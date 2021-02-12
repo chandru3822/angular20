@@ -1,29 +1,10 @@
 <template>
   <v-container class="custom-field-group-container py-0">
     <v-row>
-      <v-col cols="12">
-        <v-row class="mb-2">
-          <v-col cols="12">
-            <v-text-field color="primaryCustom"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          v-model="processStep.processStepName"
-                          label="Process Step Name"></v-text-field>
-            <div>
-              <label class="mt-4">Allow Non-Admin to Add to Project:</label>
-              <input class="ml-3" type="checkbox" :readonly="!userCanEdit"
-                     :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
-            </div>
-            <v-btn color="primaryCustom" dark class="white--text mt-3" v-if="userCanEdit"
-                   @click="saveProcessStep">
-              Save Process Step
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-divider></v-divider>
+      <v-col cols="12" class="py-0">
         <v-row>
-          <v-col cols="12" class="pt-0">
-            <v-toolbar flat>
+          <v-col cols="12" class="pt-0 px-0">
+            <v-toolbar flat class="wqt-header-bar">
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
@@ -33,8 +14,8 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <div class="pl-5">
-              <v-card flat class="square-card mb-3" v-if="addNewWorkQueueType">
+            <div>
+              <v-card flat class="square-card mb-3 pa-2" color="rowShadeCustom" v-if="addNewWorkQueueType">
                 <v-autocomplete v-model="newWorkQueueType.workQueueTypeId"
                                 :items="workQueueTypes"
                                 label="Select Work Queue Type"
@@ -134,7 +115,7 @@
                   hide-default-footer
                   :items-per-page="-1"
                   disable-sort
-                  class="elevation-1"
+                  class="elevation-1 square-card"
                 >
                   <template #no-data>
                     No available work queue types
@@ -304,10 +285,9 @@
             </div>
           </v-col>
         </v-row>
-        <v-divider></v-divider>
         <v-row>
-          <v-col cols="12" class="pt-0">
-            <v-toolbar flat>
+          <v-col cols="12" class="mt-3 pa-0">
+            <v-toolbar flat class="link-header-bar">
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
@@ -317,7 +297,7 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <div class="pl-5">
+            <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewLink">
               <v-select v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
@@ -326,70 +306,69 @@
                         item-value="id"
                         @input="assignNewLink"
               ></v-select>
-              <v-card flat v-if="processStep.links && processStep.links.length > 0">
-                <draggable v-model="processStep.links" group="links"
-                           :disabled="!userCanEdit"
-                           id="link-draggable"
-                           @change="saveLinkOrder(processStep.links)"
-                           @start="drag=true" @end="drag=false">
-                  <v-list class="grab" v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
-                          :key="index">
-                    <v-list-item dense :class="{'shaded-row': index % 2}">
-                      <v-list-item-action>
-                        <v-icon>drag_handle</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-content>
-                        {{ a.link }} | {{ a.url }}
-                      </v-list-item-content>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="a.deleteConfirm"
-                        width="500">
-                        <template v-slot:activator="{ on }">
-                          <v-list-item-action class="clickable" v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-list-item-action>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
-                          >
-                            Confirm
-                          </v-card-title>
+            </v-card>
+            <v-card flat v-if="processStep.links && processStep.links.length > 0">
+              <draggable v-model="processStep.links" group="links"
+                         :disabled="!userCanEdit"
+                         id="link-draggable"
+                         @change="saveLinkOrder(processStep.links)"
+                         @start="drag=true" @end="drag=false">
+                <v-list class="grab" v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
+                        :key="index">
+                  <v-list-item dense :class="{'shaded-row': index % 2}">
+                    <v-list-item-action>
+                      <v-icon>drag_handle</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      {{ a.link }} | {{ a.url }}
+                    </v-list-item-content>
+                    <v-dialog
+                      v-if="userCanEdit"
+                      v-model="a.deleteConfirm"
+                      width="500">
+                      <template v-slot:activator="{ on }">
+                        <v-list-item-action class="clickable" v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-list-item-action>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                        >
+                          Confirm
+                        </v-card-title>
 
-                          <v-card-text>
-                            Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
-                          </v-card-text>
+                        <v-card-text>
+                          Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
+                        </v-card-text>
 
-                          <v-divider></v-divider>
+                        <v-divider></v-divider>
 
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="a.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="[a.archived = true, deleteLinkFromStep(a.id)]">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
-                    </v-list-item>
-                  </v-list>
-                </draggable>
-              </v-card>
-            </div>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="a.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="[a.archived = true, deleteLinkFromStep(a.id)]">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </v-list-item>
+                </v-list>
+              </draggable>
+            </v-card>
           </v-col>
         </v-row>
-        <v-divider></v-divider>
         <v-row v-if="processStepId">
-          <v-col cols="12" class="pt-0">
-            <v-toolbar flat>
+          <v-col cols="12" class="pa-0 mt-4">
+            <v-toolbar flat class="attach-header-bar">
               <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
@@ -399,74 +378,73 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <div class="pl-5">
-              <v-autocomplete v-if="addNewType"
-                              v-model="newType.attachmentTypeId"
+            <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewType">
+              <v-autocomplete v-model="newType.attachmentTypeId"
                               :items="availableAttachmentTypes"
                               label="Select Attachment Type"
                               item-text="attachmentType"
                               item-value="id"
                               @input="assignNewType"
               ></v-autocomplete>
-              <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
-                <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
-                           :disabled="!userCanEdit"
-                           id="attachment-draggable"
-                           @change="saveAttachmentTypeOrder(processStep.attachmentTypes)"
-                           @start="drag=true" @end="drag=false">
-                  <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')" :key="index">
-                    <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
-                      <v-list-item-action>
-                        <v-icon>drag_handle</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-content>
-                        {{ a.attachmentType }}
-                      </v-list-item-content>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="a.deleteConfirm"
-                        width="500">
-                        <template v-slot:activator="{ on }">
-                          <v-list-item-action class="clickable" v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-list-item-action>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
-                          >
-                            Confirm
-                          </v-card-title>
+            </v-card>
+            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
+              <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
+                         :disabled="!userCanEdit"
+                         id="attachment-draggable"
+                         @change="saveAttachmentTypeOrder(processStep.attachmentTypes)"
+                         @start="drag=true" @end="drag=false">
+                <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')" :key="index">
+                  <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
+                    <v-list-item-action>
+                      <v-icon>drag_handle</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      {{ a.attachmentType }}
+                    </v-list-item-content>
+                    <v-dialog
+                      v-if="userCanEdit"
+                      v-model="a.deleteConfirm"
+                      width="500">
+                      <template v-slot:activator="{ on }">
+                        <v-list-item-action class="clickable" v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-list-item-action>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                        >
+                          Confirm
+                        </v-card-title>
 
-                          <v-card-text>
-                            Are you sure you want to delete this attachment type: <strong>{{
-                              a.attachmentType
-                            }}</strong>?
-                          </v-card-text>
+                        <v-card-text>
+                          Are you sure you want to delete this attachment type: <strong>{{
+                            a.attachmentType
+                          }}</strong>?
+                        </v-card-text>
 
-                          <v-divider></v-divider>
+                        <v-divider></v-divider>
 
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="a.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="[a.archived = true, deleteTypeFromStep(a.id)]">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
-                    </v-list-item>
-                  </v-list>
-                </draggable>
-              </v-card>
-            </div>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="a.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="[a.archived = true, deleteTypeFromStep(a.id)]">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </v-list-item>
+                </v-list>
+              </draggable>
+            </v-card>
           </v-col>
         </v-row>
       </v-col>
@@ -794,21 +772,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await putRequest(`/processStep`, this.processStep)
-        this.changesMade = false
-        this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+
     async getAttachmentTypesForProcessStep() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -1059,5 +1023,17 @@ export default {
   width: 10px;
   margin-left: 15px;
   margin-right: 20px !important;
+}
+
+.wqt-header-bar {
+  border-bottom: 1px solid #E6E6E6;
+}
+.link-header-bar {
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+}
+.attach-header-bar {
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
 }
 </style>
