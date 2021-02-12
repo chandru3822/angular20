@@ -124,7 +124,7 @@
         </v-row>
       </v-col>
       <v-dialog v-model="showDrilldown">
-        <CompanyDashboardDrilldown :milestone="selectedMilestone"
+        <CompanyDashboardDrilldown v-if="!drilldownIsLoading" :milestone="selectedMilestone"
                                    :load-partners="loadPartners"
                                    :drilldown-data="drilldownData"
                                    :start-date="startDate"
@@ -173,6 +173,7 @@
         currentPeriod: Math.ceil(moment().isoWeek() / 4),
         dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
         isLoading: true,
+        drilldownIsLoading: true,
         dashValues: [],
         drilldownData: [],
         singleDateRange: false,
@@ -216,6 +217,7 @@
         this.selectedMilestone = {}
         this.drilldownData = []
         this.loadPartners = false
+        this.drilldownIsLoading = false
         this.showDrilldown = false
       },
       async openDrilldown(item, loadPartners) {
@@ -226,6 +228,7 @@
       },
       async getDrilldownData() {
         //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
+        this.drilldownIsLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -239,12 +242,12 @@
           const {data} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven')
           this.drilldownData = data
 
-          this.isLoading = false
+          this.drilldownIsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-          this.isLoading = false
+          this.drilldownIsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

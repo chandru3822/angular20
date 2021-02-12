@@ -231,7 +231,12 @@
                            and up2.primary_flag IS TRUE
                            AND up2.end_date IS NULL
                            AND up2.archived IS NOT TRUE
-                           and up2.position_id in (1,2,3,133)
+                           and up2.id in (select up5.id
+                                    from flow.user_position up5
+                                             inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                    where up5.primary_flag is true
+                                      and up5.archived is false
+                                      and cf.archived is false)
                            AND ust.has_access is true),false) AS "is_active_closer",
             (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
              FROM (SELECT op2.name AS "receivingPlan", op2.description AS "receivingDescription", op2.id AS "receivingPlanId"
@@ -244,7 +249,12 @@
                  INNER JOIN flow.user_position up ON up.user_id = u.id AND
                                                     ((up.primary_flag IS TRUE AND up.end_date IS NULL AND up.archived IS NOT TRUE) OR
                                                      1 = 1)
-                                                    AND position_id IN (1, 2, 3, 133)
+                                                    AND up.id IN (select up5.id
+                                                                from flow.user_position up5
+                                                                         inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                                                where up5.primary_flag is true
+                                                                  and up5.archived is false
+                                                                  and cf.archived is false)
                         inner join flow.company_user_status cus on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.has_access is true and ust.company_id = 3
                  LEFT JOIN brs.commission_plan_user cpu ON cpu.user_id = u.id AND (cpu.start_date <= CURRENT_TIMESTAMP AND
@@ -384,7 +394,12 @@ FROM (SELECT cp.id,
 
                            string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                                CASE WHEN cp.position_id = 1
-                                        THEN up.position_id IN (1,2,3,133)
+                                        THEN up.id IN (select up5.id
+                                                from flow.user_position up5
+                                                         inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                                where up5.primary_flag is true
+                                                  and up5.archived is false
+                                                  and cf.archived is false)
                                     WHEN cp.position_id = 4
                                         THEN up.position_id IN (4,5,6)
                                    END
@@ -415,7 +430,12 @@ FROM (SELECT cp.id,
              cpu.end_date                       AS "endDate",
              string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                CASE WHEN cp.position_id = 1
-                 THEN up.position_id IN (1,2,3,133)
+                 THEN up.id IN (select up5.id
+                                  from flow.user_position up5
+                                           inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                  where up5.primary_flag is true
+                                    and up5.archived is false
+                                    and cf.archived is false)
                WHEN cp.position_id = 4
                  THEN up.position_id IN (4,5,6)
                END
@@ -726,7 +746,12 @@ FROM (SELECT cp.id,
           select up.user_id, up.start_date::date, up.end_date::date
           from flow.user_position up
             inner join flow.position p on p.id = up.position_id
-          where up.position_id in (1,2,3,133)
+          where up.id in (select up5.id
+                    from flow.user_position up5
+                             inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                    where up5.primary_flag is true
+                      and up5.archived is false
+                      and cf.archived is false)
             and p.company_id = 3
             and up.user_id in (:userIds);
     ]]></commissions.getUserDatesAsCloser>

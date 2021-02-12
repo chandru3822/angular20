@@ -21,7 +21,12 @@ BEGIN
                           inner join flow.timezone t on t.id = ct.timezone_id
                           inner join flow.company_user_status cus on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = o.company_id
-                     and up.position_id in (1,2,3)
+                     and up.id in (select up2.id
+                                      from flow.user_position up2
+                                                inner join flow.custom_field cf on up2.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                            where up2.primary_flag is true
+                                              and up2.archived is false
+                                              and cf.archived is false)
                      and up.end_date is null
                      and up.primary_flag is true
                      and up.archived is false
