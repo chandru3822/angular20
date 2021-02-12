@@ -128,9 +128,17 @@ export default {
       }
     },
     setFunction(date) {
-      this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+      //date in this context = the current time in non-utc time
+      //we have to combine the selected date with the current time in non-utc in case they have selected date with a different daylight savings time than "NOW"
+      let combined = this.date + ' ' + date
+      this.time = moment.tz(combined, 'yyyy-MM-DD HH:mm', this.timezone).utc().format('HH:mm')
+
+      // this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+      // ^^ this is the old way, in case i broke something
+
       // this date will be used in case the time selected pushes the utc date to the next day
       this.utcDate = moment(this.date + ' ' + date).utc().format('yyyy-MM-DD')
+
       return date
     },
     changeHandler () {
@@ -149,6 +157,7 @@ export default {
         //the localDate setter was doing exactly what was needed to the date but we need to convert this.time to the "this.timezone"
         //value before sending everything to the setFunction because this is what the date picker does
         this.setFunction(moment.utc(this.time, 'HH:mm').tz(this.timezone).format('HH:mm'))
+        // this.setFunction(moment.utc(this.date))
         this.showDate = false
         this.showTime = true
       }
@@ -204,13 +213,6 @@ export default {
         //if previous value, use that and dont do the setFunction thing
         this.time = this.dateToUse.toFormat('HH:mm')
       }
-      // console.log('timePost', this.time)
-      //
-      // console.log('val', this.$props.value)
-      // console.log('value', value)
-      // console.log('date to use', this.dateToUse)
-      // console.log('date', this.date)
-      // console.log('utcDate', this.utcDate)
 
       if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true
