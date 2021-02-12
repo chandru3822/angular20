@@ -289,7 +289,7 @@
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getCompanyStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getCompanyStatusTypes, getStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
   import constants from "@/helpers/constants";
@@ -505,9 +505,16 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStatusTypes()
+          //the old way
+          // const {data} = await getCompanyStatusTypes()
+          // //only show active and complete
+          // this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
+
+          //the new way - use root statuses
+          const {data} = await getStatusTypes()
           //only show active and complete
-          this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
+          this.processStepStatusTypes = data.filter(d => d.id !== 3)
+
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -552,7 +559,10 @@
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
-              processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
+              //old way
+              // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
+              // new way:
+              processStepStatusTypeId: this.selectedProcessStepStatusType.id,
               companyStateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
