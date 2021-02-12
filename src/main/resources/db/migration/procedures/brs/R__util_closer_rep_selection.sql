@@ -24,7 +24,7 @@ BEGIN
         and up.primary_flag is true;
 
     -- org_level_id of 6 = Office
-    case when (v_org_level_id < 6) OR (2 = any(v_current_position_ids)) OR (p_platform_user_id = 99999999) then ---- Corporate and Regional
+    case when (v_org_level_id < 6) OR (326 = any(v_current_position_ids)) OR (2 = any(v_current_position_ids)) then ---- Corporate and Regional
         RETURN QUERY
 
         select array_to_json(array_agg(row_to_json(sub_rows)))

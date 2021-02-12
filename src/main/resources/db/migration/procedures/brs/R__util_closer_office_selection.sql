@@ -17,7 +17,7 @@ BEGIN
         and up.primary_flag is true;
 
     -- org_level_id of 6 = Office
-    case when (p_permission_override) OR (v_org_level_id < 6) OR (p_platform_user_id = 99999999) then ---- Corporate and Regional
+    case when (p_permission_override) OR (v_org_level_id < 6) then ---- Corporate and Regional
         RETURN QUERY
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (
