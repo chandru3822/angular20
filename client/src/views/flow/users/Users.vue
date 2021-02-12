@@ -323,7 +323,15 @@
 
   export default {
     name: 'Users',
-
+    watch: {
+      options: {
+        handler() {
+          if(!this.initialLoad) {
+            this.getUsers(false)
+          }
+        }
+      }
+    },
     data () {
       return {
         delay: 500,
@@ -331,6 +339,7 @@
         dialog: false,
         snackbar: {},
         users: [],
+        initialLoad: true,
         allUsers: [],
         selectedLevel: null,
         masterOrgFilterList: [],
@@ -480,6 +489,7 @@
                 })
             }
             this.dataLoading = false
+            this.initialLoad = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
