@@ -67,7 +67,7 @@
               </div>
             </v-col>
             <v-col cols="4" class="lead-owner pb-2 text-right">
-              <div class="d-inline-block mr-4">
+              <div class="d-inline-block mr-4" v-if="project.companyId !== this.companyId">
                 <v-avatar
                   :tile="false"
                   :size="25"
