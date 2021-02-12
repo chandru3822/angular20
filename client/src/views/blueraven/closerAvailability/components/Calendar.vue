@@ -405,6 +405,24 @@
             d.resourceId = `${d.resourceId}`
             d.color = 'gray'
           })
+
+          //we do this for every resource, regardless of if they already have an availability or not
+          // if they already have one it still works as it should and doesn't block out the time, but if they
+          // dont already have one then this will block/grey out the day so it doesn't look like they are available
+          this.resources.forEach(r => {
+            data.push({
+              start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              end: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              title: null,
+              rendering: 'inverse-background',
+              allDay: false,
+              //these values have already been pre-appended with the 1 or 2
+              groupId: r.id,
+              resourceId: r.id,
+              color: 'gray'
+            })
+          })
+
           this.eventSources[1].events = cloneDeep(data)
         } catch (e) {
           console.error('*** ERROR ***', e)
