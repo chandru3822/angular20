@@ -38,7 +38,7 @@
             </td>
             <td v-for="acl in item.accessControl">
               <input type="checkbox" :readonly="!userCanEdit"
-                     :disabled="!userCanEdit" v-model="acl.enabled" @input="callback(companyFeatureList)">
+                     :disabled="!userCanEdit" v-model="acl.enabled" @input="[acl.dirty = true, item.dirty = true, callback(companyFeatureList)]">
 
               <v-icon class="ml-2 mb-1" small color="activeBlue"
                       v-if="secondaryFeatureAccess.length > 0 && secondaryHasAccess(item, acl)">
@@ -151,6 +151,10 @@
           this.companyFeatureList.forEach(cf => {
             cf.accessControl.forEach(acl => {
               if(header.accessControlId === acl.accessControlId) {
+                if(acl.enabled !== header.selectAll) {
+                  acl.dirty = true
+                  cf.dirty = true
+                }
                 acl.enabled = header.selectAll
               }
             })
@@ -164,6 +168,11 @@
           // select all
           this.companyFeatureList.forEach(cfl => {
             cfl.accessControl.forEach(ac => {
+              //if ac was not enabled, set dirty value to true
+              if(!ac.enabled) {
+                ac.dirty = true
+                cfl.dirty = true
+              }
               ac.enabled = true
             })
           })
@@ -171,6 +180,11 @@
           // deselect all
           this.companyFeatureList.forEach(cfl => {
             cfl.accessControl.forEach(ac => {
+              //if ac was already enabled, set dirty value to true
+              if(ac.enabled) {
+                ac.dirty = true
+                cfl.dirty = true
+              }
               ac.enabled = false
             })
           })
@@ -185,6 +199,10 @@
           }
           let selectedCfl = this.companyFeatureList.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
           selectedCfl?.accessControl?.forEach(acl => {
+            if(acl.enabled !== enable) {
+              acl.dirty = true
+              selectedCfl.dirty = true
+            }
             acl.enabled = enable
           })
         }
