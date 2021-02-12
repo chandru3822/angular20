@@ -29,7 +29,8 @@ BEGIN
                                      s.abbreviation                         state,
                                      pd.source_name,
                                      fa.date_created             as         date_value,
-                                     'Appointments Created Date' as         date_label
+                                     'Appointments Created Date' as         date_label,
+                                     'timestamp' as date_type
                               from brs.project_details pd
                                        inner join first_appointment fa on fa.project_id = pd.project_id
                                        inner join flow.project p on p.id = pd.project_id
@@ -52,7 +53,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.first_appointment as                date_value,
-                                         'Appointment Date'   as                date_label
+                                         'Appointment Date'   as                date_label,
+                                         'timestamp' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -75,9 +77,10 @@ BEGIN
                                          pd.source_name,
                                          pd.first_appointment_pitched as        date_value,
                                          'Appointment Date'           as        date_label,
+                                         'timestamp' as date_type,
                                          lov.name                               additional_field_value,
                                          'Appointment Outcome'        as        additional_field_label,
-                                         false as additional_field_as_date
+                                         'text' as additional_field_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -101,7 +104,8 @@ BEGIN
                                          s.abbreviation                           state,
                                          pd.source_name,
                                          pd.installation_agreement_signed_date as date_value,
-                                         'Installation Agreement Signed Date'  as date_label
+                                         'Installation Agreement Signed Date'  as date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -124,7 +128,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.site_survey_verified_date as        date_value,
-                                         'Site Survey Verified Date'  as        date_label
+                                         'Site Survey Verified Date'  as        date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -147,7 +152,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.final_design_created_timestamp as   date_value,
-                                         'Final Design Created Date'       as   date_label
+                                         'Final Design Created Date'       as   date_label,
+                                         'timestamp' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -170,7 +176,8 @@ BEGIN
                                          s.abbreviation                            state,
                                          pd.source_name,
                                          pd.final_design_sent_to_homeowner_date as date_value,
-                                         'Final Design Sent to Homeowner Date'  as date_label
+                                         'Final Design Sent to Homeowner Date'  as date_label,
+                                         'timestamp' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -193,7 +200,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.final_design_signed_date  as        date_value,
-                                         'Final Design Approved Date' as        date_label
+                                         'Final Design Approved Date' as        date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -216,7 +224,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.final_design_complete_date as       date_value,
-                                         'Final Design Completed Date' as       date_label
+                                         'Final Design Completed Date' as       date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -239,7 +248,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.plan_set_created_date as            date_value,
-                                         'Plan Set Created Date'  as            date_label
+                                         'Plan Set Created Date'  as            date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -262,7 +272,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.permit_pack_complete     as         date_value,
-                                         'Permit Pack Complete Date' as         date_label
+                                         'Permit Pack Complete Date' as         date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -309,7 +320,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.permit_approved_date as             date_value,
-                                         'Permit Approved Date'  as             date_label
+                                         'Permit Approved Date'  as             date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -332,7 +344,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.installation_scheduled     as       date_value,
-                                         'Installation Scheduled Date' as       date_label
+                                         'Installation Scheduled Date' as       date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -356,9 +369,10 @@ BEGIN
                                          pd.source_name,
                                          pd.installation_start_time          as date_value,
                                          'Installation Date'                 as date_label,
+                                         'timestamp'  as date_type,
                                          pd.installation_closeout_start_time as additional_field_value,
                                          'Installation Closeout Date'        as additional_field_label,
-                                         true as additional_field_as_date
+                                         'timestamp'  as additional_field_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -382,7 +396,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.substantial_completion_date as      date_value,
-                                         'Substantial Completion Date'  as      date_label
+                                         'Substantial Completion Date'  as      date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -406,9 +421,10 @@ BEGIN
                                          pd.source_name,
                                          pd.ahj_inspection_scheduled_date   as  date_value,
                                          'AHJ Inspection Scheduled Date'    as  date_label,
+                                         'date' as date_type,
                                          pd.ahj_reinspection_scheduled_date as  additional_field_value,
                                          'AHJ Reinspection Scheduled'       as  additional_field_label,
-                                         true as additional_field_as_date
+                                         'date' as additional_field_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -432,9 +448,10 @@ BEGIN
                                          pd.source_name,
                                          pd.ahj_inspection_start_time   as      date_value,
                                          'AHJ Inspection Date'          as      date_label,
+                                         'timestamp' as date_type,
                                          pd.ahj_reinspection_start_time as      additional_field_value,
                                          'AHJ Reinspection Date'        as      additional_field_label,
-                                         true as additional_field_as_date
+                                         'timestamp' as additional_field_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -459,7 +476,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.ahj_final_inspection_verified    as date_value,
-                                         'AHJ FinalInspection Verified Date' as date_label
+                                         'AHJ FinalInspection Verified Date' as date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -483,9 +501,10 @@ BEGIN
                                          pd.source_name,
                                          pd.verified_inspection_approval_received_by_utility_date as date_value,
                                          'Verified Inspection Approval Received by Utility Date'  as date_label,
+                                         'date' as date_type,
                                          ahj_inspection_approval_submitted_date                   as additional_field_value,
                                          'AHJ Inspection Approval Submitted Date'                 as additional_field_label,
-                                         true as additional_field_as_date
+                                         'timestamp' as additional_field_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
@@ -508,7 +527,8 @@ BEGIN
                                          s.abbreviation                         state,
                                          pd.source_name,
                                          pd.final_completion_submitted_date as  date_value,
-                                         'Final Completion Submitted Date'  as  date_label
+                                         'Final Completion Submitted Date'  as  date_label,
+                                         'date' as date_type
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id

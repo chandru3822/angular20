@@ -35,6 +35,7 @@
                   :rules="requiredRules"
                   :label="f.levelName"
                   item-value="id"
+                  item-text="orgName"
                 >
                   <template slot="selection" slot-scope="{ item, index }">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>

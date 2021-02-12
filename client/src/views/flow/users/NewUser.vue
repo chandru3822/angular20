@@ -113,6 +113,7 @@
                     :label="f.levelName"
                     :rules="requiredRules"
                     item-value="id"
+                    item-text="orgName"
                     autocomplete="off"
                     type="search"
                   >

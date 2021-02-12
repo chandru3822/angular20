@@ -17,12 +17,9 @@ begin
       order by s.state;
   when p_smartlist_system_list_id = 2 then
     return query
-      select cpssst.id, cpssst.process_step_status_type as name
-      from flow.company_process_step_status_type cpssst
-      where
-        cpssst.company_id = p_company_id and
-        cpssst.archived is not true
-      order by cpssst.process_step_status_type;
+      select psst.id, psst.process_step_status_type as name
+      from flow.process_step_status_type psst
+      order by psst.id;
   when p_smartlist_system_list_id = 3 then
     return query
       select cpst.id, cpst.project_status_type as name

@@ -65,7 +65,12 @@
                                             concat(u.first_name, ' ', u.last_name) AS name,
                                             string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                                                 CASE WHEN rp.position_id = 1
-                                                         THEN up.position_id IN (1,2,3,133)
+                                                         THEN up.id IN (select up5.id
+                                                                from flow.user_position up5
+                                                                         inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                                                where up5.primary_flag is true
+                                                                  and up5.archived is false
+                                                                  and cf.archived is false)
                                                      WHEN rp.position_id = 4
                                                          THEN up.position_id IN (4,5,6)
                                                     END
@@ -156,7 +161,12 @@
                      rpu.end_date                       AS "endDate",
                      string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                          CASE WHEN rp.position_id = 1
-                                  THEN up.position_id IN (1,2,3,133)
+                                  THEN up.id IN (select up5.id
+                                                  from flow.user_position up5
+                                                           inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                                                  where up5.primary_flag is true
+                                                    and up5.archived is false
+                                                    and cf.archived is false)
                               WHEN rp.position_id = 4
                                   THEN up.position_id IN (4,5,6)
                              END
