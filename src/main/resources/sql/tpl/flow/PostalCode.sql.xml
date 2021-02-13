@@ -240,8 +240,7 @@
                                           inner join flow.position p on p.id = up.position_id
                                           inner join flow.org o on o.id = up.org_id
                                  WHERE up.user_id = pczu.user_id
-                                   and up.archived is not true
-                                   and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
+                                   and up.archived is not true) positions), '[]') AS "userPositions"
     from flow.postal_code_zone_user pczu
              inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
         inner join flow."user" u on u.id = pczu.user_id
