@@ -177,7 +177,7 @@ BEGIN
                                   from search_projects sc
                                   group by 1
                                   order by count(1) desc, sum(rank)
-                                  limit p_limit offset p_offset
+--                                   limit p_limit offset p_offset
                               )
                          select p.id,
                                 p.project_name,
