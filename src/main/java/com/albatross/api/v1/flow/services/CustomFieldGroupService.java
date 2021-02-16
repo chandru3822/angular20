@@ -94,6 +94,17 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
   }
 
+  public void saveUseParentData(CustomField customField) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+    params.put("useParentData", customField.getUseParentData());
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+
+    sqlCache.update("customFieldGroupAssignment.saveUseParentData", params);
+  }
+
   public void saveReadOnlyAndWhiteList(CustomField customField, Boolean savePositions) {
     User currentUser = securityService.getCurrentUser();
 
