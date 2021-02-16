@@ -136,6 +136,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(this.positionId) {
+            //we do this temp so that we only send up the values that need to be saved
+            let tempCompanyFeatures = this.position?.companyFeatures?.filter(cf => cf.dirty)
+            this.position.companyFeatures = tempCompanyFeatures
             const {data} = await putRequest(`/position/`, this.position)
             this.position = data
             this.accessControlKey++

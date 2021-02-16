@@ -16,6 +16,8 @@ public class CompanyFeature {
   private Long id, companyId, featureId;
   private String featureName, featureCode;
   private Boolean archived;
+  //i know this is BAD, but i'm just trying to patch this really quickly to not take so freaking long!
+  private boolean dirty = false;
 
   private List<FeatureAccessControl> accessControl;
 

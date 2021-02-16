@@ -243,7 +243,9 @@
       async saveUserAccess() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/feature/user/${this.userId}`, this.userCompanyFeatures)
+          //we do this temp so that we only send up the values that need to be saved
+          let tempCompanyFeatures = this.userCompanyFeatures?.filter(cf => cf.dirty)
+          const {data} = await putRequest(`/feature/user/${this.userId}`, tempCompanyFeatures)
           this.userCompanyFeatures = data
           this.accessControlKey++
           this.$store.commit(AppMutations.SET_LOADING, false)

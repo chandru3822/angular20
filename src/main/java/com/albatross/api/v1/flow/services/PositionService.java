@@ -120,17 +120,22 @@ public class PositionService {
     params.put("modifiedById", user.getId());
     sqlCache.update("position.update", params);
 
+    //i think these dirty checks are redundant now that i filtered the frontend but i am leaving them in cuz it works and i dont want to update it and have to test it again
     for(CompanyFeature cf : p.getCompanyFeatures()) {
-      for (FeatureAccessControl ac : cf.getAccessControl()) {
-        if(null != ac.getId()) {
-          params.put("enabled", ac.isEnabled());
-          params.put("id", ac.getId());
-          sqlCache.update("position.updatePositionFeatureAccessControl", params);
-        } else if (ac.isEnabled()) {
-          params.put("companyFeatureId", cf.getId());
-          params.put("accessControlId", ac.getAccessControlId());
-          params.put("positionId", p.getId());
-          sqlCache.update("position.insertPositionFeatureAccessControl", params);
+      if(cf.isDirty()) {
+        for (FeatureAccessControl ac : cf.getAccessControl()) {
+          if (ac.isDirty()) {
+            if (null != ac.getId()) {
+              params.put("enabled", ac.isEnabled());
+              params.put("id", ac.getId());
+              sqlCache.update("position.updatePositionFeatureAccessControl", params);
+            } else if (ac.isEnabled()) {
+              params.put("companyFeatureId", cf.getId());
+              params.put("accessControlId", ac.getAccessControlId());
+              params.put("positionId", p.getId());
+              sqlCache.update("position.insertPositionFeatureAccessControl", params);
+            }
+          }
         }
       }
     }

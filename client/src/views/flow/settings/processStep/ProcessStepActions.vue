@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="pt-0">
     <v-dialog
       v-model="deleteError"
     >
@@ -35,14 +35,18 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12">
-        <v-toolbar flat>
+      <v-col cols="12" class="pt-0 px-0">
+        <v-toolbar flat class="req-header-bar">
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text v-if="userCanAdd">
               <v-icon v-if="!addNewRequirement">add</v-icon>
               {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
+            </v-btn>
+            <v-btn text @click="expandRequirements = !expandRequirements">
+              <v-icon v-if="!expandRequirements">mdi-chevron-down</v-icon>
+              <v-icon v-else>mdi-chevron-up</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -189,8 +193,8 @@
             </v-btn>
           </v-col>
         </v-row>
-        <v-row>
-          <v-col cols="12">
+        <v-row v-if="expandRequirements">
+          <v-col cols="12" class="pt-0">
             <v-data-table
               :headers="headers"
               :items="filterRequirements()"
@@ -199,7 +203,7 @@
               single-expand
               :expanded.sync="expanded"
               hide-default-footer
-              class="elevation-1 fix-column-width-bug"
+              class="elevation-1 fix-column-width-bug square-card"
             >
               <template #no-data>
                 No requirements for this process step
@@ -450,13 +454,17 @@
       <v-divider></v-divider>
       <v-row>
         <v-col cols="12">
-          <v-toolbar flat>
+          <v-toolbar flat class="action-header-bar">
             <v-toolbar-title class="app-title">Actions</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn @click="addNewAction = !addNewAction" text v-if="userCanAdd">
                 <v-icon v-if="!addNewAction">add</v-icon>
                 {{ addNewAction ? 'Cancel' : 'Add Action'}}
+              </v-btn>
+              <v-btn text @click="expandActions = !expandActions">
+                <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
+                <v-icon v-else>mdi-chevron-up</v-icon>
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
@@ -521,7 +529,7 @@
               Save
             </v-btn>
           </v-card>
-          <v-card flat>
+          <v-card flat v-if="expandActions">
             <v-data-table
               :headers="actionHeaders"
               :items="filterActions()"
@@ -1188,6 +1196,8 @@
     data() {
       return {
         snackbar: {},
+        expandRequirements: true,
+        expandActions: true,
         deleteError: false,
         actionsUsingLogic: [],
         invalidRequirement: true,
@@ -1973,5 +1983,14 @@
 <style scoped lang="scss">
   .params {
     width: 100%;
+  }
+
+  .req-header-bar {
+    border-bottom: 1px solid #E6E6E6;
+  }
+
+  .action-header-bar {
+    border-top: 1px solid #E6E6E6;
+    border-bottom: 1px solid #E6E6E6;
   }
 </style>

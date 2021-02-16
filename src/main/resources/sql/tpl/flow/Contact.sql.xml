@@ -35,6 +35,7 @@
        c.city,
        c.company_state_id,
        s.state,
+       comp.company_name,
        c.postal_code,
        c.company_country_id,
        ctr.country,
@@ -68,6 +69,7 @@
                   WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
+             inner join flow.company comp on comp.id = c.company_id
              left outer join flow.company_state cs on cs.id = c.company_state_id
               left outer join flow.state s on s.id = cs.state_id
              left outer join flow.company_country cc on cc.id = c.company_country_id
