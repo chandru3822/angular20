@@ -31,10 +31,11 @@ public class ProjectController {
   @GetMapping(value= "/search", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Page<Project>> searchProjects(@RequestParam String query,
                                                       @RequestParam(required = false) Long companyProjectStatusTypeId,
+                                                      @RequestParam(required = false) String overrideType,
                                                       @RequestParam(required = false) String sortColumn,
                                                       @RequestParam(required = false) String sortDirection,
                                                       Pageable pageable) {
-    return new ResponseEntity<>(projectService.searchProjects(query, companyProjectStatusTypeId, sortColumn, sortDirection, pageable), HttpStatus.OK);
+    return new ResponseEntity<>(projectService.searchProjects(query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, pageable), HttpStatus.OK);
   }
 
   @GetMapping(value= "/countsByStatus", produces = MediaType.APPLICATION_JSON_VALUE)

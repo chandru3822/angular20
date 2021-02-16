@@ -73,13 +73,13 @@ public class ProjectService {
     return projectId;
   }
 
-  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String sortColumn, String sortDirection, Pageable pageable) {
+  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String overrideType, String sortColumn, String sortDirection, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if(!viewAll) {
+    if(!viewAll || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
       viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
     }
 
@@ -95,7 +95,12 @@ public class ProjectService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    String searchSqlKey = viewAll ? "project.search" : viewDownline ? "project.searchDownline" : "project.searchByOwner";
+    String searchSqlKey = "project.searchByOwner";
+    if(viewDownline) {
+      searchSqlKey = "project.searchDownline";
+    } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
+      searchSqlKey = "project.search";
+    }
 //    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
 
     List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
