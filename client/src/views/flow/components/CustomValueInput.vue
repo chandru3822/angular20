@@ -2,7 +2,8 @@
 <v-row class="d-flex justify-space-between align-center">
   <v-col v-if="showFieldName">
     {{field.fieldName}}
-    <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
+    <span class="ancillary" v-if="field.useParentData">(Parent)</span>
+    <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
   </v-col>
 
   <v-col class="d-flex justify-start align-self-start py-0">
@@ -181,12 +182,18 @@ export default {
       timezone: this.$store.state.user.details?.timezone?.value
     }
   },
+  // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
+  // computed: {
+    // displayedFieldName () {
+    //   return this.field.useParentData ? this.field.fieldName + ' (Parent)' : this.field.ancillaryCustomFieldGroupAssignmentId ? this.field.fieldName + ' (Primary)' : this.field.fieldName
+    // }
+  // },
   methods: {
     getRequiredRule() {
       if(this.required) {
         return this.requiredRules
       }
-    }
+    },
   }
 }
 </script>

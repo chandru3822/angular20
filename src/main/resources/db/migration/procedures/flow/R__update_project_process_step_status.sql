@@ -52,9 +52,30 @@ set
     company_process_step_status_type_id = p_company_process_step_status_typeId,
     modified_by_id = p_user_id,
     date_modified = now(),
-    process_step_complete_date = (
-    case when p_process_step_status_type_id = 2 then now() end)
+    process_step_complete_date = (case when p_process_step_status_type_id = 2 then now() end)
 where id = p_project_process_step_id;
+
+-- If we just updated the PPS to cancelled status, unset the primary/main flag
+IF p_process_step_status_type_id = 3
+THEN
+    update flow.project_process_step
+    set main = false,
+        date_modified = now(),
+        modified_by_id = p_user_id
+    where id = p_project_process_step_id;
+end if;
+
+-- if status is set to 2 (complete) check for a primary flag = true, if there isn't one then set it to true
+IF p_process_step_status_type_id = 2 and ( select count(1)
+    from flow.project_process_step pps
+    where project_id = p_project_id
+    and pps.process_step_id = p_process_step_id
+    and pps.main is true ) = 0
+THEN
+    update flow.project_process_step pps
+    set main = true
+    where pps.id = p_project_process_step_id;
+end if;
 
 -- If we just updated the PPS to active status, it must now be the only primary/main PPS
 IF p_process_step_status_type_id = 1

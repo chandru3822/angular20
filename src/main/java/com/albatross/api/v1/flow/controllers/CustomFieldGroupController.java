@@ -41,6 +41,11 @@ public class CustomFieldGroupController {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
+  @PutMapping(value = "/saveUseParentData", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveUseParentData(@RequestBody CustomField customField) {
+    customFieldGroupService.saveUseParentData(customField);
+  }
+
   @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateFieldInGroup(@RequestParam(required = false) Boolean savePositions,
                                  @RequestBody CustomField customField) {
