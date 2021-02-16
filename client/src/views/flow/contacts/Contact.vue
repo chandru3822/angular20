@@ -58,7 +58,7 @@
           >
             <v-icon color="white" size="20">mdi-office-building</v-icon>
           </v-avatar>
-          <strong>{{contact.companyName}}</strong><br/>
+          <span>{{contact.companyName}}</span><br/>
           <span class="project-company-subheader">Company</span>
         </div>
         <div v-if="!changeOwner || !userCanEdit" class="d-inline-block">
