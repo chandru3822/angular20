@@ -16,7 +16,7 @@ public class Contact {
   private String firstName, lastName, fullName, email,
       street1, street2, city, state, postalCode, country,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
-      phone, mobile, contactType;
+      phone, mobile, contactType, companyName;
   private Date dateCreated;
 
   private Owner owner;

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="">
+  <v-container class="pt-0 px-0">
     <v-dialog
       v-model="deleteError"
     >
@@ -85,8 +85,8 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12" class="pt-0">
-        <v-toolbar flat>
+      <v-col cols="12" class="pt-0 px-0">
+        <v-toolbar flat  class="cfg-header-bar">
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -96,7 +96,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="createNew" text class="text-left one-hunned pa-3" flat
+        <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
                 color="rowShadeCustom">
           <div>
             <v-text-field
@@ -104,7 +104,7 @@
                 tabindex=1
                 v-model="newGroup.groupName"
             ></v-text-field>
-            <div v-if="showScheduleGroupCheckbox()">
+            <div v-if="showScheduleGroupCheckbox()" class="mb-3">
               <label>Schedule Group:</label>
               <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="[getSchedulingFields(), getEventTypes()]">
             </div>
@@ -155,7 +155,7 @@
                 hide-default-header
                 :sort-desc="[false]"
                 :sort-by="['groupOrder']"
-                class="elevation-1 fix-column-width-bug process-step-cfg-table"
+                class="elevation-1 fix-column-width-bug process-step-cfg-table square-card"
             >
               <template #no-data>
                 No custom for this process step
@@ -293,7 +293,7 @@
                     </v-autocomplete>
                     <v-btn @click="addField = false">Cancel</v-btn>
                   </v-col>
-                  <v-col cols="12" justify="center" class="px-3 py-0"
+                  <v-col cols="12" justify="center" class="px-3 py-0 pt-2"
                           v-if="!addField && (!item.customFields || item.customFields.length === 0)">
                     No Custom Fields Added
                   </v-col>
@@ -949,5 +949,13 @@
     height: 30px;
     width: 30px;
     border-radius: 5px;
+  }
+
+  .cfg-header-bar {
+    border-bottom: 1px solid #E6E6E6;
+  }
+
+  .add-new {
+    border-bottom: 1px solid #E6E6E6;
   }
 </style>
