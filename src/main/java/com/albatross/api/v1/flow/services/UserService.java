@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -433,6 +434,14 @@ public class UserService {
     return results;
   }
 
+  public void addNotificationToken(Long userId, String token) {
+    try {
+      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().getId()));
+    } catch (DuplicateKeyException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Token already exists on given user", e);
+    }
+  }
+
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -458,6 +467,9 @@ public class UserService {
       TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "userPositions",
           new JsonCollectionDeserializer(userPositionsRef, objectMapper));
+
+      TypeReference<List<Long>> notificationTokensRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "notificationTokens", new JsonCollectionDeserializer(notificationTokensRef, objectMapper));
     }
   }
 }

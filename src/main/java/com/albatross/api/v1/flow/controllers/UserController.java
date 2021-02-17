@@ -225,4 +225,10 @@ public class UserController {
   public List<User> getMentionableUsers() {
     return userService.getMentionableUsers();
   }
+
+  @PostMapping(value = "/{userId}/token")
+  public ResponseEntity<Void> addTokenToUser(@PathVariable Long userId, @RequestBody UserNotificationTokenDTO token) {
+    userService.addNotificationToken(userId, token.getToken());
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
 }
