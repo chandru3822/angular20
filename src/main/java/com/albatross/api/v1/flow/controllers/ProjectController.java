@@ -39,8 +39,8 @@ public class ProjectController {
   }
 
   @GetMapping(value= "/countsByStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<ProjectStatusCount>> projectCountsByStatus() {
-    return new ResponseEntity<List<ProjectStatusCount>>(projectService.projectCountsByStatus(), HttpStatus.OK);
+  public ResponseEntity<List<ProjectStatusCount>> projectCountsByStatus(@RequestParam(required = false) String overrideType) {
+    return new ResponseEntity<List<ProjectStatusCount>>(projectService.projectCountsByStatus(overrideType), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)

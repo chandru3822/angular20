@@ -79,6 +79,24 @@
                                             inner join flow.attachment_type at on at.id = psat.attachment_type_id
                                    WHERE psat.process_step_id = ps.id AND psat.archived is not true
                                     order by psat.display_order) attachmentTypes), '[]') AS "attachmentTypes",
+                        coalesce((
+                                    SELECT array_to_json(array_agg(row_to_json(companyProcessStepStatusTypes)))
+                                    FROM (
+                                             SELECT pscpsst.id,
+                                                    pscpsst.process_step_id as "processStepId",
+                                                    pscpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                                    pscpsst.archived,
+                                                    ps2.process_step_name as "processStepName",
+                                                    cpsst.process_step_status_type as "processStepStatusType",
+                                                    cpsst.process_step_status_type_id as "processStepStatusTypeId",
+                                                    cpsst.company_id as "companyId",
+                                                    psst.process_step_status_type as "rootProcessStepStatusType"
+                                             FROM flow.process_step_company_process_step_status_type pscpsst
+                                                      inner join flow.process_step ps2 on pscpsst.process_step_id = ps2.id
+                                                      inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                      inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+                                             WHERE pscpsst.process_step_id = ps.id AND pscpsst.archived is not true
+                                             order by cpsst.process_step_status_type) companyProcessStepStatusTypes), '[]') AS "companyProcessStepStatusTypes",
              coalesce((
                           SELECT array_to_json(array_agg(row_to_json(cfGroups)))
                           FROM (
