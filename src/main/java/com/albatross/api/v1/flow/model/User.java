@@ -35,6 +35,9 @@ public class User {
     @JsonIgnore
     private String password;
 
+    @JsonIgnore
+    private List<String> notificationTokens;
+
     //so far this is only used for saving
     List<CustomFieldGroup> customFieldGroups;
 

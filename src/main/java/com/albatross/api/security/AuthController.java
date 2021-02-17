@@ -69,8 +69,8 @@ public class AuthController {
     }
 
     if (!user.isUnlocked()) {
-      log.info("AUTH: Cannot log in; account is locked: " + creds.getUsername());
-      return ResponseEntity.badRequest().body("Account is Locked");
+      log.info("AUTH: Cannot log in; user does not have access: " + creds.getUsername());
+      return ResponseEntity.badRequest().body("This account does not have access.");
     }
 
     //cannot turn this on in prod until mobile is ready
