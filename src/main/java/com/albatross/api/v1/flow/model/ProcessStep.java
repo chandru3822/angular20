@@ -27,5 +27,6 @@ public class ProcessStep {
   private List<OwningPosition> owningPositions;
 
   private List<ProcessStepWorkQueueType> workQueueTypes;
+  private List<ProcessStepCompanyProcessStepStatusType> companyProcessStepStatusTypes;
 }
 
