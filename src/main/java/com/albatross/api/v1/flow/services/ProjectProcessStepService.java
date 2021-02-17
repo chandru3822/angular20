@@ -224,7 +224,7 @@ public class ProjectProcessStepService {
     }
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long companyProcessStepStatusTypeId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long existingCompanyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -242,7 +242,7 @@ public class ProjectProcessStepService {
     params.put("userId", user.getId());
     params.put("companyId", companyId);
     params.put("parentProjectProcessStepId", parentProjectProcessStepId);
-    params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
+    params.put("existingCompanyProcessStepStatusTypeId", existingCompanyProcessStepStatusTypeId);
 
     Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
 
@@ -435,7 +435,7 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getCompanyProcessStepStatusTypeId());
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getExistingCompanyProcessStepStatusTypeId());
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());

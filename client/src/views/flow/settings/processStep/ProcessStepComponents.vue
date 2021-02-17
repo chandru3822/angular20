@@ -40,9 +40,13 @@
                   <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
                   {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
                 </v-btn>
+                <v-btn text @click="expandPsst = !expandPsst">
+                  <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
+                </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <div>
+            <div class="mb-4">
               <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewProcessStepStatusType">
                 <h3>Assign a Status Type</h3>
                 <v-autocomplete label="Process Step Status Type"
@@ -53,9 +57,15 @@
                                 :loading="companyStatusesLoading"
                                 autocomplete="off"
                                 @input="assignStatusTypeToProcessStep"
-                ></v-autocomplete>
+                >
+                  <template slot="item" slot-scope="data">
+                    <!-- HTML that describes how select should render items when the select is open -->
+                    {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                  </template>
+                </v-autocomplete>
               </v-card>
               <v-data-table
+                v-if="expandPsst"
                 :headers="processStepHeaders"
                 :items="filterAssignedProcessStepStatusTypes()"
                 hide-default-footer
@@ -129,6 +139,10 @@
                 <v-btn text @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }, getWorkQueueTypesForStep(), prepTempStatuses(newWorkQueueType), prepTempProcessStepStatuses(newWorkQueueType)]" v-if="userCanAdd">
                   <v-icon v-if="!addNewWorkQueueType">add</v-icon>
                   {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}
+                </v-btn>
+                <v-btn text @click="expandWqt = !expandWqt">
+                  <v-icon v-if="!expandWqt">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
@@ -224,7 +238,7 @@
                   Save
                 </v-btn>
               </v-card>
-              <v-card flat v-if="processStep.workQueueTypes && processStep.workQueueTypes.length > 0">
+              <v-card flat v-if="processStep.workQueueTypes && processStep.workQueueTypes.length > 0 && expandWqt">
                 <v-data-table
                   :headers="headers"
                   :items="filterWorkQueueTypes()"
@@ -404,7 +418,7 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12" class="mt-3 pa-0">
+          <v-col cols="12" class="mt-1 pa-0">
             <v-toolbar flat class="link-header-bar">
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -412,6 +426,10 @@
                 <v-btn text @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
                   {{ addNewLink ? 'Cancel' : 'Add Link' }}
+                </v-btn>
+                <v-btn text @click="expandLinks = !expandLinks">
+                  <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
@@ -425,7 +443,7 @@
                         @input="assignNewLink"
               ></v-select>
             </v-card>
-            <v-card flat v-if="processStep.links && processStep.links.length > 0">
+            <v-card flat v-if="processStep.links && processStep.links.length > 0 && expandLinks">
               <draggable v-model="processStep.links" group="links"
                          :disabled="!userCanEdit"
                          id="link-draggable"
@@ -494,6 +512,10 @@
                   <v-icon v-if="!addNewType">add</v-icon>
                   {{ addNewType ? 'Cancel' : 'Add Type' }}
                 </v-btn>
+                <v-btn text @click="expandAttachmentTypes = !expandAttachmentTypes">
+                  <v-icon v-if="!expandAttachmentTypes">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
+                </v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewType">
@@ -505,7 +527,7 @@
                               @input="assignNewType"
               ></v-autocomplete>
             </v-card>
-            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
+            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0 && expandAttachmentTypes">
               <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
                          :disabled="!userCanEdit"
                          id="attachment-draggable"
@@ -593,6 +615,10 @@ export default {
   data() {
     return {
       snackbar: {},
+      expandPsst: true,
+      expandWqt: true,
+      expandLinks: true,
+      expandAttachmentTypes: true,
       expanded: [],
       deleteError: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
@@ -1220,7 +1246,9 @@ export default {
 
   .wqt-header-bar {
     border-bottom: 1px solid #E6E6E6;
+    border-top: 1px solid #E6E6E6;
   }
+
   .link-header-bar {
     border-top: 1px solid #E6E6E6;
     border-bottom: 1px solid #E6E6E6;
