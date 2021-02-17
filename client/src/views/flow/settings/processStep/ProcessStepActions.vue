@@ -735,7 +735,7 @@
                       ></v-autocomplete>
                       <v-autocomplete v-model="selectedStatus"
                                       :items="cancelledCompanyStatuses"
-                                      label="Status to Use"
+                                      label="Set status of existing Active steps of the same type to:"
                                       item-text="processStepStatusType"
                                       return-object
                       ></v-autocomplete>
@@ -770,7 +770,6 @@
                         <template #expanded-item="{ headers, item:cp }">
                           <tr>
                             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': item.processStepActionChildProcesses.indexOf(cp) % 2}">
-                              <h3>Edit Status To Use</h3>
                               <h4>{{cp.processStepName}}</h4>
                               <v-autocomplete v-model="cp.companyProcessStepStatusTypeId"
                                               :items="cancelledCompanyStatuses"
