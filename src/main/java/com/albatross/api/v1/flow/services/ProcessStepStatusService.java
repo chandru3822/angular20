@@ -2,12 +2,11 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.ProcessStepStatusType;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -55,6 +54,17 @@ public class ProcessStepStatusService {
     params.put("parentOverride", null != projectId || null != projectProcessStepId);
 
     List<CompanyProcessStepStatusType> companyProcessStepStatusTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
+    return companyProcessStepStatusTypes;
+  }
+
+  public List<CompanyProcessStepStatusType> getAvailableForProcessStep(Long processStepId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+    params.put("companyId", user.getCompanyId());
+
+    List<CompanyProcessStepStatusType> companyProcessStepStatusTypes = sqlCache.query("processStepStatus.availableForProcessStep", params, CompanyProcessStepStatusType.class);
     return companyProcessStepStatusTypes;
   }
 
@@ -143,6 +153,58 @@ public class ProcessStepStatusService {
     sqlCache.update("processStepStatus.saveInitialProcessStepStatusType", params);
   }
 
+  public List<CompanyProcessStepStatusType> getAssignedToStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<CompanyProcessStepStatusType> results = sqlCache.query("processStepStatus.getAssignedToStep", params, CompanyProcessStepStatusType.class);
+    return results;
+  }
+
+  public List<CompanyProcessStepStatusType> getCancelledAssignedToStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<CompanyProcessStepStatusType> results = sqlCache.query("processStepStatus.getCancelledAssignedToStep", params, CompanyProcessStepStatusType.class);
+    return results;
+  }
+
+  public Optional<ProcessStepCompanyProcessStepStatusType> assignStatusToProcessStep(Long companyProcessStepStatusTypeId, Long processStepId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+    params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepStatus.assignStatusToProcessStep", params, "id").longValue();
+    return getProcessStepCompanyProcessStepStatusType(id);
+  }
+
+  public Optional<ProcessStepCompanyProcessStepStatusType> getProcessStepCompanyProcessStepStatusType(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ProcessStepCompanyProcessStepStatusType> result = sqlCache.get("processStepStatus.getProcessStepCompanyProcessStepStatusType", params, ProcessStepCompanyProcessStepStatusType.class);
+    return result;
+  }
+
+  public ResponseEntity deleteStatusFromProcessStep(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", currentUser.getId());
+
+    List<WorkQueueTypeProcessStepStatus> wqtUsingStatus = sqlCache.query("processStepStatus.statusInUseByWQT", params, WorkQueueTypeProcessStepStatus.class);
+
+    if(wqtUsingStatus.isEmpty()) {
+      sqlCache.update("processStepStatus.deleteStatusFromProcessStep", params);
+      return ResponseEntity.ok().build();
+    } else {
+      return ResponseEntity.badRequest().body("Status is in use and cannot be deleted.");
+    }
+  }
 
 
 }

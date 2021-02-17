@@ -1,9 +1,127 @@
 <template>
   <v-container class="custom-field-group-container py-0">
+    <div class="text-center">
+    <v-dialog width="700"
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          Error Deleting Status from Process Step
+        </v-card-title>
+
+        <v-card-text>
+          You must remove this status from its use in the Work Queue Types before you can delete it.
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    </div>
     <v-row>
       <v-col cols="12" class="py-0">
         <v-row>
           <v-col cols="12" class="pt-0 px-0">
+            <v-toolbar flat class="wqt-header-bar">
+              <v-toolbar-title class="app-title">Process Step Status Types</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], addNewWorkQueueType = false, getCompanyProcessStepStatusTypes()]" v-if="userCanAdd">
+                  <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
+                  {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <div>
+              <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewProcessStepStatusType">
+                <h3>Assign a Status Type</h3>
+                <v-autocomplete label="Process Step Status Type"
+                                :items="availableCompanyProcessStepStatusTypes"
+                                v-model="newProcessStepStatusTypeId"
+                                item-text="processStepStatusType"
+                                item-value="id"
+                                :loading="companyStatusesLoading"
+                                autocomplete="off"
+                                @input="assignStatusTypeToProcessStep"
+                ></v-autocomplete>
+              </v-card>
+              <v-data-table
+                :headers="processStepHeaders"
+                :items="filterAssignedProcessStepStatusTypes()"
+                hide-default-footer
+                :items-per-page="-1"
+                disable-sort
+                class="elevation-1 square-card mb-2"
+              >
+                <template #no-data>
+                  No available process step status types
+                </template>
+
+                <template #no-results>
+                  No available process step status types
+                </template>
+
+                <template #item="{ item, index }">
+                  <tr class="clickable" :class="{'shaded-row': index % 2}">
+                    <td class="text-left">{{ item.processStepStatusType }}</td>
+                    <td class="text-left">{{ item.rootProcessStepStatusType }}</td>
+                    <td class="text-right">
+                      <div class="flex-display">
+                        <v-dialog
+                          v-if="userCanEdit"
+                          v-model="item.deleteConfirm"
+                          width="500">
+                          <template v-slot:activator="{ on }">
+                            <v-btn text v-on="on">
+                              <v-icon>delete</v-icon>
+                            </v-btn>
+                          </template>
+                          <v-card>
+                            <v-card-title
+                              class="headline grey lighten-2"
+                              primary-title
+                            >
+                              Confirm
+                            </v-card-title>
+
+                            <v-card-text>
+                              Are you sure you want to delete <strong>{{ item.processStepStatusType }}</strong>?
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                @click="item.deleteConfirm = false">
+                                No
+                              </v-btn>
+                              <v-btn
+                                color="primaryCustom"
+                                text
+                                @click="deleteStatusTypeFromStep(item)">
+                                Yes
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </v-data-table>
+            </div>
+<!--            work queue types -->
             <v-toolbar flat class="wqt-header-bar">
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -15,7 +133,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <div>
-              <v-card flat class="square-card mb-3 pa-2" color="rowShadeCustom" v-if="addNewWorkQueueType">
+              <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewWorkQueueType">
                 <v-autocomplete v-model="newWorkQueueType.workQueueTypeId"
                                 :items="workQueueTypes"
                                 label="Select Work Queue Type"
@@ -458,7 +576,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getStatusTypes, getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
@@ -476,6 +594,7 @@ export default {
     return {
       snackbar: {},
       expanded: [],
+      deleteError: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       companyProjectStatusTypes: [],
@@ -483,7 +602,7 @@ export default {
       combinedStatuses: [ {header: 'Category'} ],
       companyProcessStepStatusTypes: [],
       processStepStatusTypes: [],
-      combinedProcessStepStatuses: [ {header: 'Category'} ],
+      // combinedProcessStepStatuses: [ {header: 'Category'} ],
       headers: [
         {text: 'Category', value: 'workQueueCategory', show: true},
         {text: 'Type', value: 'workQueueType', show: true},
@@ -501,7 +620,16 @@ export default {
       processStepId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
       processStep: {},
+      companyStatusesLoading: false,
       availableAttachmentTypes: [],
+      availableCompanyProcessStepStatusTypes: [],
+      addNewProcessStepStatusType: false,
+      newProcessStepStatusTypeId: null,
+      processStepHeaders: [
+        {text: 'Status Type', value: 'statusType', show: true},
+        {text: 'Category', value: 'category', show: true},
+        {text: '', value: 'icons', show: false, width: '100px'},
+      ],
       workQueueTypes: [],
       newWorkQueueType: {
         processStepStatuses: [],
@@ -520,7 +648,20 @@ export default {
     }
   },
   computed: {
+    combinedProcessStepStatuses() {
+      //sometimes i am amazed this shit works
+      let tempAssignedStatusTypes = cloneDeep(this.processStep?.companyProcessStepStatusTypes)
+      tempAssignedStatusTypes.forEach(st => {
+        st.id = st.companyProcessStepStatusTypeId
+        st.group = 'Process Step Status'
+        st.fakeText = st.processStepStatusType + 'CPSST'
+        st.selected = false
+      })
+      return [ {header: 'Category'} ].concat(this.processStepStatusTypes,
+        [{divider: true}, {header: 'Process Step Status'}],
+        orderBy(tempAssignedStatusTypes.filter(t => !t.archived), [f => f.processStepStatusType]))
 
+    }
   },
   async created() {
     this.getProjectStatusTypes()
@@ -715,27 +856,74 @@ export default {
         ps.fakeText = ps.companyProcessStepStatusTypeId !== null ? ps.processStepStatusType + 'CPSST' : ps.processStepStatusType + 'PSST'
       })
     },
-    async getCompanyProcessStepStatusTypes() {
+    async deleteStatusTypeFromStep(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getCompanyStatusTypes()
-        this.companyProcessStepStatusTypes = orderBy(data, ['rootProcessStepStatusType', 'processStepStatusType'])
-        this.combinedProcessStepStatuses.push({divider: true})
-        this.combinedProcessStepStatuses.push({header: 'Process Step Status'})
-        this.companyProcessStepStatusTypes.forEach(ps => {
-          ps.group = 'Process Step Status'
-          ps.fakeText = ps.processStepStatusType + 'CPSST'
-          ps.selected = false
-          this.combinedProcessStepStatuses.push(ps)
-        })
+        //have to close the work queue editor to for the component to refresh available values
+        this.addNewWorkQueueType = false
+        this.expanded = []
+        await deleteRequest(`/processStep/status/removeFromStep/${item.id}`)
+        item.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Status Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+
+        if(e.status === 400) {
+          item.deleteConfirm = false
+          this.deleteError = true
+        }
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Status Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async assignStatusTypeToProcessStep () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newType.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/processStep/status/assignCompanyStatus/${this.newProcessStepStatusTypeId}/toProcessStep/${this.processStepId}`)
+        this.processStep.companyProcessStepStatusTypes.push(data)
+        // reset fields
+        this.addNewProcessStepStatusType = false
+        this.newProcessStepStatusTypeId = null
+        this.snackbar = getSnackbar('SUCCESS', 'Status Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCompanyProcessStepStatusTypes() {
+      if(this.addNewProcessStepStatusType) {
+        this.companyStatusesLoading = true
+        try {
+          const {data} = await getAvailableForProcessStep(this.processStepId)
+          this.availableCompanyProcessStepStatusTypes = data
+
+          //this one is used for assigning types to a work queue type - will likely be changing soon
+          // this.companyProcessStepStatusTypes = orderBy(data, ['rootProcessStepStatusType', 'processStepStatusType'])
+          // this.combinedProcessStepStatuses.push({divider: true})
+          // this.combinedProcessStepStatuses.push({header: 'Process Step Status'})
+          // this.companyProcessStepStatusTypes.forEach(ps => {
+          //   ps.group = 'Process Step Status'
+          //   ps.fakeText = ps.processStepStatusType + 'CPSST'
+          //   ps.selected = false
+          //   this.combinedProcessStepStatuses.push(ps)
+          // })
+          this.companyStatusesLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.companyStatusesLoading = false
+        }
+      }
+
     },
     async getProcessStepStatusTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -747,9 +935,9 @@ export default {
           ps.group = 'Category'
           ps.fakeText = ps.processStepStatusType + 'PSST'
           ps.selected = false
-          this.combinedProcessStepStatuses.push(ps)
+          // this.combinedProcessStepStatuses.push(ps)
         })
-        this.getCompanyProcessStepStatusTypes()
+        // this.getCompanyProcessStepStatusTypes()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
@@ -947,6 +1135,11 @@ export default {
       return this.processStep?.workQueueTypes.filter(u => {
         return !u.archived
       })
+    },
+    filterAssignedProcessStepStatusTypes() {
+      return orderBy(this.processStep?.companyProcessStepStatusTypes?.filter(u => {
+        return !u.archived
+      }), [f => f.processStepStatusType])
     },
     async saveAttachmentTypeOrder(attachmentTypes) {
       this.$store.commit(AppMutations.SET_LOADING, true)

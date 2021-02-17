@@ -1,11 +1,13 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
+import com.albatross.api.v1.flow.model.ProcessStepCompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.ProcessStepStatusType;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +37,11 @@ public class ProcessStepStatusController {
     return processStepStatusService.getStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
+  @GetMapping(value = "/company/availableForProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyProcessStepStatusType> getAvailableForProcessStep (@PathVariable Long id) {
+    return processStepStatusService.getAvailableForProcessStep(id);
+  }
+
   @GetMapping(value = "/company/cancelled", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyProcessStepStatusType> getCancelledCompanyStatusTypesForCompany (@RequestParam(required = false) Long projectId,
                                                                                       @RequestParam(required = false) Long projectProcessStepId) {
@@ -61,4 +68,24 @@ public class ProcessStepStatusController {
     processStepStatusService.saveInitialProcessStepStatusType(id);
   }
 
+  @GetMapping(value = "/company/assignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyProcessStepStatusType> getAssignedToStep(@PathVariable Long processStepId) {
+    return processStepStatusService.getAssignedToStep(processStepId);
+  }
+
+  @GetMapping(value = "/company/cancelledAssignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyProcessStepStatusType> getCancelledAssignedToStep(@PathVariable Long processStepId) {
+    return processStepStatusService.getCancelledAssignedToStep(processStepId);
+  }
+
+  @PostMapping(value = "/assignCompanyStatus/{companyStatusTypeId}/toProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepCompanyProcessStepStatusType> assignStatusToProcessStep(@PathVariable Long companyStatusTypeId,
+                                                                           @PathVariable Long processStepId) {
+    return processStepStatusService.assignStatusToProcessStep(companyStatusTypeId, processStepId);
+  }
+
+  @DeleteMapping(value = "/removeFromStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity deleteStatusFromProcessStep(@PathVariable Long id) {
+    return processStepStatusService.deleteStatusFromProcessStep(id);
+  }
 }

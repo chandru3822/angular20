@@ -735,7 +735,7 @@
                       ></v-autocomplete>
                       <v-autocomplete v-model="selectedStatus"
                                       :items="cancelledCompanyStatuses"
-                                      label="Status to Use"
+                                      label="Status to Use For Existing of the Same Type"
                                       item-text="processStepStatusType"
                                       return-object
                       ></v-autocomplete>
@@ -774,7 +774,7 @@
                               <h4>{{cp.processStepName}}</h4>
                               <v-autocomplete v-model="cp.companyProcessStepStatusTypeId"
                                               :items="cancelledCompanyStatuses"
-                                              label="Status to Use"
+                                              label="Status to Use For Existing of the Same Type"
                                               item-text="processStepStatusType"
                                               item-value="id"
                               ></v-autocomplete>
@@ -1149,7 +1149,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import {
     getRequest,
     deleteRequest,
@@ -1159,7 +1159,7 @@
     getSnackbar
   } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
-  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import Sortable from "sortablejs";
 
   export default {
@@ -1618,7 +1618,7 @@
       async getCancelledStatuses() {
         if (this.cancelledCompanyStatuses?.length === 0) {
           try {
-            const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+            const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(this.processStepId)
             this.cancelledCompanyStatuses = data
             if (data?.length === 1) {
               this.selectedStatus = data[0]
@@ -1721,8 +1721,8 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStatusTypes()
-          this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          const {data} = await getAssignedToProcessStep(this.processStepId)
+          this.statusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

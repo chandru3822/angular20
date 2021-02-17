@@ -7,7 +7,7 @@
 >
 
   <template #activator="{on}">
-    <v-btn text class="" small v-on="on" @click="[ getSteps(), getCancelledStatuses() ]">
+    <v-btn text class="" small v-on="on" @click="[ getSteps() ]">
       <v-icon>add</v-icon>
     </v-btn>
   </template>
@@ -19,6 +19,7 @@
                     item-text="processStepName"
                     item-value="id"
                     placeholder="Select one..."
+                    @input="getCancelledStatuses()"
                     return-object/>
     <v-autocomplete v-model="selectedStatus"
                     :items="cancelledCompanyStatuses"
@@ -41,7 +42,7 @@
 <script>
 import {getRequest, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import {getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
 
 export default {
@@ -95,9 +96,11 @@ export default {
       }
     },
     getCancelledStatuses: async function () {
+      this.cancelledCompanyStatuses = []
+      this.selectedStatus = null
       try {
         this.fetchingStatuses = true
-        const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+        const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(this.selectedStep.processStepId)
         this.cancelledCompanyStatuses = data
         if(data?.length === 1) {
           this.selectedStatus = data[0]

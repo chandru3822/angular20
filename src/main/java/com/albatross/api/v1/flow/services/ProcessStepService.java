@@ -136,6 +136,7 @@ public class ProcessStepService {
       TypeReference<List<ProcessStepAttachmentType>> processStepAttachmentTypeRef = new TypeReference<List<ProcessStepAttachmentType>>() {};
       TypeReference<List<ProcessStepLink>> processStepLinkRef = new TypeReference<List<ProcessStepLink>>() {};
       TypeReference<List<ProcessStepWorkQueueType>> workQueueTypeRef = new TypeReference<List<ProcessStepWorkQueueType>>() {};
+      TypeReference<List<ProcessStepCompanyProcessStepStatusType>> companyProcessStepStatusTypeRef = new TypeReference<List<ProcessStepCompanyProcessStepStatusType>>() {};
 
       bw.registerCustomEditor(List.class, "customFieldGroups",
           new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
@@ -148,6 +149,9 @@ public class ProcessStepService {
 
       bw.registerCustomEditor(List.class, "workQueueTypes",
           new JsonCollectionDeserializer(workQueueTypeRef, objectMapper));
+
+      bw.registerCustomEditor(List.class, "companyProcessStepStatusTypes",
+          new JsonCollectionDeserializer(companyProcessStepStatusTypeRef, objectMapper));
     }
   }
 

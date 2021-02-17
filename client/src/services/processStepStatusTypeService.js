@@ -1,4 +1,4 @@
-import {getRequestWithParams} from '@/helpers/helpers'
+import {getRequestWithParams, getRequest} from '@/helpers/helpers'
 
 export async function getCompanyStatusTypes(projectId, projectProcessStepId) {
   try {
@@ -7,6 +7,33 @@ export async function getCompanyStatusTypes(projectId, projectProcessStepId) {
       projectProcessStepId
     }
     const {data} = await getRequestWithParams(`/processStep/status/company`, { params })
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function getAvailableForProcessStep(processStepId) {
+  try {
+    const {data} = await getRequest(`/processStep/status/company/availableForProcessStep/${processStepId}`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function getAssignedToProcessStep(processStepId) {
+  try {
+    const {data} = await getRequest(`/processStep/status/company/assignedToProcessStep/${processStepId}`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function getCancelledCompanyStatusTypesAssignedToProcessStep(processStepId) {
+  try {
+    const {data} = await getRequestWithParams(`/processStep/status/company/cancelledAssignedToProcessStep/${processStepId}`)
     return {data, status}
   } catch (e) {
     throw e
