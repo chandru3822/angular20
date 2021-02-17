@@ -538,7 +538,7 @@
 
                         <v-card-text>
                           Are you sure you want to delete this attachment type: <strong>{{
-                            a.attachmentType
+                          a.attachmentType
                           }}</strong>?
                         </v-card-text>
 
@@ -581,7 +581,7 @@ import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
 
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'ProcessStepComponents',
@@ -700,72 +700,72 @@ export default {
         exists = true
       }
 
-      //if not already exists then if selected - add to existingProjectStatuses
-      if(!exists && selectedItem.selected) {
-        let tempObj = { id: null, projectStatusType: selectedItem.projectStatusType, fakeText: selectedItem.fakeText }
-        if(selectedItem.projectStatusTypeId === null) {
-          tempObj.companyProjectStatusTypeId = null
-          tempObj.projectStatusTypeId = selectedItem.id;
-        } else {
-          tempObj.projectStatusTypeId = null
-          tempObj.companyProjectStatusTypeId = selectedItem.id;
-        }
-        wqtItem.projectStatuses.push(tempObj)
-      } else if(!exists) {
-        //remove it if it has already been added
-        wqtItem.projectStatuses = wqtItem.projectStatuses.filter(ps => {
+        //if not already exists then if selected - add to existingProjectStatuses
+        if(!exists && selectedItem.selected) {
+          let tempObj = { id: null, projectStatusType: selectedItem.projectStatusType, fakeText: selectedItem.fakeText }
           if(selectedItem.projectStatusTypeId === null) {
-            return ps.projectStatusTypeId !== selectedItem.id
+            tempObj.companyProjectStatusTypeId = null
+            tempObj.projectStatusTypeId = selectedItem.id;
           } else {
-            return ps.companyProjectStatusTypeId !== selectedItem.id
+            tempObj.projectStatusTypeId = null
+            tempObj.companyProjectStatusTypeId = selectedItem.id;
           }
-        })
-      }
+          wqtItem.projectStatuses.push(tempObj)
+        } else if(!exists) {
+          //remove it if it has already been added
+          wqtItem.projectStatuses = wqtItem.projectStatuses.filter(ps => {
+            if(selectedItem.projectStatusTypeId === null) {
+              return ps.projectStatusTypeId !== selectedItem.id
+            } else {
+              return ps.companyProjectStatusTypeId !== selectedItem.id
+            }
+          })
+        }
 
-    },
-    getExistingValue(existingProjectStatuses, item) {
-      //if ps contains item then return true
-      if(item.projectStatusTypeId === null) {
-        let match = existingProjectStatuses?.find(ps => ps.projectStatusTypeId === item.id)
-        // console.log('metdjlks',match && match.projectStatusType !== null)
-        // item.selected = !!(match && match.projectStatusType !== null)
-        return match && match.projectStatusType !== null
-      } else {
-        let match = existingProjectStatuses?.find(ps => ps.companyProjectStatusTypeId === item.id)
-        // item.selected = !!(match && match.projectStatusType !== null)
-        return match && match.projectStatusType !== null
-      }
-    },
-    prepTempStatuses(item) {
-      //this is required so that selections made on one wqt are not auto-selected in other wqt's
-      item.tempStatuses = cloneDeep(this.combinedStatuses)
-      item.projectStatuses.forEach(ps => {
-        ps.fakeText = ps.companyProjectStatusTypeId !== null ? ps.projectStatusType + 'CPST' : ps.projectStatusType + 'PST'
-      })
-    },
-    async getCompanyProjectStatusTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getCompanyProjectStatusTypes()
-        this.companyProjectStatusTypes = orderBy(data, ['rootProjectStatusType', 'projectStatusType'])
-        this.combinedStatuses.push({divider: true})
-        this.combinedStatuses.push({header: 'Project Status'})
-        this.companyProjectStatusTypes.forEach(ps => {
-          ps.group = 'Project Status'
-          ps.fakeText = ps.projectStatusType + 'CPST'
-          ps.selected = false
-          this.combinedStatuses.push(ps)
+      },
+      getExistingValue(existingProjectStatuses, item) {
+        //if ps contains item then return true
+        if(item.projectStatusTypeId === null) {
+          let match = existingProjectStatuses?.find(ps => ps.projectStatusTypeId === item.id)
+          // console.log('metdjlks',match && match.projectStatusType !== null)
+          // item.selected = !!(match && match.projectStatusType !== null)
+          return match && match.projectStatusType !== null
+        } else {
+          let match = existingProjectStatuses?.find(ps => ps.companyProjectStatusTypeId === item.id)
+          // item.selected = !!(match && match.projectStatusType !== null)
+          return match && match.projectStatusType !== null
+        }
+      },
+      prepTempStatuses(item) {
+        //this is required so that selections made on one wqt are not auto-selected in other wqt's
+        item.tempStatuses = cloneDeep(this.combinedStatuses)
+        item.projectStatuses.forEach(ps => {
+          ps.fakeText = ps.companyProjectStatusTypeId !== null ? ps.projectStatusType + 'CPST' : ps.projectStatusType + 'PST'
         })
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getProjectStatusTypes() {
+      },
+      async getCompanyProjectStatusTypes() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data} = await getCompanyProjectStatusTypes()
+          this.companyProjectStatusTypes = orderBy(data, ['rootProjectStatusType', 'projectStatusType'])
+          this.combinedStatuses.push({divider: true})
+          this.combinedStatuses.push({header: 'Project Status'})
+          this.companyProjectStatusTypes.forEach(ps => {
+            ps.group = 'Project Status'
+            ps.fakeText = ps.projectStatusType + 'CPST'
+            ps.selected = false
+            this.combinedStatuses.push(ps)
+          })
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getProjectStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -784,38 +784,38 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-    },
-    // process step status repeat of all the project status stuff
-    addProcessStepValueToNew(selectedItem) {
-      if(selectedItem.selected) {
-        let tempObj = { id: null, processStepStatusType: selectedItem.processStepStatusType, fakeText: selectedItem.fakeText }
-        if(selectedItem.processStepStatusTypeId === null) {
-          tempObj.companyProcessStepStatusTypeId = null
-          tempObj.processStepStatusTypeId = selectedItem.id;
-        } else {
-          tempObj.processStepStatusTypeId = null
-          tempObj.companyProcessStepStatusTypeId = selectedItem.id;
-        }
-        this.newWorkQueueType.processStepStatuses.push(tempObj)
-      } else {
-        //remove it if it has already been added
-        this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
+      },
+      // process step status repeat of all the project status stuff
+      addProcessStepValueToNew(selectedItem) {
+        if(selectedItem.selected) {
+          let tempObj = { id: null, processStepStatusType: selectedItem.processStepStatusType, fakeText: selectedItem.fakeText }
           if(selectedItem.processStepStatusTypeId === null) {
-            return ps.processStepStatusTypeId !== selectedItem.id
+            tempObj.companyProcessStepStatusTypeId = null
+            tempObj.processStepStatusTypeId = selectedItem.id;
           } else {
-            return ps.companyProcessStepStatusTypeId !== selectedItem.id
+            tempObj.processStepStatusTypeId = null
+            tempObj.companyProcessStepStatusTypeId = selectedItem.id;
           }
-        })
-      }
-    },
-    addProcessStepValueToExisting(wqtItem, selectedItem) {
-      //check if already in existing - if it is, set archived to opposite of selected
-      let exists = false
-      let match = selectedItem.processStepStatusTypeId === null ? wqtItem.processStepStatuses?.find(ps => ps.id !== null && ps.processStepStatusTypeId === selectedItem.id) : wqtItem.processStepStatuses?.find(ps => ps.id !== null && ps.companyProcessStepStatusTypeId === selectedItem.id)
-      if(match) {
-        match.archived = selectedItem.selected
-        exists = true
-      }
+          this.newWorkQueueType.processStepStatuses.push(tempObj)
+        } else {
+          //remove it if it has already been added
+          this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
+            if(selectedItem.processStepStatusTypeId === null) {
+              return ps.processStepStatusTypeId !== selectedItem.id
+            } else {
+              return ps.companyProcessStepStatusTypeId !== selectedItem.id
+            }
+          })
+        }
+      },
+      addProcessStepValueToExisting(wqtItem, selectedItem) {
+        //check if already in existing - if it is, set archived to opposite of selected
+        let exists = false
+        let match = selectedItem.processStepStatusTypeId === null ? wqtItem.processStepStatuses?.find(ps => ps.id !== null && ps.processStepStatusTypeId === selectedItem.id) : wqtItem.processStepStatuses?.find(ps => ps.id !== null && ps.companyProcessStepStatusTypeId === selectedItem.id)
+        if(match) {
+          match.archived = selectedItem.selected
+          exists = true
+        }
 
       //if not already exists then if selected - add to existingProjectStatuses
       if(!exists && selectedItem.selected) {
@@ -1197,19 +1197,19 @@ export default {
     }
   }
 
-}
+  }
 </script>
 
 <style scoped lang="scss">
-.name-container {
-  background-color: var(--v-rowShadeCustom-base) !important;
-  border-radius: 5px;
-}
+  .name-container {
+    background-color: var(--v-rowShadeCustom-base) !important;
+    border-radius: 5px;
+  }
 
-#attachment-draggable .v-list, #link-draggable .v-list {
-  padding-top: 0;
-  padding-bottom: 0;
-}
+  #attachment-draggable .v-list, #link-draggable .v-list {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 
 .combined-statuses > div.v-list-item__action {
   min-width: 10px !important;
@@ -1218,15 +1218,15 @@ export default {
   margin-right: 20px !important;
 }
 
-.wqt-header-bar {
-  border-bottom: 1px solid #E6E6E6;
-}
-.link-header-bar {
-  border-top: 1px solid #E6E6E6;
-  border-bottom: 1px solid #E6E6E6;
-}
-.attach-header-bar {
-  border-top: 1px solid #E6E6E6;
-  border-bottom: 1px solid #E6E6E6;
-}
+  .wqt-header-bar {
+    border-bottom: 1px solid #E6E6E6;
+  }
+  .link-header-bar {
+    border-top: 1px solid #E6E6E6;
+    border-bottom: 1px solid #E6E6E6;
+  }
+  .attach-header-bar {
+    border-top: 1px solid #E6E6E6;
+    border-bottom: 1px solid #E6E6E6;
+  }
 </style>

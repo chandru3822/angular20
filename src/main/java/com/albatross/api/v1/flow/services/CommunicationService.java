@@ -2,8 +2,10 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.EmailMessage;
 import com.albatross.api.v1.flow.model.User;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +13,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import javax.mail.internet.InternetAddress;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,8 @@ public class CommunicationService {
   private final UserService userService;
   private final MailService mailService;
   private final SMSService smsService;
+
+  private final FirebaseMessaging firebaseMessaging;
 
   @Async
   public Future<Void> sendEmails(String subject, List<Long> userIDs, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail, String sentByName) {
@@ -115,4 +118,15 @@ public class CommunicationService {
     }
   }
 
+  public void sendPushNotificationToTopic(String title, String body) throws FirebaseMessagingException {
+    Message message = Message.builder()
+      .putData("score", "854")
+      .setTopic("test")
+      .build();
+
+//    FirebaseMessaging.getInstance(app).subscribeToTopic(List.of("123"), "test");
+    String response = firebaseMessaging.send(message);
+
+    log.info("SENT MESSAGE: {}", response);
+  }
 }

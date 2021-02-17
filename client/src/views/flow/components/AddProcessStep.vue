@@ -3,6 +3,7 @@
     v-model="displayDropdown"
     bottom
     offset-y
+    min-width="350"
     :close-on-content-click="false"
 >
 
@@ -23,7 +24,7 @@
                     return-object/>
     <v-autocomplete v-model="selectedStatus"
                     :items="cancelledCompanyStatuses"
-                    label="Cancelled Status To Use"
+                    label="Set status of existing active steps of the same type to:"
                     item-text="processStepStatusType"
                     item-value="id"
                     placeholder="Select one..."
