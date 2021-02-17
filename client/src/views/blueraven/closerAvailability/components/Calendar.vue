@@ -431,16 +431,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      getUserPositionIds () {
-        let userPositionIds = []
-        this.selectedPostalCodeZoneUsers?.forEach(su => {
-          su.userPositions?.forEach(up => {
-            //up.id = userPositionId
-            userPositionIds.push(up.id)
-          })
-        })
-        return userPositionIds
-      },
+      // getUserPositionIds () {
+      //   let userPositionIds = []
+      //   this.selectedPostalCodeZoneUsers?.forEach(su => {
+      //     su.userPositions?.forEach(up => {
+      //       //up.id = userPositionId
+      //       userPositionIds.push(up.id)
+      //     })
+      //   })
+      //   return userPositionIds
+      // },
       async getEvents(reload) {
         // localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
         //dont reload events if they deselected all of one type
@@ -464,7 +464,9 @@
 
             try {
               let params = {
-                userPositionIds: this.getUserPositionIds(),
+                // this was the old way. leaving here in case
+                // userPositionIds: this.getUserPositionIds(),
+                userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
