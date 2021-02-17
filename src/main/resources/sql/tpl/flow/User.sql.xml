@@ -592,4 +592,9 @@
       group by u.id, last_name, first_name
       order by last_name, first_name desc
   ]]></user.mentionableUsers>
+
+<user.addNotificationToken><![CDATA[
+  insert into flow.user_notification_token (user_id, token, created_by_id)
+  values (:userId, :token, :createdById)
+]]></user.addNotificationToken>
 </sql>
