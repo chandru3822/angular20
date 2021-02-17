@@ -35,6 +35,7 @@
        c.city,
        c.company_state_id,
        s.state,
+       comp.company_name,
        c.postal_code,
        c.company_country_id,
        ctr.country,
@@ -68,6 +69,7 @@
                   WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
+             inner join flow.company comp on comp.id = c.company_id
              left outer join flow.company_state cs on cs.id = c.company_state_id
               left outer join flow.state s on s.id = cs.state_id
              left outer join flow.company_country cc on cc.id = c.company_country_id
@@ -140,7 +142,7 @@
 
   <contact.insertContact><![CDATA[
     insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, trim(:postalCode), :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
   ]]></contact.insertContact>
 
   <contact.getOwners><![CDATA[

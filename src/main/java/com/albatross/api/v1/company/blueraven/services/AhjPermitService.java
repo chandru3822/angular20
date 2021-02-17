@@ -60,7 +60,7 @@ public class AhjPermitService {
   }
 
   @Transactional
-  public Optional<AhjPermitDetail> saveAhjPermit(Long ahjId, Long permitId, AhjPermit permit) {
+  public Optional<AhjPermitDetail> saveAhjPermit(Long ahjId, Long permitId, AhjPermit permit, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -93,23 +93,23 @@ public class AhjPermitService {
     params.put("asBuiltNote", permit.getAsBuiltNote());
     params.put("deliveryNote", permit.getDeliveryNote());
 
-    if (permit.getUpdateAllInState() != null && !permit.getUpdateAllInState()) {
-      params.put("ahjId", ahjId);
-
-      if (permitId == null) {
-        permitId = sqlCache.updateReturningId("ahj.permit.create", params, "id").longValue();
-      } else {
-        params.put("id", permitId);
-        sqlCache.update("ahj.permit.update", params);
-      }
-      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), permitId);
-    } else {
+    if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState()) {
       params.put("ahjIds", permit.getAhjIds());
       sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
       blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(permit.getCustomFieldGroups(), permit.getPermitIds());
+    } else {
+      params.put("ahjId", ahjId);
+
+      if (permitId == null) {
+        sqlCache.updateReturningId("ahj.permit.create", params, "id").longValue();
+      } else {
+        params.put("id", permitId);
+        sqlCache.update("ahj.permit.update", params);
+        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), permitId);
+      }
     }
 
-    return getAhjPermitDetailByAhjId(ahjId);
+    return returnValue ? getAhjPermitDetailByAhjId(ahjId) : Optional.empty();
   }
 
   public List<AhjPermit> searchAhjsByState(Long stateId) {

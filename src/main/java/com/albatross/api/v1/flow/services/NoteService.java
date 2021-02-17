@@ -6,7 +6,9 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.Note;
+import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +43,12 @@ public class NoteService {
 
   @Autowired
   private CommunicationService communicationService;
+
+  @Autowired
+  private ContactService contactService;
+
+  @Autowired
+  private ProjectService projectService;
 
   @Autowired
   SqlCache sqlCache;
@@ -133,13 +141,21 @@ public class NoteService {
 
         String locationOfNote = "";
         String link = "";
+        // Used to store the Contact name or Project name which contains the Note
+        String noteRefName = "";
         if (typeId.equals(ObjectType.CONTACT.id)) {
           locationOfNote = "contact";
           link = homeUrl + "/contact/" + note.getPrimaryId();
+          Contact c = contactService.getContact(note.getPrimaryId());
+          noteRefName = c.getFirstName() + " " + c.getLastName() + " - " + c.getId();
         }
         else if (typeId.equals(ObjectType.PROJECT.id)) {
           locationOfNote = "project";
           link = homeUrl + "/project/"+note.getPrimaryId()+"/details";
+          Optional<Project> p = projectService.getProject(note.getPrimaryId());
+          if (p.isPresent()) {
+            noteRefName = p.get().getProjectName() + " - " + p.get().getId();
+          }
         }
 
         // Check if text message or email
@@ -150,7 +166,10 @@ public class NoteService {
           context.put("lastName", lastName);
           context.put("locationOfNote", locationOfNote);
           context.put("link", link);
-          communicationService.sendEmail("You were mentioned in an Albatross note", emailAddress, template, context, "noreply@albatross.myblueraven.com");
+          context.put("noteContents", note.getNote());
+          String emailSubject = currentUser.getFirstName() + " " + currentUser.getLastName() +
+            " mentioned you in a note on " + noteRefName;
+          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@albatross.myblueraven.com", "Albatross");
         }
         else {
           String groupId = UUID.randomUUID().toString();

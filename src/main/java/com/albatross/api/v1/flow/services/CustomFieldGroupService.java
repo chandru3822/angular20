@@ -94,6 +94,17 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
   }
 
+  public void saveUseParentData(CustomField customField) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+    params.put("useParentData", customField.getUseParentData());
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+
+    sqlCache.update("customFieldGroupAssignment.saveUseParentData", params);
+  }
+
   public void saveReadOnlyAndWhiteList(CustomField customField, Boolean savePositions) {
     User currentUser = securityService.getCurrentUser();
 
@@ -157,6 +168,14 @@ public class CustomFieldGroupService {
     params.put("groupId", groupId);
 
     List<CustomField> results = sqlCache.query("customFieldGroupAssignment.getCustomFieldsInGroup", params, CustomField.class);
+    return results;
+  }
+
+  public List<CustomFieldGroup> getNonEventCustomFieldGroupsByProcessStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<CustomFieldGroup> results = sqlCache.query("customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep", params, CustomFieldGroup.class);
     return results;
   }
 
@@ -299,14 +318,15 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public void updateFieldShowOnInsert(CustomFieldObjectType customFieldObjectType) {
+  public void updateFieldShowOrRequireOnInsert(CustomFieldObjectType customFieldObjectType) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldObjectType.getId());
     params.put("modifiedById", user.getId());
     params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
+    params.put("requireOnInsert", customFieldObjectType.getRequireOnInsert());
 
-    sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);
+    sqlCache.update("customFieldGroup.updateFieldShowOrRequireOnInsert", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

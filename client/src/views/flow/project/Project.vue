@@ -4,7 +4,7 @@
       <v-row>
         <v-col cols="12" class="pb-0">
           <v-row class="project-header">
-            <v-col cols="6" class="text-left pl-5">
+            <v-col cols="5" class="text-left pl-5">
               <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
               <div class="project-title">
                 <router-link v-if="$store.getters.userHasFeature('CONTACTS')"
@@ -18,36 +18,41 @@
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
                 <div v-else-if="userCanEdit" class="mt-4">
-                  <v-text-field
-                    v-model="project.projectName"
-                    label="ProjectName"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="project.street1"
-                    label="Street"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="project.city"
-                    label="City"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="project.postalCode"
-                    counter
-                    maxlength="10"
-                    label="Postal Code"
-                  ></v-text-field>
-                  <v-select v-model="project.companyStateId"
-                            :items="states"
-                            label="State"
-                            item-text="state"
-                            item-value="id"
-                  ></v-select>
-                  <v-select v-model="project.companyCountryId"
-                            :items="countries"
-                            label="Country"
-                            item-text="country"
-                            item-value="id"
-                  ></v-select>
+                  <v-form ref="projectEditForm">
+                    <v-text-field
+                      v-model="project.projectName"
+                      label="ProjectName"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="project.street1"
+                      label="Street"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="project.city"
+                      label="City"
+                    ></v-text-field>
+                    <v-text-field
+                      type="text"
+                      v-model="project.postalCode"
+                      counter
+                      maxlength="10"
+                      @keypress="isNumberOrHyphen"
+                      :rules="postalCodeRules"
+                      label="Postal Code"
+                    ></v-text-field>
+                    <v-select v-model="project.companyStateId"
+                              :items="states"
+                              label="State"
+                              item-text="state"
+                              item-value="id"
+                    ></v-select>
+                    <v-select v-model="project.companyCountryId"
+                              :items="countries"
+                              label="Country"
+                              item-text="country"
+                              item-value="id"
+                    ></v-select>
+                  </v-form>
                 </div>
                 <v-btn x-small text v-if="userCanEdit"
                        @click="[editAddress = !editAddress, project.reloadCoordinates = true, getStatesAndCountries()]">
@@ -56,13 +61,25 @@
                 </v-btn>
                 <v-btn small color="primaryCustom"
                        :disabled="!project.projectName"
-                       class="white--text" v-if="editAddress" @click="saveProjectAddress">
+                       class="white--text" v-if="editAddress" @click="validateForm">
                   Save
                 </v-btn>
               </div>
             </v-col>
-            <v-col cols="3" class="lead-owner pb-2 text-right">
-              <div v-if="!displayChangeOwner">
+            <v-col cols="4" class="lead-owner pb-2 text-right">
+              <div class="d-inline-block mr-4" v-if="project.companyId !== this.companyId">
+                <v-avatar
+                  :tile="false"
+                  :size="25"
+                  color="#D6D6D6"
+                  class="account-img mr-2"
+                >
+                  <v-icon color="white" size="20">mdi-office-building</v-icon>
+                </v-avatar>
+                <span>{{project.companyName}}</span><br/>
+                <span class="project-company-subheader">Company</span>
+              </div>
+              <div v-if="!displayChangeOwner" class="d-inline-block">
                 <div v-if="project.owner && project.owner.userId">
                   <v-avatar
                     :tile="false"
@@ -178,7 +195,7 @@
 </template>
 
 <script>
-  import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, isNumberOrHyphen, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import ProjectDetails from '@/views/flow/project/ProjectDetails'
@@ -204,8 +221,10 @@
         tabsLoading: true,
         selectedTab: {},
         secondaryTab: 1,
+        isNumberOrHyphen,
         menuOpen: false,
         constants,
+        postalCodeRules: constants.POSTAL_CODE_RULES,
         formatPhoneNumber,
         projectId: parseInt(this.$route.params.projectId),
         companyId: this.$store.state.user.details.companyId,
@@ -234,6 +253,11 @@
       this.getProjectTabs()
     },
     methods: {
+      validateForm() {
+        if (this.$refs.projectEditForm.validate()) {
+          this.saveProjectAddress()
+        }
+      },
       getProjectTabs: async function () {
         this.tabsLoading = true
         try {
@@ -372,6 +396,10 @@
     font-size: 12px;
     color: grey;
     font-style: italic;
+  }
+
+  .project-company-subheader {
+    font-size: 12px;
   }
 </style>
 

@@ -73,13 +73,13 @@ public class ProjectService {
     return projectId;
   }
 
-  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, Pageable pageable) {
+  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String overrideType, String sortColumn, String sortDirection, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if(!viewAll) {
+    if(!viewAll || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
       viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
     }
 
@@ -89,11 +89,18 @@ public class ProjectService {
     params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    params.put("sortColumn", sortColumn);
+    params.put("sortDirection", sortDirection);
     params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    String searchSqlKey = viewAll ? "project.search" : viewDownline ? "project.searchDownline" : "project.searchByOwner";
+    String searchSqlKey = "project.searchByOwner";
+    if(viewDownline) {
+      searchSqlKey = "project.searchDownline";
+    } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
+      searchSqlKey = "project.search";
+    }
 //    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
 
     List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));

@@ -49,6 +49,8 @@
                                         cf.field_name as "fieldName",
                                         cf.custom_field_sql_key as "customFieldSqlKey",
                                         cf.company_data_type_id as "companyDataTypeId",
+                                        cfot.show_on_insert as "showOnInsert",
+                                        cfot.require_on_insert as "requireOnInsert",
                                         cdt.data_type_id as "dataTypeId",
                                         cdt.has_list_values as "hasListValues",
                                         coalesce((
@@ -72,6 +74,7 @@
                                  where cfga.custom_field_group_id = cfg.id
                                    and cfga.archived is not true
                                    and cfot.archived is not true
+                                   and cf.company_id = :companyId
                                    and cfot.show_on_insert is true
                                  order by cfga.field_order, cf.field_name
                              ) fields), '[]') AS "customFieldValues"
@@ -83,13 +86,14 @@
     order by cfg.group_order
   ]]></customFieldGroup.getInsertFieldsByType>
 
-  <customFieldGroup.updateFieldShowOnInsert><![CDATA[
+  <customFieldGroup.updateFieldShowOrRequireOnInsert><![CDATA[
     update flow.custom_field_object_type
       set show_on_insert = :showOnInsert,
+        require_on_insert = :requireOnInsert,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
-  ]]></customFieldGroup.updateFieldShowOnInsert>
+  ]]></customFieldGroup.updateFieldShowOrRequireOnInsert>
 
   <customFieldGroup.checkForFieldsInUse><![CDATA[
     select null as field_name,

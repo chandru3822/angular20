@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class WorkQueueDetail {
     private Long processStepId, companyId, projectProcessStepId, projectId, contactId, processStepWorkQueueTypeId, daysInQueue;
-    private String projectName, workQueueType, processStepName, owner, lastUpdated, stateAbbreviation;
+    private String projectName, workQueueType, processStepName, owner, lastUpdated, stateAbbreviation, processStepStatusType;
     private List<OwningPosition> owningPositions;
     private List<ProjectProcessStep> activeProcessSteps;
     private List<Note> notes;

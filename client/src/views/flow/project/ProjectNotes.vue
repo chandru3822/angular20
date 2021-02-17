@@ -8,7 +8,6 @@
       :notes="notes"
       :primaryId="parseInt(projectId)"
       type="Project"
-      :users="allUsers"
     />
   </v-col>
 
@@ -19,7 +18,7 @@
 
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
-import {AppMutations} from "@/stores/AppStore";
+
 
 
 export default {
@@ -31,13 +30,11 @@ export default {
     return {
       snackbar: {},
       projectId: parseInt(this.$route.params.projectId),
-      notes: [],
-      allUsers: []
+      notes: []
     }
   },
   created () {
     this.getNotes()
-    this.getUsers()
   },
   computed: {},
   methods: {
@@ -53,17 +50,6 @@ export default {
         console.log('done gone boom')
       }
     },
-    getUsers: async function () {
-      try {
-        const {data} = await getRequest('/user/mentionableUsers')
-        this.allUsers = data;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
   }
 }
 </script>

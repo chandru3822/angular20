@@ -6,7 +6,7 @@
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/users">Cancel</v-btn>
         <v-btn color="primaryCustom white--text" @click="validate"
-               :disabled="(newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)">
+               :disabled="loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)">
           Save
         </v-btn>
       </v-card-title>
@@ -64,26 +64,16 @@
             </v-col>
           </v-row>
         </v-container>
-        <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index"
-                     v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+        <SpinnerInline v-if="loadingUserInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
           <h3>{{cfg.groupName}}</h3>
-          <div v-for="(cf, idx) in cfg.customFieldValues"
-               :key="idx">
-            <CustomValueInput v-if="cf.fieldName === 'Finding Source'"
-                              :readonly="getReadOnly(cf)"
-                              :callback="populateDirtyCfvs"
-                              :field="cf"></CustomValueInput>
-            <CustomValueInput v-if="cf.fieldName === 'Recruited By' && !hideRecruitedBy"
-                              :readonly="getReadOnly(cf)"
-                              :callback="populateDirtyCfvs"
-                              :field="cf"></CustomValueInput>
-            <CustomValueInput v-if="cf.fieldName === 'Referred By (Employee)' && !hideReferredBy"
-                              :readonly="getReadOnly(cf)"
-                              :callback="populateDirtyCfvs"
-                              :field="cf"></CustomValueInput>
-          </div>
+          <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                            :key="idx"
+                            :callback="populateDirtyCfvs"
+                            :required="cf.requireOnInsert"
+                            :readonly="getReadOnly(cf)"
+                            :field="cf"></CustomValueInput>
         </v-container>
-
 
         <v-expansion-panels class="mt-4 mb-6" v-model="userPositionPanel">
           <v-expansion-panel>
@@ -123,6 +113,7 @@
                     :label="f.levelName"
                     :rules="requiredRules"
                     item-value="id"
+                    item-text="orgName"
                     autocomplete="off"
                     type="search"
                   >
@@ -149,7 +140,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import SpinnerInline from '@/components/SpinnerInline'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {getCountries} from '@/services/countryService'
@@ -166,7 +157,7 @@
   export default {
     name: 'NewUser',
     components: {
-
+      SpinnerInline,
       CustomValueInput,
       DatetimePickerInput
     },
@@ -177,9 +168,8 @@
         states: [],
         countries: [],
         dirtyCfvs: [],
+        loadingUserInsertFields: true,
         customFieldGroups: [],
-        hideRecruitedBy: false,
-        hideReferredBy: false,
         userStatusTypes: [],
         requiredRules: constants.BASIC_REQUIRED_RULE,
         emailRules: constants.EMAIL_RULES,
@@ -211,14 +201,17 @@
         }
       },
       async getCustomFieldGroups() {
+        this.loadingUserInsertFields = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/customFieldGroup/getUserInsertFields`)
           this.customFieldGroups = data
+          this.loadingUserInsertFields = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.loadingUserInsertFields = false
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -402,28 +395,6 @@
           this.dirtyCfvs.push(field)
         }
 
-        if (field.fieldName !== 'Finding Source' && field?.intValue === undefined) {
-          if (this.dirtyCfvs.length === 1) {
-            this.dirtyCfvs = []
-          } else if (this.dirtyCfvs.length === 2) {
-            this.dirtyCfvs = this.dirtyCfvs.filter(cfv => cfv.fieldName === 'Finding Source')
-          }
-
-          this.hideRecruitedBy = false
-          this.hideReferredBy = false
-        } else {
-          let customField = this.dirtyCfvs.filter(cfv => cfv.fieldName !== 'Finding Source')
-
-          if (customField !== undefined && customField[0]?.intValue !== undefined) {
-            if (customField[0].fieldName === 'Recruited By') {
-              this.hideRecruitedBy = false
-              this.hideReferredBy = true
-            } else if (customField[0].fieldName === 'Referred By (Employee)') {
-              this.hideRecruitedBy = true
-              this.hideReferredBy = false
-            }
-          }
-        }
       }
     }
   }

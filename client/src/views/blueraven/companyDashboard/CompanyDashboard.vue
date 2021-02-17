@@ -22,7 +22,6 @@
                                      :maxDate="endDate"
                                      :type="'date'"
                                      label="Start Date"
-                                     @input="getDashboardValues(true)"
                                      hide-details
                                      :hide-prepend-icon="true"
                                      :dense="'dense'"
@@ -34,14 +33,17 @@
                                      :minDate="startDate"
                                      :type="'date'"
                                      label="End Date"
-                                     @input="getDashboardValues(true)"
                                      hide-details
                                      :hide-prepend-icon="true"
                                      :dense="'dense'"
                                      :outlined="'outlined'"
                 ></DatetimePickerInput>
+                <v-btn color="primaryCustom" dark class="white--text dash-btn"
+                  @click="getDashboardValues(true)">
+                  Go
+                </v-btn>
                 <v-btn v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser) && !constants.IS_MOBILE"
-                       id="targets-btn" class="white--text text-capitalize" color="primaryCustom"
+                       id="targets-btn" class="dash-btn text-capitalize"
                        to="/companyDashboardTargets" title="View company dashboard targets">
                   Targets
                 </v-btn>
@@ -124,7 +126,7 @@
         </v-row>
       </v-col>
       <v-dialog v-model="showDrilldown">
-        <CompanyDashboardDrilldown :milestone="selectedMilestone"
+        <CompanyDashboardDrilldown v-if="!drilldownIsLoading" :milestone="selectedMilestone"
                                    :load-partners="loadPartners"
                                    :drilldown-data="drilldownData"
                                    :start-date="startDate"
@@ -173,6 +175,7 @@
         currentPeriod: Math.ceil(moment().isoWeek() / 4),
         dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
         isLoading: true,
+        drilldownIsLoading: true,
         dashValues: [],
         drilldownData: [],
         singleDateRange: false,
@@ -216,6 +219,7 @@
         this.selectedMilestone = {}
         this.drilldownData = []
         this.loadPartners = false
+        this.drilldownIsLoading = false
         this.showDrilldown = false
       },
       async openDrilldown(item, loadPartners) {
@@ -226,6 +230,7 @@
       },
       async getDrilldownData() {
         //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
+        this.drilldownIsLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -239,12 +244,12 @@
           const {data} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven')
           this.drilldownData = data
 
-          this.isLoading = false
+          this.drilldownIsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-          this.isLoading = false
+          this.drilldownIsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -414,9 +419,11 @@
             margin-left: 5px !important;
           }
 
-          #targets-btn {
+          .dash-btn {
             box-shadow: none;
-            font-size: 9px;
+            border: 1px solid #9E9E9E;
+            font-size: 14px;
+            font-weight: 500;
             margin-left: 5px;
             height: 40px;
           }

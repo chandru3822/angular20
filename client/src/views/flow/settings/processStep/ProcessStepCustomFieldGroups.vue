@@ -1,5 +1,5 @@
 <template>
-  <v-container class="">
+  <v-container class="pt-0 px-0">
     <v-dialog
       v-model="deleteError"
     >
@@ -35,9 +35,58 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="showMoveDialog"
+    >
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>
+          Move Custom Field
+        </v-card-title>
+
+        <v-card-text class="mt-4">
+
+          <v-autocomplete label="Process Step to Move To"
+                          :items="moveableProcessSteps"
+                          v-model="moveToItem.processStepId"
+                          item-text="processStepName"
+                          item-value="id"
+                          autocomplete="off"
+                          required
+                          @input="getMoveCustomFieldGroups()"
+                          filled
+          ></v-autocomplete>
+          <v-autocomplete label="Custom Field Group to Move To"
+                          :items="moveableCustomFieldGroups"
+                          v-model="moveToItem.customFieldGroupId"
+                          item-text="groupName"
+                          item-value="id"
+                          autocomplete="off"
+                          required
+                          filled
+          ></v-autocomplete>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text
+            @click="[fieldToMove = {}, showMoveDialog = false, moveableProcessSteps = [], moveableCustomFieldGroups = []]"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primaryCustom white--text"
+            @click="moveFieldToOtherGroup(moveToItem.customFieldGroupId)"
+            :disabled="!moveToItem.customFieldGroupId || !moveToItem.processStepId"
+          >
+            Move
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
-      <v-col cols="12" class="pt-0">
-        <v-toolbar flat>
+      <v-col cols="12" class="pt-0 px-0">
+        <v-toolbar flat  class="cfg-header-bar">
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -47,7 +96,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="createNew" text class="text-left one-hunned pa-3" flat
+        <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
                 color="rowShadeCustom">
           <div>
             <v-text-field
@@ -55,7 +104,7 @@
                 tabindex=1
                 v-model="newGroup.groupName"
             ></v-text-field>
-            <div v-if="showScheduleGroupCheckbox()">
+            <div v-if="showScheduleGroupCheckbox()" class="mb-3">
               <label>Schedule Group:</label>
               <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="[getSchedulingFields(), getEventTypes()]">
             </div>
@@ -106,7 +155,7 @@
                 hide-default-header
                 :sort-desc="[false]"
                 :sort-by="['groupOrder']"
-                class="elevation-1 fix-column-width-bug process-step-cfg-table"
+                class="elevation-1 fix-column-width-bug process-step-cfg-table square-card"
             >
               <template #no-data>
                 No custom for this process step
@@ -244,7 +293,7 @@
                     </v-autocomplete>
                     <v-btn @click="addField = false">Cancel</v-btn>
                   </v-col>
-                  <v-col cols="12" justify="center" class="px-3 py-0"
+                  <v-col cols="12" justify="center" class="px-3 py-0 pt-2"
                           v-if="!addField && (!item.customFields || item.customFields.length === 0)">
                     No Custom Fields Added
                   </v-col>
@@ -317,30 +366,40 @@
                             </div>
                             <div v-else>
                               {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                              <div v-if="cf.edit" class="mt-3">
+                                <label>Use Parent Data: </label>
+                                <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
+                                       @change="saveUseParentData(cf)"
+                                       :readonly="!userCanEdit" :disabled="!userCanEdit">
+                              </div>
                             </div>
                           </v-list-item-content>
                           <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
                           </v-btn>
-                          <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                            <template v-slot:activator="{ on: menu }">
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}">
-                                    <v-icon>mdi-cursor-move</v-icon>
-                                  </v-btn>
-                                </template>
-                                <span>Move to Other Group</span>
-                              </v-tooltip>
-                            </template>
-                              <v-list>
-                                <v-list-item
-                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
-                                  :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
-                                  <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
+                          <v-btn text small v-if="!item.eventTypeId && userCanEdit"
+                                 @click="[showMoveDialog = true, fieldToMove = cf, getMoveProcessSteps()]">
+                            <v-icon>mdi-cursor-move</v-icon>
+                          </v-btn>
+<!--                          <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">-->
+<!--                            <template v-slot:activator="{ on: menu }">-->
+<!--                              <v-tooltip bottom>-->
+<!--                                <template v-slot:activator="{ on: tooltip }">-->
+<!--                                  <v-btn text small v-on="{...tooltip, ...menu}">-->
+<!--                                    <v-icon>mdi-cursor-move</v-icon>-->
+<!--                                  </v-btn>-->
+<!--                                </template>-->
+<!--                                <span>Move to Other Group</span>-->
+<!--                              </v-tooltip>-->
+<!--                            </template>-->
+<!--                              <v-list>-->
+<!--                                <v-list-item-->
+<!--                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"-->
+<!--                                  :key="index" @click="moveFieldToOtherGroup(cf, cfg)">-->
+<!--                                  <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>-->
+<!--                                </v-list-item>-->
+<!--                              </v-list>-->
+<!--                            </v-menu>-->
 
 
                           <v-dialog
@@ -461,6 +520,12 @@
         fieldsInUse: [],
         positions: [],
         positionsLoading: false,
+        showMoveDialog: false,
+        selectedMoveItem: {},
+        moveToItem: {},
+        moveableProcessSteps: [],
+        moveableCustomFieldGroups: [],
+        fieldToMove: {},
         constants,
         newGroup: {
           schedulingFields: [],
@@ -521,6 +586,36 @@
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
+      },
+      async getMoveProcessSteps () {
+        if(this.moveableProcessSteps?.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/processStep`)
+            this.moveableProcessSteps = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async getMoveCustomFieldGroups () {
+        if(this.moveToItem?.processStepId !== null) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/customFieldGroup/getNonEventCustomFieldGroupsByProcessStep/${this.moveToItem.processStepId}`)
+            this.moveableCustomFieldGroups = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
       },
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -597,11 +692,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async moveFieldToOtherGroup (field, newGroup) {
+      async moveFieldToOtherGroup (groupId) {
+        console.log('randaLogger', this.fieldToMove)
+        console.log('randaLogger', groupId)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
+          await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${groupId}`, this.fieldToMove)
           this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
+          this.showMoveDialog = false
+          this.moveableCustomFieldGroups = []
+          this.fieldToMove = {}
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
           window.location.reload()
@@ -654,6 +754,18 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveUseParentData (field) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/customFieldGroup/saveUseParentData`, field)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -855,5 +967,13 @@
     height: 30px;
     width: 30px;
     border-radius: 5px;
+  }
+
+  .cfg-header-bar {
+    border-bottom: 1px solid #E6E6E6;
+  }
+
+  .add-new {
+    border-bottom: 1px solid #E6E6E6;
   }
 </style>

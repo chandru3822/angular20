@@ -2,7 +2,8 @@
 <v-row class="d-flex justify-space-between align-center">
   <v-col v-if="showFieldName">
     {{field.fieldName}}
-    <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
+    <span class="ancillary" v-if="field.useParentData">(Parent)</span>
+    <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
   </v-col>
 
   <v-col class="d-flex justify-start align-self-start py-0">
@@ -25,6 +26,7 @@
       v-model="field.timestampValue"
       :timezone="this.timezone"
       type="timestamp"
+      :required="required"
       :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
       :readonly="readonly"
@@ -35,6 +37,7 @@
       v-if="field.dataTypeId === 3"
       v-model="field.booleanValue"
       :label="field.fieldName"
+      :rules="getRequiredRule()"
       :disabled="readonly"
       :ripple="false"
       @change="callback(field)"
@@ -45,6 +48,7 @@
       text
       :readonly="readonly"
       placeholder=" "
+      :rules="getRequiredRule()"
       :label="field.fieldName"
       type="number"
       v-model.number="field.numericValue"
@@ -58,6 +62,7 @@
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
+      :rules="getRequiredRule()"
       :label="field.fieldName"
       v-model="field.textValue"
       @change="callback(field)"
@@ -69,6 +74,7 @@
       :readonly="readonly"
       :label="field.fieldName"
       placeholder=" "
+      :rules="getRequiredRule()"
       type="number"
       v-model.number="field.intValue"
       @change="callback(field)"
@@ -82,6 +88,7 @@
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
+      :rules="getRequiredRule()"
       :items="field.listOfValues"
       :label="field.fieldName"
       item-value="id"
@@ -98,6 +105,7 @@
       :clearable="!readonly"
       :readonly="readonly"
       :disabled="readonly"
+      :rules="getRequiredRule()"
       :label="field.fieldName"
       v-model="field.intArrayValue"
       item-value="id"
@@ -114,6 +122,7 @@
       :disabled="readonly"
       :items="field.listOfValues"
       :label="field.fieldName"
+      :rules="getRequiredRule()"
       placeholder=" "
       item-value="id"
       item-text="name"
@@ -129,6 +138,7 @@
       :label="field.fieldName"
       :readonly="readonly"
       :disabled="readonly"
+      :rules="getRequiredRule()"
       placeholder=" "
       item-value="id"
       item-text="name"
@@ -141,10 +151,15 @@
 <script>
 
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import constants from '@/helpers/constants'
 
 export default {
   name: 'CustomValueInput',
   props: {
+    required: {
+      type: Boolean,
+      default: false
+    },
     readonly: {
       type: Boolean,
       default: false
@@ -163,8 +178,22 @@ export default {
   },
   data () {
     return {
+      requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value
     }
+  },
+  // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
+  // computed: {
+    // displayedFieldName () {
+    //   return this.field.useParentData ? this.field.fieldName + ' (Parent)' : this.field.ancillaryCustomFieldGroupAssignmentId ? this.field.fieldName + ' (Primary)' : this.field.fieldName
+    // }
+  // },
+  methods: {
+    getRequiredRule() {
+      if(this.required) {
+        return this.requiredRules
+      }
+    },
   }
 }
 </script>

@@ -35,9 +35,14 @@
             <td class="text-left customer-name">{{ item.customer_name }}</td>
             <td class="text-left">{{ item.state }}</td>
             <td class="text-left">{{ item.source_name }}</td>
-            <td class="text-left">{{ item.date_value | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+            <td class="text-left">
+              <span v-if="item.date_type === 'date'">{{ item.date_value | formatDate('date', 'MM/DD/YYYY') }}</span>
+              <span v-else-if="item.date_type === 'timestamp'">{{ item.date_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>
+              <span v-else>{{ item.date_value }}</span>
+            </td>
             <td class="text-left" v-if="milestone.has_additional_column">
-              <span v-if="item.additional_field_as_date">{{item.additional_field_value | formatDate('date', 'MM/DD/YYYY')}}</span>
+              <span v-if="item.additional_field_type === 'date'">{{ item.additional_field_value | formatDate('date', 'MM/DD/YYYY') }}</span>
+              <span v-else-if="item.additional_field_type === 'timestamp'">{{ item.additional_field_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>
               <span v-else>{{ item.additional_field_value }}</span>
             </td>
           </tr>

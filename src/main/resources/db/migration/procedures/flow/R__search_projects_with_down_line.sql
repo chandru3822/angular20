@@ -3,7 +3,9 @@ CREATE OR REPLACE FUNCTION flow.search_projects_with_down_line(p_searchterm char
                                                                p_is_parent boolean,
                                                                p_limit integer,
                                                                p_offset integer,
-                                                               p_company_project_status_type_id integer default null)
+                                                               p_company_project_status_type_id integer default null,
+                                                               p_sort_column character varying default null,
+                                                               p_sort_direction character varying default null)
     RETURNS TABLE
             (
                 id                             integer,
@@ -69,7 +71,8 @@ BEGIN
                          with positions as (
                              select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
-                             where up.primary_flag is true
+                             where (up.end_date is null or up.end_date > now())
+                                   -- judson had me change this: up.primary_flag is true
                                and up.archived is not true
                                and user_id = p_user_id
                          ),
@@ -146,7 +149,11 @@ BEGIN
                        and case when p_company_project_status_type_id is not null then
                                         cpst.id = p_company_project_status_type_id
                                 else 1=1 end
-                     order by p.date_created desc
+                     ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
+                              (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc' then p.project_name end) asc nulls last,
+                              (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'desc' then p.project_name end) desc nulls last,
+                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.date_created end) asc,
+                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.date_created end) desc
                      limit p_limit offset p_offset
                  ) as limited_projects;
 
@@ -225,7 +232,8 @@ BEGIN
                          with positions as (
                              select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
-                             where up.primary_flag is true
+                             where (up.end_date is null or up.end_date > now())
+                                   --up.primary_flag is true
                                and up.archived is not true
                                and user_id = p_user_id
                          ),
@@ -302,7 +310,11 @@ BEGIN
                            and case when p_company_project_status_type_id is not null then
                                             cpst.id = p_company_project_status_type_id
                                     else 1=1 end
-                         order by p.date_created desc
+                         ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
+                                  (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc' then p.project_name end) asc nulls last,
+                                  (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'desc' then p.project_name end) desc nulls last,
+                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.date_created end) asc,
+                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.date_created end) desc
                          limit p_limit offset p_offset
                      ) as limited_projects;
         end case;

@@ -709,11 +709,11 @@
         try {
           const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
           this.ahjUtility = cloneDeep(data)
-          this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name.toLowerCase())
-          this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name.toLowerCase())
-          this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name.toLowerCase())
-          this.ahjUtility.submissionLinks = orderBy(this.ahjUtility.submissionLinks, link => link.name.toLowerCase())
-          this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name.toLowerCase())
+          this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name?.toLowerCase())
+          this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name?.toLowerCase())
+          this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name?.toLowerCase())
+          this.ahjUtility.submissionLinks = orderBy(this.ahjUtility.submissionLinks, link => link.name?.toLowerCase())
+          this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name?.toLowerCase())
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Utility')

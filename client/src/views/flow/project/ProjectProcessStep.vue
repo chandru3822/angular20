@@ -244,14 +244,23 @@
 
       <v-col cols="12" lg="6" class="text-left pt-0">
         <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Actions</v-toolbar-title>
+          <v-toolbar-title>
+            Actions
+            <v-btn
+              class="back-btn show-unperformable-actions-btn"
+              text
+              :ripple="false"
+              @click="showUnperformableActions = !showUnperformableActions"
+            >
+              {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
+            </v-btn>
+          </v-toolbar-title>
         </v-toolbar>
-        <v-col v-for="action in processStep.actions" :key="action.id" class="pt-0">
+        <v-col v-for="action in filteredActions" :key="action.id" class="pt-0">
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hidden"
-            :actionId="action.id"
+            :action-result="action"
             :projectProcessStepId="parseInt(projectProcessStepId)"
-            :label="action.actionName"
             :handleOnComplete="handleActionCompleted"
             :handleOnCompleteError="handleOnCompleteError"
           />
@@ -280,8 +289,9 @@
         :project-process-step="processStep"
         :available-process-step-statuses="availableProcessStepStatuses"
         :limit-to-active="true"
+        :new-status-optional="processStep.processStepStatusTypeId !== 3"
         @updateStatus="updateMain"
-        @dialogClosed="showMainDialog = false"
+        @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
     />
   </v-main>
 </template>
@@ -300,6 +310,8 @@
   import moment from 'moment-timezone'
   import {DateTime} from 'luxon'
   import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+
+  const NEW_STATUS_TO_USE = {id: null}
 
   export default {
     name: 'ProjectProcessStep',
@@ -348,7 +360,9 @@
         uniqueAlreadyHasValue: false,
         psHasEventCfg: false,
         psRequiresResource: false,
-        showMainDialog: false
+        showMainDialog: false,
+        NEW_STATUS_TO_USE,
+        showUnperformableActions: false
       }
     },
     async created() {
@@ -359,6 +373,19 @@
       this.getProject()
       await this.getProcessStep()
       this.getAvailableOwners()
+    },
+    computed: {
+      filteredActions () {
+        if (!this?.processStep?.actions) {
+          return []
+        }
+
+        if (this.showUnperformableActions) {
+          return this.processStep.actions
+        } else {
+          return this.processStep.actions.filter(a => a.canPerform === true)
+        }
+      }
     },
     methods: {
       getStatusClass(rootTypeId) {
@@ -382,7 +409,7 @@
       getProcessStep: async function () {
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-          this.processStep = {...data, newStatusToUse: {}}
+          this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
         } catch (e) {
@@ -586,7 +613,7 @@
           }
           //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
           this.closerApptSaved = true
-          this.$root.$emit('projectProcessStep:checkAction')
+          await this.getProcessStep()
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
@@ -643,6 +670,7 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
+          await this.getProcessStep()
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
@@ -710,7 +738,7 @@
             this.timeSlots = []
             this.selectedTimeSlot = {}
           }
-          this.$root.$emit('projectProcessStep:checkAction')
+          await this.getProcessStep()
         } catch (e) {
           logError(e)
           let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
@@ -789,6 +817,11 @@
       .v-btn__content {
         justify-content: start;
       }
+    }
+
+    .show-unperformable-actions-btn {
+      margin-bottom: 2px;
+      font-size: 12px;
     }
   }
 </style>

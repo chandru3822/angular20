@@ -45,6 +45,7 @@ public class AhjService {
     params.put("currentUser", currentUser.getId());
     params.put("name", ahjSummary.getName());
     params.put("metroAreaId", ahjSummary.getMetroAreaId());
+    params.put("companyStateId", ahjSummary.getCompanyStateId());
 
     if (id == null) {
       Optional<AhjSummary> ahj = sqlCache.get("ahj.checkForDuplicate", params, AhjSummary.class);
@@ -53,9 +54,9 @@ public class AhjService {
         id = sqlCache.updateReturningId("ahj.create", params, "id").longValue();
 
         // create an empty permit, inspection, and design tied to the ahj - only required for new
-        ahjPermitService.saveAhjPermit(id, null, new AhjPermit());
-        ahjInspectionService.saveAhjInspection(id, null, new AhjInspection());
-        ahjDesignService.saveAhjDesign(id, null, new AhjDesign());
+        ahjPermitService.saveAhjPermit(id, null, new AhjPermit(), false);
+        ahjInspectionService.saveAhjInspection(id, null, new AhjInspection(), false);
+        ahjDesignService.saveAhjDesign(id, null, new AhjDesign(), false);
       } else {
         return Optional.empty();
       }

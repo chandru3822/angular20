@@ -12,6 +12,7 @@
       :class="customClass"
       :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
+      :rules="getRequiredRule()"
       :prepend-icon="hidePrependIcon ? '' : 'event'"
       :append-icon="showAppendIcon ? 'event' : ''"
       readonly
@@ -55,6 +56,7 @@
 
 import {DateTime} from 'luxon'
 import moment from 'moment'
+import constants from '@/helpers/constants'
 
 export default {
   name: 'DatetimePickerInput',
@@ -76,6 +78,10 @@ export default {
     allowedMinutes: Function,
     showAppendIcon: Boolean,
     changeCallback: Function,
+    required: {
+      type: Boolean,
+      default: false
+    },
     readonly: {
       type: Boolean,
       default: false
@@ -86,6 +92,7 @@ export default {
     utcDate: null,
     time: null,
     menu: false,
+    requiredRules: constants.BASIC_REQUIRED_RULE,
     showDate: false,
     showTime: false,
     //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
@@ -115,10 +122,23 @@ export default {
     }
   },
   methods: {
+    getRequiredRule() {
+      if(this.required) {
+        return this.requiredRules
+      }
+    },
     setFunction(date) {
-      this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+      //date in this context = the current time in non-utc time
+      //we have to combine the selected date with the current time in non-utc in case they have selected date with a different daylight savings time than "NOW"
+      let combined = this.date + ' ' + date
+      this.time = moment.tz(combined, 'yyyy-MM-DD HH:mm', this.timezone).utc().format('HH:mm')
+
+      // this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+      // ^^ this is the old way, in case i broke something
+
       // this date will be used in case the time selected pushes the utc date to the next day
       this.utcDate = moment(this.date + ' ' + date).utc().format('yyyy-MM-DD')
+
       return date
     },
     changeHandler () {
@@ -137,6 +157,7 @@ export default {
         //the localDate setter was doing exactly what was needed to the date but we need to convert this.time to the "this.timezone"
         //value before sending everything to the setFunction because this is what the date picker does
         this.setFunction(moment.utc(this.time, 'HH:mm').tz(this.timezone).format('HH:mm'))
+        // this.setFunction(moment.utc(this.date))
         this.showDate = false
         this.showTime = true
       }
@@ -192,13 +213,6 @@ export default {
         //if previous value, use that and dont do the setFunction thing
         this.time = this.dateToUse.toFormat('HH:mm')
       }
-      // console.log('timePost', this.time)
-      //
-      // console.log('val', this.$props.value)
-      // console.log('value', value)
-      // console.log('date to use', this.dateToUse)
-      // console.log('date', this.date)
-      // console.log('utcDate', this.utcDate)
 
       if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true

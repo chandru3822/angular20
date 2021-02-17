@@ -9,12 +9,33 @@
       </v-toolbar>
       <v-divider></v-divider>
       <v-card class="px-3 elevation-0 square-card">
-        <mentionable-textarea class="py-2"
-          ref="mentionableTextarea"
-          @onMention="onMention(instance, $event)"
-          :modeIdentifiers="modeIdentifiers"
-          :isLoading="isLoading"
-          v-model="note.note"/>
+          <Mentionable
+            :keys="['@']"
+            :items="users"
+            offset="6"
+            insert-space
+          >
+            <v-textarea class="py-2" hide-details
+                        auto-grow
+                        rows="4"
+                        background-color="#F2F6F8"
+                        filled v-model="note.note">
+            </v-textarea>
+
+            <template #no-result>
+              <div class="dim">
+                No result
+              </div>
+            </template>
+
+            <template #item-@="{ item }">
+              <div class="user">
+                <span class="dim">
+                  ({{ item.value }})
+                </span>
+              </div>
+            </template>
+          </Mentionable>
         <div class="text-left mb-2">
           <v-btn color="primaryCustom" class="white--text"
                  :disabled="!note.note || savingNote"
@@ -50,11 +71,32 @@
         <template #item="{ item, index }">
           <tr class="text-left" :class="{'shaded-row': index % 2}" v-if="item.edit" >
             <td class="py-2 pl-5" colspan="3">
-              <v-textarea class="py-2" hide-details
-                          auto-grow
-                          rows="4"
-                          background-color="#F2F6F8"
-                          filled v-model="item.note"></v-textarea>
+              <Mentionable
+                :keys="['@']"
+                :items="users"
+                offset="6"
+                insert-space
+              >
+                <v-textarea class="py-2" hide-details
+                            auto-grow
+                            rows="4"
+                            background-color="#F2F6F8"
+                            filled v-model="item.note"></v-textarea>
+
+                <template #no-result>
+                  <div class="dim">
+                    No result
+                  </div>
+                </template>
+
+                <template #item-@="{ item }">
+                  <div class="user">
+                <span class="dim">
+                  ({{ item.value }})
+                </span>
+                  </div>
+                </template>
+              </Mentionable>
               <div class="text-left mb-2">
                 <v-btn color="primaryCustom" class="white--text"
                        :disabled="!item.note"
@@ -144,11 +186,32 @@
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length" class="py-4 px-10">
             <div v-if="item.showReply">
-              <v-textarea solo v-model="item.reply"
-                          hide-details
-                          auto-grow
-                          rows="1"
-                          placeholder="Add a comment..." class="mt-1"></v-textarea>
+              <Mentionable
+                :keys="['@']"
+                :items="users"
+                offset="6"
+                insert-space
+              >
+                <v-textarea solo v-model="item.reply"
+                            hide-details
+                            auto-grow
+                            rows="1"
+                            placeholder="Add a comment..." class="mt-1"></v-textarea>
+
+                <template #no-result>
+                  <div class="dim">
+                    No result
+                  </div>
+                </template>
+
+                <template #item-@="{ item }">
+                  <div class="user">
+                    <span class="dim">
+                      ({{ item.value }})
+                    </span>
+                  </div>
+                </template>
+              </Mentionable>
               <div class="text-left py-2">
                 <v-btn color="primaryCustom white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
@@ -162,11 +225,33 @@
             </div>
             <div v-for="(cn, index) in filterBy(item.childNotes, false, 'archived')" :key="index">
               <div v-if="cn.edit">
-                <v-textarea class="py-2" hide-details
-                            auto-grow
-                            rows="4"
-                            background-color="#F2F6F8"
-                            filled v-model="cn.note"></v-textarea>
+                <Mentionable
+                  :keys="['@']"
+                  :items="users"
+                  offset="6"
+                  insert-space
+                >
+                  <v-textarea class="py-2" hide-details
+                              auto-grow
+                              rows="4"
+                              background-color="#F2F6F8"
+                              filled v-model="cn.note"></v-textarea>
+
+                  <template #no-result>
+                    <div class="dim">
+                      No result
+                    </div>
+                  </template>
+
+                  <template #item-@="{ item }">
+                    <div class="user">
+                      <span class="dim">
+                        ({{ item.value }})
+                      </span>
+                    </div>
+                  </template>
+                </Mentionable>
+
                 <div class="text-left mb-2">
                   <v-btn color="primaryCustom" class="white--text"
                          :disabled="!cn.note"
@@ -252,6 +337,7 @@
 
       </v-data-table>
 
+
     </v-card>
 
   </div>
@@ -262,8 +348,6 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
 import {AppMutations} from '@/stores/AppStore'
 
 import Vue2Filters from "vue2-filters";
-import debounce from 'lodash.debounce'
-import MentionableUser from "./MentionableUser.vue";
 
 export default {
   name: 'NotesAndActivity',
@@ -275,31 +359,7 @@ export default {
     secondaryId: Number,
     isWqtNote: Boolean,
     notes: Array,
-    users: Array,
     type: String
-  },
-  computed: {
-    filteredUserList() {
-      if (this.searchParam != null && this.searchParam.length > 2) {
-        return this.users.filter(user => user.fullName.toLowerCase().indexOf(this.searchParam.toLowerCase()) > -1);
-      }
-      else {
-        return [];
-      }
-    },
-    instance() {
-      return this;
-    },
-    modeIdentifiers() {
-      return [
-        {...{
-            mode: 0,
-            key: '@',
-            comp: MentionableUser,
-            valueKey: 'fullName'
-          }, suggestions: this.filteredUserList}
-      ]
-    }
   },
   data () {
     return {
@@ -320,16 +380,13 @@ export default {
         { text: null, value: 'icons', show: true, width: '50px' }
       ],
       expanded: [],
-      isLoading: false,
-      currentMode: 0,
-      searchParam: '',
+      users: []
     }
   },
+  created () {
+    this.getUsers()
+  },
   methods: {
-    onMention: debounce((self, event) => {
-      self.currentMode = event.mode;
-      self.searchParam = event.searchParam;
-    }, 250),
     async deleteNote(n, isChildNote, item) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
@@ -371,7 +428,6 @@ export default {
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$refs.mentionableTextarea.selection = ''
         this.savingNote = false
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -387,6 +443,10 @@ export default {
       try {
         const {data} = await getRequest('/user/mentionableUsers')
         this.users = data;
+        this.users.forEach(u => {
+          u.value = u.fullName
+        })
+
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
@@ -427,6 +487,10 @@ export default {
 .reply-button-dots {
   display: flex;
   align-items: center;
+}
+.dim:hover {
+  color: var(--v-primary-base);
+  font-weight: bold;
 }
 </style>
 <style lang="scss">

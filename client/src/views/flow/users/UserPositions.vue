@@ -19,6 +19,8 @@
               :format="'MM/DD/YYYY'"
               label="End Date"
             />
+            <label>Make Primary:</label>
+            <input type="checkbox" class="ml-3 mb-4" v-model="newPosition.primaryFlag">
             <v-autocomplete v-model="newPosition.positionId"
                             :items="positions"
                             label="Positions"
@@ -33,6 +35,7 @@
                   :rules="requiredRules"
                   :label="f.levelName"
                   item-value="id"
+                  item-text="orgName"
                 >
                   <template slot="selection" slot-scope="{ item, index }">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>

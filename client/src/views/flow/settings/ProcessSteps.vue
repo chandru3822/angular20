@@ -36,7 +36,7 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" class="pa-0">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -46,8 +46,8 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-container>
-          <v-card color="transparent" flat v-if="addNew" class="mb-3">
+        <v-container class="pa-0">
+          <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
             <v-text-field
                 label="Process Step Name"
                 tabindex=1
@@ -55,7 +55,8 @@
             ></v-text-field>
             <v-btn :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
           </v-card>
-          <v-card>
+          <v-divider v-if="addNew"></v-divider>
+          <v-card class="square-card">
             <v-card-title class="pt-0">
               <v-text-field
                 v-model="search"
@@ -73,7 +74,7 @@
               :search="search"
               :footer-props="footerProps"
               hide-default-header
-              class="elevation-1"
+              class="elevation-1 square-card"
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">

@@ -49,7 +49,19 @@
         </div>
       </v-col>
       <v-col cols="4" class="contact-owner pb-2">
-        <div v-if="!changeOwner || !userCanEdit">
+        <div class="d-inline-block mr-4" v-if="contact.companyId !== this.companyId">
+          <v-avatar
+            :tile="false"
+            :size="25"
+            color="#D6D6D6"
+            class="account-img mr-2"
+          >
+            <v-icon color="white" size="20">mdi-office-building</v-icon>
+          </v-avatar>
+          <span>{{contact.companyName}}</span><br/>
+          <span class="project-company-subheader">Company</span>
+        </div>
+        <div v-if="!changeOwner || !userCanEdit" class="d-inline-block">
           <div v-if="contact.owner">
             <v-avatar
                 :tile="false"
@@ -135,10 +147,13 @@
               ></v-select>
               <v-text-field text
                             label="Zip"
+                            type="text"
                             placeholder=" "
                             @change="addressChanged = true"
                             :readonly="!userCanEdit"
                             counter
+                            @keypress="isNumberOrHyphen"
+                            :rules="postalCodeRules"
                             maxlength="10"
                             v-model="contact.postalCode"></v-text-field>
             </v-form>
@@ -224,7 +239,6 @@
       <v-col cols="12" md="6" class="text-left">
         <NotesAndActivity :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(contactId)"
-                          :users="allUsers"
                           type="Contact"
         ></NotesAndActivity>
       </v-col>
@@ -253,14 +267,16 @@ import {AppMutations} from '@/stores/AppStore'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, isNumberOrHyphen, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import constants from '@/helpers/constants'
 
 export default {
   name: 'Contact',
   components: {
+
     CustomValueInput,
     NotesAndActivity,
     DatetimePickerInput
@@ -270,15 +286,16 @@ export default {
       snackbar: {},
       states: [],
       contact: {},
+      postalCodeRules: constants.POSTAL_CODE_RULES,
       deleteContactConfirm: false,
       addressChanged: false,
+      isNumberOrHyphen,
       contactLoading: true,
       customFieldGroups: [],
       notes: [],
       fieldsSaving: false,
       dirtyCfvs: [],
       owners: [],
-      allUsers: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADMIN'),
@@ -303,44 +320,43 @@ export default {
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
-    this.getUsers()
   },
   methods: {
     async saveContact() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
-        if (this.contact?.phone?.length > 0 && (!this.contact?.phone?.match(phoneRegex) || this.contact?.phone?.length > 20)) {
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Phone field with a valid phone number')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.fieldsSaving = false;
-          return;
-        }
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+          if (this.contact?.phone?.length > 0 && (!this.contact?.phone?.match(phoneRegex) || this.contact?.phone?.length > 20)) {
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Phone field with a valid phone number')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.fieldsSaving = false;
+            return;
+          }
 
-        if (this.contact?.mobile?.length > 0 && (!this.contact?.mobile?.match(phoneRegex) || this.contact?.mobile?.length > 20)) {
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Mobile field with a valid phone number')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.fieldsSaving = false;
-          return;
-        }
+          if (this.contact?.mobile?.length > 0 && (!this.contact?.mobile?.match(phoneRegex) || this.contact?.mobile?.length > 20)) {
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Mobile field with a valid phone number')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.fieldsSaving = false;
+            return;
+          }
 
-      // save contact
-        const {data} = await postRequest(`/contact`, this.contact)
-        this.contact.projects = data.projects
-        await this.saveCustomFieldValues()
-        // Save BlueRaven Solar Contacts to Genesys
-        if (this.companyId == 3) {
-          await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+        // save contact
+          const {data} = await postRequest(`/contact`, this.contact)
+          this.contact.projects = data.projects
+          await this.saveCustomFieldValues()
+          // Save BlueRaven Solar Contacts to Genesys
+          if (this.companyId === 3) {
+            await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
     },
     async saveCustomFieldValues () {
       try {
@@ -422,17 +438,6 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getUsers: async function () {
-      try {
-        const {data} = await getRequest('/user/mentionableUsers')
-        this.allUsers = data;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

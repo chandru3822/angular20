@@ -41,6 +41,11 @@ public class CustomFieldGroupController {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
+  @PutMapping(value = "/saveUseParentData", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveUseParentData(@RequestBody CustomField customField) {
+    customFieldGroupService.saveUseParentData(customField);
+  }
+
   @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateFieldInGroup(@RequestParam(required = false) Boolean savePositions,
                                  @RequestBody CustomField customField) {
@@ -61,6 +66,11 @@ public class CustomFieldGroupController {
   @GetMapping(value = "/getCustomFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomField> getCustomFieldsInGroup (@RequestParam Long groupId) {
     return customFieldGroupService.getCustomFieldsInGroup(groupId);
+  }
+
+  @GetMapping(value = "/getNonEventCustomFieldGroupsByProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getNonEventCustomFieldGroupsByProcessStep (@PathVariable Long id) {
+    return customFieldGroupService.getNonEventCustomFieldGroupsByProcessStep(id);
   }
 
   @GetMapping(value = "/getEventTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -122,8 +132,8 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getInsertFieldsByType(null, ObjectType.ORGANIZATION.id);
   }
 
-  @PutMapping(value = "/updateFieldShowOnInsert", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateFieldShowOnInsert(@RequestBody CustomFieldObjectType objectType) {
-    customFieldGroupService.updateFieldShowOnInsert(objectType);
+  @PutMapping(value = "/updateFieldShowOrRequireOnInsert", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateFieldShowOrRequireOnInsert(@RequestBody CustomFieldObjectType objectType) {
+    customFieldGroupService.updateFieldShowOrRequireOnInsert(objectType);
   }
 }

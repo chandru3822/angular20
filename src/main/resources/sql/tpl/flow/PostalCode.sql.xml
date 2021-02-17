@@ -1,14 +1,28 @@
 <sql>
   <postalCode.getZones><![CDATA[
-    select id,
-           company_id,
-           zone_name,
-           distribution_time_frame_days,
-           schedulable_future_days,
-           archived
-    from flow.postal_code_zone
-    where company_id = :companyId
-      and archived is not true
+    select pcz.id,
+        pcz.company_id,
+        pcz.zone_name,
+        pcz.distribution_time_frame_days,
+        pcz.schedulable_future_days,
+        pcz.archived
+    from flow.postal_code_zone pcz
+    where pcz.company_id = :companyId
+    and pcz.archived is not true
+    and case when :searchQuery::text is not null then
+                 lower(translate(pcz.zone_name, '*,.& ', '')) like '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%'
+            OR pcz.id in (select pc.postal_code_zone_id
+                from flow.postal_code pc
+                where pc.archived is not true
+                and pc.postal_code like '%' || :searchQuery::text || '%')
+            OR pcz.id in (select distinct pczu.postal_code_zone_id
+                          from flow.postal_code_zone_user pczu
+                                   inner join flow."user" u on u.id = pczu.user_id
+                          where pczu.archived is not true
+                            AND lower(translate(coalesce(u.first_name, ''), '*,.& ', '')) || ' ' ||
+                                lower(translate(coalesce(u.last_name, ''), '*,.& ', '')) like
+                                '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%')
+        else 1=1 end
     order by zone_name
   ]]></postalCode.getZones>
 
@@ -131,7 +145,7 @@
 
   <postalCode.addZoneCode><![CDATA[
     insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id)
-    values (:postalCodeZoneId, :postalCode, now(), :createdById)
+    values (:postalCodeZoneId, trim(:postalCode), now(), :createdById)
   ]]></postalCode.addZoneCode>
 
   <postalCode.deleteZoneCode><![CDATA[
@@ -226,8 +240,7 @@
                                           inner join flow.position p on p.id = up.position_id
                                           inner join flow.org o on o.id = up.org_id
                                  WHERE up.user_id = pczu.user_id
-                                   and up.archived is not true
-                                   and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
+                                   and up.archived is not true) positions), '[]') AS "userPositions"
     from flow.postal_code_zone_user pczu
              inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
         inner join flow."user" u on u.id = pczu.user_id

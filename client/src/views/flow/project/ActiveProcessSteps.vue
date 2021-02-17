@@ -77,8 +77,15 @@
             <SpinnerInline :size="20" color="primaryCustom"/>
           </v-col>
 
-          <v-col cols="12" v-else>
-            <template v-for="step in processStepsByName">
+          <v-col cols="12" class="pt-0" v-else>
+            <v-text-field placeholder="Filter..."
+                          hide-details
+                          outlined
+                          type="search"
+                          class=""
+                          v-model="stepsSearch"></v-text-field>
+
+            <template v-for="step in filteredProcessSteps()">
               <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
               <ProjectProcessStepSnippet
                 :key="step.processStepName"
@@ -133,6 +140,7 @@ export default {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       isProcessStepsLoading: false,
       snackbar: {},
+      stepsSearch: '',
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
     }
@@ -153,6 +161,9 @@ export default {
     }
   },
   methods: {
+    filteredProcessSteps () {
+      return this.stepsSearch === '' ? this.processStepsByName : this.processStepsByName.filter(psn => psn.processStepName.toLowerCase().includes(this.stepsSearch.toLowerCase()) )
+    },
     getProcessSteps: async function () {
       try {
       this.isProcessStepsLoading = true
@@ -188,7 +199,7 @@ export default {
 
 .work-type-header {
   &:not(:first-child) {
-    padding-top: 48px;
+    padding-top: 20px;
   }
 }
 </style>

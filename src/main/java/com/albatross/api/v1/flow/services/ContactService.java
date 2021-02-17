@@ -43,14 +43,14 @@ public class ContactService {
 
   private final ObjectMapper om;
 
-  public Page<Contact> searchContacts(String query, Pageable pageable) {
+  public Page<Contact> searchContacts(String query, String overrideType, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if (!viewAll) {
+    if(!viewAll || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
       viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", List.of("VIEW_DOWNLINE"));
     }
 
@@ -64,7 +64,14 @@ public class ContactService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    String searchSqlKey = viewAll ? "contact.search" : viewDownline ? "contact.searchDownline" : "contact.searchByOwner";
+//    String searchSqlKey = viewAll ? "contact.search" : viewDownline ? "contact.searchDownline" : "contact.searchByOwner";
+    String searchSqlKey = "contact.searchByOwner";
+    if(viewDownline) {
+      searchSqlKey = "contact.searchDownline";
+    } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
+      searchSqlKey = "contact.search";
+    }
+
     List<Contact> results = sqlCache.query(searchSqlKey, params, new ContactMapper<>(Contact.class, om));
 
 //    Integer count = sqlCache.queryForObject("contact.searchContactsCount", params, Integer.class);

@@ -4,7 +4,7 @@
       set archived = true
     where custom_field_id = :fieldId
   ]]></customFieldGroupAssignment.archiveRows>
-  
+
   <customFieldGroupAssignment.getOne><![CDATA[
     select cfg.*,
        ot.object_type,
@@ -22,7 +22,8 @@
                                     cfga.archived,
                                     cf.field_name as "fieldName",
                                     cfot.id as "customFieldObjectTypeId",
-                                    cfot.show_on_insert as "showOnInsert"
+                                    cfot.show_on_insert as "showOnInsert",
+                                    cfot.require_on_insert as "requireOnInsert"
                              FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
@@ -34,7 +35,7 @@
              left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id
     where cfg.id = :id
   ]]></customFieldGroupAssignment.getOne>
-  
+
   <customFieldGroupAssignment.getByObjectTypeId><![CDATA[
     select cfg.*,
        cfg.group_name as original_group_name,
@@ -56,6 +57,7 @@
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfot.id as "customFieldObjectTypeId",
                                     cfot.show_on_insert as "showOnInsert",
+                                    cfot.require_on_insert as "requireOnInsert",
                                     null as "processStepName",
                                     null as "groupName",
                                     coalesce((
@@ -89,6 +91,7 @@
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfot.id as "customFieldObjectTypeId",
                                     cfot.show_on_insert as "showOnInsert",
+                                    cfot.require_on_insert as "requireOnInsert",
                                     ps.process_step_name as "processStepName",
                                     cfg2.group_name as "groupName",
                                     '[]' as whiteListedPositions
@@ -110,7 +113,7 @@
           and cfg.archived is not true
         order by cott.display_order, cfg.group_order, cfg.group_name
   ]]></customFieldGroupAssignment.getByObjectTypeId>
-  
+
   <customFieldGroupAssignment.getCustomFieldsInGroup><![CDATA[
     select cfga.*,
       cfg.group_name,
@@ -128,7 +131,17 @@
       and cf.archived is not true
     order by cfga.field_order, cf.field_name
   ]]></customFieldGroupAssignment.getCustomFieldsInGroup>
-  
+
+  <customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep><![CDATA[
+    select cfg.id,
+       cfg.group_name
+    from flow.custom_field_group cfg
+    where cfg.process_step_id = :processStepId
+      and cfg.event_type_id is null
+      and cfg.archived is not true
+    order by cfg.group_name
+  ]]></customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep>
+
   <customFieldGroupAssignment.getEventTypesAndFields><![CDATA[
     select sft.id,
            sft.field_type,
@@ -157,7 +170,7 @@
     where sft.archived is not true
     order by sft.id
   ]]></customFieldGroupAssignment.getEventTypesAndFields>
-  
+
   <customFieldGroupAssignment.getAvailableCustomFieldsInGroup><![CDATA[
     select cf.id,cf.field_name, cfot.company_object_type_id
     from flow.custom_field_object_type cfot
@@ -178,7 +191,7 @@
       and cfg.archived is not true
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableCustomFieldsInGroup>
-  
+
   <customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep><![CDATA[
     select cf.id,cf.field_name, cfot.company_object_type_id
     from flow.custom_field_object_type cfot
@@ -199,7 +212,7 @@
       and cf.archived is not true
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep>
-  
+
   <customFieldGroupAssignment.getCustomField><![CDATA[
     SELECT cfga.id,
            cfga.id as custom_field_group_assignment_id,
@@ -239,12 +252,12 @@
              inner join flow.object_type ot on ot.id = cot.object_type_id
     WHERE cfga.id = :id
   ]]></customFieldGroupAssignment.getCustomField>
-  
+
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
     insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, schedule_field_type_id)
     values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, :scheduleFieldTypeId)
   ]]></customFieldGroupAssignment.addFieldToGroup>
-  
+
   <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[
     update flow.custom_field_group_assignment
         set custom_field_group_id = :newGroupId,
@@ -252,7 +265,15 @@
             date_modified = now()
     where id = :id
   ]]></customFieldGroupAssignment.moveFieldToOtherGroup>
-  
+
+  <customFieldGroupAssignment.saveUseParentData><![CDATA[
+    update flow.custom_field_group_assignment
+      set use_parent_data = :useParentData,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></customFieldGroupAssignment.saveUseParentData>
+
   <customFieldGroupAssignment.saveReadOnly><![CDATA[
     update flow.custom_field_group_assignment
       set read_only = :cfgaReadOnly,
@@ -260,7 +281,7 @@
           modified_by_id = :userId
     where id = :cfgaId
   ]]></customFieldGroupAssignment.saveReadOnly>
-  
+
   <customFieldGroupAssignment.archiveWhiteListPositions><![CDATA[
     update flow.custom_field_group_assignment_white_listed_position
       set archived = true,
@@ -268,7 +289,7 @@
           modified_by_id = :userId
     where custom_field_group_assignment_id = :cfgaId
   ]]></customFieldGroupAssignment.archiveWhiteListPositions>
-  
+
   <customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed><![CDATA[
     update flow.custom_field_group_assignment_white_listed_position
       set archived = true,
@@ -277,7 +298,7 @@
     where custom_field_group_assignment_id = :cfgaId
       and position_id not in (:positionIdsUsed)
   ]]></customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed>
-  
+
   <customFieldGroupAssignment.archiveAllWhiteListedPositions><![CDATA[
     update flow.custom_field_group_assignment_white_listed_position
       set archived = true,
@@ -285,7 +306,7 @@
           modified_by_id = :userId
     where custom_field_group_assignment_id = :cfgaId
   ]]></customFieldGroupAssignment.archiveAllWhiteListedPositions>
-  
+
   <customFieldGroupAssignment.insertWhiteListPosition><![CDATA[
     insert into flow.custom_field_group_assignment_white_listed_position(position_id, custom_field_group_assignment_id, created_by_id)
     select :positionId, :cfgaId, :userId
@@ -295,7 +316,7 @@
                           and position_id = :positionId
                            and archived is not true)
   ]]></customFieldGroupAssignment.insertWhiteListPosition>
-  
+
   <customFieldGroupAssignment.updateFieldInGroup><![CDATA[
     update flow.custom_field_group_assignment
       set field_order = :fieldOrder,
@@ -303,7 +324,7 @@
           modified_by_id = :modifiedById
     where id = :id
   ]]></customFieldGroupAssignment.updateFieldInGroup>
-  
+
   <customFieldGroupAssignment.deleteFieldFromGroup><![CDATA[
     update flow.custom_field_group_assignment
       set archived = true,
@@ -311,7 +332,7 @@
           modified_by_id = :modifiedById
     where id = :id
   ]]></customFieldGroupAssignment.deleteFieldFromGroup>
-  
+
   <customFieldGroupAssignment.deleteAllFieldsInGroup><![CDATA[
     update flow.custom_field_group_assignment
       set archived = true,

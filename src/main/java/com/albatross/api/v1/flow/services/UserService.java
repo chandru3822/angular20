@@ -184,18 +184,23 @@ public class UserService {
   public Optional<User> getUser(Long id, Boolean userIsAlbatross) {
     //this userIsAlbatross stuff was all super dumb because we can't load albatross users the same way as regular users
     User currentUser = securityService.getCurrentUser();
-    // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    params.put("companyId", currentUser.getCompanyId());
-    Optional<User> result;
-    if(userIsAlbatross) {
-      result = sqlCache.get("user.getOneAlbatross", params, new UserMapper<>(User.class, om));
-    } else {
-      result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+    //todo: check the logs for this and figure out how it is possible this is happening
+    try {
+      // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", id);
+      params.put("companyId", currentUser.getCompanyId());
+      Optional<User> result;
+      if(userIsAlbatross) {
+        result = sqlCache.get("user.getOneAlbatross", params, new UserMapper<>(User.class, om));
+      } else {
+        result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+      }
+      return result;
+    } catch (Exception e) {
+      log.error("USER: Main user query returned more than 1 result. {} user={}", e.getMessage(), currentUser.getId());
+      return null;
     }
-
-    return result;
   }
 
   public List<User> getSchedulingUsers(Long companyStateId, Boolean isSchedulingTool) {
@@ -408,6 +413,7 @@ public class UserService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
     List<User> results = sqlCache.query("user.mentionableUsers", params, new UserMapper<>(User.class, om));
 
     List<Long> userIds = results.stream()
