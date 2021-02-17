@@ -3,6 +3,7 @@
     v-model="displayDropdown"
     bottom
     offset-y
+    min-width="350"
     :close-on-content-click="false"
 >
 
