@@ -71,7 +71,8 @@ BEGIN
                          with positions as (
                              select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
-                             where up.primary_flag is true
+                             where (up.end_date is null or up.end_date > now())
+                                   -- judson had me change this: up.primary_flag is true
                                and up.archived is not true
                                and user_id = p_user_id
                          ),
@@ -231,7 +232,8 @@ BEGIN
                          with positions as (
                              select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
-                             where up.primary_flag is true
+                             where (up.end_date is null or up.end_date > now())
+                                   --up.primary_flag is true
                                and up.archived is not true
                                and user_id = p_user_id
                          ),

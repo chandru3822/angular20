@@ -1,4 +1,10 @@
 <sql>
+  <schedule.getUserPositionIdsForUsers><![CDATA[
+    select id
+    from flow.user_position up
+    where user_id = any(array[ :userIds ]::int[])
+  ]]></schedule.getUserPositionIdsForUsers>
+
   <schedule.getEvents><![CDATA[
     with resource as (
         select ppscfv.id,

@@ -679,7 +679,9 @@
             try {
               let params = {
                 orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-                userPositionIds: this.getUserPositionIds(),
+                // this was the old way. leaving here in case
+                // userPositionIds: this.getUserPositionIds(),
+                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
@@ -707,16 +709,16 @@
           }
         }
       },
-      getUserPositionIds () {
-        let userPositionIds = []
-        this.selectedUsers?.forEach(su => {
-          su.userPositions.forEach(up => {
-            //up.id = userPositionId
-            userPositionIds.push(up.id)
-          })
-        })
-        return userPositionIds
-      },
+      // getUserPositionIds () {
+      //   let userPositionIds = []
+      //   this.selectedUsers?.forEach(su => {
+      //     su.userPositions.forEach(up => {
+      //       //up.id = userPositionId
+      //       userPositionIds.push(up.id)
+      //     })
+      //   })
+      //   return userPositionIds
+      // },
       setCalendarStartAndEndTimes () {
         this.calendarStart = this.calendarApi.getDate()
         this.calendarView = this.calendarApi.view?.type

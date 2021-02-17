@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -42,8 +43,18 @@ public class ScheduleService {
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    List<Long> combined;
 
-    List<Long> combined = esp.getUserPositionIds();
+    if(null != esp.getUserPositionIds()) {
+      //this part can be taken out as soon as the new mobile version has been adopted - check with kory
+      //BACKWARDS: 2/16/21
+      combined = esp.getUserPositionIds();
+    } else {
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("userIds", esp.getUserIds());
+      combined = sqlCache.query("schedule.getUserPositionIdsForUsers", p2, new SingleColumnRowMapper<>(Long.class));
+    }
+
     if(null != esp.getOrgIds()) {
       combined.addAll(esp.getOrgIds());
     }

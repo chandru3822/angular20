@@ -18,6 +18,23 @@
     order by cpsst.process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
 
+  <processStepStatus.availableForProcessStep><![CDATA[
+    select cpsst.*,
+       psst.process_step_status_type as root_process_step_status_type
+    from flow.company_process_step_status_type cpsst
+             inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+    where cpsst.archived is not true
+      and company_id = :companyId
+      and not exists (
+            select id
+            from flow.process_step_company_process_step_status_type pscpsst
+            where pscpsst.company_process_step_status_type_id = cpsst.id
+              and pscpsst.archived is not true
+              and pscpsst.process_step_id = :processStepId
+        )
+    order by cpsst.process_step_status_type
+  ]]></processStepStatus.availableForProcessStep>
+
   <processStepStatus.getCancelledTypesForCompany><![CDATA[
     select cpsst.*,
            psst.process_step_status_type as root_process_step_status_type
@@ -81,4 +98,87 @@
       where id = :id;
     ]]>
   </processStepStatus.saveInitialProcessStepStatusType>
+
+  <processStepStatus.assignStatusToProcessStep>
+    <![CDATA[
+      insert into flow.process_step_company_process_step_status_type(process_step_id, company_process_step_status_type_id, created_by_id)
+        values (:processStepId, :companyProcessStepStatusTypeId, :createdById)
+    ]]>
+  </processStepStatus.assignStatusToProcessStep>
+
+  <processStepStatus.getProcessStepCompanyProcessStepStatusType>
+    <![CDATA[
+      select pscpsst.*,
+             ps.process_step_name,
+             cpsst.process_step_status_type,
+             cpsst.company_id,
+             cpsst.process_step_status_type_id,
+             psst.process_step_status_type as root_process_step_status_type
+      from flow.process_step_company_process_step_status_type pscpsst
+          inner join flow.process_step ps on pscpsst.process_step_id = ps.id
+          inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+          inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+      where pscpsst.id = :id
+    ]]>
+  </processStepStatus.getProcessStepCompanyProcessStepStatusType>
+
+  <processStepStatus.deleteStatusFromProcessStep>
+    <![CDATA[
+      update flow.process_step_company_process_step_status_type
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where id = :id
+    ]]>
+  </processStepStatus.deleteStatusFromProcessStep>
+
+  <processStepStatus.statusInUseByWQT><![CDATA[
+      SELECT pswqtpsst.*
+      FROM flow.process_step_company_process_step_status_type pscpsst
+           inner join flow.process_step ps on pscpsst.process_step_id = ps.id
+          inner join flow.process_step_work_queue_type pswqt on ps.id = pswqt.process_step_id
+          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst on pswqt.id = pswqtpsst.process_step_work_queue_type_id and pswqtpsst.company_process_step_status_type_id = pscpsst.company_process_step_status_type_id
+      WHERE pscpsst.id = :id
+  ]]></processStepStatus.statusInUseByWQT>
+
+  <processStepStatus.getAssignedToStep><![CDATA[
+      SELECT cpsst.id,
+             pscpsst.process_step_id as "processStepId",
+             pscpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+             cpsst.archived,
+             ps2.process_step_name as "processStepName",
+             cpsst.process_step_status_type as "processStepStatusType",
+             cpsst.process_step_status_type_id as "processStepStatusTypeId",
+             cpsst.company_id as "companyId",
+             psst.process_step_status_type as "rootProcessStepStatusType"
+      FROM flow.process_step_company_process_step_status_type pscpsst
+               inner join flow.process_step ps2 on pscpsst.process_step_id = ps2.id
+               inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+               inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+      WHERE pscpsst.process_step_id = :processStepId
+        AND pscpsst.archived is not true
+        and cpsst.archived is not true
+      order by cpsst.process_step_status_type
+  ]]></processStepStatus.getAssignedToStep>
+
+  <processStepStatus.getCancelledAssignedToStep><![CDATA[
+      SELECT cpsst.id,
+             pscpsst.process_step_id as "processStepId",
+             pscpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+             cpsst.archived,
+             ps2.process_step_name as "processStepName",
+             cpsst.process_step_status_type as "processStepStatusType",
+             cpsst.process_step_status_type_id as "processStepStatusTypeId",
+             cpsst.company_id as "companyId",
+             psst.process_step_status_type as "rootProcessStepStatusType"
+      FROM flow.process_step_company_process_step_status_type pscpsst
+               inner join flow.process_step ps2 on pscpsst.process_step_id = ps2.id
+               inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+               inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+      WHERE pscpsst.process_step_id = :processStepId
+        AND pscpsst.archived is not true
+        and cpsst.archived is not true
+        AND cpsst.process_step_status_type_id = 3
+      order by cpsst.process_step_status_type
+  ]]></processStepStatus.getCancelledAssignedToStep>
 </sql>

@@ -28,8 +28,10 @@ public class ContactController {
     private final ContactService contactService;
 
     @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<Contact>> searchContacts(@RequestParam String query, Pageable pageable) {
-        return new ResponseEntity<>(contactService.searchContacts(query, pageable), HttpStatus.OK);
+    public ResponseEntity<Page<Contact>> searchContacts(@RequestParam String query,
+                                                        @RequestParam(required = false) String overrideType,
+                                                        Pageable pageable) {
+        return new ResponseEntity<>(contactService.searchContacts(query, overrideType, pageable), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
