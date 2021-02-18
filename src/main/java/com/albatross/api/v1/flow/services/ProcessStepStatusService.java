@@ -144,18 +144,6 @@ public class ProcessStepStatusService {
     return getType(type.getCompanyId(), id);
   }
 
-
-  public void saveInitialProcessStepStatusType(Long companyProcessStepStatusTypeId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", companyProcessStepStatusTypeId);
-    params.put("companyId", currentUser.getCompanyId());
-    params.put("modifiedById", currentUser.getId());
-
-    sqlCache.update("processStepStatus.saveInitialProcessStepStatusType", params);
-  }
-
   public List<CompanyProcessStepStatusType> getActiveAssignedToProcessStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);

@@ -53,7 +53,6 @@
       select cpsst.id,
              cpsst.process_step_status_type,
              cpsst.process_step_status_type_id,
-             cpsst.is_default,
              cpsst.archived,
              psst.process_step_status_type as root_process_step_status_type
       from flow.company_process_step_status_type cpsst
@@ -87,17 +86,6 @@
       returning id;
     ]]>
   </processStepStatus.insertType>
-
-  <processStepStatus.saveInitialProcessStepStatusType>
-    <![CDATA[
-      update flow.company_process_step_status_type
-      set is_default = false
-      where company_id = :companyId;
-      update flow.company_process_step_status_type
-      set is_default = true
-      where id = :id;
-    ]]>
-  </processStepStatus.saveInitialProcessStepStatusType>
 
   <processStepStatus.assignStatusToProcessStep>
     <![CDATA[

@@ -19,3 +19,7 @@ where ps.id = psacp.process_step_id;
 -- lol, not really sure how many there were. covering my bases
 drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer);
 drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer);
+
+-- get rid of the default column on company_process_step_status_type, no longer used
+alter table flow.company_process_step_status_type
+    drop column if exists is_default;

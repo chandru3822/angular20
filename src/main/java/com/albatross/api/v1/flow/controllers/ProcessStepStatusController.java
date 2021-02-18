@@ -63,11 +63,6 @@ public class ProcessStepStatusController {
     return processStepStatusService.insertType(type);
   }
 
-  @PutMapping(value = "/initial/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveInitialProcessStepStatusType(@PathVariable Long id) {
-    processStepStatusService.saveInitialProcessStepStatusType(id);
-  }
-
   @GetMapping(value = "/company/activeAssignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyProcessStepStatusType> getActiveAssignedToProcessStep(@PathVariable Long processStepId) {
     return processStepStatusService.getActiveAssignedToProcessStep(processStepId);

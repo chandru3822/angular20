@@ -180,7 +180,7 @@
                 <template #activator="{ on }">
                   <v-btn color="secondaryCustom"
                          class="ml-3"
-                         @click="getCancelledStatuses"
+                         @click="getCancelledStatuses(selectedProject.processStepId)"
                          v-on="on">Unschedule Event</v-btn>
                 </template>
                 <v-card>
@@ -191,14 +191,15 @@
                   </v-card-title>
 
                   <v-card-text class="pt-4">
+                    Are you sure you want to unschedule this event?
+
                     <v-select :items="cancelledCompanyStatuses"
                               v-model="selectedProject.cancelledCompanyStatusType"
                               item-value="id"
                               return-object
-                              label="Status to set this project to:"
+                              label="Status to set this process step to:"
                               item-text="processStepStatusType"></v-select>
 
-                    Are you sure you want to unschedule this event?
                   </v-card-text>
 
                   <v-divider></v-divider>
@@ -289,7 +290,7 @@
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getCompanyStatusTypes, getStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getCompanyStatusTypes, getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
   import constants from "@/helpers/constants";
@@ -397,9 +398,9 @@
       }
     },
     methods: {
-      getCancelledStatuses: async function () {
+      getCancelledStatuses: async function (processStepId) {
         try {
-          const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(processStepId)
           this.cancelledCompanyStatuses = data
           if(data?.length === 1) {
             this.selectedProject.cancelledCompanyStatusType = data[0]
