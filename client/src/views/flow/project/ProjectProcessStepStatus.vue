@@ -1,6 +1,7 @@
 <template>
 <v-dialog
   v-model="internalShowDialog"
+  @click:outside="$emit('dialogClosed')"
   width="500">
   <v-card>
     <v-card-title
@@ -89,6 +90,10 @@ export default {
   watch: {
     showDialog: function(val) {
       this.internalShowDialog = val
+    },
+    projectProcessStep: function () {
+      //need to re-get cancelled statuses for the correct process step when it changes
+      this.getCancelledStatuses()
     }
   },
   computed: {

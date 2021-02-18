@@ -150,7 +150,7 @@
                     <v-btn
                       color="primaryCustom"
                       text
-                      @click="[projectProcessStep.changeActiveConfirm = false, showMainDialog = true, selectedPps = projectProcessStep]"
+                      @click="[showSelectedPps = false, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
                     >
                       Yes
                     </v-btn>
@@ -298,6 +298,7 @@ export default {
       }
     },
     async getAvailableStatuses (pps) {
+      console.log('here here')
       this.showSelectedPps = false
       try {
         const {data} = await getAssignedToProcessStep(pps.processStepId)
