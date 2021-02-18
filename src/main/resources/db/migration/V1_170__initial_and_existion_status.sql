@@ -16,4 +16,6 @@ set initial_company_process_step_status_type_id = (select id
 from flow.process_step ps
 where ps.id = psacp.process_step_id;
 
-
+-- lol, not really sure how many there were. covering my bases
+drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer);
+drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer);

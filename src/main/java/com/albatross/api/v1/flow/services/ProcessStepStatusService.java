@@ -156,6 +156,14 @@ public class ProcessStepStatusService {
     sqlCache.update("processStepStatus.saveInitialProcessStepStatusType", params);
   }
 
+  public List<CompanyProcessStepStatusType> getActiveAssignedToProcessStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<CompanyProcessStepStatusType> results = sqlCache.query("processStepStatus.getActiveAssignedToProcessStep", params, CompanyProcessStepStatusType.class);
+    return results;
+  }
+
   public List<CompanyProcessStepStatusType> getAssignedToStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);

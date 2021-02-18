@@ -734,7 +734,7 @@
                                       item-text="processStepName"
                       ></v-autocomplete>
                       <v-autocomplete v-model="newChildProcessStep.initialCompanyProcessStepStatusTypeId"
-                                      :items="statusesAssignedToStep"
+                                      :items="activeStatusesAssignedToStep"
                                       label="Set initial status to:"
                                       item-text="processStepStatusType"
                       ></v-autocomplete>
@@ -775,7 +775,7 @@
                           <tr>
                             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': item.processStepActionChildProcesses.indexOf(cp) % 2}">
                               <v-autocomplete v-model="cp.initialCompanyProcessStepStatusTypeId"
-                                              :items="statusesAssignedToStep"
+                                              :items="activeStatusesAssignedToStep"
                                               label="Set initial status as:"
                                               item-text="processStepStatusType"
                                               item-value="id"
@@ -1158,7 +1158,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import {
     getRequest,
     deleteRequest,
@@ -1277,7 +1277,7 @@
         addChildFunction: false,
         newChildProcessStep: {},
         cancelledCompanyStatuses: [],
-        statusesAssignedToStep: [],
+        activeStatusesAssignedToStep: [],
         selectedChildFunction: {},
         selectedChildRequirementParamDynamicValues: [],
 
@@ -1625,10 +1625,10 @@
         return items.filter(i => !i.archived)
       },
       async getStatusesAssignedToStep(item) {
-        this.statusesAssignedToStep = []
+        this.activeStatusesAssignedToStep = []
         try {
-          const {data} = await getAssignedToProcessStep(item.processStepId)
-          this.statusesAssignedToStep = data
+          const {data} = await getActiveAssignedToProcessStep(item.processStepId)
+          this.activeStatusesAssignedToStep = data
           if (data?.length === 1) {
             item.initialCompanyProcessStepStatusTypeId = data[0].id
           }

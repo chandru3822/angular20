@@ -284,6 +284,7 @@
     </v-row>
 
     <ProjectProcessStepStatus
+        v-if="!isProcessStepLoading"
         :show-dialog="showMainDialog"
         :project-id="parseInt(projectId)"
         :project-process-step="processStep"
