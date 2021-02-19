@@ -1,0 +1,2 @@
+ALTER TABLE flow.process_step_action_child_process
+    RENAME COLUMN exisiting_company_process_step_status_type_id TO existing_company_process_step_status_type_id;
