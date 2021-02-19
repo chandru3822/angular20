@@ -21,6 +21,11 @@
         return-object
         class="mt-2"
       />
+      <div class="error-text"
+        v-if="projectProcessStep.main && projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 3">
+        WARNING: Setting the Primary step to a Cancelled status will automatically remove the Primary flag from this Project Process Step.
+      </div>
+
       <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 1) || newStatusOptional === true">
         Please select what to do with all existing Active steps of the same type.
         <v-autocomplete
