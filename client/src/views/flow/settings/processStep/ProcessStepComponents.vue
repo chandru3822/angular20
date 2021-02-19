@@ -5,12 +5,34 @@
       v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="headline error--text">
+        <v-card-title class="headline grey lighten-2 error--text">
           Error Deleting Status from Process Step
         </v-card-title>
 
-        <v-card-text>
-          You must remove this status from its use in the Work Queue Types before you can delete it.
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons.inUseByWqt" class="mb-5">
+            * This status is in use by Work Queue Types. <br/>
+            <span class="ml-5">You must delete those before you can delete this status.</span>
+          </div>
+
+          <div v-if="cannotDeleteReasons.inUseByInitialStep" class="mb-5">
+            * This step is set as an Initial Step in a process and is using this status.  <br/>
+            <span class="ml-5">You must remove it there before you can delete this status.</span>
+          </div>
+
+          <div v-if="cannotDeleteReasons.actions && cannotDeleteReasons.actions.length > 0" class="mb-5">
+            * This status is being used as the Parent Status in the following actions on this step:
+            <div v-for="a in cannotDeleteReasons.actions" :key="a.id" class="ml-5">
+              <strong>{{a.actionName}}</strong>
+            </div>
+          </div>
+
+          <div v-if="cannotDeleteReasons.childProcesses && cannotDeleteReasons.childProcesses.length > 0" class="mb-5">
+            * This status is being used when creating a Child Process Step in the following step and actions:
+            <div v-for="a in cannotDeleteReasons.childProcesses" :key="a.id" class="ml-5">
+              <strong>{{a.processStepName}} - {{a.actionName}}</strong>
+            </div>
+          </div>
         </v-card-text>
 
         <v-card-actions>
@@ -621,6 +643,7 @@ export default {
       expandAttachmentTypes: true,
       expanded: [],
       deleteError: false,
+      cannotDeleteReasons: {},
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       companyProjectStatusTypes: [],
@@ -888,7 +911,7 @@ export default {
         //have to close the work queue editor to for the component to refresh available values
         this.addNewWorkQueueType = false
         this.expanded = []
-        await deleteRequest(`/processStep/status/removeFromStep/${item.id}`)
+        await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${this.processStepId}`)
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Status Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -899,6 +922,7 @@ export default {
         if(e.status === 400) {
           item.deleteConfirm = false
           this.deleteError = true
+          this.cannotDeleteReasons = e.data
         }
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Status Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

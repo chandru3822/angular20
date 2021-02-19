@@ -78,11 +78,15 @@ public class BeansConfiguration {
     firebaseCredentials.put("auth_provider_x509_cert_url", firebaseAuthProviderX509CertUrl);
     firebaseCredentials.put("client_x509_cert_url", firebaseClientX509CertUrl);
 
-    FirebaseOptions firebaseOptions = FirebaseOptions.builder()
-      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(firebaseCredentials.toString().getBytes())))
-      .build();
-
-    firebaseApp = FirebaseApp.initializeApp(firebaseOptions);
+    try {
+      FirebaseOptions firebaseOptions = FirebaseOptions.builder()
+        .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(firebaseCredentials.toString().getBytes())))
+        .build();
+      firebaseApp = FirebaseApp.initializeApp(firebaseOptions);
+    } catch (Exception e) {
+      //@humes, not sure what you want to do here
+      log.error("FIREBASE: Failed to initialize.");
+    }
   }
 
   @Bean

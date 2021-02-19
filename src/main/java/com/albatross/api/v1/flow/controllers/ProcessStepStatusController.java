@@ -1,9 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.ProcessStepCompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.ProcessStepStatusType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -84,8 +83,17 @@ public class ProcessStepStatusController {
     return processStepStatusService.assignStatusToProcessStep(companyStatusTypeId, processStepId);
   }
 
-  @DeleteMapping(value = "/removeFromStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity deleteStatusFromProcessStep(@PathVariable Long id) {
-    return processStepStatusService.deleteStatusFromProcessStep(id);
+  @PutMapping(value = "/removeStatus/{id}/fromStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<CannotDeleteProcessStepStatus> deleteStatusFromProcessStep(@PathVariable Long id,
+                                                                                   @PathVariable Long processStepId) {
+    //needed this to be a put so i could return the elements blocking it from being deleted if needed
+    return processStepStatusService.deleteStatusFromProcessStep(id, processStepId);
+  }
+
+  @Data
+  public static class CannotDeleteProcessStepStatus {
+    private Boolean inUseByWqt, inUseByInitialStep;
+    private List<ProcessStepAction> actions;
+    private List<ProcessStepActionChildProcess> childProcesses;
   }
 }

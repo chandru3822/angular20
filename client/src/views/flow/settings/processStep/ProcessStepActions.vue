@@ -1158,7 +1158,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import {getActiveAssignedToProcessStep, getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import {
     getRequest,
     deleteRequest,
@@ -1743,7 +1743,7 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getActiveAssignedToProcessStep(this.processStepId)
+          const {data} = await getAssignedToProcessStep(this.processStepId)
           this.statusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
