@@ -82,13 +82,26 @@ BEGIN
 
     if v_new_project_status_type_id = 1 and v_old_project_status_type_id = 2 then
         v_cancelled_date = null;
+        update brs.project_details
+        set cancelled_date = v_cancelled_date
+        where project_id = new.id;
         if v_on_hold_date is not null and v_off_hold_date is null then
             v_off_hold_date = now();
+            update brs.project_details
+            set off_hold_date = v_off_hold_date
+            where project_id = new.id;
         end if;
+
     elsif v_new_project_status_type_id = 1 and v_old_project_status_type_id = 3 then
         v_off_hold_date = now();
+        update brs.project_details
+        set off_hold_date = v_off_hold_date
+        where project_id = new.id;
     elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 1 then
         v_cancelled_date = now();
+        update brs.project_details
+        set cancelled_date = v_cancelled_date
+        where project_id = new.id;
 --         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
 --         select 99999999,
 --                concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
@@ -103,6 +116,9 @@ BEGIN
 --         where p.id = new.id;
     elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 3 then
         v_cancelled_date = now();
+        update brs.project_details
+        set cancelled_date = v_cancelled_date
+        where project_id = new.id;
 --         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
 --         select 99999999,
 --                concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
@@ -118,10 +134,19 @@ BEGIN
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 1 then
         v_on_hold_date = now();
         v_off_hold_date = null;
+        update brs.project_details
+        set on_hold_date = v_on_hold_date,
+            off_hold_date = v_off_hold_date
+        where project_id = new.id;
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 2 then
         v_on_hold_date = now();
         v_off_hold_date = null;
         v_cancelled_date = null;
+        update brs.project_details
+        set on_hold_date = v_on_hold_date,
+            off_hold_date = v_off_hold_date,
+            cancelled_date = v_cancelled_date
+        where project_id = new.id;
     end if;
 
     IF (TG_OP = 'INSERT') THEN
@@ -131,13 +156,13 @@ BEGIN
                                         project_time_zone, project_state_id, project_state_abbreviation, contact_name,
                                         setter_user_position_id, setter_user_id, closer_user_id,
                                         closer_user_position_id, closer_name,
-                                        project_creator, contact_id, cancelled_date, on_hold_date, off_hold_date,project_created_date,
+                                        project_creator, contact_id,project_created_date,
                                         company_project_status_type_id,company_project_status_type)
         values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
                 new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
                 v_owner_user_position_id, v_owner_user_id, v_user_id,
                 coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
-                v_project_creator, new.contact_id, v_cancelled_date, v_on_hold_date, v_off_hold_date, new.date_created,
+                v_project_creator, new.contact_id,new.date_created,
                 new.company_project_status_type_id,v_company_project_status);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
@@ -158,9 +183,6 @@ BEGIN
             closer_user_id             = v_user_id,
             project_creator            = v_project_creator,
             contact_id                 = new.contact_id,
-            cancelled_date             = v_cancelled_date,
-            on_hold_date               = v_on_hold_date,
-            off_hold_date              = v_off_hold_date,
             project_created_date       = new.date_created,
             company_project_status_type_id = new.company_project_status_type_id,
             company_project_status_type = v_company_project_status
