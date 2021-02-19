@@ -1743,7 +1743,7 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getAssignedToProcessStep(this.processStepId)
+          const {data} = await getActiveAssignedToProcessStep(this.processStepId)
           this.statusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
