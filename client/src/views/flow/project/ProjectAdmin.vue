@@ -298,7 +298,6 @@ export default {
       }
     },
     async getAvailableStatuses (pps) {
-      console.log('here here')
       this.showSelectedPps = false
       try {
         const {data} = await getAssignedToProcessStep(pps.processStepId)
