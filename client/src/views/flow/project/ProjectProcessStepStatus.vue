@@ -1,6 +1,7 @@
 <template>
 <v-dialog
   v-model="internalShowDialog"
+  @click:outside="$emit('dialogClosed')"
   width="500">
   <v-card>
     <v-card-title
@@ -42,7 +43,7 @@
         Cancel
       </v-btn>
       <v-btn
-        :disabled="!projectProcessStep.newStatusToUse || (projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 && !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
+        :disabled="!projectProcessStep.newStatusToUse || !projectProcessStep.newStatusToUse.id || (projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 && !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
         color="primaryCustom"
         text
         @click="$emit('updateStatus', projectProcessStep)">
@@ -54,7 +55,7 @@
 </template>
 
 <script>
-import {getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import {getSnackbar, logError} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 
@@ -89,6 +90,10 @@ export default {
   watch: {
     showDialog: function(val) {
       this.internalShowDialog = val
+    },
+    projectProcessStep: function () {
+      //need to re-get cancelled statuses for the correct process step when it changes
+      this.getCancelledStatuses()
     }
   },
   computed: {
@@ -103,7 +108,7 @@ export default {
     async getCancelledStatuses() {
       if (this.cancelledCompanyStatuses?.length === 0) {
         try {
-          const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(this.projectProcessStep.processStepId)
           this.cancelledCompanyStatuses = data
         } catch (e) {
           logError(e)

@@ -1,32 +1,54 @@
 <template>
   <v-container class="custom-field-group-container py-0">
     <div class="text-center">
-      <v-dialog width="700"
-                v-model="deleteError"
-      >
-        <v-card>
-          <v-card-title class="headline error--text">
-            Error Deleting Status from Process Step
-          </v-card-title>
+    <v-dialog width="700"
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline grey lighten-2 error--text">
+          Error Deleting Status from Process Step
+        </v-card-title>
 
-          <v-card-text>
-            You must remove this status from its use in the Work Queue Types before you can delete it.
-          </v-card-text>
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons.inUseByWqt" class="mb-5">
+            * This status is in use by Work Queue Types. <br/>
+            <span class="ml-5">You must delete those before you can delete this status.</span>
+          </div>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
+          <div v-if="cannotDeleteReasons.inUseByInitialStep" class="mb-5">
+            * This step is set as an Initial Step in a process and is using this status.  <br/>
+            <span class="ml-5">You must remove it there before you can delete this status.</span>
+          </div>
 
-            <v-btn
-              color="primaryCustom"
-              dark
-              class="white--text"
-              @click="deleteError = false"
-            >
-              OK
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+          <div v-if="cannotDeleteReasons.actions && cannotDeleteReasons.actions.length > 0" class="mb-5">
+            * This status is being used as the Parent Status in the following actions on this step:
+            <div v-for="a in cannotDeleteReasons.actions" :key="a.id" class="ml-5">
+              <strong>{{a.actionName}}</strong>
+            </div>
+          </div>
+
+          <div v-if="cannotDeleteReasons.childProcesses && cannotDeleteReasons.childProcesses.length > 0" class="mb-5">
+            * This status is being used when creating a Child Process Step in the following step and actions:
+            <div v-for="a in cannotDeleteReasons.childProcesses" :key="a.id" class="ml-5">
+              <strong>{{a.processStepName}} - {{a.actionName}}</strong>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     </div>
     <v-row>
       <v-col cols="12" class="py-0">
@@ -40,9 +62,13 @@
                   <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
                   {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
                 </v-btn>
+                <v-btn text @click="expandPsst = !expandPsst">
+                  <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
+                </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <div>
+            <div class="mb-4">
               <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewProcessStepStatusType">
                 <h3>Assign a Status Type</h3>
                 <v-autocomplete label="Process Step Status Type"
@@ -53,9 +79,15 @@
                                 :loading="companyStatusesLoading"
                                 autocomplete="off"
                                 @input="assignStatusTypeToProcessStep"
-                ></v-autocomplete>
+                >
+                  <template slot="item" slot-scope="data">
+                    <!-- HTML that describes how select should render items when the select is open -->
+                    {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                  </template>
+                </v-autocomplete>
               </v-card>
               <v-data-table
+                v-if="expandPsst"
                 :headers="processStepHeaders"
                 :items="filterAssignedProcessStepStatusTypes()"
                 hide-default-footer
@@ -121,7 +153,7 @@
                 </template>
               </v-data-table>
             </div>
-            <!--            work queue types -->
+<!--            work queue types -->
             <v-toolbar flat class="wqt-header-bar">
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -129,6 +161,10 @@
                 <v-btn text @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }, getWorkQueueTypesForStep(), prepTempStatuses(newWorkQueueType), prepTempProcessStepStatuses(newWorkQueueType)]" v-if="userCanAdd">
                   <v-icon v-if="!addNewWorkQueueType">add</v-icon>
                   {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}
+                </v-btn>
+                <v-btn text @click="expandWqt = !expandWqt">
+                  <v-icon v-if="!expandWqt">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
@@ -224,7 +260,7 @@
                   Save
                 </v-btn>
               </v-card>
-              <v-card flat v-if="processStep.workQueueTypes && processStep.workQueueTypes.length > 0">
+              <v-card flat v-if="processStep.workQueueTypes && processStep.workQueueTypes.length > 0 && expandWqt">
                 <v-data-table
                   :headers="headers"
                   :items="filterWorkQueueTypes()"
@@ -404,7 +440,7 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12" class="mt-3 pa-0">
+          <v-col cols="12" class="mt-1 pa-0">
             <v-toolbar flat class="link-header-bar">
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -412,6 +448,10 @@
                 <v-btn text @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
                   {{ addNewLink ? 'Cancel' : 'Add Link' }}
+                </v-btn>
+                <v-btn text @click="expandLinks = !expandLinks">
+                  <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
@@ -425,7 +465,7 @@
                         @input="assignNewLink"
               ></v-select>
             </v-card>
-            <v-card flat v-if="processStep.links && processStep.links.length > 0">
+            <v-card flat v-if="processStep.links && processStep.links.length > 0 && expandLinks">
               <draggable v-model="processStep.links" group="links"
                          :disabled="!userCanEdit"
                          id="link-draggable"
@@ -494,6 +534,10 @@
                   <v-icon v-if="!addNewType">add</v-icon>
                   {{ addNewType ? 'Cancel' : 'Add Type' }}
                 </v-btn>
+                <v-btn text @click="expandAttachmentTypes = !expandAttachmentTypes">
+                  <v-icon v-if="!expandAttachmentTypes">mdi-chevron-down</v-icon>
+                  <v-icon v-else>mdi-chevron-up</v-icon>
+                </v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewType">
@@ -505,7 +549,7 @@
                               @input="assignNewType"
               ></v-autocomplete>
             </v-card>
-            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
+            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0 && expandAttachmentTypes">
               <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
                          :disabled="!userCanEdit"
                          id="attachment-draggable"
@@ -572,133 +616,138 @@
 </template>
 
 <script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import draggable from 'vuedraggable'
-  import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getStatusTypes, getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
-  import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import orderBy from "lodash.orderby"
-  import cloneDeep from 'lodash.clonedeep'
+import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
+import draggable from 'vuedraggable'
+import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
+import {getStatusTypes, getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
+import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
+import orderBy from "lodash.orderby"
+import cloneDeep from 'lodash.clonedeep'
 
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
-  export default {
-    name: 'ProcessStepComponents',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ProcessStepCustomFieldGroups,
-      draggable,
-    },
-    data() {
-      return {
-        snackbar: {},
-        expanded: [],
-        deleteError: false,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        companyProjectStatusTypes: [],
-        projectStatusTypes: [],
-        combinedStatuses: [ {header: 'Category'} ],
-        companyProcessStepStatusTypes: [],
-        processStepStatusTypes: [],
-        // combinedProcessStepStatuses: [ {header: 'Category'} ],
-        headers: [
-          {text: 'Category', value: 'workQueueCategory', show: true},
-          {text: 'Type', value: 'workQueueType', show: true},
-          {text: 'Project Status', value: 'projectStatus', show: true},
-          {text: 'Process Step Status', value: 'processStepStatus', show: true},
-          {text: '', value: 'icons', show: false, width: '100px'},
-        ],
-        addNewCustomFieldGroup: false,
-        changesMade: false,
-        addNewType: false,
-        newType: {},
-        addNewLink: false,
-        newLink: {},
-        availableLinks: [],
-        processStepId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
-        processStep: {},
-        companyStatusesLoading: false,
-        availableAttachmentTypes: [],
-        availableCompanyProcessStepStatusTypes: [],
-        addNewProcessStepStatusType: false,
-        newProcessStepStatusTypeId: null,
-        processStepHeaders: [
-          {text: 'Status Type', value: 'statusType', show: true},
-          {text: 'Category', value: 'category', show: true},
-          {text: '', value: 'icons', show: false, width: '100px'},
-        ],
-        workQueueTypes: [],
-        newWorkQueueType: {
-          processStepStatuses: [],
-          projectStatuses: [],
-        },
-        addNewWorkQueueType: false,
-        checkedIds: [],
-        breadcrumbs: [
-          {
-            text: 'Back',
-            disabled: false,
-            exact: true,
-            to: `/settings/processSteps`
-          },
-        ]
-      }
-    },
-    computed: {
-      combinedProcessStepStatuses() {
-        //sometimes i am amazed this shit works
-        let tempAssignedStatusTypes = cloneDeep(this.processStep?.companyProcessStepStatusTypes)
-        tempAssignedStatusTypes.forEach(st => {
-          st.id = st.companyProcessStepStatusTypeId
-          st.group = 'Process Step Status'
-          st.fakeText = st.processStepStatusType + 'CPSST'
-          st.selected = false
-        })
-        return [ {header: 'Category'} ].concat(this.processStepStatusTypes,
-          [{divider: true}, {header: 'Process Step Status'}],
-          orderBy(tempAssignedStatusTypes.filter(t => !t.archived), [f => f.processStepStatusType]))
-
-      }
-    },
-    async created() {
-      this.getProjectStatusTypes()
-      this.getProcessStepStatusTypes()
-      await this.getProcessStepDetails()
-    },
-    methods: {
-      addValueToNew(selectedItem) {
-        if(selectedItem.selected) {
-          let tempObj = { id: null, projectStatusType: selectedItem.projectStatusType, fakeText: selectedItem.fakeText }
-          if(selectedItem.projectStatusTypeId === null) {
-            tempObj.companyProjectStatusTypeId = null
-            tempObj.projectStatusTypeId = selectedItem.id;
-          } else {
-            tempObj.projectStatusTypeId = null
-            tempObj.companyProjectStatusTypeId = selectedItem.id;
-          }
-          this.newWorkQueueType.projectStatuses.push(tempObj)
-        } else {
-          //remove it if it has already been added
-          this.newWorkQueueType.projectStatuses = this.newWorkQueueType.projectStatuses.filter(ps => {
-            if(selectedItem.projectStatusTypeId === null) {
-              return ps.projectStatusTypeId !== selectedItem.id
-            } else {
-              return ps.companyProjectStatusTypeId !== selectedItem.id
-            }
-          })
-        }
+export default {
+  name: 'ProcessStepComponents',
+  mixins: [Vue2Filters.mixin],
+  components: {
+    ProcessStepCustomFieldGroups,
+    draggable,
+  },
+  data() {
+    return {
+      snackbar: {},
+      expandPsst: true,
+      expandWqt: true,
+      expandLinks: true,
+      expandAttachmentTypes: true,
+      expanded: [],
+      deleteError: false,
+      cannotDeleteReasons: {},
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+      companyProjectStatusTypes: [],
+      projectStatusTypes: [],
+      combinedStatuses: [ {header: 'Category'} ],
+      companyProcessStepStatusTypes: [],
+      processStepStatusTypes: [],
+      // combinedProcessStepStatuses: [ {header: 'Category'} ],
+      headers: [
+        {text: 'Category', value: 'workQueueCategory', show: true},
+        {text: 'Type', value: 'workQueueType', show: true},
+        {text: 'Project Status', value: 'projectStatus', show: true},
+        {text: 'Process Step Status', value: 'processStepStatus', show: true},
+        {text: '', value: 'icons', show: false, width: '100px'},
+      ],
+      addNewCustomFieldGroup: false,
+      changesMade: false,
+      addNewType: false,
+      newType: {},
+      addNewLink: false,
+      newLink: {},
+      availableLinks: [],
+      processStepId: this.$route.params.id,
+      companyId: this.$store.state.user.details.companyId,
+      processStep: {},
+      companyStatusesLoading: false,
+      availableAttachmentTypes: [],
+      availableCompanyProcessStepStatusTypes: [],
+      addNewProcessStepStatusType: false,
+      newProcessStepStatusTypeId: null,
+      processStepHeaders: [
+        {text: 'Status Type', value: 'statusType', show: true},
+        {text: 'Category', value: 'category', show: true},
+        {text: '', value: 'icons', show: false, width: '100px'},
+      ],
+      workQueueTypes: [],
+      newWorkQueueType: {
+        processStepStatuses: [],
+        projectStatuses: [],
       },
-      addValueToExisting(wqtItem, selectedItem) {
-        //check if already in existing - if it is, set archived to opposite of selected
-        let exists = false
-        let match = selectedItem.projectStatusTypeId === null ? wqtItem.projectStatuses?.find(ps => ps.id !== null && ps.projectStatusTypeId === selectedItem.id) : wqtItem.projectStatuses?.find(ps => ps.id !== null && ps.companyProjectStatusTypeId === selectedItem.id)
-        if(match) {
-          match.archived = selectedItem.selected
-          exists = true
+      addNewWorkQueueType: false,
+      checkedIds: [],
+      breadcrumbs: [
+        {
+          text: 'Back',
+          disabled: false,
+          exact: true,
+          to: `/settings/processSteps`
+        },
+      ]
+    }
+  },
+  computed: {
+    combinedProcessStepStatuses() {
+      //sometimes i am amazed this shit works
+      let tempAssignedStatusTypes = cloneDeep(this.processStep?.companyProcessStepStatusTypes)
+      tempAssignedStatusTypes.forEach(st => {
+        st.id = st.companyProcessStepStatusTypeId
+        st.group = 'Process Step Status'
+        st.fakeText = st.processStepStatusType + 'CPSST'
+        st.selected = false
+      })
+      return [ {header: 'Category'} ].concat(this.processStepStatusTypes,
+        [{divider: true}, {header: 'Process Step Status'}],
+        orderBy(tempAssignedStatusTypes.filter(t => !t.archived), [f => f.processStepStatusType]))
+
+    }
+  },
+  async created() {
+    this.getProjectStatusTypes()
+    this.getProcessStepStatusTypes()
+    await this.getProcessStepDetails()
+  },
+  methods: {
+    addValueToNew(selectedItem) {
+      if(selectedItem.selected) {
+        let tempObj = { id: null, projectStatusType: selectedItem.projectStatusType, fakeText: selectedItem.fakeText }
+        if(selectedItem.projectStatusTypeId === null) {
+          tempObj.companyProjectStatusTypeId = null
+          tempObj.projectStatusTypeId = selectedItem.id;
+        } else {
+          tempObj.projectStatusTypeId = null
+          tempObj.companyProjectStatusTypeId = selectedItem.id;
         }
+        this.newWorkQueueType.projectStatuses.push(tempObj)
+      } else {
+        //remove it if it has already been added
+        this.newWorkQueueType.projectStatuses = this.newWorkQueueType.projectStatuses.filter(ps => {
+          if(selectedItem.projectStatusTypeId === null) {
+            return ps.projectStatusTypeId !== selectedItem.id
+          } else {
+            return ps.companyProjectStatusTypeId !== selectedItem.id
+          }
+        })
+      }
+    },
+    addValueToExisting(wqtItem, selectedItem) {
+      //check if already in existing - if it is, set archived to opposite of selected
+      let exists = false
+      let match = selectedItem.projectStatusTypeId === null ? wqtItem.projectStatuses?.find(ps => ps.id !== null && ps.projectStatusTypeId === selectedItem.id) : wqtItem.projectStatuses?.find(ps => ps.id !== null && ps.companyProjectStatusTypeId === selectedItem.id)
+      if(match) {
+        match.archived = selectedItem.selected
+        exists = true
+      }
 
         //if not already exists then if selected - add to existingProjectStatuses
         if(!exists && selectedItem.selected) {
@@ -817,385 +866,386 @@
           exists = true
         }
 
-        //if not already exists then if selected - add to existingProjectStatuses
-        if(!exists && selectedItem.selected) {
-          let tempObj = { id: null, processStepStatusType: selectedItem.processStepStatusType, fakeText: selectedItem.fakeText }
-          if(selectedItem.processStepStatusTypeId === null) {
-            tempObj.companyProcessStepStatusTypeId = null
-            tempObj.processStepStatusTypeId = selectedItem.id;
-          } else {
-            tempObj.processStepStatusTypeId = null
-            tempObj.companyProcessStepStatusTypeId = selectedItem.id;
-          }
-          wqtItem.processStepStatuses.push(tempObj)
-        } else if(!exists) {
-          //remove it if it has already been added
-          wqtItem.processStepStatuses = wqtItem.processStepStatuses.filter(ps => {
-            if(selectedItem.processStepStatusTypeId === null) {
-              return ps.processStepStatusTypeId !== selectedItem.id
-            } else {
-              return ps.companyProcessStepStatusTypeId !== selectedItem.id
-            }
-          })
-        }
-      },
-      getProcessStepExistingValue(existingProcessStepStatuses, item) {
-        //if ps contains item then return true
-        if(item.processStepStatusTypeId === null) {
-          let match = existingProcessStepStatuses?.find(ps => ps.processStepStatusTypeId === item.id)
-          return match && match.processStepStatusType !== null
+      //if not already exists then if selected - add to existingProjectStatuses
+      if(!exists && selectedItem.selected) {
+        let tempObj = { id: null, processStepStatusType: selectedItem.processStepStatusType, fakeText: selectedItem.fakeText }
+        if(selectedItem.processStepStatusTypeId === null) {
+          tempObj.companyProcessStepStatusTypeId = null
+          tempObj.processStepStatusTypeId = selectedItem.id;
         } else {
-          let match = existingProcessStepStatuses?.find(ps => ps.companyProcessStepStatusTypeId === item.id)
-          return match && match.processStepStatusType !== null
+          tempObj.processStepStatusTypeId = null
+          tempObj.companyProcessStepStatusTypeId = selectedItem.id;
         }
-      },
-      prepTempProcessStepStatuses(item) {
-        //this is required so that selections made on one wqt are not auto-selected in other wqt's
-        item.tempProcessStepStatuses = cloneDeep(this.combinedProcessStepStatuses)
-        item.processStepStatuses?.forEach(ps => {
-          ps.fakeText = ps.companyProcessStepStatusTypeId !== null ? ps.processStepStatusType + 'CPSST' : ps.processStepStatusType + 'PSST'
+        wqtItem.processStepStatuses.push(tempObj)
+      } else if(!exists) {
+        //remove it if it has already been added
+        wqtItem.processStepStatuses = wqtItem.processStepStatuses.filter(ps => {
+          if(selectedItem.processStepStatusTypeId === null) {
+            return ps.processStepStatusTypeId !== selectedItem.id
+          } else {
+            return ps.companyProcessStepStatusTypeId !== selectedItem.id
+          }
         })
-      },
-      async deleteStatusTypeFromStep(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          //have to close the work queue editor to for the component to refresh available values
-          this.addNewWorkQueueType = false
-          this.expanded = []
-          await deleteRequest(`/processStep/status/removeFromStep/${item.id}`)
-          item.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Status Type Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
+      }
+    },
+    getProcessStepExistingValue(existingProcessStepStatuses, item) {
+      //if ps contains item then return true
+      if(item.processStepStatusTypeId === null) {
+        let match = existingProcessStepStatuses?.find(ps => ps.processStepStatusTypeId === item.id)
+        return match && match.processStepStatusType !== null
+      } else {
+        let match = existingProcessStepStatuses?.find(ps => ps.companyProcessStepStatusTypeId === item.id)
+        return match && match.processStepStatusType !== null
+      }
+    },
+    prepTempProcessStepStatuses(item) {
+      //this is required so that selections made on one wqt are not auto-selected in other wqt's
+      item.tempProcessStepStatuses = cloneDeep(this.combinedProcessStepStatuses)
+      item.processStepStatuses?.forEach(ps => {
+        ps.fakeText = ps.companyProcessStepStatusTypeId !== null ? ps.processStepStatusType + 'CPSST' : ps.processStepStatusType + 'PSST'
+      })
+    },
+    async deleteStatusTypeFromStep(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //have to close the work queue editor to for the component to refresh available values
+        this.addNewWorkQueueType = false
+        this.expanded = []
+        await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${this.processStepId}`)
+        item.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Status Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
 
-          if(e.status === 400) {
-            item.deleteConfirm = false
-            this.deleteError = true
-          }
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Status Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        if(e.status === 400) {
+          item.deleteConfirm = false
+          this.deleteError = true
+          this.cannotDeleteReasons = e.data
         }
-      },
-      async assignStatusTypeToProcessStep () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Status Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignStatusTypeToProcessStep () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newType.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/processStep/status/assignCompanyStatus/${this.newProcessStepStatusTypeId}/toProcessStep/${this.processStepId}`)
+        this.processStep.companyProcessStepStatusTypes.push(data)
+        // reset fields
+        this.addNewProcessStepStatusType = false
+        this.newProcessStepStatusTypeId = null
+        this.snackbar = getSnackbar('SUCCESS', 'Status Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCompanyProcessStepStatusTypes() {
+      if(this.addNewProcessStepStatusType) {
+        this.companyStatusesLoading = true
         try {
-          this.newType.processStepId = this.$route.params.id
-          const {data} = await postRequest(`/processStep/status/assignCompanyStatus/${this.newProcessStepStatusTypeId}/toProcessStep/${this.processStepId}`)
-          this.processStep.companyProcessStepStatusTypes.push(data)
-          // reset fields
-          this.addNewProcessStepStatusType = false
-          this.newProcessStepStatusTypeId = null
-          this.snackbar = getSnackbar('SUCCESS', 'Status Type Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCompanyProcessStepStatusTypes() {
-        if(this.addNewProcessStepStatusType) {
-          this.companyStatusesLoading = true
-          try {
-            const {data} = await getAvailableForProcessStep(this.processStepId)
-            this.availableCompanyProcessStepStatusTypes = data
+          const {data} = await getAvailableForProcessStep(this.processStepId)
+          this.availableCompanyProcessStepStatusTypes = data
 
-            //this one is used for assigning types to a work queue type - will likely be changing soon
-            // this.companyProcessStepStatusTypes = orderBy(data, ['rootProcessStepStatusType', 'processStepStatusType'])
-            // this.combinedProcessStepStatuses.push({divider: true})
-            // this.combinedProcessStepStatuses.push({header: 'Process Step Status'})
-            // this.companyProcessStepStatusTypes.forEach(ps => {
-            //   ps.group = 'Process Step Status'
-            //   ps.fakeText = ps.processStepStatusType + 'CPSST'
-            //   ps.selected = false
-            //   this.combinedProcessStepStatuses.push(ps)
-            // })
-            this.companyStatusesLoading = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.companyStatusesLoading = false
-          }
-        }
-
-      },
-      async getProcessStepStatusTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getStatusTypes()
-          this.processStepStatusTypes = data
-          this.processStepStatusTypes.forEach(ps => {
-            ps.group = 'Category'
-            ps.fakeText = ps.processStepStatusType + 'PSST'
-            ps.selected = false
-            // this.combinedProcessStepStatuses.push(ps)
-          })
-          // this.getCompanyProcessStepStatusTypes()
+          //this one is used for assigning types to a work queue type - will likely be changing soon
+          // this.companyProcessStepStatusTypes = orderBy(data, ['rootProcessStepStatusType', 'processStepStatusType'])
+          // this.combinedProcessStepStatuses.push({divider: true})
+          // this.combinedProcessStepStatuses.push({header: 'Process Step Status'})
+          // this.companyProcessStepStatusTypes.forEach(ps => {
+          //   ps.group = 'Process Step Status'
+          //   ps.fakeText = ps.processStepStatusType + 'CPSST'
+          //   ps.selected = false
+          //   this.combinedProcessStepStatuses.push(ps)
+          // })
+          this.companyStatusesLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getProcessStepDetails() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/processStep/${this.processStepId}`)
-          this.processStep = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      async getAttachmentTypesForProcessStep() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewType = !this.addNewType
-          if (this.addNewType) {
-            const {data} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
-            this.availableAttachmentTypes = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignNewType() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newType.processStepId = this.$route.params.id
-          const {data} = await postRequest(`/attachmentType/processStepType`, this.newType)
-          this.processStep.attachmentTypes.push(data)
-          // reset fields
-          this.addNewType = false
-          this.newType = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteTypeFromStep(id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewType = false
-          await deleteRequest(`/attachmentType/processStepType/${id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getLinksForProcessStep() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewLink = !this.addNewLink
-          if (this.addNewLink) {
-            const {data} = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
-            this.availableLinks = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignNewLink() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newLink.processStepId = this.$route.params.id
-          const {data} = await postRequest(`/links/processStep`, this.newLink)
-          this.processStep.links.push(data)
-          // reset fields
-          this.addNewLink = false
-          this.newLink = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Link Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteLinkFromStep(id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewLink = false
-          await deleteRequest(`/links/processStep/${id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getWorkQueueTypesForStep() {
-        try {
-          this.addNewWorkQueueType = !this.addNewWorkQueueType
-          if (this.addNewWorkQueueType) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
-            this.workQueueTypes = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignNewWorkQueueType() {
-        //todo make this work for both proj and process step types
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newWorkQueueType.processStepId = this.$route.params.id
-          const {data} = await postRequest(`/workQueueType/processStep`, this.newWorkQueueType)
-          this.processStep.workQueueTypes.push(data)
-          // reset fields
-          this.addNewWorkQueueType = false
-          this.newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveStatusesToWorkQueueType(item) {
-        //todo: fix this to save both things
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await putRequest(`/workQueueType/saveStatusTypesToWorkQueueType`, item)
-          item.projectStatuses = data.projectStatuses
-          item.processStepStatuses = data.processStepStatuses
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'Status Types Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteWorkQueueTypeFromStep(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewWorkQueueType = false
-          await deleteRequest(`/workQueueType/processStep/${item.id}`)
-          item.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterWorkQueueTypes() {
-        return this.processStep?.workQueueTypes.filter(u => {
-          return !u.archived
-        })
-      },
-      filterAssignedProcessStepStatusTypes() {
-        return orderBy(this.processStep?.companyProcessStepStatusTypes?.filter(u => {
-          return !u.archived
-        }), [f => f.processStepStatusType])
-      },
-      async saveAttachmentTypeOrder(attachmentTypes) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-          // pull those needing to be saved out of list
-          let typesToSave = []
-          attachmentTypes.forEach((f, idx) => {
-            let order = idx + 1
-            if (f.displayOrder !== order) {
-              f.displayOrder = order
-              typesToSave.push(f)
-            }
-          })
-          // save them here
-          if (typesToSave.length > 0) {
-            await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveLinkOrder(links) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-          // pull those needing to be saved out of list
-          let linksToSave = []
-          links.forEach((f, idx) => {
-            let order = idx + 1
-            if (f.displayOrder !== order) {
-              f.displayOrder = order
-              linksToSave.push(f)
-            }
-          })
-          // save them here
-          if (linksToSave.length > 0) {
-            await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.companyStatusesLoading = false
         }
       }
+
+    },
+    async getProcessStepStatusTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await getStatusTypes()
+        this.processStepStatusTypes = data
+        this.processStepStatusTypes.forEach(ps => {
+          ps.group = 'Category'
+          ps.fakeText = ps.processStepStatusType + 'PSST'
+          ps.selected = false
+          // this.combinedProcessStepStatuses.push(ps)
+        })
+        // this.getCompanyProcessStepStatusTypes()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getProcessStepDetails() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await getRequest(`/processStep/${this.processStepId}`)
+        this.processStep = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+
+    async getAttachmentTypesForProcessStep() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewType = !this.addNewType
+        if (this.addNewType) {
+          const {data} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
+          this.availableAttachmentTypes = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewType() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newType.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/attachmentType/processStepType`, this.newType)
+        this.processStep.attachmentTypes.push(data)
+        // reset fields
+        this.addNewType = false
+        this.newType = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteTypeFromStep(id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewType = false
+        await deleteRequest(`/attachmentType/processStepType/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getLinksForProcessStep() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewLink = !this.addNewLink
+        if (this.addNewLink) {
+          const {data} = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
+          this.availableLinks = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewLink() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newLink.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/links/processStep`, this.newLink)
+        this.processStep.links.push(data)
+        // reset fields
+        this.addNewLink = false
+        this.newLink = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Link Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteLinkFromStep(id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewLink = false
+        await deleteRequest(`/links/processStep/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getWorkQueueTypesForStep() {
+      try {
+        this.addNewWorkQueueType = !this.addNewWorkQueueType
+        if (this.addNewWorkQueueType) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
+          this.workQueueTypes = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewWorkQueueType() {
+      //todo make this work for both proj and process step types
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newWorkQueueType.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/workQueueType/processStep`, this.newWorkQueueType)
+        this.processStep.workQueueTypes.push(data)
+        // reset fields
+        this.addNewWorkQueueType = false
+        this.newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }
+        this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveStatusesToWorkQueueType(item) {
+      //todo: fix this to save both things
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/workQueueType/saveStatusTypesToWorkQueueType`, item)
+        item.projectStatuses = data.projectStatuses
+        item.processStepStatuses = data.processStepStatuses
+        this.expanded = []
+        this.snackbar = getSnackbar('SUCCESS', 'Status Types Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteWorkQueueTypeFromStep(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewWorkQueueType = false
+        await deleteRequest(`/workQueueType/processStep/${item.id}`)
+        item.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    filterWorkQueueTypes() {
+      return this.processStep?.workQueueTypes.filter(u => {
+        return !u.archived
+      })
+    },
+    filterAssignedProcessStepStatusTypes() {
+      return orderBy(this.processStep?.companyProcessStepStatusTypes?.filter(u => {
+        return !u.archived
+      }), [f => f.processStepStatusType])
+    },
+    async saveAttachmentTypeOrder(attachmentTypes) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let typesToSave = []
+        attachmentTypes.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            typesToSave.push(f)
+          }
+        })
+        // save them here
+        if (typesToSave.length > 0) {
+          await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveLinkOrder(links) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let linksToSave = []
+        links.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            linksToSave.push(f)
+          }
+        })
+        // save them here
+        if (linksToSave.length > 0) {
+          await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
+  }
 
   }
 </script>
@@ -1211,16 +1261,18 @@
     padding-bottom: 0;
   }
 
-  .combined-statuses > div.v-list-item__action {
-    min-width: 10px !important;
-    width: 10px;
-    margin-left: 15px;
-    margin-right: 20px !important;
-  }
+.combined-statuses > div.v-list-item__action {
+  min-width: 10px !important;
+  width: 10px;
+  margin-left: 15px;
+  margin-right: 20px !important;
+}
 
   .wqt-header-bar {
     border-bottom: 1px solid #E6E6E6;
+    border-top: 1px solid #E6E6E6;
   }
+
   .link-header-bar {
     border-top: 1px solid #E6E6E6;
     border-bottom: 1px solid #E6E6E6;

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.ProcessStepStatusController;
 import com.albatross.api.v1.flow.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -144,16 +145,12 @@ public class ProcessStepStatusService {
     return getType(type.getCompanyId(), id);
   }
 
-
-  public void saveInitialProcessStepStatusType(Long companyProcessStepStatusTypeId) {
-    User currentUser = securityService.getCurrentUser();
-
+  public List<CompanyProcessStepStatusType> getActiveAssignedToProcessStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", companyProcessStepStatusTypeId);
-    params.put("companyId", currentUser.getCompanyId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("processStepId", processStepId);
 
-    sqlCache.update("processStepStatus.saveInitialProcessStepStatusType", params);
+    List<CompanyProcessStepStatusType> results = sqlCache.query("processStepStatus.getActiveAssignedToProcessStep", params, CompanyProcessStepStatusType.class);
+    return results;
   }
 
   public List<CompanyProcessStepStatusType> getAssignedToStep(Long processStepId) {
@@ -192,24 +189,42 @@ public class ProcessStepStatusService {
     return result;
   }
 
-  public ResponseEntity deleteStatusFromProcessStep(Long id) {
+  public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteStatusFromProcessStep(Long id, Long processStepId) {
     User currentUser = securityService.getCurrentUser();
+    ProcessStepStatusController.CannotDeleteProcessStepStatus cannotDelete = new ProcessStepStatusController.CannotDeleteProcessStepStatus();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("processStepId", processStepId);
     params.put("modifiedById", currentUser.getId());
 
-    List<WorkQueueTypeProcessStepStatus> wqtUsingStatus = sqlCache.query("processStepStatus.statusInUseByWQT", params, WorkQueueTypeProcessStepStatus.class);
+    //yes, i realize that instead of 5 calls i could just make a function. dont mess with me right now. i am working this out in chunks in my mind.
 
-    if(wqtUsingStatus.isEmpty()) {
+    //check for any wq types on the step that are using this status type
+    List<WorkQueueTypeProcessStepStatus> wqtUsingStatus = sqlCache.query("processStepStatus.statusInUseByWQT", params, WorkQueueTypeProcessStepStatus.class);
+    cannotDelete.setInUseByWqt(!wqtUsingStatus.isEmpty());
+
+    //check for an initial step of this type using this status type
+    Optional<ProcessStepProcess> psp = sqlCache.get("processStepStatus.statusInUseByInitialStep", params, ProcessStepProcess.class);
+    cannotDelete.setInUseByInitialStep(psp.isPresent());
+
+    //check for any actions using this status type to set the parent step as
+    List<ProcessStepAction> actions = sqlCache.query("processStepStatus.actionsUsingStatusToSetParent", params, ProcessStepAction.class);
+    cannotDelete.setActions(actions);
+
+    //check for any child process steps of this type using this status type
+    List<ProcessStepActionChildProcess> childProcesses = sqlCache.query("processStepStatus.childProcessesUsingStatus", params, ProcessStepActionChildProcess.class);
+    cannotDelete.setChildProcesses(childProcesses);
+
+    //eventually check for any requirements referencing this status type for this step
+
+    if(!cannotDelete.getInUseByWqt() && !cannotDelete.getInUseByInitialStep()) {
       sqlCache.update("processStepStatus.deleteStatusFromProcessStep", params);
       return ResponseEntity.ok().build();
     } else {
-      return ResponseEntity.badRequest().body("Status is in use and cannot be deleted.");
+      return ResponseEntity.badRequest().body(cannotDelete);
     }
   }
-
-
 
 
 }
