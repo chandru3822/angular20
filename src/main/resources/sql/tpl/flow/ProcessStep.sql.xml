@@ -79,7 +79,7 @@
                                             inner join flow.attachment_type at on at.id = psat.attachment_type_id
                                    WHERE psat.process_step_id = ps.id AND psat.archived is not true
                                     order by psat.display_order) attachmentTypes), '[]') AS "attachmentTypes",
-                        coalesce((
+                       coalesce((
                                     SELECT array_to_json(array_agg(row_to_json(companyProcessStepStatusTypes)))
                                     FROM (
                                              SELECT pscpsst.id,

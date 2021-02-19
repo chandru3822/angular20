@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Primary;
 import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.UUID;
 
 @Slf4j
 @Configuration
@@ -82,7 +83,7 @@ public class BeansConfiguration {
       .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(firebaseCredentials.toString().getBytes())))
       .build();
 
-    firebaseApp = FirebaseApp.initializeApp(firebaseOptions);
+    firebaseApp = FirebaseApp.initializeApp(firebaseOptions, UUID.randomUUID().toString());
   }
 
   @Bean

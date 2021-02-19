@@ -29,22 +29,22 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-container v-if="addNew">
-          <v-select v-model="newProcessStep.processStepId"
-                    :items="availableProcessSteps"
-                    no-data-text="No Steps Available"
-                    label="Select a Process Step"
-                    item-text="processStepName"
-                    item-value="id"
-          ></v-select>
-          <v-select v-model="newProcessStep.owningPositions"
-                    :items="owningPositions"
-                    no-data-text="No Positions Available"
-                    label="Select Owning Positions"
-                    item-text="position"
-                    item-value="positionId"
-                    multiple
-                    return-object
-          ></v-select>
+          <v-autocomplete v-model="newProcessStep.processStepId"
+                          :items="availableProcessSteps"
+                          no-data-text="No Steps Available"
+                          label="Select a Process Step"
+                          item-text="processStepName"
+                          item-value="id"
+          ></v-autocomplete>
+          <v-autocomplete v-model="newProcessStep.owningPositions"
+                          :items="owningPositions"
+                          no-data-text="No Positions Available"
+                          label="Select Owning Positions"
+                          item-text="position"
+                          item-value="positionId"
+                          multiple
+                          return-object
+          ></v-autocomplete>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
           <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
@@ -81,27 +81,31 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': selectedIndex % 2}">
-              <v-card flat color="transparent" class="text-left pt-4">
-                <label>Initial Step:</label>
-                <input type="checkbox" class="ml-2" v-model="item.initialStep">
-                <v-select v-model="item.companyProcessStepStatusTypeId"
-                          v-if="item.initialStep"
-                          :items="processStepStatusTypes"
-                          label="Initial Process Step Status Type"
-                          item-text="processStepStatusType"
-                          item-value="id"
-                          class="mt-4"
-                ></v-select>
-                <v-select v-model="item.owningPositions"
-                          :items="owningPositions"
-                          no-data-text="No Positions Available"
-                          label="Select Owning Positions"
-                          item-text="position"
-                          item-value="positionId"
-                          multiple
-                          return-object
-                ></v-select>
+            <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': process.processStepProcesses.indexOf(item) % 2}">
+              <v-card flat color="transparent" class="text-left pa-4">
+                <div class="mb-2">
+                  <label>Initial Step:</label>
+                  <input type="checkbox" class="ml-2" v-model="item.initialStep" @change="getActiveAssignedToProcessStep(item)">
+                  <v-autocomplete v-model="item.companyProcessStepStatusTypeId"
+                                  v-if="item.initialStep"
+                                  :loading="statusesLoading"
+                                  class="mt-4 mb-2"
+                                  :items="processStepStatusTypes"
+                                  label="Initial Process Step Status Type"
+                                  item-text="processStepStatusType"
+                                  item-value="id"
+                  ></v-autocomplete>
+                </div>
+                <v-autocomplete v-model="item.owningPositions"
+                                class="pt-4"
+                                :items="owningPositions"
+                                no-data-text="No Positions Available"
+                                label="Select Owning Positions"
+                                item-text="position"
+                                item-value="positionId"
+                                multiple
+                                return-object
+                ></v-autocomplete>
                 <div class="mt-3 text-center">
                   <v-btn :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
                          @click="saveProcessStepProcess(item)">
@@ -131,7 +135,7 @@
               <td class="text-left">{{ item.processStepStatusType }}</td>
               <td>
                 <div style="display: flex; float: right;">
-                  <v-btn text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                  <v-btn text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getActiveAssignedToProcessStep(item)]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>
@@ -187,10 +191,9 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
-import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import cloneDeep from 'lodash.clonedeep'
 
-import {getStatusTypes} from '@/services/processStepStatusTypeService'
+import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
@@ -210,6 +213,7 @@ export default {
       processId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
       changesMade: false,
+      statusesLoading: false,
       process: {
         processStepProcesses: []
       },
@@ -222,11 +226,11 @@ export default {
         },
       ],
       headers: [
-        { text: 'Name', value: 'processStepName', sortable: false},
+        { text: 'Name', value: 'processStepName'},
         { text: 'Owning Positions', value: 'positionName', sortable: false},
-        { text: 'Last Modified', value: 'dateModified', sortable: false},
-        { text: 'Initial', value: 'initial', sortable: false},
-        { text: 'Status Type', value: 'statusType', sortable: false},
+        { text: 'Last Modified', value: 'dateModified'},
+        { text: 'Initial', value: 'initialStep'},
+        { text: 'Status Type', value: 'processStepStatusType'},
         { text: null, value: null},
       ],
       footerProps: {
@@ -240,7 +244,6 @@ export default {
   created () {
     this.getPositions()
     this.getProcessDetails()
-    this.getStatusTypes()
   },
   computed: {
   },
@@ -378,17 +381,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getStatusTypes () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getCompanyStatusTypes()
-        this.processStepStatusTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+    async getActiveAssignedToProcessStep (item) {
+      if(item.initialStep) {
+        this.processStepStatusTypes = []
+        this.statusesLoading = true
+        try {
+          const {data} = await getActiveAssignedToProcessStep(item.processStepId)
+          this.processStepStatusTypes = data
+          this.statusesLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.statusesLoading = false
+        }
       }
     },
   },

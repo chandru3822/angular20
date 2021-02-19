@@ -1,5 +1,5 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container id="ps-container" class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -27,137 +27,104 @@
                             item-text="processStepStatusType"></v-autocomplete>
             <v-btn :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
           </v-card>
-          <v-data-table
-            :headers="headers"
-            :items="filterProcessStepStatuses()"
-            :fixed-header="true"
-            :expanded.sync="expanded"
-            single-expand
-            :items-per-page="-1"
-            hide-default-footer
-            :sort-by="['displayOrder']"
-            :sort-desc="[false]"
-            class="elevation-1"
-          >
-            <template #expanded-item="{ headers, item }">
-              <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
-                <h3 class="mb-3">Edit Status Type</h3>
-                <v-text-field v-model="item.processStepStatusType"
-                              label="Status Type"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                ></v-text-field>
-                <v-autocomplete
-                  :items="rootStatusTypes"
-                  v-model="item.processStepStatusTypeId"
-                  item-value="id"
-                  :readonly="!userCanEdit"
-                  :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
-                  label="Select a Category"
-                  item-text="processStepStatusType"></v-autocomplete>
+          <v-card class="square-card">
+            <v-card-title class="pt-0">
+              <v-text-field
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-card-title>
+            <v-data-table
+              :headers="headers"
+              :items="filterProcessStepStatuses()"
+              :fixed-header="true"
+              :expanded.sync="expanded"
+              single-expand
+              :search="search"
+              :footer-props="footerProps"
+              :options.sync="options"
+              class="elevation-1"
+            >
+              <template #expanded-item="{ headers, item }">
+                <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+                  <h3 class="mb-3">Edit Status Type</h3>
+                  <v-text-field v-model="item.processStepStatusType"
+                                label="Status Type"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
+                  ></v-text-field>
+                  <v-autocomplete
+                    :items="filteredRootStatuses(item)"
+                    v-model="item.processStepStatusTypeId"
+                    item-value="id"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
+                    label="Select a Category"
+                    item-text="processStepStatusType"></v-autocomplete>
 
-                <v-btn color="primaryCustom" dark class="white--text mr-4"
-                       :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
-                       @click="saveType(item, false)">Save</v-btn>
-                <div  v-if="!item.isDefault" class="mb-3 d-inline-block">
-                  <v-dialog
-                    v-model="item.setInitialConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn v-on="on">
-                        Set as Initial
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="headline grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Setting this Process Step Status Type as default will unset the other initial status. Are you sure you want to continue?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.setInitialConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="setAsInitial(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
-
-
-              </td>
-            </template>
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
-                <td class="text-left">
-                  {{item.processStepStatusType}}
+                  <v-btn color="primaryCustom" dark class="white--text mr-4"
+                         :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
+                         @click="saveType(item, false)">Save</v-btn>
                 </td>
-                <td class="text-left">
-                  {{item.rootProcessStepStatusType}}
-                </td>
-                <td class="text-left">
-                  <input v-if="item.isDefault" type="checkbox" v-model="item.isDefault" disabled readonly>
-                </td>
-                <td class="text-right">
-                  <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                  <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                            v-model="item.deleteConfirm" width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="headline grey lighten-2"
-                        primary-title
-                      >
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this status type: <strong>{{ item.processStepStatusType }}</strong>?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.deleteConfirm = false">
-                          No
+              </template>
+              <template #item="{ item, index }">
+                <tr :class="{'shaded-row': index % 2}">
+                  <td class="text-left">
+                    {{item.processStepStatusType}}
+                  </td>
+                  <td class="text-left">
+                    {{item.rootProcessStepStatusType}}
+                  </td>
+                  <td class="text-right">
+                    <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                      <v-icon>edit</v-icon>
+                    </v-btn>
+                    <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                    <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                              v-model="item.deleteConfirm" width="500">
+                      <template #activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
                         </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="[item.archived = true, deleteType(item)]">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </td>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                        >
+                          Confirm
+                        </v-card-title>
 
-              </tr>
-            </template>
-          </v-data-table>
+                        <v-card-text>
+                          Are you sure you want to delete this status type: <strong>{{ item.processStepStatusType }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="[item.archived = true, deleteType(item)]">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </td>
+
+                </tr>
+              </template>
+            </v-data-table>
+          </v-card>
         </v-container>
       </v-col>
 
@@ -183,15 +150,22 @@
       return {
         snackbar: {},
         constants,
+        search: '',
         statusTypes: [],
         expanded: [],
         rootStatusTypes: [],
         headers: [
           {text: 'Process Step Status', value: 'processStepStatusType', show: true},
-          {text: 'Category', value: 'rootProjectStatusType', show: true},
-          {text: 'Initial', value: 'initial', show: true},
-          {text: '', value: 'icons', show: true},
+          {text: 'Category', value: 'rootProcessStepStatusType', show: true},
+          {text: '', value: 'icons', show: true, sortable: false},
         ],
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        options: {
+          itemsPerPage: 100
+        },
         addNew: false,
         newType: {},
         selectedStatusTypeId: null,
@@ -203,6 +177,10 @@
     computed: {
     },
     methods: {
+      filteredRootStatuses(item) {
+        console.log('randaLogger',this.rootStatusTypes)
+        return this.rootStatusTypes.filter(rst => rst.id !== 3)
+      },
       async getCompanyStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -282,25 +260,6 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async setAsInitial (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/processStep/status/initial/${item.id}`, )
-          this.statusTypes.forEach(st => {
-            st.isDefault = false
-          })
-          item.isDefault = true
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       filterProcessStepStatuses () {
         return this.statusTypes.filter(s => { return !s.archived})
       },
@@ -312,6 +271,18 @@
   }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+  #ps-container .v-data-table__wrapper {
+    height: calc(100vh - 290px);
+    min-height: 300px;
+  }
+</style>
 
+<style scoped lang="scss">
+  #ps-container {
+    margin-top: -15px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+  }
 </style>
