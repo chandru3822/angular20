@@ -1,5 +1,4 @@
 -- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer, integer);
-
 CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer,
                                                             p_company_id integer, p_parent_project_process_step_id integer,
                                                             p_initial_company_process_step_status_type_id integer, p_existing_company_process_step_status_type_id integer default null)
@@ -51,23 +50,8 @@ from pps1, cpsst
 where pps.id = pps1.id;
 
 -- Insert new active and main pps
-with cpsst as (
-    select id
-    from flow.company_process_step_status_type
-    where
-        company_id = p_company_id and
-        id = p_initial_company_process_step_status_type_id
-)
 insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main, user_position_id, parent_project_process_step_id)
-select
-    p_project_id,
-    p_process_step_id,
-    cpsst.id,
-    p_user_id,
-    true,
-    p_user_position_id,
-    p_parent_project_process_step_id
-from cpsst
+values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, p_user_id, true, p_user_position_id, p_parent_project_process_step_id)
 returning id into p_project_process_step_id;
 
 RETURN p_project_process_step_id;
