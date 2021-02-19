@@ -374,12 +374,15 @@
                               </div>
                             </div>
                           </v-list-item-content>
+                          <div v-if="!item.eventTypeId && userCanEdit">
+                            <v-btn text small v-if="!cf.ancillaryCustomFieldGroupAssignmentId"
+                                   @click="[showMoveDialog = true, fieldToMove = cf, getMoveProcessSteps()]">
+                              <v-icon>mdi-cursor-move</v-icon>
+                            </v-btn>
+                            <v-btn text small v-else></v-btn>
+                          </div>
                           <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
-                          </v-btn>
-                          <v-btn text small v-if="!item.eventTypeId && userCanEdit"
-                                 @click="[showMoveDialog = true, fieldToMove = cf, getMoveProcessSteps()]">
-                            <v-icon>mdi-cursor-move</v-icon>
                           </v-btn>
 <!--                          <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">-->
 <!--                            <template v-slot:activator="{ on: menu }">-->

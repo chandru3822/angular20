@@ -26,7 +26,7 @@
         WARNING: Setting the Primary step to a Cancelled status will automatically remove the Primary flag from this Project Process Step.
       </div>
 
-      <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 1) || newStatusOptional === true">
+      <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3) || newStatusOptional === true">
         Please select what to do with all existing Active steps of the same type.
         <v-autocomplete
           v-if="projectProcessStep.newStatusToUse"
@@ -48,7 +48,9 @@
         Cancel
       </v-btn>
       <v-btn
-        :disabled="!projectProcessStep.newStatusToUse || !projectProcessStep.newStatusToUse.id || (projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 && !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
+        :disabled="(!newStatusOptional && (!projectProcessStep.newStatusToUse || !projectProcessStep.newStatusToUse.id)) ||
+                  (projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3 &&
+                      !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
         color="primaryCustom"
         text
         @click="$emit('updateStatus', projectProcessStep)">
@@ -70,6 +72,10 @@ export default {
     projectId: Number,
     projectProcessStep: Object,
     availableProcessStepStatuses: Array,
+    limitToNonCancelled: {
+      type: Boolean,
+      default: false
+    },
     limitToActive: {
       type: Boolean,
       default: false
@@ -105,6 +111,8 @@ export default {
     statuses() {
       if (this.limitToActive === true) {
         return this.availableProcessStepStatuses.filter(step => step.processStepStatusTypeId === 1)
+      } else if (this.limitToNonCancelled) {
+        return this.availableProcessStepStatuses.filter(step => step.processStepStatusTypeId !== 3)
       }
       return this.availableProcessStepStatuses
     }
