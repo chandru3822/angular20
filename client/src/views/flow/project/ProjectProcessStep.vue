@@ -289,7 +289,8 @@
         :project-id="parseInt(projectId)"
         :project-process-step="processStep"
         :available-process-step-statuses="availableProcessStepStatuses"
-        :limit-to-active="true"
+        :limit-to-active="false"
+        :limit-to-non-cancelled="true"
         :new-status-optional="processStep.processStepStatusTypeId !== 3"
         @updateStatus="updateMain"
         @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
@@ -302,7 +303,7 @@
   import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
-  import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
   import Links from '@/views/flow/components/Links'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -397,7 +398,7 @@
       },
       async getAvailableStatuses() {
         try {
-          const {data} = await getActiveAssignedToProcessStep(this.processStep.processStepId)
+          const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
           // const {data} = await getRequest(`/processStep/status`)
           this.availableProcessStepStatuses = data
         } catch (e) {

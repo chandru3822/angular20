@@ -144,13 +144,13 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
-                      @click="[projectProcessStep.changeActiveConfirm = false, projectProcessStep.main = false]">
+                      @click="[projectProcessStep.changeActiveConfirm = false, alteringPrimaryFlag = false, projectProcessStep.main = false]">
                       No
                     </v-btn>
                     <v-btn
                       color="primaryCustom"
                       text
-                      @click="[showSelectedPps = false, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
+                      @click="[showSelectedPps = false, showMainDialog = true, alteringPrimaryFlag = true, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
                     >
                       Yes
                     </v-btn>
@@ -168,7 +168,7 @@
   </v-col>
 
   <ProjectProcessStepStatus
-    v-if="selectedPps"
+    v-if="selectedPps && !alteringPrimaryFlag"
     :show-dialog="showStatusDialog"
     :project-id="projectId"
     :project-process-step="selectedPps"
@@ -178,12 +178,13 @@
   />
 
   <ProjectProcessStepStatus
-      v-if="showSelectedPps"
+      v-if="showSelectedPps && alteringPrimaryFlag"
       :show-dialog="showMainDialog"
       :project-id="projectId"
       :project-process-step="selectedPps"
       :available-process-step-statuses="availableProcessStepStatuses"
-      :limit-to-active="true"
+      :limit-to-active="false"
+      :limit-to-non-cancelled="true"
       :new-status-optional="selectedPps.selectedProcessStepStatusType.processStepStatusTypeId !== 3"
       @updateStatus="updateMain"
       @dialogClosed="[showMainDialog = false, selectedPps.main = false, selectedPps.newStatusToUse = {NEW_STATUS_TO_USE}]"
@@ -207,6 +208,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       project: {},
+      alteringPrimaryFlag: false,
       projectProcessSteps: [],
       process: {},
       contact: {},
