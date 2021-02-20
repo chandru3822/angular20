@@ -110,7 +110,7 @@
                 <v-btn
                   text
                   color="primaryCustom"
-                  @click="[showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(projectProcessStep)]"
+                  @click="[showStatusDialog = true, showMainDialog = false, alteringPrimaryFlag = false, selectedPps = projectProcessStep, getAvailableStatuses(projectProcessStep)]"
                 >
                   <v-icon>edit</v-icon>
                 </v-btn>
