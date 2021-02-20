@@ -22,6 +22,15 @@ export async function getAvailableForProcessStep(processStepId) {
   }
 }
 
+export async function getActiveAssignedToProcessStep(processStepId) {
+  try {
+    const {data} = await getRequest(`/processStep/status/company/activeAssignedToProcessStep/${processStepId}`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 export async function getAssignedToProcessStep(processStepId) {
   try {
     const {data} = await getRequest(`/processStep/status/company/assignedToProcessStep/${processStepId}`)

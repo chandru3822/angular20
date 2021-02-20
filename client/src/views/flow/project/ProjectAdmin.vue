@@ -110,7 +110,7 @@
                 <v-btn
                   text
                   color="primaryCustom"
-                  @click="[showStatusDialog = true, selectedPps = projectProcessStep]"
+                  @click="[showStatusDialog = true, showMainDialog = false, alteringPrimaryFlag = false, selectedPps = projectProcessStep, getAvailableStatuses(projectProcessStep)]"
                 >
                   <v-icon>edit</v-icon>
                 </v-btn>
@@ -144,13 +144,13 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
-                      @click="[projectProcessStep.changeActiveConfirm = false, projectProcessStep.main = false]">
+                      @click="[projectProcessStep.changeActiveConfirm = false, alteringPrimaryFlag = false, projectProcessStep.main = false]">
                       No
                     </v-btn>
                     <v-btn
                       color="primaryCustom"
                       text
-                      @click="[projectProcessStep.changeActiveConfirm = false, showMainDialog = true, selectedPps = projectProcessStep]"
+                      @click="[showSelectedPps = false, showMainDialog = true, alteringPrimaryFlag = true, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
                     >
                       Yes
                     </v-btn>
@@ -168,7 +168,7 @@
   </v-col>
 
   <ProjectProcessStepStatus
-    v-if="selectedPps"
+    v-if="selectedPps && !alteringPrimaryFlag"
     :show-dialog="showStatusDialog"
     :project-id="projectId"
     :project-process-step="selectedPps"
@@ -178,12 +178,13 @@
   />
 
   <ProjectProcessStepStatus
-      v-if="selectedPps"
+      v-if="showSelectedPps && alteringPrimaryFlag"
       :show-dialog="showMainDialog"
       :project-id="projectId"
       :project-process-step="selectedPps"
       :available-process-step-statuses="availableProcessStepStatuses"
-      :limit-to-active="true"
+      :limit-to-active="false"
+      :limit-to-non-cancelled="true"
       :new-status-optional="selectedPps.selectedProcessStepStatusType.processStepStatusTypeId !== 3"
       @updateStatus="updateMain"
       @dialogClosed="[showMainDialog = false, selectedPps.main = false, selectedPps.newStatusToUse = {NEW_STATUS_TO_USE}]"
@@ -194,7 +195,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
-import {getCompanyStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
@@ -207,6 +208,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       project: {},
+      alteringPrimaryFlag: false,
       projectProcessSteps: [],
       process: {},
       contact: {},
@@ -232,6 +234,7 @@ export default {
       showStatusDialog: false,
       showMainDialog: false,
       selectedPps: null,
+      showSelectedPps: false,
       NEW_STATUS_TO_USE
     }
   },
@@ -243,7 +246,7 @@ export default {
     this.getContact()
     await this.getProject()
     this.getProcess()
-    await this.getAvailableStatuses()
+    // await this.getAvailableStatuses()
     this.getProjectProcessSteps()
   },
   methods: {
@@ -262,7 +265,7 @@ export default {
         this.isProjectProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.projectProcessSteps = data.map(step => {
-          step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
+          // step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
           step.newStatusToUse = {NEW_STATUS_TO_USE}
           return step
         })
@@ -296,10 +299,18 @@ export default {
         console.error('*** ERROR ***', e)
       }
     },
-    async getAvailableStatuses () {
+    async getAvailableStatuses (pps) {
+      this.showSelectedPps = false
       try {
-        const {data} = await getCompanyStatusTypes(parseInt(this.projectId))
+        const {data} = await getAssignedToProcessStep(pps.processStepId)
         this.availableProcessStepStatuses = data
+        if(this.availableProcessStepStatuses?.length > 0) {
+          let match = this.availableProcessStepStatuses.find(status => status.id === pps.companyProcessStepStatusTypeId)
+          if(match) {
+            this.selectedPps.selectedProcessStepStatusType = match
+            this.showSelectedPps = true
+          }
+        }
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

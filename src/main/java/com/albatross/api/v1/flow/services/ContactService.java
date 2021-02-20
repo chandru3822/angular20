@@ -50,7 +50,7 @@ public class ContactService {
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if(!viewAll || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
+    if((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
       viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", List.of("VIEW_DOWNLINE"));
     }
 
@@ -218,7 +218,7 @@ public class ContactService {
       //create all initial project_process_steps - these wont have a userPositionId
       for (ProcessStepProcess step : initialProcessSteps) {
         //the last companyProcessStepStatusTypeId can be null because an initial process step shouldn't need to cancel any pre-existing steps of the same type
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, null);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null);
       }
     }
 

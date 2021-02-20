@@ -1,6 +1,6 @@
 <sql>
 <projectProcessStep.insertProjectProcessStep><![CDATA[
-select insert_project_process_step as id from flow.insert_project_process_step(:projectId::integer, :processStepId::integer, :userPositionId::integer, :userId::integer, :companyId::integer, :parentProjectProcessStepId::integer, :companyProcessStepStatusTypeId::integer)
+select insert_project_process_step as id from flow.insert_project_process_step(:projectId::integer, :processStepId::integer, :userPositionId::integer, :userId::integer, :companyId::integer, :parentProjectProcessStepId::integer, :initialCompanyProcessStepStatusTypeId::integer, :existingCompanyProcessStepStatusTypeId::integer)
 ]]></projectProcessStep.insertProjectProcessStep>
 
   <projectProcessStep.delete><![CDATA[

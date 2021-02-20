@@ -87,10 +87,11 @@ public class ProjectProcessStepController {
     }
   }
 
-  @PostMapping(value = "/{companyProcessStepStatusTypeId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Long> createProjectProcessStep(@PathVariable Long companyProcessStepStatusTypeId,
+  @PostMapping(value = "/initialStatus/{initialCompanyProcessStepStatusTypeId}/existingStatus/{existingCompanyProcessStepStatusTypeId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Long> createProjectProcessStep(@PathVariable Long initialCompanyProcessStepStatusTypeId,
+                                                       @PathVariable Long existingCompanyProcessStepStatusTypeId,
                                                        @RequestBody ProjectProcessStep projectProcessStep) {
-    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, companyProcessStepStatusTypeId), HttpStatus.OK);
+    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)

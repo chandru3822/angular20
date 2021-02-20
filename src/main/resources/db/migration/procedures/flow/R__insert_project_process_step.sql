@@ -1,7 +1,7 @@
--- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer);
-
+-- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer, integer);
 CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer,
-                                                            p_company_id integer, p_parent_project_process_step_id integer, p_company_process_step_status_type_id integer default null)
+                                                            p_company_id integer, p_parent_project_process_step_id integer,
+                                                            p_initial_company_process_step_status_type_id integer, p_existing_company_process_step_status_type_id integer default null)
 -- i am leaving p_user_position_id as a param in case they ask us to put it back. just needs added to the insert at the bottom
 RETURNS integer
 LANGUAGE plpgsql AS
@@ -36,9 +36,9 @@ cpsst as (
     from flow.company_process_step_status_type status
 --     where status.company_id = p_company_id and status.process_step_status_type_id = 3
     where status.company_id = p_company_id
-        and case when p_company_process_step_status_type_id is not null then
+        and case when p_existing_company_process_step_status_type_id is not null then
           -- we now allow the user to select which cancelled status to use to when adding a new project process step, but sometimes like when creating a project for the first time we wont send this in, but there also shouldn't be any of the same type in this scenario
-            status.id = p_company_process_step_status_type_id else status.process_step_status_type_id = 3 end
+            status.id = p_existing_company_process_step_status_type_id else status.process_step_status_type_id = 3 end
     limit 1 --just in case
 )
 update flow.project_process_step pps
@@ -50,23 +50,8 @@ from pps1, cpsst
 where pps.id = pps1.id;
 
 -- Insert new active and main pps
-with cpsst as (
-    select id
-    from flow.company_process_step_status_type
-    where
-        company_id = p_company_id and
-        is_default = true
-)
 insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main, user_position_id, parent_project_process_step_id)
-select
-    p_project_id,
-    p_process_step_id,
-    cpsst.id,
-    p_user_id,
-    true,
-    p_user_position_id,
-    p_parent_project_process_step_id
-from cpsst
+values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, p_user_id, true, p_user_position_id, p_parent_project_process_step_id)
 returning id into p_project_process_step_id;
 
 RETURN p_project_process_step_id;
