@@ -305,23 +305,25 @@
                             </div>
                           </div>
                         </v-list-item-content>
-                        <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
-                          <v-icon>edit</v-icon>
-                        </v-btn>
-                        <v-menu offset-y v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                        <v-menu offset-y v-if="cf.ancillaryCustomFieldGroupAssignmentId === null && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on">
                               <v-icon>mdi-cursor-move</v-icon>
                             </v-btn>
                           </template>
-                          <v-list>
-                            <v-list-item
-                              v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId })"
-                              :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
-                              <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
-                            </v-list-item>
-                          </v-list>
+                            <v-list>
+                              <v-list-item
+                                v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId })"
+                                :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
+                                <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
+                              </v-list-item>
+                            </v-list>
+
                         </v-menu>
+                        <v-btn text small v-else></v-btn>
+                        <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                          <v-icon>edit</v-icon>
+                        </v-btn>
                         <v-dialog
                             v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                             v-model="cf.deleteConfirm"

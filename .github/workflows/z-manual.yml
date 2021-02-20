@@ -3,13 +3,14 @@
 
 name: Albatross Manual Build
 
-on: 
+on:
   workflow_dispatch:
     inputs:
      lane:
        description: "Enter lane to deploy"
        required: true
-    
+       default: 'stage'
+
 #    push:
 #        branches:
 #            - "release"

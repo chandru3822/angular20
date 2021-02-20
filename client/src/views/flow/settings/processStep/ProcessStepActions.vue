@@ -719,7 +719,7 @@
                       <v-spacer></v-spacer>
                       <v-toolbar-items>
                         <v-btn text v-if="!addChildProcess && userCanAdd"
-                               @click="[addChildProcess = true, getCancelledStatuses(), loadChildProcessSteps(item.id)]">
+                               @click="[addChildProcess = true, loadChildProcessSteps(item.id)]">
                           <v-icon>add</v-icon>
                         </v-btn>
                       </v-toolbar-items>
@@ -727,25 +727,29 @@
                     <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                             v-if="addChildProcess">
                       <h3>Add Child Process Step</h3>
-                      <v-autocomplete v-model="selectedProcessStep"
+                      <v-autocomplete v-model="newChildProcessStep.processStepId"
                                       :items="childProcessSteps"
                                       label="Process Step"
+                                      @input="[getCancelledStatuses(newChildProcessStep), getStatusesAssignedToStep(newChildProcessStep)]"
                                       item-text="processStepName"
-                                      return-object
                       ></v-autocomplete>
-                      <v-autocomplete v-model="selectedStatus"
+                      <v-autocomplete v-model="newChildProcessStep.initialCompanyProcessStepStatusTypeId"
+                                      :items="activeStatusesAssignedToStep"
+                                      label="Set initial status to:"
+                                      item-text="processStepStatusType"
+                      ></v-autocomplete>
+                      <v-autocomplete v-model="newChildProcessStep.existingCompanyProcessStepStatusTypeId"
                                       :items="cancelledCompanyStatuses"
                                       label="Set status of existing Active steps of the same type to:"
                                       item-text="processStepStatusType"
-                                      return-object
                       ></v-autocomplete>
                       <div class="mt-3">
-                        <v-btn :disabled="!selectedProcessStep.id || !selectedStatus.id"
+                        <v-btn :disabled="!newChildProcessStep.processStepId || !newChildProcessStep.existingCompanyProcessStepStatusTypeId || !newChildProcessStep.initialCompanyProcessStepStatusTypeId"
                                @click="saveProcessStepToAction(item)">
                           <v-icon>save</v-icon>
                           Save
                         </v-btn>
-                        <v-btn class="ml-3" @click="addChildProcess = false">
+                        <v-btn class="ml-3" @click="[addChildProcess = false, newChildProcessStep = {}]">
                           <v-icon>remove</v-icon>
                           Cancel
                         </v-btn>
@@ -770,14 +774,20 @@
                         <template #expanded-item="{ headers, item:cp }">
                           <tr>
                             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': item.processStepActionChildProcesses.indexOf(cp) % 2}">
-                              <v-autocomplete v-model="cp.companyProcessStepStatusTypeId"
+                              <v-autocomplete v-model="cp.initialCompanyProcessStepStatusTypeId"
+                                              :items="activeStatusesAssignedToStep"
+                                              label="Set initial status as:"
+                                              item-text="processStepStatusType"
+                                              item-value="id"
+                              ></v-autocomplete>
+                              <v-autocomplete v-model="cp.existingCompanyProcessStepStatusTypeId"
                                               :items="cancelledCompanyStatuses"
                                               label="Set status of existing Active steps of the same type to:"
                                               item-text="processStepStatusType"
                                               item-value="id"
                               ></v-autocomplete>
-                              <v-btn color="primaryCustom" dark class="white--text"
-                                     :disabled="!cp.companyProcessStepStatusTypeId"
+                              <v-btn color="primaryCustom" class="white--text"
+                                     :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
                                      @click="saveChildProcessCancelledStatus(item, cp)">Save Changes</v-btn>
                             </td>
                           </tr>
@@ -786,9 +796,10 @@
                         <template #item="{ item:cp, index }">
                           <tr :class="{'shaded-row': index % 2}">
                             <td class="text-left">{{cp.processStepName}}</td>
-                            <td class="text-left">{{cp.processStepStatusType}}</td>
+                            <td class="text-left">{{cp.initialProcessStepStatusType}}</td>
+                            <td class="text-left">{{cp.existingProcessStepStatusType}}</td>
                             <td class="text-right">
-                              <v-btn text v-if="!cpExpanded.includes(cp)" @click="[ cpExpanded = [cp], getCancelledStatuses()]">
+                              <v-btn text v-if="!cpExpanded.includes(cp)" @click="[ cpExpanded = [cp], getStatusesAssignedToStep(cp), getCancelledStatuses(cp)]">
                                 <v-icon>edit</v-icon>
                               </v-btn>
                               <v-btn small text v-if="cpExpanded.includes(cp)" @click="cpExpanded = []">cancel</v-btn>
@@ -1147,7 +1158,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getActiveAssignedToProcessStep, getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import {
     getRequest,
     deleteRequest,
@@ -1157,7 +1168,6 @@
     getSnackbar
   } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
-  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import Sortable from "sortablejs";
 
   export default {
@@ -1219,7 +1229,8 @@
         ],
         childProcessStepHeaders: [
           {text: 'Child Step', value: 'processStepName', show: true},
-          {text: 'Status', value: 'companyProcessStepStatusTypeId', show: true},
+          {text: 'Initial Status', value: 'initialProcessStepStatusType', show: true},
+          {text: 'Status for any Existing Active', value: 'existingProcessStepStatusType', show: true},
           {text: null, value: 'icons', show: true}
         ],
         addNewRequirement: false,
@@ -1264,9 +1275,9 @@
         ],
         addChildProcess: false,
         addChildFunction: false,
-        selectedProcessStep: {},
-        selectedStatus: {},
+        newChildProcessStep: {},
         cancelledCompanyStatuses: [],
+        activeStatusesAssignedToStep: [],
         selectedChildFunction: {},
         selectedChildRequirementParamDynamicValues: [],
 
@@ -1613,19 +1624,32 @@
       filterItems(items) {
         return items.filter(i => !i.archived)
       },
-      async getCancelledStatuses() {
-        if (this.cancelledCompanyStatuses?.length === 0) {
-          try {
-            const {data} = await getCancelledCompanyStatusTypes(this.projectId)
-            this.cancelledCompanyStatuses = data
-            if (data?.length === 1) {
-              this.selectedStatus = data[0]
-            }
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      async getStatusesAssignedToStep(item) {
+        this.activeStatusesAssignedToStep = []
+        try {
+          const {data} = await getActiveAssignedToProcessStep(item.processStepId)
+          this.activeStatusesAssignedToStep = data
+          if (data?.length === 1) {
+            item.initialCompanyProcessStepStatusTypeId = data[0].id
           }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+      async getCancelledStatuses(item) {
+        this.cancelledCompanyStatuses = []
+        try {
+          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(item.processStepId)
+          this.cancelledCompanyStatuses = data
+          if (data?.length === 1) {
+            item.existingCompanyProcessStepStatusTypeId = data[0].id
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getActions() {
@@ -1719,8 +1743,8 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStatusTypes()
-          this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          const {data} = await getAssignedToProcessStep(this.processStepId)
+          this.statusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1779,10 +1803,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
-            companyProcessStepStatusTypeId: cp.companyProcessStepStatusTypeId,
+            existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
+            initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
           })
           this.cpExpanded = []
-          cp.processStepStatusType = data.processStepStatusType
+          cp.existingProcessStepStatusType = data.existingProcessStepStatusType
+          cp.initialProcessStepStatusType = data.initialProcessStepStatusType
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Status Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1797,13 +1823,13 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
-            processStepId: this.selectedProcessStep.id,
-            companyProcessStepStatusTypeId: this.selectedStatus.id,
+            processStepId: this.newChildProcessStep.processStepId,
+            existingCompanyProcessStepStatusTypeId: this.newChildProcessStep.existingCompanyProcessStepStatusTypeId,
+            initialCompanyProcessStepStatusTypeId: this.newChildProcessStep.initialCompanyProcessStepStatusTypeId,
             displayOrder: 0
           })
           action.processStepActionChildProcesses.push(data)
-          this.selectedProcessStep = {}
-          this.selectedStatus = this.cancelledCompanyStatuses?.length === 1 ? this.cancelledCompanyStatuses[0] : {}
+          this.newChildProcessStep = {}
           this.addChildProcess = false
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Added To Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

@@ -86,7 +86,7 @@
                   v-on="on"
                   dense
                   v-model="processStep.main"
-                  :disabled="processStep.main || !userCanEdit"
+                  :disabled="processStep.main || !userCanEdit || availableProcessStepStatuses.length === 0"
                   label="Primary"
                 />
               </template>
@@ -284,11 +284,13 @@
     </v-row>
 
     <ProjectProcessStepStatus
+        v-if="!isProcessStepLoading"
         :show-dialog="showMainDialog"
         :project-id="parseInt(projectId)"
         :project-process-step="processStep"
         :available-process-step-statuses="availableProcessStepStatuses"
-        :limit-to-active="true"
+        :limit-to-active="false"
+        :limit-to-non-cancelled="true"
         :new-status-optional="processStep.processStepStatusTypeId !== 3"
         @updateStatus="updateMain"
         @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
@@ -301,7 +303,7 @@
   import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
-  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
   import Links from '@/views/flow/components/Links'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -366,7 +368,6 @@
       }
     },
     async created() {
-      this.getAvailableStatuses()
       this.getCustomFieldGroups()
       //per 9/24 request judson had us remove notes from process steps
       // this.getNotes()
@@ -397,7 +398,7 @@
       },
       async getAvailableStatuses() {
         try {
-          const {data} = await getCompanyStatusTypes(parseInt(this.projectId))
+          const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
           // const {data} = await getRequest(`/processStep/status`)
           this.availableProcessStepStatuses = data
         } catch (e) {
@@ -410,6 +411,7 @@
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+          this.getAvailableStatuses()
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
         } catch (e) {

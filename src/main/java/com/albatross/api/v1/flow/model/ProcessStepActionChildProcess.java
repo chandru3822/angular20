@@ -12,8 +12,9 @@ import lombok.Setter;
 public class ProcessStepActionChildProcess {
 
   private Long id, processStepActionId, processStepId, createdById, modifiedById,
-                displayOrder, autoTriggerActionCount, companyProcessStepStatusTypeId; //companyProcessStepStatusTypeId is used to say which status to set existing steps of the same type to
-  private String processStepName, processStepStatusType;
+                displayOrder, autoTriggerActionCount, existingCompanyProcessStepStatusTypeId, initialCompanyProcessStepStatusTypeId;
+      //existingCompanyProcessStepStatusTypeId is used to say which status to set existing steps of the same type to
+  private String processStepName, existingProcessStepStatusType, initialProcessStepStatusType, actionName;
   private Boolean archived;
 }
 

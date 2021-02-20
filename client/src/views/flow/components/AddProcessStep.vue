@@ -8,29 +8,38 @@
 >
 
   <template #activator="{on}">
-    <v-btn text class="" small v-on="on" @click="[ getSteps(), getCancelledStatuses() ]">
+    <v-btn text class="" small v-on="on" @click="[ getSteps() ]">
       <v-icon>add</v-icon>
     </v-btn>
   </template>
 
   <v-card class="pa-5">
+<!--    cant change this part cuz the steps used are different depending on if the user is an admin or not -->
     <v-autocomplete v-model="selectedStep"
                     :items="steps"
                     label="Process Steps"
                     item-text="processStepName"
                     item-value="id"
                     placeholder="Select one..."
+                    @input="[getCancelledStatuses(), getActiveStatusesAssignedToStep() ]"
                     return-object/>
-    <v-autocomplete v-model="selectedStatus"
+    <v-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
+                    v-if="null != selectedStep"
+                    :items="activeStatusesAssignedToStep"
+                    label="Set initial status to:"
+                    item-text="processStepStatusType"
+                    item-value="id"
+                    placeholder="Select one..."/>
+    <v-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
+                    v-if="null != selectedStep"
                     :items="cancelledCompanyStatuses"
                     label="Set status of existing active steps of the same type to:"
                     item-text="processStepStatusType"
                     item-value="id"
-                    placeholder="Select one..."
-                    return-object/>
+                    placeholder="Select one..."/>
     <v-btn
         class="add-process-step-btn primary"
-        :disabled="selectedStep === null || selectedStatus === null"
+        :disabled="selectedStep == null || !newPps.existingCompanyProcessStepStatusTypeId || !newPps.initialCompanyProcessStepStatusTypeId"
         @click="addStep"
     >
       Create
@@ -42,7 +51,7 @@
 <script>
 import {getRequest, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import {getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
 
 export default {
@@ -66,10 +75,11 @@ export default {
       displayDropdown: false,
       fetchingSteps: false,
       steps: [],
+      newPps: {},
       selectedStep: null,
       fetchingStatuses: false,
       cancelledCompanyStatuses: [],
-      selectedStatus: null
+      activeStatusesAssignedToStep: [],
     }
   },
   created () {
@@ -78,30 +88,54 @@ export default {
   },
   methods: {
     getSteps: async function () {
+      if(!this.displayDropdown) {
+        try {
+          const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
+          this.fetchingSteps = true
+          const {data} = await getRequestWithParams(url, {
+            params: {
+              projectId: this.projectId,
+            }
+          })
+          this.steps = (this.admin) ? data.processStepProcesses : data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.fetchingSteps = false
+        }
+      } else {
+        this.selectedStep = null
+        this.newPps = {}
+      }
+    },
+    async getActiveStatusesAssignedToStep() {
+      this.activeStatusesAssignedToStep = []
       try {
-        const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
-        this.fetchingSteps = true
-        const {data} = await getRequestWithParams(url, {
-          params: {
-            projectId: this.projectId,
-          }
-        })
-        this.steps = (this.admin) ? data.processStepProcesses : data
+        let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
+        const {data} = await getActiveAssignedToProcessStep(stepId)
+        this.activeStatusesAssignedToStep = data
+        if (data?.length === 1) {
+          this.newPps.initialCompanyProcessStepStatusTypeId = data[0].id
+        }
       } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.fetchingSteps = false
       }
     },
     getCancelledStatuses: async function () {
+      this.cancelledCompanyStatuses = []
       try {
+        let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
         this.fetchingStatuses = true
-        const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+        const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
         this.cancelledCompanyStatuses = data
+        console.log('randaLogger',data)
         if(data?.length === 1) {
-          this.selectedStatus = data[0]
+          console.log('randaLogger',data[0])
+          this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
         }
       } catch (e) {
         logError(e)
@@ -114,14 +148,14 @@ export default {
     addStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/projectProcessStep/${this.selectedStatus.id}`, {
+        const {data} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
           projectId: this.projectId,
           processStepId: (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id,
           main: true
         })
 
         this.selectedStep = null
-        this.selectedStatus = null
+        this.newPps = {}
         this.displayDropdown = false
         this.$emit('step-added')
       } catch (e) {

@@ -113,12 +113,12 @@
   <user.updateUser>
     <![CDATA[
       update flow."user"
-      set first_name = :firstName,
-          last_name = :lastName,
-          email = :email,
+      set first_name = trim(:firstName),
+          last_name = trim(:lastName),
+          email = trim(:email),
           notification_type_id = :notificationTypeId,
-          username = :username,
-          phone_number = :phone,
+          username = trim(:username),
+          phone_number = trim(:phone),
           modified_by_id = :modifiedById,
           date_modified = now()
       where id = :id;
@@ -140,7 +140,7 @@
 
   <user.insertUser><![CDATA[
       insert into flow.user(first_name, last_name, created_by_id, phone_number, email, username, password)
-      values(:firstName, :lastName, :createdById, :phone, :email, :email, :defaultPassword);
+      values(trim(:firstName), trim(:lastName), :createdById, trim(:phone), trim(:email), trim(:email), :defaultPassword);
   ]]></user.insertUser>
 
   <user.getOne><![CDATA[

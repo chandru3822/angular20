@@ -176,7 +176,7 @@ public class ProcessStepActionService {
     params.put("processStepActionId", actionId);
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.getId());
-    params.put("companyProcessStepStatusTypeId", child.getCompanyProcessStepStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
 
     Long id = sqlCache.updateReturningId("processStepAction.addChildStepToAction", params, "id").longValue();
     return getActionChildStep(id);
@@ -187,10 +187,11 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("childProcessStepId", childProcessStepId);
     params.put("processStepActionId", actionId);
-    params.put("companyProcessStepStatusTypeId", child.getCompanyProcessStepStatusTypeId());
+    params.put("existingCompanyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
+    params.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
     params.put("modifiedById", currentUser.getId());
 
-    Long id = sqlCache.updateReturningId("processStepAction.saveChildProcessCancelledStatus", params, "id").longValue();
+    Long id = sqlCache.updateReturningId("processStepAction.saveChildProcessStatuses", params, "id").longValue();
     return getActionChildStep(id);
   }
 
@@ -219,7 +220,8 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
-    params.put("companyProcessStepStatusTypeId", child.getCompanyProcessStepStatusTypeId());
+    params.put("existingCompanyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
+    params.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
     sqlCache.update("processStepAction.updateActionChildStep", params);
   }
 
