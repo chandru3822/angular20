@@ -14,7 +14,7 @@ public class Contact {
 
   private Long id, contactBaseId, companyId, contactTypeId, companyStateId, companyCountryId;
   private String firstName, lastName, fullName, email,
-      street1, street2, city, state, postalCode, country,
+      street1, street2, city, state, postalCode, country, countryId,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
       phone, mobile, contactType, companyName;
   private Date dateCreated;

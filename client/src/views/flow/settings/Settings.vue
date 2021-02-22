@@ -134,6 +134,11 @@ export default {
         pathMatch: '/settings/postalCode',
         show: this.$store.getters.userHasFeature('ROUND_ROBIN')
       }, {
+        path: '/settings/callGroups',
+        title: 'Call Groups',
+        pathMatch: '/settings/callGroup',
+        show: this.$store.getters.userHasFeature('CALL_GROUPS')
+      }, {
         header: 'User Management',
         show: this.hasSettingsAccess
       }, {
