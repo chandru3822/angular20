@@ -39,6 +39,7 @@
        c.postal_code,
        c.company_country_id,
        ctr.country,
+       cc.country_id,
        c.owner_user_position_id,
        coalesce((
             SELECT array_to_json(array_agg(row_to_json(projects)))
