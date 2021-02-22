@@ -78,7 +78,7 @@ order by s.name
 
 <smartlist.add><![CDATA[
 insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details)
-values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, true, :projectDetails)
+values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps, :projectDetails)
 returning id;
 ]]></smartlist.add>
 
@@ -91,7 +91,8 @@ set
   view_object_type_id = :viewObjectTypeId,
   modified_by_id = :userId,
   date_modified = now(),
-  project_details = :projectDetails
+  project_details = :projectDetails,
+  main_process_steps = :mainProcessSteps
 where
   id = :id;
 ]]></smartlist.update>
