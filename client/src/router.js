@@ -359,6 +359,32 @@ export default new Router({
                 }
               ]
             }, {
+              path: 'callGroups',
+              meta: {title: 'Albatross - Call Groups'},
+              component: () => {
+                if (store.getters.userHasFeature('CALL_GROUPS')) {
+                  return import (/* webpackChunkName: "callGroups" */ './views/flow/settings/callGroups/CallGroups.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'callGroup/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "callGroups" */ './views/flow/settings/callGroups/PostalCode.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'codes',
+                  component: () => import (/* webpackChunkName: "callGroups" */ './views/flow/settings/callGroups/Codes.vue'),
+                }
+              ]
+            }, {
               path: 'orgTypes',
               meta: {title: 'Albatross - Settings'},
               component: () => {

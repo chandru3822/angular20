@@ -2,12 +2,15 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.ContactService;
+import com.albatross.api.v1.flow.services.CustomFieldValueService;
+import com.albatross.api.v1.flow.services.SMSService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.mypurecloud.sdk.v2.*;
 import com.mypurecloud.sdk.v2.api.OutboundApi;
 import com.mypurecloud.sdk.v2.api.request.*;
@@ -43,7 +46,13 @@ public class GenesysService {
   private ContactService contactService;
 
   @Autowired
+  private CustomFieldValueService customFieldValueService;
+
+  @Autowired
   private SecurityService securityService;
+
+  @Autowired
+  private SMSService smsService;
 
   @Autowired
   private SqlCache sqlCache;
@@ -165,41 +174,51 @@ public class GenesysService {
     contactMap.put("street2", contact.getStreet2() != null ? contact.getStreet2() : "");
     contactMap.put("phone", contact.getPhone() != null ? contact.getPhone() : "");
     contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile() : "");
+    contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
+    contactMap.put("contact_type", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
+    contactMap.put("Lead Main State", "");
+    contactMap.put("Total Call Attempts", "");
+    contactMap.put("Contacted Call Attempts", "");
+    contactMap.put("contactcallable", 1);
+    contactMap.put("zipcodeautomatictimezone", "");
+    contactMap.put("CallRecordLastAttempt-mobile", "");
+    contactMap.put("CallRecordLastResult-mobile", "");
+    contactMap.put("CallRecordLastAgentWrapup-mobile", "");
+    contactMap.put("SmsLastAttempt-mobile", "");
+    contactMap.put("SmsLastResult-mobile", "");
+    contactMap.put("Callable-mobile", 1);
+    contactMap.put("AutomaticTimeZone-mobile", "");
+    contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
+    contactMap.put("to_char", formatter.format(calendar.getTime()));
     contactMap.put("date_created", formatter.format(calendar.getTime()));
-    contactMap.put("lead_source", "");
-    contactMap.put("lead_source_detail", "");
-    contactMap.put("lead_status", "");
 
-    for (CustomFieldValue cfv: values) {
-      String value = "";
-      if (cfv.getIntValue() != null && !cfv.getListOfValues().isEmpty()) {
-        for (ListOfValue lov: cfv.getListOfValues()) {
-          if (lov.getId().equals(cfv.getIntValue())) {
-            value = lov.getName();
-            break;
-          }
-        }
-      }
+    getCfvValues(contactMap, values);
 
-      if (cfv.getFieldName().equals("Lead Source")) {
-        contactMap.put("lead_source", value);
-      }
-      else if (cfv.getFieldName().equals("Lead Source Detail")) {
-        contactMap.put("lead_source_detail", value);
-      }
-      else if (cfv.getFieldName().equals("Lead Status")) {
-        contactMap.put("lead_status", value);
-      }
-    }
     wdc.setData(contactMap);
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    ContactListEntityListing newContactList = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
-    String contactListId = newContactList.getEntities().get(0).getId();
+    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
+
+    String lead = (String) contactMap.get("lead_source");
+    if (lead.isEmpty()) {
+      return;
+    }
+
+    String contactListId = "";
+    for (ContactList cl: contactListEntity.getEntities()) {
+      if (cl.getName().equals(lead)) {
+        contactListId = cl.getId();
+        break;
+      }
+    }
+    // If no Contact List match was found
+    if (contactListId.isEmpty()) {
+      return;
+    }
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
     // Store the Genesys Contact ID
@@ -222,7 +241,7 @@ public class GenesysService {
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
   }
 
-  public void updateContact(Long contactId, List<CustomFieldValue> values) throws IOException, ApiException {
+  public void updateContact(Long contactId) throws IOException, ApiException {
     // Only update contacts if we are in Prod
     if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
       return;
@@ -240,13 +259,71 @@ public class GenesysService {
     contactMap.put("street2", contact.getStreet2() != null ? contact.getStreet2() : "");
     contactMap.put("phone", contact.getPhone() != null ? contact.getPhone() : "");
     contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile() : "");
+    contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
+    contactMap.put("Total Call Attempts", "");
+    contactMap.put("Contacted Call Attempts", "");
+    contactMap.put("contactcallable", 1);
+    contactMap.put("zipcodeautomatictimezone", "");
+    contactMap.put("CallRecordLastAttempt-mobile", "");
+    contactMap.put("CallRecordLastResult-mobile", "");
+    contactMap.put("CallRecordLastAgentWrapup-mobile", "");
+    contactMap.put("SmsLastAttempt-mobile", "");
+    contactMap.put("SmsLastResult-mobile", "");
+    contactMap.put("Callable-mobile", 1);
+    contactMap.put("AutomaticTimeZone-mobile", "");
+    contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
+    contactMap.put("to_char", formatter.format(calendar.getTime()));
     contactMap.put("date_created", formatter.format(calendar.getTime()));
+
+    List<CustomFieldGroup> customFieldGroups = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), contactId);
+    getCfvValues(contactMap, customFieldGroups.get(0).getCustomFieldValues());
+
+    dc.setData(contactMap);
+    // Get the list of contacts
+    Configuration.setDefaultApiClient(initGenesysApi());
+    OutboundApi apiInstance = new OutboundApi();
+    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
+
+    String lead = (String) contactMap.get("lead_source");
+    if (lead.isEmpty()) {
+      return;
+    }
+
+    String contactListId = "";
+    for (ContactList cl: contactListEntity.getEntities()) {
+      if (cl.getName().equals(lead)) {
+        contactListId = cl.getId();
+        break;
+      }
+    }
+    // If no Contact List match was found
+    if (contactListId.isEmpty()) {
+      return;
+    }
+
+    // Try with the Contact ID first (for imported contacts)
+    // if that doesn't work use the Genesys Agent ID (newly created Contacts)
+    try {
+      apiInstance.putOutboundContactlistContact(contactListId, contact.getId().toString(), dc);
+    } catch (ApiException e) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("contactId", contact.getId());
+      Optional<String> genesysContactId = sqlCache.get("genesys.getGenesysContactIdByContactId", params, new SingleColumnRowMapper<>(String.class));
+      if (genesysContactId.isPresent()) {
+        apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
+      }
+    }
+  }
+
+  private void getCfvValues(HashMap<String, Object> contactMap, List<CustomFieldValue> values) {
     contactMap.put("lead_source", "");
     contactMap.put("lead_source_detail", "");
     contactMap.put("lead_status", "");
+    contactMap.put("referral", false);
+    contactMap.put("retargeted", false);
 
     for (CustomFieldValue cfv: values) {
       String value = "";
@@ -268,27 +345,25 @@ public class GenesysService {
       else if (cfv.getFieldName().equals("Lead Status")) {
         contactMap.put("lead_status", value);
       }
-    }
-
-    dc.setData(contactMap);
-    // Get the list of contacts
-    Configuration.setDefaultApiClient(initGenesysApi());
-    OutboundApi apiInstance = new OutboundApi();
-    ContactListEntityListing newContactList = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
-    String contactListId = newContactList.getEntities().get(0).getId();
-
-
-    // Try with the Contact ID first (for imported contacts)
-    // if that doesn't work use the Genesys Agent ID (newly created Contacts)
-    try {
-      apiInstance.putOutboundContactlistContact(contactListId, contact.getId().toString(), dc);
-    } catch (ApiException e) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("contactId", contact.getId());
-      Optional<String> genesysContactId = sqlCache.get("genesys.getGenesysContactIdByContactId", params, new SingleColumnRowMapper<>(String.class));
-      if (genesysContactId.isPresent()) {
-        apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
+      else if (cfv.getFieldName().equals("Referral")) {
+        contactMap.put("referral", cfv.getBooleanValue() == null ? false : cfv.getBooleanValue());
       }
+    }
+  }
+
+  private String getCallerGroupNumber(Contact contact) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("postalCode", contact.getPostalCode());
+    Optional<String> groupNumber = sqlCache.get("callGroup.getCallerGroupNumber", params, new SingleColumnRowMapper<>(String.class));
+    if (groupNumber.isPresent()) {
+      try {
+        return smsService.cleanPhoneNumber("+" + contact.getCountryId() + groupNumber.get());
+      } catch (NumberParseException e) {
+        return "+1385-292-1523";
+      }
+    }
+    else {
+      return "+13852921523";
     }
   }
 }

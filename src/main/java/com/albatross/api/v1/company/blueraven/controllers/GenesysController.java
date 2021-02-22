@@ -2,14 +2,15 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.mypurecloud.sdk.v2.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -72,9 +73,15 @@ public class GenesysController {
     try {
       genesysService.addContact(id, values);
       return ResponseEntity.ok("Contact successfully added.");
-    } catch (Exception e) {
-      String msg = "GENE: Error adding contact";
-      log.error(msg, e);
+    } catch (ApiException e) {
+      JSONObject apiException = new JSONObject(e.getRawBody());
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, apiException.getString("message"));
+      return ResponseEntity.badRequest().body("Error adding contact");
+    }
+    catch (IOException e) {
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, e.getMessage());
       return ResponseEntity.badRequest().body("Error adding contact");
     }
   }
@@ -82,12 +89,18 @@ public class GenesysController {
   @PutMapping(value = "/contact/{id}")
   public ResponseEntity updateContact(@RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
     try {
-      genesysService.updateContact(id, values);
+      genesysService.updateContact(id);
       return ResponseEntity.ok("Contact successfully updated.");
-    } catch (Exception e) {
-      String msg = "GENE: Error updating contact";
-      log.error(msg, e);
-      return ResponseEntity.badRequest().body("Error updating contact");
+    } catch (ApiException e) {
+      JSONObject apiException = new JSONObject(e.getRawBody());
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, apiException.getString("message"));
+      return ResponseEntity.badRequest().body("Error adding contact");
+    }
+    catch (IOException e) {
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error adding contact");
     }
   }
 }
