@@ -1,0 +1,105 @@
+<sql>
+  <callGroup.getGroups><![CDATA[
+    select cg.id,
+        cg.company_id,
+        cg.call_group_name,
+        cg.phone_number,
+        cg.archived
+    from brs.call_group cg
+    where cg.company_id = :companyId
+    and cg.archived is not true
+    and case when :searchQuery::text is not null then
+                 lower(translate(cg.call_group_name, '*,.& ', '')) like '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%'
+            OR cg.id in (select cgpc.call_group_id
+                from brs.call_group_postal_code cgpc
+                where cgpc.archived is not true
+                and cgpc.postal_code like '%' || :searchQuery::text || '%')
+        else 1=1 end
+    order by call_group_name
+  ]]></callGroup.getGroups>
+
+  <callGroup.getCodesForGroup><![CDATA[
+    select cgpc.id,
+           cgpc.postal_code as "postalCode",
+           cgpc.call_group_id as "callGroupId",
+           cgpc.archived
+    from brs.call_group_postal_code cgpc
+    where cgpc.call_group_id = :callGroupId
+      and cgpc.archived is not true
+    order by cgpc.postal_code
+  ]]></callGroup.getCodesForGroup>
+
+  <callGroup.getGroup><![CDATA[
+    select cg.id,
+       cg.company_id,
+       cg.call_group_name,
+       cg.phone_number,
+       cg.phone_number,
+       cg.archived
+    from brs.call_group cg
+    where cg.id = :id
+  ]]></callGroup.getGroup>
+
+  <callGroup.insertGroup><![CDATA[
+    insert into brs.call_group(company_id, call_group_name, phone_number, date_created, created_by_id)
+    values (:companyId, :callGroupName, :phoneNumber, now(), :createdById)
+  ]]></callGroup.insertGroup>
+
+  <callGroup.updateGroup><![CDATA[
+    update brs.call_group
+    set call_group_name = :callGroupName,
+        phone_number = :phoneNumber,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></callGroup.updateGroup>
+
+  <callGroup.deleteGroup><![CDATA[
+    update brs.call_group
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></callGroup.deleteGroup>
+
+  <callGroup.addPostalCode><![CDATA[
+    insert into brs.call_group_postal_code(call_group_id, postal_code, date_created, created_by_id)
+    values (:callGroupId, trim(:postalCode), now(), :createdById)
+  ]]></callGroup.addPostalCode>
+
+  <callGroup.deletePostalCode><![CDATA[
+    update brs.call_group_postal_code
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></callGroup.deletePostalCode>
+
+  <callGroup.getPostalCode><![CDATA[
+    select cgpc.id,
+       cgpc.call_group_id,
+       cgpc.postal_code,
+       cgpc.archived
+    from brs.call_group_postal_code cgpc
+    where cgpc.id = :id
+  ]]></callGroup.getPostalCode>
+
+  <callGroup.checkForExisting><![CDATA[
+    select cgpc.id,
+       cgpc.call_group_id,
+       cgpc.postal_code,
+       cgpc.archived
+    from brs.call_group_postal_code cgpc
+        inner join brs.call_group cg on cgpc.call_group_id = cg.id
+    where cgpc.postal_code = :postalCode
+      and cg.archived is not true and cgpc.archived is not true
+  ]]></callGroup.checkForExisting>
+
+  <callGroup.getCallerGroupNumber><![CDATA[
+    select cg.phone_number
+    from brs.call_group cg
+        inner join brs.call_group_postal_code cgpc on cg.id = cgpc.call_group_id
+    where cgpc.postal_code = :postalCode
+      and cg.archived is not true and cgpc.archived is not true
+  ]]></callGroup.getCallerGroupNumber>
+</sql>
