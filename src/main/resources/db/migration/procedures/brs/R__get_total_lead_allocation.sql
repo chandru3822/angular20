@@ -114,7 +114,7 @@ BEGIN
                           left join brs.cached_appointment ca on rru.user_id = ca.user_id
              )
         select foo3.postal_code_zone_user_id, foo3.user_id,
-               foo3.distance_from_actual_to_target,
+               foo3.actual_lead_allocation - foo3.total_lead_allocation as distance_from_actual_to_target,
                foo3.total_lead_allocation,
                foo3.actual_lead_allocation,
                foo3.score,

@@ -1935,7 +1935,7 @@ BEGIN
                                                  and pd.credit_decision_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -1950,7 +1950,7 @@ BEGIN
                                                  and pd.credit_decision_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -1966,7 +1966,7 @@ BEGIN
                                                  and pd.credit_decision_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -1983,7 +1983,7 @@ BEGIN
                                                  and pd.credit_decision_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -1996,7 +1996,7 @@ BEGIN
 
                                                  and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2010,7 +2010,7 @@ BEGIN
 
                                                  and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2036,7 +2036,7 @@ BEGIN
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2052,7 +2052,7 @@ BEGIN
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2069,7 +2069,7 @@ BEGIN
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2087,7 +2087,7 @@ BEGIN
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2101,7 +2101,7 @@ BEGIN
                                                  and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
 
@@ -2117,7 +2117,7 @@ BEGIN
                                                  and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2142,7 +2142,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2157,7 +2157,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2173,7 +2173,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2190,7 +2190,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2203,7 +2203,7 @@ BEGIN
 
                                                  and pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2217,7 +2217,7 @@ BEGIN
 
                                                  and pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2242,7 +2242,7 @@ BEGIN
                                                  and pd.site_survey_verified_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2257,7 +2257,7 @@ BEGIN
                                                  and pd.site_survey_verified_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2273,7 +2273,7 @@ BEGIN
                                                  and pd.site_survey_verified_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2290,7 +2290,7 @@ BEGIN
                                                  and pd.site_survey_verified_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2303,7 +2303,7 @@ BEGIN
 
                                                  and pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.site_survey_verified_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2317,7 +2317,7 @@ BEGIN
 
                                                  and pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.site_survey_verified_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2342,7 +2342,7 @@ BEGIN
                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2357,7 +2357,7 @@ BEGIN
                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2373,7 +2373,7 @@ BEGIN
                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2390,7 +2390,7 @@ BEGIN
                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2403,7 +2403,7 @@ BEGIN
 
                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2417,7 +2417,7 @@ BEGIN
 
                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2442,7 +2442,7 @@ BEGIN
                                                  and pd.final_design_signed_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2457,7 +2457,7 @@ BEGIN
                                                  and pd.final_design_signed_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2473,7 +2473,7 @@ BEGIN
                                                  and pd.final_design_signed_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2490,7 +2490,7 @@ BEGIN
                                                  and pd.final_design_signed_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2503,7 +2503,7 @@ BEGIN
 
                                                  and pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2517,7 +2517,7 @@ BEGIN
 
                                                  and pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_signed_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2542,7 +2542,7 @@ BEGIN
 
                                                  and pd.final_design_complete_date is not null
                                                  and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
@@ -2555,7 +2555,7 @@ BEGIN
                                                  and pd.company_id = v_company_id and
 
                                                    pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as today_count,
 
                                               (select count(1)
@@ -2569,9 +2569,9 @@ BEGIN
                                                  and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
 
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
@@ -2585,7 +2585,7 @@ BEGIN
                                                  and pd.final_design_complete_date is not null
                                                  and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as week_to_date_count,
 
                                               (select count(1)
@@ -2598,7 +2598,7 @@ BEGIN
 
                                                  and pd.final_design_complete_date is not null
                                                  and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
@@ -2612,7 +2612,7 @@ BEGIN
 
                                                  and pd.final_design_complete_date is not null
                                                  and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -2637,7 +2637,7 @@ BEGIN
                                                  and pd.substantial_completion_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
@@ -2652,7 +2652,7 @@ BEGIN
                                                  and pd.substantial_completion_date :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as today_count,
 
                                               (select count(1)
@@ -2668,7 +2668,7 @@ BEGIN
                                                  and pd.substantial_completion_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
@@ -2685,7 +2685,7 @@ BEGIN
                                                  and pd.substantial_completion_date :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as week_to_date_count,
 
                                               (select count(1)
@@ -2698,7 +2698,7 @@ BEGIN
 
                                                  and pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.substantial_completion_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
@@ -2712,7 +2712,7 @@ BEGIN
 
                                                  and pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.substantial_completion_date is not null
-                                                 and o.id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as custom_date_range_count
 
                                        from brs.funnel
