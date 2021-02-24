@@ -1,0 +1,38 @@
+<sql>
+  <contactLead.insertContact><![CDATA[
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId,
+            (select cs.id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
+                    where s.state = :state and cs.company_id = :companyId),
+            (select s.country_id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
+                    where s.state = :state and cs.company_id = :companyId))
+  ]]></contactLead.insertContact>
+
+  <contactLead.insertContactStateAbbr><![CDATA[
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId,
+            (select cs.id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
+                    where s.abbreviation = :companyState and cs.company_id = :companyId),
+            (select s.country_id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
+                    where s.abbreviation = :companyState and cs.company_id = :companyId))
+  ]]></contactLead.insertContactStateAbbr>
+
+  <contactLead.checkIfCustomFieldDropdownValueExists><![CDATA[
+    select id
+    from flow.list_of_value lov
+    where lov.parent_id = :listOfValueId
+      and lov.name = :customFieldDropdownValue
+  ]]></contactLead.checkIfCustomFieldDropdownValueExists>
+
+  <contactLead.upsertCustomFieldValue><![CDATA[
+    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, numeric_value, created_by_id)
+    values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, :numericValue, :leadOwnerUserId)
+    on conflict (contact_id, custom_field_group_assignment_id)
+    do update
+        set text_value = :textValue,
+            int_value = :intValue,
+            numeric_value = :numericValue,
+            modified_by_id = :leadOwnerUserId,
+            date_modified = now()
+  ]]></contactLead.upsertCustomFieldValue>
+</sql>
