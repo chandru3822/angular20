@@ -13,7 +13,7 @@
 
     <installAgreement.getUtilityFromProposalLog>
         <![CDATA[
-            SELECT utility_name
+            SELECT utility_name as utility_company
             FROM brs.proposal_log_history
             WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
         ]]>
