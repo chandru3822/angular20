@@ -527,6 +527,9 @@ public class ProjectProcessStepService {
       Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
       //@TODO: compare returnValue to the requirement value
       requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
+    } else if(r.getProcessStepRequirementTypeId() == 7) {
+      // 7 = check process step status type from reference step
+      requirementMet = calculateStatusRequirement(r, ppsId, false);
     } else {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
 
@@ -607,6 +610,30 @@ public class ProjectProcessStepService {
       }
 
       return passed;
+  }
+
+  public boolean calculateStatusRequirement(ProjectProcessStepRequirement requirement, Long projectProcessStepId, Boolean isProject) {
+    boolean passed = false;
+    if(isProject) {
+      //place holder for checking project statuses in the future
+    } else {
+      //check process step status here
+      //get the primary pps of the reference_process_step_id type
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("referenceProcessStepId", requirement.getReferenceProcessStepId());
+      params.put("ppsId", projectProcessStepId);
+      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
+
+      Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
+      //if we found a primary pss of that type and one of the selected statuses
+      if(projectProcessStep.isPresent()) {
+        passed = true;
+      } else {
+        //if we didn't find one, check the "failIfNoReferenceStepFound" value
+        passed = !requirement.getFailIfNoReferenceStepFound();
+      }
+    }
+    return passed;
   }
 
   public boolean calculateFunctionRequirement(Object functionResult, ProjectProcessStepRequirement r) throws Exception {

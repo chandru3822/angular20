@@ -63,18 +63,18 @@
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
-            <!-- if it is a process step custom field -->
+<!--            show this for both custom fields AND statuses-->
             <v-autocomplete
-              v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
+              v-if="newRequirement.processStepRequirementTypeId && (newRequirement.processStepRequirementTypeId === 1 || newRequirement.processStepRequirementTypeId === 7)"
               v-model="parent"
               :items="parentObjects"
               label="Parent Object"
               return-object
               item-text="processStepName"
-              @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
-                              validateRequirementForm(),
-                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
-                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
+              @input="[loadValues(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+                        validateRequirementForm(),
+                        selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                        newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
             <v-autocomplete
@@ -123,7 +123,9 @@
               </v-card>
             </div>
             <v-select
-              v-if="(newRequirement.processStepRequirementTypeId !== 2 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
+              v-if="(newRequirement.processStepRequirementTypeId !== 2 && newRequirement.processStepRequirementTypeId !== 7 && selectedCustomField.customFieldGroupAssignmentId)
+                      || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)
+                      || (newRequirement.processStepRequirementTypeId === 7 && parent.id)"
               v-model="newRequirement.operatorTypeId"
               :items="operatorTypes"
               label="Operator"
@@ -134,8 +136,8 @@
             <v-switch
               v-if="newRequirement.operatorTypeId"
               v-model="newRequirement.customValue"
-              :readonly="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
-              :disabled="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
+              :readonly="(selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3 || newRequirement.processStepRequirementTypeId === 7"
+              :disabled="(selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3 || newRequirement.processStepRequirementTypeId === 7"
               @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
               class="mx-2"
               label="Custom"
@@ -150,6 +152,7 @@
             <v-select
               v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
+                              && newRequirement.processStepRequirementTypeId !== 7
                               && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)
                               && !selectedCustomField.allowMultiple"
               v-model="selectedListValue"
@@ -171,6 +174,16 @@
               return-object
             ></v-select>
             <v-select
+              v-else-if="newRequirement.operatorTypeId && newRequirement.processStepRequirementTypeId === 7"
+              v-model="selectedListOfValues"
+              :items="processStepStatuses"
+              label="Available Values"
+              multiple
+              @change="validateRequirementForm()"
+              item-text="processStepStatusType"
+              return-object
+            ></v-select>
+            <v-select
               v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
               v-model="selectedDataTypeRequirement"
               :items="dataTypeRequirements"
@@ -186,6 +199,13 @@
                           @input="validateRequirementForm()"
                           label="Value">
             </v-text-field>
+            <div v-if="newRequirement.processStepRequirementTypeId === 7 && newRequirement.operatorTypeId">
+              <label>Fail if no
+                <strong>{{parent.processStepName}}</strong> steps are found:</label>
+              <input type="checkbox" class="ml-3 mb-4" v-model="newRequirement.failIfNoReferenceStepFound"
+                     :readonly="!userCanEdit"
+                     :disabled="!userCanEdit">
+            </div>
             <v-btn :disabled="invalidRequirement"
                    @click="saveNewRequirement">
               <v-icon>save</v-icon>
@@ -279,8 +299,8 @@
                   ></v-select>
                   <v-switch v-model="item.customValue"
                             class="mx-2"
-                            :readonly="(item.operatorTypeId === 5 && item.dataTypeId === 7) || item.dataTypeId === 3 || !userCanEdit"
-                            :disabled="(item.operatorTypeId === 5 && item.dataTypeId === 7) || item.dataTypeId === 3 || item.immutable  || !userCanEdit"
+                            :readonly="(item.dataTypeId === 7) || item.dataTypeId === 3 || !userCanEdit || item.processStepRequirementTypeId === 7"
+                            :disabled="(item.dataTypeId === 7) || item.dataTypeId === 3 || item.immutable  || !userCanEdit || item.processStepRequirementTypeId === 7"
                             label="Custom"
                   ></v-switch>
                   <!-- single text field for non list custom values -->
@@ -294,7 +314,7 @@
                   </v-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
-                    v-else-if="item.customValue && item.customField
+                    v-else-if="item.customValue && item.customField && item.processStepRequirementTypeId !== 7
                             && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null || item.customField.companySystemListId !== null) && !item.customField.allowMultiple)"
                     v-model="item.listOfValueId"
                     :disabled="item.immutable || !userCanEdit"
@@ -303,6 +323,16 @@
                     label="Available Values"
                     item-text="name"
                     item-value="id"
+                  ></v-select>
+                  <v-select
+                    v-else-if="item.operatorTypeId && item.processStepRequirementTypeId === 7"
+                    v-model="item.listOfValues"
+                    :items="item.availableListOfValues"
+                    label="Available Values"
+                    multiple
+                    @change="validateRequirementForm()"
+                    item-text="name"
+                    return-object
                   ></v-select>
                   <v-select
                     v-else-if="item.customValue && item.systemListId"
@@ -356,6 +386,13 @@
                                 :readonly="item.immutable || !userCanEdit"
                                 label="Value">
                   </v-text-field>
+                  <div v-if="item.processStepRequirementTypeId === 7 && item.operatorTypeId">
+                    <label>Fail if no
+                      <strong>{{item.referenceProcessStepName}}</strong> steps are found:</label>
+                    <input type="checkbox" class="ml-3 mb-4" v-model="item.failIfNoReferenceStepFound"
+                           :readonly="!userCanEdit"
+                           :disabled="!userCanEdit">
+                  </div>
                   <v-btn v-if="userCanEdit" @click="updateRequirement(item)">
                     <v-icon>save</v-icon>
                     Save
@@ -373,6 +410,9 @@
                     </span>
                     <span v-else-if="item.processStepRequirementTypeId === 2">
                       {{ item.companyFunctionName }}
+                    </span>
+                    <span v-else-if="item.processStepRequirementTypeId === 7">
+                      {{ item.referenceProcessStepName }}
                     </span>
                     <span v-else>
                       {{ item.fieldName }}
@@ -397,7 +437,7 @@
                   </td>
                   <td>
                     <div style="display: flex;">
-                      <v-btn small text @click="[expanded = [item], loadOperatorTypes(item.dataTypeId),
+                      <v-btn small text @click="[expanded = [item], loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId),
                                     loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index]"
                              v-if="!expanded.includes(item)">
                         <v-icon v-if="item.immutable">expand_more</v-icon>
@@ -1255,6 +1295,8 @@
         customFields: [],
         operatorTypes: [],
         operationTypes: [],
+        selectedProcessStepStatus: {},
+        processStepStatuses: [],
 
         requirements: [],
         availableFunctions: [],
@@ -1336,7 +1378,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           //1 == process step custom field, 2 == function, 3 == project custom field, 4 == contact custom field
-          if (this.newRequirement.processStepRequirementTypeId === 1) {
+          if (this.newRequirement.processStepRequirementTypeId === 1 || this.newRequirement.processStepRequirementTypeId === 7) {
             this.loadParentObjects()
           } else if (this.newRequirement.processStepRequirementTypeId === 3) {
             //get project custom fields
@@ -1374,6 +1416,29 @@
         try {
           const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
           this.parentObjects = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async loadValues(parent) {
+        if(this.newRequirement?.processStepRequirementTypeId === 1) {
+          await this.loadFieldsByParent(parent)
+        } else if (this.newRequirement?.processStepRequirementTypeId === 7) {
+          this.newRequirement.customValue = true
+          await this.getStatusesAssignedToProcessStep(parent)
+          //this 7 = data type for multi select
+          await this.loadOperatorTypes(7, 7)
+        }
+      },
+      async getStatusesAssignedToProcessStep(parent) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getAssignedToProcessStep(parent.id)
+          this.processStepStatuses = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1425,11 +1490,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async loadOperatorTypes(dataTypeId) {
+      async loadOperatorTypes(dataTypeId, processStepRequirementTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/operator/${dataTypeId}`)
-          this.operatorTypes = data
+          if(processStepRequirementTypeId === 7) {
+            this.operatorTypes = data.filter(d => d.id === 5)
+          } else {
+            this.operatorTypes = data
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1492,7 +1561,6 @@
           } else if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
             //  if from a list of values and not allow multiple use the selected value id,
             this.newRequirement.listOfValueId = this.selectedListValue.id
-
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
             this.newRequirement.systemListOptionId = null
             this.newRequirement.customSqlOptionId = null
@@ -1502,7 +1570,6 @@
           } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
             //  if from a system list and not allow multiple use the selected value id,
             this.newRequirement.systemListOptionId = this.selectedListValue.id
-
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
             this.newRequirement.listOfValueId = null
             this.newRequirement.listOfValueIds = null
@@ -1512,7 +1579,6 @@
           } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSqlKey && !this.selectedCustomField.allowMultiple) {
             //  if from a list of values and not allow multiple use the selected value id,
             this.newRequirement.customSqlOptionId = this.selectedListValue.id
-
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
             this.newRequirement.listOfValueId = null
             this.newRequirement.systemListOptionId = null
@@ -1521,14 +1587,19 @@
             this.newRequirement.requirementValue = null
           } else if (this.newRequirement.customValue) {
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            this.newRequirement.listOfValueIds = null
+            //here
+            if(this.newRequirement.processStepRequirementTypeId === 7) {
+              this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
+              this.newRequirement.referenceProcessStepId = this.parent.id
+            } else {
+              this.newRequirement.listOfValueIds = null
+            }
             this.newRequirement.systemListOptionId = null
             this.newRequirement.customSqlOptionId = null
             this.newRequirement.listOfValueId = null
             this.newRequirement.dataTypeRequirementId = null
           } else if (!this.newRequirement.customValue) {
             this.newRequirement.dataTypeRequirementId = this.selectedDataTypeRequirement.id
-
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
             this.newRequirement.listOfValueIds = null
             this.newRequirement.systemListOptionId = null
@@ -1989,13 +2060,25 @@
         }
       },
       operatorDataTypeCheck(item) {
+        // keeps multiselects using the right operator with the right lists.  i could probably do this better
         if (item) {
           if (item.operatorTypeId === 5 && item.dataTypeId === 7) {
             item.customValue = true
+            item.dataTypeRequirement = {}
+          } else if (item.dataTypeId === 7) {
+            item.customValue = false
+            item.listOfValues = []
+            this.loadDataTypeRequirements(item.dataTypeId)
           }
         } else {
           if (this.newRequirement.operatorTypeId === 5 && this.selectedCustomField.dataTypeId === 7) {
             this.newRequirement.customValue = true
+            this.selectedDataTypeRequirement = {}
+          } else if (this.selectedCustomField.dataTypeId) {
+            this.newRequirement.customValue = false
+            this.selectedListOfValues = []
+            let dataTypeToUse = this.newRequirement.processStepRequirementTypeId === 7 ? 7 : this.selectedCustomField.dataTypeId
+            this.loadDataTypeRequirements(dataTypeToUse)
           }
         }
       }
