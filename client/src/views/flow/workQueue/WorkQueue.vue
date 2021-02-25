@@ -34,13 +34,16 @@
         <v-row>
           <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
-                  @click="loadDrilldown(wq)"
+                  :key="wq.id"
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
-            <v-card-text class="pt-1">
-              <div class="text-left">{{wq.workQueueType}}</div>
-              <div class="card-count">{{wq.workQueueCount}}</div>
-            </v-card-text>
+              <v-card-text class="pt-1">
+                <router-link class="no-text-decoration"
+                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: selectedUserPosition.userPositionId, unassigned: selectedUserPosition.unassigned}}">
+                  <div class="text-left">{{wq.workQueueType}}</div>
+                  <div class="card-count">{{wq.workQueueCount}}</div>
+                </router-link>
+              </v-card-text>
           </v-card>
         </v-row>
       </v-col>
