@@ -152,10 +152,22 @@ public class ProjectProcessStepService {
     params.put("cancelledStatusTypeId", cancelledCompanyProcessStepStatusTypeId);
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
-    //check for un-run automatic actions if the new status type is active
+    //check for un-run automatic actions
+    // only run for self if the new status type is active
     if(runAutoTriggers && processStepStatusTypeId == 1) {
       performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
     }
+    //check for any actions using this PS - Status as a requirement - including SELF if active
+    //run auto triggers for those actions
+    //if the status changed, get all actions using this step's status as a requirement and run auto triggers for those
+    List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
+    for(ProjectProcessStep step : steps) {
+      //only run if the referring project process step is active
+      if(step.getProcessStepStatusTypeId() == 1) {
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+      }
+    }
+
   }
 
   public void setMain(Long ppsId, CompanyProcessStepStatusType status) {
@@ -220,7 +232,7 @@ public class ProjectProcessStepService {
           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
         }
     } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", e);
     }
   }
 
@@ -404,6 +416,7 @@ public class ProjectProcessStepService {
               }
           });
       }
+
       return createdPpsIds;
   }
 
@@ -423,7 +436,7 @@ public class ProjectProcessStepService {
 
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), false, null);
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), true, null);
     }
 
     //update project status if needed
