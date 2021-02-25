@@ -12,12 +12,3 @@ drop function if exists flow.get_project_process_step_requirements_with_values(I
 -- 2845
 -- 1
 ;
-
-select pps.*
-from flow.project_process_step pps
-         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-where pps.project_id = (select pps2.project_id from flow.project_process_step pps2 where id = 2350550)
-  and pps.main is true
-  and pps.archived is not true
-  and pps.process_step_id = :referenceProcessStepId
-  and pps.company_process_step_status_type_id = any(array[ 1 ]::integer[])
