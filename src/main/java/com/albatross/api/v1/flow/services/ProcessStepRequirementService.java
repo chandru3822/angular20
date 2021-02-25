@@ -104,6 +104,7 @@ public class ProcessStepRequirementService {
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
+    params.put("failIfNoReferenceStepFound", null != requirement.getFailIfNoReferenceStepFound() ? requirement.getFailIfNoReferenceStepFound() : false);
     params.put("listOfValueId", requirement.getListOfValueId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
@@ -122,6 +123,8 @@ public class ProcessStepRequirementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", requirement.getProcessStepRequirementTypeId());
     params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
+    params.put("referenceProcessStepId", requirement.getReferenceProcessStepId());
+    params.put("failIfNoReferenceStepFound", null != requirement.getFailIfNoReferenceStepFound() ? requirement.getFailIfNoReferenceStepFound() : false);
     params.put("operatorTypeId", requirement.getOperatorTypeId());
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
