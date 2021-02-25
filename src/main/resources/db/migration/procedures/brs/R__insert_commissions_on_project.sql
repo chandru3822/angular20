@@ -11,7 +11,21 @@ declare
     v_company_feature_id               integer;
     v_company_id                       integer;
     v_custom_field_group_assignment_id integer;
+    v_override_plan_found              bigint;
+    v_commission_plan_found             bigint;
 BEGIN
+
+
+    select count(1)
+    into v_override_plan_found
+    from brs.project_override
+    where project_id = p_project_id;
+
+    select count(1)
+    into v_commission_plan_found
+    from brs.project_commission
+    where project_id = p_project_id;
+
     select pd.closer_user_id
     into v_user_id
     from brs.project_details pd
@@ -50,12 +64,12 @@ BEGIN
 --              inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = v_user_id
 --     where (now() AT TIME ZONE 'US/Mountain') >= rpu.start_date and case when rpu.end_date is not null then
 --                                                                                 (now() AT TIME ZONE 'US/Mountain') <= rpu.end_date else 1=1 end;
-    delete from brs.project_commission where project_id = p_project_id;
-    delete from brs.project_override where project_id = p_project_id;
+
+
 --    delete from brs.project_residual where project_id = p_project_id;
 
-    if v_user_id is not null and v_commission_plan_id is not null then
-
+    if v_user_id is not null and v_commission_plan_id is not null and v_commission_plan_found < 1 then
+        --delete from brs.project_commission where project_id = p_project_id;
         insert into brs.project_commission(project_id, commission_plan_id)
         values (p_project_id, v_commission_plan_id);
     else
@@ -70,7 +84,8 @@ BEGIN
         values (v_company_feature_id, 'Unable to assign Commission Plan to Project ' || p_project_id || '.', 1, now(),
                 99999999);
     end if;
-    if v_user_id is not null and v_override_plan_id is not null then
+    if v_user_id is not null and v_override_plan_id is not null and v_override_plan_found < 1 then
+        --delete from brs.project_override where project_id = p_project_id;
         insert into brs.project_override(project_id, override_plan_id)
         values (p_project_id, v_override_plan_id);
     else
