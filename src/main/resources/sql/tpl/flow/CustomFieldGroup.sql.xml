@@ -68,7 +68,19 @@
                                                                 and lov.parent_id = cf.list_of_value_id
                                                                 and lov.archived is not true
                                                               order by lov.display_order
-                                                          ) listOfValues), '[]') AS "listOfValues"
+                                                          ) listOfValues), '[]') AS "listOfValues",
+                                        coalesce((
+                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                        FROM (
+                                                                 SELECT cfgawlp.id,
+                                                                        cfgawlp.position_id as "positionId",
+                                                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                        cfgawlp.created_by_id as "createdById",
+                                                                        cfgawlp.modified_by_id as "modifiedById",
+                                                                        cfgawlp.archived
+                                                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                                                 WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                                   AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
                                  from flow.custom_field_group_assignment cfga
                                           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                           inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
@@ -79,19 +91,7 @@
                                    and cf.company_id = :companyId
                                    and cfot.show_on_insert is true
                                  order by cfga.field_order, cf.field_name
-                             ) fields), '[]') AS "customFieldValues",
-                  coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(wlp)))
-                    FROM (
-                             SELECT cfgawlp.id,
-                                    cfgawlp.position_id as "positionId",
-                                    cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                    cfgawlp.created_by_id as "createdById",
-                                    cfgawlp.modified_by_id as "modifiedById",
-                                    cfgawlp.archived
-                             FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
-                             WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
-                               AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
+                             ) fields), '[]') AS "customFieldValues"
     from flow.custom_field_group cfg
       inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
     where cot.object_type_id = :objectTypeId
