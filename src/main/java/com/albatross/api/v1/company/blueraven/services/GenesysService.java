@@ -327,26 +327,34 @@ public class GenesysService {
 
     for (CustomFieldValue cfv: values) {
       String value = "";
-      if (cfv.getIntValue() != null && !cfv.getListOfValues().isEmpty()) {
-        for (ListOfValue lov: cfv.getListOfValues()) {
-          if (lov.getId().equals(cfv.getIntValue())) {
-            value = lov.getName();
-            break;
+      if (cfv.getIntValue() != null) {
+        // If Contact is from ContactLeadService, value for Lead Source & Lead Source Detail will be in fieldValue
+        if (cfv.getListOfValues() == null) {
+          value = cfv.getFieldValue();
+        }
+        else {
+          for (ListOfValue lov: cfv.getListOfValues()) {
+            if (lov.getId().equals(cfv.getIntValue())) {
+              value = lov.getName();
+              break;
+            }
           }
         }
       }
 
-      if (cfv.getFieldName().equals("Lead Source")) {
-        contactMap.put("lead_source", value);
-      }
-      else if (cfv.getFieldName().equals("Lead Source Detail")) {
-        contactMap.put("lead_source_detail", value);
-      }
-      else if (cfv.getFieldName().equals("Lead Status")) {
-        contactMap.put("lead_status", value);
-      }
-      else if (cfv.getFieldName().equals("Referral")) {
-        contactMap.put("referral", cfv.getBooleanValue() == null ? false : cfv.getBooleanValue());
+      if (cfv.getFieldName() != null) {
+        if (cfv.getFieldName().equals("Lead Source")) {
+          contactMap.put("lead_source", value);
+        }
+        else if (cfv.getFieldName().equals("Lead Source Detail")) {
+          contactMap.put("lead_source_detail", value);
+        }
+        else if (cfv.getFieldName().equals("Lead Status")) {
+          contactMap.put("lead_status", value);
+        }
+        else if (cfv.getFieldName().equals("Referral")) {
+          contactMap.put("referral", cfv.getBooleanValue() == null ? false : cfv.getBooleanValue());
+        }
       }
     }
   }
