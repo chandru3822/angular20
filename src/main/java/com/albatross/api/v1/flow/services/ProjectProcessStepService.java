@@ -159,7 +159,6 @@ public class ProjectProcessStepService {
     }
     //check for any actions using this PS - Status as a requirement - including SELF if active
     //run auto triggers for those actions
-    //if the status changed, get all actions using this step's status as a requirement and run auto triggers for those
     List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
     for(ProjectProcessStep step : steps) {
       //only run if the referring project process step is active
@@ -261,6 +260,16 @@ public class ProjectProcessStepService {
 
     if (performAutoTrigger) {
       this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+    }
+    //check for any actions using this PS - Status as a requirement - including SELF if active
+    //run auto triggers for those actions
+    params.put("projectProcessStepId", ppsId);
+    List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
+    for(ProjectProcessStep step : steps) {
+      //only run if the referring project process step is active
+      if(step.getProcessStepStatusTypeId() == 1) {
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+      }
     }
 
     return ppsId;
