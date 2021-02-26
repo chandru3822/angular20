@@ -5,15 +5,19 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.flow.enums.ContactType;
+import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.services.UserPositionService;
+import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -23,6 +27,7 @@ import java.util.Optional;
 @Service
 public class ContactLeadService {
   private final SqlCache sqlCache;
+  private final GenesysService genesysService;
   private final SecurityService securityService;
   private final UserPositionService userPositionService;
 
@@ -34,7 +39,6 @@ public class ContactLeadService {
     params.put("lastName", CleanString.replaceApostrophe(cl.getLastName()));
     params.put("street1", cl.getAddress());
     params.put("city", cl.getCity());
-    params.put("state", cl.getState());
     params.put("postalCode", cl.getZip());
     params.put("phone", cl.getPhone());
     params.put("email", cl.getEmail());
@@ -44,20 +48,41 @@ public class ContactLeadService {
     params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
     params.put("contactTypeId", ContactType.LEAD.id);
     Long contactId;
-    if (cl.getState().length() == 2) {
-      contactId = sqlCache.updateReturningId("contactLead.insertContactStateAbbr", params, "id").longValue();
+
+    String state = cl.getState();
+    if (state != null) {
+      // If State abbreviation was entered
+      if (State.valueOfName(state) != State.UNKNOWN) {
+        params.put("state", State.valueOfName(state).toString());
+        // Case for State full name
+        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
+      }
+      else if (State.valueOfAbbreviation(state.toUpperCase()) != State.UNKNOWN) {
+        // Case for State abbreviation
+        params.put("state", State.valueOfAbbreviation(state.toUpperCase()).toString());
+        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
+      }
+      else {
+        // Case for invalid State
+        contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
+      }
     }
     else {
-      contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
+      // Case for no State
+      contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
     }
+
+    ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     // handles saving 'Lead Source' custom field
     if (cl.getLeadSource() != null) {
       String leadSourceId = checkIfCustomFieldDropdownValueExists(520, cl.getLeadSource());
       CustomFieldValue leadSource = new CustomFieldValue();
+      leadSource.setFieldName("Lead Source");
       if (!leadSourceId.equalsIgnoreCase("null")) {
         leadSource.setCustomFieldGroupAssignmentId(395L);
         leadSource.setIntValue(Long.parseLong(leadSourceId));
-        saveCustomFieldValue(leadSource, contactId, currentUser.getId());
+        leadSource.setFieldValue(cl.getLeadSource());
+        cfvList.add(leadSource);
       }
     }
 
@@ -65,15 +90,15 @@ public class ContactLeadService {
     if (cl.getLeadSourceDetail() != null) {
       String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, cl.getLeadSourceDetail());
       CustomFieldValue leadSourceDetail = new CustomFieldValue();
+      leadSourceDetail.setFieldName("Lead Source Detail");
 
       if (!leadSourceDetailId.equalsIgnoreCase("null")) {
         leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
         leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
-        saveCustomFieldValue(leadSourceDetail, contactId, currentUser.getId());
+        leadSourceDetail.setFieldValue(cl.getLeadSourceDetail());
+        cfvList.add(leadSourceDetail);
       }
     }
-
-    ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
 
     if (cl.getTcpaOptIn() != null) {
       CustomFieldValue tcpa = new CustomFieldValue();
@@ -222,8 +247,27 @@ public class ContactLeadService {
       cfvList.add(comments);
     }
 
+    if (cl.getLeadPrice() != null) {
+      CustomFieldValue leadPrice = new CustomFieldValue();
+      leadPrice.setCustomFieldGroupAssignmentId(19695L);
+      leadPrice.setNumericValue(cl.getLeadPrice());
+      cfvList.add(leadPrice);
+    }
+
     for (CustomFieldValue cfv: cfvList) {
       saveCustomFieldValue(cfv, contactId, currentUser.getId());
+    }
+
+    try {
+      genesysService.addContact(contactId, cfvList);
+    } catch (ApiException e) {
+      JSONObject apiException = new JSONObject(e.getRawBody());
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, apiException.getString("message"));
+    }
+    catch (IOException e) {
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, e.getMessage());
     }
   }
 

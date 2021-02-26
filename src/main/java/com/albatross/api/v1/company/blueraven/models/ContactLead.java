@@ -17,5 +17,5 @@ public class ContactLead {
 
   private Long creditScore;
 
-  private BigDecimal householdIncome, electricMonthly;
+  private BigDecimal householdIncome, electricMonthly, leadPrice;
 }
