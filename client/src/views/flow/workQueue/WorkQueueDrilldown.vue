@@ -29,8 +29,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left underline">
+                <v-btn text small :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${item.contactId}`">
+                  {{item.projectName}}
+                </v-btn>
+              </td>
               <td class="text-left">{{item.processStepName}}</td>
               <td class="text-left">{{item.processStepStatusType}}</td>
               <td class="text-left">{{item.daysInQueue}}</td>

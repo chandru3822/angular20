@@ -26,7 +26,7 @@ export default {
   },
   data () {
     return {
-      proceed: this.actionResult.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
+      proceed: !this.actionResult.triggerAutomatically && this.actionResult.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
     }
   },
   methods: {

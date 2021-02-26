@@ -132,9 +132,7 @@ export default {
         this.fetchingStatuses = true
         const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
         this.cancelledCompanyStatuses = data
-        console.log('randaLogger',data)
         if(data?.length === 1) {
-          console.log('randaLogger',data[0])
           this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
         }
       } catch (e) {

@@ -84,12 +84,14 @@ BEGIN
                     system_list_option_id as "systemListOptionId",
                     custom_sql_option_id as "customSqlOptionId",
                     project_custom_field_value_id as "projectCustomFieldValueId",
-                    project_process_step_id as "projectprocessStepId",
+                    project_process_step_id as "projectProcessStepId",
                     text_value as "textValue",
                     date_value as "dateValue",
                     timestamp_value as "timestampValue",
                     boolean_value as "booleanValue",
                     numeric_value as "numericValue",
+                    reference_process_step_id as "referenceProcessStepId",
+                    fail_if_no_reference_step_found as "failIfNoReferenceStepFound",
                     int_value as "intValue",
                     int_array_value as "intArrayValue",
                     system_list_option_ids as "systemListOptionIds",
@@ -121,7 +123,12 @@ BEGIN
                     cpsst.process_step_status_type_id as "processStepStatusTypeId",
                     cpsst.process_step_status_type as "processStepStatusType",
                     at.action_type as "actionType",
-                    case when ppsa.id is null then false else true end as "alreadyTriggered",
+                    case when
+                             (select id
+                              from flow.project_process_step_action ppsa
+                              where ppsa.project_process_step_id = p_project_process_step_id
+                                and ppsa.process_step_action_id = psa.id limit 1) is null
+                             then false else true end as "alreadyTriggered",
                     coalesce((
                                  SELECT array_to_json(array_agg(row_to_json(logic)))
                                  FROM (
@@ -222,7 +229,6 @@ BEGIN
                 from flow.process_step_action psa
                          left join flow.company_process_step_status_type cpsst on cpsst.id = psa.company_process_step_status_type_id
                          left join flow.company_project_status_type cpst on cpst.id = psa.company_project_status_type_id
-                         left join flow.project_process_step_action ppsa on ppsa.project_process_step_id = pps.id and ppsa.process_step_action_id = psa.id
                          inner join flow.action_type at on at.id = psa.action_type_id
                 where psa.process_step_id = ps.id and
                     psa.archived is not true
