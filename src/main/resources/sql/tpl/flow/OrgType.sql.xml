@@ -55,6 +55,7 @@
     select *
     from flow.org_level
     where company_id = :companyId
+    order by level
   ]]></orgType.getLevels>
 
   <orgType.getOrgLevel><![CDATA[
