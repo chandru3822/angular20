@@ -1444,7 +1444,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getAssignedToProcessStep(parent.id)
-          this.processStepStatuses = data
+          //if the selected process step is the same as the active process step being viewed, only allow active process step status types
+          this.processStepStatuses = parent.id === parseInt(this.processStepId) ? data.filter(d => d.processStepStatusTypeId === 1) : data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
