@@ -178,7 +178,6 @@
     },
     methods: {
       filteredRootStatuses(item) {
-        console.log('randaLogger',this.rootStatusTypes)
         return this.rootStatusTypes.filter(rst => rst.id !== 3)
       },
       async getCompanyStatusTypes () {

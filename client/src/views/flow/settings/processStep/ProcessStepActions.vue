@@ -173,7 +173,7 @@
               item-text="name"
               return-object
             ></v-select>
-            <v-select
+            <v-autocomplete
               v-else-if="newRequirement.operatorTypeId && newRequirement.processStepRequirementTypeId === 7"
               v-model="selectedListOfValues"
               :items="processStepStatuses"
@@ -182,7 +182,12 @@
               @change="validateRequirementForm()"
               item-text="processStepStatusType"
               return-object
-            ></v-select>
+            >
+              <template slot="item" slot-scope="data">
+                <!-- HTML that describes how select should render items when the select is open -->
+                {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+              </template>
+            </v-autocomplete>
             <v-select
               v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
               v-model="selectedDataTypeRequirement"
@@ -324,7 +329,7 @@
                     item-text="name"
                     item-value="id"
                   ></v-select>
-                  <v-select
+                  <v-autocomplete
                     v-else-if="item.operatorTypeId && item.processStepRequirementTypeId === 7"
                     v-model="item.listOfValues"
                     :items="item.availableListOfValues"
@@ -333,7 +338,8 @@
                     @change="validateRequirementForm()"
                     item-text="name"
                     return-object
-                  ></v-select>
+                  >
+                  </v-autocomplete>
                   <v-select
                     v-else-if="item.customValue && item.systemListId"
                     v-model="item.systemListOptionId"
@@ -1438,7 +1444,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getAssignedToProcessStep(parent.id)
-          this.processStepStatuses = data
+          //if the selected process step is the same as the active process step being viewed, only allow active process step status types
+          this.processStepStatuses = parent.id === parseInt(this.processStepId) ? data.filter(d => d.processStepStatusTypeId === 1) : data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

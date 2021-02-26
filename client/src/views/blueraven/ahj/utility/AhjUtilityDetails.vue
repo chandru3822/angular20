@@ -479,10 +479,9 @@
                   PTO Details
                 </v-card-title>
                 <v-card-text class="mt-4">
-                  <div class="flex-display flex-row-reverse flex-nowrap justify-space-between">
                     <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id"
                          :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
-                      <v-select v-if="[54,53].indexOf(item.customFieldId) !== -1"
+                      <v-select
                                 v-model="item.intValue"
                                 :readonly="!userCanEdit"
                                 :disabled="!userCanEdit"
@@ -503,7 +502,6 @@
                                     class="other-field"
                       ></v-text-field>
                     </div>
-                  </div>
                   <AhjChecklist v-if="dataReady"
                                 title="Checklist for Submission"
                                 :checklistTypeId="6"

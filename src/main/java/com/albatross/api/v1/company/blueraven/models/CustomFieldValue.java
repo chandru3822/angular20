@@ -12,7 +12,7 @@ import java.util.List;
 public class CustomFieldValue {
 
   private Long id, sourceId, customFieldGroupAssignmentId, customFieldGroupId,
-               customFieldId, fieldOrder, listOfValueId, dataTypeId;
+               customFieldId, fieldOrder, listOfValueId, companyDataTypeId;
   private Boolean valueWasChanged;
 
   // not sure on these types
