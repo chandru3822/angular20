@@ -14,10 +14,11 @@ import java.util.List;
 public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
-    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, returnDataTypeId, companySystemListId, systemListOptionId, customSqlOptionId;
+    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, returnDataTypeId,
+    companySystemListId, systemListOptionId, customSqlOptionId, referenceProcessStepId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, functionName, processStepName,
-    secondaryRequirementValue, customFieldSqlKey;
+    secondaryRequirementValue, customFieldSqlKey, referenceProcessStepName;
 
   // not sure what type to make this yet
   private List<Integer> listOfValueIds;
@@ -39,6 +40,6 @@ public class ProcessStepRequirement {
   //i need this so i can determine what type of field is being used when EDITING a custom field
   private CustomField customField;
 
-  private Boolean archived, fulfilled, secondaryRequirement, customValue, immutable;
+  private Boolean archived, fulfilled, secondaryRequirement, customValue, immutable, failIfNoReferenceStepFound;
 }
 

@@ -696,8 +696,6 @@
         }
       },
       async moveFieldToOtherGroup (groupId) {
-        console.log('randaLogger', this.fieldToMove)
-        console.log('randaLogger', groupId)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${groupId}`, this.fieldToMove)

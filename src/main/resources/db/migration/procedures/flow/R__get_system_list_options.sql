@@ -80,7 +80,9 @@ BEGIN
             union
             -- these little unions at the end make it so if the user who is saved in the value is no longer a valid value in the list we still show it.
                 select upv.user_position_id,
-                       concat(upv.first_name,' ', upv.last_name::text) as name
+                       case when ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
+                                then concat(upv.first_name,' ',upv.last_name::text,' - ', upv.position)
+                            else concat(upv.first_name,' ',upv.last_name::text) end as name
                 from flow.user_positions_vw upv
                 where user_position_id = p_int_value
             order by name;

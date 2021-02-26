@@ -42,6 +42,8 @@
                                         cfga.custom_field_group_id as "customFieldGroupId",
                                         cfga.id as "customFieldGroupAssignmentId",
                                         cfga.field_order as "fieldOrder",
+                                        cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                        cf.readonly,
                                         cf.list_of_value_id as "listOfValueId",
                                         cf.company_system_list_id as "companySystemListId",
                                         cf.system_list_option_ids as "systemListOptionIds",
@@ -66,7 +68,19 @@
                                                                 and lov.parent_id = cf.list_of_value_id
                                                                 and lov.archived is not true
                                                               order by lov.display_order
-                                                          ) listOfValues), '[]') AS "listOfValues"
+                                                          ) listOfValues), '[]') AS "listOfValues",
+                                        coalesce((
+                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                        FROM (
+                                                                 SELECT cfgawlp.id,
+                                                                        cfgawlp.position_id as "positionId",
+                                                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                        cfgawlp.created_by_id as "createdById",
+                                                                        cfgawlp.modified_by_id as "modifiedById",
+                                                                        cfgawlp.archived
+                                                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                                                 WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                                   AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
                                  from flow.custom_field_group_assignment cfga
                                           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                           inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id

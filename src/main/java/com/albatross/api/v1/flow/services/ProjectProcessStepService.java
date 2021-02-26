@@ -152,10 +152,21 @@ public class ProjectProcessStepService {
     params.put("cancelledStatusTypeId", cancelledCompanyProcessStepStatusTypeId);
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
-    //check for un-run automatic actions if the new status type is active
+    //check for un-run automatic actions
+    // only run for self if the new status type is active
     if(runAutoTriggers && processStepStatusTypeId == 1) {
       performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
     }
+    //check for any actions using this PS - Status as a requirement - including SELF if active
+    //run auto triggers for those actions
+    List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
+    for(ProjectProcessStep step : steps) {
+      //only run if the referring project process step is active
+      if(step.getProcessStepStatusTypeId() == 1) {
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+      }
+    }
+
   }
 
   public void setMain(Long ppsId, CompanyProcessStepStatusType status) {
@@ -220,7 +231,7 @@ public class ProjectProcessStepService {
           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
         }
     } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", e);
     }
   }
 
@@ -249,6 +260,16 @@ public class ProjectProcessStepService {
 
     if (performAutoTrigger) {
       this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+    }
+    //check for any actions using this PS - Status as a requirement - including SELF if active
+    //run auto triggers for those actions
+    params.put("projectProcessStepId", ppsId);
+    List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
+    for(ProjectProcessStep step : steps) {
+      //only run if the referring project process step is active
+      if(step.getProcessStepStatusTypeId() == 1) {
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+      }
     }
 
     return ppsId;
@@ -404,6 +425,7 @@ public class ProjectProcessStepService {
               }
           });
       }
+
       return createdPpsIds;
   }
 
@@ -423,7 +445,7 @@ public class ProjectProcessStepService {
 
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), false, null);
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), true, null);
     }
 
     //update project status if needed
@@ -527,6 +549,9 @@ public class ProjectProcessStepService {
       Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
       //@TODO: compare returnValue to the requirement value
       requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
+    } else if(r.getProcessStepRequirementTypeId() == 7) {
+      // 7 = check process step status type from reference step
+      requirementMet = calculateStatusRequirement(r, ppsId, false);
     } else {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
 
@@ -607,6 +632,30 @@ public class ProjectProcessStepService {
       }
 
       return passed;
+  }
+
+  public boolean calculateStatusRequirement(ProjectProcessStepRequirement requirement, Long projectProcessStepId, Boolean isProject) {
+    boolean passed = false;
+    if(isProject) {
+      //place holder for checking project statuses in the future
+    } else {
+      //check process step status here
+      //get the primary pps of the reference_process_step_id type
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("referenceProcessStepId", requirement.getReferenceProcessStepId());
+      params.put("ppsId", projectProcessStepId);
+      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
+
+      Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
+      //if we found a primary pss of that type and one of the selected statuses
+      if(projectProcessStep.isPresent()) {
+        passed = true;
+      } else {
+        //if we didn't find one, check the "failIfNoReferenceStepFound" value
+        passed = !requirement.getFailIfNoReferenceStepFound();
+      }
+    }
+    return passed;
   }
 
   public boolean calculateFunctionRequirement(Object functionResult, ProjectProcessStepRequirement r) throws Exception {
