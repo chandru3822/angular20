@@ -112,11 +112,6 @@ export default {
         title: 'Org Levels',
         show: !this.$store.getters.isCompanyRoot(this.companyId)
       }, {
-        path: '/admin/states',
-        title: 'States',
-        //todo: make this page work like features. so that if at root you add a state to flow.state instead of flow.company_state
-        show: !this.$store.getters.isCompanyRoot(this.companyId)
-      }, {
         path: '/admin/statusTypes',
         title: 'Status Types',
         //todo: make this page work like features. so that if at root you add a status type to flow.user_status_type instead of flow.company_user_status_type
