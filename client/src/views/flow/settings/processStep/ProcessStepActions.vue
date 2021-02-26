@@ -778,17 +778,28 @@
                                       label="Process Step"
                                       @input="[getCancelledStatuses(newChildProcessStep), getStatusesAssignedToStep(newChildProcessStep)]"
                                       item-text="processStepName"
+                                      item-value="id"
                       ></v-autocomplete>
                       <v-autocomplete v-model="newChildProcessStep.initialCompanyProcessStepStatusTypeId"
                                       :items="activeStatusesAssignedToStep"
                                       label="Set initial status to:"
                                       item-text="processStepStatusType"
-                      ></v-autocomplete>
+                                      item-value="id"
+                      >
+                        <template slot="item" slot-scope="data">
+                          {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                        </template>
+                      </v-autocomplete>
                       <v-autocomplete v-model="newChildProcessStep.existingCompanyProcessStepStatusTypeId"
                                       :items="cancelledCompanyStatuses"
                                       label="Set status of existing Active steps of the same type to:"
                                       item-text="processStepStatusType"
-                      ></v-autocomplete>
+                                      item-value="id"
+                      >
+                        <template slot="item" slot-scope="data">
+                          {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                        </template>
+                      </v-autocomplete>
                       <div class="mt-3">
                         <v-btn :disabled="!newChildProcessStep.processStepId || !newChildProcessStep.existingCompanyProcessStepStatusTypeId || !newChildProcessStep.initialCompanyProcessStepStatusTypeId"
                                @click="saveProcessStepToAction(item)">

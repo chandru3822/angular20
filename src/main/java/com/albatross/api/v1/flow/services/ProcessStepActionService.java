@@ -177,6 +177,8 @@ public class ProcessStepActionService {
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.getId());
     params.put("companyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
+    params.put("existingCompanyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
+    params.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
 
     Long id = sqlCache.updateReturningId("processStepAction.addChildStepToAction", params, "id").longValue();
     return getActionChildStep(id);
