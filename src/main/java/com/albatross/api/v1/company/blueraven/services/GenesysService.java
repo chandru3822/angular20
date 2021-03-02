@@ -165,7 +165,7 @@ public class GenesysService {
     Contact contact = contactService.getContact(contactId);
     WritableDialerContact wdc = new WritableDialerContact();
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
     contactMap.put("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
@@ -192,7 +192,6 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("to_char", formatter.format(calendar.getTime()));
     contactMap.put("date_created", formatter.format(calendar.getTime()));
 
     getCfvValues(contactMap, values);
@@ -249,7 +248,7 @@ public class GenesysService {
 
     Contact contact = contactService.getContact(contactId);
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
@@ -275,7 +274,6 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("to_char", formatter.format(calendar.getTime()));
     contactMap.put("date_created", formatter.format(calendar.getTime()));
 
     List<CustomFieldGroup> customFieldGroups = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), contactId);
