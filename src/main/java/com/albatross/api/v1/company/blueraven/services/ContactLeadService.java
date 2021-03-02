@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.HubspotLead;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.services.UserPositionService;
@@ -290,5 +291,66 @@ public class ContactLeadService {
 
     Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
     return customFieldDropdownValueId.orElse("null");
+  }
+
+  public void processCustomFieldValues(HubspotLead lead, Long contactId, Long leadOwnerUserId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    params.put("leadOwnerUserId", leadOwnerUserId);
+
+    // if "null" is returned for leadStatusId, then we don't want to save it, b/c that means it's not one of the existing options, and we don't save new values
+    String leadStatusId = checkIfCustomFieldDropdownValueExists(696, lead.getStatus());
+
+    // handles saving 'Lead Status' custom field
+    if (!leadStatusId.equalsIgnoreCase("null")) {
+      CustomFieldValue leadStatus = new CustomFieldValue();
+      leadStatus.setCustomFieldGroupAssignmentId(399L);
+      leadStatus.setIntValue(Long.parseLong(leadStatusId));
+      saveCustomFieldValue(leadStatus, contactId, leadOwnerUserId);
+    }
+
+    // handles saving 'Lead Source' custom field
+    if (!lead.getLead_source().isBlank()) {
+      String leadSourceId = checkIfCustomFieldDropdownValueExists(520, lead.getLead_source());
+      CustomFieldValue leadSource = new CustomFieldValue();
+
+      if (leadSourceId.equalsIgnoreCase("null")) {
+        params.put("listOfValueId", 520);
+        params.put("customFieldDropdownValue", lead.getLead_source());
+        leadSourceId = sqlCache.updateReturningId("contactLead.insertCustomFieldDropdownValue", params, "id").toString();
+      }
+
+      leadSource.setCustomFieldGroupAssignmentId(395L);
+      leadSource.setIntValue(Long.parseLong(leadSourceId));
+      saveCustomFieldValue(leadSource, contactId, leadOwnerUserId);
+    }
+
+    // handles saving 'Lead Source Detail' custom field
+    if (!lead.getLead_source_detail().isBlank()) {
+      String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, lead.getLead_source_detail());
+      CustomFieldValue leadSourceDetail = new CustomFieldValue();
+
+      if (leadSourceDetailId.equalsIgnoreCase("null")) {
+        params.put("listOfValueId", 543);
+        params.put("customFieldDropdownValue", lead.getLead_source_detail());
+        leadSourceDetailId = sqlCache.updateReturningId("contactLead.insertCustomFieldDropdownValue", params, "id").toString();
+      }
+
+      leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
+      leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
+      saveCustomFieldValue(leadSourceDetail, contactId, leadOwnerUserId);
+    }
+
+    // handles saving 'Hubspot ID' custom field
+    CustomFieldValue hubspotId = new CustomFieldValue();
+    hubspotId.setCustomFieldGroupAssignmentId(397L);
+
+    if (lead.getHubspot_id() != null) {
+      hubspotId.setTextValue(lead.getHubspot_id().toString());
+    } else {
+      hubspotId.setTextValue(null);
+    }
+
+    saveCustomFieldValue(hubspotId, contactId, leadOwnerUserId);
   }
 }
