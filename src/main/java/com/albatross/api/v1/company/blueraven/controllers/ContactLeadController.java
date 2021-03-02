@@ -100,6 +100,11 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/instagram", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactInstagram(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
   @PostMapping(value = "/youtube", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateContactYouTube(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
