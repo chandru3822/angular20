@@ -316,8 +316,15 @@ public class SmartlistService {
     }
 
     log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
-    final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
-//    log.info("*** {} ***", query);
+    String query;
+
+    if (smartlist.getObjectTypeId() == 4 && !smartlist.isMainProcessSteps()) {
+      query = buildProcessStepSql(smartlist, fields);
+    } else {
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    }
+
+    log.info("*** {} ***", query);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     if (results.isEmpty()) {
@@ -1044,6 +1051,133 @@ public class SmartlistService {
         // remove the last "and "
         query = query.delete(query.length() - 5, query.length());
     }
+
+    query.append(";");
+
+    return query.toString();
+  }
+
+  private String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
+
+    StringBuilder query = new StringBuilder();
+
+    List<Long> usedProcessStepIds = new ArrayList<>();
+
+    for(SmartlistFieldAssignment f : fields) {
+      if (f.getProcessStepId() != null && !usedProcessStepIds.contains(f.getProcessStepId())) {
+        usedProcessStepIds.add(f.getProcessStepId());
+      }
+    }
+
+    query.append("with ");
+
+    for(Long processStepId : usedProcessStepIds) {
+      // grab all fields using this psID
+
+      List<SmartlistFieldAssignment> psFields = fields.stream()
+        .filter(f -> f.getProcessStepId() != null && f.getProcessStepId().equals(processStepId))
+        .sorted(Comparator.comparing(SmartlistFieldAssignment::getDisplayOrder))
+        .collect(Collectors.toList());
+
+      String withClause = "\"" + psFields.get(0).getProcessStepName() + processStepId + "\" as (";
+
+      StringBuilder selectFields = new StringBuilder();
+      fields.forEach(f -> {
+        f.setValueReferenceTable(UUID.randomUUID().toString());
+
+        if (f.getProcessStepId() != null) {
+          if (f.getProcessStepId().equals(processStepId)) {
+            if (Objects.equals(f.getReferenceTable(), "flow.user")) {
+              selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
+            } else {
+              selectFields.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+            }
+          }
+        } else {
+          selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+        }
+
+
+//        if (f.getSmartlistFieldId() != null) {
+//          if (Objects.equals(f.getReferenceTable(), "flow.user")) {
+//            selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
+//          } else {
+//            selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+//          }
+//        } else if (Objects.equals(f.getProcessStepId(), processStepId)) {
+//          selectFields.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+//        }
+      });
+
+      // remove comma and space from last field
+      selectFields.deleteCharAt(selectFields.length() - 2);
+
+      withClause += "select " + selectFields.toString();
+
+      withClause += " from flow.project_process_step ";
+      withClause += " inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId;
+      withClause += " inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true";
+      withClause += " inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true";
+
+      StringBuilder valueJoins = new StringBuilder();
+      psFields.forEach(f -> {
+        if (f.getSmartlistFieldId() != null) {
+          if (f.getReferenceTable().equals("flow.user")) {
+            final String joinUserPosition = UUID.randomUUID().toString();
+            valueJoins.append(String.format(" inner join flow.user_position \"%s\" on \"%s\".id = flow.project_process_step.%s ", joinUserPosition, joinUserPosition, f.getJoinColumn()));
+            valueJoins.append(String.format(" inner join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
+            f.setUserPositionTable(joinUserPosition);
+          }
+        } else {
+          valueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = flow.project_process_step.id and \"%s\".custom_field_group_assignment_id = %s", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), f.getCustomFieldGroupAssignmentId()));
+        }
+      });
+      withClause += valueJoins.toString();
+
+      withClause += "), ";
+
+      query.append(withClause);
+    }
+
+    // remove comma and space from with clause
+    query.deleteCharAt(query.length() - 2);
+
+    List<SmartlistFieldAssignment> sortedFields = fields.stream().sorted(Comparator.comparing(SmartlistFieldAssignment::getDisplayOrder)).collect(Collectors.toList());
+
+    usedProcessStepIds.forEach(id -> {
+
+      Optional<SmartlistFieldAssignment> psField = fields.stream().filter(f -> Objects.equals(f.getProcessStepId(), id)).findFirst();
+
+      StringBuilder selectClause = new StringBuilder(" select ");
+
+      sortedFields.forEach(f -> {
+        if (f.getProcessStepId() != null) {
+          if (f.getProcessStepId().equals(id)) {
+            selectClause.append(String.format("\"%s\".\"%s\" as \"%s (%s)\", ", f.getProcessStepName() + f.getProcessStepId(), f.getId(), f.getProcessStepName(), f.getProcessStepId()));
+          } else {
+            selectClause.append(String.format("null as \"%s (%s)\", ", f.getProcessStepName(), f.getProcessStepId()));
+          }
+        } else {
+          //project and contact fields
+          psField.ifPresent(field -> selectClause.append(String.format("\"%s\".\"%s\" as \"%s\", ", field.getProcessStepName() + field.getProcessStepId(), f.getName(), f.getName())));
+        }
+      });
+
+      // remove comma and space from select clause
+      selectClause.deleteCharAt(selectClause.length() - 2);
+
+      query.append(selectClause.toString());
+
+      StringBuilder fromClause = new StringBuilder(" from ");
+
+
+      psField.ifPresent(f -> fromClause.append(String.format("\"%s%s\"", f.getProcessStepName(), f.getProcessStepId())));
+
+      query.append(fromClause.toString() + " union ");
+    });
+
+    // remove comma and space from with clause
+    query.delete(query.length() - 7, query.length());
 
     query.append(";");
 
