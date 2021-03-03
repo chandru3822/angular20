@@ -1089,6 +1089,8 @@ public class SmartlistService {
           if (f.getProcessStepId().equals(processStepId)) {
             if (Objects.equals(f.getReferenceTable(), "flow.user")) {
               selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
+            } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step")) {
+              selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else {
               selectFields.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
             }
@@ -1153,9 +1155,9 @@ public class SmartlistService {
       sortedFields.forEach(f -> {
         if (f.getProcessStepId() != null) {
           if (f.getProcessStepId().equals(id)) {
-            selectClause.append(String.format("\"%s\".\"%s\" as \"%s (%s)\", ", f.getProcessStepName() + f.getProcessStepId(), f.getId(), f.getProcessStepName(), f.getProcessStepId()));
+            selectClause.append(String.format("\"%s\".\"%s\" as \"%s\", ", f.getProcessStepName() + f.getProcessStepId(), f.getId(), f.getName()));
           } else {
-            selectClause.append(String.format("null as \"%s (%s)\", ", f.getProcessStepName(), f.getProcessStepId()));
+            selectClause.append(String.format("null as \"%s\", ", f.getName()));
           }
         } else {
           //project and contact fields
