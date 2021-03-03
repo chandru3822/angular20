@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.HubspotLead;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.UserPositionService;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import java.util.Optional;
 public class ContactLeadService {
   private final SqlCache sqlCache;
   private final GenesysService genesysService;
+  private final SMSService smsService;
   private final SecurityService securityService;
   private final UserPositionService userPositionService;
 
@@ -41,13 +43,19 @@ public class ContactLeadService {
     params.put("street1", cl.getAddress());
     params.put("city", cl.getCity());
     params.put("postalCode", cl.getZip());
-    params.put("phone", cl.getPhone());
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
     params.put("createdById", currentUser.getId());
     UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
     params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
     params.put("contactTypeId", ContactType.LEAD.id);
+
+    try {
+      params.put("phone", smsService.cleanPhoneNumber(cl.getPhone()));
+    } catch (Exception e) {
+      params.put("phone", cl.getPhone());
+    }
+
     Long contactId;
 
     String state = cl.getState();
@@ -99,6 +107,18 @@ public class ContactLeadService {
         leadSourceDetail.setFieldValue(cl.getLeadSourceDetail());
         cfvList.add(leadSourceDetail);
       }
+    }
+
+    String leadStatusId = checkIfCustomFieldDropdownValueExists(696, "New");
+
+    // handles saving 'Lead Status' custom field
+    if (!leadStatusId.equalsIgnoreCase("null")) {
+      CustomFieldValue leadStatus = new CustomFieldValue();
+      leadStatus.setFieldName("Lead Status");
+      leadStatus.setCustomFieldGroupAssignmentId(399L);
+      leadStatus.setIntValue(Long.parseLong(leadStatusId));
+      leadStatus.setFieldValue("New");
+      cfvList.add(leadStatus);
     }
 
     if (cl.getTcpaOptIn() != null) {
