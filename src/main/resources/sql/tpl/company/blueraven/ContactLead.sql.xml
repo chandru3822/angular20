@@ -31,4 +31,15 @@
             modified_by_id = :leadOwnerUserId,
             date_modified = now()
   ]]></contactLead.upsertCustomFieldValue>
+
+  <contactLead.insertCustomFieldDropdownValue><![CDATA[
+    with display_order as (
+      select max(display_order) as value
+      from flow.list_of_value
+      where parent_id = :listOfValueId
+    )
+    insert into flow.list_of_value (name, parent_id, display_order, created_by_id)
+    (select :customFieldDropdownValue, :listOfValueId, ((select value from display_order) + 1), :leadOwnerUserId)
+    returning id
+  ]]></contactLead.insertCustomFieldDropdownValue>
 </sql>
