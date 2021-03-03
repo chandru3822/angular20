@@ -601,7 +601,11 @@ export default {
         if (f.customFieldGroupAssignmentId !== null) {
           return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
         } else {
-          return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          if (this.newField.processStepId) {
+            return !this.assignedFields.filter(a => a.processStepId === this.newField.processStepId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          } else {
+            return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          }
         }
       })
     },
