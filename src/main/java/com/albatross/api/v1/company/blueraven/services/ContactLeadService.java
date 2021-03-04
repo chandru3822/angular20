@@ -6,10 +6,8 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.HubspotLead;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.HubspotWebhookService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.UserPositionService;
 import com.mypurecloud.sdk.v2.ApiException;
@@ -17,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -30,11 +29,19 @@ import java.util.Optional;
 public class ContactLeadService {
   private final SqlCache sqlCache;
   private final GenesysService genesysService;
+
+  @Autowired
+  private HubspotWebhookService hubspotWebhookService;
+
+  @Value(value = "${app.ricochet.enabled:false}")
+  private Boolean ricochetEnabled;
+
   private final SMSService smsService;
   private final SecurityService securityService;
   private final UserPositionService userPositionService;
 
   public void saveContactLead(ContactLead cl) {
+    RicochetLead ricochetLead = new RicochetLead();
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -80,6 +87,7 @@ public class ContactLeadService {
       // Case for no State
       contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
     }
+    ricochetLead.setContactId(contactId);
 
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     // handles saving 'Lead Source' custom field
@@ -91,6 +99,7 @@ public class ContactLeadService {
         leadSource.setCustomFieldGroupAssignmentId(395L);
         leadSource.setIntValue(Long.parseLong(leadSourceId));
         leadSource.setFieldValue(cl.getLeadSource());
+        ricochetLead.setLead_source(cl.getLeadSource());
         cfvList.add(leadSource);
       }
     }
@@ -105,6 +114,7 @@ public class ContactLeadService {
         leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
         leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
         leadSourceDetail.setFieldValue(cl.getLeadSourceDetail());
+        ricochetLead.setLead_source_detail(cl.getLeadSourceDetail());
         cfvList.add(leadSourceDetail);
       }
     }
@@ -290,6 +300,19 @@ public class ContactLeadService {
       String msg = "GENE: Error adding contact: {}";
       log.error(msg, e.getMessage());
     }
+
+    try {
+      if (ricochetEnabled) {
+        postToRicochet(ricochetLead, params);
+      }
+      else {
+        log.info("RICOCHET: not enabled");
+      }
+
+    } catch (Exception e) {
+      String msg = "RICO: Failed to post Contact Lead information to Ricochet.";
+      log.error(msg, e);
+    }
   }
 
   private void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, Long leadOwnerUserId) {
@@ -313,7 +336,7 @@ public class ContactLeadService {
     return customFieldDropdownValueId.orElse("null");
   }
 
-  public void processCustomFieldValues(HubspotLead lead, Long contactId, Long leadOwnerUserId) {
+  public void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     params.put("leadOwnerUserId", leadOwnerUserId);
@@ -372,5 +395,35 @@ public class ContactLeadService {
     }
 
     saveCustomFieldValue(hubspotId, contactId, leadOwnerUserId);
+  }
+
+  private void postToRicochet(RicochetLead lead, HashMap<String, Object> params) throws Exception {
+    // Not needed for non-Ricochet leads
+    lead.setHubspot_id(null);
+    lead.setStatus("New");
+    lead.setLeadOwner(null);
+
+    if (lead.getLead_source() == null) {
+      lead.setLead_source("Organic");
+    }
+
+    if (lead.getLead_source_detail() == null) {
+      lead.setLead_source_detail("DigitalOrganic");
+    }
+
+    RicochetLead.Customer customer = new RicochetLead.Customer();
+    customer.setFirstName(params.containsKey("firstName") ? (String) params.get("firstName") : null);
+    customer.setLastName(params.containsKey("lastName") ? (String) params.get("lastName") : null);
+    customer.setPhone1(params.containsKey("phone") ? (String) params.get("phone") : null);
+    customer.setEmail(params.containsKey("email") ? (String) params.get("email") : null);
+
+    RicochetLead.Address address = new RicochetLead.Address();
+    address.setZip(params.containsKey("postalCode") ? (String) params.get("postalCode") : null);
+
+    customer.setAddress(address);
+    lead.setCustomer(customer);
+
+    // handles sending lead information to Ricochet
+    hubspotWebhookService.postLeadToRicochet(lead);
   }
 }
