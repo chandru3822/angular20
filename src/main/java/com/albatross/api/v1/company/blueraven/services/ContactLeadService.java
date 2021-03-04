@@ -95,11 +95,11 @@ public class ContactLeadService {
       String leadSourceId = checkIfCustomFieldDropdownValueExists(520, cl.getLeadSource());
       CustomFieldValue leadSource = new CustomFieldValue();
       leadSource.setFieldName("Lead Source");
+      ricochetLead.setLead_source(cl.getLeadSource());
       if (!leadSourceId.equalsIgnoreCase("null")) {
         leadSource.setCustomFieldGroupAssignmentId(395L);
         leadSource.setIntValue(Long.parseLong(leadSourceId));
         leadSource.setFieldValue(cl.getLeadSource());
-        ricochetLead.setLead_source(cl.getLeadSource());
         cfvList.add(leadSource);
       }
     }
@@ -109,12 +109,11 @@ public class ContactLeadService {
       String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, cl.getLeadSourceDetail());
       CustomFieldValue leadSourceDetail = new CustomFieldValue();
       leadSourceDetail.setFieldName("Lead Source Detail");
-
+      ricochetLead.setLead_source_detail(cl.getLeadSourceDetail());
       if (!leadSourceDetailId.equalsIgnoreCase("null")) {
         leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
         leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
         leadSourceDetail.setFieldValue(cl.getLeadSourceDetail());
-        ricochetLead.setLead_source_detail(cl.getLeadSourceDetail());
         cfvList.add(leadSourceDetail);
       }
     }
@@ -419,6 +418,9 @@ public class ContactLeadService {
 
     RicochetLead.Address address = new RicochetLead.Address();
     address.setZip(params.containsKey("postalCode") ? (String) params.get("postalCode") : null);
+    address.setState(params.containsKey("state") ? (String) params.get("state") : null);
+    address.setAddress1(params.containsKey("street1") ? (String) params.get("street1") : null);
+    address.setCity(params.containsKey("city") ? (String) params.get("city") : null);
 
     customer.setAddress(address);
     lead.setCustomer(customer);
