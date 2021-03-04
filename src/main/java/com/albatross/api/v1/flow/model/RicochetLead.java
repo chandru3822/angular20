@@ -6,7 +6,7 @@ import lombok.Data;
  * Created by Joseph Canto on 2020-10-23.
  */
 @Data
-public class HubspotLead {
+public class RicochetLead {
     private Long uniqueIdentifier, hubspot_id, contactId;
     private Customer customer;
     private String lead_source, status, leadOwner, lead_source_detail;
