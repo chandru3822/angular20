@@ -1059,6 +1059,10 @@ public class SmartlistService {
 
   private String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
 
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
+
     StringBuilder query = new StringBuilder();
 
     List<Long> usedProcessStepIds = new ArrayList<>();
@@ -1072,8 +1076,8 @@ public class SmartlistService {
     query.append("with ");
 
     for(Long processStepId : usedProcessStepIds) {
-      // grab all fields using this psID
 
+      // grab all fields using this psID
       List<SmartlistFieldAssignment> psFields = fields.stream()
         .filter(f -> f.getProcessStepId() != null && f.getProcessStepId().equals(processStepId))
         .sorted(Comparator.comparing(SmartlistFieldAssignment::getDisplayOrder))
@@ -1098,17 +1102,6 @@ public class SmartlistService {
         } else {
           selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
         }
-
-
-//        if (f.getSmartlistFieldId() != null) {
-//          if (Objects.equals(f.getReferenceTable(), "flow.user")) {
-//            selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
-//          } else {
-//            selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
-//          }
-//        } else if (Objects.equals(f.getProcessStepId(), processStepId)) {
-//          selectFields.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
-//        }
       });
 
       // remove comma and space from last field
@@ -1136,9 +1129,80 @@ public class SmartlistService {
       });
       withClause += valueJoins.toString();
 
-      withClause += "), ";
+      StringBuilder whereClause = new StringBuilder();
 
-      query.append(withClause);
+      requirements.forEach(r -> {
+
+        String referenceLocation = null;
+
+        if (r.getSmartlistSystemListId() != null) {
+          //smartlist system field
+        } else if (r.getSmartlistFieldId() != null) {
+          //smartlist field
+          if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
+            referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+          } else if (r.getObjectTypeId() == 4) {
+            String joinTable;
+            try {
+              joinTable = fields.stream()
+                .filter(f -> Objects.equals(f.getCustomFieldGroupAssignmentId(), r.getCustomFieldGroupAssignmentId()))
+                .map(SmartlistFieldAssignment::getValueReferenceTable)
+                .findFirst()
+                .orElse(null);
+
+              if (joinTable == null) {
+                joinTable = UUID.randomUUID().toString();
+              }
+
+            } catch (NullPointerException e) {
+              joinTable = UUID.randomUUID().toString();
+            }
+
+            referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
+          }
+        } else {
+          //custom field
+        }
+
+        Object requirementValue = getRequirementValue(r);
+        String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
+
+        //Check for double negative with "nots" between operator and requirement
+        if (r.getDataTypeRequirementId() != null) {
+          if (requirementValue != null && requirementValue.toString().contains("not") && operator != null && operator.contains("not")) {
+            operator = operator.replace("not", "");
+
+            if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
+              requirementValue = requirementValue.toString().replace("not", "");
+            }
+          }
+        }
+
+        if (r.getDataTypeId() == 7) {
+          if (r.getDataTypeRequirementId() != null) {
+            whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+          } else {
+            whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          }
+        } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
+          whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        } else {
+          if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
+            whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+          } else {
+            whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+          }
+        }
+      });
+
+      if (whereClause.length() > 0) {
+        // remove the last "and "
+        whereClause.delete(whereClause.length() - 5, whereClause.length());
+
+        withClause += String.format(" where %s", whereClause.toString());
+      }
+
+      query.append(String.format("%s), ", withClause));
     }
 
     // remove comma and space from with clause
