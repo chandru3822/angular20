@@ -1,0 +1,114 @@
+<sql>
+  <ricochetWebhook.getContactIdByRicochetLeadId><![CDATA[
+    select contact_id
+    from flow.contact_custom_field_value
+    where text_value = :ricochetLeadId
+      and custom_field_group_assignment_id = 398
+      and archived is false
+    limit 1
+  ]]></ricochetWebhook.getContactIdByRicochetLeadId>
+
+  <ricochetWebhook.getContactIdByContactInfo><![CDATA[
+    select id contact_id
+    from flow.contact
+    where first_name = :firstName
+      and last_name = :lastName
+      and mobile = :mobile
+      and email = :email
+      and street1 = :street1
+      and city = :city
+      and postal_code = :postalCode
+      and company_state_id = :companyStateId::integer
+      and archived is false
+    limit 1
+  ]]></ricochetWebhook.getContactIdByContactInfo>
+
+  <ricochetWebhook.getUserIdByLeadOwnerEmail><![CDATA[
+    select id user_id
+    from flow.user
+    where lower(email) = lower(:leadOwnerEmail)
+    limit 1
+  ]]></ricochetWebhook.getUserIdByLeadOwnerEmail>
+
+  <ricochetWebhook.getUserPositionIdByUserId><![CDATA[
+    select id user_position_id
+    from flow.user_position
+    where user_id = :leadOwnerUserId
+      and primary_flag is true
+      and archived is not true
+    limit 1
+  ]]></ricochetWebhook.getUserPositionIdByUserId>
+
+  <ricochetWebhook.getStateAbbreviationByStateName><![CDATA[
+    select abbreviation state_abbreviation
+    from flow.state
+    where state = :stateName
+  ]]></ricochetWebhook.getStateAbbreviationByStateName>
+
+  <ricochetWebhook.getCompanyStateIdByStateAbbreviation><![CDATA[
+    select cs.id company_state_id
+    from flow.company_state cs
+      inner join flow.state s on s.id = cs.state_id
+    where s.abbreviation = :stateAbbreviation::character varying
+      and cs.company_id = 3
+  ]]></ricochetWebhook.getCompanyStateIdByStateAbbreviation>
+
+  <ricochetWebhook.getCompanyCountryIdByCompanyId><![CDATA[
+    select cc.id company_country_id
+    from flow.company_country cc
+    where cc.company_id = 3
+  ]]></ricochetWebhook.getCompanyCountryIdByCompanyId>
+
+  <ricochetWebhook.insertLead><![CDATA[
+    insert into flow.contact (contact_type_id, first_name, last_name, mobile, email, street1, city, postal_code, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
+    values (2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, :leadOwnerUserId, 3, :leadOwnerUserPositionId, :companyStateId::integer, :companyCountryId::integer)
+    returning id;
+  ]]></ricochetWebhook.insertLead>
+
+  <ricochetWebhook.updateLead><![CDATA[
+    update flow.contact
+    set first_name = :firstName,
+        last_name = :lastName,
+        mobile = :mobile,
+        email = :email,
+        street1 = :street1,
+        city = :city,
+        postal_code = :postalCode,
+        company_state_id = :companyStateId::integer,
+        date_modified = now(),
+        modified_by_id = :leadOwnerUserId,
+        owner_user_position_id = :leadOwnerUserPositionId,
+        company_country_id = :companyCountryId::integer
+    where id = :contactId
+    returning id
+  ]]></ricochetWebhook.updateLead>
+
+  <ricochetWebhook.checkIfCustomFieldDropdownValueExists><![CDATA[
+    select id
+    from flow.list_of_value lov
+    where lov.parent_id = :listOfValueId
+      and lov.name = :customFieldDropdownValue
+  ]]></ricochetWebhook.checkIfCustomFieldDropdownValueExists>
+
+  <ricochetWebhook.insertCustomFieldDropdownValue><![CDATA[
+    with display_order as (
+      select max(display_order) as value
+      from flow.list_of_value
+      where parent_id = :listOfValueId
+    )
+    insert into flow.list_of_value (name, parent_id, display_order, created_by_id)
+    (select :customFieldDropdownValue, :listOfValueId, ((select value from display_order) + 1), :leadOwnerUserId)
+    returning id
+  ]]></ricochetWebhook.insertCustomFieldDropdownValue>
+
+  <ricochetWebhook.upsertCustomFieldValue><![CDATA[
+    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, created_by_id)
+    values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, :leadOwnerUserId)
+    on conflict (contact_id, custom_field_group_assignment_id)
+    do update
+        set text_value = :textValue,
+            int_value = :intValue,
+            modified_by_id = :leadOwnerUserId,
+            date_modified = now()
+  ]]></ricochetWebhook.upsertCustomFieldValue>
+</sql>
