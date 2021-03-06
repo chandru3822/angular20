@@ -65,6 +65,9 @@ public class HubspotWebhookService {
 
             JSONObject address = new JSONObject();
             address.put("Zip", lead.getCustomer().getAddress().getZip());
+            address.put("State", lead.getCustomer().getAddress().getState());
+            address.put("City", lead.getCustomer().getAddress().getCity());
+            address.put("Address1", lead.getCustomer().getAddress().getAddress1());
 
             customer.put("address", address);
             contact.put("customer", customer);

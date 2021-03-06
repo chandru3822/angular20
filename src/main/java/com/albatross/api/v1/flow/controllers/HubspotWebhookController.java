@@ -68,6 +68,9 @@ public class HubspotWebhookController {
 
             RicochetLead.Address address = new RicochetLead.Address();
             address.setZip(contact.getProperties().getZip().getValue());
+            address.setAddress1(contact.getProperties().getAddress() != null ? contact.getProperties().getAddress().getValue() : "");
+            address.setCity(contact.getProperties().getCity() != null ? contact.getProperties().getCity().getValue() : "");
+            address.setState(contact.getProperties().getState() != null ? contact.getProperties().getState().getValue() : "");
 
             customer.setAddress(address);
             lead.setCustomer(customer);
