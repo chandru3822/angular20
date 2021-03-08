@@ -461,7 +461,7 @@ export default {
     },
     isSaveNewRequirementDisabled () {
       if (this.newRequirement.isCustomValue) {
-        return this.newRequirement.requirementValue === null || this.newRequirement.requirementValue?.length === 0
+        return (this.newRequirement.requirementValue === null || this.newRequirement.requirementValue?.length === 0) && this.newRequirement.listOfValueId === null
       } else {
         return this.newRequirement.dataTypeRequirementId === null && this.newRequirement.listOfValueId === null && this.newRequirement.listOfValueIds.length === 0
       }

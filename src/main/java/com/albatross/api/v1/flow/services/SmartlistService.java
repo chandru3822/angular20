@@ -1075,7 +1075,7 @@ public class SmartlistService {
       }
 
       //prepend custom field sql queries
-      if (f.getCustomFieldSqlKey() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) != -1) {
+      if (f.getCustomFieldSqlKey() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
         customSqlQueries.append(String.format(" \"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
       }
     }
@@ -1085,12 +1085,19 @@ public class SmartlistService {
 
     if (customSqlQueries.length() > 0) {
       query.append(customSqlQueries.toString());
-
-      // remove comma and space from last field
-      query.delete(query.length() - 2, query.length());
     }
 
     for(Long processStepId : usedProcessStepIds) {
+
+      SmartlistFieldAssignment psField = fields.stream()
+        .filter(f -> Objects.equals(processStepId, f.getProcessStepId()))
+        .findFirst()
+        .orElse(null);
+
+      //we know this case won't happen, but defensive programming
+      if (psField == null) {
+        break;
+      }
 
       // grab all fields using this process step will use
       List<SmartlistFieldAssignment> psFields = fields.stream()
@@ -1098,7 +1105,7 @@ public class SmartlistService {
         .sorted(Comparator.comparing(SmartlistFieldAssignment::getDisplayOrder))
         .collect(Collectors.toList());
 
-      StringBuilder withClause = new StringBuilder("\"" + psFields.get(0).getProcessStepName() + processStepId + "\" as (");
+      StringBuilder withClause = new StringBuilder("\"" + psField.getProcessStepName() + processStepId + "\" as (");
 
       StringBuilder selectFields = new StringBuilder();
       psFields.forEach(f -> {
@@ -1114,7 +1121,7 @@ public class SmartlistService {
           }
         } else {
           if (f.getCustomFieldSqlKey() != null) {
-            selectFields.append(String.format("%s.name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
+            selectFields.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
           } else {
             selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           }
@@ -1169,7 +1176,6 @@ public class SmartlistService {
           }
         }
       });
-      withClause.append(valueJoins.toString());
 
       StringBuilder whereClause = new StringBuilder();
 
@@ -1204,6 +1210,35 @@ public class SmartlistService {
           }
         } else {
           //custom field
+          if (r.getCustomFieldSqlKey() != null) {
+
+            if (valueJoins.indexOf(r.getCustomFieldSqlKey()) == -1) {
+              r.setValueReferenceTable(UUID.randomUUID().toString());
+              final String referenceTable = UUID.randomUUID().toString();
+
+              if (r.getObjectTypeId() == 1) {
+                valueJoins.append(String.format(" left join flow.project_custom_field_value \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s", referenceTable, referenceTable, referenceTable, r.getCustomFieldGroupAssignmentId()));
+              } else if (r.getObjectTypeId() == 2) {
+                valueJoins.append(String.format(" left join flow.contact_custom_field_value \"%s\" on \"%s\".contact_id = flow.contact.id and \"%s\".custom_field_group_assignment_id = %s", referenceTable, referenceTable, referenceTable, r.getCustomFieldGroupAssignmentId()));
+              } else if (r.getObjectTypeId() == 4) {
+                valueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = flow.project_process_step.id and \"%s\".custom_field_group_assignment_id = %s", referenceTable, referenceTable, referenceTable, r.getCustomFieldGroupAssignmentId()));
+              }
+
+              valueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value", r.getCustomFieldSqlKey(), r.getValueReferenceTable(), r.getValueReferenceTable(), referenceTable));
+            } else {
+              SmartlistFieldAssignment joinedField = fields.stream()
+                .filter(f -> Objects.equals(r.getCustomFieldGroupAssignmentId(), f.getCustomFieldGroupAssignmentId()))
+                .findFirst()
+                .orElse(null);
+
+              //joinedField **shouldn't** ever be null here. If it is, there are bigger issues
+              if (joinedField != null) {
+                r.setValueReferenceTable(joinedField.getValueReferenceTable());
+              }
+            }
+
+            referenceLocation = String.format("\"%s\".id", r.getValueReferenceTable());
+          }
         }
 
         Object requirementValue = getRequirementValue(r);
@@ -1236,6 +1271,8 @@ public class SmartlistService {
           }
         }
       });
+
+      withClause.append(valueJoins.toString());
 
       if (whereClause.length() > 0) {
         // remove the last "and "

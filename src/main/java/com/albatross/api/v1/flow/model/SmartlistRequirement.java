@@ -30,7 +30,7 @@ public class SmartlistRequirement {
   private DataTypeRequirement dataTypeRequirement;
 
   @JsonIgnore
-  private String referenceTable, referenceColumn, joinTable, joinColumn;
+  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn;
 
   @JsonIgnore
   private CustomField customField;
