@@ -128,7 +128,11 @@ public class ExcelImportController {
     Integer propId = null, projectId = null;
     if (json != null) {
       propId = (Integer) json.get("Proposal ID");
-      projectId = (Integer) json.get("Base Deal ID");
+      try {
+        projectId = (Integer) json.get("Base Deal ID");
+      } catch (ClassCastException e) {
+        projectId = Integer.parseInt((String) json.get("Base Deal ID"));
+      }
     }
 
     HashMap<String, Object> params = new HashMap<>();
