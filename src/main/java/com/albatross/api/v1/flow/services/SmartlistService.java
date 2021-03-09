@@ -1136,7 +1136,7 @@ public class SmartlistService {
         } else if (f.getProcessStepId() != null) {
           if (Objects.equals(f.getReferenceTable(), "flow.user")) {
             selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
-          } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step")) {
+          } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") || Objects.equals(f.getReferenceTable(), "flow.process_step")) {
             selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
           } else {
             selectFields.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
