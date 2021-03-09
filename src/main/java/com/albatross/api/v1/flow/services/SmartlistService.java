@@ -1153,12 +1153,29 @@ public class SmartlistService {
       // remove comma and space from last field
       selectFields.deleteCharAt(selectFields.length() - 2);
 
-      withClause.append("select " + selectFields.toString());
+      withClause.append("select ").append(selectFields.toString());
 
-      withClause.append(" from flow.project_process_step ");
-      withClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
-      withClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
-      withClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
+      StringBuilder fromClause = new StringBuilder(" from ");
+
+      // for any requirements that use
+      requirements.forEach(r -> {
+        if (r.getSmartlistSystemListId() != null) {
+
+          final String smartlistSystemListTable = "smartlistSystemList_" + r.getSmartlistSystemListId();
+
+          if (fromClause.indexOf(smartlistSystemListTable) == -1) {
+            fromClause.append(String.format("\"%s\", ", smartlistSystemListTable));
+          }
+        }
+      });
+
+      fromClause.append(" flow.project_process_step ");
+      fromClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
+      fromClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
+      fromClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
+      fromClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
+
+      withClause.append(fromClause.toString());
 
       StringBuilder valueJoins = new StringBuilder();
       psFields.forEach(f -> {
@@ -1201,12 +1218,26 @@ public class SmartlistService {
 
       StringBuilder whereClause = new StringBuilder();
 
-      requirements.forEach(r -> {
+      requirements.stream()
+        .filter(r -> r.getProcessStepId() == null || r.getProcessStepId().equals(processStepId))
+        .forEach(r -> {
 
         String referenceLocation = null;
 
         if (r.getSmartlistSystemListId() != null) {
-          //smartlist system field
+          //smartlist system list
+
+          final String smartlistSystemListTable = "smartlistSystemList_" + r.getSmartlistSystemListId();
+
+          if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
+            referenceLocation = String.format("\"%s\".id", smartlistSystemListTable);
+          } else if (r.getSmartlistSystemListId() == 2){
+
+            final String referenceTable = UUID.randomUUID().toString();
+            valueJoins.append(String.format(" inner join \"%s\" \"%s\" on \"%s\".id = flow.company_process_step_status_type.process_step_status_type_id", smartlistSystemListTable, referenceTable, referenceTable));
+            referenceLocation = String.format("\"%s\".id", referenceTable);
+          }
+
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist field
           if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {

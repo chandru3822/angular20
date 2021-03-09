@@ -468,7 +468,7 @@ export default {
     },
     isSaveExpandedRequirementDisabled () {
       if (this.expandedRequirement.isCustomValue) {
-        return this.expandedRequirement.requirementValue === null || this.expandedRequirement.requirementValue?.length === 0
+        return (this.expandedRequirement.requirementValue === null || this.expandedRequirement.requirementValue?.length === 0) && this.expandedRequirement.listOfValueId === null
       } else {
         return this.expandedRequirement.dataTypeRequirementId === null && this.expandedRequirement.listOfValueId === null && this.expandedRequirement.listOfValueIds.length === 0
       }
