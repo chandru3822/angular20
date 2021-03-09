@@ -30,6 +30,7 @@ THEN
 -- Grab the cancelled status for this company
 
 -- cancel existing pps using the param passed in for p_cancelled_company_status_id -- unless called from an action updating itself which can only happen on active pps so this shouldn't matter
+-- also un-set the main flag of any cancelled steps
 update flow.project_process_step
 set
     company_process_step_status_type_id = case when p_cancelled_company_status_id is not null then p_cancelled_company_status_id else
@@ -39,7 +40,8 @@ set
               and status.process_step_status_type_id = 3
             limit 1) end, --just in case,
     date_modified = now(),
-    modified_by_id = p_user_id
+    modified_by_id = p_user_id,
+    main = false
 where
     project_id = p_project_id and
     process_step_id = p_process_step_id;
