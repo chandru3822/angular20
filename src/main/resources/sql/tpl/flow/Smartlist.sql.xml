@@ -514,6 +514,7 @@ select sr.id,
        case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
        case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
        cf.company_system_list_id,
+       csl.system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
        case when sf.smartlist_system_list_id is not null then true else
          case when sr.smartlist_field_id is not null then cdt.has_list_values else cdt1.has_list_values end
@@ -584,6 +585,7 @@ inner join flow.operator_type opt on opt.id = sr.operator_type_id
 left join flow.process_step ps1 on ps1.id = sr.process_step_id
 left join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
+left join flow.company_system_list csl on csl.id = cf.company_system_list_id
 left join flow.company_data_type cdt1 on cdt1.id = cf.company_data_type_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
@@ -629,6 +631,7 @@ select sr.id,
        case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
        case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
        cf.company_system_list_id,
+       csl.system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
        case when sf.smartlist_system_list_id is not null then true else
          case when sr.smartlist_field_id is not null then cdt.has_list_values else cdt1.has_list_values end
@@ -752,6 +755,7 @@ inner join flow.operator_type opt on opt.id = sr.operator_type_id
 left join flow.process_step ps1 on ps1.id = sr.process_step_id
 left join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
+left join flow.company_system_list csl on csl.id = cf.company_system_list_id
 left join flow.company_data_type cdt1 on cdt1.id = cf.company_data_type_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id

@@ -1134,13 +1134,20 @@ public class SmartlistService {
           }
 
         } else if (f.getProcessStepId() != null) {
-          if (Objects.equals(f.getReferenceTable(), "flow.user")) {
+          if (f.getSystemListId() != null) {
+            final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
+            selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, f.getValueReferenceTable(), f.getId()));
+          } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
             selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") || Objects.equals(f.getReferenceTable(), "flow.process_step")) {
             selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
           } else {
             selectFields.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
           }
+        } else if (f.getSystemListId() != null) {
+          final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
+
+          selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, f.getValueReferenceTable(), f.getId()));
         } else {
           if (f.getCustomFieldSqlKey() != null) {
             selectFields.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
@@ -1158,13 +1165,16 @@ public class SmartlistService {
       StringBuilder fromClause = new StringBuilder(" from ");
 
       // for any requirements that use
-      requirements.forEach(r -> {
-        if (r.getSmartlistSystemListId() != null) {
+      requirements.stream()
+        .filter(r -> r.getProcessStepId() == null || r.getProcessStepId().equals(processStepId))
+        .forEach(r -> {
 
-          final String smartlistSystemListTable = "smartlistSystemList_" + r.getSmartlistSystemListId();
+        if (r.getSystemListId() != null) {
+          final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
+          final String systemListTable = "systemList_" + systemListNumber;
 
-          if (fromClause.indexOf(smartlistSystemListTable) == -1) {
-            fromClause.append(String.format("\"%s\", ", smartlistSystemListTable));
+          if (fromClause.indexOf(systemListTable) == -1) {
+            fromClause.append(String.format("\"%s\", ", systemListTable));
           }
         }
       });
@@ -1224,20 +1234,38 @@ public class SmartlistService {
 
         String referenceLocation = null;
 
+        SmartlistFieldAssignment alreadyJoinedValueTable = psFields.stream()
+          .filter(f -> r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null && r.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
+          .findFirst()
+          .orElse(null);
+
+        //join any value tables the requirements need which aren't already joined
+        if (r.getCustomFieldSqlKey() == null) {
+          if (alreadyJoinedValueTable == null) {
+            if (r.getCustomFieldGroupAssignmentId() != null) {
+              r.setValueReferenceTable(UUID.randomUUID().toString());
+
+              //join the value table for the respective field object type
+              if (r.getObjectTypeId() == 1) {
+                valueJoins.append(String.format(" left join flow.project_custom_field_value \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId()));
+              } else if (r.getObjectTypeId() == 2) {
+                valueJoins.append(String.format(" left join flow.contact_custom_field_value \"%s\" on \"%s\".contact_id = flow.contact.id and \"%s\".custom_field_group_assignment_id = %s", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId()));
+              } else if (r.getObjectTypeId() == 4) {
+                valueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = flow.project_process_step.id and \"%s\".custom_field_group_assignment_id = %s", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId()));
+              }
+            }
+          } else if (r.getCustomFieldGroupAssignmentId() != null) {
+            r.setValueReferenceTable(alreadyJoinedValueTable.getValueReferenceTable());
+          }
+        }
+
         if (r.getSmartlistSystemListId() != null) {
           //smartlist system list
-
-          final String smartlistSystemListTable = "smartlistSystemList_" + r.getSmartlistSystemListId();
-
           if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
-            referenceLocation = String.format("\"%s\".id", smartlistSystemListTable);
-          } else if (r.getSmartlistSystemListId() == 2){
-
-            final String referenceTable = UUID.randomUUID().toString();
-            valueJoins.append(String.format(" inner join \"%s\" \"%s\" on \"%s\".id = flow.company_process_step_status_type.process_step_status_type_id", smartlistSystemListTable, referenceTable, referenceTable));
-            referenceLocation = String.format("\"%s\".id", referenceTable);
+            referenceLocation = String.format("%s.%s", r.getJoinTable(), r.getJoinColumn());
+          } else if (r.getSmartlistSystemListId() == 2) {
+            referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
           }
-
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist field
           if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
@@ -1291,6 +1319,18 @@ public class SmartlistService {
             }
 
             referenceLocation = String.format("\"%s\".id", r.getValueReferenceTable());
+          } else if (r.getCompanySystemListId() != null) {
+            final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
+//            final String systemListTable = "systemList_" + systemListNumber;
+//
+//            if (valueJoins.indexOf(systemListTable) == -1) {
+//              //join the system list
+//              valueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable));
+//            } else {
+//              //get value reference UUID for reference location
+//            }
+
+            referenceLocation = String.format("\"systemList_%s\".id", systemListNumber);
           }
         }
 
