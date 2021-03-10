@@ -15,7 +15,6 @@
             disable-sort
             :loading="dataLoading"
             :options.sync="options"
-            :server-items-length="totalItems"
             :footer-props="footerProps"
             class="elevation-1 mt-1"
             @click:row="clickRow"
@@ -47,9 +46,14 @@
                 </v-btn>
               </td>
               <td class="text-left">
-                <div v-for="aps in item.activeProcessSteps">
-                  {{ aps.processStepName }}
+                <div v-if="item.activeProcessSteps">
+                  <span v-for="aps in parseActiveProcessSteps(item)">
+                    {{ aps.processStepName }}
+                  </span>
                 </div>
+              </td>
+              <td v-for="c in customColumns">
+                {{item[c.name]}}
               </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
@@ -126,8 +130,10 @@
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
+        smartlistId: this.$route.query.smartlistId,
         unassigned: this.$route.query.unassigned,
         results: [],
+        customColumns: [],
         totalItems: 0,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000],
@@ -146,7 +152,7 @@
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
-          { text: 'Notes', value: 'notes', show: true },
+
         ],
       }
     },
@@ -161,6 +167,9 @@
     computed: {},
     async created() {},
     methods: {
+      parseActiveProcessSteps(item) {
+        return JSON.parse(item?.activeProcessSteps?.value)
+      },
       filterHeaders () {
         return this.headers.filter(header => header.show === true)
       },
@@ -168,14 +177,23 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options
         try {
+          console.log('again',this.smartlistId)
           const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
+              smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
               page: page - 1,
               size: itemsPerPage
             }})
-          this.results = data.content
-          this.totalItems = data.totalElements
+          // this.results = data.content
+          // this.totalItems = data.totalElements
+          this.results = data.data
+          this.customColumns = data.headers
+          this.customColumns.forEach(c => {
+            this.headers.push( { text: c.name, value: c.name, show: true })
+          })
+          //add the notes column to the end
+          this.headers.push({ text: 'Notes', value: 'notes', show: true })
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -203,7 +221,8 @@
       },
       userCanOwnProcessStep(item) {
         let canAssign = false
-        item?.owningPositions?.forEach(op => {
+        let jsonOwningPositions = JSON.parse(item?.owningPositions?.value)
+        jsonOwningPositions?.forEach(op => {
           let positionMatch = this.userPositions.find(up => up.positionId === op.positionId)
           if(positionMatch !== null && positionMatch !== undefined) {
             canAssign = true

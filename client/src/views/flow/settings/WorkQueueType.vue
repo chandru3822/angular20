@@ -170,6 +170,13 @@
             </v-list-item>
           </draggable>
         </v-list>
+
+        <v-btn text @click="buildSql">
+          RANDA TEST BUILD SQL
+        </v-btn>
+        <div>
+          {{sql}}
+        </div>
       </v-col>
     </v-row>
 
@@ -207,6 +214,7 @@
         availableProcessSteps: [],
         workQueueTypeId: this.$route.params.id,
         workQueueType: {},
+        sql: '',
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
@@ -224,6 +232,16 @@
       }
     },
     methods: {
+      async buildSql () {
+        try {
+          const {data} = await getRequest(`/workQueue/smartlist/${this.workQueueType.smartlistId}/buildSql`)
+          this.sql = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching sql')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
       async getCompanyObjectTypes () {
         try {
           const {data} = await getRequest(`/smartlist/customFieldObjectTypes`)
