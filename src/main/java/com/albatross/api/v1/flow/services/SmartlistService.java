@@ -318,7 +318,7 @@ public class SmartlistService {
     log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
     String query;
 
-    if (smartlist.getObjectTypeId() == 4 && !smartlist.isMainProcessSteps()) {
+    if (smartlist.getObjectTypeId() == 4) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
@@ -1372,6 +1372,14 @@ public class SmartlistService {
         whereClause.delete(whereClause.length() - 5, whereClause.length());
 
         withClause.append(String.format(" where %s", whereClause.toString()));
+
+        if (smartlist.isMainProcessSteps()) {
+          withClause.append(" and flow.project_process_step.main is true");
+        }
+      } else {
+        if (smartlist.isMainProcessSteps()) {
+          withClause.append(" where flow.project_process_step.main is true");
+        }
       }
 
       query.append(String.format("%s), ", withClause));
