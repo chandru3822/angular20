@@ -788,6 +788,8 @@ public class SmartlistService {
         "                         ) notes), '[]') AS \"notes\"\n" +
         "from flow.project\n" +
         "         inner join flow.contact on flow.contact.id = flow.project.contact_id" +
+        "         left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id\n" +
+        "         left join flow.user on flow.user.id = flow.user_position.user_id" +
         "         inner join flow.company_process cp on cp.id = flow.project.company_process_id\n" +
         "         inner join flow.project_process_step on flow.project_process_step.project_id = flow.project.id\n" +
         "         inner join flow.company_project_status_type cpst on cpst.id = flow.project.company_project_status_type_id\n" +
