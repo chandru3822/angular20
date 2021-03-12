@@ -279,7 +279,14 @@ public class SmartlistService {
 
     log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-    final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    String query;
+
+    if (smartlist.getObjectTypeId() == 4) {
+      query = buildProcessStepSql(smartlist, fields);
+    } else {
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    }
+
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     return new SmartlistResult(fields, results);
@@ -324,7 +331,7 @@ public class SmartlistService {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
     }
 
-    log.info("*** {} ***", query);
+//    log.info("*** {}", query);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     if (results.isEmpty()) {
@@ -1365,6 +1372,8 @@ public class SmartlistService {
 //            }
 
             referenceLocation = String.format("\"systemList_%s\".id", systemListNumber);
+          } else {
+            referenceLocation = String.format("\"%s\".%s", r.getValueReferenceTable(), getReferenceColumn(r.getDataTypeId()));
           }
         }
 
