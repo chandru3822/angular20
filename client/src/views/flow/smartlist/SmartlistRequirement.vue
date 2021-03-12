@@ -461,14 +461,16 @@ export default {
     },
     isSaveNewRequirementDisabled () {
       if (this.newRequirement.isCustomValue) {
-        return (this.newRequirement.requirementValue === null || this.newRequirement.requirementValue?.length === 0) && this.newRequirement.listOfValueId === null
+        const isEmptyList = (this.newRequirement.hasListValues === true && this.newRequirement.allowMultiple === false && this.newRequirement.listOfValueId === null) || (this.newRequirement.allowMultiple === true && this.newRequirement.listOfValueIds.length === 0)
+        return (this.newRequirement.requirementValue === null || this.newRequirement.requirementValue?.length === 0) && isEmptyList
       } else {
         return this.newRequirement.dataTypeRequirementId === null && this.newRequirement.listOfValueId === null && this.newRequirement.listOfValueIds.length === 0
       }
     },
     isSaveExpandedRequirementDisabled () {
       if (this.expandedRequirement.isCustomValue) {
-        return (this.expandedRequirement.requirementValue === null || this.expandedRequirement.requirementValue?.length === 0) && this.expandedRequirement.listOfValueId === null
+        const isEmptyList = (this.expandedRequirement.hasListValues === true && this.expandedRequirement.allowMultiple === false && this.expandedRequirement.listOfValueId === null) || (this.expandedRequirement.allowMultiple === true && this.expandedRequirement.listOfValueIds.length === 0)
+        return (this.expandedRequirement.requirementValue === null || this.expandedRequirement.requirementValue?.length === 0) && isEmptyList
       } else {
         return this.expandedRequirement.dataTypeRequirementId === null && this.expandedRequirement.listOfValueId === null && this.expandedRequirement.listOfValueIds.length === 0
       }
