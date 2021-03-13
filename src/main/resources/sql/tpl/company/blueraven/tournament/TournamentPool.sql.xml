@@ -1,0 +1,21 @@
+<sql>
+  <tournamentPool.getDetails><![CDATA[
+    select tp.*,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(tb)))
+                        FROM (
+                                 SELECT tpu.id,
+                                        tpu.user_id as "userId",
+                                        concat(u.first_name, ' ', u.last_name) as "fullName",
+                                        tpu.tournament_pool_id as "tournamentPoolId",
+                                        tpu.archived
+                                 FROM brs.tournament_pool_user tpu
+                                    inner join flow."user" u on tpu.user_id = u.id
+                                 WHERE tpu.tournament_pool_id = tp.id
+                                   AND tpu.archived is not true) tb), '[]') AS "users"
+    from brs.tournament_pool tp
+    where tp.tournament_id = :tournamentId
+    and tp.tournament_pool_type_id = :tournamentPoolTypeId
+  ]]></tournamentPool.getDetails>
+
+</sql>

@@ -300,12 +300,56 @@ export default new Router({
               return accessDenied()
             }
           },
-        }, {
+        },
+      //TOURNAMENT STUFF
+      {
+        path: '/tournament/:id',
+        name: 'tournament',
+        props: true,
+        component: () => {
+          if (store.getters.userHasFeature('TOURNAMENTS')) {
+            return import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Tournament.vue')
+          } else {
+            return accessDenied()
+          }
+        },
+        children: [
+          {
+            path: 'qualifying',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Qualifying.vue')
+          },
+          {
+            path: 'bracket',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Bracket.vue')
+          },
+          {
+            path: 'lastChance',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/LastChance.vue')
+          },
+          {
+            path: 'winners',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
+          }
+        ]
+      },
+      //END TOURNAMENT STUFF
+
+      {
           path: '/settings',
           name: 'settings',
           meta: {title: 'Albatross - Settings'},
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
+            {
+              path: 'tournaments',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournaments.vue'),
+            },
+            {
+              path: 'tournaments/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournament.vue'),
+            },
             {
               path: 'states',
               meta: {title: 'Albatross - Settings'},

@@ -17,22 +17,56 @@
     </template>
     <div>
       <v-list>
-        <v-list-item v-for="(item, index) in companyTools" :key="index" @click="menuOpen = false" :to="item.featurePath">
-          <v-list-item-title>{{item.featureName}}</v-list-item-title>
-        </v-list-item>
+        <v-list-item v-for="(item, index) in companyTools"
+                     :class="{'pa-0': item.featureCode === 'TOURNAMENTS'}"
+                     :key="index" @click="closeMenu(item)" :to="item.featurePath">
+          <v-list-item-title v-if="item.featureCode !== 'TOURNAMENTS'">{{item.featureName}}</v-list-item-title>
+
+          <v-list-group
+            v-else
+            class="pa-0"
+            :value="false"
+            @click="loadBrsTournaments"
+          >
+            <template v-slot:activator>
+                <v-list-item-title >{{item.featureName}}</v-list-item-title>
+            </template>
+
+            <v-list-item v-if="tourneysLoading">
+              <v-list-item-title>
+                <SpinnerInline :size="20" color="primaryCustom"/>
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              v-else
+              v-for="(t, i) in tournaments"
+              :key="i"
+              class="px-7"
+              @click="goToTournament(t)"
+              link
+            >
+              <v-list-item-title>{{t.tournamentName}}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+      </v-list-item>
       </v-list>
     </div>
   </v-menu>
 </template>
 
 <script>
+  import {AppMutations} from '@/stores/AppStore'
   import constants from '@/helpers/constants'
   import Vue2Filters from "vue2-filters"
-
+  import SpinnerInline from '@/components/SpinnerInline'
+  import { getRequest, getSnackbar } from '@/helpers/helpers'
   const { VUE_APP_ENV } = process.env
 
   export default {
     name: 'CompanyTools',
+    components: {
+      SpinnerInline
+    },
     mixins: [Vue2Filters.mixin],
     props: {
         companyTools: Array
@@ -41,6 +75,8 @@
     data () {
       return {
         constants,
+        tournaments: [],
+        tourneysLoading: false,
         loadComplete: false,
         userId: this.$store.state.user.details.id,
         headerColor: VUE_APP_ENV === 'local' ? 'pink' :
@@ -53,6 +89,27 @@
     computed: {},
     created () {},
     methods: {
+      closeMenu(item) {
+        if(item.featureCode !== 'TOURNAMENTS') {
+          this.menuOpen = false
+        }
+      },
+      async loadBrsTournaments() {
+        this.tourneysLoading = true
+        try {
+          const {data} = await getRequest('/tournament/active', 'blueraven')
+          this.tournaments = data
+          this.tourneysLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Tournaments')
+          this.tourneysLoading = false
+        }
+      },
+      goToTournament(item) {
+        this.menuOpen = false
+        this.$router.push(`tournament/${item.id}/qualifying`)
+      },
       changeRoute (path) {
         this.$router.push({ name: path })
       },
