@@ -124,4 +124,9 @@ public class ContactLeadController {
   public void updateContactGoogleDisplay(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/faraday", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactFaraday(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
