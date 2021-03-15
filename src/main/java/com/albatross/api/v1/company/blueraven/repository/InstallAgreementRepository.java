@@ -231,6 +231,8 @@ public class InstallAgreementRepository {
           }
 
           try {
+              String financeOption = getFinanceOption(pd.getLoanTerm(), pd.getInterestRate());
+              baseUrl += financeOption + ".html";
               URIBuilder b = new URIBuilder(baseUrl);
               b.addParameter("fname", s(pd.getCustomerFirstName()));
               b.addParameter("lname", s(pd.getCustomerLastName()));
@@ -252,6 +254,96 @@ public class InstallAgreementRepository {
           }
       }
       return baseUrl;
+  }
+
+  private String getFinanceOption(String loanTerm, String interestRate) {
+    String financeOption = "";
+    final String SEVEN_YEAR_TERM_V1 = "07";
+    final String SEVEN_YEAR_TERM_V2 = "7";
+    final String SEVEN_YEAR_TERM_V3 = " 7";
+    final String TEN_YEAR_TERM = "10";
+    final String FIFTEEN_YEAR_TERM = "15";
+    final String TWENTY_YEAR_TERM = "20";
+    final String TWENTY_FIVE_YEAR_TERM = "25";
+    // Handle multiple formats of 7 year loan term
+    if (loanTerm.equals(SEVEN_YEAR_TERM_V1) || loanTerm.equals(SEVEN_YEAR_TERM_V2) || loanTerm.equals(SEVEN_YEAR_TERM_V3)) {
+      if (interestRate.equals("0.0699")) {
+        financeOption = "brs699";
+      }
+    }
+    else if (loanTerm.equals(TEN_YEAR_TERM)) {
+      if (interestRate.equals("0.0299")) {
+        financeOption = "blueraven";
+      }
+      else if (interestRate.equals("0.0499")) {
+        financeOption = "br";
+      }
+    }
+    else if (loanTerm.equals(FIFTEEN_YEAR_TERM)) {
+      if (interestRate.equals("0.0499")) {
+        financeOption = "bres1";
+      }
+    }
+    else if (loanTerm.equals(TWENTY_YEAR_TERM)) {
+      if (interestRate.equals("0.0148")) {
+        financeOption = "flexpay148";
+      }
+      else if (interestRate.equals("0.0149")) {
+        financeOption = "brs149";
+      }
+      else if (interestRate.equals("0.0198")) {
+        financeOption = "flexpay198";
+      }
+      else if (interestRate.equals("0.0248")) {
+        financeOption = "flexpay248";
+      }
+      else if (interestRate.equals("0.0298")) {
+        financeOption = "flexpay298";
+      }
+      else if (interestRate.equals("0.0398")) {
+        financeOption = "flexpay398";
+      }
+      else if (interestRate.equals("0.0399")) {
+        financeOption = "bres2";
+      }
+      else if (interestRate.equals("0.0498")) {
+        financeOption = "flexpay498";
+      }
+      else if (interestRate.equals("0.0598")) {
+        financeOption = "flexpay598";
+      }
+    }
+    else if (loanTerm.equals(TWENTY_FIVE_YEAR_TERM)) {
+      if (interestRate.equals("0.0198")) {
+        financeOption = "flexpay198";
+      }
+      else if (interestRate.equals("0.0199")) {
+        financeOption = "flexpay199";
+      }
+      else if (interestRate.equals("0.0248")) {
+        financeOption = "flexpay248";
+      }
+      else if (interestRate.equals("0.0298")) {
+        financeOption = "flexpay298";
+      }
+      else if (interestRate.equals("0.0299")) {
+        financeOption = "blueraven";
+      }
+      else if (interestRate.equals("0.0398")) {
+        financeOption = "flexpay398";
+      }
+      else if (interestRate.equals("0.0498")) {
+        financeOption = "flexpay498";
+      }
+      else if (interestRate.equals("0.0598")) {
+        financeOption = "flexpay598";
+      }
+    }
+    else {
+      financeOption = "blueraven";
+    }
+
+    return financeOption;
   }
 
   public void updateEmailAddress(Long projectId, String emailAddress) {
