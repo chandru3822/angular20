@@ -55,7 +55,15 @@
           </div>
         </v-card>
         <v-divider></v-divider>
-        
+        <v-toolbar flat class="wqt-header-bar">
+          <v-toolbar-title class="app-title">Brackets</v-toolbar-title>
+        </v-toolbar>
+        <v-list>
+          <v-list-item
+            v-for="(b, index) in tournament.brackets" :key="index">
+            <v-list-item-title>{{index + 1}}: {{ b.numberOfUsers }} Users</v-list-item-title>
+          </v-list-item>
+        </v-list>
 
       </v-col>
 
