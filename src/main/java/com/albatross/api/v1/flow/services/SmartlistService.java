@@ -1157,11 +1157,6 @@ public class SmartlistService {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
             } else if (f.getDataTypeId() == 7) {
               selectFields.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(\"%s\".%s)), ',')) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
-            } else if (f.getDataTypeId() == 9) {
-//                final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
-//
-//                final String sql = String.format(" (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), f.getId());
-//                query.append(sql);
             } else {
               selectFields.append(String.format(" \"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
             }
@@ -1183,11 +1178,6 @@ public class SmartlistService {
                  selectFields.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
               } else if (f.getDataTypeId() == 7) {
                 selectFields.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(\"%s\".%s)), ',')) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
-              } else if (f.getDataTypeId() == 9) {
-//                final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
-//
-//                final String sql = String.format(" (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), f.getId());
-//                query.append(sql);
               } else {
                 selectFields.append(String.format(" \"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
               }
@@ -1204,21 +1194,6 @@ public class SmartlistService {
       withClause.append("select ").append(selectFields.toString());
 
       StringBuilder fromClause = new StringBuilder(" from ");
-
-      // for any requirements that use
-      requirements.stream()
-        .filter(r -> r.getProcessStepId() == null || r.getProcessStepId().equals(processStepId))
-        .forEach(r -> {
-
-        if (r.getSystemListId() != null) {
-          final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
-          final String systemListTable = "systemList_" + systemListNumber;
-
-          if (fromClause.indexOf(systemListTable) == -1) {
-            fromClause.append(String.format("\"%s\", ", systemListTable));
-          }
-        }
-      });
 
       fromClause.append(" flow.project_process_step ");
       fromClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
@@ -1361,17 +1336,16 @@ public class SmartlistService {
 
             referenceLocation = String.format("\"%s\".id", r.getValueReferenceTable());
           } else if (r.getCompanySystemListId() != null) {
-            final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
-//            final String systemListTable = "systemList_" + systemListNumber;
-//
-//            if (valueJoins.indexOf(systemListTable) == -1) {
-//              //join the system list
-//              valueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable));
-//            } else {
-//              //get value reference UUID for reference location
-//            }
 
-            referenceLocation = String.format("\"systemList_%s\".id", systemListNumber);
+            final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
+            final String systemListTable = "systemList_" + systemListNumber;
+
+            //Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates
+            final String newValueTable = UUID.randomUUID().toString();
+            valueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable, newValueTable, newValueTable, r.getValueReferenceTable(), getReferenceColumn(r.getDataTypeId())));
+            r.setValueReferenceTable(newValueTable);
+
+            referenceLocation = String.format("\"%s\".id", newValueTable);
           } else {
             referenceLocation = String.format("\"%s\".%s", r.getValueReferenceTable(), getReferenceColumn(r.getDataTypeId()));
           }
