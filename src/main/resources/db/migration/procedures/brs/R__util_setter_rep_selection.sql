@@ -35,7 +35,7 @@ BEGIN
                               select u.id                                      user_id,
                                      concat(u.first_name, ' ', u.last_name) as name,
                                      (case
-                                          when (upv.end_date is null or
+                                          when upv.start_date is not null and (upv.end_date is null or
                                                 upv.end_date >= (now() at time zone 'US/Mountain')::date)
                                               then true
                                           else false
@@ -62,7 +62,7 @@ BEGIN
                                   select distinct upv.user_id,
                                                   concat(u.first_name, ' ', u.last_name) as name,
                                                   (case
-                                                       when (upv.end_date is null or
+                                                       when upv.start_date is not null and (upv.end_date is null or
                                                              upv.end_date >= (now() at time zone 'US/Mountain')::date)
                                                            then true
                                                        else false
