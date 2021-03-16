@@ -317,7 +317,7 @@ public class InstallAgreementRepository {
         financeOption = "flexpay198";
       }
       else if (interestRate.equals("0.0199")) {
-        financeOption = "flexpay199";
+        financeOption = "brs199";
       }
       else if (interestRate.equals("0.0248")) {
         financeOption = "flexpay248";
