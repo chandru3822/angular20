@@ -27,10 +27,13 @@
               pd.system_size,
               pd.first_cash_payment_amount,
               pd.total_system_price,
-              pd.utility_company
+              pd.utility_company,
+              plh.interest_rate,
+              plh.loan_term
             FROM flow.project p
               JOIN brs.project_details pd on p.id = pd.project_id
               JOIN brs.proposal_log pl on pl.project_id = p.id
+              JOIN brs.proposal_log_history plh on p.id = plh.project_id and pl.id = plh.proposal_log_id
               JOIN flow.contact c ON c.id = p.contact_id
               join flow.company_state cs on cs.id = p.company_state_id
               join flow.state s on s.id = cs.state_id
