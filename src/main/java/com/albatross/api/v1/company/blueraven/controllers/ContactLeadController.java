@@ -134,4 +134,5 @@ public class ContactLeadController {
   public void updateContactModernize(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
 }
