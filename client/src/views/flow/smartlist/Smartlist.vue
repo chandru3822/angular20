@@ -137,15 +137,14 @@
 <!--                  />-->
 <!--                </v-col>-->
 
-                <v-col cols="6" md="3">
+                <v-col cols="4" md="2">
                   <v-checkbox
                     v-model="smartlist.shared"
                     label="Public"
                   />
                 </v-col>
 
-                <v-col cols="6" md="3">
-
+                <v-col cols="4" md="2">
 
                   <v-dialog
                     v-model="showToggleDialog"
@@ -188,6 +187,14 @@
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
+                </v-col>
+
+                <v-col cols="4" md="2">
+                  <v-checkbox
+                      v-if="isProcessStepObjectType"
+                      v-model="smartlist.mainProcessSteps"
+                      label="Primary Steps Only"
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -428,7 +435,6 @@ import { saveAs } from 'file-saver'
 export default {
   name: 'Smartlist',
   components: {
-
     draggable,
     SmartlistRequirement
   },
@@ -436,7 +442,9 @@ export default {
     return {
       constants,
       snackbar: {},
-      smartlist: {},
+      smartlist: {
+        mainProcessSteps: true
+      },
       companyObjectTypes: [],
       operations: [],
       fetchedAvailableFields: [],
@@ -478,6 +486,9 @@ export default {
   computed: {
     isNewFieldButtonDisabled () {
       return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
+    },
+    isProcessStepObjectType () {
+      return this.smartlist.companyObjectTypeId !== null && this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id === 4
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
@@ -590,13 +601,22 @@ export default {
         if (f.customFieldGroupAssignmentId !== null) {
           return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
         } else {
-          return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          if (this.newField.processStepId) {
+            return !this.assignedFields.filter(a => a.processStepId === this.newField.processStepId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          } else {
+            return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          }
         }
       })
     },
     async addSmartlist () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
+
+        if (!this.isProcessStepObjectType) {
+          this.smartlist.mainProcessSteps = true
+        }
+
         const {data} = await postRequest(`/smartlist`, this.smartlist)
         this.smartlist = data
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
@@ -652,6 +672,11 @@ export default {
     async updateSmartlist () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
+
+        if (!this.isProcessStepObjectType) {
+          this.smartlist.mainProcessSteps = true
+        }
+
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
       } catch (e) {
         logError(e)

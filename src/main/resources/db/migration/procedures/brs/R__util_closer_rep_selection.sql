@@ -33,7 +33,7 @@ BEGIN
             from (
                 select u.id user_id,
                        concat(u.first_name, ' ', u.last_name,' - ',o.org_name) as name,
-                       (case when (upv.end_date is null or upv.end_date >= (now() at time zone 'US/Mountain')::date)
+                       (case when upv.start_date is not null and (upv.end_date is null or upv.end_date >= (now() at time zone 'US/Mountain')::date)
                              then true
                              else false
                              end) as active,
@@ -72,7 +72,7 @@ BEGIN
                     select u.id user_id,
                            concat(u.first_name, ' ', u.last_name,' - ',o.org_name) as name,
 
-                           (case when (upv.end_date is null or upv.end_date >= (now() at time zone 'US/Mountain')::date)
+                           (case when upv.start_date is not null and (upv.end_date is null or upv.end_date >= (now() at time zone 'US/Mountain')::date)
                                 then true
                                 else false
                                 end) as active,
