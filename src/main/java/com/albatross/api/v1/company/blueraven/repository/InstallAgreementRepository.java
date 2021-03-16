@@ -232,8 +232,7 @@ public class InstallAgreementRepository {
 
           try {
               String financeOption = getFinanceOption(pd.getLoanTerm(), pd.getInterestRate());
-              baseUrl += financeOption + ".html";
-              URIBuilder b = new URIBuilder(baseUrl);
+              URIBuilder b = new URIBuilder(baseUrl + financeOption + ".html");
               b.addParameter("fname", s(pd.getCustomerFirstName()));
               b.addParameter("lname", s(pd.getCustomerLastName()));
               b.addParameter("street", bothStreets);
