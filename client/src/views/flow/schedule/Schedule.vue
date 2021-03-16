@@ -117,13 +117,16 @@
               <v-toolbar-items>
                 <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, true, false)"><v-icon>mdi-chevron-right</v-icon></v-btn>
+                    <v-btn x-small text v-on="on" :to="`/project/${selectedProject.projectId}/details`"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
                 <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, false, true)"><v-icon>mdi-chevron-double-right</v-icon></v-btn>
+                    <v-btn x-small text v-on="on"
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}?processStepId=${selectedProject.processStepId}&contactId=${selectedProject.contactId}`">
+                      <v-icon>mdi-chevron-double-right</v-icon>
+                    </v-btn>
                   </template>
                   <span>Go to Process Step</span>
                 </v-tooltip>
