@@ -1103,6 +1103,13 @@ public class SmartlistService {
       query.append(customSqlQueries.toString());
     }
 
+    if (usedProcessStepIds.isEmpty()) {
+      //at this point, the only fields are project/contact, so this is essentially a project/contact smartlist
+      //set smartlist object type to "project" and build sql like usual
+      smartlist.setObjectTypeId(1L);
+      return buildSql(smartlist, fields);
+    }
+
     for(Long processStepId : usedProcessStepIds) {
 
       SmartlistFieldAssignment psField = fields.stream()
@@ -1382,19 +1389,18 @@ public class SmartlistService {
 
       withClause.append(valueJoins.toString());
 
+      final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
+
       if (whereClause.length() > 0) {
-        // remove the last "and "
-        whereClause.delete(whereClause.length() - 5, whereClause.length());
+        whereClause.append(String.format("flow.process_step.company_id = any(%s)", companySubquery));
 
         withClause.append(String.format(" where %s", whereClause.toString()));
-
-        if (smartlist.isMainProcessSteps()) {
-          withClause.append(" and flow.project_process_step.main is true");
-        }
       } else {
-        if (smartlist.isMainProcessSteps()) {
-          withClause.append(" where flow.project_process_step.main is true");
-        }
+        withClause.append(String.format(" where flow.process_step.company_id = any(%s)", companySubquery));
+      }
+
+      if (smartlist.isMainProcessSteps()) {
+        withClause.append(" and flow.project_process_step.main is true");
       }
 
       query.append(String.format("%s), ", withClause));
