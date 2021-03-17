@@ -135,4 +135,8 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/solarLeadFactory", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarLeadFactory(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
