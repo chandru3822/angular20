@@ -31,8 +31,16 @@
   ]]></tournament.update>
 
   <tournament.insert><![CDATA[
-    insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, created_by_id)
-    values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :userId)
+    with tourney as (insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, created_by_id)
+      values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :userId)
+      returning id),
+           pools as (
+      insert into brs.tournament_pool(tournament_id, tournament_pool_type_id, start_date, end_date, created_by_id)
+      values ((select id from tourney), 1, :startDate, :endDate, :userId),
+             ((select id from tourney), 2, :startDate, :endDate, :userId),
+             ((select id from tourney), 3, :startDate, :endDate, :userId)
+       )
+       select id from tourney
   ]]></tournament.insert>
 
   <tournament.getActiveTournaments><![CDATA[
