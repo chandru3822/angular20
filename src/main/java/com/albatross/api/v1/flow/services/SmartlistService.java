@@ -1244,9 +1244,7 @@ public class SmartlistService {
 
       StringBuilder whereClause = new StringBuilder();
 
-      requirements.stream()
-        .filter(r -> r.getProcessStepId() == null || r.getProcessStepId().equals(processStepId))
-        .forEach(r -> {
+      requirements.forEach(r -> {
 
         String referenceLocation = null;
 
