@@ -349,6 +349,18 @@ export default new Router({
               path: 'tournaments/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournament.vue'),
+              children: [
+                {
+                  path: 'brackets',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Bracket.vue'),
+                },
+                {
+                  path: 'pool/:id',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Pool.vue'),
+                },
+              ]
             },
             {
               path: 'states',

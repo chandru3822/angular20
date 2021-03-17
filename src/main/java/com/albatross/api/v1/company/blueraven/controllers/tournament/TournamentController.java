@@ -1,8 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.tournament;
 
-import com.albatross.api.v1.company.blueraven.models.tournament.Match;
-import com.albatross.api.v1.company.blueraven.models.tournament.Tournament;
-import com.albatross.api.v1.company.blueraven.models.tournament.TournamentOwnerType;
+import com.albatross.api.v1.company.blueraven.models.tournament.*;
 import com.albatross.api.v1.company.blueraven.services.tournament.TournamentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +55,35 @@ public class TournamentController {
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Tournament> getTournament(@PathVariable Long id) {
     return tournamentService.getTournament(id);
+  }
+
+  //brackets
+  @PostMapping(value = "/bracket", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Bracket> addBracket(@RequestBody Bracket bracket) {
+    return tournamentService.addBracket(bracket);
+  }
+
+  @DeleteMapping(value = "/bracket/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteBracket(@PathVariable Long id) {
+    tournamentService.deleteBracket(id);
+  }
+
+  //rounds
+  @PutMapping(value = "/round", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Bracket> saveRound(@RequestBody Round round) {
+    return tournamentService.saveRound(round);
+  }
+
+  @PutMapping(value = "/round/{id}/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Bracket> deleteRound(@RequestBody Round round) {
+    //has to be a put cuz we need data back after the delete
+    return tournamentService.deleteRound(round);
+  }
+
+  //matches
+  @PutMapping(value = "/bracket/{id}/generateMatches", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void generateMatches(@PathVariable Long id) {
+    tournamentService.generateMatches(id);
   }
 
   @PutMapping(value = "/advance", produces = MediaType.APPLICATION_JSON_VALUE)

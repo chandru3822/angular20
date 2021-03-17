@@ -152,7 +152,7 @@
         return this.tournaments.filter(t => { return !t.archived})
       },
       goToTournament(id) {
-        this.$router.push({path: `/settings/tournaments/${id}`})
+        this.$router.push({path: `/settings/tournaments/${id}/brackets`})
       },
       async getTournamentOwnerTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)

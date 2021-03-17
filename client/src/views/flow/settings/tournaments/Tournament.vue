@@ -1,5 +1,5 @@
 <template>
-  <v-container id="postal-codes" class="custom-field-group-container">
+  <v-container>
     <v-row>
       <v-col cols="12">
         <v-btn text class="pl-1 pr-2" :to="'/settings/tournaments'">
@@ -50,21 +50,22 @@
             />
           </div>
           <div v-if="edit">
-            <v-btn :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || !tournament.tournamentOwnerTypeId" @click="updateTournament">Save</v-btn>
+            <v-btn
+              :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || !tournament.tournamentOwnerTypeId"
+              @click="updateTournament">Save
+            </v-btn>
             <v-btn class="ml-2" @click="edit = false">Cancel</v-btn>
           </div>
         </v-card>
-        <v-divider></v-divider>
-        <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Brackets</v-toolbar-title>
-        </v-toolbar>
-        <v-list>
-          <v-list-item
-            v-for="(b, index) in tournament.brackets" :key="index">
-            <v-list-item-title>{{index + 1}}: {{ b.numberOfUsers }} Users</v-list-item-title>
-          </v-list-item>
-        </v-list>
+        <v-tabs class="tabs-bar">
+          <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                 class="text-capitalize ma-0"
+                 :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+            {{ tab.label }}
+          </v-tab>
+        </v-tabs>
 
+        <router-view/>
       </v-col>
 
     </v-row>
@@ -75,7 +76,14 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {
+    getRequest,
+    getRequestWithParams,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getSnackbar
+  } from '@/helpers/helpers'
 
   export default {
     name: 'TournamentAdmin',
@@ -83,21 +91,38 @@
     components: {
       DatetimePickerInput
     },
-    data () {
+    data() {
       return {
         snackbar: {},
         edit: false,
         tournament: {},
-        ownerTypes: [],
         timezone: this.$store.state.user.details.timezone.value,
+        ownerTypes: [],
         tournamentId: this.$route.params.id,
         userId: this.$store.state.user.details.id,
+        tabs: [
+          {
+            label: 'Brackets',
+            path: `/settings/tournaments/${this.$route.params.id}/brackets`,
+          },
+          {
+            label: 'Qualifying',
+            path: `/settings/tournaments/${this.$route.params.id}/pool/1`,
+          },
+          {
+            label: 'Last Chance',
+            path: `/settings/tournaments/${this.$route.params.id}/pool/2`,
+          },
+          {
+            label: 'Winner',
+            path: `/settings/tournaments/${this.$route.params.id}/pool/3`,
+          }
+        ]
       }
     },
-    computed: {
-    },
+    computed: {},
     methods: {
-      async getTournamentOwnerTypes () {
+      async getTournamentOwnerTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
@@ -137,9 +162,9 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
+      }
     },
-    async created () {
+    async created() {
       this.getTournamentOwnerTypes()
       this.getTournament()
     }
@@ -150,6 +175,13 @@
 </style>
 
 <style scoped lang="scss">
-
+  .tabs-bar {
+    top: -12px;
+    border-top: 1px solid #E6E6E6;
+    border-bottom: 1px solid #E6E6E6;
+    .v-tab:hover {
+      color: var(--v-primaryCustom-base);
+    }
+  }
 
 </style>

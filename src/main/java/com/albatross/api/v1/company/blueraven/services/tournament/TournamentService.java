@@ -3,10 +3,7 @@ package com.albatross.api.v1.company.blueraven.services.tournament;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.models.tournament.Bracket;
-import com.albatross.api.v1.company.blueraven.models.tournament.Match;
-import com.albatross.api.v1.company.blueraven.models.tournament.Tournament;
-import com.albatross.api.v1.company.blueraven.models.tournament.TournamentOwnerType;
+import com.albatross.api.v1.company.blueraven.models.tournament.*;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -103,6 +100,77 @@ public class TournamentService {
     return result;
   }
 
+  public Optional<Bracket> getBracket(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<Bracket> result = sqlCache.get("tournament.getBracket", params, new BracketMapper<>(Bracket.class, om));
+    return result;
+  }
+
+  public Optional<Bracket> addBracket(Bracket bracket) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("numberOfUsers", bracket.getNumberOfUsers());
+    params.put("tournamentId", bracket.getTournamentId());
+    params.put("createdById", user.getId());
+
+    Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
+    return getBracket(id);
+  }
+
+  public void deleteBracket(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("id", id);
+
+    sqlCache.update("tournament.deleteBracket", params);
+  }
+
+  public Optional<Bracket> saveRound(Round round) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("bracketId", round.getTournamentBracketId());
+    params.put("startDate", round.getStartDate());
+    params.put("endDate", round.getEndDate());
+    params.put("userId", user.getId());
+
+    if(null != round.getId()) {
+      params.put("id", round.getId());
+      sqlCache.update("tournament.updateRound", params);
+    } else {
+      sqlCache.update("tournament.addRound", params);
+    }
+
+    //return the bracket because the sort order of the rounds may have changed
+    return getBracket(round.getTournamentBracketId());
+  }
+
+  public Optional<Bracket> deleteRound(Round round) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("id", round.getId());
+
+    sqlCache.update("tournament.deleteRound", params);
+    return getBracket(round.getTournamentBracketId());
+  }
+
+  public void generateMatches(Long bracketId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("bracketId", bracketId);
+
+    sqlCache.update("tournament.generateMatches", params);
+  }
+
   public void advanceMatches(List<Match> matches) {
     User user = securityService.getCurrentUser();
 
@@ -132,6 +200,23 @@ public class TournamentService {
       };
       bw.registerCustomEditor(List.class, "brackets",
         new JsonCollectionDeserializer(bracketsRef, objectMapper));
+    }
+  }
+
+  public static class BracketMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public BracketMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Round>> roundsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "rounds",
+        new JsonCollectionDeserializer(roundsRef, objectMapper));
     }
   }
 }

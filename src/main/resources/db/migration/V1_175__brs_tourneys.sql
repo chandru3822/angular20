@@ -59,14 +59,15 @@ CREATE TABLE if not exists brs.tournament
 
 CREATE TABLE if not exists brs.tournament_bracket
 (
-    id              serial  NOT NULL,
-    tournament_id   integer NOT NULL,
-    number_of_users integer not null,
-    date_created    timestamp without time zone DEFAULT now(),
-    date_modified   timestamp without time zone,
-    created_by_id   integer not null,
-    modified_by_id  integer,
-    archived        boolean not null            default false,
+    id                serial  NOT NULL,
+    tournament_id     integer NOT NULL,
+    number_of_users   integer not null,
+    matches_generated boolean not null            default false,
+    date_created      timestamp without time zone DEFAULT now(),
+    date_modified     timestamp without time zone,
+    created_by_id     integer not null,
+    modified_by_id    integer,
+    archived          boolean not null            default false,
     CONSTRAINT brs_tournament_bracket_pk PRIMARY KEY (id),
     CONSTRAINT brs_tr_tournament_id_fk FOREIGN KEY (tournament_id)
         REFERENCES brs.tournament (id) MATCH SIMPLE
@@ -107,8 +108,8 @@ CREATE TABLE if not exists brs.tournament_round
 CREATE TABLE if not exists brs.tournament_match
 (
     id                    serial  NOT NULL,
-    tournament_bracket_id integer NOT NULL,
     tournament_round_id   integer NOT NULL,
+    parent_match_id   integer,
     user_1_id             integer,
     user_2_id             integer,
     user_1_score          integer,
@@ -120,8 +121,8 @@ CREATE TABLE if not exists brs.tournament_match
     match_advanced        boolean not null            default false,
     archived              boolean not null            default false,
     CONSTRAINT brs_tournament_match_pk PRIMARY KEY (id),
-    CONSTRAINT brs_tm_tournament_bracket_id_fk FOREIGN KEY (tournament_bracket_id)
-        REFERENCES brs.tournament_bracket (id) MATCH SIMPLE
+    CONSTRAINT brs_tm_parent_match_id_fk FOREIGN KEY (parent_match_id)
+        REFERENCES brs.tournament_match (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT brs_tm_tournament_round_id_fk FOREIGN KEY (tournament_round_id)
         REFERENCES brs.tournament_round (id) MATCH SIMPLE

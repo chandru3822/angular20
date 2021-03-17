@@ -14,7 +14,7 @@ import java.util.List;
 public class Bracket {
 
   private Long id, tournamentId, numberOfUsers;
-  private Boolean archived;
+  private Boolean archived, matchesGenerated;
   private List<Round> rounds;
 }
 

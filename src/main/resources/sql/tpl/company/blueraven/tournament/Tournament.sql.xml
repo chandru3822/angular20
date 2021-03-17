@@ -49,6 +49,7 @@
           FROM (
                SELECT tb.id,
                       tb.tournament_id as "tournamentId",
+                      tb.matches_generated as "matchesGenerated",
                       tb.number_of_users as "numberOfUsers",
                       tb.archived,
                       coalesce((
@@ -91,4 +92,84 @@
       where id = :id
   ]]></tournament.get>
 
+  <tournament.getBracket><![CDATA[
+    SELECT tb.id,
+       tb.tournament_id as "tournamentId",
+       tb.matches_generated,
+       tb.number_of_users as "numberOfUsers",
+       tb.archived,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(tb)))
+                    FROM (
+                             SELECT tr.id,
+                                    tr.tournament_bracket_id as "tournamentBracketId",
+                                    tr.start_date as "startDate",
+                                    tr.end_date as "endDate",
+                                    tr.archived,
+                                    now() between tr.start_date and tr.end_date as "currentRound",
+                                    row_number() over (order by tr.start_date) as "roundNumber",
+                                    coalesce((
+                                                 SELECT array_to_json(array_agg(row_to_json(tb)))
+                                                 FROM (
+                                                          SELECT tm.id,
+                                                                 tm.tournament_round_id as "tournamentRoundId",
+                                                                 tm.user_1_id as "user1Id",
+                                                                 tm.user_1_score as "user1Score",
+                                                                 concat(u1.first_name, ' ', u1.last_name) as "user1Name",
+                                                                 tm.user_2_id as "user2Id",
+                                                                 tm.user_2_score as "user2Score",
+                                                                 concat(u2.first_name, ' ', u2.last_name) as "user2Name",
+                                                                 tm.archived
+                                                          FROM brs.tournament_match tm
+                                                                   left join flow."user" u1 on u1.id = tm.user_1_id
+                                                                   left join flow."user" u2 on u2.id = tm.user_2_id
+                                                          WHERE tm.tournament_round_id = tr.id
+                                                            AND tm.archived is not true
+                                                          order by tm.id) tb), '[]') AS "matches"
+                             FROM brs.tournament_round tr
+                             WHERE tr.tournament_bracket_id = tb.id
+                               AND tr.archived is not true
+                             order by tr.start_date) tb), '[]') AS "rounds"
+      FROM brs.tournament_bracket tb
+      WHERE tb.id = :id
+  ]]></tournament.getBracket>
+
+  <tournament.deleteBracket><![CDATA[
+    update brs.tournament_bracket
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :id
+  ]]></tournament.deleteBracket>
+
+  <tournament.addBracket><![CDATA[
+    insert into brs.tournament_bracket(tournament_id, number_of_users, created_by_id)
+    values (:tournamentId, :numberOfUsers, :createdById)
+  ]]></tournament.addBracket>
+
+  <tournament.deleteRound><![CDATA[
+    update brs.tournament_round
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :id
+  ]]></tournament.deleteRound>
+
+  <tournament.addRound><![CDATA[
+    insert into brs.tournament_round(start_date, end_date, created_by_id, tournament_bracket_id)
+    values(:startDate, :endDate, :userId, :bracketId)
+  ]]></tournament.addRound>
+
+  <tournament.updateRound><![CDATA[
+    update brs.tournament_round
+    set start_date = :startDate,
+        end_date = :endDate,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></tournament.updateRound>
+
+  <tournament.generateMatches><![CDATA[
+    select * from brs.generate_matches(:bracketId::int, :userId::int)
+  ]]></tournament.generateMatches>
 </sql>
