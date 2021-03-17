@@ -56,6 +56,7 @@
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
           this.tournament = data
+          document.title = this.tournament.tournamentName || 'Albatross'
           this.tournamentLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

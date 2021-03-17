@@ -108,7 +108,8 @@
       },
       goToTournament(item) {
         this.menuOpen = false
-        this.$router.push(`tournament/${item.id}/qualifying`)
+        // this.$router.push(`tournament/${item.id}/qualifying`)
+        this.$router.push({name: 'tournamentQualifying', params: { id: item.id }})
       },
       changeRoute (path) {
         this.$router.push({ name: path })

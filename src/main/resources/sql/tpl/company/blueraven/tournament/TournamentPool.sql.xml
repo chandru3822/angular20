@@ -32,6 +32,36 @@
     and tp.tournament_pool_type_id = :tournamentPoolTypeId
   ]]></tournamentPool.getDetails>
 
+  <tournamentPool.getPoolUsers><![CDATA[
+    select tpu.id,
+           tpu.user_id,
+           concat(u.first_name,' ',u.last_name::text) as full_name,
+           tpu.archived
+    from brs.tournament_pool_user tpu
+             inner join brs.tournament_pool tp on tpu.tournament_pool_id = tp.id
+             inner join flow."user" u on tpu.user_id = u.id
+    where tp.tournament_id = :tournamentId
+      and tp.tournament_pool_type_id = :tournamentPoolTypeId
+      and tpu.archived is not true
+    union
+    select distinct null::integer,
+           upv.user_id,
+           concat(upv.first_name,' ',upv.last_name::text) as full_name,
+           tpp.archived
+    from flow.user_positions_vw upv
+             inner join brs.tournament_pool_position tpp on tpp.position_id = upv.position_id
+             inner join brs.tournament_pool tp on tpp.tournament_pool_id = tp.id
+    where upv.company_id = :companyId
+      and upv.has_access is true
+        and tp.tournament_id = :tournamentId
+        and tp.tournament_pool_type_id = :tournamentPoolTypeId
+        and tpp.archived is not true
+      and upv.archived is not true
+      and (upv.start_date <= now() and
+           (upv.end_date IS NULL OR upv.end_date > now()))
+    order by full_name
+  ]]></tournamentPool.getPoolUsers>
+
   <tournamentPool.getPosition><![CDATA[
     select tpp.*,
            p.position

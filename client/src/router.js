@@ -316,18 +316,22 @@ export default new Router({
         children: [
           {
             path: 'qualifying',
+            name: 'tournamentQualifying',
             component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Qualifying.vue')
           },
           {
             path: 'bracket',
+            name: 'tournamentBracket',
             component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Bracket.vue')
           },
           {
             path: 'lastChance',
+            name: 'tournamentLastChance',
             component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/LastChance.vue')
           },
           {
             path: 'winners',
+            name: 'tournamentWinners',
             component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
           }
         ]

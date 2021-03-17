@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -27,6 +28,12 @@ public class TournamentPoolController {
   public Optional<TournamentPool> getTournamentPool(@PathVariable Long tournamentId,
                                                     @PathVariable Long poolTypeId) {
     return tournamentPoolService.getPoolDetails(tournamentId, poolTypeId);
+  }
+
+  @GetMapping(value = "/usersByType/{poolTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<TournamentPoolUser> getTournamentPoolUsers(@PathVariable Long tournamentId,
+                                                         @PathVariable Long poolTypeId) {
+    return tournamentPoolService.getPoolUsers(tournamentId, poolTypeId);
   }
 
   @PostMapping(value = "/{poolId}/addPosition/{positionId}", produces = MediaType.APPLICATION_JSON_VALUE)

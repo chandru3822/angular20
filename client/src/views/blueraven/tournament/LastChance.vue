@@ -38,6 +38,7 @@
       return {
         constants,
         snackbar: {},
+        poolTypeId: 2,
         tournamentId: this.$route.params.id,
         pool: {},
         headers: [
@@ -52,7 +53,7 @@
     methods: {
       async getPool () {
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/lastChance`, 'blueraven')
+          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.pool = data
         } catch (e) {
           logError(e)

@@ -39,6 +39,16 @@ public class TournamentPoolService {
     return result;
   }
 
+  public List<TournamentPoolUser> getPoolUsers(Long tournamentId, Long tournamentPoolTypeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("tournamentId", tournamentId);
+    params.put("tournamentPoolTypeId", tournamentPoolTypeId);
+    List<TournamentPoolUser> result = sqlCache.query("tournamentPool.getPoolUsers", params, TournamentPoolUser.class);
+    return result;
+  }
+
   public Optional<TournamentPoolPosition> getPoolPosition(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
