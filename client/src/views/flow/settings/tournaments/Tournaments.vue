@@ -202,7 +202,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/tournament`, this.newTournament, 'blueraven')
-          this.$router.push({path: `/settings/tournaments/${data.id}`})
+          this.$router.push({path: `/settings/tournaments/${data.id}/brackets`})
           this.snackbar = getSnackbar('SUCCESS', 'Tournament Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

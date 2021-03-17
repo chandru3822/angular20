@@ -356,7 +356,7 @@ export default new Router({
                   component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Bracket.vue'),
                 },
                 {
-                  path: 'pool/:id',
+                  path: 'pool/:poolTypeId',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Pool.vue'),
                 },

@@ -208,13 +208,39 @@ CREATE TABLE if not exists brs.tournament_pool_user
     CONSTRAINT brs_tpu_user_id_fk FOREIGN KEY (user_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT brs_tp_created_by_id_fk FOREIGN KEY (created_by_id)
+    CONSTRAINT brs_tpu_created_by_id_fk FOREIGN KEY (created_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT brs_tp_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    CONSTRAINT brs_tpu_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE TABLE if not exists brs.tournament_pool_position
+(
+    id                 serial  NOT NULL,
+    position_id            integer NOT NULL,
+    tournament_pool_id integer NOT NULL,
+    date_created       timestamp without time zone DEFAULT now(),
+    date_modified      timestamp without time zone,
+    created_by_id      integer not null,
+    modified_by_id     integer,
+    archived           boolean not null            default false,
+    CONSTRAINT brs_tournament_pool_position_pk PRIMARY KEY (id),
+    CONSTRAINT brs_tpp_tournament_pool_id_fk FOREIGN KEY (tournament_pool_id)
+        REFERENCES brs.tournament_pool (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT brs_tpp_position_id_fk FOREIGN KEY (position_id)
+        REFERENCES flow.position (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT brs_tpp_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT brs_tpp_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
 
 insert into flow.feature(feature_name, feature_code, feature_path)
 values ('Tournaments', 'TOURNAMENTS', null);

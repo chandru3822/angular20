@@ -19,5 +19,6 @@ public class TournamentPool {
   private Date startDate, endDate;
   private Boolean archived;
   private List<TournamentPoolUser> users;
+  private List<TournamentPoolPosition> positions;
 }
 

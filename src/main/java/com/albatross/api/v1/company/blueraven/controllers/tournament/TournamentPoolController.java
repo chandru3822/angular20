@@ -1,16 +1,14 @@
 package com.albatross.api.v1.company.blueraven.controllers.tournament;
 
-import com.albatross.api.v1.company.blueraven.enums.tournament.TournamentPoolType;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPool;
+import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolPosition;
+import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolUser;
 import com.albatross.api.v1.company.blueraven.services.tournament.TournamentPoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -25,19 +23,33 @@ public class TournamentPoolController {
 
   private final TournamentPoolService tournamentPoolService;
 
-  @GetMapping(value = "/qualifying", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<TournamentPool> getQualifyingPoolDetails(@PathVariable Long tournamentId) {
-    return tournamentPoolService.getPoolDetails(tournamentId, TournamentPoolType.QUALIFYING.getId());
+  @GetMapping(value = "/byType/{poolTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<TournamentPool> getTournamentPool(@PathVariable Long tournamentId,
+                                                    @PathVariable Long poolTypeId) {
+    return tournamentPoolService.getPoolDetails(tournamentId, poolTypeId);
   }
 
-  @GetMapping(value = "/lastChance", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<TournamentPool> getLoserPoolDetails(@PathVariable Long tournamentId) {
-    return tournamentPoolService.getPoolDetails(tournamentId, TournamentPoolType.LAST_CHANCE.getId());
+  @PostMapping(value = "/{poolId}/addPosition/{positionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<TournamentPoolPosition> addPositionToPool(@PathVariable Long poolId,
+                                                            @PathVariable Long positionId) {
+    return tournamentPoolService.addPositionToPool(poolId, positionId);
   }
 
-  @GetMapping(value = "/winner", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<TournamentPool> getWinnerPoolDetails(@PathVariable Long tournamentId) {
-    return tournamentPoolService.getPoolDetails(tournamentId, TournamentPoolType.WINNER.getId());
+  @DeleteMapping(value = "/{poolId}/deletePosition/{tournamentPoolPositionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletePositionFromPool(@PathVariable Long tournamentPoolPositionId) {
+    tournamentPoolService.deletePositionFromPool(tournamentPoolPositionId);
+  }
+
+
+  @PostMapping(value = "/{poolId}/addUser/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<TournamentPoolUser> addUserToPool(@PathVariable Long poolId,
+                                                    @PathVariable Long userId) {
+    return tournamentPoolService.addUserToPool(poolId, userId);
+  }
+
+  @DeleteMapping(value = "/{poolId}/deleteUser/{tournamentPoolUserId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteUserFromPool(@PathVariable Long tournamentPoolUserId) {
+    tournamentPoolService.deleteUserFromPool(tournamentPoolUserId);
   }
 
 }

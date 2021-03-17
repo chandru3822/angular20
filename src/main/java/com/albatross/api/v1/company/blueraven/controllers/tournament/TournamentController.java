@@ -90,5 +90,4 @@ public class TournamentController {
   public void advanceMatches(@RequestBody List<Match> matches) {
     tournamentService.advanceMatches(matches);
   }
-
 }

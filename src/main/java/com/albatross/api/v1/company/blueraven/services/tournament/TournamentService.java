@@ -80,7 +80,8 @@ public class TournamentService {
     params.put("startDate", tournament.getStartDate());
     params.put("endDate", tournament.getEndDate());
 
-    Long id = sqlCache.updateReturningId("tournament.insert", params, "id").longValue();
+    // this also adds a qualifying, loser and winner pool
+    Long id = sqlCache.queryForObject("tournament.insert", params, Long.class);
     return getTournament(id);
   }
 
