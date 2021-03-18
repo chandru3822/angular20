@@ -48,6 +48,35 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
+<!--            tournament image -->
+            <div v-if="userCanEdit">
+              <v-btn text v-if="!savingImage && !tournament.presignedUrl"  @click="addImage = !addImage">
+                <v-icon v-if="addImage">remove</v-icon>
+                <v-icon v-else>add</v-icon>
+              </v-btn>
+              <v-btn v-else text class="mr-2" @click="deleteAttachment(companyLogo.id)">
+                <v-icon>delete</v-icon>
+              </v-btn>
+            </div>
+            <div class="mt-2" v-if="addImage">
+              <form enctype="multipart/form-data" novalidate>
+                <input
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  class="file-input clickable"
+                  :disabled="savingImage"
+                  @change="uploadFile(true, $event.target.files, attachmentTypeId, companyId, 1048576)"
+                  name="avatar"
+                >
+                <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+              </form>
+            </div>
+            <div class="company-logo-background" v-else-if="tournament.presignedUrl">
+              <img class="company-logo" :src="tournament.presignedUrl">
+            </div>
+            <div class="mt-2 mb-4" v-else>
+              No Tournament Image Uploaded
+            </div>
           </div>
           <div v-if="edit">
             <v-btn
@@ -74,6 +103,8 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
+  import { Actions } from '@/store'
+  import constants from '@/helpers/constants'
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
@@ -93,12 +124,19 @@
     },
     data() {
       return {
+        constants,
+        addImage: false,
+        savingImage: false,
+        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
+        //todo: 29 = company logo - do this on backend?
+        attachmentTypeId: 29,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         edit: false,
         tournament: {},
         timezone: this.$store.state.user.details.timezone.value,
         ownerTypes: [],
-        tournamentId: this.$route.params.id,
+        tournamentId: parseInt(this.$route.params.id),
         userId: this.$store.state.user.details.id,
         tabs: [
           {
@@ -162,7 +200,61 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async uploadFile (isCompanyLogo, files, attachmentTypeId, sourceId, sizeLimit) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await this.$store.dispatch(Actions.FILE_UPLOAD, {
+            file: files[0],
+            sizeLimit,
+            attachmentTypeId,
+            sourceId,
+            callback: async (img, error) => {
+              if(error?.error) {
+                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              } else {
+                if(isCompanyLogo) {
+                  this.companyLogo = img
+                  this.addImage = false
+                } else {
+                  this.homePageLogo = img
+                  this.addHomePageImage = false
+                }
+                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              }
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteAttachment (id) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await this.$store.dispatch(Actions.FILE_DELETE, {
+            id,
+            callback: async (status) => {
+              this.companyLogo = {}
+              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
+              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     },
     async created() {
       this.getTournamentOwnerTypes()

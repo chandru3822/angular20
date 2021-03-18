@@ -47,6 +47,15 @@
         tournamentId: this.$route.params.id
       }
     },
+    watch: {
+      // whenever tournament_id changes, this function will run
+      '$route.params.id': function () {
+        // reset the selected group when the object type changes
+        this.tournamentId = this.$route.params.id
+        this.tournament = {}
+        this.getTournament()
+      }
+    },
     async created () {
       this.getTournament()
     },
