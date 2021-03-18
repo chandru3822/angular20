@@ -1088,6 +1088,196 @@ public class SmartlistService {
     query.append("\"systemList_3\" as (select id, org_name::text as name from flow.org), ");
     query.append("\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
 
+    //build project IDs CTE
+    StringBuilder projectsClause = new StringBuilder();
+    StringBuilder projectsValueJoins = new StringBuilder();
+    StringBuilder projectsWhereClause = new StringBuilder();
+
+    projectsClause.append("select distinct flow.project.id ");
+    projectsClause.append("from flow.project ");
+    projectsClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
+//    projectsClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
+//    projectsClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
+//    projectsClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
+
+    requirements.forEach(r -> {
+
+      String referenceLocation = null;
+
+//      SmartlistFieldAssignment alreadyJoinedValueTable = psFields.stream()
+//        .filter(f -> r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null && r.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
+//        .findFirst()
+//        .orElse(null);
+
+      //join value tables for custom fields
+      if (r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null) {
+        r.setValueReferenceTable(UUID.randomUUID().toString());
+
+        //join the value table for the respective field object type
+        if (r.getObjectTypeId() == 1) {
+          projectsValueJoins.append(String.format(" left join flow.project_custom_field_value \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable()));
+        } else if (r.getObjectTypeId() == 2) {
+          projectsValueJoins.append(String.format(" left join flow.contact_custom_field_value \"%s\" on \"%s\".contact_id = flow.contact.id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable()));
+        } else if (r.getObjectTypeId() == 4) {
+          r.setPpsTable(UUID.randomUUID().toString());
+          projectsValueJoins.append(String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s and \"%s\".archived is not true", r.getPpsTable(), r.getPpsTable(), r.getPpsTable(), r.getProcessStepId(), r.getPpsTable()));
+          if (smartlist.isMainProcessSteps()) {
+            projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
+          }
+          projectsValueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getPpsTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable()));
+        }
+      }
+
+      if (r.getSmartlistSystemListId() != null) {
+        //smartlist system list
+        if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
+          referenceLocation = String.format("%s.%s", r.getJoinTable(), r.getJoinColumn());
+        } else if (r.getSmartlistSystemListId() == 2) {
+          final String processStepStatusTable = UUID.randomUUID().toString();
+
+          if (r.getPpsTable() == null) {
+            r.setPpsTable(UUID.randomUUID().toString());
+            projectsValueJoins.append(String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s and \"%s\".archived is not true", r.getPpsTable(), r.getPpsTable(), r.getPpsTable(), r.getProcessStepId(), r.getPpsTable()));
+            if (smartlist.isMainProcessSteps()) {
+              projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
+            }
+          }
+
+//          projectsClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
+          projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
+          referenceLocation = String.format("\"%s\".process_step_status_type_id", processStepStatusTable);
+        }
+      } else if (r.getSmartlistFieldId() != null) {
+        //smartlist field
+        if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
+          referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+        } else if (r.getObjectTypeId() == 4) {
+//          String joinTable;
+//          try {
+//            joinTable = fields.stream()
+//              .filter(f -> Objects.equals(f.getCustomFieldGroupAssignmentId(), r.getCustomFieldGroupAssignmentId()))
+//              .map(SmartlistFieldAssignment::getValueReferenceTable)
+//              .findFirst()
+//              .orElse(null);
+//
+//            if (joinTable == null) {
+//              joinTable = UUID.randomUUID().toString();
+//            }
+//
+//          } catch (NullPointerException e) {
+//            joinTable = UUID.randomUUID().toString();
+//          }
+
+
+          r.setPpsTable(UUID.randomUUID().toString());
+          String joinTable = r.getPpsTable();
+          projectsValueJoins.append(String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s and \"%s\".archived is not true", r.getPpsTable(), r.getPpsTable(), r.getPpsTable(), r.getProcessStepId(), r.getPpsTable()));
+          if (smartlist.isMainProcessSteps()) {
+            projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
+          }
+
+          if (r.getReferenceTable().equals("flow.process_step")) {
+            r.setValueReferenceTable(UUID.randomUUID().toString());
+            projectsValueJoins.append(String.format(" left join flow.process_step \"%s\" on \"%s\".id = \"%s\".process_step_id", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getPpsTable()));
+            joinTable = r.getValueReferenceTable();
+          }
+
+
+          referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
+        }
+      } else {
+        //custom field
+        if (r.getCustomFieldSqlKey() != null) {
+
+//          if (projectsValueJoins.indexOf(r.getCustomFieldSqlKey()) == -1) {
+            r.setValueReferenceTable(UUID.randomUUID().toString());
+            final String referenceTable = UUID.randomUUID().toString();
+
+            if (r.getObjectTypeId() == 1) {
+              projectsValueJoins.append(String.format(" left join flow.project_custom_field_value \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", referenceTable, referenceTable, referenceTable, r.getCustomFieldGroupAssignmentId(), referenceTable));
+            } else if (r.getObjectTypeId() == 2) {
+              projectsValueJoins.append(String.format(" left join flow.contact_custom_field_value \"%s\" on \"%s\".contact_id = flow.contact.id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", referenceTable, referenceTable, referenceTable, r.getCustomFieldGroupAssignmentId(), referenceTable));
+            } else if (r.getObjectTypeId() == 4) {
+
+              r.setPpsTable(UUID.randomUUID().toString());
+              projectsValueJoins.append(String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s and \"%s\".archived is not true", r.getPpsTable(), r.getPpsTable(), r.getPpsTable(), r.getProcessStepId(), r.getPpsTable()));
+              if (smartlist.isMainProcessSteps()) {
+                projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
+              }
+//              projectsValueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = flow.project_process_step.id and \"%s\".custom_field_group_assignment_id = %s", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId()));
+              projectsValueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = flow.project_process_step.id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", referenceTable, referenceTable, referenceTable, r.getCustomFieldGroupAssignmentId(), referenceTable));
+            }
+
+            projectsValueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value", r.getCustomFieldSqlKey(), r.getValueReferenceTable(), r.getValueReferenceTable(), referenceTable));
+//          } else {
+//            SmartlistFieldAssignment joinedField = fields.stream()
+//              .filter(f -> Objects.equals(r.getCustomFieldGroupAssignmentId(), f.getCustomFieldGroupAssignmentId()))
+//              .findFirst()
+//              .orElse(null);
+//
+//            //joinedField **shouldn't** ever be null here. If it is, there are bigger issues
+//            if (joinedField != null) {
+//              r.setValueReferenceTable(joinedField.getValueReferenceTable());
+//            }
+//          }
+
+          referenceLocation = String.format("\"%s\".id", r.getValueReferenceTable());
+        } else if (r.getCompanySystemListId() != null) {
+
+          final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
+          final String systemListTable = "systemList_" + systemListNumber;
+
+          //Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates
+          final String newValueTable = UUID.randomUUID().toString();
+          projectsValueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable, newValueTable, newValueTable, r.getValueReferenceTable(), getReferenceColumn(r.getDataTypeId())));
+          r.setValueReferenceTable(newValueTable);
+
+          referenceLocation = String.format("\"%s\".id", newValueTable);
+        } else {
+          referenceLocation = String.format("\"%s\".%s", r.getValueReferenceTable(), getReferenceColumn(r.getDataTypeId()));
+        }
+      }
+
+      Object requirementValue = getRequirementValue(r);
+      String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
+
+      //Check for double negative with "nots" between operator and requirement
+      if (r.getDataTypeRequirementId() != null) {
+        if (requirementValue != null && requirementValue.toString().contains("not") && operator != null && operator.contains("not")) {
+          operator = operator.replace("not", "");
+
+          if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
+            requirementValue = requirementValue.toString().replace("not", "");
+          }
+        }
+      }
+
+      if (r.getDataTypeId() == 7) {
+        if (r.getDataTypeRequirementId() != null) {
+          projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        } else {
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+        }
+      } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
+        projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+      } else {
+        if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
+          projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        } else {
+          projectsWhereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+        }
+      }
+    });
+
+    projectsClause.append(projectsValueJoins.toString());
+    projectsClause.append(" where" + projectsWhereClause.toString());
+
+    projectsClause.append("flow.project.archived is not true");
+
+//    projectsClause.delete(projectsClause.length() - 5, projectsClause.length());
+
+    query.append(String.format("\"projects\" as (%s), ", projectsClause.toString()));
+
     for(SmartlistFieldAssignment f : fields) {
       if (f.getProcessStepId() != null && !usedProcessStepIds.contains(f.getProcessStepId())) {
         usedProcessStepIds.add(f.getProcessStepId());
@@ -1207,6 +1397,7 @@ public class SmartlistService {
       fromClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
       fromClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
       fromClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
+      fromClause.append(" inner join \"projects\" on \"projects\".id = flow.project_process_step.project_id");
 
       withClause.append(fromClause.toString());
 
@@ -1251,7 +1442,9 @@ public class SmartlistService {
 
       StringBuilder whereClause = new StringBuilder();
 
-      requirements.forEach(r -> {
+      requirements.stream()
+        .filter(r -> r.getProcessStepId() != null && r.getProcessStepId().equals(processStepId))
+        .forEach(r -> {
 
         String referenceLocation = null;
 
@@ -1393,10 +1586,12 @@ public class SmartlistService {
 
       if (whereClause.length() > 0) {
         whereClause.append(String.format("flow.process_step.company_id = any(%s)", companySubquery));
+        whereClause.append(" and flow.project_process_step.project_id = any(array[\"projects\".id])");
 
         withClause.append(String.format(" where %s", whereClause.toString()));
       } else {
-        withClause.append(String.format(" where flow.process_step.company_id = any(%s)", companySubquery));
+        withClause.append(" where flow.project_process_step.project_id = any(array[\"projects\".id])");
+        withClause.append(String.format(" and flow.process_step.company_id = any(%s)", companySubquery));
       }
 
       if (smartlist.isMainProcessSteps()) {
