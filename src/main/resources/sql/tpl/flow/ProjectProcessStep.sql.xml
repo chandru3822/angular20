@@ -33,6 +33,14 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
     values (:attachmentId, :projectProcessStepId, :createdById)
   ]]></projectProcessStep.addAttachment>
 
+  <projectProcessStep.removeOwner><![CDATA[
+    update flow.project_process_step
+    set user_position_id = null,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :projectProcessStepId
+  ]]></projectProcessStep.removeOwner>
+
   <projectProcessStep.setStatus><![CDATA[
   select from flow.update_project_process_step_status(:projectId::integer, :processStepId::integer, :projectProcessStepId::integer, :companyProcessStepStatusTypeId::integer, :processStepStatusTypeId::integer, :userId::integer, :cancelledStatusTypeId::integer)
   ]]></projectProcessStep.setStatus>

@@ -16,8 +16,8 @@ BEGIN
     select ppscfv.numeric_value
     into v_total_cash_down_payment
     from flow.project_process_step pps
-             inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 713
-    where pps.project_id = p_project_id  and pps.main is true and pps.process_step_id = 8;
+             inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 19467
+    where pps.project_id = p_project_id  and pps.main is true and pps.process_step_id = 3355;
 
     if v_total_cash_down_payment = 0 then
       return false;

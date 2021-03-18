@@ -691,6 +691,7 @@
                 // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
                 d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
                 d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
+                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.groupName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
                 let matchingResource = this.resources.find(r => r.id === d.resourceId)
                 d.colorForBorder = matchingResource?.color
               })
@@ -719,6 +720,10 @@
       //   })
       //   return userPositionIds
       // },
+      getFormattedDate(date) {
+        //used for formatting the start/end for the hoverTitle
+        return this.$filters.formatDate(date, 'timestamp', 'h:mm a')
+      },
       setCalendarStartAndEndTimes () {
         this.calendarStart = this.calendarApi.getDate()
         this.calendarView = this.calendarApi.view?.type
@@ -752,6 +757,8 @@
         } else if(info.event.rendering !== 'inverse-background') {
           info.el.querySelector('.fc-title').innerHTML = info.event.title
           info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
+          //this gives normal events a hover
+          info.el.title = info.event.extendedProps.hoverTitle
         }
       },
       handleResourceRender (renderInfo) {

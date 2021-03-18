@@ -542,6 +542,14 @@
             <v-checkbox
               dense
               hide-details
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              v-model="newAction.removeProcessStepOwner"
+              label="Remove Parent Process Step Owner"
+            />
+            <v-checkbox
+              dense
+              hide-details
               v-model="newAction.multipleUses"
               @change="newAction.triggerAutomatically = false"
               label="Allow Multiple Uses"
@@ -629,6 +637,14 @@
                               item-text="projectStatusType"
                               item-value="id"
                     ></v-select>
+                    <v-checkbox
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-model="item.removeProcessStepOwner"
+                      label="Remove Parent Process Step Owner"
+                    />
                     <v-checkbox
                       dense
                       hide-details

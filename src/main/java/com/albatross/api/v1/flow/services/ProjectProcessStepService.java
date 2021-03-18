@@ -128,6 +128,15 @@ public class ProjectProcessStepService {
     return attachmentService.findById(attachmentId);
   }
 
+  public void removeOwner(Long projectProcessStepId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("userId", user.getId());
+
+    sqlCache.update("projectProcessStep.removeOwner", params);
+  }
+
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers, Long cancelledCompanyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
     ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
@@ -444,8 +453,14 @@ public class ProjectProcessStepService {
      */
 
     User user = securityService.getCurrentUser();
+    //update process step status if needed
     if (action.getCompanyProcessStepStatusTypeId() != null) {
       this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), true, null);
+    }
+
+    //remove process step owner if needed (BR request, dont hate)
+    if (action.getRemoveProcessStepOwner()) {
+      this.removeOwner(pps.getProjectProcessStepId());
     }
 
     //update project status if needed

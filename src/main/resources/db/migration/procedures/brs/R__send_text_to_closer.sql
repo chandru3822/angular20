@@ -6,6 +6,7 @@ AS
 $function$
 declare
     v_closer_phone_number text;
+    v_closer_first_name text;
     v_contact_name text;
     v_contact_street text;
     v_contact_city text;
@@ -15,8 +16,9 @@ declare
 BEGIN
 
     --get the closers phone number
-    select u.phone_number
-    into v_closer_phone_number
+    select u.phone_number, u.first_name
+    into v_closer_phone_number,
+         v_closer_first_name
     from brs.project_details pd
         inner join flow."user" u on u.id = pd.closer_user_id
     where pd.project_id = p_project_id;
@@ -68,6 +70,18 @@ BEGIN
             insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
             values(p_current_user_id,
                    concat('You have an appointment in less than 1 hour with ', v_contact_name, ' and a proposal has not been completed.'),
+                   (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1);
+        elseif p_message_type_id = 5 then
+            -- do the message for id 5 = final design completed
+            insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+            values(p_current_user_id,
+                   concat('Hey ', v_closer_first_name, ', a final design has been completed for project ', v_contact_name),
+                   (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1);
+        elseif p_message_type_id = 6 then
+            -- do the message for id 6 = final design sent
+            insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+            values(p_current_user_id,
+                   concat('Hey ', v_closer_first_name, ', a final design has been sent for project ', v_contact_name),
                    (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1);
         end if;
     end if;

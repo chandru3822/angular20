@@ -114,6 +114,7 @@ BEGIN
                     psa.trigger_automatically as "triggerAutomatically",
                     psa.hidden as "hidden",
                        psa.multiple_uses as "multipleUses",
+                       psa.remove_process_step_owner as "removeProcessStepOwner",
                     psa.action_name as "actionName",
                     psa.action_type_id as "actionTypeId",
                     psa.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
