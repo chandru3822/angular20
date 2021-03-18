@@ -81,6 +81,7 @@
                                             FROM (
                                                      SELECT tm.id,
                                                             tm.tournament_round_id as "tournamentRoundId",
+                                                            tm.parent_match_id as "parentMatchId",
                                                             tm.user_1_id as "user1Id",
                                                             tm.user_1_score as "user1Score",
                                                             concat(u1.first_name, ' ', u1.last_name) as "user1Name",
