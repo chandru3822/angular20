@@ -141,7 +141,7 @@
 
             <template #item="{ item }">
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
-                <td class="text-left">{{ item.user }}</td>
+                <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
                   <v-dialog
                     v-model="item.deleteConfirm"

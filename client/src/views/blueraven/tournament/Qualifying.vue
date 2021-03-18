@@ -10,6 +10,8 @@
     <v-data-table
       :headers="headers"
       :items="poolUsers"
+      :fixed-header="true"
+      dense
       :items-per-page="100"
       disable-sort
       class="elevation-1 square-card"
