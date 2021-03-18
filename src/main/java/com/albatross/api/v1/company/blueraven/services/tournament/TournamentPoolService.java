@@ -100,6 +100,18 @@ public class TournamentPoolService {
     sqlCache.update("tournamentPool.deleteUser", params);
   }
 
+  public void assignUsersToMatches(Long tournamentId, Long poolId, List<Long> userIds) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("tournamentId", tournamentId);
+    params.put("tournamentPoolId", poolId);
+    params.put("userId", user.getId());
+    params.put("userIds", userIds);
+
+    sqlCache.query("tournamentPool.assignUsersToMatches", params, String.class);
+  }
+
   public static class TournamentPoolMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

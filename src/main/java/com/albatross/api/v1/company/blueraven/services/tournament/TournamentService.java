@@ -169,7 +169,7 @@ public class TournamentService {
     params.put("userId", user.getId());
     params.put("bracketId", bracketId);
 
-    sqlCache.update("tournament.generateMatches", params);
+    sqlCache.query("tournament.generateMatches", params, String.class);
   }
 
   public void advanceMatches(List<Match> matches) {
@@ -181,6 +181,7 @@ public class TournamentService {
     for(Match m : matches) {
       //advance each match
       params.put("matchId", m.getId());
+      params.put("parentMatchId", m.getParentMatchId());
       params.put("winnerUserId", m.getWinnerUserId());
       sqlCache.update("tournament.advanceMatch", params);
     }

@@ -3,10 +3,10 @@
       <div class="container">
         <div class="split split-one">
           <div class="round"
-               v-if="renderHack"
                :class="`round-${r.roundNumber}`"
                v-for="(r, idx) in reverse ? itemsReverse : bracket.rounds">
             <div class="round-details"
+                 :key="roundRerenderKey"
                  :class="{'current': r.currentRound,
                           'bold': r.currentRound}">
 <!--              <v-btn x-small text @click="r.edit = !r.edit" class="edit-button">-->
@@ -31,12 +31,12 @@
             <ul class="matchup" v-for="(m, i) in r.matches" :class="{'mb-4': idx === 0 && i % 2 !== 0}">
               <v-radio-group v-model="m.winnerUserId">
                 <li class="team team-top" :class="{'current': r.currentRound}">
-                  <v-radio v-if="r.edit" :value="m.user1Id" class="d-inline-block"></v-radio>
+                  <v-radio v-if="r.edit && m.user1Id && m.user2Id" :value="m.user1Id" class="d-inline-block"></v-radio>
                   {{m.user1Name}}
                   <span class="score">{{m.user1Score || 0}}</span>
                 </li>
                 <li class="team team-bottom" :class="{'current': r.currentRound}">
-                  <v-radio small v-if="r.edit" :value="m.user2Id" class="d-inline-block"></v-radio>
+                  <v-radio small v-if="r.edit && m.user1Id && m.user2Id" :value="m.user2Id" class="d-inline-block"></v-radio>
                   {{m.user2Name}}
                   <span class="score">{{m.user2Score || 0}}</span></li>
               </v-radio-group>
@@ -71,7 +71,7 @@
         constants,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTDS', 'EDIT'),
         snackbar: {},
-        renderHack: true,
+        roundRerenderKey: 0,
       }
     },
     async created() {
@@ -90,11 +90,6 @@
       rerender(r) {
         //i hate this crap
         r.edit = !r.edit
-        this.renderHack = false;
-        this.$nextTick(() => {
-          // Add the component back in
-          this.renderHack = true
-        });
         //pre-populate the winner if not tied
         r?.matches.forEach(m => {
           if(m.user1Score > m.user2Score) {
@@ -103,6 +98,7 @@
             m.winnerUserId = m.user2Id
           }
         })
+        this.roundRerenderKey++
       },
       async advanceMatches(round) {
         let allMatchesHaveWinners = true
@@ -111,8 +107,25 @@
             allMatchesHaveWinners = false
             this.snackbar = getSnackbar('ERROR', 'All matches must have a winner selected')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            return
           }
         })
+        if(allMatchesHaveWinners) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            await putRequest(`/tournament/advance`, round.matches, 'blueraven')
+            round.edit = false
+            this.roundRerenderKey++
+            //maybe we dont have to do this but i am doing it for v1
+            window.location.reload(true)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.dataLoading = false
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
       }
     }
   }

@@ -4,7 +4,18 @@
     <v-toolbar flat class="app-toolbar">
       Qualifying Pool <br/>
       {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
-      {{tournamentUserCount}}
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn text @click="toggleSelectAllQualifying()" v-if="userCanEdit && !pool.advanced && !dataLoading">
+          Select All Qualifying
+        </v-btn>
+        <v-btn v-if="userCanEdit && !dataLoading"
+               :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced"
+               color="primary" class="white--text" @click="advanceSelectedToBracket()">
+          <span v-if="!pool.advanced">Advance Selected to Bracket</span>
+          <span v-else>Pool Has Been Advanced</span>
+        </v-btn>
+      </v-toolbar-items>
     </v-toolbar>
 
     <v-data-table
@@ -26,6 +37,10 @@
 
       <template #item="{ item, index }">
         <tr :class="{'qualified-row': index < tournamentUserCount,'shaded-row': index % 2}">
+          <td :key="selectRerender">
+<!--            <v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>-->
+              <input type="checkbox" v-model="item.selected" @change="toggleSingleSelect(item)">
+            </td>
           <td class="text-left">
             {{item.fullName}}
           </td>
@@ -52,11 +67,16 @@
         snackbar: {},
         tournamentId: this.$route.params.id,
         poolTypeId: 1,
+        selectRerender: 1,
         tournament: {},
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         tournamentUserCount: 0,
+        dataLoading: true,
         pool: {},
         poolUsers: [],
+        selectedUsers: [],
         headers: [
+          { text: '', value: 'checkbox', show: true, width: '50px' },
           { text: 'User', value: 'fullName', show: true },
           { text: 'Score', value: 'score', show: true },
         ],
@@ -70,6 +90,7 @@
         this.tournament = {}
         this.pool = {}
         this.poolUsers = []
+        this.selectedUsers = []
         this.tournamentUserCount = 0
         this.getPool()
         this.getPoolUsers()
@@ -83,6 +104,39 @@
       this.getTournament()
     },
     methods: {
+      toggleSingleSelect(item) {
+        if (item.selected) {
+          this.selectedUsers.push(item.userId)
+        } else {
+          this.selectedUsers = this.selectedUsers.filter(u => u !== item.userId)
+        }
+      },
+      toggleSelectAllQualifying () {
+        this.selectedUsers = []
+        this.poolUsers.forEach((pu, idx) => {
+          if(idx < this.tournamentUserCount) {
+            pu.selected = true
+            this.selectedUsers.push(pu.userId)
+          } else {
+            pu.selected = false
+          }
+        })
+        //force checkbox to rerender as selected
+        this.selectRerender++
+      },
+      async advanceSelectedToBracket () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.selectedUsers, 'blueraven')
+          this.pool.advanced = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -102,6 +156,7 @@
       async getPool () {
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
+          this.dataLoading = false
           this.pool = data
         } catch (e) {
           logError(e)

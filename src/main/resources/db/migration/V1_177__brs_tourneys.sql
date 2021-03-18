@@ -167,6 +167,7 @@ CREATE TABLE if not exists brs.tournament_pool
     tournament_pool_type_id integer NOT NULL,
     start_date              timestamp without time zone,
     end_date                timestamp without time zone,
+    advanced                boolean not null            default false,
     date_created            timestamp without time zone DEFAULT now(),
     date_modified           timestamp without time zone,
     created_by_id           integer not null,

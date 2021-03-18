@@ -72,14 +72,14 @@
                     <v-btn
                       color="primaryCustom"
                       text
-                      @click="[b.generateMatches = true, generateMatches(b)]">
+                      @click="[b.generateMatches = false, generateMatches(b)]">
                       Yes
                     </v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
 
-              <v-btn text color="primary" class="white--text" @click="[b.addRound = !b.addRound, bracketRerenderKey++]">
+              <v-btn text color="primary" v-if="!b.matchesGenerated" class="white--text" @click="[b.addRound = !b.addRound, bracketRerenderKey++]">
                 <span v-if="!b.addRound">Add Round</span>
                 <span v-else>Cancel</span>
               </v-btn>
@@ -195,7 +195,7 @@
                            @click="saveRound(b, item)">Save
                     </v-btn>
                     <v-dialog
-                      v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
+                      v-if="!b.matchesGenerated && $store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
                       v-model="item.deleteConfirm"
                       width="500">
                       <template v-slot:activator="{ on }">
@@ -420,6 +420,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')
+          //disable the button
           bracket.matchesGenerated = true
           this.snackbar = getSnackbar('SUCCESS', 'Matches Generated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

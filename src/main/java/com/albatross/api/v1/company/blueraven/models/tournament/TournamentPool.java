@@ -17,7 +17,7 @@ public class TournamentPool {
   private Long id, tournamentPoolTypeId;
   private String poolType;
   private Date startDate, endDate;
-  private Boolean archived;
+  private Boolean archived, advanced;
   private List<TournamentPoolUser> users;
   private List<TournamentPoolPosition> positions;
 }

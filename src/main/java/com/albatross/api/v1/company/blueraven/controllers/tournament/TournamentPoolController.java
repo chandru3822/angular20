@@ -59,4 +59,11 @@ public class TournamentPoolController {
     tournamentPoolService.deleteUserFromPool(tournamentPoolUserId);
   }
 
+  @PostMapping(value = "/{poolId}/assignUsersToMatches", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void assignUsersToMatches(@PathVariable Long tournamentId,
+                                   @PathVariable Long poolId,
+                                   @RequestBody List<Long> userIds) {
+    tournamentPoolService.assignUsersToMatches(tournamentId, poolId, userIds);
+  }
+
 }

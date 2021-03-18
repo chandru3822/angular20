@@ -105,4 +105,7 @@
       where id = :tournamentPoolUserId
   ]]></tournamentPool.deleteUser>
 
+  <tournamentPool.assignUsersToMatches><![CDATA[
+    select from brs.assign_users_to_matches(:tournamentId::int, :tournamentPoolId::int, :userId::int, array[ :userIds ]::int[])
+  ]]></tournamentPool.assignUsersToMatches>
 </sql>
