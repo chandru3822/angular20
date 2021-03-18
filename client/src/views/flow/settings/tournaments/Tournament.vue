@@ -49,12 +49,13 @@
               label="End Date"
             />
 <!--            tournament image -->
+            <label>Tournament Background Image</label>
             <div v-if="userCanEdit">
-              <v-btn text v-if="!savingImage && !tournament.presignedUrl"  @click="addImage = !addImage">
+              <v-btn text v-if="!savingImage && !tournament.backgroundAttachmentPresignedUrl"  @click="addImage = !addImage">
                 <v-icon v-if="addImage">remove</v-icon>
                 <v-icon v-else>add</v-icon>
               </v-btn>
-              <v-btn v-else text class="mr-2" @click="deleteAttachment(companyLogo.id)">
+              <v-btn v-else text class="mr-2" @click="deleteAttachment(tournament.backgroundAttachmentId)">
                 <v-icon>delete</v-icon>
               </v-btn>
             </div>
@@ -65,14 +66,14 @@
                   :accept="acceptedFileTypes"
                   class="file-input clickable"
                   :disabled="savingImage"
-                  @change="uploadFile(true, $event.target.files, attachmentTypeId, companyId, 1048576)"
+                  @change="uploadFile($event.target.files, attachmentTypeId, tournament.id, 1048576)"
                   name="avatar"
                 >
                 <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
               </form>
             </div>
-            <div class="company-logo-background" v-else-if="tournament.presignedUrl">
-              <img class="company-logo" :src="tournament.presignedUrl">
+            <div v-else-if="tournament.backgroundAttachmentPresignedUrl">
+              <img class="tournament-logo" :src="tournament.backgroundAttachmentPresignedUrl">
             </div>
             <div class="mt-2 mb-4" v-else>
               No Tournament Image Uploaded
@@ -128,8 +129,8 @@
         addImage: false,
         savingImage: false,
         acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-        //todo: 29 = company logo - do this on backend?
-        attachmentTypeId: 29,
+        //todo: 914 = tournament image
+        attachmentTypeId: 914,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         edit: false,
@@ -201,7 +202,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async uploadFile (isCompanyLogo, files, attachmentTypeId, sourceId, sizeLimit) {
+      async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
@@ -215,13 +216,9 @@
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                 this.$store.commit(AppMutations.SET_LOADING, false)
               } else {
-                if(isCompanyLogo) {
-                  this.companyLogo = img
-                  this.addImage = false
-                } else {
-                  this.homePageLogo = img
-                  this.addHomePageImage = false
-                }
+                console.log('randaLogger',img)
+                this.tournament.backgroundAttachmentPresignedUrl = img.presignedUrl
+                this.addImage = false
                 this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                 this.$store.commit(AppMutations.SET_LOADING, false)
@@ -241,7 +238,8 @@
           await this.$store.dispatch(Actions.FILE_DELETE, {
             id,
             callback: async (status) => {
-              this.companyLogo = {}
+              this.tournament.backgroundAttachmentId = null
+              this.tournament.backgroundAttachmentPresignedUrl = null
               // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
               this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -274,6 +272,12 @@
     .v-tab:hover {
       color: var(--v-primaryCustom-base);
     }
+  }
+
+  .tournament-logo {
+    margin-top: 15px;
+    max-width: 200px;
+    height: auto;
   }
 
 </style>

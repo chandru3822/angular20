@@ -36,7 +36,6 @@ CREATE TABLE if not exists brs.tournament
     tournament_owner_type_id integer           NOT NULL,
     start_date               date,
     end_date                 date,
-    background_attachment_id int,
     date_created             timestamp without time zone DEFAULT now(),
     date_modified            timestamp without time zone,
     created_by_id            integer           not null,
@@ -45,9 +44,6 @@ CREATE TABLE if not exists brs.tournament
     CONSTRAINT brs_tournament_pk PRIMARY KEY (id),
     CONSTRAINT brs_t_tournament_owner_type_id_fk FOREIGN KEY (tournament_owner_type_id)
         REFERENCES brs.tournament_owner_type (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT brs_t_attachment_id_fk FOREIGN KEY (background_attachment_id)
-        REFERENCES flow.attachment (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT brs_t_created_by_id_fk FOREIGN KEY (created_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
@@ -247,6 +243,3 @@ values ('Tournaments', 'TOURNAMENTS', null);
 
 insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
 values ('Tournaments', 3, (select id from flow.feature where feature_code = 'TOURNAMENTS'), false);
-
-insert into flow.attachment_type(attachment_type, attachment_code, company_id, key_pattern_id, created_by_id)
-values ('Tournament', 'TOURNAMENT', 3, 2, 2417170);
