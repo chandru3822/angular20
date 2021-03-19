@@ -164,6 +164,7 @@ values ('Qualifying', 2350555),
 CREATE TABLE if not exists brs.tournament_pool
 (
     id                      serial  NOT NULL,
+    custom_name             varchar(255),
     tournament_id           integer NOT NULL,
     tournament_pool_type_id integer NOT NULL,
     start_date              timestamp without time zone,

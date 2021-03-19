@@ -1,6 +1,12 @@
 <sql>
   <tournamentPool.getDetails><![CDATA[
     select tp.*,
+    ( select a.id
+            from flow.attachment a
+           inner join flow.attachment_source src on a.id = src.attachment_id
+           where a.archived is not true
+           and a.attachment_type_id = 915
+           and src.source_id = tp.id ) as background_attachment_id,
            tpt.pool_type,
            coalesce((
                     SELECT array_to_json(array_agg(row_to_json(tb)))
@@ -33,6 +39,16 @@
     where tp.tournament_id = :tournamentId
     and tp.tournament_pool_type_id = :tournamentPoolTypeId
   ]]></tournamentPool.getDetails>
+
+  <tournamentPool.updatePool><![CDATA[
+    update brs.tournament_pool
+    set start_date = :startDate,
+        end_date = :endDate,
+        custom_name = :customName,
+        modified_by_id = :userId,
+        date_modified = now()
+    where id = :poolId
+  ]]></tournamentPool.updatePool>
 
   <tournamentPool.getPoolUsers><![CDATA[
     select tpu.id,

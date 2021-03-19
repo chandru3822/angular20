@@ -23,7 +23,6 @@ import VueMapbox from 'vue-mapbox'
 import Mapbox from 'mapbox-gl'
 
 
-
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 

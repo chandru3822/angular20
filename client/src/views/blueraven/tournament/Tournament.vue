@@ -11,16 +11,16 @@
         <v-tabs>
           <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
           <v-tab :to="`/tournament/${tournamentId}/qualifying`">
-            Qualifying
+            {{ getPoolName(1) || 'Qualifying' }}
           </v-tab>
           <v-tab :to="`/tournament/${tournamentId}/bracket`">
             Bracket
           </v-tab>
           <v-tab :to="`/tournament/${tournamentId}/lastChance`">
-            Last Chance Pool
+            {{ getPoolName(2) || 'Last Chance'}}
           </v-tab>
           <v-tab :to="`/tournament/${tournamentId}/winners`">
-            Winner Pool
+            {{ getPoolName(3) || 'Winners'}}
           </v-tab>
         </v-tabs>
       </v-toolbar-items>
@@ -60,6 +60,9 @@
       this.getTournament()
     },
     methods: {
+      getPoolName(typeId) {
+        return this.tournament?.pools?.find(p => p.tournamentPoolTypeId === typeId)?.customName
+      },
       async getTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

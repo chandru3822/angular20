@@ -42,7 +42,8 @@
               v-for="(t, i) in tournaments"
               :key="i"
               class="px-7"
-              @click="goToTournament(t)"
+              @click="closeMenu(t)"
+              :to="`/tournament/${t.id}/qualifying`"
               link
             >
               <v-list-item-title>{{t.tournamentName}}</v-list-item-title>
@@ -105,15 +106,7 @@
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournaments')
           this.tourneysLoading = false
         }
-      },
-      goToTournament(item) {
-        this.menuOpen = false
-        // this.$router.push(`tournament/${item.id}/qualifying`)
-        this.$router.push({name: 'tournamentQualifying', params: { id: item.id }})
-      },
-      changeRoute (path) {
-        this.$router.push({ name: path })
-      },
+      }
     }
   }
 </script>

@@ -1,10 +1,92 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" class="pt-0" v-if="!poolLoading">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">{{pool.poolType}} Pool</v-toolbar-title>
+          <v-toolbar-title class="app-title">{{pool.customName || pool.poolType + ' Pool'}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn text @click="editPool = !editPool">
+            <v-icon v-if="!editPool">edit</v-icon>
+            <v-icon v-else>close</v-icon>
+          </v-btn>
         </v-toolbar>
+        <div>
+          <v-text-field
+            v-if="editPool"
+            label="Custom Pool Name"
+            hint="(optional)"
+            persistent-hint
+            v-model="pool.customName"
+          ></v-text-field>
+          <div>
+            <DatetimePickerInput
+              v-model="pool.startDate"
+              :readonly="!editPool"
+              :disabled="!editPool"
+              :timezone="this.timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="Start Date"
+            />
+            <DatetimePickerInput
+              v-model="pool.endDate"
+              :readonly="!editPool"
+              :disabled="!editPool"
+              :timezone="this.timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="End Date"
+            />
+          </div>
+          <v-btn color="primary"
+                 v-if="editPool"
+                 class="white--text"
+                 :disabled="!pool.startDate || !pool.endDate || pool.startDate > pool.endDate"
+                 @click="savePoolDates()">
+            Save
+          </v-btn>
+        </div>
+        <div v-if="poolTypeId === 3">
+          <v-divider class="mt-2"></v-divider>
+
+          <v-toolbar flat class="app-toolbar">
+            <v-toolbar-title class="app-title">Winner Background Image</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
+                     @click="addImage = !addImage">
+                <v-icon v-if="addImage">remove</v-icon>
+                <v-icon v-else>add</v-icon>
+              </v-btn>
+              <v-btn v-else-if="userCanEdit" text class="mr-2"
+                     @click="deleteAttachment(pool.backgroundAttachmentId)">
+                <v-icon>delete</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <label></label>
+
+          <div class="mt-2" v-if="addImage">
+            <form enctype="multipart/form-data" novalidate>
+              <input
+                type="file"
+                :accept="acceptedFileTypes"
+                class="file-input clickable"
+                :disabled="savingImage"
+                @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 1048576)"
+                name="avatar"
+              >
+              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+            </form>
+          </div>
+          <div v-else-if="pool.backgroundAttachmentPresignedUrl">
+            <img class="tournament-logo" :src="pool.backgroundAttachmentPresignedUrl">
+          </div>
+          <div class="mt-2 mb-4 pt-2 pl-5" v-else>
+            No Winner Background Image Uploaded
+          </div>
+        </div>
+        <v-divider class="mt-2"></v-divider>
 
         <div v-if="poolTypeId === 1" class="mb-2">
           <v-toolbar flat class="wqt-header-bar">
@@ -96,7 +178,7 @@
           </v-data-table>
         </div>
 
-        <div>
+        <div id="pool-container">
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="app-title">Users</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -121,14 +203,21 @@
               Cancel
             </v-btn>
           </v-card>
-
+          <v-text-field
+            v-model="userSearch"
+            prepend-inner-icon="search"
+            label="Search"
+            class="mb-2"
+            single-line
+            hide-details
+          ></v-text-field>
           <v-data-table
             :headers="userHeaders"
             :items="filterUsers()"
             :fixed-header="true"
-            :items-per-page="-1"
+            :search="userSearch"
+            :items-per-page="100"
             :mobile-breakpoint="0"
-            hide-default-footer
             class="elevation-1 org-type-table"
           >
             <template #no-data>
@@ -194,7 +283,9 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
+  import { Actions } from '@/store'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import constants from '@/helpers/constants'
   import {
     getRequest,
     getRequestWithParams,
@@ -212,15 +303,26 @@
     },
     data() {
       return {
+        constants,
         snackbar: {},
         edit: false,
         pool: {},
+        userSearch: '',
+        addImage: false,
+        savingImage: false,
+        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
+        //todo: 915 = tournament pool image
+        attachmentTypeId: 915,
+        editPool: false,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
+        poolLoading: true,
         addPosition: false,
         positionId: null,
         positions: [],
         addUser: false,
         userId: null,
         users: [],
+        timezone: this.$store.state.user.details.timezone.value,
         tournamentId: this.$route.params.id,
         poolTypeId: parseInt(this.$route.params.poolTypeId),
         positionHeaders: [
@@ -249,6 +351,20 @@
     },
     computed: {},
     methods: {
+      async savePoolDates() {
+        try {
+          await putRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}`, this.pool, 'blueraven')
+          this.editPool = false
+          this.snackbar = getSnackbar('SUCCESS', 'Pool Changes Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Pool')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getPositions() {
         try {
           const {data} = await getRequest(`/position`)
@@ -274,10 +390,12 @@
         }
       },
       async getTournamentPool() {
+        this.poolLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.pool = data
+          this.poolLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -348,15 +466,74 @@
       filterUsers () {
         return this.pool?.users?.filter(p => { return !p.archived})
       },
+      async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await this.$store.dispatch(Actions.FILE_UPLOAD, {
+            file: files[0],
+            sizeLimit,
+            attachmentTypeId,
+            sourceId,
+            callback: async (img, error) => {
+              if(error?.error) {
+                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              } else {
+                console.log('randaLogger',img)
+                this.pool.backgroundAttachmentPresignedUrl = img.presignedUrl
+                this.addImage = false
+                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              }
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteAttachment (id) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await this.$store.dispatch(Actions.FILE_DELETE, {
+            id,
+            callback: async (status) => {
+              this.pool.backgroundAttachmentId = null
+              this.pool.backgroundAttachmentPresignedUrl = null
+              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
+              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     },
 
   }
 </script>
 
 <style lang="scss">
+  #pool-container .v-data-table__wrapper {
+    max-height: calc(100vh - 650px);
+    min-height: 300px;
+  }
 </style>
 
 <style scoped lang="scss">
 
-
+  .tournament-logo {
+    margin-top: 15px;
+    max-width: 400px;
+    height: auto;
+  }
 </style>

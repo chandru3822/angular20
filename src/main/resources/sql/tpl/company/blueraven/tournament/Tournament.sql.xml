@@ -59,6 +59,19 @@
            and a.attachment_type_id = 914
            and src.source_id = t.id ) as background_attachment_id,
        coalesce((
+                SELECT array_to_json(array_agg(row_to_json(tp)))
+                FROM (
+                         SELECT tp.id,
+                                tp.tournament_id as "tournamentId",
+                                tp.tournament_pool_type_id as "tournamentPoolTypeId",
+                                tp.archived,
+                                tp.advanced,
+                                tp.custom_name as "customName"
+                         FROM brs.tournament_pool tp
+                         WHERE tp.tournament_id = t.id
+                           AND tp.archived is not true
+                         order by tp.tournament_pool_type_id) tp), '[]') AS "pools",
+       coalesce((
           SELECT array_to_json(array_agg(row_to_json(tb)))
           FROM (
                SELECT tb.id,

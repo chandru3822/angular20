@@ -19,5 +19,6 @@ public class Tournament {
   private Date startDate, endDate;
   private Boolean archived;
   private List<Bracket> brackets;
+  private List<TournamentPool> pools;
 }
 

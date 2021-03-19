@@ -9,7 +9,7 @@
                  :key="roundRerenderKey"
                  :class="{'current': r.currentRound,
                           'bold': r.currentRound}">
-              <v-icon v-if="!r.advanced && r.roundNumber !== bracket.rounds.length && userCanEdit && !r.edit" class="edit-button clickable"
+              <v-icon v-if="canEditRound(r)" class="edit-button clickable"
                       size="15" @click="rerender(r)">edit</v-icon>
               <v-icon v-if="userCanEdit && r.edit" class="edit-button clickable"
                       size="15" @click="rerender(r)">close</v-icon>
@@ -21,7 +21,7 @@
                 mdi-check-decagram
               </v-icon>
               <v-dialog
-                v-if="!r.advanced && r.roundNumber === bracket.rounds.length && userCanEdit"
+                v-if="canAdvanceWinners(r)"
                 class="advance-button-container"
                 v-model="r.advanceConfirm"
                 width="500">
@@ -120,6 +120,24 @@
 
     },
     methods: {
+      canAdvanceWinners(r) {
+        let allMatchesHaveUsers = true
+        r.matches.forEach(m => {
+          if(!m.user1Id || !m.user2Id) {
+            allMatchesHaveUsers = false
+          }
+        })
+        return allMatchesHaveUsers && !r.advanced && r.roundNumber === this.bracket.rounds.length && this.userCanEdit
+      },
+      canEditRound(r) {
+        let allMatchesHaveUsers = true
+        r.matches.forEach(m => {
+          if(!m.user1Id || !m.user2Id) {
+            allMatchesHaveUsers = false
+          }
+        })
+        return allMatchesHaveUsers && !r.advanced && r.roundNumber !== this.bracket.rounds.length && this.userCanEdit && !r.edit
+      },
       async advanceWinners(round) {
         round.advanced = true
         round.advanceConfirm = false

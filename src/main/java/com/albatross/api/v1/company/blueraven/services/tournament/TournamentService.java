@@ -213,10 +213,13 @@ public class TournamentService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Bracket>> bracketsRef = new TypeReference<>() {
-      };
+      TypeReference<List<Bracket>> bracketsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "brackets",
         new JsonCollectionDeserializer(bracketsRef, objectMapper));
+
+      TypeReference<List<TournamentPool>> poolsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "pools",
+        new JsonCollectionDeserializer(poolsRef, objectMapper));
     }
   }
 
@@ -230,8 +233,7 @@ public class TournamentService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Round>> roundsRef = new TypeReference<>() {
-      };
+      TypeReference<List<Round>> roundsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "rounds",
         new JsonCollectionDeserializer(roundsRef, objectMapper));
     }

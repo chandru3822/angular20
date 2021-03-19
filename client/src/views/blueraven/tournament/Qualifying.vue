@@ -1,55 +1,66 @@
 <template>
-  <v-container id="pool-container">
+  <v-container id="qualifying-pool-container" v-if="!dataLoading">
 
-    <v-toolbar flat class="app-toolbar">
-      Qualifying Pool <br/>
-      {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn text @click="toggleSelectAllQualifying()" v-if="userCanEdit && !pool.advanced && !dataLoading">
-          Select All Qualifying
-        </v-btn>
-        <v-btn v-if="userCanEdit && !dataLoading"
-               :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced"
-               color="primary" class="white--text" @click="advanceSelectedToBracket()">
-          <span v-if="!pool.advanced">Advance Selected to Bracket</span>
-          <span v-else>Pool Has Been Advanced</span>
-        </v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
+    <v-card color="white" flat class="square-card">
+      <v-toolbar flat class="app-toolbar">
+        {{pool.customName || 'Qualifying'}}<br/>
+        {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text @click="toggleSelectAllQualifying()" v-if="userCanEdit && !pool.advanced">
+            Select All Qualifying
+          </v-btn>
+          <v-btn v-if="userCanEdit"
+                 :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced"
+                 color="primary" class="white--text" @click="advanceSelectedToBracket()">
+            <span v-if="!pool.advanced">Advance Selected to Bracket</span>
+            <span v-else>Pool Has Been Advanced</span>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
 
-    <v-data-table
-      :headers="headers"
-      :items="poolUsers"
-      :fixed-header="true"
-      dense
-      :items-per-page="100"
-      disable-sort
-      class="elevation-1 square-card"
-    >
-      <template #no-data>
-        No available users
-      </template>
+      <v-text-field
+        v-model="search"
+        class="mb-2 px-4 py-2"
+        prepend-inner-icon="search"
+        label="Search"
+        single-line
+        hide-details
+      ></v-text-field>
+      <v-divider></v-divider>
+      <v-data-table
+        :headers="headers"
+        :items="poolUsers"
+        :fixed-header="true"
+        :search="search"
+        dense
+        :items-per-page="100"
+        disable-sort
+        class="elevation-1 square-card"
+      >
+        <template #no-data>
+          No available users
+        </template>
 
-      <template #no-results>
-        No available users
-      </template>
+        <template #no-results>
+          No available users
+        </template>
 
-      <template #item="{ item, index }">
-        <tr :class="{'qualified-row': index < tournamentUserCount,'shaded-row': index % 2}">
-          <td :key="selectRerender">
-            <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
-          </td>
-          <td class="text-left">
-            {{item.fullName}}
-          </td>
-          <td>{{item.score || 0}}</td>
-        </tr>
-      </template>
+        <template #item="{ item, index }">
+          <tr :class="{'qualified-row': index < tournamentUserCount,'shaded-row': index % 2}">
+            <td :key="selectRerender">
+              <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
+            </td>
+            <td class="text-left">
+              {{item.fullName}}
+            </td>
+            <td>{{item.score || 0}}</td>
+          </tr>
+        </template>
 
 
-    </v-data-table>
-
+      </v-data-table>
+    </v-card>
   </v-container>
 </template>
 
@@ -67,6 +78,7 @@
         tournamentId: this.$route.params.id,
         poolTypeId: 1,
         selectRerender: 1,
+        search: '',
         tournament: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         tournamentUserCount: 0,
@@ -75,9 +87,9 @@
         poolUsers: [],
         selectedUsers: [],
         headers: [
-          { text: '', value: 'checkbox', show: true, width: '50px' },
-          { text: 'User', value: 'fullName', show: true },
-          { text: 'Score', value: 'score', show: true },
+          {text: '', value: 'checkbox', show: true, width: '50px'},
+          {text: 'User', value: 'fullName', show: true},
+          {text: 'Score', value: 'score', show: true},
         ],
       }
     },
@@ -96,7 +108,7 @@
         this.getTournament()
       }
     },
-    async created () {
+    async created() {
       this.getPool()
       this.getPoolUsers()
       //need the tournament so i can see how many users can qualify
@@ -110,10 +122,10 @@
           this.selectedUsers = this.selectedUsers.filter(u => u !== item.userId)
         }
       },
-      toggleSelectAllQualifying () {
+      toggleSelectAllQualifying() {
         this.selectedUsers = []
         this.poolUsers.forEach((pu, idx) => {
-          if(idx < this.tournamentUserCount) {
+          if (idx < this.tournamentUserCount) {
             pu.selected = true
             this.selectedUsers.push(pu.userId)
           } else {
@@ -123,7 +135,7 @@
         //force checkbox to rerender as selected
         this.selectRerender++
       },
-      async advanceSelectedToBracket () {
+      async advanceSelectedToBracket() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.selectedUsers, 'blueraven')
@@ -152,7 +164,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getPool () {
+      async getPool() {
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.dataLoading = false
@@ -163,7 +175,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
-      async getPoolUsers () {
+      async getPoolUsers() {
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
           this.poolUsers = data
@@ -178,16 +190,18 @@
 </script>
 
 <style lang="scss">
-  #pool-container .v-data-table__wrapper {
-    height: calc(100vh - 250px);
+  #qualifying-pool-container .v-data-table__wrapper {
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 
   .qualified-row {
-    background-color: var(--v-brGreen-base) !important;;
+    /*background-color: var(--v-brGreen-base) !important;;*/
+    background-color: lightgreen !important;
   }
 </style>
 
 <style lang="scss" scoped>
+
 </style>
 

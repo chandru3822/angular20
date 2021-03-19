@@ -7,11 +7,13 @@ import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPool;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolPosition;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolUser;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.AttachmentService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +28,12 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TournamentPoolService {
 
+  @Value("${aws.storageBucket}")
+  private String bucket;
+
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final AttachmentService attachmentService;
   private final ObjectMapper om;
 
   public Optional<TournamentPool> getPoolDetails(Long tournamentId, Long tournamentPoolTypeId) {
@@ -36,7 +42,21 @@ public class TournamentPoolService {
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolTypeId", tournamentPoolTypeId);
     Optional<TournamentPool> result = sqlCache.get("tournamentPool.getDetails", params, new TournamentPoolMapper<>(TournamentPool.class, om));
+    if(result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
+      result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(bucket, result.get().getBackgroundAttachmentId()));
+    }
     return result;
+  }
+
+  public void updatePool(Long tournamentId, Long poolId, TournamentPool pool) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("poolId", poolId);
+    params.put("userId", user.getId());
+    params.put("customName", pool.getCustomName());
+    params.put("startDate", pool.getStartDate());
+    params.put("endDate", pool.getEndDate());
+    sqlCache.update("tournamentPool.updatePool", params);
   }
 
   public List<TournamentPoolUser> getPoolUsers(Long tournamentId, Long tournamentPoolTypeId) {

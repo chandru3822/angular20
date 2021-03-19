@@ -14,8 +14,8 @@ import java.util.List;
 @Setter
 public class TournamentPool {
 
-  private Long id, tournamentPoolTypeId;
-  private String poolType;
+  private Long id, tournamentPoolTypeId, backgroundAttachmentId;
+  private String poolType, customName, backgroundAttachmentPresignedUrl;
   private Date startDate, endDate;
   private Boolean archived, advanced;
   private List<TournamentPoolUser> users;

@@ -30,6 +30,13 @@ public class TournamentPoolController {
     return tournamentPoolService.getPoolDetails(tournamentId, poolTypeId);
   }
 
+  @PutMapping(value = "/{poolId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updatePool(@PathVariable Long tournamentId,
+                         @PathVariable Long poolId,
+                         @RequestBody TournamentPool pool) {
+    tournamentPoolService.updatePool(tournamentId, poolId, pool);
+  }
+
   @GetMapping(value = "/usersByType/{poolTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<TournamentPoolUser> getTournamentPoolUsers(@PathVariable Long tournamentId,
                                                          @PathVariable Long poolTypeId) {

@@ -1,48 +1,56 @@
 <template>
-  <v-container id="pool-container">
+  <v-container id="last-chance-pool-container">
+    <v-card color="white" flat class="square-card">
+      <v-toolbar flat class="app-toolbar">
+        {{pool.customName || 'Last Chance'}} <br/>
+        {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn v-if="userCanEdit && !dataLoading && selectedUsers.length > 0"
+                 color="primary" class="white--text" @click="moveUsersToWinnersPool()">
+            <span>Advance Users To Next Round</span>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-text-field
+        v-model="search"
+        class="mb-2 px-4 py-2"
+        prepend-inner-icon="search"
+        label="Search"
+        single-line
+        hide-details
+      ></v-text-field>
+      <v-divider></v-divider>
+      <v-data-table
+        :headers="headers"
+        :items="pool.users"
+        :search="search"
+        :fixed-header="true"
+        :items-per-page="100"
+        disable-sort
+        class="elevation-1 square-card"
+      >
+        <template #no-data>
+          No available users
+        </template>
 
-    <v-toolbar flat class="app-toolbar">
-      Last Chance Pool <br/>
-      {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn v-if="userCanEdit && !dataLoading && selectedUsers.length > 0"
-               color="primary" class="white--text" @click="moveUsersToWinnersPool()">
-          <span>Advance Users To Winner Pool</span>
-        </v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
-
-    <v-data-table
-      :headers="headers"
-      :items="pool.users"
-      :fixed-header="true"
-      :items-per-page="100"
-      disable-sort
-      class="elevation-1 square-card"
-    >
-      <template #no-data>
-        No available users
-      </template>
-
-      <template #no-results>
-        No available users
-      </template>
-      <template #item="{ item, index }">
-        <tr :class="{'shaded-row': index % 2}">
-          <td :key="selectRerender">
-            <input type="checkbox" v-if="!item.qualified" v-model="item.selected" @change="toggleSingleSelect(item)">
-            <v-icon v-else color="green" size="15">mdi-check-decagram</v-icon>
-          </td>
-          <td class="text-left">
-            {{item.fullName}}
-          </td>
-          <td>{{item.score || 0}}</td>
-        </tr>
-      </template>
-    </v-data-table>
-
-
+        <template #no-results>
+          No available users
+        </template>
+        <template #item="{ item, index }">
+          <tr :class="{'shaded-row': index % 2}">
+            <td :key="selectRerender">
+              <input type="checkbox" v-if="!item.qualified" v-model="item.selected" @change="toggleSingleSelect(item)">
+              <v-icon v-else color="green" size="15">mdi-check-decagram</v-icon>
+            </td>
+            <td class="text-left">
+              {{item.fullName}}
+            </td>
+            <td>{{item.score || 0}}</td>
+          </tr>
+        </template>
+      </v-data-table>
+    </v-card>
   </v-container>
 </template>
 
@@ -58,6 +66,7 @@
         constants,
         snackbar: {},
         poolTypeId: 2,
+        search: '',
         dataLoading: true,
         selectRerender: 1,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
@@ -117,8 +126,8 @@
 </script>
 
 <style lang="scss">
-  #pool-container .v-data-table__wrapper {
-    height: calc(100vh - 250px);
+  #last-chance-pool-container .v-data-table__wrapper {
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>
