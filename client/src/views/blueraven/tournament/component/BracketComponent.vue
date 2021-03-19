@@ -9,14 +9,56 @@
                  :key="roundRerenderKey"
                  :class="{'current': r.currentRound,
                           'bold': r.currentRound}">
-<!--              <v-btn x-small text @click="r.edit = !r.edit" class="edit-button">-->
-              <v-icon v-if="roundCanBeEdited(r)" class="edit-button clickable"
+              <v-icon v-if="!r.advanced && r.roundNumber !== bracket.rounds.length && userCanEdit && !r.edit" class="edit-button clickable"
                       size="15" @click="rerender(r)">edit</v-icon>
               <v-icon v-if="userCanEdit && r.edit" class="edit-button clickable"
                       size="15" @click="rerender(r)">close</v-icon>
               <v-icon v-if="userCanEdit && r.edit" class="save-button clickable"
                       size="15" @click="advanceMatches(r)">save</v-icon>
-<!--              </v-btn>-->
+              <v-icon size="15" color="green"
+                      v-if="r.advanced && r.roundNumber === bracket.rounds.length"
+                      class="advance-button">
+                mdi-check-decagram
+              </v-icon>
+              <v-dialog
+                v-if="!r.advanced && r.roundNumber === bracket.rounds.length && userCanEdit"
+                class="advance-button-container"
+                v-model="r.advanceConfirm"
+                width="500">
+                <template v-slot:activator="{ on }">
+                  <v-btn text x-small v-on="on" class="advance-button">
+                    <v-icon size="15">mdi-arrow-top-right</v-icon>
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title
+                  >
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text>
+                    Are you sure you want to advance these winners to the Winner Pool?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="r.advanceConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="[r.advanceConfirm = true, advanceWinners(r)]">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
               <div v-if="r.roundNumber === bracket.rounds.length">
                 WINNERS
               </div>
@@ -69,7 +111,7 @@
     data() {
       return {
         constants,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTDS', 'EDIT'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         roundRerenderKey: 0,
       }
@@ -78,14 +120,22 @@
 
     },
     methods: {
-      roundCanBeEdited(r) {
-        let alreadyAdvanced = false
-        r?.matches.forEach(m => {
-          if(m.matchAdvanced) {
-            alreadyAdvanced = true
-          }
-        })
-        return !alreadyAdvanced && r.roundNumber !== this.bracket.rounds.length && this.userCanEdit && !r.edit
+      async advanceWinners(round) {
+        round.advanced = true
+        round.advanceConfirm = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/tournament/${this.bracket.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Winners Advanced')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.dataLoading = false
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       rerender(r) {
         //i hate this crap
@@ -263,6 +313,18 @@
     left: 20px;
     padding: 0;
   }
+
+  .advance-button-container {
+    position: relative;
+  }
+
+  .advance-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0;
+  }
+
 
 
 </style>

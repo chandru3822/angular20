@@ -2,7 +2,7 @@
   <v-container>
 
     <v-toolbar flat class="app-toolbar">
-      Winners Pool <br/>
+      Winner Pool <br/>
       {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
     </v-toolbar>
     <v-data-table

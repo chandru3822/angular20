@@ -52,6 +52,12 @@ BEGIN
         END LOOP;
     drop table user_ids;
 
+    -- set all users as "qualified" so we can show that in the future
+    update brs.tournament_pool_user
+        set qualified = true
+    where user_id in ( select unnest(array[ p_user_ids ]::int[] ) )
+        and tournament_pool_id = p_tournament_pool_id;
+
     -- after advancing the qualifiers add all the non-qualified to the loser pool
     with all_pool_users as (
         select tpu.id,

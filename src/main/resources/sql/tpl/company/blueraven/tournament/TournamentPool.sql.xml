@@ -19,13 +19,15 @@
                         FROM (
                                  SELECT tpu.id,
                                         tpu.user_id as "userId",
+                                        tpu.qualified,
                                         concat(u.first_name, ' ', u.last_name) as "fullName",
                                         tpu.tournament_pool_id as "tournamentPoolId",
                                         tpu.archived
                                  FROM brs.tournament_pool_user tpu
                                     inner join flow."user" u on tpu.user_id = u.id
                                  WHERE tpu.tournament_pool_id = tp.id
-                                   AND tpu.archived is not true) tb), '[]') AS "users"
+                                   AND tpu.archived is not true
+                                   order by qualified is not true, "fullName") tb), '[]') AS "users"
     from brs.tournament_pool tp
       inner join brs.tournament_pool_type tpt on tp.tournament_pool_type_id = tpt.id
     where tp.tournament_id = :tournamentId
@@ -108,4 +110,18 @@
   <tournamentPool.assignUsersToMatches><![CDATA[
     select from brs.assign_users_to_matches(:tournamentId::int, :tournamentPoolId::int, :userId::int, array[ :userIds ]::int[])
   ]]></tournamentPool.assignUsersToMatches>
+
+  <tournamentPool.advanceUsersToWinnerPool><![CDATA[
+      update brs.tournament_pool_user
+          set qualified = true
+      where tournament_pool_id = :tournamentPoolId
+      and user_id in ( :userIds );
+
+      insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
+        select tpu.user_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId
+      from brs.tournament_pool_user tpu
+      where tpu.tournament_pool_id = :tournamentPoolId
+        and tpu.user_id  in ( :userIds );
+
+  ]]></tournamentPool.advanceUsersToWinnerPool>
 </sql>

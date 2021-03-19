@@ -86,6 +86,7 @@ CREATE TABLE if not exists brs.tournament_round
     date_modified         timestamp without time zone,
     created_by_id         integer not null,
     modified_by_id        integer,
+    advanced              boolean not null            default false,
     archived              boolean not null            default false,
     CONSTRAINT brs_tournament_round_pk PRIMARY KEY (id),
     CONSTRAINT brs_tr_tournament_bracket_id_fk FOREIGN KEY (tournament_bracket_id)
@@ -103,19 +104,19 @@ CREATE TABLE if not exists brs.tournament_round
 
 CREATE TABLE if not exists brs.tournament_match
 (
-    id                    serial  NOT NULL,
-    tournament_round_id   integer NOT NULL,
-    parent_match_id   integer,
-    user_1_id             integer,
-    user_2_id             integer,
-    user_1_score          integer,
-    user_2_score          integer,
-    date_created          timestamp without time zone DEFAULT now(),
-    date_modified         timestamp without time zone,
-    created_by_id         integer not null,
-    modified_by_id        integer,
-    match_advanced        boolean not null            default false,
-    archived              boolean not null            default false,
+    id                  serial  NOT NULL,
+    tournament_round_id integer NOT NULL,
+    parent_match_id     integer,
+    user_1_id           integer,
+    user_2_id           integer,
+    user_1_score        integer,
+    user_2_score        integer,
+    date_created        timestamp without time zone DEFAULT now(),
+    date_modified       timestamp without time zone,
+    created_by_id       integer not null,
+    modified_by_id      integer,
+    match_advanced      boolean not null            default false,
+    archived            boolean not null            default false,
     CONSTRAINT brs_tournament_match_pk PRIMARY KEY (id),
     CONSTRAINT brs_tm_parent_match_id_fk FOREIGN KEY (parent_match_id)
         REFERENCES brs.tournament_match (id) MATCH SIMPLE
@@ -193,6 +194,8 @@ CREATE TABLE if not exists brs.tournament_pool_user
     id                 serial  NOT NULL,
     user_id            integer NOT NULL,
     tournament_pool_id integer NOT NULL,
+    qualified          boolean not null            default false,
+    score              integer,
     date_created       timestamp without time zone DEFAULT now(),
     date_modified      timestamp without time zone,
     created_by_id      integer not null,
@@ -216,7 +219,7 @@ CREATE TABLE if not exists brs.tournament_pool_user
 CREATE TABLE if not exists brs.tournament_pool_position
 (
     id                 serial  NOT NULL,
-    position_id            integer NOT NULL,
+    position_id        integer NOT NULL,
     tournament_pool_id integer NOT NULL,
     date_created       timestamp without time zone DEFAULT now(),
     date_modified      timestamp without time zone,
@@ -244,3 +247,13 @@ values ('Tournaments', 'TOURNAMENTS', null);
 
 insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
 values ('Tournaments', 3, (select id from flow.feature where feature_code = 'TOURNAMENTS'), false);
+
+CREATE TABLE if not exists brs.tournament_seed_position
+(
+    id              serial  NOT NULL,
+    number_of_users integer NOT NULL,
+    match_number    integer NOT NULL,
+    top_seed        integer NOT NULL,
+    bottom_seed     integer NOT NULL,
+    CONSTRAINT brs_tournament_seed_position_pk PRIMARY KEY (id)
+);

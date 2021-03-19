@@ -14,6 +14,6 @@ public class TournamentPoolUser {
   private Long id, tournamentPoolId, userId;
   private Double score;
   private String fullName;
-  private Boolean archived;
+  private Boolean archived, qualified;
 }
 

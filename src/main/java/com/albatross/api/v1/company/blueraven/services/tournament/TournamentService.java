@@ -172,6 +172,21 @@ public class TournamentService {
     sqlCache.query("tournament.generateMatches", params, String.class);
   }
 
+  public void advanceWinners(Long tournamentId, Long roundId, List<Match> matches) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+
+    for(Match m : matches) {
+      //advance each match
+      params.put("matchId", m.getId());
+      params.put("roundId", roundId);
+      params.put("tournamentId", tournamentId);
+      sqlCache.update("tournament.advanceWinners", params);
+    }
+  }
+
   public void advanceMatches(List<Match> matches) {
     User user = securityService.getCurrentUser();
 

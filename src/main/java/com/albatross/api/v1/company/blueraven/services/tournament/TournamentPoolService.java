@@ -112,6 +112,18 @@ public class TournamentPoolService {
     sqlCache.query("tournamentPool.assignUsersToMatches", params, String.class);
   }
 
+  public void advanceUsersToWinnerPool(Long tournamentId, Long poolId, List<Long> userIds) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("tournamentId", tournamentId);
+    params.put("tournamentPoolId", poolId);
+    params.put("userId", user.getId());
+    params.put("userIds", userIds);
+
+    sqlCache.update("tournamentPool.advanceUsersToWinnerPool", params);
+  }
+
   public static class TournamentPoolMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

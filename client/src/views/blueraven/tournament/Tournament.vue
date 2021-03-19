@@ -20,7 +20,7 @@
             Last Chance Pool
           </v-tab>
           <v-tab :to="`/tournament/${tournamentId}/winners`">
-            Winners Pool
+            Winner Pool
           </v-tab>
         </v-tabs>
       </v-toolbar-items>

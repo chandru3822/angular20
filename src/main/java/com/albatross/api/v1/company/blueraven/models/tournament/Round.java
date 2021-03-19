@@ -16,7 +16,7 @@ public class Round {
 
   private Long id, tournamentBracketId, roundNumber;
   private Date startDate, endDate;
-  private Boolean archived, currentRound;
+  private Boolean archived, currentRound, advanced;
   private List<Match> matches;
 }
 

@@ -66,4 +66,11 @@ public class TournamentPoolController {
     tournamentPoolService.assignUsersToMatches(tournamentId, poolId, userIds);
   }
 
+  @PostMapping(value = "/{poolId}/advanceUsersToWinnerPool", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void advanceUsersToWinnerPool(@PathVariable Long tournamentId,
+                                       @PathVariable Long poolId,
+                                       @RequestBody List<Long> userIds) {
+    tournamentPoolService.advanceUsersToWinnerPool(tournamentId, poolId, userIds);
+  }
+
 }

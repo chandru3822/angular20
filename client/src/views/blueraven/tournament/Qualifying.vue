@@ -38,9 +38,8 @@
       <template #item="{ item, index }">
         <tr :class="{'qualified-row': index < tournamentUserCount,'shaded-row': index % 2}">
           <td :key="selectRerender">
-<!--            <v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>-->
-              <input type="checkbox" v-model="item.selected" @change="toggleSingleSelect(item)">
-            </td>
+            <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
+          </td>
           <td class="text-left">
             {{item.fullName}}
           </td>
@@ -69,7 +68,7 @@
         poolTypeId: 1,
         selectRerender: 1,
         tournament: {},
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         tournamentUserCount: 0,
         dataLoading: true,
         pool: {},
