@@ -40,6 +40,7 @@ CREATE TABLE if not exists brs.tournament
     date_modified            timestamp without time zone,
     created_by_id            integer           not null,
     modified_by_id           integer,
+    active                   boolean           not null  default false,
     archived                 boolean           not null  default false,
     CONSTRAINT brs_tournament_pk PRIMARY KEY (id),
     CONSTRAINT brs_t_tournament_owner_type_id_fk FOREIGN KEY (tournament_owner_type_id)

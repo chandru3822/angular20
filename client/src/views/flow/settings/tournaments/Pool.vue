@@ -73,10 +73,10 @@
                 :accept="acceptedFileTypes"
                 class="file-input clickable"
                 :disabled="savingImage"
-                @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 1048576)"
+                @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 2097152)"
                 name="avatar"
               >
-              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+              <br/><span>* Due to render times associated with this file it cannot exceed 2MB</span>
             </form>
           </div>
           <div v-else-if="pool.backgroundAttachmentPresignedUrl">

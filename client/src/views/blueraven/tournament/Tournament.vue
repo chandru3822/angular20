@@ -35,6 +35,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import moment from 'moment'
 
   export default {
     name: 'Tournament',
@@ -49,17 +50,33 @@
     },
     watch: {
       // whenever tournament_id changes, this function will run
-      '$route.params.id': function () {
+      '$route.params.id': async function () {
         // reset the selected group when the object type changes
         this.tournamentId = this.$route.params.id
         this.tournament = {}
-        this.getTournament()
+        await this.getTournament()
+        this.goToRoute()
       }
     },
     async created () {
-      this.getTournament()
+      await this.getTournament()
+      this.goToRoute()
     },
     methods: {
+      goToRoute() {
+        //go to the tab that is currently in progress
+        let qualifyingPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 1)
+        let winnersPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 3)
+        if( moment().isBetween(moment(qualifyingPool?.startDate), moment(qualifyingPool?.endDate))) {
+          this.$router.push(`/tournament/${this.tournamentId}/qualifying`)
+        } else if( moment().isAfter(moment(winnersPool?.startDate))) {
+          this.$router.push(`/tournament/${this.tournamentId}/winners`)
+          // this.$router.push({name: 'tournamentWinners', params: { id: this.tournament.id }})
+        } else {
+          this.$router.push(`/tournament/${this.tournamentId}/bracket`)
+          // this.$router.push({name: 'tournamentBracket', params: { id: this.tournament.id }})
+        }
+      },
       getPoolName(typeId) {
         return this.tournament?.pools?.find(p => p.tournamentPoolTypeId === typeId)?.customName
       },

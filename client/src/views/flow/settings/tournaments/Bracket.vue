@@ -12,12 +12,15 @@
         <v-card flat v-if="addBracket">
           <v-text-field text
                         label="Number of Users"
+                        class="mb-2"
                         type="number"
                         hint="[2, 4, 8, 16, 32, 64, 128]"
                         persistent-hint
                         v-model.number="newBracket.numberOfUsers"></v-text-field>
           <div class="error-text" v-if="bracketError">{{bracketErrorMsg}}</div>
-          <v-btn text :disabled="!newBracket.numberOfUsers"
+          <v-btn color="primary"
+                 class="white--text"
+                 :disabled="!newBracket.numberOfUsers"
                  @click="addNewBracket">
             Save
           </v-btn>
@@ -137,7 +140,9 @@
                 :format="'MMMM DD, YYYY'"
                 label="End Date"
               />
-              <v-btn text :disabled="!newRound.startDate || !newRound.endDate || newRound.startDate > newRound.endDate"
+              <v-btn color="primary"
+                     class="white--text mb-3"
+                     :disabled="!newRound.startDate || !newRound.endDate || newRound.startDate > newRound.endDate"
                      @click="saveRound(b, newRound)">Save
               </v-btn>
             </v-card>

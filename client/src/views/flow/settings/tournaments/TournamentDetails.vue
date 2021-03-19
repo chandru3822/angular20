@@ -38,6 +38,15 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
+            <div class="mb-4">
+              <label>Tournament Is Live: </label>
+              <input type="checkbox"
+                class="d-inline-block ml-3"
+                :readonly="!edit"
+                :disabled="!edit"
+                v-model="tournament.active"
+              />
+            </div>
             <v-btn color="primaryCustom"
                    class="white--text mb-4"
                    v-if="!edit"

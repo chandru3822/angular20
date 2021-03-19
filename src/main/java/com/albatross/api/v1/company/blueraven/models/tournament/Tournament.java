@@ -17,7 +17,7 @@ public class Tournament {
   private Long id, tournamentOwnerTypeId, backgroundAttachmentId;
   private String tournamentName, ownerType, backgroundAttachmentPresignedUrl;
   private Date startDate, endDate;
-  private Boolean archived;
+  private Boolean archived, active;
   private List<Bracket> brackets;
   private List<TournamentPool> pools;
 }

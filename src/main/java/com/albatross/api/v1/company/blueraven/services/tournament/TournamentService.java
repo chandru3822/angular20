@@ -65,6 +65,7 @@ public class TournamentService {
     params.put("tournamentOwnerTypeId", tournament.getTournamentOwnerTypeId());
     params.put("startDate", tournament.getStartDate());
     params.put("endDate", tournament.getEndDate());
+    params.put("active", null != tournament.getActive() ? tournament.getActive() : false);
 
     Long id = sqlCache.updateReturningId("tournament.update", params, "id").longValue();
     return getTournament(id);

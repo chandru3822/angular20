@@ -55,8 +55,8 @@
             :style="{'background-image': null != pool.backgroundAttachmentPresignedUrl
                   ? `url(${pool.backgroundAttachmentPresignedUrl})` : ''}"
     >
-      <v-card color="white" class="square-card pa-4">
-        <div class="congrats-header">
+      <v-card color="white" class="square-card pa-5 congrats-inner-container">
+        <div class="congrats-header mb-3">
           Congratulations to our Winner{{winners.length > 1 ? 's' : ''}}!
         </div>
         <div v-for="w in this.winners" class="congrats-winner">
@@ -118,6 +118,8 @@
                 this.winners.push(u)
               }
             })
+            //todo take this out, just testing for 1 user
+            // this.winners = this.pool.users.filter((u, idx) => { return idx === 0})
             this.showWinners = true
           }
           this.poolLoading = false
@@ -162,13 +164,17 @@
     justify-content: center;
   }
 
+  .congrats-inner-container {
+    min-height: 200px;
+  }
+
   .congrats-header {
     font-family: "Congrats", sans-serif;
     font-size: 50px;
   }
 
   .congrats-winner {
-    font-size: 20px;
+    font-size: 30px;
   }
 
   .show-score-button {

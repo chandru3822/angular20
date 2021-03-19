@@ -37,13 +37,20 @@
                 <SpinnerInline :size="20" color="primaryCustom"/>
               </v-list-item-title>
             </v-list-item>
+
+            <v-list-item v-if="!tourneysLoading && tournaments.length === 0">
+              <v-list-item-title class="px-7">
+                No Active Tournaments
+              </v-list-item-title>
+            </v-list-item>
+
             <v-list-item
-              v-else
+              v-else-if="!tourneysLoading"
               v-for="(t, i) in tournaments"
               :key="i"
               class="px-7"
               @click="closeMenu(t)"
-              :to="`/tournament/${t.id}/qualifying`"
+              :to="`/tournament/${t.id}`"
               link
             >
               <v-list-item-title>{{t.tournamentName}}</v-list-item-title>

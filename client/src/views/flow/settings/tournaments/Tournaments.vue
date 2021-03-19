@@ -1,5 +1,5 @@
 <template>
-  <v-container id="postal-codes" class="custom-field-group-container">
+  <v-container id="tournament-admin-container" class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -48,15 +48,19 @@
               :headers="headers"
               :items="filterTournaments()"
               :fixed-header="true"
-              :items-per-page="-1"
+              :items-per-page="100"
               disable-sort
               :loading="dataLoading"
-              hide-default-footer
               class="elevation-1 round-robin-table"
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToTournament(item.id)">{{item.tournamentName}}</td>
+                  <td class="text-left clickable" @click="goToTournament(item.id)">{{item.startDate | formatDate('date', 'M/D/YYYY')}}</td>
+                  <td class="text-left clickable" @click="goToTournament(item.id)">{{item.endDate | formatDate('date', 'M/D/YYYY')}}</td>
+                  <td class="text-left clickable" @click="goToTournament(item.id)">
+                    <input type="checkbox" v-model="item.active" readonly disabled>
+                  </td>
                   <td class="text-right">
                     <v-btn small text @click="goToTournament(item.id)">
                       <v-icon>edit</v-icon>
@@ -141,6 +145,9 @@
         ownerTypes: [],
         headers: [
           {text: 'Tournament', value: 'tournamentName', show: true},
+          {text: 'Start', value: 'startDate', show: true},
+          {text: 'End', value: 'endDate', show: true},
+          {text: 'Active', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ]
       }
@@ -222,6 +229,10 @@
 </script>
 
 <style lang="scss">
+  #tournament-admin-container .v-data-table__wrapper {
+    max-height: calc(100vh - 250px);
+    min-height: 300px;
+  }
 </style>
 
 <style scoped lang="scss">
