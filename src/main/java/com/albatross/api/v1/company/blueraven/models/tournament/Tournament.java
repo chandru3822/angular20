@@ -14,8 +14,8 @@ import java.util.List;
 @Setter
 public class Tournament {
 
-  private Long id, tournamentOwnerTypeId, backgroundAttachmentId;
-  private String tournamentName, ownerType, backgroundAttachmentPresignedUrl;
+  private Long id, tournamentOwnerTypeId, backgroundAttachmentId, tournamentFormulaId;
+  private String tournamentName, ownerType, backgroundAttachmentPresignedUrl, formulaTitle, formulaDescription;
   private Date startDate, endDate;
   private Boolean archived, active;
   private List<Bracket> brackets;

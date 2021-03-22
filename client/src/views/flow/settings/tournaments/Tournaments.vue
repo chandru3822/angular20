@@ -22,7 +22,15 @@
               v-model="newTournament.tournamentOwnerTypeId"
               :items="ownerTypes"
               label="Owner Type"
+              @change="getTournamentFormulas()"
               item-text="ownerType"
+              item-value="id"
+            ></v-autocomplete>
+            <v-autocomplete
+              v-model="newTournament.tournamentFormulaId"
+              :items="formulas"
+              label="Scoring Formula"
+              item-text="formulaTitle"
               item-value="id"
             ></v-autocomplete>
             <DatetimePickerInput
@@ -39,7 +47,7 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate || !newTournament.tournamentOwnerTypeId" @click="addTournament">Save</v-btn>
+            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId" @click="addTournament">Save</v-btn>
             <v-btn class="ml-2" @click="[newTournament = {}, addNew = false]">Cancel</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
@@ -143,6 +151,7 @@
         userId: this.$store.state.user.details.id,
         tournaments: [],
         ownerTypes: [],
+        formulas: [],
         headers: [
           {text: 'Tournament', value: 'tournamentName', show: true},
           {text: 'Start', value: 'startDate', show: true},
@@ -160,6 +169,20 @@
       },
       goToTournament(id) {
         this.$router.push({path: `/settings/tournaments/${id}/details`})
+      },
+      async getTournamentFormulas() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/tournament/formulas/${this.newTournament.tournamentOwnerTypeId}`, 'blueraven')
+          this.formulas = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.dataLoading = false
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getTournamentOwnerTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -209,7 +232,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/tournament`, this.newTournament, 'blueraven')
-          this.$router.push({path: `/settings/tournaments/${data.id}/brackets`})
+          this.$router.push({path: `/settings/tournaments/${data.id}/details`})
           this.snackbar = getSnackbar('SUCCESS', 'Tournament Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

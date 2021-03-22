@@ -12,6 +12,13 @@
     where archived is not true
   ]]></tournament.getOwnerTypes>
 
+  <tournament.getFormulas><![CDATA[
+    select *
+    from brs.tournament_formula
+    where archived is not true
+    and tournament_owner_type_id = :ownerTypeId
+  ]]></tournament.getFormulas>
+
   <tournament.delete><![CDATA[
     update brs.tournament
       set archived = true,
@@ -33,8 +40,8 @@
   ]]></tournament.update>
 
   <tournament.insert><![CDATA[
-    with tourney as (insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, created_by_id)
-    values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :userId)
+    with tourney as (insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, created_by_id, tournament_formula_id)
+    values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :userId, :tournamentFormulaId)
     returning id),
          pools as (
              insert into brs.tournament_pool (tournament_id, tournament_pool_type_id, start_date, end_date, created_by_id)

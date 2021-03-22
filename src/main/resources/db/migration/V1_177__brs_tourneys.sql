@@ -29,11 +29,36 @@ insert into brs.tournament_owner_type(owner_type, created_by_id)
 values ('Project', 2350555),
        ('Contact', 2350555);
 
+CREATE TABLE if not exists brs.tournament_formula
+(
+    id                       serial            NOT NULL,
+    formula_title            character varying NOT NULL,
+    formula_description      text,
+    tournament_owner_type_id integer           NOT NULL,
+    date_created             timestamp without time zone DEFAULT now(),
+    date_modified            timestamp without time zone,
+    created_by_id            integer           not null,
+    modified_by_id           integer,
+    active                   boolean           not null  default false,
+    archived                 boolean           not null  default false,
+    CONSTRAINT brs_tournament_formula_pk PRIMARY KEY (id),
+    CONSTRAINT brs_tf_tournament_owner_type_id_fk FOREIGN KEY (tournament_owner_type_id)
+        REFERENCES brs.tournament_owner_type (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT brs_tf_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT brs_tf_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
 CREATE TABLE if not exists brs.tournament
 (
     id                       serial            NOT NULL,
     tournament_name          character varying NOT NULL,
     tournament_owner_type_id integer           NOT NULL,
+    tournament_formula_id    integer           NOT NULL,
     start_date               date,
     end_date                 date,
     date_created             timestamp without time zone DEFAULT now(),
@@ -45,6 +70,9 @@ CREATE TABLE if not exists brs.tournament
     CONSTRAINT brs_tournament_pk PRIMARY KEY (id),
     CONSTRAINT brs_t_tournament_owner_type_id_fk FOREIGN KEY (tournament_owner_type_id)
         REFERENCES brs.tournament_owner_type (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT brs_t_tournament_formula_id_fk FOREIGN KEY (tournament_formula_id)
+        REFERENCES brs.tournament_formula (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT brs_t_created_by_id_fk FOREIGN KEY (created_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE

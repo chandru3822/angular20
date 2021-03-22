@@ -12,12 +12,21 @@
               v-model="tournament.tournamentName"
             ></v-text-field>
             <v-autocomplete
-              :readonly="!edit"
-              :disabled="!edit"
+              readonly
+              disabled
               v-model="tournament.tournamentOwnerTypeId"
               :items="ownerTypes"
               label="Owner Type"
               item-text="ownerType"
+              item-value="id"
+            ></v-autocomplete>
+            <v-autocomplete
+              readonly
+              disabled
+              v-model="tournament.tournamentFormulaId"
+              :items="formulas"
+              label="Scoring Formula"
+              item-text="formulaTitle"
               item-value="id"
             ></v-autocomplete>
             <DatetimePickerInput
@@ -41,10 +50,10 @@
             <div class="mb-4">
               <label>Tournament Is Live: </label>
               <input type="checkbox"
-                class="d-inline-block ml-3"
-                :readonly="!edit"
-                :disabled="!edit"
-                v-model="tournament.active"
+                     class="d-inline-block ml-3"
+                     :readonly="!edit"
+                     :disabled="!edit"
+                     v-model="tournament.active"
               />
             </div>
             <v-btn color="primaryCustom"
@@ -63,19 +72,21 @@
               <v-btn class="ml-2" @click="edit = false">Cancel</v-btn>
             </div>
 
-<!--            tournament image -->
+            <!--            tournament image -->
             <v-divider></v-divider>
             <v-toolbar flat class="app-toolbar">
               <v-toolbar-title class="app-title">Tournament Background Image</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                  <v-btn text v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"  @click="addImage = !addImage">
-                    <v-icon v-if="addImage">remove</v-icon>
-                    <v-icon v-else>add</v-icon>
-                  </v-btn>
-                  <v-btn v-else-if="userCanEdit" text class="mr-2" @click="deleteAttachment(tournament.backgroundAttachmentId)">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
+                <v-btn text v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
+                       @click="addImage = !addImage">
+                  <v-icon v-if="addImage">remove</v-icon>
+                  <v-icon v-else>add</v-icon>
+                </v-btn>
+                <v-btn v-else-if="userCanEdit" text class="mr-2"
+                       @click="deleteAttachment(tournament.backgroundAttachmentId)">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <label></label>
@@ -109,7 +120,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { Actions } from '@/store'
+  import {Actions} from '@/store'
   import constants from '@/helpers/constants'
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -142,17 +153,37 @@
         tournament: {},
         timezone: this.$store.state.user.details.timezone.value,
         ownerTypes: [],
+        formulas: [],
         tournamentId: parseInt(this.$route.params.id),
         userId: this.$store.state.user.details.id
       }
     },
     computed: {},
+    async created() {
+      this.getTournamentOwnerTypes()
+      await this.getTournament()
+      this.getTournamentFormulas()
+    },
     methods: {
       async getTournamentOwnerTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
           this.ownerTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.dataLoading = false
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getTournamentFormulas() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/tournament/formulas/${this.tournament.tournamentOwnerTypeId}`, 'blueraven')
+          this.formulas = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -189,7 +220,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
+      async uploadFile(files, attachmentTypeId, sourceId, sizeLimit) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
@@ -198,7 +229,7 @@
             attachmentTypeId,
             sourceId,
             callback: async (img, error) => {
-              if(error?.error) {
+              if (error?.error) {
                 this.snackbar = getSnackbar('ERROR', error.errorMsg)
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                 this.$store.commit(AppMutations.SET_LOADING, false)
@@ -211,14 +242,14 @@
               }
             }
           })
-        } catch(e) {
+        } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteAttachment (id) {
+      async deleteAttachment(id) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_DELETE, {
@@ -232,17 +263,13 @@
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           })
-        } catch(e) {
+        } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-    },
-    async created() {
-      this.getTournamentOwnerTypes()
-      this.getTournament()
     }
   }
 </script>

@@ -45,6 +45,13 @@ public class TournamentService {
     return results;
   }
 
+  public List<TournamentFormula> getTournamentFormulas(Long ownerTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ownerTypeId", ownerTypeId);
+    List<TournamentFormula> results = sqlCache.query("tournament.getFormulas", params, TournamentFormula.class);
+    return results;
+  }
+
   public void deleteTournament(Long id) {
     User user = securityService.getCurrentUser();
 
@@ -78,6 +85,7 @@ public class TournamentService {
     params.put("userId", user.getId());
     params.put("tournamentName", tournament.getTournamentName());
     params.put("tournamentOwnerTypeId", tournament.getTournamentOwnerTypeId());
+    params.put("tournamentFormulaId", tournament.getTournamentFormulaId());
     params.put("startDate", tournament.getStartDate());
     params.put("endDate", tournament.getEndDate());
 
