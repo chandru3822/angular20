@@ -218,6 +218,7 @@ declare
     v_project_id1                    integer;
     v_field_name                     varchar;
     v_parent_custom_field_id         integer;
+    v_project_id2                    integer;
 BEGIN
 
     select pps.project_id
@@ -340,10 +341,10 @@ BEGIN
                                                                                                                               into v_value; end case;
                     v_value = v_value || '::text';
                 end if;
-
+                v_project_id2 = coalesce(v_project_id,v_project_id1);
                 v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
-           where project_id = coalesce($$ || v_project_id||$$,$$||v_project_id1||$$) and
-            case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.field_to_update||
+                          where project_id = $$ || v_project_id2||$$ and
+                          case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.field_to_update||
                         $$ is null else 1=1 end $$;
                 begin
                     execute v_sql;
@@ -410,7 +411,7 @@ BEGIN
                     end if;
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
                             v_value || $$
-                            where project_id = coalesce($$ || v_project_id||$$,$$||v_project_id1||$$) and
+                            where project_id = $$ || v_project_id2||$$ and
                     case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.second_field_to_update||
                             $$ is null else 1=1 end $$;
                     begin
