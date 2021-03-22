@@ -545,7 +545,7 @@
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               v-model="newAction.removeProcessStepOwner"
-              label="Remove Parent Process Step Owner"
+              label="Clear Process Step Owner"
             />
             <v-checkbox
               dense
@@ -643,7 +643,7 @@
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       v-model="item.removeProcessStepOwner"
-                      label="Remove Parent Process Step Owner"
+                      label="Clear Process Step Owner"
                     />
                     <v-checkbox
                       dense
