@@ -110,6 +110,14 @@ public class TournamentService {
     return result;
   }
 
+  public String getBrackets(Long tournamentId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("tournamentId", tournamentId);
+
+    String results = sqlCache.queryForObject("tournament.getBrackets", params, String.class);
+    return results;
+  }
+
   public Optional<Bracket> getBracket(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -191,6 +199,8 @@ public class TournamentService {
       //advance each match
       params.put("matchId", m.getId());
       params.put("roundId", roundId);
+      params.put("user1Score", m.getUser1Score());
+      params.put("user2Score", m.getUser2Score());
       params.put("tournamentId", tournamentId);
       sqlCache.update("tournament.advanceWinners", params);
     }
@@ -206,6 +216,8 @@ public class TournamentService {
       //advance each match
       params.put("matchId", m.getId());
       params.put("parentMatchId", m.getParentMatchId());
+      params.put("user1Score", m.getUser1Score());
+      params.put("user2Score", m.getUser2Score());
       params.put("winnerUserId", m.getWinnerUserId());
       sqlCache.update("tournament.advanceMatch", params);
     }

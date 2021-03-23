@@ -63,6 +63,11 @@ public class TournamentController {
   }
 
   //brackets
+  @GetMapping(value = "/{tournamentId}/brackets", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getBrackets(@PathVariable Long tournamentId) {
+    return tournamentService.getBrackets(tournamentId);
+  }
+
   @PostMapping(value = "/bracket", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Bracket> addBracket(@RequestBody Bracket bracket) {
     return tournamentService.addBracket(bracket);

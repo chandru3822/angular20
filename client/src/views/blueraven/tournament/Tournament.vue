@@ -64,17 +64,20 @@
     },
     methods: {
       goToRoute() {
-        //go to the tab that is currently in progress
-        let qualifyingPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 1)
-        let winnersPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 3)
-        if( moment().isBetween(moment(qualifyingPool?.startDate), moment(qualifyingPool?.endDate))) {
-          this.$router.push(`/tournament/${this.tournamentId}/qualifying`)
-        } else if( moment().isAfter(moment(winnersPool?.startDate))) {
-          this.$router.push(`/tournament/${this.tournamentId}/winners`)
-          // this.$router.push({name: 'tournamentWinners', params: { id: this.tournament.id }})
-        } else {
-          this.$router.push(`/tournament/${this.tournamentId}/bracket`)
-          // this.$router.push({name: 'tournamentBracket', params: { id: this.tournament.id }})
+        //
+        if(this.$route.name === 'tournament') {
+          //go to the tab that is currently in progress
+          let qualifyingPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 1)
+          let winnersPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 3)
+          if( moment().isBetween(moment(qualifyingPool?.startDate), moment(qualifyingPool?.endDate))) {
+            this.$router.push(`/tournament/${this.tournamentId}/qualifying`)
+          } else if( moment().isAfter(moment(winnersPool?.startDate))) {
+            this.$router.push(`/tournament/${this.tournamentId}/winners`)
+            // this.$router.push({name: 'tournamentWinners', params: { id: this.tournament.id }})
+          } else {
+            this.$router.push(`/tournament/${this.tournamentId}/bracket`)
+            // this.$router.push({name: 'tournamentBracket', params: { id: this.tournament.id }})
+          }
         }
       },
       getPoolName(typeId) {

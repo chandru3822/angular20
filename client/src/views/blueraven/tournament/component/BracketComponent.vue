@@ -7,8 +7,8 @@
                v-for="(r, idx) in reverse ? itemsReverse : bracket.rounds">
             <div class="round-details"
                  :key="roundRerenderKey"
-                 :class="{'current': r.currentRound,
-                          'bold': r.currentRound}">
+                 :class="{'current': isCurrentRound(r),
+                          'bold': isCurrentRound(r)}">
               <v-icon v-if="canEditRound(r)" class="edit-button clickable"
                       size="15" @click="rerender(r)">edit</v-icon>
               <v-icon v-if="userCanEdit && r.edit" class="edit-button clickable"
@@ -39,7 +39,7 @@
                   </v-card-title>
 
                   <v-card-text>
-                    Are you sure you want to advance these winners to the Winner Pool?
+                    Are you sure you want to advance these users to the final pool?
                   </v-card-text>
 
                   <v-divider></v-divider>
@@ -60,7 +60,7 @@
                 </v-card>
               </v-dialog>
               <div v-if="r.roundNumber === bracket.rounds.length">
-                WINNERS
+                FINAL ROUND
               </div>
               <div v-else>
                 Round {{r.roundNumber}}<br/>
@@ -72,15 +72,15 @@
             </div>
             <ul class="matchup" v-for="(m, i) in r.matches" :class="{'mb-4': idx === 0 && i % 2 !== 0}">
               <v-radio-group v-model="m.winnerUserId">
-                <li class="team team-top" :class="{'current': r.currentRound}">
+                <li class="team team-top" :class="{'current': isCurrentRound(r)}">
                   <v-radio v-if="r.edit && m.user1Id && m.user2Id" :value="m.user1Id" class="d-inline-block"></v-radio>
                   {{m.user1Name}}
-                  <span class="score">{{m.user1Score || 0}}</span>
+                  <span class="score">{{m.user1Score}}</span>
                 </li>
-                <li class="team team-bottom" :class="{'current': r.currentRound}">
+                <li class="team team-bottom" :class="{'current': isCurrentRound(r)}">
                   <v-radio small v-if="r.edit && m.user1Id && m.user2Id" :value="m.user2Id" class="d-inline-block"></v-radio>
                   {{m.user2Name}}
-                  <span class="score">{{m.user2Score || 0}}</span></li>
+                  <span class="score">{{m.user2Score}}</span></li>
               </v-radio-group>
             </ul>
           </div>
@@ -114,12 +114,17 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         roundRerenderKey: 0,
+        firstNonAdvancedRound: {}
       }
     },
     async created() {
 
     },
     methods: {
+      isCurrentRound(r) {
+        this.bracket.firstNonAdvancedRound = this.bracket?.rounds.find(r => !r.advanced)
+        return r.id === this.bracket?.firstNonAdvancedRound?.id
+      },
       canAdvanceWinners(r) {
         let allMatchesHaveUsers = true
         r.matches.forEach(m => {
@@ -144,7 +149,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/tournament/${this.bracket.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Winners Advanced')
+          this.snackbar = getSnackbar('SUCCESS', 'Final Round Advanced')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
