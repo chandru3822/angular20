@@ -228,54 +228,64 @@ public class CloserDashboardService {
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
-  public String getDistricts(int userId, Boolean setterOverride) {
-    String sqlQuery = "SELECT * FROM brs.util_closer_district_selection(:userId, :setterOverride::BOOLEAN)";
+  public String getAreas(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_closer_area_selection(:userId::int, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("setterOverride", setterOverride);
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("setterOverride", req.getSetterOverride());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return null == results ? "[]" : results;
   }
 
-  public String getRegions(int userId, String districts, Boolean setterOverride) {
-    districts = districts.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
-
-    String sqlQuery = "SELECT * FROM brs.util_closer_region_selection(:userId, :districts::JSON, :setterOverride::BOOLEAN)";
+  public String getRegions(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_closer_region_selection(:userId::int, :areas::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("districts", districts);
-    parameters.addValue("setterOverride", setterOverride);
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
+    parameters.addValue("setterOverride", req.getSetterOverride());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return null == results ? "[]" : results;
   }
 
-  public String getOffices(int userId, String districts, String regions, Boolean setterOverride) {
-    regions = regions.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
-    districts = districts.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
-
-    String sqlQuery = "SELECT * FROM brs.util_closer_office_selection(:userId, :districts::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
+  public String getDistricts(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_closer_district_selection(:userId::int, :areas::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("districts", districts);
-    parameters.addValue("regions", regions);
-    parameters.addValue("setterOverride", setterOverride);
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
+    parameters.addValue("regions", req.getRegions());
+    parameters.addValue("setterOverride", req.getSetterOverride());
+
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
+  }
+
+  public String getOffices(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_closer_office_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON, :setterOverride::BOOLEAN)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
+    parameters.addValue("regions", req.getRegions());
+    parameters.addValue("districts", req.getDistricts());
+    parameters.addValue("setterOverride", req.getSetterOverride());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return null == results ? "[]" : results;
   }
 
   public String getReps(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_closer_rep_selection(:userId::int, :districts::JSON, :regions::JSON, :offices::JSON)";
+    String sqlQuery = "SELECT * FROM brs.util_closer_rep_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
-    parameters.addValue("districts", req.getDistricts());
+    parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
+    parameters.addValue("districts", req.getDistricts());
     parameters.addValue("offices", req.getOffices());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
