@@ -1303,7 +1303,17 @@ public class SmartlistService {
           } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
             selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") || Objects.equals(f.getReferenceTable(), "flow.process_step")) {
-            selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            if (f.getDataTypeId() == 1) {
+              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            } else if(f.getDataTypeId() == 2) {
+              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
+              selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            } else if (f.getDataTypeId() == 7) {
+              selectFields.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            } else {
+              selectFields.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            }
           } else {
             if (f.getDataTypeId() == 1) {
               selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
