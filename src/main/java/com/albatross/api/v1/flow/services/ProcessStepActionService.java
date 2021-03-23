@@ -88,6 +88,7 @@ public class ProcessStepActionService {
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
+    params.put("removeProcessStepOwner", action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
     params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
@@ -146,6 +147,7 @@ public class ProcessStepActionService {
     params.put("processStepId", action.getProcessStepId());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
+    params.put("removeProcessStepOwner", action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
     params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());

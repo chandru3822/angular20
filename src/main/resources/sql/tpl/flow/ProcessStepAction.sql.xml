@@ -151,6 +151,7 @@
     set action_name = :actionName,
         trigger_automatically = :triggerAutomatically,
         multiple_uses = :multipleUses,
+        remove_process_step_owner = :removeProcessStepOwner,
         time_based_trigger = :timeBasedTrigger,
         hidden = :hidden,
         action_type_id = :actionTypeId,
@@ -163,8 +164,8 @@
   ]]></processStepAction.updateAction>
 
   <processStepAction.insertAction><![CDATA[
-    insert into flow.process_step_action(process_step_id, action_name, multiple_uses, trigger_automatically, action_type_id, company_process_step_status_type_id, company_project_status_type_id, created_by_id, archived, display_order, time_based_trigger, hidden)
-     values (:processStepId, :actionName, :multipleUses, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :companyProjectStatusTypeId, :createdById, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true), :timeBasedTrigger, :hidden)
+    insert into flow.process_step_action(process_step_id, action_name, multiple_uses, trigger_automatically, action_type_id, company_process_step_status_type_id, company_project_status_type_id, created_by_id, archived, display_order, time_based_trigger, hidden, remove_process_step_owner)
+     values (:processStepId, :actionName, :multipleUses, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :companyProjectStatusTypeId, :createdById, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true), :timeBasedTrigger, :hidden, :removeProcessStepOwner)
   ]]></processStepAction.insertAction>
 
   <processStepAction.archiveOldLogic><![CDATA[
