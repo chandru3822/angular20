@@ -356,6 +356,7 @@ const newRequirementStructure = {
   processStepId: null,
   operatorTypeId: null,
   dataTypeRequirementId: null,
+  requirementValue: null,
   secondaryRequirement: null,
   secondaryRequirementValue: null,
   isCustomValue: null,
@@ -449,7 +450,7 @@ export default {
       return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSqlKey !== null || this.newRequirement.selectedField.companySystemListId !== null
     },
     isExpandedListField () {
-      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null || this.expandedRequirement.availableListOfValues != null
+      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null || (this.expandedRequirement.availableListOfValues != null && this.expandedRequirement.availableListOfValues.length > 0)
     },
     expandedRequirementArray: {
       get: function () {
@@ -459,10 +460,20 @@ export default {
       set: () => {}
     },
     isSaveNewRequirementDisabled () {
-      return this.newRequirement.dataTypeRequirementId === null && this.newRequirement.listOfValueId === null && this.newRequirement.listOfValueIds.length === 0
+      if (this.newRequirement.isCustomValue) {
+        const isEmptyList = (this.newRequirement.hasListValues === true && this.newRequirement.allowMultiple === false && this.newRequirement.listOfValueId === null) || (this.newRequirement.allowMultiple === true && this.newRequirement.listOfValueIds.length === 0)
+        return (this.newRequirement.requirementValue === null || this.newRequirement.requirementValue?.length === 0) && isEmptyList
+      } else {
+        return this.newRequirement.dataTypeRequirementId === null && this.newRequirement.listOfValueId === null && this.newRequirement.listOfValueIds.length === 0
+      }
     },
     isSaveExpandedRequirementDisabled () {
-      return this.expandedRequirement.dataTypeRequirementId === null && this.expandedRequirement.listOfValueId === null && this.expandedRequirement.listOfValueIds.length === 0
+      if (this.expandedRequirement.isCustomValue) {
+        const isEmptyList = (this.expandedRequirement.hasListValues === true && this.expandedRequirement.allowMultiple === false && this.expandedRequirement.listOfValueId === null) || (this.expandedRequirement.allowMultiple === true && this.expandedRequirement.listOfValueIds.length === 0)
+        return (this.expandedRequirement.requirementValue === null || this.expandedRequirement.requirementValue?.length === 0) && isEmptyList
+      } else {
+        return this.expandedRequirement.dataTypeRequirementId === null && this.expandedRequirement.listOfValueId === null && this.expandedRequirement.listOfValueIds.length === 0
+      }
     }
   },
   methods: {
