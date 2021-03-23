@@ -46,10 +46,15 @@
                 </v-autocomplete>
               </div>
             </div>
+            <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
+              End date must be null or after the start date
+            </div>
             <v-btn color="secondary" class="mr-2"
                    @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
             <v-btn color="primaryCustom" class="white--text mr-2"
-                   :disabled="!newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate )"
+                   :disabled="!newPosition.positionId ||
+                              (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) ||
+                              (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
                    @click="validate(newPosition)">Add</v-btn>
           </v-form>
         </v-card>
@@ -135,8 +140,11 @@
                   </template>
                 </v-autocomplete>
               </div>
+              <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
+                End date must be null or after the start date
+              </div>
               <v-btn color="primaryCustom" class="white--text mr-2"
-                     :disabled="validatePositionFields(item)"
+                     :disabled="item.startDate >= item.endDate || validatePositionFields(item)"
                      v-if="userCanEdit"
                      @click="savePosition(item)">Save</v-btn>
             </td>
@@ -353,41 +361,50 @@
         }
       },
       async savePosition (item) {
-        let itemIndex = this.userPositions.indexOf(item)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addNew = false
+          let itemIndex = this.userPositions.indexOf(item)
 
-        let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
-          return (prev.level > current.level) ? prev : current
-        })
-        let itemId = item.id
-        item.orgId = lowestHierarchy.orgId
-        let params = {
-          ...item,
-          primaryFlag: !itemId && this.userPositions.filter(up => !up.archived).length === 0 ? true : item.primaryFlag,
-          userId: this.userId
-        }
-
-        const {data} = await postRequest(`/userPosition`, params)
-        item = data
-        this.$set(item, 'hierarchy', data.hierarchy)
-        if(item && item.hierarchy) {
-          this.$set(item, 'keyedHierarchy', keyBy(item.hierarchy, 'orgLevelId'))
-          if(!itemId) {
-            this.userPositions.push(item)
-          } else {
-            this.$set(this.userPositions, itemIndex, item)
-          }
-        }
-        if(item.primaryFlag) {
-          //clear out any other primary flags in the ui - the db should have already done it
-          this.userPositions.forEach(up => {
-            if(up.primaryFlag && up.id !== item.id) {
-              up.primaryFlag = false
-            }
+          let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
+            return (prev.level > current.level) ? prev : current
           })
+          let itemId = item.id
+          item.orgId = lowestHierarchy.orgId
+          let params = {
+            ...item,
+            primaryFlag: !itemId && this.userPositions.filter(up => !up.archived).length === 0 ? true : item.primaryFlag,
+            userId: this.userId
+          }
+
+          const {data} = await postRequest(`/userPosition`, params)
+          item = data
+          this.$set(item, 'hierarchy', data.hierarchy)
+          if (item && item.hierarchy) {
+            this.$set(item, 'keyedHierarchy', keyBy(item.hierarchy, 'orgLevelId'))
+            if (!itemId) {
+              this.userPositions.push(item)
+            } else {
+              this.$set(this.userPositions, itemIndex, item)
+            }
+          }
+          if (item.primaryFlag) {
+            //clear out any other primary flags in the ui - the db should have already done it
+            this.userPositions.forEach(up => {
+              if (up.primaryFlag && up.id !== item.id) {
+                up.primaryFlag = false
+              }
+            })
+          }
+          this.newPosition = {}
+          this.addNew = false
+          this.expanded = []
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Position')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.newPosition = {}
-        this.addNew = false
-        this.expanded = []
       },
       isSameLevelAsPosition(f, item) {
         // get hierarchy level to show on screen

@@ -72,31 +72,45 @@ BEGIN
         else
             if v_data_type_id = 1 then
                 update flow.project_process_step_custom_field_value
-                    set date_value = p_value_to_save::date
+                    set date_value = p_value_to_save::date,
+                        modified_by_id = p_user_id,
+                        date_modified = now()
                 where id = v_existing_id;
             elsif v_data_type_id = 2 then
                 update flow.project_process_step_custom_field_value
-                set timestamp_value = p_value_to_save::timestamp
+                set timestamp_value = p_value_to_save::timestamp,
+                    modified_by_id = p_user_id,
+                    date_modified = now()
                 where id = v_existing_id;
             elsif v_data_type_id = 3 then
                 update flow.project_process_step_custom_field_value
-                set boolean_value = p_value_to_save::boolean
+                set boolean_value = p_value_to_save::boolean,
+                    modified_by_id = p_user_id,
+                    date_modified = now()
                 where id = v_existing_id;
             elsif v_data_type_id = 4 then
                 update flow.project_process_step_custom_field_value
-                set numeric_value = p_value_to_save::numeric(10,2)
+                set numeric_value = p_value_to_save::numeric(10,2),
+                    modified_by_id = p_user_id,
+                    date_modified = now()
                 where id = v_existing_id;
             elsif v_data_type_id = 5 then
                 update flow.project_process_step_custom_field_value
-                set text_value = p_value_to_save::text
+                set text_value = p_value_to_save::text,
+                    modified_by_id = p_user_id,
+                    date_modified = now()
                 where id = v_existing_id;
             elsif v_data_type_id = 6 then
                 update flow.project_process_step_custom_field_value
-                set int_value = p_value_to_save::int
+                set int_value = p_value_to_save::int,
+                    modified_by_id = p_user_id,
+                    date_modified = now()
                 where id = v_existing_id;
             elsif v_data_type_id = 7 then
                 update flow.project_process_step_custom_field_value
-                set int_array_value = p_value_to_save::int[]
+                set int_array_value = p_value_to_save::int[],
+                    modified_by_id = p_user_id,
+                    date_modified = now()
                 where id = v_existing_id;
             end if;
         end if;
