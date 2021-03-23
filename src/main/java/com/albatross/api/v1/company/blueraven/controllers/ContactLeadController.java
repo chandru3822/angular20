@@ -139,4 +139,9 @@ public class ContactLeadController {
   public void updateContactSolarLeadFactory(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/insideSales", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactInsideSales(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
