@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_tournament_pool(p_tournament_id integer, p_tournament_pool_type_id integer)
+CREATE OR REPLACE FUNCTION brs.get_tournament_pool_users(p_tournament_id integer, p_tournament_pool_type_id integer)
     RETURNS SETOF json
 AS
 $BODY$
