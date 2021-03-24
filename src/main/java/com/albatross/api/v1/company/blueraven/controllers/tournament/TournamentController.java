@@ -73,6 +73,11 @@ public class TournamentController {
     return tournamentService.addBracket(bracket);
   }
 
+  @PostMapping(value = "/bracket/replicate", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Bracket> replicateBracket(@RequestBody Bracket bracket) {
+    return tournamentService.replicateBracket(bracket);
+  }
+
   @DeleteMapping(value = "/bracket/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteBracket(@PathVariable Long id) {
     tournamentService.deleteBracket(id);
@@ -81,7 +86,7 @@ public class TournamentController {
   //rounds
   @PutMapping(value = "/round", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Bracket> saveRound(@RequestBody Round round) {
-    return tournamentService.saveRound(round);
+    return tournamentService.saveRound(round, false);
   }
 
   @PutMapping(value = "/round/{id}/delete", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -138,6 +138,25 @@ public class TournamentService {
     return getBracket(id);
   }
 
+
+  public Optional<Bracket> replicateBracket(Bracket bracket) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("numberOfUsers", bracket.getNumberOfUsers());
+    params.put("tournamentId", bracket.getTournamentId());
+    params.put("createdById", user.getId());
+
+    Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
+
+    for(Round round : bracket.getRounds()) {
+      round.setTournamentBracketId(id);
+      saveRound(round, true);
+    }
+    return getBracket(id);
+  }
+
+
   public void deleteBracket(Long id) {
     User user = securityService.getCurrentUser();
 
@@ -148,7 +167,7 @@ public class TournamentService {
     sqlCache.update("tournament.deleteBracket", params);
   }
 
-  public Optional<Bracket> saveRound(Round round) {
+  public Optional<Bracket> saveRound(Round round, Boolean replicate) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -157,7 +176,8 @@ public class TournamentService {
     params.put("endDate", round.getEndDate());
     params.put("userId", user.getId());
 
-    if(null != round.getId()) {
+    //if replicating then always insert
+    if(null != round.getId() && !replicate) {
       params.put("id", round.getId());
       sqlCache.update("tournament.updateRound", params);
     } else {

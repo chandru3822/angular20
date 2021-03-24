@@ -87,6 +87,44 @@
                 <span v-else>Cancel</span>
               </v-btn>
               <v-dialog
+                v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')"
+                v-model="b.replicateConfirm"
+                width="500">
+                <template v-slot:activator="{ on }">
+                  <v-btn small text v-on="on">
+                    <v-icon>mdi-content-copy</v-icon>
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title
+                  >
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text>
+                    Are you sure you want to replicate this bracket?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="b.replicateConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="[b.replicateConfirm = false, replicateBracket(b)]">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-dialog
                 v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
                 v-model="b.deleteConfirm"
                 width="500">
@@ -273,7 +311,7 @@
         snackbar: {},
         edit: false,
         rerenderKey: 0,
-        validNumUsers: [2, 4, 8, 16, 32, 64, 128],
+        validNumUsers: [2, 4, 8, 16, 32, 64],
         bracketRerenderKey: 0,
         tournament: {},
         newBracket: {},
@@ -296,6 +334,19 @@
     },
     computed: {},
     methods: {
+      async replicateBracket(b) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/tournament/bracket/replicate`, b, 'blueraven')
+          this.tournament.brackets.push(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Bracket')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getTournamentOwnerTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -354,13 +405,13 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Tournament')
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Bracket')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
           this.bracketError = true
-          this.bracketErrorMsg = 'Number of Users must be 2, 4, 8, 16, 32, 64, or 128'
+          this.bracketErrorMsg = 'Number of Users must be 2, 4, 8, 16, 32, or 64'
         }
       },
       async deleteBracket(id) {
