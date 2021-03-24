@@ -52,6 +52,26 @@ BEGIN
                                  and pd.closer_user_id = p_user_id
                                  and pd.final_design_complete_date between p_start_date and p_end_date
                                  and ccfv.boolean_value is true) * 5))) as cnt;
+            when p_tournament_formula_id = 2 then
+                select *
+                into v_score
+                from (
+                         (select (select count(1) * 2
+                                  from brs.project_details pd
+                                  where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                                    and first_appointment_pitched_id is not null
+                                    and pd.setter_user_id = p_user_id) +
+                                 (select count(1)
+                                  from brs.project_details pd
+                                  where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                                    and pd.first_appointment_missed_id is not null
+                                    and pd.setter_user_id = p_user_id) +
+                                 (select count(1) *-1
+                                  from brs.project_details pd
+                                  where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                                    and pd.first_appointment_not_pitched_or_missed_id is not null
+                                    and pd.setter_user_id = p_user_id))) as cnt;
+
             else
                 v_score = null;
             end case;
@@ -62,5 +82,4 @@ BEGIN
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE;
-
 
