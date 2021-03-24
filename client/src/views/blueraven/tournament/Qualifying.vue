@@ -158,19 +158,16 @@
         }
       },
       async getTournament() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
           this.tournament = data
           this.tournament?.brackets?.forEach(b => {
             this.tournamentUserCount += b.numberOfUsers
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getPool() {
@@ -185,13 +182,16 @@
         }
       },
       async getPoolUsers() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
           this.poolUsers = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
     }
@@ -200,7 +200,7 @@
 
 <style lang="scss">
   #qualifying-pool-container .v-data-table__wrapper {
-    height: calc(100vh - 300px);
+    max-height: calc(100vh - 375px);
     min-height: 300px;
   }
 
@@ -211,6 +211,8 @@
 </style>
 
 <style lang="scss" scoped>
-
+#qualifying-pool-container {
+  padding: 50px;
+}
 </style>
 

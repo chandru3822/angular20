@@ -1,5 +1,5 @@
 <template>
-  <v-container id="winners-pool-container" v-if="!poolLoading">
+  <v-container id="winners-pool-container" v-if="!poolLoading" :class="{'padded-pool': !showWinners}">
     <v-card color="white" flat class="square-card ma-4" v-if="!showWinners">
       <v-toolbar flat class="app-toolbar">
         {{pool.customName || 'Winners'}} <br/>
@@ -145,7 +145,7 @@
 
 <style lang="scss">
   #winners-pool-container .v-data-table__wrapper {
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 375px);
     min-height: 300px;
   }
 
@@ -159,6 +159,10 @@
   #winners-pool-container {
     padding: 0;
     height: calc(100vh - 110px);
+  }
+
+  .padded-pool {
+    padding: 50px !important;
   }
 
   .congrats-card {

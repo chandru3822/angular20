@@ -139,12 +139,14 @@
 
 <style lang="scss">
   #last-chance-pool-container .v-data-table__wrapper {
-    height: calc(100vh - 300px);
+    max-height: calc(100vh - 375px);
     min-height: 300px;
   }
 </style>
 
 <style lang="scss" scoped>
-
+#last-chance-pool-container {
+  padding: 50px;
+}
 </style>
 
