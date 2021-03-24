@@ -4,10 +4,19 @@ $BODY$
 declare
     v_field_saved boolean;
     v_existing_id int;
+    v_date_value_to_save text;
     v_project_process_step_id int;
     v_data_type_id int;
     v_request_is_valid boolean;
 BEGIN
+--     now()
+--     now() AT TIME ZONE 'US/MOUNTAIN'
+--     now() AT TIME ZONE 'US/EASTERN'
+--     2020-11-23
+    if lower(trim(p_value_to_save)) like '%now()%' then
+        EXECUTE 'select ' || p_value_to_save into v_date_value_to_save;
+--         raise notice 'hello world %', v_date_value_to_save;
+    end if;
 
     --check that the project company id and the cfga company id are the same in case the user screwed it up
     select ( select cp.company_id
@@ -49,7 +58,7 @@ BEGIN
     -- 9,System List
             if v_data_type_id = 1 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, p_value_to_save::date, null, null, null, null, null, null, p_user_id);
+                values (v_project_process_step_id, p_cfga, coalesce(v_date_value_to_save::date, p_value_to_save::date), null, null, null, null, null, null, p_user_id);
             elsif v_data_type_id = 2 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
                 values (v_project_process_step_id, p_cfga, null, p_value_to_save::timestamp, null, null, null, null, null, p_user_id);
@@ -72,7 +81,7 @@ BEGIN
         else
             if v_data_type_id = 1 then
                 update flow.project_process_step_custom_field_value
-                    set date_value = p_value_to_save::date,
+                    set date_value = coalesce(v_date_value_to_save::date, p_value_to_save::date),
                         modified_by_id = p_user_id,
                         date_modified = now()
                 where id = v_existing_id;
