@@ -20,7 +20,14 @@ BEGIN
                                            union
                                            select u.first_name || ' ' || u.last_name                        as "fullName",
                                                   u.id                                                      as "userId",
-                                                  false                                                     as "qualified",
+                                                  (select case when tm.id is null then false else true end
+                                                   from brs.tournament_match tm
+                                                            inner join brs.tournament_round tr on tm.tournament_round_id = tr.id
+                                                            inner join brs.tournament_bracket tb on tr.tournament_bracket_id = tb.id
+                                                   where tb.tournament_id = 3
+                                                     and (tm.user_1_id = u.id or tm.user_2_id = u.id)
+                                                   limit 1
+                                                  )                                                         as "qualified",
                                                   brs.get_tournament_user_score(t.tournament_formula_id, tp.start_date,
                                                                                 tp.end_date, u.id::integer) as score
                                            from brs.tournament_pool tp

@@ -47,9 +47,10 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr :class="{'qualified-row': index < tournamentUserCount,'shaded-row': index % 2}">
+          <tr :class="{'qualified-row': !pool.advanced && index < tournamentUserCount,'shaded-row': index % 2}">
             <td :key="selectRerender">
               <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
+              <v-icon color="green" v-else-if="item.qualified">mdi-check-decagram</v-icon>
             </td>
             <td class="text-left">
               {{item.fullName}}
@@ -68,6 +69,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, logError, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import orderBy from "lodash.orderby"
 
   export default {
     name: 'Qualifying',
@@ -117,9 +119,9 @@
     methods: {
       toggleSingleSelect(item) {
         if (item.selected) {
-          this.selectedUsers.push(item.userId)
+          this.selectedUsers.push(item)
         } else {
-          this.selectedUsers = this.selectedUsers.filter(u => u !== item.userId)
+          this.selectedUsers = this.selectedUsers.filter(u => u.userId !== item.userId)
         }
       },
       toggleSelectAllQualifying() {
@@ -127,7 +129,7 @@
         this.poolUsers.forEach((pu, idx) => {
           if (idx < this.tournamentUserCount) {
             pu.selected = true
-            this.selectedUsers.push(pu.userId)
+            this.selectedUsers.push(pu)
           } else {
             pu.selected = false
           }
@@ -136,16 +138,23 @@
         this.selectRerender++
       },
       async advanceSelectedToBracket() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.selectedUsers, 'blueraven')
-          this.pool.advanced = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
+        let seededUsers = orderBy(this.selectedUsers, ['score', 'fullName'], ['desc', 'asc'])
+        let userIds = seededUsers?.map(u => u.userId)
+        if(userIds?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, userIds, 'blueraven')
+            this.pool.advanced = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
           this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getTournament() {
