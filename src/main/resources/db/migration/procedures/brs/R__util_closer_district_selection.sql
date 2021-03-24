@@ -42,7 +42,7 @@ BEGIN
                 where upv.org_id is not null
                   and upv.archived is not true
                   and  case when p_area_ids::text != '[]'::text then
-                                    o3.parent_org_id in (SELECT (elem ->> 'area_id') :: INTEGER
+                                    o2.parent_org_id in (SELECT (elem ->> 'area_id') :: INTEGER
                                                         FROM json_array_elements(p_area_ids) elem)
                             else 1= 1 end
                   and case when p_region_ids::text != '[]'::text then
@@ -76,7 +76,7 @@ BEGIN
                 where upv.org_id is not null
                   and upv.archived is not true
                   and  case when p_area_ids::text != '[]'::text then
-                                    o3.parent_org_id in (SELECT (elem ->> 'area_id') :: INTEGER
+                                    o2.parent_org_id in (SELECT (elem ->> 'area_id') :: INTEGER
                                                         FROM json_array_elements(p_area_ids) elem)
                             else 1= 1 end
                   and case when p_region_ids::text != '[]'::text then
