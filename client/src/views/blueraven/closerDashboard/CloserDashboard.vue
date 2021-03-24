@@ -3037,6 +3037,10 @@
           return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
 
+        this.isCloserDistrictMgr = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+
         let fakeCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
           return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
@@ -3049,19 +3053,21 @@
           positionId = 1
         } else if (this.isCloserMgr) {
           positionId = 2
+        } else if (this.isCloserDistrictMgr) {
+          positionId = 517
         } else if (this.isCloserRegional) {
           positionId = 3
         } else if (fakeCloserMgr) {
           positionId = 326
         }
 
-        if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+        if (this.isCloser || this.isCloserMgr || this.isCloserDistrictMgr || this.isCloserRegional) {
           this.currentUserOrgId = this.$store.state.user.details.userPositions.filter(position => {
             return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
           })[0]?.orgId
         }
 
-        if(fakeCloserMgr) {
+        if(fakeCloserMgr || this.isCloserDistrictMgr) {
           this.isCloserMgr = true
         }
       }
