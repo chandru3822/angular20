@@ -482,6 +482,7 @@
               } else {
                 console.log('randaLogger',img)
                 this.pool.backgroundAttachmentPresignedUrl = img.presignedUrl
+                this.pool.backgroundAttachmentId = img.id
                 this.addImage = false
                 this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

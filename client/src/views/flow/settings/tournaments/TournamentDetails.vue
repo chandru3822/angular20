@@ -235,6 +235,7 @@
                 this.$store.commit(AppMutations.SET_LOADING, false)
               } else {
                 this.tournament.backgroundAttachmentPresignedUrl = img.presignedUrl
+                this.tournament.backgroundAttachmentId = img.id
                 this.addImage = false
                 this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
