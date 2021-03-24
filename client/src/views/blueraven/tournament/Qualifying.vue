@@ -47,7 +47,7 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr :class="{'qualified-row': !pool.advanced && index < tournamentUserCount,'shaded-row': index % 2}">
+          <tr :class="{'qualified-row': !pool.advanced && poolUsers.indexOf(item) < tournamentUserCount,'shaded-row': index % 2}">
             <td :key="selectRerender">
               <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
               <v-icon color="green" v-else-if="item.qualified">mdi-check-decagram</v-icon>
