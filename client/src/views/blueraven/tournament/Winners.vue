@@ -22,7 +22,7 @@
       <v-divider></v-divider>
       <v-data-table
         :headers="headers"
-        :items="pool.users"
+        :items="poolUsers"
         :search="search"
         :fixed-header="true"
         :items-per-page="100"
@@ -87,6 +87,7 @@
         poolLoading: false,
         tournamentId: this.$route.params.id,
         pool: {},
+        poolUsers: [],
         tournamentOver: false,
         winners: [],
         showWinners: false,
@@ -98,11 +99,12 @@
     },
     async created() {
       this.getPool()
+      this.getPoolUsers()
     },
     methods: {
       isWinner(poolUser) {
         if (this.tournamentOver) {
-          let topScore = this.pool?.users[0]?.score || 0
+          let topScore = this.poolUsers[0]?.score || 0
           return (poolUser.score || 0) === topScore
         }
       },
@@ -113,19 +115,27 @@
           this.pool = data
           this.tournamentOver = moment() > moment(this.pool.endDate)
           if(this.tournamentOver) {
-            this.pool.users.forEach(u => {
-              if (this.isWinner(u)) {
-                this.winners.push(u)
-              }
-            })
-            //todo take this out, just testing for 1 user
-            // this.winners = this.pool.users.filter((u, idx) => { return idx === 0})
             this.showWinners = true
           }
           this.poolLoading = false
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching pool details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+      async getPoolUsers() {
+        try {
+          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
+          this.poolUsers = data
+          this.poolUsers.forEach(u => {
+            if (this.isWinner(u)) {
+              this.winners.push(u)
+            }
+          })
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },

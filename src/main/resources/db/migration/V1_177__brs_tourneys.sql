@@ -59,6 +59,9 @@ CREATE TABLE if not exists brs.tournament_formula
 insert into brs.tournament_formula(formula_title, formula_description, tournament_owner_type_id, created_by_id)
 values ('Standard Closer Scoring', 'The standard scoring formula for closers', 1, 2417170);
 
+insert into brs.tournament_formula(formula_title, formula_description, tournament_owner_type_id, created_by_id)
+values ('Standard Setter Scoring', 'The standard scoring formula for setters', 2, 2417170);
+
 CREATE TABLE if not exists brs.tournament
 (
     id                       serial            NOT NULL,

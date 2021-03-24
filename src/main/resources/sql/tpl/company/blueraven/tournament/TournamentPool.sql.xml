@@ -7,33 +7,7 @@
            where a.archived is not true
            and a.attachment_type_id = 915
            and src.source_id = tp.id ) as background_attachment_id,
-           tpt.pool_type,
-           coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(tb)))
-                    FROM (
-                             SELECT tpp.id,
-                                    tpp.position_id as "positionId",
-                                    p.position as "position",
-                                    tpp.tournament_pool_id as "tournamentPoolId",
-                                    tpp.archived
-                             FROM brs.tournament_pool_position tpp
-                                      inner join flow.position p on tpp.position_id = p.id
-                             WHERE tpp.tournament_pool_id = tp.id
-                               AND tpp.archived is not true) tb), '[]') AS "positions",
-           coalesce((
-                        SELECT array_to_json(array_agg(row_to_json(tb)))
-                        FROM (
-                                 SELECT tpu.id,
-                                        tpu.user_id as "userId",
-                                        tpu.qualified,
-                                        concat(u.first_name, ' ', u.last_name) as "fullName",
-                                        tpu.tournament_pool_id as "tournamentPoolId",
-                                        tpu.archived
-                                 FROM brs.tournament_pool_user tpu
-                                    inner join flow."user" u on tpu.user_id = u.id
-                                 WHERE tpu.tournament_pool_id = tp.id
-                                   AND tpu.archived is not true
-                                   order by qualified is not true, "fullName") tb), '[]') AS "users"
+           tpt.pool_type
     from brs.tournament_pool tp
       inner join brs.tournament_pool_type tpt on tp.tournament_pool_type_id = tpt.id
     where tp.tournament_id = :tournamentId

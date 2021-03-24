@@ -23,7 +23,7 @@
       <v-divider></v-divider>
       <v-data-table
         :headers="headers"
-        :items="pool.users"
+        :items="poolUsers"
         :search="search"
         :fixed-header="true"
         :items-per-page="100"
@@ -72,6 +72,7 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         tournamentId: this.$route.params.id,
         pool: {},
+        poolUsers: [],
         selectedUsers: [],
         headers: [
           { text: '', value: 'checkbox', show: true, width: '50px' },
@@ -82,6 +83,7 @@
     },
     async created () {
       this.getPool()
+      this.getPoolUsers()
     },
     methods: {
       toggleSingleSelect(item) {
@@ -119,6 +121,16 @@
           this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getPoolUsers() {
+        try {
+          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
+          this.poolUsers = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
     }

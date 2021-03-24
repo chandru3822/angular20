@@ -1,5 +1,5 @@
 <template>
-    <section id="bracket" :class="{'float-right': reverse}">
+    <section id="bracket" :class="{'opposite': reverse}">
       <div class="container">
         <div class="split split-one">
           <div class="round"
@@ -70,17 +70,17 @@
                 </span>
               </div>
             </div>
-            <ul class="matchup" v-for="(m, i) in r.matches" :class="{'mb-4': idx === 0 && i % 2 !== 0}">
+            <ul class="matchup" v-for="(m, i) in r.matches" :class="{'mb-4': getSpacingByIndex(idx, i)}">
               <v-radio-group v-model="m.winnerUserId">
                 <li class="team team-top" :class="{'current': isCurrentRound(r)}">
                   <v-radio v-if="r.edit && m.user1Id && m.user2Id" :value="m.user1Id" class="d-inline-block"></v-radio>
                   {{m.user1Name}}
-                  <span class="score">{{m.user1Score}}</span>
+                  <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user1Score}}</span>
                 </li>
                 <li class="team team-bottom" :class="{'current': isCurrentRound(r)}">
                   <v-radio small v-if="r.edit && m.user1Id && m.user2Id" :value="m.user2Id" class="d-inline-block"></v-radio>
                   {{m.user2Name}}
-                  <span class="score">{{m.user2Score}}</span></li>
+                  <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user2Score}}</span></li>
               </v-radio-group>
             </ul>
           </div>
@@ -121,6 +121,9 @@
 
     },
     methods: {
+      getSpacingByIndex(roundIndex, matchIndex) {
+        return this.reverse ? roundIndex === this.bracket?.rounds?.length - 1 && matchIndex % 2 !== 0 : roundIndex === 0 && matchIndex % 2 !== 0
+      },
       isCurrentRound(r) {
         this.bracket.firstNonAdvancedRound = this.bracket?.rounds.find(r => !r.advanced)
         return r.id === this.bracket?.firstNonAdvancedRound?.id
@@ -214,6 +217,11 @@
     padding: 8px 0;
   }
 
+  .opposite {
+    float: right !important;
+    padding-right: 20px !important;
+  }
+
   .split {
     display: flex;
     width: 100%;
@@ -229,8 +237,6 @@
     flex-direction: column;
     width: var(--round-width);
   }
-
-  .split-two {}
 
   .split-one .round {
     margin: 0 2.5% 0 0;
