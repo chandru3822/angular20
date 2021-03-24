@@ -16,8 +16,8 @@
 
   <tournamentPool.updatePool><![CDATA[
     update brs.tournament_pool
-    set start_date = :startDate,
-        end_date = :endDate,
+    set start_date = :startDate::date,
+        end_date = :endDate::date,
         custom_name = :customName,
         modified_by_id = :userId,
         date_modified = now()

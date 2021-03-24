@@ -113,7 +113,9 @@
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.pool = data
-          this.tournamentOver = moment() > moment(this.pool.endDate)
+          console.log('randaLogger',this.pool.endDate)
+          console.log('randaLogger',moment(this.pool.endDate).endOf('day'))
+          this.tournamentOver = moment() > moment(this.pool.endDate).endOf('day')
           if(this.tournamentOver) {
             this.showWinners = true
           }
