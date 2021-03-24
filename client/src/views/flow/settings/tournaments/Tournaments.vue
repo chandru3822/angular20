@@ -47,7 +47,7 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId" @click="addTournament">Save</v-btn>
+            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId" @click="addTournament">Save</v-btn>
             <v-btn class="ml-2" @click="[newTournament = {}, addNew = false]">Cancel</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
@@ -171,6 +171,7 @@
         this.$router.push({path: `/settings/tournaments/${id}/details`})
       },
       async getTournamentFormulas() {
+        this.newTournament.tournamentFormulaId = null
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/formulas/${this.newTournament.tournamentOwnerTypeId}`, 'blueraven')

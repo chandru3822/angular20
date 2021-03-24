@@ -66,7 +66,7 @@
               <v-btn
                 color="primary"
                 class="white--text"
-                :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || !tournament.tournamentOwnerTypeId"
+                :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId"
                 @click="updateTournament">Save
               </v-btn>
               <v-btn class="ml-2" @click="edit = false">Cancel</v-btn>
