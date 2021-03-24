@@ -38,8 +38,8 @@ public class TournamentPoolController {
   }
 
   @GetMapping(value = "/usersByType/{poolTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<TournamentPoolUser> getTournamentPoolUsers(@PathVariable Long tournamentId,
-                                                         @PathVariable Long poolTypeId) {
+  public String getTournamentPoolUsers(@PathVariable Long tournamentId,
+                                       @PathVariable Long poolTypeId) {
     return tournamentPoolService.getPoolUsers(tournamentId, poolTypeId);
   }
 

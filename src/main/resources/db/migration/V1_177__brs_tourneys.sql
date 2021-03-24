@@ -1,11 +1,14 @@
 -- drop table brs.tournament_owner_type;
+-- drop table brs.tournament_formula;
 -- drop table brs.tournament;
--- drop table brs.tournament_round;
 -- drop table brs.tournament_bracket;
+-- drop table brs.tournament_round;
 -- drop table brs.tournament_match;
 -- drop table brs.tournament_pool_type;
 -- drop table brs.tournament_pool;
 -- drop table brs.tournament_pool_user;
+-- drop table brs.tournament_pool_position;
+-- drop table brs.tournament_seed_position;
 
 CREATE TABLE if not exists brs.tournament_owner_type
 (
@@ -52,6 +55,9 @@ CREATE TABLE if not exists brs.tournament_formula
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+insert into brs.tournament_formula(formula_title, formula_description, tournament_owner_type_id, created_by_id)
+values ('Standard Closer Scoring', 'The standard scoring formula for closers', 1, 2417170);
 
 CREATE TABLE if not exists brs.tournament
 (
@@ -109,8 +115,8 @@ CREATE TABLE if not exists brs.tournament_round
 (
     id                    serial  NOT NULL,
     tournament_bracket_id integer NOT NULL,
-    start_date            timestamp without time zone,
-    end_date              timestamp without time zone,
+    start_date            date,
+    end_date              date,
     date_created          timestamp without time zone DEFAULT now(),
     date_modified         timestamp without time zone,
     created_by_id         integer not null,
@@ -196,8 +202,8 @@ CREATE TABLE if not exists brs.tournament_pool
     custom_name             varchar(255),
     tournament_id           integer NOT NULL,
     tournament_pool_type_id integer NOT NULL,
-    start_date              timestamp without time zone,
-    end_date                timestamp without time zone,
+    start_date              date,
+    end_date                date,
     advanced                boolean not null            default false,
     date_created            timestamp without time zone DEFAULT now(),
     date_modified           timestamp without time zone,

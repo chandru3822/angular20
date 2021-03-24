@@ -59,13 +59,13 @@ public class TournamentPoolService {
     sqlCache.update("tournamentPool.updatePool", params);
   }
 
-  public List<TournamentPoolUser> getPoolUsers(Long tournamentId, Long tournamentPoolTypeId) {
+  public String getPoolUsers(Long tournamentId, Long tournamentPoolTypeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolTypeId", tournamentPoolTypeId);
-    List<TournamentPoolUser> result = sqlCache.query("tournamentPool.getPoolUsers", params, TournamentPoolUser.class);
+    String result = sqlCache.queryForObject("tournamentPool.getPoolUsers", params, String.class);
     return result;
   }
 
