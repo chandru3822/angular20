@@ -7,7 +7,7 @@ BEGIN
     RETURN QUERY select array_to_json(array_agg(row_to_json(pools)))
                  from (
                           select u.first_name || ' ' || u.last_name as "fullName",
-                                 u.id                               as "useriId",
+                                 u.id                               as "userId",
                                  brs.get_tournament_user_score(t.tournament_formula_id, tp.start_date,
                                                                tp.end_date, u.id::integer) as score
                           from brs.tournament_pool tp
@@ -18,7 +18,7 @@ BEGIN
                             and tp.tournament_pool_type_id = p_tournament_pool_type_id
                           union
                           select u.first_name || ' ' || u.last_name as "fullName",
-                                 u.id                               as "useriId",
+                                 u.id                               as "userId",
                                  brs.get_tournament_user_score(t.tournament_formula_id, tp.start_date,
                                                                tp.end_date, u.id::integer) as score
                           from brs.tournament_pool tp
@@ -33,7 +33,7 @@ BEGIN
                           where tp.tournament_id = p_tournament_id
                             and tp.tournament_pool_type_id = p_tournament_pool_type_id
                           group by 1, 2, t.tournament_formula_id, tp.start_date, tp.end_date
-                         order by 3 desc) as pools;
+                         order by 3 desc, 1) as pools;
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE;

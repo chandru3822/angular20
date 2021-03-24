@@ -293,3 +293,130 @@ CREATE TABLE if not exists brs.tournament_seed_position
     bottom_seed     integer NOT NULL,
     CONSTRAINT brs_tournament_seed_position_pk PRIMARY KEY (id)
 );
+-- add tournament match seeding stuff
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (2, 1, 1, 2);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (4, 1, 1, 4);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (4, 2, 3, 2);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (8, 1, 1, 8);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (8, 2, 4, 5);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (8, 3, 3, 6);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (8, 4, 2, 7);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 1, 1, 16);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 2, 8, 9);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 3, 4, 13);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 4, 5, 12);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 5, 6, 11);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 6, 3, 14);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 7, 7, 10);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (16, 8, 2, 15);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 1, 1, 32);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 2, 16, 17);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 3, 9, 24);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 4, 8, 25);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 5, 4, 29);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 6, 13, 20);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 7, 12, 21);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 8, 5, 28);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 9, 6, 27);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 10, 11, 22);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 11, 14, 19);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 12, 3, 30);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 13, 7, 26);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 14, 10, 23);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 15, 15, 18);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (32, 16, 2, 31);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 1, 1, 64);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 2, 32, 33);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 3, 17, 48);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 4, 16, 49);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 5, 9, 56);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 6, 24, 41);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 7, 25, 40);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 8, 8, 57);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 9, 5, 60);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 10, 28, 37);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 11, 21, 44);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 12, 12, 53);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 13, 13, 52);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 14, 20, 45);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 15, 29, 36);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 16, 4, 61);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 17, 6, 59);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 18, 27, 38);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 19, 22, 43);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 20, 11, 54);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 21, 14, 51);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 22, 19, 46);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 23, 30, 35);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 24, 3, 62);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 25, 7, 58);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 26, 26, 39);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 27, 23, 42);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 28, 10, 55);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 29, 15, 50);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 30, 18, 47);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 31, 31, 34);
+insert into brs.tournament_seed_position(number_of_users, match_number, top_seed, bottom_seed)
+values (64, 32, 2, 63);
