@@ -54,9 +54,9 @@ BEGIN
 
     -- set all users as "qualified" so we can show that in the future
     update brs.tournament_pool_user
-        set qualified = true
+    set qualified = true
     where user_id in ( select unnest(array[ p_user_ids ]::int[] ) )
-        and tournament_pool_id = p_tournament_pool_id;
+      and tournament_pool_id = p_tournament_pool_id;
 
     -- after advancing the qualifiers add all the non-qualified to the loser pool
     with all_pool_users as (
@@ -89,12 +89,13 @@ BEGIN
         order by full_name
     )
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
-    (select apu.user_id,
-            ( select id from brs.tournament_pool where tournament_id = p_tournament_id and tournament_pool_type_id = 2),
-              now(), p_user_id
-     from all_pool_users apu
-       where apu.user_id not in ( select unnest(array[ p_user_ids ]::int[] ) )
-         and apu.archived is not true);
+
+        (select apu.user_id,
+                ( select id from brs.tournament_pool where tournament_id = p_tournament_id and tournament_pool_type_id = 2),
+                now(), p_user_id
+         from all_pool_users apu
+         where apu.user_id not in ( select unnest(array[ p_user_ids ]::int[] ) )
+           and apu.archived is not true);
 
 
 END

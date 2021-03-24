@@ -1,28 +1,32 @@
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 
-export async function getCloserDistricts (userId, setterOverride) {
-  const params = {userId, setterOverride}
-  const {data} = await getRequestWithParams('/closerDashboard/getDistricts', {params}, 'blueraven')
+export async function getCloserAreas (userId, setterOverride) {
+  const requestBody = {userId, setterOverride}
+  const {data} = await postRequest('/closerDashboard/getAreas', requestBody, 'blueraven')
   return data
 }
 
-export async function getCloserRegions (userId, districts, setterOverride) {
-  districts = encodeURI(districts)
-  const params = {userId, districts, setterOverride}
-  const {data} = await getRequestWithParams('/closerDashboard/getRegions', {params}, 'blueraven')
+export async function getCloserRegions (userId, areas, setterOverride) {
+  const requestBody = {userId, areas, setterOverride}
+  const {data} = await postRequest('/closerDashboard/getRegions', requestBody, 'blueraven')
   return data
 }
 
-export async function getCloserOffices (userId, districts, regions, setterOverride) {
-  districts = encodeURI(districts)
-  regions = encodeURI(regions)
-  const params = {userId, regions, districts, setterOverride}
-  const {data} = await getRequestWithParams('/closerDashboard/getOffices', {params}, 'blueraven')
+export async function getCloserDistricts (userId, areas, regions, setterOverride) {
+  const requestBody = {userId, areas, regions}
+  const {data} = await postRequest('/closerDashboard/getDistricts', requestBody, 'blueraven')
   return data
 }
 
-export async function getCloserReps (userId, districts, regions, offices) {
-  const requestBody = {userId, districts, regions, offices}
+
+export async function getCloserOffices (userId, areas, regions, districts, setterOverride) {
+  const requestBody = {userId, areas, regions, districts, setterOverride}
+  const {data} = await postRequest('/closerDashboard/getOffices', requestBody, 'blueraven')
+  return data
+}
+
+export async function getCloserReps (userId, areas, regions, districts, offices) {
+  const requestBody = {userId, areas, regions, districts, offices}
   const {data} = await postRequest('/closerDashboard/getReps', requestBody, 'blueraven')
   return data
 }
