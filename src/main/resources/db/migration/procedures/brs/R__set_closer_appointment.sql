@@ -99,11 +99,12 @@ BEGIN
         select up.id
         into v_user_position_id
         from flow.user_position up
-                 inner join flow.custom_field cf on up.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
+                 inner join flow.position p on up.position_id = p.id
+                 inner join flow.custom_field cf on up.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959 and p.company_id = cf.company_id
         where up.user_id = v_user_id
           and up.primary_flag is true
-         and up.archived is false
-        and cf.archived is false;
+          and up.archived is false
+          and cf.archived is false;
 
         select count(1)
         into v_user_already_assigned
