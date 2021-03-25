@@ -25,8 +25,8 @@ BEGIN
       and up.end_date is null
       and up.primary_flag is true;
 
-    -- org_level_id of 6 = Office
-    case when (v_org_level_id < 6) OR (5 = any (v_current_position_ids)) then ---- Corporate and Regional
+    -- org_level_id of 7 = Office
+    case when (v_org_level_id < 7) OR (5 = any (v_current_position_ids)) then ---- Corporate and Regional
         RETURN QUERY
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (

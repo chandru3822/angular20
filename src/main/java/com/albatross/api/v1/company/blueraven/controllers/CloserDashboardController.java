@@ -74,25 +74,24 @@ public class CloserDashboardController {
     return closerDashboardService.apptsCreatedPipelineDrilldown(funnelRequest);
   }
 
-  @GetMapping(value = "/getDistricts")
-  public String getDistricts(@RequestParam int userId,
-                             @RequestParam Boolean setterOverride) {
-    return closerDashboardService.getDistricts(userId, setterOverride);
+  @PostMapping(value = "/getAreas")
+  public String getAreas(@RequestBody DashboardUserRequest request) {
+    return closerDashboardService.getAreas(request);
   }
 
-  @GetMapping(value = "/getRegions")
-  public String getRegions(@RequestParam int userId,
-                           @RequestParam String districts,
-                           @RequestParam Boolean setterOverride) {
-    return closerDashboardService.getRegions(userId, districts, setterOverride);
+  @PostMapping(value = "/getRegions")
+  public String getRegions(@RequestBody DashboardUserRequest request) {
+    return closerDashboardService.getRegions(request);
   }
 
-  @GetMapping(value = "/getOffices")
-  public String getOffices(@RequestParam int userId,
-                           @RequestParam String districts,
-                           @RequestParam String regions,
-                           @RequestParam Boolean setterOverride) {
-    return closerDashboardService.getOffices(userId, districts, regions, setterOverride);
+  @PostMapping(value = "/getDistricts")
+  public String Districts(@RequestBody DashboardUserRequest request) {
+    return closerDashboardService.getDistricts(request);
+  }
+
+  @PostMapping(value = "/getOffices")
+  public String getOffices(@RequestBody DashboardUserRequest request) {
+    return closerDashboardService.getOffices(request);
   }
 
   @PostMapping(value = "/getReps")

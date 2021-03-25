@@ -197,28 +197,28 @@
         <!-- DROPDOWNS -->
         <div id="pipeline-header-right-side">
           <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
-                          ref="districtSelect"
-                          v-model="districtModel"
-                          :items="districtData"
+                          ref="areaSelect"
+                          v-model="areaModel"
+                          :items="areaData"
                           item-text="org_name"
                           item-value="org_id"
-                          label="District"
-                          no-data-text="No districts available"
+                          label="Area"
+                          no-data-text="No areas available"
                           outlined
                           multiple
                           dense
                           hide-details
-                          @input="districtValuesChanged = true"
+                          @input="areaValuesChanged = true"
                           return-object>
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
-                {{ districtModel.length }} Checked
+                {{ areaModel.length }} Checked
               </span>
             </template>
-            <template v-if="districtData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="[districtValuesChanged = true, toggleSelectAllDistricts()]">
+            <template v-if="areaData.length > 0" v-slot:prepend-item>
+              <v-list-item @click="[areaValuesChanged = true, toggleSelectAllAreas()]">
                 <v-list-item-action class="mr-2">
-                  <v-icon>{{ districtSelectIcon }}</v-icon>
+                  <v-icon>{{ areaSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
                   <v-list-item-title>Select All</v-list-item-title>
@@ -262,6 +262,49 @@
               <v-list-item @click="[regionValuesChanged = true, toggleSelectAllRegions()]">
                 <v-list-item-action class="mr-2">
                   <v-icon>{{ regionSelectIcon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template v-slot:item="data">
+              <v-list-item-action class="mr-2">
+                <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                <v-icon v-else>check_box_outline_blank</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                  {{ data.item.org_name }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </template>
+          </v-autocomplete>
+
+          <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          ref="districtSelect"
+                          v-model="districtModel"
+                          :items="districtData"
+                          item-text="org_name"
+                          item-value="org_id"
+                          label="District"
+                          no-data-text="No districts available"
+                          outlined
+                          multiple
+                          dense
+                          hide-details
+                          @input="districtValuesChanged = true"
+                          return-object>
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index === 0" class="grey--text caption">
+                {{ districtModel.length }} Checked
+              </span>
+            </template>
+            <template v-if="districtData.length > 0" v-slot:prepend-item>
+              <v-list-item @click="[districtValuesChanged = true, toggleSelectAllDistricts()]">
+                <v-list-item-action class="mr-2">
+                  <v-icon>{{ districtSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
                   <v-list-item-title>Select All</v-list-item-title>
@@ -1142,7 +1185,7 @@
   import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
-  import { getCloserDistricts, getCloserRegions, getCloserOffices, getCloserReps } from '@/services/dashboardService'
+  import { getCloserAreas, getCloserRegions, getCloserDistricts, getCloserOffices, getCloserReps } from '@/services/dashboardService'
 
   export default {
     name: 'closerDashboard',
@@ -1234,10 +1277,12 @@
         brsProvidedSourceData: [],
         selfGenSourceModel: [],
         selfGenSourceData: [],
-        districtModel: [],
-        districtData: [],
+        areaModel: [],
+        areaData: [],
         regionModel: [],
         regionData: [],
+        districtModel: [],
+        districtData: [],
         officeModel: [],
         officeData: [],
         repModel: [],
@@ -1268,8 +1313,9 @@
         //if we allow users to "Select All" when there are more than this the UI slows to a halt
         maxRepLimit: 1000,
         //without these the ui keeps reloading the dropdowns when nothing has changed
-        districtValuesChanged: false,
+        areaValuesChanged: false,
         regionValuesChanged: false,
+        districtValuesChanged: false,
         officeValuesChanged: false,
         repValuesChanged: false,
         apptsToFdcPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
@@ -1379,17 +1425,17 @@
         }
         return 'check_box_outline_blank'
       },
-      selectAllDistricts () {
-        return this.districtModel.length === this.districtData.length
+      selectAllAreas () {
+        return this.areaModel.length === this.areaData.length
       },
-      selectSomeDistricts () {
-        return this.districtModel.length > 0 && !this.selectAllDistricts
+      selectSomeAreas () {
+        return this.areaModel.length > 0 && !this.selectAllAreas
       },
-      districtSelectIcon () {
-        if (this.districtModel.length === this.districtData.length) {
+      areaSelectIcon () {
+        if (this.areaModel.length === this.areaData.length) {
           return 'check_box'
         }
-        if (this.selectSomeDistricts) {
+        if (this.selectSomeAreas) {
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
@@ -1405,6 +1451,21 @@
           return 'check_box'
         }
         if (this.selectSomeRegions) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllDistricts () {
+        return this.districtModel.length === this.districtData.length
+      },
+      selectSomeDistricts () {
+        return this.districtModel.length > 0 && !this.selectAllDistricts
+      },
+      districtSelectIcon () {
+        if (this.districtModel.length === this.districtData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeDistricts) {
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
@@ -2108,13 +2169,15 @@
 
         if (this.apptsToFdcPipelineData?.length === 0) {
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-            await this.districtLoad(true)
+            await this.areaLoad(true)
             await this.regionLoad(true, true)
+            await this.districtLoad(true, true)
             await this.officeLoad(true, true)
             this.repLoad(true)
           } else {
-            await this.districtLoad(false)
+            await this.areaLoad(false)
             await this.regionLoad(false, true)
+            await this.districtLoad(false, true)
             await this.officeLoad(false, true)
             this.repLoad(false)
           }
@@ -2122,6 +2185,7 @@
       },
 
       funnelAllReps () {
+        this.areaModel = []
         this.districtModel = []
         this.regionModel = []
         this.officeModel = []
@@ -2314,23 +2378,24 @@
         }
       },
 
-      async districtLoad (preSelectLists) {
+      async areaLoad (preSelectLists) {
         if (!this.currentUserId) return
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserDistricts(this.currentUserId, false).then(res => {
+        await getCloserAreas(this.currentUserId, false).then(res => {
           if (res?.length > 0) {
-            this.districtData = res
+            this.areaData = res
           }
 
           if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
-            this.districtModel = this.districtData.filter(od => od.active)
+            this.areaModel = this.areaData.filter(od => od.active)
           } else if (preSelectLists) {
-            this.districtModel = cloneDeep(this.districtData)
+            this.areaModel = cloneDeep(this.areaData)
           }
 
-          // reset these values when the districts change
+          // reset these values when the areas change
           this.regionModel = []
+          this.districtModel = []
           this.officeModel = []
           this.repModel = []
 
@@ -2350,9 +2415,9 @@
       async regionLoad (preSelectLists, loadedFromHigher) {
         if (!this.currentUserId) return
 
-        let districts = this.districtModel.map(function (district) {
+        let areas = this.areaModel.map(function (area) {
           return {
-            district_id: district.org_id
+            area_id: area.org_id
           }
         })
 
@@ -2369,12 +2434,13 @@
         // }
 
         // reset these values when the regions change
+        this.districtModel = []
         this.officeModel = []
         this.repModel = []
 
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserRegions(this.currentUserId, JSON.stringify(districts), false).then(res => {
+        await getCloserRegions(this.currentUserId, JSON.stringify(areas), false).then(res => {
           this.regionData = res
 
 
@@ -2385,7 +2451,7 @@
           }
 
           if (!this.initialPageLoad) {
-            this.officeLoad(preSelectLists, true)
+            this.districtLoad(preSelectLists, true)
             // this.repLoad(preSelectLists, true)
           }
         })
@@ -2394,18 +2460,70 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
-      async officeLoad (preSelectLists, loadedFromHigher) {
+      async districtLoad (preSelectLists, loadedFromHigher) {
         if (!this.currentUserId) return
 
-        let districts = this.districtModel.map(function (district) {
+        let areas = this.areaModel.map(function (area) {
           return {
-            district_id: district.org_id
+            area_id: area.org_id
           }
         })
 
         let regions = this.regionModel.map(function (region) {
           return {
             region_id: region.org_id
+          }
+        })
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getCloserDistricts(this.currentUserId, JSON.stringify(areas), JSON.stringify(regions), false).then(res => {
+          if (res?.length > 0) {
+            this.districtData = res
+          }
+
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
+            this.districtModel = this.districtData.filter(od => od.active)
+          } else if (preSelectLists) {
+            this.districtModel = cloneDeep(this.districtData)
+          }
+
+          // reset these values when the districts change
+          // this.regionModel = []
+          this.officeModel = []
+          this.repModel = []
+
+          if (!this.initialPageLoad) {
+            this.officeLoad(preSelectLists, true)
+            // this.officeLoad(preSelectLists, true)
+            // this.repLoad(preSelectLists, true)
+          }
+        })
+
+
+        this.apptsToFdcPipelineData = []
+        this.apptsToFdcPipelineLoaded = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+
+      async officeLoad (preSelectLists, loadedFromHigher) {
+        if (!this.currentUserId) return
+
+
+        let areas = this.areaModel.map(function (area) {
+          return {
+            area_id: area.org_id
+          }
+        })
+
+        let regions = this.regionModel.map(function (region) {
+          return {
+            region_id: region.org_id
+          }
+        })
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
           }
         })
 
@@ -2423,7 +2541,7 @@
         this.repModel = []
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserOffices(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), false).then(res => {
+        await getCloserOffices(this.currentUserId, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
           this.officeData = res
 
           if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
@@ -2446,15 +2564,21 @@
       async repLoad (preSelectLists) {
         if (!this.currentUserId) return
 
-        let districts = this.districtModel.map(function (district) {
+        let areas = this.areaModel.map(function (area) {
           return {
-            district_id: district.org_id
+            area_id: area.org_id
           }
         })
 
         let regions = this.regionModel.map(function (region) {
           return {
             region_id: region.org_id
+          }
+        })
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
           }
         })
 
@@ -2473,7 +2597,7 @@
         // }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserReps(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), JSON.stringify(offices)).then(res => {
+        await getCloserReps(this.currentUserId,  JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
           this.repData = res
 
           this.repDataMaster = cloneDeep(res)
@@ -2805,19 +2929,21 @@
         })
       },
 
-      toggleSelectAllDistricts () {
+      toggleSelectAllAreas () {
         this.$nextTick(() => {
-          if (this.selectAllDistricts) {
-            this.districtModel = []
+          if (this.selectAllAreas) {
+            this.areaModel = []
             this.regionData = []
             this.regionModel = []
+            this.districtData = []
+            this.districtModel = []
             this.officeData = []
             this.officeModel = []
             this.repData = []
             this.repModel = []
             this.apptsToFdcPipelineData = []
           } else {
-            this.districtModel = cloneDeep(this.districtData)
+            this.areaModel = cloneDeep(this.areaData)
             this.repModel = [] // in case the user previously clicked the 'All Reps' button
             // this.regionLoad(false)
           }
@@ -2836,6 +2962,25 @@
           } else {
             this.regionModel = cloneDeep(this.regionData)
             // this.officeLoad(false)
+          }
+        })
+      },
+
+      toggleSelectAllDistricts () {
+        this.$nextTick(() => {
+          if (this.selectAllDistricts) {
+            this.districtModel = []
+            this.regionData = []
+            this.regionModel = []
+            this.officeData = []
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.apptsToFdcPipelineData = []
+          } else {
+            this.districtModel = cloneDeep(this.districtData)
+            // this.repModel = [] // in case the user previously clicked the 'All Reps' button
+            // this.regionLoad(false)
           }
         })
       },
@@ -2892,6 +3037,10 @@
           return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
 
+        this.isCloserDistrictMgr = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+
         let fakeCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
           return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
@@ -2904,19 +3053,21 @@
           positionId = 1
         } else if (this.isCloserMgr) {
           positionId = 2
+        } else if (this.isCloserDistrictMgr) {
+          positionId = 517
         } else if (this.isCloserRegional) {
           positionId = 3
         } else if (fakeCloserMgr) {
           positionId = 326
         }
 
-        if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+        if (this.isCloser || this.isCloserMgr || this.isCloserDistrictMgr || this.isCloserRegional) {
           this.currentUserOrgId = this.$store.state.user.details.userPositions.filter(position => {
             return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
           })[0]?.orgId
         }
 
-        if(fakeCloserMgr) {
+        if(fakeCloserMgr || this.isCloserDistrictMgr) {
           this.isCloserMgr = true
         }
       }
@@ -2932,12 +3083,12 @@
       //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
       //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
       //this sucks but fixes that issue re: https://github.com/vuetifyjs/vuetify/issues/11488
-      this.myDynamicDistrictWatcher = this.$watch(
-        () => this.$refs.districtSelect.isMenuActive,
+      this.myDynamicAreaWatcher = this.$watch(
+        () => this.$refs.areaSelect.isMenuActive,
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
           if(!val) {
-            if(this.districtValuesChanged) {
+            if(this.areaValuesChanged) {
               // reset these values when the districts change
               this.regionModel = []
               this.officeModel = []
@@ -2946,7 +3097,7 @@
               this.regionLoad(false)
               // this.officeLoad(false)
               // this.repLoad(false)
-              this.districtValuesChanged = false
+              this.areaValuesChanged = false
             }
           }
         })
@@ -2957,12 +3108,30 @@
           if(!val) {
             if(this.regionValuesChanged) {
               // reset these values when the regions change
+              this.districtModel = []
+              this.officeModel = []
+              this.repModel = []
+              this.repDataSelectAll = false
+              this.districtLoad(false)
+              // this.repLoad(false)
+              this.regionValuesChanged = false
+            }
+          }
+        })
+      this.myDynamicDistrictWatcher = this.$watch(
+        () => this.$refs.districtSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val) {
+            if(this.districtValuesChanged) {
+              // reset these values when the districts change
               this.officeModel = []
               this.repModel = []
               this.repDataSelectAll = false
               this.officeLoad(false)
+              // this.officeLoad(false)
               // this.repLoad(false)
-              this.regionValuesChanged = false
+              this.districtValuesChanged = false
             }
           }
         })
