@@ -8,5 +8,6 @@ import lombok.Data;
 @Data
 public class DashboardUserRequest {
     private Long userId;
-    private String districts, regions, offices;
+    private String areas, regions, districts, offices;
+    private Boolean setterOverride;
 }
