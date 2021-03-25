@@ -103,8 +103,7 @@ BEGIN
                (upv.end_date IS NULL OR upv.end_date > now()))
         order by full_name
     )
-    insert
-    into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
         (select apu.user_id,
                 (select id
                  from brs.tournament_pool

@@ -93,6 +93,9 @@ BEGIN
         end if;
     end loop;
     drop table matches;
+    update brs.tournament_bracket
+        set matches_generated = true
+    where id = p_tournament_bracket_id;
 END
 
 $BODY$

@@ -300,12 +300,77 @@ export default new Router({
               return accessDenied()
             }
           },
-        }, {
+        },
+      //TOURNAMENT STUFF
+      {
+        path: '/tournament/:id',
+        name: 'tournament',
+        props: true,
+        component: () => {
+          if (store.getters.userHasFeature('TOURNAMENTS')) {
+            return import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Tournament.vue')
+          } else {
+            return accessDenied()
+          }
+        },
+        children: [
+          {
+            path: 'qualifying',
+            name: 'tournamentQualifying',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Qualifying.vue')
+          },
+          {
+            path: 'bracket',
+            name: 'tournamentBracket',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Bracket.vue')
+          },
+          {
+            path: 'lastChance',
+            name: 'tournamentLastChance',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/LastChance.vue')
+          },
+          {
+            path: 'winners',
+            name: 'tournamentWinners',
+            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
+          }
+        ]
+      },
+      //END TOURNAMENT STUFF
+
+      {
           path: '/settings',
           name: 'settings',
           meta: {title: 'Albatross - Settings'},
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
+            {
+              path: 'tournaments',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournaments.vue'),
+            },
+            {
+              path: 'tournaments/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournament.vue'),
+              children: [
+                {
+                  path: 'details',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/TournamentDetails.vue'),
+                },
+                {
+                  path: 'brackets',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Bracket.vue'),
+                },
+                {
+                  path: 'pool/:poolTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Pool.vue'),
+                },
+              ]
+            },
             {
               path: 'states',
               meta: {title: 'Albatross - Settings'},
