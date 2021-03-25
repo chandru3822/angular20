@@ -14,7 +14,8 @@ BEGIN
     into v_number_of_users
     from brs.tournament t
              inner join brs.tournament_bracket tb on tb.tournament_id = t.id
-    where t.id = p_tournament_id;
+    where t.id = p_tournament_id
+    and tb.archived is not true;
     -- set the pool as advanced so the frontend knows not to allow them to do it again
     update brs.tournament_pool
     set advanced       = true,
