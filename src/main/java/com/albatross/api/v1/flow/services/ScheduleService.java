@@ -4,10 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ScheduleController;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.ScheduleAvailability;
-import com.albatross.api.v1.flow.model.ScheduleEvent;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -70,6 +68,14 @@ public class ScheduleService {
     params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.query("schedule.getEvents", params, ScheduleEvent.class);
     return results;
+  }
+
+  public Optional<ProjectWithEvents> getEventsByProject(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    Optional<ProjectWithEvents> result = sqlCache.get("schedule.getEventsByProject", params, new ProjectWithEventsMapper<>(ProjectWithEvents.class, om));
+    return result;
   }
 
   public List<ScheduleAvailability> getAvailabilityForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
@@ -210,6 +216,22 @@ public class ScheduleService {
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "systemListOptionIds",
         new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+    }
+  }
+
+  public static class ProjectWithEventsMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProjectWithEventsMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ProjectWithEvents.ProjectEvent>> eventsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "events",
+          new JsonCollectionDeserializer(eventsRef, objectMapper));
     }
   }
 

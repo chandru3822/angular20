@@ -16,6 +16,7 @@ BEGIN
                                                     inner join brs.tournament_pool_user tpu on tp.id = tpu.tournament_pool_id
                                                     inner join flow.user u on u.id = tpu.user_id
                                            where tp.tournament_id = p_tournament_id
+                                             and tpu.archived is not true
                                              and tp.tournament_pool_type_id = p_tournament_pool_type_id
                                            union
                                            select u.first_name || ' ' || u.last_name                        as "fullName",
@@ -24,7 +25,7 @@ BEGIN
                                                    from brs.tournament_match tm
                                                             inner join brs.tournament_round tr on tm.tournament_round_id = tr.id
                                                             inner join brs.tournament_bracket tb on tr.tournament_bracket_id = tb.id
-                                                   where tb.tournament_id = 3
+                                                   where tb.tournament_id = p_tournament_id
                                                      and (tm.user_1_id = u.id or tm.user_2_id = u.id)
                                                    limit 1
                                                   )                                                         as "qualified",
@@ -41,6 +42,7 @@ BEGIN
                                                                                         up.archived is not true
                                                     inner join flow.user u on u.id = up.user_id
                                            where tp.tournament_id = p_tournament_id
+                                             and tpu.archived is not true
                                              and tp.tournament_pool_type_id = p_tournament_pool_type_id
                                            group by 1, 2, 3, t.tournament_formula_id, tp.start_date, tp.end_date
                                            order by 4 desc nulls last, 1) as pools), '[]') as pools;
