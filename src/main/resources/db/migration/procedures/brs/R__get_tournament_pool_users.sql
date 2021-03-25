@@ -24,7 +24,7 @@ BEGIN
                                                    from brs.tournament_match tm
                                                             inner join brs.tournament_round tr on tm.tournament_round_id = tr.id
                                                             inner join brs.tournament_bracket tb on tr.tournament_bracket_id = tb.id
-                                                   where tb.tournament_id = 3
+                                                   where tb.tournament_id = p_tournament_id
                                                      and (tm.user_1_id = u.id or tm.user_2_id = u.id)
                                                    limit 1
                                                   )                                                         as "qualified",
