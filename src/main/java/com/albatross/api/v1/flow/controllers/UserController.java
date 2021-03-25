@@ -77,6 +77,11 @@ public class UserController {
         return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 
+    @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getAllActiveUsers() {
+      return userService.getAllActiveUsers();
+    }
+
     @GetMapping(value = "/getSchedulingUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<User> getSchedulingUsers(@RequestParam(required = false) Long companyStateId,
                                          @RequestParam Boolean isSchedulingTool) {

@@ -1,0 +1,92 @@
+<sql>
+  <tournamentPool.getDetails><![CDATA[
+    select tp.*,
+    ( select a.id
+            from flow.attachment a
+           inner join flow.attachment_source src on a.id = src.attachment_id
+           where a.archived is not true
+           and a.attachment_type_id = 915
+           and src.source_id = tp.id ) as background_attachment_id,
+           tpt.pool_type
+    from brs.tournament_pool tp
+      inner join brs.tournament_pool_type tpt on tp.tournament_pool_type_id = tpt.id
+    where tp.tournament_id = :tournamentId
+    and tp.tournament_pool_type_id = :tournamentPoolTypeId
+  ]]></tournamentPool.getDetails>
+
+  <tournamentPool.updatePool><![CDATA[
+    update brs.tournament_pool
+    set start_date = :startDate::date,
+        end_date = :endDate::date,
+        custom_name = :customName,
+        modified_by_id = :userId,
+        date_modified = now()
+    where id = :poolId
+  ]]></tournamentPool.updatePool>
+
+  <tournamentPool.getPoolUsers><![CDATA[
+    select *
+    from brs.get_tournament_pool_users(:tournamentId::int, :tournamentPoolTypeId::int)
+  ]]></tournamentPool.getPoolUsers>
+
+  <tournamentPool.getPosition><![CDATA[
+    select tpp.*,
+           p.position
+    from brs.tournament_pool_position tpp
+    inner join flow.position p on p.id = tpp.position_id
+    where tpp.id = :id
+  ]]></tournamentPool.getPosition>
+
+  <tournamentPool.addPosition><![CDATA[
+    insert into brs.tournament_pool_position(position_id, tournament_pool_id, created_by_id)
+    values (:positionId, :poolId, :createdById)
+  ]]></tournamentPool.addPosition>
+
+  <tournamentPool.deletePosition><![CDATA[
+      update brs.tournament_pool_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+      where id = :tournamentPoolPositionId
+  ]]></tournamentPool.deletePosition>
+
+
+  <tournamentPool.getUser><![CDATA[
+    select tpu.*,
+           concat(u.first_name, ' ', u.last_name) as full_name
+    from brs.tournament_pool_user tpu
+    inner join flow.user u on u.id = tpu.user_id
+    where tpu.id = :id
+  ]]></tournamentPool.getUser>
+
+  <tournamentPool.addUser><![CDATA[
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id)
+    values (:userId, :poolId, :createdById)
+  ]]></tournamentPool.addUser>
+
+  <tournamentPool.deleteUser><![CDATA[
+      update brs.tournament_pool_user
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+      where id = :tournamentPoolUserId
+  ]]></tournamentPool.deleteUser>
+
+  <tournamentPool.assignUsersToMatches><![CDATA[
+    select from brs.assign_users_to_matches(:tournamentId::int, :tournamentPoolId::int, :userId::int, array[ :userIds ]::int[])
+  ]]></tournamentPool.assignUsersToMatches>
+
+  <tournamentPool.advanceUsersToWinnerPool><![CDATA[
+      update brs.tournament_pool_user
+          set qualified = true
+      where tournament_pool_id = :tournamentPoolId
+      and user_id in ( :userIds );
+
+      insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
+        select tpu.user_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId
+      from brs.tournament_pool_user tpu
+      where tpu.tournament_pool_id = :tournamentPoolId
+        and tpu.user_id  in ( :userIds );
+
+  ]]></tournamentPool.advanceUsersToWinnerPool>
+</sql>
