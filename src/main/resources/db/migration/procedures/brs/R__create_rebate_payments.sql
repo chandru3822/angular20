@@ -25,7 +25,7 @@ BEGIN
              inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10430
                                     and company_id = (select company_id from brs.project_details where project_id = p_project_id))
-      and p.id = p_project_id);
+      and p.id = p_project_id and pps.main = true);
 
     update flow.project_process_step_custom_field_value
     set numeric_value = p_total_promotion_amount where id =
@@ -43,7 +43,7 @@ BEGIN
              inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10324
                                     and company_id = (select company_id from brs.project_details where project_id = p_project_id))
-      and p.id = p_project_id);
+      and p.id = p_project_id and pps.main = true);
 
 --Create an audit record
   insert into brs.project_rebate_payment_audit(project_id, audit, changed_date, changed_by_user_id) values
