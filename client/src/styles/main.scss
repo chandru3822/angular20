@@ -10,6 +10,12 @@
   color: var(--v-primaryText-base) !important;
   /*color: #1F3C73 !important;*/
 }
+
+@font-face {
+  font-family: "Congrats";
+  src: local("Congrats"),
+  url('~@/styles/fonts/Congratulations_DEMO.ttf') format("truetype");
+}
 /*
  * not sure what to do about this. this makes the date time picker look way nicer and doesn't
  * seem to affect anything else so far.  will have to figure out a solution later if it does

@@ -14,7 +14,8 @@ BEGIN
     into v_number_of_users
     from brs.tournament t
              inner join brs.tournament_bracket tb on tb.tournament_id = t.id
-    where t.id = p_tournament_id;
+    where t.id = p_tournament_id
+    and tb.archived is not true;
     -- set the pool as advanced so the frontend knows not to allow them to do it again
     update brs.tournament_pool
     set advanced       = true,
@@ -103,8 +104,7 @@ BEGIN
                (upv.end_date IS NULL OR upv.end_date > now()))
         order by full_name
     )
-    insert
-    into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
         (select apu.user_id,
                 (select id
                  from brs.tournament_pool

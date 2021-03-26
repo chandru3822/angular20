@@ -5,6 +5,61 @@
     where user_id = any(array[ :userIds ]::int[])
   ]]></schedule.getUserPositionIdsForUsers>
 
+  <schedule.getEventsByProject><![CDATA[
+    select p.id,
+           p.project_name,
+           c.id as contact_id,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(steps)))
+                        FROM (
+                                 SELECT ps.process_step_name as "processStepName",
+                                        pps.id as "projectProcessStepId",
+                                        (select timestamp_value
+                                         from flow.project_process_step_custom_field_value start
+                                                  inner join flow.custom_field_group_assignment cfga on start.custom_field_group_assignment_id = cfga.id
+                                         where start.project_process_step_id = pps.id
+                                           and start.archived is not true
+                                           and cfga.archived is not true
+                                           and cfga.custom_field_group_id = cfg.id
+                                           and cfga.schedule_field_type_id = 1
+                                        ) as start,
+                                        (select timestamp_value
+                                         from flow.project_process_step_custom_field_value cfv_end
+                                                  inner join flow.custom_field_group_assignment cfga on cfv_end.custom_field_group_assignment_id = cfga.id
+                                         where cfv_end.project_process_step_id = pps.id
+                                           and cfv_end.archived is not true
+                                           and cfga.archived is not true
+                                           and cfga.custom_field_group_id = cfg.id
+                                           and cfga.schedule_field_type_id = 2
+                                        ) as "end",
+                                        (select case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name
+                                         from flow.project_process_step_custom_field_value resource
+                                                  inner join flow.custom_field_group_assignment cfga on resource.custom_field_group_assignment_id = cfga.id
+                                                  left join flow.user_position up on up.id = resource.int_value
+                                                  left join flow.user u on u.id = up.user_id
+                                                  left join flow.org o on o.id = resource.int_value
+                                                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                                  inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+                                                  inner join flow.system_list sl on sl.id = csl.system_list_id
+                                         where resource.project_process_step_id = pps.id
+                                           and resource.archived is not true
+                                           and cfga.archived is not true
+                                           and cfga.custom_field_group_id = cfg.id
+                                           and cfga.schedule_field_type_id = 3
+                                        ) as "resourceName"
+                                 from flow.project_process_step pps
+                                          inner join flow.process_step ps on pps.process_step_id = ps.id
+                                          inner join flow.custom_field_group cfg on ps.id = cfg.process_step_id and cfg.event_type_id is not null and cfg.archived is not true
+                                 where pps.project_id = :projectId
+                                   and pps.archived is not true
+                                   and pps.main is true
+                                 order by start, "end"
+                             ) steps), '[]') AS "events"
+    from flow.project p
+             inner join flow.contact c on p.contact_id = c.id
+    where p.id = :projectId
+  ]]></schedule.getEventsByProject>
+
   <schedule.getEvents><![CDATA[
     with resource as (
         select ppscfv.id,
