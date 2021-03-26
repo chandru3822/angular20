@@ -204,6 +204,17 @@ public class UserService {
     }
   }
 
+  public List<User> getAllActiveUsers() {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+
+    List<User> results = sqlCache.query("user.getAllActiveUsers", params, new UserMapper<>(User.class, om));
+    return results;
+
+  }
+
   public List<User> getSchedulingUsers(Long companyStateId, Boolean isSchedulingTool) {
     //i had to change this to return user positions so that when filtering by position in the scheduling tool we have the data
     User user = securityService.getCurrentUser();

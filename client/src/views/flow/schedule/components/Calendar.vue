@@ -742,8 +742,10 @@
       handleEventClick (info) {
         if(info.event.title && !info.event.rendering) {
           let props = info.event.extendedProps
-          this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
-          // this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
+          //open event clicks in new window every time so they dont have to keep reloading the calendar
+          let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
+          window.open(routerData.href, '_blank')
+          // this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
         }
       },
       handleEventRender (info) {

@@ -29,7 +29,7 @@ BEGIN
              inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10324
                                     and company_id = (select company_id from brs.project_details where project_id = p_project_id))
-      and p.id = p_project_id);
+      and p.id = p_project_id and pps.main = true);
 
   insert into brs.project_rebate_payment (project_id, payment_amount, payment_nbr, created_by_user_id, created_date, project_rebate_payment_state_id)
   values (p_project_id, p_payment_amount, v_last_payment_nbr, p_created_by_user_id, (now() at time zone 'US/Mountain')::date,1);

@@ -32,7 +32,7 @@ BEGIN
              inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id=10324
                                     and company_id = (select company_id from brs.project_details where project_id = v_project_id))
-      and p.id = v_project_id);
+      and p.id = v_project_id and pps.main = true);
 
     insert into brs.project_rebate_payment_audit (project_id, audit, changed_date, changed_by_user_id)
     values (v_project_id, 'Deleted payment_id: '||p_payment_id||' payment_amount: '||v_payment_amount, (now() at time zone 'US/Mountain')::date, p_deleted_by_user_id);

@@ -4,8 +4,8 @@ CREATE OR REPLACE FUNCTION brs.get_tournament_user_score(p_tournament_formula_id
 AS
 $BODY$
 declare
-    v_score      integer;
-    v_timezone   varchar;
+    v_score    integer;
+    v_timezone varchar;
 BEGIN
 
     select t.timezone
@@ -31,27 +31,23 @@ BEGIN
                                from brs.project_details pd
                                         inner join flow.project p on p.id = pd.project_id
                                         inner join flow.contact c on c.id = p.contact_id
-                                        left join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id
-                                        left join flow.custom_field_group_assignment cfga
-                                                  on cfga.id = ccfv.custom_field_group_assignment_id
-                                        left join flow.custom_field cf
-                                                  on cf.id = cfga.custom_field_id and cf.parent_custom_field_id = 10540
+                                        left join flow.contact_custom_field_value ccfv
+                                                  on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
                                where pd.closer_user_id = p_user_id
                                  and pd.final_design_complete_date between p_start_date and p_end_date
-                                 and (ccfv.boolean_value is null or ccfv.boolean_value is false)) * 4) +
+                                 and (ccfv.boolean_value is null or ccfv.boolean_value is false)
+                                 and pd.source != 523) * 4) +
                              ((select count(1)
                                from brs.project_details pd
                                         inner join flow.project p on p.id = pd.project_id
                                         inner join flow.contact c on c.id = p.contact_id
-                                        left join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id
-                                        left join flow.custom_field_group_assignment cfga
-                                                  on cfga.id = ccfv.custom_field_group_assignment_id
-                                        left join flow.custom_field cf
-                                                  on cf.id = cfga.custom_field_id and cf.parent_custom_field_id = 10540
+                                        inner join flow.contact_custom_field_value ccfv
+                                                   on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
                                where pd.final_design_complete_date is not null
                                  and pd.closer_user_id = p_user_id
                                  and pd.final_design_complete_date between p_start_date and p_end_date
-                                 and ccfv.boolean_value is true) * 5))) as cnt;
+                                 and (ccfv.boolean_value is true
+                                   or pd.source = 523)) * 5))) as cnt;
             when p_tournament_formula_id = 2 then
                 select *
                 into v_score
@@ -66,7 +62,7 @@ BEGIN
                                   where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                     and pd.first_appointment_missed_id is not null
                                     and pd.setter_user_id = p_user_id) +
-                                 (select count(1) *-1
+                                 (select count(1) * -1
                                   from brs.project_details pd
                                   where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                     and pd.first_appointment_not_pitched_or_missed_id is not null
