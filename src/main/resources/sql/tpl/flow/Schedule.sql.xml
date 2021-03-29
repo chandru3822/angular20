@@ -16,6 +16,7 @@
                                         pps.id as "projectProcessStepId",
                                         ps.id as "processStepId",
                                         cfg.event_type_id as "eventTypeId",
+                                        et.event_type as "eventType",
                                         (select timestamp_value
                                          from flow.project_process_step_custom_field_value start
                                                   inner join flow.custom_field_group_assignment cfga on start.custom_field_group_assignment_id = cfga.id
@@ -52,6 +53,7 @@
                                  from flow.project_process_step pps
                                           inner join flow.process_step ps on pps.process_step_id = ps.id
                                           inner join flow.custom_field_group cfg on ps.id = cfg.process_step_id and cfg.event_type_id is not null and cfg.archived is not true
+                                          inner join flow.event_type et on cfg.event_type_id = et.id
                                  where pps.project_id = :projectId
                                    and pps.archived is not true
                                    and pps.main is true
