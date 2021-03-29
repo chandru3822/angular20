@@ -14,6 +14,7 @@
                         FROM (
                                  SELECT ps.process_step_name as "processStepName",
                                         pps.id as "projectProcessStepId",
+                                        cfg.event_type_id as "eventTypeId",
                                         (select timestamp_value
                                          from flow.project_process_step_custom_field_value start
                                                   inner join flow.custom_field_group_assignment cfga on start.custom_field_group_assignment_id = cfga.id
