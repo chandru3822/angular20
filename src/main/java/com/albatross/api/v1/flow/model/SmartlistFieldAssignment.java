@@ -25,7 +25,7 @@ public class SmartlistFieldAssignment {
 
   private List<Long> systemListOptionIds;
 
-  private List<ListOfValue> listOfValues;
+  private List<SmartlistListOfValue> listOfValues;
 
   private CustomField customField;
 

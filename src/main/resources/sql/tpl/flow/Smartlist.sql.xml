@@ -171,7 +171,7 @@ select sf.id as "smartlistFieldId",
        null as "allowMultiple",
        case when sf.smartlist_system_list_id is null then '[]' else
          (select to_jsonb(array_agg(row_to_json(rows))) from (
-           select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+           select id, name, root_status_type as "rootStatusType", root_status_type_id as "rootStatusTypeId" from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
          ) rows)
        end as "listOfValues"
 from flow.smartlist_field sf
@@ -590,7 +590,7 @@ select sr.id,
             ) lov), '[]')
           when sf.smartlist_system_list_id is not null then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+              select id, name, root_status_type as "rootStatusType", root_status_type_id as "rootStatusTypeId" from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
             ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 2 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
@@ -707,7 +707,7 @@ select sr.id,
             ) lov), '[]')
           when sf.smartlist_system_list_id is not null then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-             select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+             select id, name, root_status_type as "rootStatusType", root_status_type_id as "rootStatusTypeId" from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
            ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 2 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
@@ -829,7 +829,7 @@ where id = :requirementId
 ]]></smartlist.deleteRequirement>
 
 <smartlist.getSmartlistSystemList><![CDATA[
-select * from flow.get_smartlist_system_list_options(:smartlistSystemListId::int, :companyId::int)
+select id, name, root_status_type as "rootStatusType", root_status_type_id as "rootStatusTypeId" from flow.get_smartlist_system_list_options(:smartlistSystemListId::int, :companyId::int)
 ]]></smartlist.getSmartlistSystemList>
 
 <smartlist.getLogic><![CDATA[

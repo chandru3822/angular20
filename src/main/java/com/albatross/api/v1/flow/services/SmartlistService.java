@@ -137,10 +137,13 @@ public class SmartlistService {
             if (field.getCustomFieldSqlKey() != null) {
                 final String sql = sqlCache.getByKey(field.getCustomFieldSqlKey());
                 if (sql != null) {
-                    field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
+                    field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), SmartlistListOfValue.class));
                 }
             } else if (field.getCompanySystemListId() != null) {
-                field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds(), field.getCompanyId()));
+                List<ListOfValue> values = systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds(), field.getCompanyId());
+                List<SmartlistListOfValue> smartlistValues = new ArrayList<>();
+                values.forEach(v -> smartlistValues.add((SmartlistListOfValue) v));
+                field.setListOfValues(smartlistValues);
             }
         }
 
@@ -171,7 +174,7 @@ public class SmartlistService {
         if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
             final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
             if (sql != null) {
-                requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+                requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, SmartlistListOfValue.class));
             }
         }
 
@@ -257,7 +260,7 @@ public class SmartlistService {
             if (r.getCustomFieldSqlKey() != null) {
                 final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
                 if (sql != null) {
-                    r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+                    r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, SmartlistListOfValue.class));
                 }
             }
         }
@@ -454,7 +457,7 @@ public class SmartlistService {
     // Get smartlist system lists
     withClause.append(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
     withClause.append(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_3\" as (select id, name, root_status_type, root_status_type_id from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -538,8 +541,14 @@ public class SmartlistService {
 
         final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
-        if (f.getSmartlistSystemListId() == 1 || f.getSmartlistSystemListId() == 3) {
+        if (f.getSmartlistSystemListId() == 1) {
           location = String.format("(select name from \"%s\" where \"%s\".id = %s.%s)", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn());
+        } else if (f.getSmartlistSystemListId() == 3) {
+          if (f.getReferenceTable().equals("flow.project_status_type")) {
+            location = String.format("(select name from \"%s\" where \"%s\".root_status_type_id = %s.%s)", smartlistSystemListTable, smartlistSystemListTable, f.getReferenceTable(), f.getReferenceColumn());
+          } else {
+            location = String.format("(select name from \"%s\" where \"%s\".id = %s.%s)", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn());
+          }
         } else if (f.getSmartlistSystemListId() == 2) {
 
           if (smartlist.getObjectTypeId() == 4) {
@@ -648,6 +657,7 @@ public class SmartlistService {
       case 1:
         query.append(" from flow.project ");
         query.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id ");
+        query.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id ");
         query.append(" left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
         query.append(" left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
         query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
@@ -1848,8 +1858,8 @@ public class SmartlistService {
     }
   }
 
-  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
-    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
+  public List<SmartlistListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
+    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), SmartlistListOfValue.class);
   }
 
   public static class SmartlistRequirementMapper<T> extends BeanPropertyRowMapper<T> {
@@ -1874,7 +1884,7 @@ public class SmartlistService {
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, om));
 
-      TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
+      TypeReference<List<SmartlistListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "availableListOfValues", new JsonCollectionDeserializer(availableListOfValuesRef, om));
 
         TypeReference<CustomField> customFieldRef = new TypeReference<>() {};
@@ -1892,7 +1902,7 @@ public class SmartlistService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
+      TypeReference<List<SmartlistListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, om));
 
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
