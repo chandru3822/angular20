@@ -5,6 +5,7 @@
              u.name,
              u.metro_area_id,
              lov.name as metro_area,
+             cs.id as company_state_id,
              cs.state_id,
              s.state,
              s.abbreviation as state_abbreviation,

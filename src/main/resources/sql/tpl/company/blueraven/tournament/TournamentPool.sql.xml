@@ -99,7 +99,7 @@
   ]]></tournamentPool.deleteUser>
 
   <tournamentPool.assignUsersToMatches><![CDATA[
-    select from brs.assign_users_to_matches(:tournamentId::int, :tournamentPoolId::int, :userId::int, array[ :userIds ]::int[])
+    select from brs.assign_users_to_matches(:tournamentId::int, :tournamentPoolId::int, :userId::int, :seededMatches::jsonb)
   ]]></tournamentPool.assignUsersToMatches>
 
   <tournamentPool.advanceUsersToWinnerPool><![CDATA[
