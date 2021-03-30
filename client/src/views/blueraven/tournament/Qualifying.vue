@@ -79,6 +79,7 @@
         snackbar: {},
         tournamentId: this.$route.params.id,
         poolTypeId: 1,
+        finalMatches: [],
         selectRerender: 1,
         search: '',
         tournament: {},
@@ -87,7 +88,9 @@
         dataLoading: true,
         pool: {},
         poolUsers: [],
+        ordered: [],
         selectedUsers: [],
+        seededUserIds: [],
         headers: [
           {text: '', value: 'checkbox', show: true, width: '50px'},
           {text: 'User', value: 'fullName', show: true},
@@ -139,11 +142,14 @@
       },
       async advanceSelectedToBracket() {
         let seededUsers = orderBy(this.selectedUsers, ['score', 'fullName'], ['desc', 'asc'])
-        let userIds = seededUsers?.map(u => u.userId)
-        if(userIds?.length > 0) {
+        this.seededUserIds = seededUsers?.map(u => u.userId)
+
+        this.populateSeededMatches()
+
+        if(this.seededUserIds?.length > 0 && this.finalMatches.length === this.tournamentUserCount / 2) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, userIds, 'blueraven')
+            const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.finalMatches, 'blueraven')
             this.pool.advanced = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -156,6 +162,78 @@
           this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
+      },
+      populateSeededMatches () {
+        //todo: this could probably be cleaned up a little but I got it working and that is all i care about at this point
+        //reset these values every time
+        this.ordered = []
+        this.finalMatches = []
+
+        let ind = []
+
+        //populate a blank array of zeroes for the total number of users
+        // (not sure why but that's how they coded the formula to work and it doesn't work if this isn't done this way)
+        for(let i = 0; i < this.tournamentUserCount; i++) {
+          ind.push(0)
+        }
+
+        //this creates the total number of users game indexes that i dont fully understand
+        for (let i = 0; i <= (Math.log(this.tournamentUserCount) / Math.log(2)); i++) {
+          for(let N = 1; N <= this.tournamentUserCount; N++)
+          {
+            let myRank = Math.floor((N - 1) / Math.pow(2, i) + 1);
+            ind[N - 1] += Math.floor(((myRank % 4)/2)) * Math.pow(2, ( (Math.log(this.tournamentUserCount) / Math.log(2)) -  i - 1));
+          }
+        }
+
+        //make an array of the games so i can order them by the game number
+        //again i dont fully understand the ind[N-1]+1 stuff but i know it works cuz they coded that part
+        let games = []
+        for (let N = 1; N <= this.tournamentUserCount; N++){
+          let gameNumber = ind[N - 1] + 1;
+          let game = {
+            seed: N,
+            gameNumber
+          }
+          games.push(game)
+        }
+
+        //order them by game number
+        this.ordered = orderBy(games, g => g.gameNumber);
+
+        //the game numbers go 1,2,3,4,5,6 etc
+        //i need them to go 1,1,2,2,3,3,4,4
+        //this changes the game numbers accordingly
+        let count = 1
+        this.ordered.forEach((o, idx) => {
+          o.gameNumber = count
+          if(idx % 2 !== 0) {
+            count++
+          }
+        })
+
+
+        let params = {}
+        for(let i = 1; i <= this.tournamentUserCount / 2; i++) {
+          //find both the matches where the gameNumber === i
+          let matches = this.ordered.filter(o => o.gameNumber === i)
+          //turn the 2 rows into 1 object for sending to the backend
+          params = {
+            matchNumber: i,
+            user1Id: this.seededUserIds[(matches[0].seed - 1)],
+            user2Id: this.seededUserIds[(matches[1].seed -1)]
+          }
+          //populate the final results to be sent
+          this.finalMatches.push(params)
+
+          //just a quick String to display the magic on the screen in a more friendly format
+          // let game = 'Game ' + i + ': ' + matches[0].seed + ' vs ' + matches[1].seed + '\n'
+          // this.gamesString += game
+        }
+        //log it out
+        // console.log('final matches', this.finalMatches)
+
+
       },
       async getTournament() {
         try {
