@@ -18,8 +18,8 @@ public class ProjectWithEvents {
 
   @Data
   public static class ProjectEvent {
-    private Long projectProcessStepId;
-    private String processStepName, resourceName;
+    private Long projectProcessStepId, processStepId, eventTypeId;
+    private String processStepName, resourceName, eventType;
     private Timestamp start, end;
   }
 }

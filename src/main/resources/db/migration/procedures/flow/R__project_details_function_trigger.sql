@@ -402,7 +402,13 @@ BEGIN
                             end case;
                     elsif v_record.field_to_update in ('installation_resource', 'permit_pack_submittal_resource',
                                                        'in_house_mpu_permit_submittal_resource',
-                                                       'permit_pickup_resource') then
+                                                       'permit_pickup_resource','ac_compressor_relocation_resource',
+                                                      'as_built_permit_pickup_resource','as_built_permit_submission_resource',
+                                                      'in_house_mpu_permit_pickup_resource','in_house_mpu_resource',
+                                                      'installation_closeout_resource','non_standard_installation_resource',
+                                                      'outsource_mpu_resource','reroof_resource','structural_upgrade_resource',
+                                                      'tree_trimming_resource','trenching_resource','work_order_resource') then
+
                         case when new.int_value is null then select 'null' into v_value;
                             else
                                 select quote_literal(org_name)
@@ -410,6 +416,7 @@ BEGIN
                                 from flow.org o
                                 where o.id = new.int_value;
                             end case;
+                       -- raise notice 'value&&&&&&&&&&&& = %',v_value;
                     elsif v_record.list_of_value_id is not null then
                         case when new.int_value is null then select 'null' into v_value;
                             else
@@ -422,13 +429,14 @@ BEGIN
                         case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
                         v_value = '(' || v_value || '::timestamp at time zone ' || quote_literal('UTC') ||
                                   ' at time zone ' || quote_literal('US/Mountain') || ')::date';
-                        -- raise notice 'value = %',v_value;
+
                     end if;
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
                             v_value || $$
                             where project_id = $$ || v_project_id2||$$ and
                     case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.second_field_to_update||
                             $$ is null else 1=1 end $$;
+                   -- raise notice 'what is the sql %',v_sql;
                     begin
                         execute v_sql;
                     exception

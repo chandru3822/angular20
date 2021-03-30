@@ -14,6 +14,9 @@
                         FROM (
                                  SELECT ps.process_step_name as "processStepName",
                                         pps.id as "projectProcessStepId",
+                                        ps.id as "processStepId",
+                                        cfg.event_type_id as "eventTypeId",
+                                        et.event_type as "eventType",
                                         (select timestamp_value
                                          from flow.project_process_step_custom_field_value start
                                                   inner join flow.custom_field_group_assignment cfga on start.custom_field_group_assignment_id = cfga.id
@@ -50,6 +53,7 @@
                                  from flow.project_process_step pps
                                           inner join flow.process_step ps on pps.process_step_id = ps.id
                                           inner join flow.custom_field_group cfg on ps.id = cfg.process_step_id and cfg.event_type_id is not null and cfg.archived is not true
+                                          inner join flow.event_type et on cfg.event_type_id = et.id
                                  where pps.project_id = :projectId
                                    and pps.archived is not true
                                    and pps.main is true
@@ -149,8 +153,9 @@
     where  st.timestamp_value is not null
       and et.timestamp_value is not null
       and r.int_value is not null
-      and case when :startTime::timestamp is not null then st.timestamp_value >= :startTime::timestamp else 1=1 end
-        and case when :endTime::timestamp is not null then et.timestamp_value <= :endTime::timestamp else 1=1 end
+      and case when :startTime::timestamp is not null and :endTime::timestamp is not null
+           then st.timestamp_value between :startTime::timestamp and :endTime::timestamp OR
+                et.timestamp_value between :startTime::timestamp and :endTime::timestamp else 1=1 end
       and case when :isParent
                        then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                    else ps.company_id = :companyId end
