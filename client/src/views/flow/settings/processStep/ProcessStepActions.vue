@@ -143,7 +143,7 @@
               label="Custom"
             ></v-switch>
             <v-text-field
-              v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
+              v-if="newRequirement.operatorTypeId && newRequirement.customValue && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSqlKey || selectedCustomField.customFieldSqlKey === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
               v-model="newRequirement.requirementValue"
               placeholder="Enter a value"
               @input="validateRequirementForm()"
@@ -153,7 +153,7 @@
               v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
                               && newRequirement.processStepRequirementTypeId !== 7
-                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)
+                              && ((selectedCustomField.listOfValueId && selectedCustomField.listOfValueId !== null) || (selectedCustomField.customFieldSqlKey && selectedCustomField.customFieldSqlKey !== null) || (selectedCustomField.companySystemListId && selectedCustomField.companySystemListId !== null))
                               && !selectedCustomField.allowMultiple"
               v-model="selectedListValue"
               :items="selectedCustomField.listOfValues"
