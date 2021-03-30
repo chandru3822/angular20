@@ -43,7 +43,7 @@
         :fixed-header="true"
         :search="search"
         dense
-        :items-per-page="100"
+        :items-per-page="minRowsPerPage"
         disable-sort
         class="elevation-1 square-card"
       >
@@ -56,7 +56,7 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr :class="{'qualified-row': !pool.advanced && poolUsers.indexOf(item) < tournamentUserCount,'shaded-row': index % 2}">
+          <tr :class="{'on-fence-row': item.score === lastQualifiedUserScore,'qualified-row': !pool.advanced && poolUsers.indexOf(item) < tournamentUserCount,'shaded-row': index % 2}">
             <td :key="selectRerender">
               <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
               <v-icon color="green" v-else-if="item.qualified">mdi-check-decagram</v-icon>
@@ -101,7 +101,9 @@
         search: '',
         tournament: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
+        lastQualifiedUserScore: null,
         tournamentUserCount: 0,
+        minRowsPerPage: 0,
         dataLoading: true,
         pool: {},
         poolUsers: [],
@@ -117,7 +119,7 @@
     },
     watch: {
       // whenever tournament_id changes, this function will run
-      '$route.params.id': function () {
+      '$route.params.id': async function () {
         // reset the selected group when the object type changes
         this.tournamentId = this.$route.params.id
         this.tournament = {}
@@ -125,9 +127,9 @@
         this.poolUsers = []
         this.selectedUsers = []
         this.tournamentUserCount = 0
+        await this.getTournament()
         this.getPool()
         this.getPoolUsers()
-        this.getTournament()
       }
     },
     async created() {
@@ -146,10 +148,18 @@
       },
       toggleSelectAllQualifying() {
         this.selectedUsers = []
+        //get the score of the last qualified user based on index so we can compare others to it later
         this.poolUsers.forEach((pu, idx) => {
           if (idx < this.tournamentUserCount) {
             pu.selected = true
             this.selectedUsers.push(pu)
+          } else if (pu.score === this.lastQualifiedUserScore) {
+            //if a user has the same score as the final qualified user then select them also so that they have to manual decide who advances
+            pu.selected = true
+            this.selectedUsers.push(pu)
+            this.minRowsPerPage++
+            this.snackbar = getSnackbar('ERROR', 'The final qualifying user is tied with other users. You will have to manually select who advances.')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             pu.selected = false
           }
@@ -158,7 +168,7 @@
         this.selectRerender++
       },
       async advanceSelectedToBracket() {
-        let seededUsers = orderBy(this.selectedUsers, ['score', 'fullName'], ['desc', 'asc'])
+        let seededUsers = orderBy(this.selectedUsers, ['score', su => su.fullName.toLowerCase()], ['desc', 'asc'])
         this.seededUserIds = seededUsers?.map(u => u.userId)
 
         this.populateSeededMatches()
@@ -260,6 +270,7 @@
           this.tournament?.brackets?.forEach(b => {
             this.tournamentUserCount += b.numberOfUsers
           })
+          this.minRowsPerPage = this.tournamentUserCount > 100 ? this.tournamentUserCount : 100
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
@@ -282,6 +293,7 @@
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
           this.poolUsers = data
+          this.lastQualifiedUserScore = this.poolUsers[this.tournamentUserCount - 1].score
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           logError(e)
@@ -303,6 +315,11 @@
   .qualified-row {
     /*background-color: var(--v-brGreen-base) !important;;*/
     background-color: lightgreen !important;
+  }
+
+  .on-fence-row {
+    /*background-color: var(--v-brGreen-base) !important;;*/
+    background-color: #cdfacd !important;
   }
 </style>
 

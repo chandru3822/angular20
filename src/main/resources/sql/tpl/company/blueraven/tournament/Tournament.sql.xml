@@ -25,7 +25,16 @@
   ]]></tournament.getOwnerTypes>
 
   <tournament.getFormulas><![CDATA[
-    select *
+    select id,
+       formula_title,
+       formula_description,
+       tournament_owner_type_id,
+       date_created,
+       date_modified,
+       created_by_id,
+       modified_by_id,
+       active,
+       archived
     from brs.tournament_formula
     where archived is not true
     and tournament_owner_type_id = :ownerTypeId
