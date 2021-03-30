@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class Match {
 
-  private Long id, tournamentRoundId, user1Id, user2Id, user1Score, user2Score, parentMatchId;
+  private Long id, tournamentRoundId, user1Id, user2Id, user1Score, user2Score, parentMatchId, matchNumber; //matchNumber is only used on seeding matches
   private String user1Name, user2Name;
   private Boolean archived, matchAdvanced;
 
