@@ -1,6 +1,15 @@
 <template>
   <v-container id="qualifying-pool-container" v-if="!dataLoading">
 
+    <v-dialog v-model="showModal" class="square-card">
+      <ScoreDrilldown :tournament-id="parseInt(tournamentId)"
+                      :start-date="pool.startDate"
+                      :end-date="pool.endDate"
+                      :user="showScoreUser.fullName"
+                      :user-id="showScoreUser.userId"
+      ></ScoreDrilldown>
+    </v-dialog>
+
     <v-card color="white" flat class="square-card">
       <v-toolbar flat class="app-toolbar">
         {{pool.customName || 'Qualifying'}}<br/>
@@ -55,7 +64,9 @@
             <td class="text-left">
               {{item.fullName}}
             </td>
-            <td>{{item.score || 0}}</td>
+            <td>
+              <v-btn text small @click="[showModal = true, showScoreUser = item]">{{item.score || 0}}</v-btn>
+            </td>
           </tr>
         </template>
 
@@ -70,9 +81,13 @@
   import {getRequest, logError, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby"
+  import ScoreDrilldown from "./component/ScoreDrilldown";
 
   export default {
     name: 'Qualifying',
+    components: {
+      ScoreDrilldown
+    },
     data() {
       return {
         constants,
@@ -80,6 +95,8 @@
         tournamentId: this.$route.params.id,
         poolTypeId: 1,
         finalMatches: [],
+        showScoreUser: {},
+        showModal: false,
         selectRerender: 1,
         search: '',
         tournament: {},
@@ -218,6 +235,7 @@
           //find both the matches where the gameNumber === i
           let matches = this.ordered.filter(o => o.gameNumber === i)
           //turn the 2 rows into 1 object for sending to the backend
+          // seededUserIds is indexed at zero and match seeds start at 1, so have to subtract 1
           params = {
             matchNumber: i,
             user1Id: this.seededUserIds[(matches[0].seed - 1)],
@@ -289,8 +307,8 @@
 </style>
 
 <style lang="scss" scoped>
-#qualifying-pool-container {
-  padding: 50px;
-}
+  #qualifying-pool-container {
+    padding: 50px;
+  }
 </style>
 
