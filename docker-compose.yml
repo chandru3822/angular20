@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     restart: always
-    image: postgres:11.4-alpine
+    image: postgres:12.5-alpine
     expose:
       - "5433"
     ports:
