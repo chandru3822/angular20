@@ -31,7 +31,7 @@ BEGIN
                                  from (
                                           select project_id,
                                                  p.project_name,
-                                                 ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date as complete_date_booking,
+                                                 ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
                                                  count(1) as score
                                           from brs.project_details pd
@@ -42,7 +42,7 @@ BEGIN
                                           union
                                           select project_id,
                                                  p.project_name,
-                                                 ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date as complete_date_booking,
+                                                 ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
                                                  count(1) * 4 as score
                                           from brs.project_details pd
@@ -58,7 +58,7 @@ BEGIN
                                           union
                                           select project_id,
                                                  p.project_name,
-                                                 ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date as complete_date_booking,
+                                                 ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
                                                  count(1) * 5 as score
                                           from brs.project_details pd
@@ -78,7 +78,7 @@ BEGIN
                                      from (
                                               select pd.project_id,
                                                      p.project_name,
-                                                     ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date as first_appointment,
+                                                     ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                                                      pd.first_appointment_pitched,
                                                      count(1) as score
                                               from brs.project_details pd
@@ -90,7 +90,7 @@ BEGIN
                                               union
                                               select pd.project_id,
                                                      p.project_name,
-                                                     ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date as first_appointment,
+                                                     ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                                                      pd.first_appointment_missed,
                                                      count(1) as score
                                               from brs.project_details pd
@@ -102,7 +102,7 @@ BEGIN
                                               union
                                               select pd.project_id,
                                                      p.project_name,
-                                                     ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date as first_appointment,
+                                                     ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                                                      pd.first_appointment_not_pitched_or_missed,
                                                      count(1) * -1 as score
                                               from brs.project_details pd
