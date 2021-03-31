@@ -7,6 +7,7 @@
                       :end-date="pool.endDate"
                       :user="showScoreUser.fullName"
                       :user-id="showScoreUser.userId"
+                      @scoreDialogClosed="showModal = false"
       ></ScoreDrilldown>
     </v-dialog>
 
@@ -55,8 +56,17 @@
           No available users
         </template>
 
+        <template #header.score="{ header }">
+            <div class="text-center">
+              {{header.text}}
+            </div>
+        </template>
+
+
+
+
         <template #item="{ item, index }">
-          <tr :class="{'on-fence-row': item.score === lastQualifiedUserScore,'qualified-row': !pool.advanced && poolUsers.indexOf(item) < tournamentUserCount,'shaded-row': index % 2}">
+          <tr :class="{'on-fence-row': !pool.advanced && item.score === lastQualifiedUserScore,'qualified-row': !pool.advanced && poolUsers.indexOf(item) < tournamentUserCount,'shaded-row': index % 2}">
             <td :key="selectRerender">
               <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
               <v-icon color="green" v-else-if="item.qualified">mdi-check-decagram</v-icon>
@@ -64,8 +74,13 @@
             <td class="text-left">
               {{item.fullName}}
             </td>
-            <td>
-              <v-btn text small @click="[showModal = true, showScoreUser = item]">{{item.score || 0}}</v-btn>
+            <td class="text-center">
+              {{item.score || 0}}
+            </td>
+            <td class="text-right">
+              <v-btn text small class="clickable" @click="[showModal = true, showScoreUser = item]">
+                <v-icon>mdi-format-list-bulleted</v-icon>
+              </v-btn>
             </td>
           </tr>
         </template>
@@ -113,7 +128,8 @@
         headers: [
           {text: '', value: 'checkbox', show: true, width: '50px'},
           {text: 'User', value: 'fullName', show: true},
-          {text: 'Score', value: 'score', show: true},
+          {text: 'Score', value: 'score', show: true, width: '75px'},
+          {text: '', value: 'details', show: true},
         ],
       }
     },

@@ -27,9 +27,9 @@ public class TournamentController {
     return tournamentService.getTournaments();
   }
 
-  @GetMapping(value = "/{id}/headers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<TournamentFormula> getFormulaHeaders(@PathVariable Long id) {
-    return tournamentService.getFormulaHeaders(id);
+  @GetMapping(value = "/{id}/columns", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getFormulaColumns(@PathVariable Long id) {
+    return tournamentService.getFormulaColumns(id);
   }
 
   @GetMapping(value = "/{tournamentId}/scores", produces = MediaType.APPLICATION_JSON_VALUE)
