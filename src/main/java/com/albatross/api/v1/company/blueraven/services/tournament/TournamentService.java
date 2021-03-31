@@ -40,10 +40,10 @@ public class TournamentService {
     return results;
   }
 
-  public Optional<TournamentFormula> getFormulaHeaders(Long tournamentId) {
+  public String getFormulaColumns(Long tournamentId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
-    Optional<TournamentFormula> result = sqlCache.get("tournament.getFormulaHeaders", params, new FormulaMapper<>(TournamentFormula.class, om));
+    String result = sqlCache.queryForObject("tournament.getFormulaColumns", params, String.class);
     return result;
   }
 
@@ -297,19 +297,4 @@ public class TournamentService {
     }
   }
 
-  public static class FormulaMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public FormulaMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<String>> headersRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "headers",
-        new JsonCollectionDeserializer(headersRef, objectMapper));
-    }
-  }
 }

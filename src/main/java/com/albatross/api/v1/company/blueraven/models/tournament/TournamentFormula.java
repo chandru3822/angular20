@@ -3,8 +3,6 @@ package com.albatross.api.v1.company.blueraven.models.tournament;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 /**
  * Created by randanunn on 2019-05-20.
  * !Describe Purpose!
@@ -15,7 +13,8 @@ public class TournamentFormula {
 
   private Long id, tournamentOwnerTypeId;
   private String formulaTitle, formulaDescription;
-  private List<String> headers;
+  //this is a json string for the frontend to dynamically display columns for scoring drillins
+  private String columns;
   private Boolean archived;
 }
 
