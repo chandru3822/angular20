@@ -5,6 +5,12 @@
         {{user}}
         <div class="toolbar-subtitle">{{startDate | formatDate('date', 'M/D/YYYY')}} - {{ endDate | formatDate('date', 'M/D/YYYY')}}</div>
       </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn text @click="$emit('scoreDialogClosed')">
+          Close
+        </v-btn>
+      </v-toolbar-items>
     </v-toolbar>
     <v-data-table
       :headers="columns"
@@ -16,7 +22,7 @@
       :mobile-breakpoint="0"
       hide-default-header
       hide-default-footer
-      class="elevation-1 org-type-table"
+      class="elevation-0"
     >
       <template #no-data>
         NO RESULTS
@@ -84,6 +90,21 @@
       startDate: String,
       endDate: String,
     },
+    watch: {
+      //this is all dumb. i cant figure out how to make a dialog reload the "created" function when it is opened for a second time
+      'userId': async function () {
+        this.onLoad()
+      },
+      'tournamentId': async function () {
+        this.onLoad()
+      },
+      'endDate': async function () {
+        this.onLoad()
+      },
+      'startDate': async function () {
+        this.onLoad()
+      }
+    },
     data() {
       return {
         constants,
@@ -96,11 +117,19 @@
       }
     },
     async created() {
-      this.getResults()
-      await this.getColumns()
-      this.dataLoading = false
+      this.onLoad()
     },
     methods: {
+      async onLoad () {
+        this.totalScore = 0
+        this.columnsLoading = true
+        this.results = []
+        this.columns = []
+        this.dataLoading = true
+        this.getResults()
+        await this.getColumns()
+        this.dataLoading = false
+      },
       async getColumns() {
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/columns`, 'blueraven')
@@ -120,7 +149,7 @@
             userId: this.userId
           }
           const {data} = await getRequestWithParams(`/tournament/${this.tournamentId}/scores`, { params }, 'blueraven')
-          this.results = data
+          this.results = data.length > 0 ? data : []
           this.totalScore = sumBy(this.results,  function(o) { return o.score || 0 })
           this.resultsLoading = false
         } catch (e) {
@@ -135,12 +164,15 @@
 
 <style lang="scss">
   #score-drilldown .v-data-table__wrapper {
-    height: calc(100vh - 250px);
+    height: calc(100vh - 325px);
     min-height: 300px;
   }
 </style>
 
 <style lang="scss" scoped>
-
+  #score-drilldown {
+    height: calc(100vh - 250px);
+    min-height: 300px;
+  }
 </style>
 
