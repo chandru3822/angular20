@@ -1,5 +1,15 @@
 <template>
   <v-container id="last-chance-pool-container">
+    <v-dialog v-model="showModal" class="square-card">
+      <ScoreDrilldown :tournament-id="parseInt(tournamentId)"
+                      :start-date="pool.startDate"
+                      :end-date="pool.endDate"
+                      :user="showScoreUser.fullName"
+                      :user-id="showScoreUser.userId"
+                      @scoreDialogClosed="showModal = false"
+      ></ScoreDrilldown>
+    </v-dialog>
+
     <v-card color="white" flat class="square-card">
       <v-toolbar flat class="app-toolbar">
         {{pool.customName || 'Last Chance'}} <br/>
@@ -37,6 +47,13 @@
         <template #no-results>
           No available users
         </template>
+
+        <template #header.score="{ header }">
+          <div class="text-center">
+            {{header.text}}
+          </div>
+        </template>
+
         <template #item="{ item, index }">
           <tr :class="{'shaded-row': index % 2}">
             <td :key="selectRerender">
@@ -46,7 +63,14 @@
             <td class="text-left">
               {{item.fullName}}
             </td>
-            <td>{{item.score || 0}}</td>
+            <td class="text-center">
+              {{item.score || 0}}
+            </td>
+            <td class="text-right">
+              <v-btn text small class="clickable" @click="[showModal = true, showScoreUser = item]">
+                <v-icon>mdi-format-list-bulleted</v-icon>
+              </v-btn>
+            </td>
           </tr>
         </template>
       </v-data-table>
@@ -58,15 +82,21 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, logError, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ScoreDrilldown from "./component/ScoreDrilldown"
 
   export default {
     name: 'LastChance',
+    components: {
+      ScoreDrilldown
+    },
     data() {
       return {
         constants,
         snackbar: {},
         poolTypeId: 2,
         search: '',
+        showScoreUser: {},
+        showModal: false,
         dataLoading: true,
         selectRerender: 1,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
@@ -78,6 +108,7 @@
           { text: '', value: 'checkbox', show: true, width: '50px' },
           { text: 'User', value: 'fullName', show: true },
           { text: 'Score', value: 'score', show: true },
+          {text: '', value: 'details', show: true},
         ],
       }
     },

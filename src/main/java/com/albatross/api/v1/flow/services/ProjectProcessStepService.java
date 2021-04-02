@@ -659,12 +659,13 @@ public class ProjectProcessStepService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("referenceProcessStepId", requirement.getReferenceProcessStepId());
       params.put("ppsId", projectProcessStepId);
-      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
+//      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
 
       Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
-      //if we found a primary pss of that type and one of the selected statuses
+      //if we found a primary pss of that type
       if(projectProcessStep.isPresent()) {
-        passed = true;
+        // check if the status is in one of the statuses
+        passed = requirement.getListOfValueIds().contains(projectProcessStep.get().getCompanyProcessStepStatusTypeId().intValue());
       } else {
         //if we didn't find one, check the "failIfNoReferenceStepFound" value
         passed = !requirement.getFailIfNoReferenceStepFound();
@@ -889,37 +890,46 @@ public class ProjectProcessStepService {
       case 6:
       case 9:
         Long intFunctionResult = (functionResult != null) ? Long.valueOf(functionResult.toString()) : null;
-        switch(r.getDataTypeRequirementId().intValue()) {
-          case 20:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = intFunctionResult == null;
-                break;
-              case 2:
-                passed = intFunctionResult != null;
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
-          case 21:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = intFunctionResult != null;
-                break;
-              case 2:
-                passed = intFunctionResult == null;
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
+        if (r.getDataTypeRequirementId() == null) {
+          try {
+            Long reqValue = Long.parseLong(r.getRequirementValue());
+            passed = compareInt(intFunctionResult, reqValue, r.getOperatorTypeId());
+          } catch (Exception e) {
+            throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+          }
+        } else {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 20:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = intFunctionResult == null;
+                  break;
+                case 2:
+                  passed = intFunctionResult != null;
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+            case 21:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = intFunctionResult != null;
+                  break;
+                case 2:
+                  passed = intFunctionResult == null;
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+          }
         }
         break;
       case 7:

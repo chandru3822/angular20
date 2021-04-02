@@ -6,6 +6,17 @@
     order by t.active is not true, t.tournament_name
   ]]></tournament.getTournaments>
 
+  <tournament.getFormulaColumns><![CDATA[
+      select tf.columns
+      from brs.tournament_formula tf
+      inner join brs.tournament t on tf.id = t.tournament_formula_id
+      where t.id = :tournamentId
+  ]]></tournament.getFormulaColumns>
+
+  <tournament.getUserScores><![CDATA[
+      select * from brs.get_tournament_user_score_drill_down(:tournamentId::int, :startDate::date, :endDate::date, :userId::int)
+  ]]></tournament.getUserScores>
+
   <tournament.getOwnerTypes><![CDATA[
     select *
     from brs.tournament_owner_type
@@ -13,7 +24,16 @@
   ]]></tournament.getOwnerTypes>
 
   <tournament.getFormulas><![CDATA[
-    select *
+    select id,
+       formula_title,
+       formula_description,
+       tournament_owner_type_id,
+       date_created,
+       date_modified,
+       created_by_id,
+       modified_by_id,
+       active,
+       archived
     from brs.tournament_formula
     where archived is not true
     and tournament_owner_type_id = :ownerTypeId

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_day_of_week(p_custom_field_group_assignment_id integer, p_project_process_step_id integer)
+CREATE OR REPLACE FUNCTION brs.get_day_of_week_by_custom_field(p_custom_field_group_assignment_id integer, p_project_process_step_id integer)
     returns integer AS
 $BODY$
 declare
@@ -6,7 +6,7 @@ declare
     v_date timestamp;
 BEGIN
 
-    select coalesce(ppscfv.date_value,ppscfv.timestamp_value)
+    select coalesce(ppscfv.date_value,((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain'))
     into v_date
     from flow.project_process_step pps
     inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id

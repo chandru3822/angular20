@@ -40,6 +40,23 @@ public class TournamentService {
     return results;
   }
 
+  public String getFormulaColumns(Long tournamentId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("tournamentId", tournamentId);
+    String result = sqlCache.queryForObject("tournament.getFormulaColumns", params, String.class);
+    return result;
+  }
+
+  public String getUserScores(Long tournamentId, Long userId, String startDate, String endDate) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("tournamentId", tournamentId);
+    params.put("userId", userId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    String results = sqlCache.queryForObject("tournament.getUserScores", params, String.class);
+    return results;
+  }
+
   public List<TournamentOwnerType> getTournamentOwnerTypes() {
     List<TournamentOwnerType> results = sqlCache.query("tournament.getOwnerTypes", Collections.emptyMap(), TournamentOwnerType.class);
     return results;
@@ -279,4 +296,5 @@ public class TournamentService {
         new JsonCollectionDeserializer(roundsRef, objectMapper));
     }
   }
+
 }

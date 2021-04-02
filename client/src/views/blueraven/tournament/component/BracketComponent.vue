@@ -1,5 +1,15 @@
 <template>
     <section id="bracket" :class="{'opposite': reverse}">
+      <v-dialog v-model="showModal" class="square-card">
+        <ScoreDrilldown :tournament-id="bracket.tournamentId"
+                        :start-date="showScoreData.round.startDate"
+                        :end-date="showScoreData.round.endDate"
+                        :user="showScoreData.user"
+                        :user-id="showScoreData.userId"
+                        @scoreDialogClosed="showModal = false"
+        ></ScoreDrilldown>
+      </v-dialog>
+
       <div class="container">
         <div class="split split-one">
           <div class="round"
@@ -72,12 +82,14 @@
             </div>
             <ul class="matchup" v-for="(m, i) in r.matches" :class="{'mb-4': getSpacingByIndex(idx, i)}">
               <v-radio-group v-model="m.winnerUserId">
-                <li class="team team-top" :class="{'current': isCurrentRound(r)}">
+                <li class="team team-top" :class="{'current': isCurrentRound(r)}"
+                    @click="[showScoreData.userId = m.user1Id, showScoreData.user = m.user1Name, showScoreData.round = r, showModal = true]">
                   <v-radio v-if="r.edit && m.user1Id && m.user2Id" :value="m.user1Id" class="d-inline-block"></v-radio>
                   {{m.user1Name}}
                   <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user1Score}}</span>
                 </li>
-                <li class="team team-bottom" :class="{'current': isCurrentRound(r)}">
+                <li class="team team-bottom" :class="{'current': isCurrentRound(r)}"
+                    @click="[showScoreData.userId = m.user2Id, showScoreData.user = m.user2Name, showScoreData.round = r, showModal = true]">
                   <v-radio small v-if="r.edit && m.user1Id && m.user2Id" :value="m.user2Id" class="d-inline-block"></v-radio>
                   {{m.user2Name}}
                   <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user2Score}}</span></li>
@@ -93,9 +105,13 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ScoreDrilldown from "./ScoreDrilldown"
 
   export default {
     name: 'BracketComponent',
+    components: {
+      ScoreDrilldown
+    },
     props: {
       bracket: {type: Object},
       bracketCount: {type: Number},
@@ -113,6 +129,12 @@
         constants,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
+        showModal: false,
+        showScoreData: {
+          userId: null,
+          user: null,
+          round: {}
+        },
         roundRerenderKey: 0,
         firstNonAdvancedRound: {}
       }
@@ -287,8 +309,14 @@
 
   .round-4 .matchup {
     margin: 0;
-    height: 60px;
+    height: 560px;
     padding: 240px 0;
+  }
+
+  .round-5 .matchup {
+    margin: 0;
+    height: 1120px;
+    padding: 520px 0;
   }
 
   .round-details {

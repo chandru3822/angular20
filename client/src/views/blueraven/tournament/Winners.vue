@@ -1,5 +1,15 @@
 <template>
   <v-container id="winners-pool-container" v-if="!poolLoading" :class="{'padded-pool': !showWinners}">
+    <v-dialog v-model="showModal" class="square-card">
+      <ScoreDrilldown :tournament-id="parseInt(tournamentId)"
+                      :start-date="pool.startDate"
+                      :end-date="pool.endDate"
+                      :user="showScoreUser.fullName"
+                      :user-id="showScoreUser.userId"
+                      @scoreDialogClosed="showModal = false"
+      ></ScoreDrilldown>
+    </v-dialog>
+
     <v-card color="white" flat class="square-card ma-4" v-if="!showWinners">
       <v-toolbar flat class="app-toolbar">
         {{pool.customName || 'Winners'}} <br/>
@@ -37,13 +47,26 @@
           No available users
         </template>
 
+        <template #header.score="{ header }">
+          <div class="text-center">
+            {{header.text}}
+          </div>
+        </template>
+
         <template #item="{ item, index }">
           <tr :class="{'shaded-row': index % 2}">
             <td class="text-left">
               <v-icon v-if="isWinner(item)" class="mr-2" color="green">mdi-seal</v-icon>
               {{item.fullName}}
             </td>
-            <td>{{item.score || 0}}</td>
+            <td class="text-center">
+              {{item.score || 0}}
+            </td>
+            <td class="text-right">
+              <v-btn text small class="clickable" @click="[showModal = true, showScoreUser = item]">
+                <v-icon>mdi-format-list-bulleted</v-icon>
+              </v-btn>
+            </td>
           </tr>
         </template>
 
@@ -75,14 +98,20 @@
   import {getRequest, deleteRequest, logError, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import moment from 'moment'
+  import ScoreDrilldown from "./component/ScoreDrilldown"
 
   export default {
     name: 'Winners',
+    components: {
+      ScoreDrilldown
+    },
     data() {
       return {
         constants,
         snackbar: {},
         search: '',
+        showScoreUser: {},
+        showModal: false,
         poolTypeId: 3,
         poolLoading: false,
         tournamentId: this.$route.params.id,
@@ -94,6 +123,7 @@
         headers: [
           {text: 'User', value: 'fullName', show: true},
           {text: 'Score', value: 'score', show: true},
+          {text: '', value: 'details', show: true},
         ],
       }
     },
@@ -113,8 +143,6 @@
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.pool = data
-          console.log('randaLogger',this.pool.endDate)
-          console.log('randaLogger',moment(this.pool.endDate).endOf('day'))
           this.tournamentOver = moment() > moment(this.pool.endDate).endOf('day')
           if(this.tournamentOver) {
             this.showWinners = true

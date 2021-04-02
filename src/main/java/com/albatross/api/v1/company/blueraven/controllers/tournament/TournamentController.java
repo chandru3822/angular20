@@ -27,6 +27,19 @@ public class TournamentController {
     return tournamentService.getTournaments();
   }
 
+  @GetMapping(value = "/{id}/columns", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getFormulaColumns(@PathVariable Long id) {
+    return tournamentService.getFormulaColumns(id);
+  }
+
+  @GetMapping(value = "/{tournamentId}/scores", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getUserScores(@PathVariable Long tournamentId,
+                            @RequestParam Long userId,
+                            @RequestParam String startDate,
+                            @RequestParam String endDate) {
+    return tournamentService.getUserScores(tournamentId, userId, startDate, endDate);
+  }
+
   @GetMapping(value = "/ownerTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<TournamentOwnerType> getTournamentOwnerTypes() {
     return tournamentService.getTournamentOwnerTypes();

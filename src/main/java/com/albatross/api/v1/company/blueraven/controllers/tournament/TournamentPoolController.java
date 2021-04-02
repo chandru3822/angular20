@@ -69,8 +69,8 @@ public class TournamentPoolController {
   @PostMapping(value = "/{poolId}/assignUsersToMatches", produces = MediaType.APPLICATION_JSON_VALUE)
   public void assignUsersToMatches(@PathVariable Long tournamentId,
                                    @PathVariable Long poolId,
-                                   @RequestBody List<Long> userIds) {
-    tournamentPoolService.assignUsersToMatches(tournamentId, poolId, userIds);
+                                   @RequestBody String seededMatches) {
+    tournamentPoolService.assignUsersToMatches(tournamentId, poolId, seededMatches);
   }
 
   @PostMapping(value = "/{poolId}/advanceUsersToWinnerPool", produces = MediaType.APPLICATION_JSON_VALUE)

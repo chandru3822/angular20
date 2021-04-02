@@ -13,6 +13,8 @@ public class TournamentFormula {
 
   private Long id, tournamentOwnerTypeId;
   private String formulaTitle, formulaDescription;
+  //this is a json string for the frontend to dynamically display columns for scoring drillins
+  private String columns;
   private Boolean archived;
 }
 

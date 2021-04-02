@@ -153,8 +153,9 @@
     where  st.timestamp_value is not null
       and et.timestamp_value is not null
       and r.int_value is not null
-      and case when :startTime::timestamp is not null then st.timestamp_value >= :startTime::timestamp else 1=1 end
-        and case when :endTime::timestamp is not null then et.timestamp_value <= :endTime::timestamp else 1=1 end
+      and case when :startTime::timestamp is not null and :endTime::timestamp is not null
+           then st.timestamp_value between :startTime::timestamp and :endTime::timestamp OR
+                et.timestamp_value between :startTime::timestamp and :endTime::timestamp else 1=1 end
       and case when :isParent
                        then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                    else ps.company_id = :companyId end

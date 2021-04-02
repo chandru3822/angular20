@@ -120,14 +120,14 @@ public class TournamentPoolService {
     sqlCache.update("tournamentPool.deleteUser", params);
   }
 
-  public void assignUsersToMatches(Long tournamentId, Long poolId, List<Long> userIds) {
+  public void assignUsersToMatches(Long tournamentId, Long poolId, String seededMatches) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolId", poolId);
     params.put("userId", user.getId());
-    params.put("userIds", userIds);
+    params.put("seededMatches", seededMatches);
 
     sqlCache.query("tournamentPool.assignUsersToMatches", params, String.class);
   }

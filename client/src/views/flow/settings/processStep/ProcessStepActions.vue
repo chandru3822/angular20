@@ -143,7 +143,8 @@
               label="Custom"
             ></v-switch>
             <v-text-field
-              v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
+              v-if="newRequirement.operatorTypeId && newRequirement.customValue && newRequirement.processStepRequirementTypeId !== 7
+                    && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSqlKey || selectedCustomField.customFieldSqlKey === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
               v-model="newRequirement.requirementValue"
               placeholder="Enter a value"
               @input="validateRequirementForm()"
@@ -153,7 +154,7 @@
               v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
                               && newRequirement.processStepRequirementTypeId !== 7
-                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)
+                              && ((selectedCustomField.listOfValueId && selectedCustomField.listOfValueId !== null) || (selectedCustomField.customFieldSqlKey && selectedCustomField.customFieldSqlKey !== null) || (selectedCustomField.companySystemListId && selectedCustomField.companySystemListId !== null))
                               && !selectedCustomField.allowMultiple"
               v-model="selectedListValue"
               :items="selectedCustomField.listOfValues"
@@ -310,7 +311,7 @@
                   ></v-switch>
                   <!-- single text field for non list custom values -->
                   <v-text-field
-                    v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
+                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
                     v-model="item.requirementValue"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
@@ -557,6 +558,18 @@
             <v-checkbox
               dense
               hide-details
+              v-model="newAction.hideFromMobile"
+              label="Hide From Mobile"
+            />
+            <v-checkbox
+              dense
+              hide-details
+              v-model="newAction.hideFromWeb"
+              label="Hide From Web"
+            />
+            <v-checkbox
+              dense
+              hide-details
               v-model="newAction.triggerAutomatically"
               @change="newAction.multipleUses = false"
               label="Trigger Automatically"
@@ -568,14 +581,6 @@
               hide-details
               v-model="newAction.timeBasedTrigger"
               label="Time Based"
-            />
-            <v-checkbox
-              class="pl-3 pt-0"
-              dense
-              v-if="newAction.triggerAutomatically"
-              hide-details
-              v-model="newAction.hidden"
-              label="Hide From UI"
             />
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
@@ -656,6 +661,22 @@
                     />
                     <v-checkbox
                       dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      hide-details
+                      v-model="item.hideFromMobile"
+                      label="Hide From Mobile"
+                    />
+                    <v-checkbox
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      hide-details
+                      v-model="item.hideFromWeb"
+                      label="Hide From Web"
+                    />
+                    <v-checkbox
+                      dense
                       hide-details
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
@@ -672,16 +693,6 @@
                       hide-details
                       v-model="item.timeBasedTrigger"
                       label="Time Based"
-                    />
-                    <v-checkbox
-                      class="pl-3 pt-0 pb-3"
-                      dense
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      v-if="item.triggerAutomatically"
-                      hide-details
-                      v-model="item.hidden"
-                      label="Hide From UI"
                     />
 
                     <!-- LINK -->
@@ -1109,7 +1120,7 @@
                       </v-btn>
                     </v-toolbar-items>
                   </v-toolbar>
-                  <v-card flat class="text-left" color="transparent">
+                  <v-card flat class="text-left px-3" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1"
                            :disabled="!userCanEdit"
                            v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
@@ -1125,7 +1136,7 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
                   </v-toolbar>
-                  <v-card flat class="text-left" color="transparent">
+                  <v-card flat class="text-left px-3" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
                            :disabled="!userCanEdit"
                            @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]">
@@ -1140,7 +1151,7 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
                   </v-toolbar>
-                  <v-card flat class="text-left mb-4" color="transparent">
+                  <v-card flat class="text-left mb-4 px-3" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
                            :disabled="!userCanEdit"
                            @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })]">
@@ -1148,7 +1159,7 @@
                     </v-btn>
                   </v-card>
                   <v-divider></v-divider>
-                  <v-btn v-if="userCanEdit" @click="updateAction(item)" class="mt-4">
+                  <v-btn v-if="userCanEdit" @click="updateAction(item)" class="mt-4 ml-3">
                     <v-icon class="mr-2">save</v-icon>
                     Save Changes
                   </v-btn>
@@ -1781,8 +1792,6 @@
           if (!this.newAction.triggerAutomatically) {
             //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
             this.newAction.timeBasedTrigger = false
-            //same with hidden
-            this.newAction.hidden = false
           }
           this.newAction.processStepId = this.processStepId
           const {data} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
@@ -1808,8 +1817,6 @@
           if (!action.triggerAutomatically) {
             //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
             action.timeBasedTrigger = false
-            //same with hidden
-            action.hidden = false
           }
 
           // build the list of psr's that need to be set to immutable  do that if the save is successful
