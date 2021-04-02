@@ -400,7 +400,7 @@
       async getCustomFieldObjectTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
+          const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
           data.forEach(d => d.archived = true)
           this.customFieldObjectTypes = cloneDeep(data)
           this.objectFilters = data

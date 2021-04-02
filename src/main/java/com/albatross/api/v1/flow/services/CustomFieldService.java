@@ -61,13 +61,6 @@ public class CustomFieldService {
     return result;
   }
 
-  public List<CompanyObjectType> getCompanyObjectTypes() {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    List<CompanyObjectType> result = sqlCache.query("customField.getCompanyObjectTypes", params, CompanyObjectType.class);
-    return result;
-  }
 
   /*
   * I think this handles saving all scenarios of custom fields
@@ -307,6 +300,10 @@ public class CustomFieldService {
       TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "whiteListedPositions",
         new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> hiddenWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "hiddenWhiteListedPositions",
+        new JsonCollectionDeserializer(hiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 }

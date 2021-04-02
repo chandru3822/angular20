@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -31,6 +32,7 @@ public class CustomFieldValueService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final SystemListService systemListService;
+  private final UserPositionService userPositionService;
   private final ProjectService projectService;
   private final ObjectMapper om;
   private final DataSource dataSource;
@@ -80,10 +82,10 @@ public class CustomFieldValueService {
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
         params.put("userId", currentUser.getId());
-  
+
         //only used on upsert
         params.put("id", cfv.getId());
-  
+
         String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
         sqlCache.update(sql, params);
       }
@@ -93,7 +95,7 @@ public class CustomFieldValueService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
   }
-  
+
   private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
     if (array != null && !array.isEmpty()) {
       try (Connection connection = dataSource.getConnection()) {
@@ -104,34 +106,46 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("objectTypeId", ObjectType.get(objectType).id);
-    params.put("sourceId", id);
-    String sqlPrefix = "customFieldValues." + objectType;
+    try {
+      User user = securityService.getCurrentUser();
+      Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+      List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("objectTypeId", ObjectType.get(objectType).id);
+      params.put("sourceId", id);
+      params.put("userPositions", null != userPositions && userPositions.size() > 0 ? createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
+      params.put("systemAdmin", systemAdmin);
+      String sqlPrefix = "customFieldValues." + objectType;
 
 //    note: this company id needs to be the company_id of the object (contact, project, org, process_step, user) so that users in the parent can see the custom field groups still
-    Long companyId;
-    if(objectType.equals("user")) {
-      companyId = user.getCompanyId();
-    } else {
-      companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
+      Long companyId;
+      if(objectType.equals("user")) {
+        companyId = user.getCompanyId();
+      } else {
+        companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
+      }
+      params.put("companyId", companyId);
+
+      List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+      // this allows us to pass project_id and user_id to custom sql queries
+      if(objectType.equals("project")) {
+        handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
+      } else if (objectType.equals("process_step")) {
+        Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
+        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
+      } else {
+        handleCustomListOfValue(fieldGroups, companyId);
+      }
+
+      return fieldGroups;
+
+    } catch (SQLException e) {
+      //this error should never happen
+      log.error("SQL", e);
+      return null;
     }
-    params.put("companyId", companyId);
-
-    List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
-
-    // this allows us to pass project_id and user_id to custom sql queries
-    if(objectType.equals("project")) {
-      handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
-    } else if (objectType.equals("process_step")) {
-      Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
-      handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
-    } else {
-      handleCustomListOfValue(fieldGroups, companyId);
-    }
-
-    return fieldGroups;
   }
 
   public void updateProjectCustomFieldValue(CustomFieldValue cfv, Long projectId, Long customFieldId) {
@@ -146,6 +160,7 @@ public class CustomFieldValueService {
     params.put("userId", user.getId());
     sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
+
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
@@ -172,6 +187,10 @@ public class CustomFieldValueService {
       TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "whiteListedPositions",
           new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> hiddenWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "hiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(hiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 }

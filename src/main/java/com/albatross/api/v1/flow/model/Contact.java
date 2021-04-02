@@ -18,10 +18,12 @@ public class Contact {
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
       phone, mobile, contactType, companyName;
   private Date dateCreated;
+  private Boolean ownerReadOnly;
 
   private Owner owner;
 
   private List<Project> projects;
+  private List<WhiteListedPosition> ownerReadOnlyWhiteListedPositions;
 
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;

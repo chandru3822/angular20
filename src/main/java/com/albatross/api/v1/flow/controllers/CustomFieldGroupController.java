@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.Data;
@@ -47,9 +48,15 @@ public class CustomFieldGroupController {
   }
 
   @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateFieldInGroup(@RequestParam(required = false) Boolean savePositions,
-                                 @RequestBody CustomField customField) {
-    customFieldGroupService.saveReadOnlyAndWhiteList(customField, savePositions);
+  public void saveReadOnlyAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                       @RequestBody CustomField customField) {
+    customFieldGroupService.saveCfgaAndWhiteList(customField, true, savePositions, WhiteListType.CFGA_READ_ONLY.id);
+  }
+
+  @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                     @RequestBody CustomField customField) {
+    customFieldGroupService.saveCfgaAndWhiteList(customField, false, savePositions, WhiteListType.CFGA_HIDDEN.id);
   }
 
   // to update a list of them - (currently used when updating field order):

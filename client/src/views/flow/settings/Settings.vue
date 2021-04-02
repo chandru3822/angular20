@@ -232,7 +232,7 @@ export default {
       if(this.hasSettingsAccess) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
+          const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
           this.companyObjectTypes = data
           this.setTitle()
           this.$store.commit(AppMutations.SET_LOADING, false)
