@@ -123,7 +123,7 @@ public class CustomFieldGroupService {
       sqlCache.update("customFieldGroupAssignment.saveHidden", params);
     }
 
-    if (!customField.getCustomFieldGroupAssignmentReadOnly()) {
+    if ((savingReadOnly && !customField.getCustomFieldGroupAssignmentReadOnly()) || (!savingReadOnly && !customField.getCustomFieldGroupAssignmentHidden())) {
       // if field is not readonly archive any white listed positions for it
       sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositions", params);
     } else if (null != savePositions && savePositions) {
