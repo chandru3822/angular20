@@ -659,12 +659,13 @@ public class ProjectProcessStepService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("referenceProcessStepId", requirement.getReferenceProcessStepId());
       params.put("ppsId", projectProcessStepId);
-      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
+//      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
 
       Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
-      //if we found a primary pss of that type and one of the selected statuses
+      //if we found a primary pss of that type
       if(projectProcessStep.isPresent()) {
-        passed = true;
+        // check if the status is in one of the statuses
+        passed = requirement.getListOfValueIds().contains(projectProcessStep.get().getCompanyProcessStepStatusTypeId().intValue());
       } else {
         //if we didn't find one, check the "failIfNoReferenceStepFound" value
         passed = !requirement.getFailIfNoReferenceStepFound();
