@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_day_of_week(p_custom_field_group_assignment_id integer, p_project_process_step_id integer)
+CREATE OR REPLACE FUNCTION brs.get_day_of_week_by_custom_field(p_custom_field_group_assignment_id integer, p_project_process_step_id integer)
     returns integer AS
 $BODY$
 declare
