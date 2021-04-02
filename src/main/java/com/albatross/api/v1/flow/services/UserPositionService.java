@@ -47,6 +47,16 @@ public class UserPositionService {
     return results;
   }
 
+  public List<UserPosition> getAllActiveUserPositions(Long userId) {
+    //this returns a list of all active positions for a user regardless of company id
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    List<UserPosition> results = sqlCache.query("userPosition.getAllActive", params, new UserPositionMapper<>(UserPosition.class, om));
+
+    return results;
+  }
+
   public UserPosition getOne(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

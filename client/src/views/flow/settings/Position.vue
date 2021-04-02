@@ -48,7 +48,7 @@
             <label>Can Own Contacts:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner">
           </div>
-          <div class="mb-3" v-if="!position.projectOwnerReadonly">
+          <div class="mb-3">
             <label>Can Own Projects:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner">
           </div>
