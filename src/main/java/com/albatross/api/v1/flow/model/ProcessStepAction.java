@@ -19,6 +19,12 @@ public class ProcessStepAction {
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;
   private List<ProcessStepActionChildFunction> processStepActionChildFunctions;
   private List<ProcessStepActionLink> processStepActionLinks;
-  private Boolean archived, alwaysEnabled, logicListChanged, triggerAutomatically, timeBasedTrigger, hidden, multipleUses, removeProcessStepOwner;
+  private Boolean archived, alwaysEnabled, logicListChanged, triggerAutomatically, timeBasedTrigger, hideFromWeb, multipleUses, removeProcessStepOwner;
+
+// NOTE: the "hidden" field is the same as "hideFromMobile"
+// mobile was already honoring the "hidden" flag so we couldn't re-purpose it without breaking old versions of the mobile app
+// newer app versions reference "hideFromMobile" though so eventually we can phase out the uninformative "hidden" flag
+//humes said that this makes perfect sense so bug him about it when it doesn't
+  private Boolean hidden, hideFromMobile;
 }
 
