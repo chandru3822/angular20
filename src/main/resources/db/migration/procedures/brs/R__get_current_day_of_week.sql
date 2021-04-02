@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_day_of_week()
+CREATE OR REPLACE FUNCTION brs.get_current_day_of_week()
     returns integer AS
 $BODY$
 declare

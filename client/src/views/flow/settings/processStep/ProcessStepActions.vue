@@ -311,7 +311,7 @@
                   ></v-switch>
                   <!-- single text field for non list custom values -->
                   <v-text-field
-                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
+                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
                     v-model="item.requirementValue"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
