@@ -41,6 +41,19 @@
        ctr.country,
        cc.country_id,
        c.owner_user_position_id,
+       cot.owner_read_only,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(wlp)))
+                    FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 5
+                               AND wlp.archived is not true) wlp), '[]') AS "ownerReadOnlyWhiteListedPositions",
        coalesce((
             SELECT array_to_json(array_agg(row_to_json(projects)))
             FROM (
@@ -71,6 +84,7 @@
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
              inner join flow.company comp on comp.id = c.company_id
+             inner join flow.company_object_type cot on cot.company_id = comp.id and cot.object_type_id = 2
              left outer join flow.company_state cs on cs.id = c.company_state_id
               left outer join flow.state s on s.id = cs.state_id
              left outer join flow.company_country cc on cc.id = c.company_country_id

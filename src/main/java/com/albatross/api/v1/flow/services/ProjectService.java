@@ -472,6 +472,14 @@ public class ProjectService {
         TypeReference<Owner> ownerRef = new TypeReference<>() {};
         bw.registerCustomEditor(Object.class, "owner",
           new JsonCollectionDeserializer(ownerRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "statusReadOnlyWhiteListedPositions",
+        new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "ownerReadOnlyWhiteListedPositions",
+        new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
     }
   }
 

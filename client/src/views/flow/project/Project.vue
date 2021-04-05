@@ -93,7 +93,7 @@
                   {{project.owner.position}}
                 </div>
               </div>
-              <div v-if="displayChangeOwner && !project.projectOwnerReadonly">
+              <div v-if="displayChangeOwner && !projectOwnerIsReadOnly()">
                 <v-autocomplete v-model="project.owner"
                                 :items="availableOwners"
                                 label="Select Owner"
@@ -105,7 +105,7 @@
                 </v-autocomplete>
               </div>
               <v-btn text x-small class="change-owner-button"
-                     v-if="!project.projectOwnerReadonly"
+                     v-if="!projectOwnerIsReadOnly()"
                      @click="[displayChangeOwner = !displayChangeOwner, getOwners()]">
                 <span v-if="displayChangeOwner">cancel</span>
                 <span v-else-if="project.owner && project.owner.userId">change</span>
@@ -116,8 +116,8 @@
               <v-select
                 v-model="project.companyProjectStatusTypeId"
                 :items="statuses"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
+                :readonly="!userCanEdit || projectStatusIsReadOnly()"
+                :disabled="!userCanEdit || projectStatusIsReadOnly()"
                 item-text="projectStatusType"
                 item-value="id"
                 @change="updateStatus"
@@ -253,6 +253,20 @@
       this.getProjectTabs()
     },
     methods: {
+      projectOwnerIsReadOnly() {
+        if(this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
+          return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+        } else {
+          return this.project.ownerReadOnly
+        }
+      },
+      projectStatusIsReadOnly() {
+        if(this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
+          return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+        } else {
+          return this.project.ownerReadOnly
+        }
+      },
       validateForm() {
         if (this.$refs.projectEditForm.validate()) {
           this.saveProjectAddress()

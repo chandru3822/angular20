@@ -14,7 +14,8 @@
             <v-list-item-content>
               <div v-if="item.objectType">{{item.objectType}}</div>
               <div v-if="item.processStepName">{{item.processStepName}}</div>
-              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
+              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span>
+              </div>
             </v-list-item-content>
           </v-list>
 
@@ -37,7 +38,7 @@
     </v-dialog>
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
-        <v-toolbar flat  class="cfg-header-bar">
+        <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -51,24 +52,25 @@
                 color="rowShadeCustom">
           <div>
             <v-text-field
-                label="Group Name"
-                tabindex=1
-                v-model="newGroup.groupName"
+              label="Group Name"
+              tabindex=1
+              v-model="newGroup.groupName"
             ></v-text-field>
             <div v-if="showScheduleGroupCheckbox()" class="mb-3">
               <label>Schedule Group:</label>
-              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="[getSchedulingFields(), getEventTypes()]">
+              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable"
+                     @change="[getSchedulingFields(), getEventTypes()]">
             </div>
             <div v-if="newGroup.schedulable">
               <v-select
-                  v-model="newGroup.eventTypeId"
-                  :items="eventTypes"
-                  label="Scheduling Tool Event Type"
-                  placeholder="Select One..."
-                  item-text="eventType"
-                  item-value="id"
+                v-model="newGroup.eventTypeId"
+                :items="eventTypes"
+                label="Scheduling Tool Event Type"
+                placeholder="Select One..."
+                item-text="eventType"
+                item-value="id"
               ></v-select>
-              <div  v-for="(sf, index) in schedulingFields" :key="index">
+              <div v-for="(sf, index) in schedulingFields" :key="index">
                 <v-select v-model="newGroup.schedulingFields[index]"
                           text
                           :items="sf.availableCustomFields"
@@ -82,31 +84,31 @@
             </div>
           </div>
           <v-btn
-              color="primaryCustom"
-              class="white--text mr-2"
-              :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
-              @click="saveFieldGroup()">
+            color="primaryCustom"
+            class="white--text mr-2"
+            :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
+            @click="saveFieldGroup()">
             Save
           </v-btn>
           <v-btn
-              @click="[newGroup = { schedulingFields: [], schedulable: false }, createNew = false]">
+            @click="[newGroup = { schedulingFields: [], schedulable: false }, createNew = false]">
             Cancel
           </v-btn>
         </v-card>
         <v-row>
           <v-col cols="12">
             <v-data-table
-                :key="componentKey"
-                :headers="headers"
-                :items="filterCustomFieldGroups()"
-                :items-per-page="-1"
-                single-expand
-                :expanded.sync="expanded"
-                hide-default-footer
-                hide-default-header
-                :sort-desc="[false]"
-                :sort-by="['groupOrder']"
-                class="elevation-1 fix-column-width-bug process-step-cfg-table square-card"
+              :key="componentKey"
+              :headers="headers"
+              :items="filterCustomFieldGroups()"
+              :items-per-page="-1"
+              single-expand
+              :expanded.sync="expanded"
+              hide-default-footer
+              hide-default-header
+              :sort-desc="[false]"
+              :sort-by="['groupOrder']"
+              class="elevation-1 fix-column-width-bug process-step-cfg-table square-card"
             >
               <template #no-data>
                 No custom for this process step
@@ -139,64 +141,70 @@
                     </div>
                     <span v-else>{{item.groupName}}</span>
                   </td>
-                  <td><div class="item-icons">
-                    <v-btn v-if="!item.eventTypeId && userCanAdd" small text @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
-                      <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                      <v-icon v-else>add</v-icon>
-                    </v-btn>
-                    <v-btn small text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                      <v-icon v-else>expand_more</v-icon>
-                    </v-btn>
-                    <v-dialog
+                  <td>
+                    <div class="item-icons">
+                      <v-btn v-if="!item.eventTypeId && userCanAdd" small text
+                             @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
+                        <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
+                        <v-icon v-else>add</v-icon>
+                      </v-btn>
+                      <v-btn small text
+                             @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
+                        <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+                        <v-icon v-else>expand_more</v-icon>
+                      </v-btn>
+                      <v-dialog
                         v-if="userCanEdit"
                         v-model="item.deleteConfirm"
                         width="500">
-                      <template #activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
+                        <template #activator="{ on }">
+                          <v-btn small text v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </template>
+                        <v-card>
+                          <v-card-title
                             class="headline grey lighten-2"
                             primary-title>
-                          Confirm
-                        </v-card-title>
+                            Confirm
+                          </v-card-title>
 
-                        <v-card-text class="pt-4">
-                          <span class="error--text">WARNING:</span>
-                          By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                          <v-card-text class="pt-4">
+                            <span class="error--text">WARNING:</span>
+                            By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
 
-                          Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
-                        </v-card-text>
+                            Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName
+                            }}</strong>?
+                          </v-card-text>
 
-                        <v-divider></v-divider>
+                          <v-divider></v-divider>
 
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
                               @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
+                              No
+                            </v-btn>
+                            <v-btn
                               color="primaryCustom"
                               text
                               @click="deleteWithChecks(item, item.id, null)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </div></td>
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </div>
+                  </td>
                 </tr>
               </template>
 
               <template #expanded-item="{ headers, item }">
-                <td :colspan="headers.length" class="pb-2 px-0"  :class="{'shaded-row': selectedIndex % 2}">
+                <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
-                    <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
+                    <v-radio-group v-model="newFieldType"
+                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-radio label="Native Field"
                                value="native"></v-radio>
                       <v-radio label="Reference Field: viewed only from other process steps or objects"
@@ -245,78 +253,155 @@
                     <v-btn @click="addField = false">Cancel</v-btn>
                   </v-col>
                   <v-col cols="12" justify="center" class="px-3 py-0 pt-2"
-                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
+                         v-if="!addField && (!item.customFields || item.customFields.length === 0)">
                     No Custom Fields Added
                   </v-col>
-                  <v-col  cols="12" justify="center" class="px-3 py-0"
-                          v-if="item.customFields && item.customFields.length > 0">
+                  <v-col cols="12" justify="center" class="px-3 py-0"
+                         v-if="item.customFields && item.customFields.length > 0">
                     <div v-if="item.eventTypeId">Scheduling Tool Event Type: {{item.eventType}}</div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                :disabled="!userCanEdit"
-                               group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
+                               group="customFields" @start="drag=true" @end="drag=false"
+                               @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
-                              :key="index" class="pa-0"  color="transparent">
+                              :key="index" class="pa-0" color="transparent">
                         <v-list-item :class="{grab: !item.eventTypeId}">
                           <v-list-item-action>
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
-                              {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
+                              {{cf.fieldName}}
+                              <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
+                              <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                               <div class="text-left mt-3" v-if="cf.edit">
-                                <div>
-                                  <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly">
-                                  Read Only
-                                </div>
-                                <v-autocomplete
-                                  v-if="cf.customFieldGroupAssignmentReadOnly"
-                                  v-model="cf.whiteListedPositions"
-                                  :items="positions"
-                                  :loading="positionsLoading"
-                                  multiple
-                                  clearable
-                                  label="White Listed Positions"
-                                  item-text="position"
-                                  item-value="positionId"
-                                  return-object
-                                  height="35px"
-                                  class="mt-2"
-                                  @change="cf.positionsChanged = true"
-                                >
-                                  <v-list-item
-                                    slot="prepend-item"
-                                    ripple
-                                    @click="toggleSelectAllPositions(cf)"
-                                  >
-                                    <v-list-item-action>
-                                      <v-icon>{{ icon(cf) }}</v-icon>
-                                    </v-list-item-action>
-                                    <v-list-item-title>Select All</v-list-item-title>
-                                  </v-list-item>
-                                  <v-divider
-                                    slot="prepend-item"
-                                    class="mt-2"
-                                  ></v-divider>
-                                  <template
-                                    slot="selection"
-                                    slot-scope="{ item, index }"
-                                  >
-                                    <v-chip small v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
-                                      <span>{{ item.position }}</span>
-                                    </v-chip>
-                                    <span
-                                      v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
-                                      class="primary--text caption"
-                                    >{{ cf.whiteListedPositions.length }} selected</span>
-                                  </template>
-                                </v-autocomplete>
-                                <v-btn color="primaryCustom" dark class="mt-2 white--text" @click="saveReadOnlyAndWhiteList(cf)">
-                                  Save
-                                </v-btn>
+                                <v-row>
+                                  <v-col cols="6">
+                                    <v-card flat color="rowShadeCustom" class="square-card">
+                                      <v-card-title style="height: 40px" class="py-0">
+                                        Read Only
+                                        <v-checkbox type="checkbox" class="ml-3"
+                                                    v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>
+                                      </v-card-title>
+                                      <v-card-text>
+                                        <v-autocomplete
+                                          v-if="cf.customFieldGroupAssignmentReadOnly"
+                                          v-model="cf.whiteListedPositions"
+                                          :items="positions"
+                                          :loading="positionsLoading"
+                                          multiple
+                                          clearable
+                                          label="White Listed Positions"
+                                          item-text="position"
+                                          item-value="positionId"
+                                          return-object
+                                          height="35px"
+                                          class="d-inline-block mr-3"
+                                          @change="cf.positionsChanged = true"
+                                        >
+                                          <v-list-item
+                                            slot="prepend-item"
+                                            ripple
+                                            @click="toggleSelectAllPositions(cf)"
+                                          >
+                                            <v-list-item-action>
+                                              <v-icon>{{ icon(cf) }}</v-icon>
+                                            </v-list-item-action>
+                                            <v-list-item-title>Select All</v-list-item-title>
+                                          </v-list-item>
+                                          <v-divider
+                                            slot="prepend-item"
+                                            class="mt-2"
+                                          ></v-divider>
+                                          <template
+                                            slot="selection"
+                                            slot-scope="{ item, index }"
+                                          >
+                                            <v-chip small
+                                                    v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
+                                              <span>{{ item.position }}</span>
+                                            </v-chip>
+                                            <span
+                                              v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
+                                              class="primary--text caption"
+                                            >{{ cf.whiteListedPositions.length }} selected</span>
+                                          </template>
+                                        </v-autocomplete>
+                                        <br/>
+                                        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                                               @click="saveReadOnlyAndWhiteList(cf)">
+                                          <v-icon class="mr-2">save</v-icon>
+                                          Save Read Only
+                                        </v-btn>
+                                      </v-card-text>
+                                    </v-card>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-card flat color="rowShadeCustom" class="square-card">
+                                      <v-card-title style="height: 40px" class="py-0">
+                                        Hidden
+                                        <v-checkbox type="checkbox" class="ml-2"
+                                                    v-model="cf.customFieldGroupAssignmentHidden"></v-checkbox>
+                                      </v-card-title>
+                                      <v-card-text>
+                                        <v-autocomplete
+                                          v-if="cf.customFieldGroupAssignmentHidden"
+                                          v-model="cf.hiddenWhiteListedPositions"
+                                          :items="positions"
+                                          :loading="positionsLoading"
+                                          multiple
+                                          clearable
+                                          label="White Listed Positions"
+                                          item-text="position"
+                                          item-value="positionId"
+                                          return-object
+                                          height="35px"
+                                          class="d-inline-block mr-3"
+                                          @change="cf.hiddenPositionsChanged = true"
+                                        >
+                                          <v-list-item
+                                            slot="prepend-item"
+                                            ripple
+                                            @click="toggleHiddenSelectAllPositions(cf)"
+                                          >
+                                            <v-list-item-action>
+                                              <v-icon>{{ icon(cf) }}</v-icon>
+                                            </v-list-item-action>
+                                            <v-list-item-title>Select All</v-list-item-title>
+                                          </v-list-item>
+                                          <v-divider
+                                            slot="prepend-item"
+                                            class="mt-2"
+                                          ></v-divider>
+                                          <template
+                                            slot="selection"
+                                            slot-scope="{ item, index }"
+                                          >
+                                            <v-chip small
+                                                    v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
+                                              <span>{{ item.position }}</span>
+                                            </v-chip>
+                                            <span
+                                              v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
+                                              class="primary--text caption"
+                                            >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
+                                          </template>
+                                        </v-autocomplete>
+                                        <br/>
+                                        <v-btn color="primaryCustom" dark class="white--text d-inline-block"
+                                               @click="saveHiddenAndWhiteList(cf)">
+                                          <v-icon class="mr-2">save</v-icon>
+                                          Save Hidden
+                                        </v-btn>
+                                      </v-card-text>
+                                    </v-card>
+                                  </v-col>
+                                </v-row>
                               </div>
                             </div>
                             <div v-else>
-                              {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                              {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
+                              (Ancillary)
                               <div v-if="cf.edit" class="mt-3">
                                 <label>Use Parent Data: </label>
                                 <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
@@ -325,11 +410,13 @@
                               </div>
                             </div>
                           </v-list-item-content>
-                          <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                          <v-menu offset-y
+                                  v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}" v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
+                                  <v-btn text small v-on="{...tooltip, ...menu}"
+                                         v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
                                     <v-icon>mdi-cursor-move</v-icon>
                                   </v-btn>
                                 </template>
@@ -349,9 +436,9 @@
                           </v-btn>
 
                           <v-dialog
-                              v-if="!item.eventTypeId && userCanEdit"
-                              v-model="cf.deleteConfirm"
-                              width="500">
+                            v-if="!item.eventTypeId && userCanEdit"
+                            v-model="cf.deleteConfirm"
+                            width="500">
                             <template v-slot:activator="{ on }">
                               <v-list-item-action class="clickable" v-on="on">
                                 <v-icon>delete</v-icon>
@@ -359,16 +446,18 @@
                             </template>
                             <v-card>
                               <v-card-title
-                                  class="headline grey lighten-2"
-                                  primary-title>
+                                class="headline grey lighten-2"
+                                primary-title>
                                 Confirm
                               </v-card-title>
 
                               <v-card-text class="mt-2">
                                 <span class="error--text">WARNING:</span>
-                                By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
+                                By deleting a field you will lose all data associated with the field. If you meant to
+                                "move" the field to another group please cancel and move the field. <br/><br/>
 
-                                Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{ item.groupName }}</strong>?
+                                Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
+                                item.groupName }}</strong>?
                               </v-card-text>
 
                               <v-divider></v-divider>
@@ -376,13 +465,13 @@
                               <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                    @click="cf.deleteConfirm = false">
+                                  @click="cf.deleteConfirm = false">
                                   No
                                 </v-btn>
                                 <v-btn
-                                    color="primaryCustom"
-                                    text
-                                    @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
+                                  color="primaryCustom"
+                                  text
+                                  @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -410,7 +499,14 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getEventTypes} from '@/services/scheduleService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {
+    getRequest,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getRequestWithParams,
+    getSnackbar
+  } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from 'lodash.clonedeep'
@@ -432,8 +528,8 @@
       const _self = this
       Sortable.create(table, {
         handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
-          if(_self.localCustomFieldGroups?.length > 0) {
+        onEnd({newIndex, oldIndex}) {
+          if (_self.localCustomFieldGroups?.length > 0) {
             const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
             _self.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
             let rowsClone = cloneDeep(_self.localCustomFieldGroups)
@@ -446,7 +542,7 @@
               //update display order
               r.groupOrder = idx
               //save only rows that changed
-              if(save) {
+              if (save) {
                 _self.localCustomFieldGroups[idx].newGroupOrder = idx
                 rowsToSave.push(r)
               }
@@ -488,9 +584,9 @@
         selectedAncillaryField: {},
         ancillaryCustomFields: [],
         headers: [
-          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
-          { text: 'Name', value: 'groupName', show: true },
-          { text: null, value: 'icons', show: true }
+          {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+          {text: 'Name', value: 'groupName', show: true},
+          {text: null, value: 'icons', show: true}
         ],
         expanded: [],
         schedulingFields: [],
@@ -499,10 +595,10 @@
     },
     computed: {
       localCustomFieldGroups: {
-        get: function() {
+        get: function () {
           return this.customFieldGroups
         },
-        set: function(val) {
+        set: function (val) {
           val.forEach(v => {
             v.groupOrder = v.newGroupOrder ?? v.groupOrder
           })
@@ -512,13 +608,13 @@
 
     },
     methods: {
-      selectAll (f) {
+      selectAll(f) {
         return f.whiteListedPositions?.length === this.positions?.length
       },
-      selectSome (f) {
+      selectSome(f) {
         return f.whiteListedPositions?.length > 0 && !this.selectAll(f)
       },
-      icon (f) {
+      icon(f) {
         if (this.selectAll(f)) {
           return 'check_box'
         }
@@ -566,7 +662,7 @@
             let errorMsg = 'Group Cannot Be Deleted'
             this.deleteHeader = 'Error Deleting Custom Field Group'
             this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
-            if(null !== customFieldGroupAssignmentId) {
+            if (null !== customFieldGroupAssignmentId) {
               errorMsg = 'Field Cannot Be Deleted'
               this.deleteHeader = 'Error Deleting Custom Field from Group'
               this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
@@ -588,7 +684,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveGroupName (group) {
+      async saveGroupName(group) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
@@ -602,7 +698,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async moveFieldToOtherGroup (field, newGroup) {
+      async moveFieldToOtherGroup(field, newGroup) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
@@ -633,7 +729,7 @@
             this.ancillaryCustomFields = []
           } else if (this.addField && this.newFieldType === 'ancillary') {
             this.availableCustomFields = []
-            const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
+            const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
           }
@@ -648,7 +744,7 @@
       async loadFieldsByParent() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if(this.parent.isProcessStep) {
+          if (this.parent.isProcessStep) {
             const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
             this.ancillaryCustomFields = data
           } else {
@@ -663,7 +759,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveUseParentData (field) {
+      async saveUseParentData(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/customFieldGroup/saveUseParentData`, field)
@@ -675,12 +771,12 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveReadOnlyAndWhiteList (field) {
+      async saveReadOnlyAndWhiteList(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
           field.positionsChanged = false
-          if(!field.customFieldGroupAssignmentReadOnly) {
+          if (!field.customFieldGroupAssignmentReadOnly) {
             this.$set(field, 'whiteListedPositions', [])
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -691,7 +787,23 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveFieldChanges (fields) {
+      async saveHiddenAndWhiteList(field) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
+          field.hiddenPositionsChanged = false
+          if (!field.customFieldGroupAssignmentHidden) {
+            this.$set(field, 'hiddenWhiteListedPositions', [])
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveFieldChanges(fields) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
@@ -699,13 +811,13 @@
           let fieldsToSave = []
           fields.forEach((f, idx) => {
             let order = idx + 1
-            if(f.fieldOrder !== order){
+            if (f.fieldOrder !== order) {
               f.fieldOrder = order
               fieldsToSave.push(f)
             }
           })
           // save them here
-          if(fieldsToSave.length > 0) {
+          if (fieldsToSave.length > 0) {
             await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
           }
           this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
@@ -764,11 +876,13 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      filterCustomFieldGroups () {
-        return this.localCustomFieldGroups?.filter(cfg => { return !cfg.archived})
+      filterCustomFieldGroups() {
+        return this.localCustomFieldGroups?.filter(cfg => {
+          return !cfg.archived
+        })
       },
-      async getSchedulingFields () {
-        if(this.newGroup.schedulable) {
+      async getSchedulingFields() {
+        if (this.newGroup.schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields`)
@@ -782,8 +896,8 @@
           }
         }
       },
-      async getEventTypes () {
-        if(this.newGroup.schedulable) {
+      async getEventTypes() {
+        if (this.newGroup.schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             const {data} = await getEventTypes()
@@ -797,13 +911,13 @@
           }
         }
       },
-      showScheduleGroupCheckbox () {
+      showScheduleGroupCheckbox() {
         let tempGroups = this.localCustomFieldGroups.filter(cfg => !cfg.archived)
         return tempGroups?.length === 0 ||
           tempGroups.find(cfg => cfg.eventTypeId) === undefined
       },
       async saveRowChanges(rows) {
-        if(rows?.length > 0) {
+        if (rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
@@ -822,7 +936,7 @@
         }
       },
       async getPositions() {
-        if(this.positions?.length === 0) {
+        if (this.positions?.length === 0) {
           try {
             this.positionsLoading = true
             const {data} = await getRequest(`/position/withParent`)
@@ -838,7 +952,18 @@
           }
         }
       },
-      toggleSelectAllPositions (field) {
+      toggleHiddenSelectAllPositions(field) {
+        this.$nextTick(() => {
+          if (this.selectAll(field)) {
+            field.hiddenWhiteListedPositions = []
+            field.hiddenPositionsChanged = true
+          } else {
+            field.hiddenWhiteListedPositions = cloneDeep(this.positions)
+            field.hiddenPositionsChanged = true
+          }
+        })
+      },
+      toggleSelectAllPositions(field) {
         this.$nextTick(() => {
           if (this.selectAll(field)) {
             field.whiteListedPositions = []

@@ -341,6 +341,7 @@ select
         cfga1.custom_field_group_id as "customFieldGroupId",
         cfga1.id as "customFieldGroupAssignmentId",
         cfga1.read_only as "customFieldGroupAssignmentReadOnly",
+        cfga1.hidden as "customFieldGroupAssignmentHidden",
         cfga1.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
         cfga1.field_order as "fieldOrder",
         cf.list_of_value_id as "listOfValueId",
@@ -370,15 +371,16 @@ select
         coalesce((
                      SELECT array_to_json(array_agg(row_to_json(wlp)))
                      FROM (
-                              SELECT cfgawlp.id,
-                                     cfgawlp.position_id as "positionId",
-                                     cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                     cfgawlp.created_by_id as "createdById",
-                                     cfgawlp.modified_by_id as "modifiedById",
-                                     cfgawlp.archived
-                              FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
-                              WHERE cfgawlp.custom_field_group_assignment_id = cfga1.id
-                                AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
+                              SELECT wlp.id,
+                                     wlp.position_id as "positionId",
+                                     wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                     wlp.created_by_id as "createdById",
+                                     wlp.modified_by_id as "modifiedById",
+                                     wlp.archived
+                              FROM flow.white_listed_position cfgawlp
+                              WHERE wlp.custom_field_group_assignment_id = cfga1.id
+                                AND wlp.white_list_type_id = 1
+                                AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
     from flow.custom_field_group_assignment cfga1
              left join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga1.ancillary_custom_field_group_assignment_id
              left join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
@@ -724,6 +726,7 @@ select sr.id,
                 cfga1.custom_field_group_id as "customFieldGroupId",
                 cfga1.id as "customFieldGroupAssignmentId",
                 cfga1.read_only as "customFieldGroupAssignmentReadOnly",
+                cfga1.hidden as "customFieldGroupAssignmentHidden",
                 cfga1.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                 cfga1.field_order as "fieldOrder",
                 cf.list_of_value_id as "listOfValueId",
@@ -753,15 +756,16 @@ select sr.id,
                 coalesce((
                              SELECT array_to_json(array_agg(row_to_json(wlp)))
                              FROM (
-                                      SELECT cfgawlp.id,
-                                             cfgawlp.position_id as "positionId",
-                                             cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                             cfgawlp.created_by_id as "createdById",
-                                             cfgawlp.modified_by_id as "modifiedById",
-                                             cfgawlp.archived
-                                      FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
-                                      WHERE cfgawlp.custom_field_group_assignment_id = cfga1.id
-                                        AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
+                                      SELECT wlp.id,
+                                                                        wlp.position_id as "positionId",
+                                                                        wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                        wlp.created_by_id as "createdById",
+                                                                        wlp.modified_by_id as "modifiedById",
+                                                                        wlp.archived
+                                                                 FROM flow.white_listed_position wlp
+                                                                 WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                   AND wlp.white_list_type_id = 1
+                                                                   AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
             from flow.custom_field_group_assignment cfga1
                      left join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga1.ancillary_custom_field_group_assignment_id
                      left join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id

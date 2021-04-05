@@ -637,6 +637,11 @@ export default new Router({
                   path: 'attachments',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachments.vue'),
+                },
+                {
+                  path: 'system',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectSystem.vue'),
                 }
               ]
             }, {
