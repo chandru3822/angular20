@@ -246,6 +246,10 @@ public class ContactService {
       };
       bw.registerCustomEditor(List.class, "projects",
         new JsonCollectionDeserializer(projectsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "ownerReadOnlyWhiteListedPositions",
+        new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
     }
   }
 }

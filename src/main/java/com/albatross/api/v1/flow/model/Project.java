@@ -3,6 +3,8 @@ package com.albatross.api.v1.flow.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 public class Project {
@@ -13,7 +15,8 @@ public class Project {
   private String dateCreated;
   private Owner owner;
   private Contact contact;
-  private Boolean projectOwnerReadonly;
+  private Boolean statusReadOnly, ownerReadOnly;
+  private List<WhiteListedPosition> statusReadOnlyWhiteListedPositions, ownerReadOnlyWhiteListedPositions;
 
   //tells server to update geolocation
   private Boolean reloadCoordinates = false;

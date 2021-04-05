@@ -55,6 +55,7 @@
                                     cfga.archived,
                                     cf.field_name as "fieldName",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfot.id as "customFieldObjectTypeId",
                                     cfot.show_on_insert as "showOnInsert",
                                     cfot.require_on_insert as "requireOnInsert",
@@ -63,15 +64,29 @@
                                     coalesce((
                                         SELECT array_to_json(array_agg(row_to_json(wlp)))
                                         FROM (
-                                                 SELECT cfgawlp.id,
-                                                        cfgawlp.position_id as "positionId",
-                                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                        cfgawlp.created_by_id as "createdById",
-                                                        cfgawlp.modified_by_id as "modifiedById",
-                                                        cfgawlp.archived
-                                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
-                                                    WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
-                                                      AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
+                                                 SELECT wlp.id,
+                                                                        wlp.position_id as "positionId",
+                                                                        wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                        wlp.created_by_id as "createdById",
+                                                                        wlp.modified_by_id as "modifiedById",
+                                                                        wlp.archived
+                                                                 FROM flow.white_listed_position wlp
+                                                                 WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                   AND wlp.white_list_type_id = 1
+                                                                   AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
+                                                                   coalesce((
+                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                        FROM (
+                                                                 SELECT wlp.id,
+                                                                        wlp.position_id as "positionId",
+                                                                        wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                        wlp.created_by_id as "createdById",
+                                                                        wlp.modified_by_id as "modifiedById",
+                                                                        wlp.archived
+                                                                 FROM flow.white_listed_position wlp
+                                                                 WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                   AND wlp.white_list_type_id = 2
+                                                                   AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
@@ -89,12 +104,14 @@
                                     cfga.archived,
                                     cf.field_name as "fieldName",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfot.id as "customFieldObjectTypeId",
                                     cfot.show_on_insert as "showOnInsert",
                                     cfot.require_on_insert as "requireOnInsert",
                                     ps.process_step_name as "processStepName",
                                     cfg2.group_name as "groupName",
-                                    '[]' as whiteListedPositions
+                                    '[]' as whiteListedPositions,
+                                    '[]' as hiddenWhiteListedPositions
                              FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
                                       inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
@@ -283,38 +300,54 @@
     where id = :cfgaId
   ]]></customFieldGroupAssignment.saveReadOnly>
 
+  <customFieldGroupAssignment.saveHidden><![CDATA[
+    update flow.custom_field_group_assignment
+      set hidden = :cfgaHidden,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></customFieldGroupAssignment.saveHidden>
+
   <customFieldGroupAssignment.archiveWhiteListPositions><![CDATA[
-    update flow.custom_field_group_assignment_white_listed_position
+    update flow.white_listed_position
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
-    where custom_field_group_assignment_id = :cfgaId
+    where case when :cfgaId::int is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
   ]]></customFieldGroupAssignment.archiveWhiteListPositions>
 
   <customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed><![CDATA[
-    update flow.custom_field_group_assignment_white_listed_position
+    update flow.white_listed_position
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
-    where custom_field_group_assignment_id = :cfgaId
+    where case when :cfgaId::int is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
       and position_id not in (:positionIdsUsed)
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
   ]]></customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed>
 
   <customFieldGroupAssignment.archiveAllWhiteListedPositions><![CDATA[
-    update flow.custom_field_group_assignment_white_listed_position
+    update flow.white_listed_position
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
-    where custom_field_group_assignment_id = :cfgaId
+    where case when :cfgaId::int is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
+      and white_list_type_id = :whiteListTypeId
+      and company_id = :companyId
   ]]></customFieldGroupAssignment.archiveAllWhiteListedPositions>
 
   <customFieldGroupAssignment.insertWhiteListPosition><![CDATA[
-    insert into flow.custom_field_group_assignment_white_listed_position(position_id, custom_field_group_assignment_id, created_by_id)
-    select :positionId, :cfgaId, :userId
+    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, created_by_id, white_list_type_id, company_id)
+    select :positionId, :cfgaId, :userId, :whiteListTypeId, :companyId
     where not exists (  select id
-                        from flow.custom_field_group_assignment_white_listed_position
+                        from flow.white_listed_position
                         where custom_field_group_assignment_id = :cfgaId
                           and position_id = :positionId
+                          and company_id = :companyId
+                          and white_list_type_id = :whiteListTypeId
                            and archived is not true)
   ]]></customFieldGroupAssignment.insertWhiteListPosition>
 

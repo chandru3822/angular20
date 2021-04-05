@@ -81,8 +81,8 @@
                               </v-icon>
                           </div>
 
-                          <v-btn color="primaryButton" raised @click="openLoanpalApp()" class="white--text">
-                              LoanPal Application
+                          <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
+                              Loan Application
                           </v-btn>
                       </v-col>
                       <v-col>
@@ -98,8 +98,8 @@
                           <v-checkbox label="Send Spanish Installation Agreement"
                                       v-model="requestItem.isSpanish"
                           ></v-checkbox>
-                          <v-checkbox label="Send Loan Docs (LoanPal Only)"
-                                      v-model="requestItem.sendLoanpalDocs"
+                          <v-checkbox label="Send Loan Docs (Loan Products Only)"
+                                      v-model="requestItem.sendLoanDocs"
                           ></v-checkbox>
                       </v-col>
                   </v-row>
@@ -162,7 +162,7 @@
           email: '',
           proposalNbr: '',
           proposalNbrs: [],
-          sendLoanpalDocs: true,
+          sendLoanDocs: true,
           sendInstallationAgreement: false,
           isSpanish: false,
           projectId: ''
@@ -278,11 +278,11 @@
               console.error('*** ERROR ***', e)
           }
       },
-      async openLoanpalApp() {
+      async openLoanApp() {
           try {
               if (!this.requestItem.proposalNbr) {
-                  console.error('*** ERROR ***', 'Error: Unable to generate LonaPal application without Proposal Number')
-                  this.snackbar = getSnackbar('ERROR', 'Unable to generate LonaPal application without Proposal Number')
+                  console.error('*** ERROR ***', 'Error: Unable to generate Loan application without Proposal Number')
+                  this.snackbar = getSnackbar('ERROR', 'Unable to generate Loan application without Proposal Number')
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                   return
               }
@@ -291,7 +291,7 @@
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error generating LoanPal Application')
+              this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },

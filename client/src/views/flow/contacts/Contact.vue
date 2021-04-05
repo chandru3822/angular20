@@ -86,7 +86,8 @@
           >
           </v-autocomplete>
         </div>
-        <v-btn text x-small class="change-owner-button" v-if="userCanEdit" @click="changeOwner = !changeOwner">
+        <v-btn text x-small class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
+               @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
           <span v-else-if="contact.owner && contact.owner.userId">change</span>
           <span v-else style="font-size: 15px;">add owner</span>
@@ -322,6 +323,13 @@ export default {
     this.getNotes()
   },
   methods: {
+    contactOwnerIsReadOnly() {
+      if(this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
+        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+      } else {
+        return this.contact.ownerReadOnly
+      }
+    },
     async saveContact() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

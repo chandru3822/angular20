@@ -76,6 +76,9 @@ public class LoanPalService {
   }
 
   public JSONObject getApplicationByProjectId(String projectId) throws Exception {
+    JSONObject returnApplication = new JSONObject();
+    returnApplication.put("type", "LoanPal");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", Long.valueOf(projectId));
 
@@ -97,7 +100,7 @@ public class LoanPalService {
         String uri = "/applications/reference/" + projectId;
         HttpResponse res = GET(uri);
         if (res.getResponseCode() != 200) {
-            throw new Exception(String.format("Unable to locate LoanPal application for project %s: %s", projectId, res.getBody()));
+            throw new Exception(String.format("Unable to locate loan application for project %s: %s", projectId, res.getBody()));
         }
 
         applications = res.getJSONArray();
@@ -107,7 +110,11 @@ public class LoanPalService {
     }
 
     JSONObject application = applications.getJSONObject(0);
-    return getApplicationByLoanId(getLoanId(application));
+    JSONObject loanPalApp = getApplicationByLoanId(getLoanId(application));
+    JSONObject statusJson = loanPalApp.getJSONObject("loanStatus");
+    returnApplication.put("status", statusJson.getString("application"));
+    returnApplication.put("loanStatus", loanPalApp);
+    return returnApplication;
   }
 
   public JSONObject getApplicationByLoanId(String loanId) throws Exception {
@@ -148,6 +155,22 @@ public class LoanPalService {
     }
 
     return created.toLocalDate().toString();
+  }
+
+  // Used to standardize the status sent back to mobile for a loan
+  public String getLoanStatusForMobile(String creditStatus) {
+    if (creditStatus.contains("Approved") || creditStatus.contains("Sent")) {
+      return "Approved";
+    }
+    else if (creditStatus.contains("Pending") || creditStatus.equals("New")) {
+      return "Pending";
+    }
+    else if (creditStatus.contains("Denied") || creditStatus.contains("Fail") || creditStatus.contains("Declined")) {
+      return "Denied";
+    }
+    else {
+      return creditStatus;
+    }
   }
 
   public String getMaxLoanAmount(JSONObject app) throws JSONException {
