@@ -78,7 +78,7 @@ public class ObjectTypeService {
     } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<WhiteListedPosition> positionsToUse = savingStatusReadOnly ? companyObjectType.getStatusReadOnlyWhiteListedPositions() : companyObjectType.getOwnerReadOnlyWhiteListedPositions();
-      List<Long> positionIdsUsed = companyObjectType.getStatusReadOnlyWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
+      List<Long> positionIdsUsed = positionsToUse.stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
       if (positionIdsUsed.size() > 0) {
         sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);

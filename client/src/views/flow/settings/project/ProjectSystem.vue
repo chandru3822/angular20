@@ -180,6 +180,7 @@
         this.$nextTick(() => {
           if (this.selectAll()) {
             this.ownerReadOnlyWhiteListedPositions = []
+            this.ownerReadOnlyPositionsChanged = true
           } else {
             this.ownerReadOnlyWhiteListedPositions = cloneDeep(this.positions)
             this.ownerReadOnlyPositionsChanged = true
