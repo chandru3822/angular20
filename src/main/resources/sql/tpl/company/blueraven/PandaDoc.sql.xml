@@ -29,7 +29,8 @@
               pd.total_system_price,
               pd.utility_company,
               plh.interest_rate,
-              plh.loan_term
+              plh.loan_term,
+              plh.loan_type
             FROM flow.project p
               JOIN brs.project_details pd on p.id = pd.project_id
               JOIN brs.proposal_log pl on pl.project_id = p.id
