@@ -377,7 +377,7 @@ select
                                      wlp.created_by_id as "createdById",
                                      wlp.modified_by_id as "modifiedById",
                                      wlp.archived
-                              FROM flow.white_listed_position cfgawlp
+                              FROM flow.white_listed_position wlp
                               WHERE wlp.custom_field_group_assignment_id = cfga1.id
                                 AND wlp.white_list_type_id = 1
                                 AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions"

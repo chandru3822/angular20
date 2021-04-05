@@ -11,7 +11,8 @@ begin
       select cs.id,
              s.abbreviation as name,
              false as root_status_type,
-             null as root_status_type_id
+-- If `null` is returned here, it throws an error about this column returning as text instead of int. But if `0` is returned, no error and returned data is `null` ¯\_(ツ)_/¯
+             0 as root_status_type_id
       from flow.company_state cs
              inner join flow.state s on s.id = cs.state_id
       where cs.active is true
