@@ -816,13 +816,13 @@ public class SmartlistService {
             String referenceTable = "";
             final String smartlistSystemListTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
 
-            if (List.of(1L, 3L, 4L, 5L).contains(r.getSmartlistSystemListId())) {
+            if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
               if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::int, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
                 referenceTable = UUID.randomUUID().toString();
                 final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
               }
-            } else if (r.getSmartlistSystemListId() == 2) {
+            } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
               String joinTable;
               try {
                 joinTable = joinTables.stream()
@@ -851,12 +851,14 @@ public class SmartlistService {
                 }
               }
 
-              final String tempCpsst = UUID.randomUUID().toString();
-              additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id ", tempCpsst, tempCpsst, joinTable));
-
               referenceTable = UUID.randomUUID().toString();
-              final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", 2, r.getCompanyId());
-              additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = \"%s\".process_step_status_type_id ", subquery, referenceTable, referenceTable, tempCpsst));
+              additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id ", referenceTable, referenceTable, joinTable));
+
+              if (r.getSmartlistSystemListId() == 4) {
+                final String newReferenceTable = UUID.randomUUID().toString();
+                additionalJoins.append(String.format(" left join flow.process_step_status_type \"%s\" on \"%s\".id = \"%s\".process_step_status_type_id ", newReferenceTable, newReferenceTable, referenceTable));
+                referenceTable = newReferenceTable;
+              }
             }
             referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {

@@ -683,14 +683,23 @@ select sr.id,
            'dataTypeValue', dtr.data_type_value,
            'secondaryRequirement', dtr.secondary_requirement
        ) end as data_type_requirement,
-       coalesce((
+       case when cf.list_of_value_id is not null then
+         coalesce((
          select array_to_json(array_agg(row_to_json(lov))) from (
            select
              lv.id,
              lv.name
            from flow.list_of_value lv
            where lv.id = any(sr.list_of_value_ids)
-        ) lov), '[]') as list_of_values,
+        ) lov), '[]')
+        when sf.smartlist_system_list_id is not null then
+        (select array_to_json(array_agg(row_to_json(rows))) from (
+             select id, name
+             from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+            where id = any(sr.list_of_value_ids)
+           ) rows)
+       else null
+       end as list_of_values,
         case
           when cf.list_of_value_id is not null then
             coalesce((
