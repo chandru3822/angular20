@@ -348,6 +348,7 @@
 
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import {AppMutations} from '@/stores/AppStore'
 
 
 const newRequirementStructure = {
@@ -434,8 +435,16 @@ export default {
         customFieldSqlKey: null,
         companySystemListId: null,
         availableListOfValues: []
-      }
+      },
+      projectStatusTypes: [],
+      companyProjectStatusTypes: [],
+      processStepStatusTypes: [],
+      companyProcessStepStatusTypes: []
     }
+  },
+  created () {
+    this.getProjectStatusTypes()
+    this.getProcessStepStatusTypes()
   },
   updated () {
     if (this.resetForm) {
@@ -551,6 +560,28 @@ export default {
           this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
+      }
+    },
+    async getProjectStatusTypes () {
+      try {
+        const [result, companyResult] = await Promise.all([getRequest(`/project/status`), getRequest(`/project/companyStatus`)])
+        this.projectStatusTypes = result.data
+        this.companyProjectStatusTypes = companyResult.data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async getProcessStepStatusTypes () {
+      try {
+        const [result, companyResult] = await Promise.all([getRequest(`/processStep/status`), getRequest(`/processStep/status/company`)])
+        this.processStepStatusTypes = result.data
+        this.companyProcessStepStatusTypes = companyResult.data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     addNewRequirement () {

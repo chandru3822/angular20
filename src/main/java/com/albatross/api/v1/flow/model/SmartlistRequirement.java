@@ -25,7 +25,7 @@ public class SmartlistRequirement {
 
   private List<Long> listOfValueIds, systemListOptionIds;
 
-  private List<SmartlistListOfValue> listOfValues, availableListOfValues;
+  private List<ListOfValue> listOfValues, availableListOfValues;
 
   private DataTypeRequirement dataTypeRequirement;
 
