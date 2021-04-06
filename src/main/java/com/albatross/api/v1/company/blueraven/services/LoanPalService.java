@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -159,13 +160,45 @@ public class LoanPalService {
 
   // Used to standardize the status sent back to mobile for a loan
   public String getLoanStatusForMobile(String creditStatus) {
-    if (creditStatus.contains("Approved") || creditStatus.contains("Sent")) {
+    HashSet<String> declinedStatus = new HashSet<>() {{
+      add("Credit Declined");
+      add("Declined");
+      add("Denied");
+      add("Project Withdrawn");
+    }};
+
+    HashSet<String> pendingStatus = new HashSet<>() {{
+      add("Credit Pending Review");
+      add("Pending");
+      add("New");
+    }};
+
+    HashSet<String> approvedStatus = new HashSet<>() {{
+      add("Change Order Pending");
+      add("Inspection Approved");
+      add("Inspection in Review");
+      add("Installation Approved");
+      add("Installation in Review");
+      add("Kitting in Review");
+      add("Loan Agreement Signed");
+      add("Notice to Proceed Approved");
+      add("Notice to Proceed in Review");
+      add("Permission to Operate in Review");
+      add("Permit Application Approved");
+      add("Permit Application in Review");
+      add("Project Completed");
+      add("PTO Payment Pending");
+      add("Approved");
+      add("Sent");
+    }};
+
+    if (approvedStatus.contains(creditStatus)) {
       return "Approved";
     }
-    else if (creditStatus.contains("Pending") || creditStatus.equals("New")) {
+    else if (pendingStatus.contains(creditStatus)) {
       return "Pending";
     }
-    else if (creditStatus.contains("Denied") || creditStatus.contains("Fail") || creditStatus.contains("Declined")) {
+    else if (declinedStatus.contains(creditStatus)) {
       return "Denied";
     }
     else {
