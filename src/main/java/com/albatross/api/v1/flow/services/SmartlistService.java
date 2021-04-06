@@ -1301,14 +1301,22 @@ public class SmartlistService {
         if (f.getSmartlistSystemListId() != null) {
           final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
-          if (f.getSmartlistSystemListId() == 1 || f.getSmartlistSystemListId() == 3) {
+          if (List.of(1L, 3L, 5L).contains(f.getSmartlistSystemListId())) {
             selectFields.append(String.format("(select name from \"%s\" where \"%s\".id = %s.%s) as \"%s\", ", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn(), f.getId()));
-          } else if (f.getSmartlistSystemListId() == 2) {
-            selectFields.append(String.format("(" +
-              "select name " +
-              "from \"%s\" " +
-              "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
-              "where \"%s\".id = cpsst.process_step_status_type_id) as \"%s\", ", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable, f.getId()));
+          } else if (f.getSmartlistSystemListId() == 2 || f.getSmartlistSystemListId() == 4) {
+            if (f.getSmartlistSystemListId() == 2) {
+              selectFields.append(String.format("(" +
+                "select name " +
+                "from \"%s\" " +
+                "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
+                "where \"%s\".id = cpsst.id) as \"%s\", ", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable, f.getId()));
+            } else {
+              selectFields.append(String.format("(" +
+                "select name " +
+                "from \"%s\" " +
+                "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
+                "where \"%s\".id = cpsst.process_step_status_type_id) as \"%s\", ", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable, f.getId()));
+            }
           }
 
         } else if (f.getProcessStepId() != null) {
@@ -1378,8 +1386,11 @@ public class SmartlistService {
 
       fromClause.append(" flow.project_process_step ");
       fromClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
+      fromClause.append(" inner join flow.process_step_status_type on flow.process_step_status_type.id = flow.company_process_step_status_type.process_step_status_type_id");
       fromClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
       fromClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
+      fromClause.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id");
+      fromClause.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id");
       fromClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
       fromClause.append(" inner join \"projects\" on \"projects\".id = flow.project_process_step.project_id");
 
