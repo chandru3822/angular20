@@ -858,7 +858,7 @@ public class SmartlistService {
               final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", 2, r.getCompanyId());
               additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = \"%s\".process_step_status_type_id ", subquery, referenceTable, referenceTable, tempCpsst));
             }
-            referenceLocation = String.format("\"%s\".id", referenceTable);
+            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
