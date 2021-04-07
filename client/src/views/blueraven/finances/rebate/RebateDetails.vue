@@ -340,7 +340,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
 
   export default {
     name: 'RebateDetails',
@@ -663,7 +663,7 @@
       },
       async getStates () {
           try {
-            const {data} = await getStates()
+            const {data} = await getCompanyStates()
             this.states = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {

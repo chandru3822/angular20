@@ -1470,7 +1470,11 @@ public class SmartlistService {
               joinTable = UUID.randomUUID().toString();
             }
 
-            referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
+            if (r.getReferenceTable().contains(".")) {
+              referenceLocation = String.format("%s.%s", r.getReferenceTable(), r.getReferenceColumn());
+            } else {
+              referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
+            }
           }
         } else {
           //custom field
