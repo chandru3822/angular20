@@ -189,7 +189,7 @@
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
           <template v-else-if="requirement.listOfValueId || requirement.customFieldSqlKey || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
-          <template v-else-if="requirement.listOfValues">{{requirement.listOfValues.map(v => ` ${v.name}`).toString()}}</template>
+          <template v-else-if="requirement.listOfValues">{{computeMutliSelectValue(requirement)}}</template>
         </td>
         <td v-if="canEdit" class="action-cell">
 <!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
@@ -674,6 +674,14 @@ export default {
     checkSmartlistSystemList () {
       if (this.newRequirement?.selectedField?.smartlistSystemListId) {
         this.newRequirement.isCustomValue = true
+      }
+    },
+    computeMutliSelectValue(req) {
+      if (req.smartlistSystemListId === null) {
+        return req.listOfValues.map(v => ` ${v.name}`).toString()
+      } else {
+        //The backend returns incorrect listOfValues for smartlist field multiselects
+        return req.availableListOfValues.filter(v => req.listOfValueIds.includes(v.id)).map(v => ` ${v.name}`).toString()
       }
     }
   }

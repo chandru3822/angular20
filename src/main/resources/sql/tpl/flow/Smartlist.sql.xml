@@ -236,12 +236,14 @@ select null as "smartlistFieldId",
        ps.process_step_name as "processStepName",
        null as "dataTypeId",
        null as "hasListValues",
-       null as "allowMultiple",
+       cdt.allow_multiple as "allowMultiple",
        null as "listOfValues"
 from flow.custom_field_group_assignment cfga
 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
 inner join flow.process_step ps on ps.id = cfg.process_step_id
+inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
 where cot.object_type_id = :objectTypeId and
       cot.company_id = :companyId and
       cfga.ancillary_custom_field_group_assignment_id is not null and
@@ -548,7 +550,7 @@ select sr.id,
        case when sf.smartlist_system_list_id is not null then true else
          case when sr.smartlist_field_id is not null then cdt.has_list_values else cdt1.has_list_values end
        end as has_list_values,
-       cdt1.allow_multiple,
+       case when sr.smartlist_field_id is not null then cdt.allow_multiple else cdt1.allow_multiple end as allow_multiple,
        case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
@@ -665,7 +667,7 @@ select sr.id,
        case when sf.smartlist_system_list_id is not null then true else
          case when sr.smartlist_field_id is not null then cdt.has_list_values else cdt1.has_list_values end
        end as has_list_values,
-       cdt1.allow_multiple,
+       case when sr.smartlist_field_id is not null then cdt.allow_multiple else cdt1.allow_multiple end as allow_multiple,
        case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
@@ -747,6 +749,7 @@ select sr.id,
                 cf.company_data_type_id as "companyDataTypeId",
                 cdt.data_type_id as "dataTypeId",
                 cdt.has_list_values as "hasListValues",
+--              @TODO: `listOfValues` is incorrect for smartlist fields that are smartlist system lists. Should correct here like `available_list_of_values` above
                 coalesce((
                              SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                              FROM (
