@@ -371,7 +371,8 @@ public class InstallAgreementRepository {
         financeOption = "flexpay598";
       }
     }
-    else {
+
+    if (financeOption.isEmpty()) {
       financeOption = "blueraven";
     }
 
