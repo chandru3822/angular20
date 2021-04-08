@@ -114,7 +114,9 @@ public class LoanPalService {
     JSONObject loanPalApp = getApplicationByLoanId(getLoanId(application));
     JSONObject statusJson = loanPalApp.getJSONObject("loanStatus");
     returnApplication.put("status", statusJson.getString("application"));
-    returnApplication.put("loanStatus", loanPalApp);
+    JSONObject applicationJson = new JSONObject();
+    applicationJson.put("application", statusJson.getString("application"));
+    returnApplication.put("loanStatus", applicationJson);
     return returnApplication;
   }
 
