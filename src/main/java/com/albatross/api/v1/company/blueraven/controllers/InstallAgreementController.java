@@ -73,8 +73,12 @@ public class InstallAgreementController {
   }
 
   @GetMapping(value = "/generate/{projectId}/{proposalNbr}")
-  public String generate(@PathVariable Long projectId, @PathVariable Long proposalNbr) {
-      return installAgreementRepository.generateLoanApplication(projectId, proposalNbr);
+  public ResponseEntity<Object> generate(@PathVariable Long projectId, @PathVariable Long proposalNbr) throws Exception {
+    try {
+      return ResponseEntity.ok(installAgreementRepository.generateLoanApplication(projectId, proposalNbr));
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
+    }
   }
 
   @PutMapping(value = "/updateEmailAddress/{projectId}")

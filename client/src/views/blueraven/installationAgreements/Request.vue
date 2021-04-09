@@ -268,7 +268,7 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
-              if (e.message.includes('locate')) {
+              if (e.message != null && e.message.includes('locate')) {
                   this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a loan application for this project')
               }
               else {
@@ -291,7 +291,12 @@
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
+              if (e.data.message!= null) {
+                this.snackbar = getSnackbar('ERROR', e.data.message)
+              }
+              else {
+                this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
+              }
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
