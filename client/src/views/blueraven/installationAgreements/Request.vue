@@ -280,14 +280,17 @@
       },
       async openLoanApp() {
           try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
               if (!this.requestItem.proposalNbr) {
                   console.error('*** ERROR ***', 'Error: Unable to generate Loan application without Proposal Number')
                   this.snackbar = getSnackbar('ERROR', 'Unable to generate Loan application without Proposal Number')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  this.$store.commit(AppMutations.SET_LOADING, false)
                   return
               }
               const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.projectId+'/'+this.requestItem.proposalNbr, 'blueraven')
               window.open(data);
+              this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
