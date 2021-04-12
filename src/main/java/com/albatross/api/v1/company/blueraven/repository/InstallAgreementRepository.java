@@ -81,6 +81,12 @@ public class InstallAgreementRepository {
   public String saveRequest(InstallAgreementRequest request) throws Exception {
     Long projectId = request.getProjectId();
     Boolean sendLoanDocs = request.getSendLoanDocs();
+
+    // TODO: Remove when Mobile supports sendLoanDocs parameter
+    if (request.getSendLoanpalDocs() != null) {
+      sendLoanDocs = request.getSendLoanpalDocs();
+    }
+
     request.validateNewRequest();
     String financier = getFinancierFromProposalLog(projectId, request.getProposalNbr());
     String resultMsg = "";
@@ -107,7 +113,7 @@ public class InstallAgreementRepository {
         try {
           JSONObject outcome = loanApplication.getJSONObject("outcome");
           String loanStatus = outcome.getString("status");
-          String loanPalId = loanApplication.getString("id");
+          String loanPalId = loanApplication.getString("loanPalId");
 
           JSONObject loanOptions = outcome.getJSONObject("loanOptions");
           String selectedLoanOption = null != loanOptions ? loanOptions.getString("id") : null;
