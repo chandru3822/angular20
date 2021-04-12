@@ -62,6 +62,7 @@ public class SunlightService {
     Optional<Object> sunlightHash = getSunlightHashId(projectId, proposalNbr);
     if (sunlightHash.isPresent()) {
       hashId = sunlightHash.get().toString();
+      setCreditLastCheckedBy(projectId, "Sunlight");
       return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
     }
 
@@ -143,6 +144,8 @@ public class SunlightService {
     }
 
     setSunlightHashId(projectId, proposalNbr, hashId);
+    setCreditLastCheckedBy(projectId, "Sunlight");
+
     return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
   }
 
@@ -214,6 +217,19 @@ public class SunlightService {
     params.put("proposalNbr", proposalNbr);
     params.put("sunlightHashId", hashId);
     sqlCache.update("installAgreement.setSunlightHashId", params);
+  }
+
+  public Optional<Object> getCreditLastCheckedBy(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    return sqlCache.get("installAgreement.getCreditLastCheckedBy", params, new SingleColumnRowMapper<>(Object.class));
+  }
+
+  public void setCreditLastCheckedBy(Long projectId, String financier) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("creditLastCheckedBy", financier);
+    sqlCache.update("installAgreement.setCreditLastCheckedBy", params);
   }
 
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {
