@@ -268,7 +268,7 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
-              if (e.message.includes('locate')) {
+              if (e.message != null && e.message.includes('locate')) {
                   this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a loan application for this project')
               }
               else {
@@ -280,18 +280,26 @@
       },
       async openLoanApp() {
           try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
               if (!this.requestItem.proposalNbr) {
                   console.error('*** ERROR ***', 'Error: Unable to generate Loan application without Proposal Number')
                   this.snackbar = getSnackbar('ERROR', 'Unable to generate Loan application without Proposal Number')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  this.$store.commit(AppMutations.SET_LOADING, false)
                   return
               }
               const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.projectId+'/'+this.requestItem.proposalNbr, 'blueraven')
               window.open(data);
+              this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
+              if (e.data.message!= null) {
+                this.snackbar = getSnackbar('ERROR', e.data.message)
+              }
+              else {
+                this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
+              }
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },

@@ -222,7 +222,7 @@ public class InstallAgreementRepository {
     );
   }
 
-  public String generateLoanApplication(Long projectId, Long proposalNbr) {
+  public String generateLoanApplication(Long projectId, Long proposalNbr) throws Exception {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", proposalNbr);
@@ -243,6 +243,14 @@ public class InstallAgreementRepository {
               return sunlightPortalUrl + "salesdashboard";
             }
           } else if (pd.getLoanType().contains("LoanPal")) {
+            // Check if this project has already had a credit check via Sunlight, if so throw error
+            Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
+            if (creditLastCheckedBy.isPresent()) {
+              String creditor = (String) creditLastCheckedBy.get();
+              if (creditor.equals("Sunlight")) {
+                throw new Exception(String.format("Unable to generate LoanPal application due to existing Sunlight application."));
+              }
+            }
             String bothStreets = "";
             if (pd.getMailingStreet1() != null) {
               bothStreets += pd.getMailingStreet1();
@@ -285,6 +293,7 @@ public class InstallAgreementRepository {
       }
       // Store the latest proposal number used by this project
       updateProposalNbr(projectId, proposalNbr);
+      sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
       return loanPalBaseUrl;
   }
 
@@ -371,7 +380,8 @@ public class InstallAgreementRepository {
         financeOption = "flexpay598";
       }
     }
-    else {
+
+    if (financeOption.isEmpty()) {
       financeOption = "blueraven";
     }
 
