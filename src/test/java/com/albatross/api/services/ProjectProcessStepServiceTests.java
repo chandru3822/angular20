@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.PostConstruct;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SpringBootTest
+@ActiveProfiles(profiles = "local")
 public class ProjectProcessStepServiceTests {
 
   private ProjectProcessStepService projectProcessStepService;
@@ -77,9 +79,9 @@ public class ProjectProcessStepServiceTests {
       jsonObjects.putAll(converted);
     }
 
-    action = om.readValue(jsonObjects.get("processStepAction.action"), ProjectProcessStepAction.class);
-    processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
-    projectProcessStepRequirements = om.readValue(jsonObjects.get("projectProcessStepRequirement.scheduleWithSystemList"), new TypeReference<List<ProjectProcessStepRequirement>>() {});
+    action = om.readValue(jsonObjects.get("projectProcessStepAction.action"), ProjectProcessStepAction.class);
+    processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {});
+    projectProcessStepRequirements = om.readValue(jsonObjects.get("projectProcessStepRequirement.scheduleWithSystemList"), new TypeReference<>() {});
   }
 
   @BeforeEach
@@ -92,32 +94,34 @@ public class ProjectProcessStepServiceTests {
   @Test
   public void alwaysEnabled() throws Exception {
     ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProjectProcessStepId(123L);
     pps.setProcessStepStatusTypeId(1L);
     action.setAlwaysEnabled(true);
     ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     boolean passed = actionResult.getCanPerform();
     assertThat(passed).isTrue();
-    verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
+    verify(projectProcessStepService, never()).isRequirementMet(any(), anyLong());
 
     action.setAlwaysEnabled(false);
-    projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
-    verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
+    projectProcessStepService.canPerformAction(action, pps, projectProcessStepRequirements);
+    verify(projectProcessStepService, atLeastOnce()).isRequirementMet(any(), anyLong());
   }
 
   @Test
   public void noLogicSteps() throws Exception {
     ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProjectProcessStepId(123L);
     pps.setProcessStepStatusTypeId(1L);
     action.setProcessStepLogicList(List.of());
     ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     boolean passed = actionResult.getCanPerform();
     assertThat(passed).isFalse();
-    verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
+    verify(projectProcessStepService, never()).isRequirementMet(any(), anyLong());
 
-    List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
+    List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {});
     action.setProcessStepLogicList(processStepLogicList);
-    projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
-    verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
+    projectProcessStepService.canPerformAction(action, pps, projectProcessStepRequirements);
+    verify(projectProcessStepService, atLeastOnce()).isRequirementMet(any(), anyLong());
   }
 
   @Test

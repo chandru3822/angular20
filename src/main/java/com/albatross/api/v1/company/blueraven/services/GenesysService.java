@@ -451,7 +451,7 @@ public class GenesysService {
         }
       }
     }
-    else if (lead.equals("Paid Advertising") && leadSourceDetail.equals("InsideSales")) {
+    else if (leadLevel.equals("10")) {
       return "InsideSales";
     }
     else if (manualCallsSources.contains(lead)) {

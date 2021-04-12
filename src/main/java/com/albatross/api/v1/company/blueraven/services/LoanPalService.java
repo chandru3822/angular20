@@ -42,7 +42,7 @@ public class LoanPalService {
       HashMap<String, Object> data = new HashMap<>();
       data.put("Credit Check", creditCheck);
       data.put("Credit Decision Date", getCreditDecisionDate(application));
-      data.put("Partner Job ID", getLoanId(application));
+      data.put("Partner Job ID", application.getString("loanPalId"));
 
       String maxLoanAmount = getMaxLoanAmount(application);
       if (maxLoanAmount != null && !maxLoanAmount.isEmpty()) {
@@ -117,6 +117,9 @@ public class LoanPalService {
     JSONObject applicationJson = new JSONObject();
     applicationJson.put("application", statusJson.getString("application"));
     returnApplication.put("loanStatus", applicationJson);
+    returnApplication.put("outcome", loanPalApp.getJSONObject("outcome"));
+    returnApplication.put("loanPalId", loanPalApp.getString("id"));
+    returnApplication.put("createdAt", loanPalApp.getString("createdAt"));
     return returnApplication;
   }
 
