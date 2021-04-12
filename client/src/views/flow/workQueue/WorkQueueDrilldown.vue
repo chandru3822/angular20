@@ -146,7 +146,7 @@
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
-          { text: 'Notes', value: 'notes', show: true },
+          { text: 'Notes', value: 'notes', show: true, width: 350 },
         ],
       }
     },
