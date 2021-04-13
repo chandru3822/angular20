@@ -23,7 +23,7 @@ BEGIN
             select *
             into v_score
             from (
-                     (select (select count(1)
+                     (select (select count(1)*2
                               from brs.project_details pd
                               where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                 and pd.closer_user_id = p_user_id) +
@@ -54,13 +54,18 @@ BEGIN
                 from (
                          (select (select count(1) * 2
                                   from brs.project_details pd
-                                  where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                                  where ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                     and first_appointment_pitched_id is not null
                                     and pd.setter_user_id = p_user_id) +
                                  (select count(1)
                                   from brs.project_details pd
-                                  where ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                                  where ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                     and pd.first_appointment_missed_id is not null
+                                    and pd.setter_user_id = p_user_id)+
+                                 (select count(1) *-1
+                                  from brs.project_details pd
+                                  where ((pd.first_appointment_not_pitched_or_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                                    and pd.first_appointment_not_pitched_or_missed_id in (58,56)
                                     and pd.setter_user_id = p_user_id))) as cnt;
 
             else

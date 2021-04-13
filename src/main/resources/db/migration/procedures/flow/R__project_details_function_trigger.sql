@@ -272,6 +272,13 @@ BEGIN
 
         end if;
 
+        if new.int_value is not null then
+            update brs.project_details
+            set first_appointment_id = new.int_value
+            where project_id = v_project_id1
+              and first_appointment_id is null;
+        end if;
+
         if new.int_value in (2, 1139, 1140) then
             update brs.project_details
             set first_appointment_pitched    = coalesce(v_timestamp_value, now()),
