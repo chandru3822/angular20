@@ -102,6 +102,7 @@ public class GenesysService {
       params.put("contactId", contact.getId());
       Optional<String> agentId = sqlCache.get("genesys.getAgentIdByContactId", params, new SingleColumnRowMapper<>(String.class));
       contactJson.put("existingCustomer", true);
+      contactJson.put("contactUrl", homeUrl + "/contact/" + contact.getId());
       if (agentId.isPresent()) {
         contactJson.put("agentId", agentId.get());
       }
