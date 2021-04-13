@@ -165,6 +165,14 @@ public class ContactLeadService {
       cfvList.add(leadType);
     }
 
+    if (cl.getLeadLevel() != null) {
+      CustomFieldValue leadLevel = new CustomFieldValue();
+      leadLevel.setFieldName("Lead Level");
+      leadLevel.setCustomFieldGroupAssignmentId(20977L);
+      leadLevel.setIntValue(cl.getLeadLevel());
+      cfvList.add(leadLevel);
+    }
+
     if (cl.getIpAddress() != null) {
       CustomFieldValue ipAddress = new CustomFieldValue();
       ipAddress.setCustomFieldGroupAssignmentId(19604L);

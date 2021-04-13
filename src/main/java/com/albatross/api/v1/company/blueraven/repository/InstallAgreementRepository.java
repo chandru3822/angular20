@@ -81,6 +81,12 @@ public class InstallAgreementRepository {
   public String saveRequest(InstallAgreementRequest request) throws Exception {
     Long projectId = request.getProjectId();
     Boolean sendLoanDocs = request.getSendLoanDocs();
+
+    // TODO: Remove when Mobile supports sendLoanDocs parameter
+    if (request.getSendLoanpalDocs() != null) {
+      sendLoanDocs = request.getSendLoanpalDocs();
+    }
+
     request.validateNewRequest();
     String financier = getFinancierFromProposalLog(projectId, request.getProposalNbr());
     String resultMsg = "";
@@ -107,7 +113,7 @@ public class InstallAgreementRepository {
         try {
           JSONObject outcome = loanApplication.getJSONObject("outcome");
           String loanStatus = outcome.getString("status");
-          String loanPalId = loanApplication.getString("id");
+          String loanPalId = loanApplication.getString("loanPalId");
 
           JSONObject loanOptions = outcome.getJSONObject("loanOptions");
           String selectedLoanOption = null != loanOptions ? loanOptions.getString("id") : null;
@@ -222,7 +228,7 @@ public class InstallAgreementRepository {
     );
   }
 
-  public String generateLoanApplication(Long projectId, Long proposalNbr) {
+  public String generateLoanApplication(Long projectId, Long proposalNbr) throws Exception {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", proposalNbr);
@@ -243,6 +249,14 @@ public class InstallAgreementRepository {
               return sunlightPortalUrl + "salesdashboard";
             }
           } else if (pd.getLoanType().contains("LoanPal")) {
+            // Check if this project has already had a credit check via Sunlight, if so throw error
+            Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
+            if (creditLastCheckedBy.isPresent()) {
+              String creditor = (String) creditLastCheckedBy.get();
+              if (creditor.equals("Sunlight")) {
+                throw new Exception(String.format("Unable to generate LoanPal application due to existing Sunlight application."));
+              }
+            }
             String bothStreets = "";
             if (pd.getMailingStreet1() != null) {
               bothStreets += pd.getMailingStreet1();
@@ -285,6 +299,7 @@ public class InstallAgreementRepository {
       }
       // Store the latest proposal number used by this project
       updateProposalNbr(projectId, proposalNbr);
+      sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
       return loanPalBaseUrl;
   }
 
@@ -371,7 +386,8 @@ public class InstallAgreementRepository {
         financeOption = "flexpay598";
       }
     }
-    else {
+
+    if (financeOption.isEmpty()) {
       financeOption = "blueraven";
     }
 

@@ -32,7 +32,7 @@ public class PandaDocProjectDetails {
             sj.add("Spanish");
         }
         sj.add(state);
-        sj.add(utilityCompany);
+        sj.add(mailingState + " - " + utilityCompany);
         sj.add(financier);
 
         return sj.toString();

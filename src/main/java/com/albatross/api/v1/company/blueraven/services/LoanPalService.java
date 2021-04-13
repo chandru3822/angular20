@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,7 +42,7 @@ public class LoanPalService {
       HashMap<String, Object> data = new HashMap<>();
       data.put("Credit Check", creditCheck);
       data.put("Credit Decision Date", getCreditDecisionDate(application));
-      data.put("Partner Job ID", getLoanId(application));
+      data.put("Partner Job ID", application.getString("loanPalId"));
 
       String maxLoanAmount = getMaxLoanAmount(application);
       if (maxLoanAmount != null && !maxLoanAmount.isEmpty()) {
@@ -113,7 +114,12 @@ public class LoanPalService {
     JSONObject loanPalApp = getApplicationByLoanId(getLoanId(application));
     JSONObject statusJson = loanPalApp.getJSONObject("loanStatus");
     returnApplication.put("status", statusJson.getString("application"));
-    returnApplication.put("loanStatus", loanPalApp);
+    JSONObject applicationJson = new JSONObject();
+    applicationJson.put("application", statusJson.getString("application"));
+    returnApplication.put("loanStatus", applicationJson);
+    returnApplication.put("outcome", loanPalApp.getJSONObject("outcome"));
+    returnApplication.put("loanPalId", loanPalApp.getString("id"));
+    returnApplication.put("createdAt", loanPalApp.getString("createdAt"));
     return returnApplication;
   }
 
@@ -159,13 +165,45 @@ public class LoanPalService {
 
   // Used to standardize the status sent back to mobile for a loan
   public String getLoanStatusForMobile(String creditStatus) {
-    if (creditStatus.contains("Approved") || creditStatus.contains("Sent")) {
+    HashSet<String> declinedStatus = new HashSet<>() {{
+      add("Credit Declined");
+      add("Declined");
+      add("Denied");
+      add("Project Withdrawn");
+    }};
+
+    HashSet<String> pendingStatus = new HashSet<>() {{
+      add("Credit Pending Review");
+      add("Pending");
+      add("New");
+    }};
+
+    HashSet<String> approvedStatus = new HashSet<>() {{
+      add("Change Order Pending");
+      add("Inspection Approved");
+      add("Inspection in Review");
+      add("Installation Approved");
+      add("Installation in Review");
+      add("Kitting in Review");
+      add("Loan Agreement Signed");
+      add("Notice to Proceed Approved");
+      add("Notice to Proceed in Review");
+      add("Permission to Operate in Review");
+      add("Permit Application Approved");
+      add("Permit Application in Review");
+      add("Project Completed");
+      add("PTO Payment Pending");
+      add("Approved");
+      add("Sent");
+    }};
+
+    if (approvedStatus.contains(creditStatus)) {
       return "Approved";
     }
-    else if (creditStatus.contains("Pending") || creditStatus.equals("New")) {
+    else if (pendingStatus.contains(creditStatus)) {
       return "Pending";
     }
-    else if (creditStatus.contains("Denied") || creditStatus.contains("Fail") || creditStatus.contains("Declined")) {
+    else if (declinedStatus.contains(creditStatus)) {
       return "Denied";
     }
     else {
