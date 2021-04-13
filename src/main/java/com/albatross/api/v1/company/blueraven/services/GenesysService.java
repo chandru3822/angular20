@@ -102,6 +102,7 @@ public class GenesysService {
       params.put("contactId", contact.getId());
       Optional<String> agentId = sqlCache.get("genesys.getAgentIdByContactId", params, new SingleColumnRowMapper<>(String.class));
       contactJson.put("existingCustomer", true);
+      contactJson.put("contactUrl", homeUrl + "/contact/" + contact.getId());
       if (agentId.isPresent()) {
         contactJson.put("agentId", agentId.get());
       }
@@ -203,7 +204,14 @@ public class GenesysService {
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
 
     String lead = (String) contactMap.get("lead_source");
+    String leadSourceDetail = (String) contactMap.get("lead_source_detail");
+    String leadLevel = (String) contactMap.get("lead_level");
     if (lead.isEmpty()) {
+      return;
+    }
+
+    String contactListName = getContactListName(lead, leadSourceDetail, leadLevel);
+    if (contactListName == null) {
       return;
     }
 
@@ -320,6 +328,7 @@ public class GenesysService {
     contactMap.put("lead_source", "");
     contactMap.put("lead_source_detail", "");
     contactMap.put("lead_status", "");
+    contactMap.put("lead_level", "");
     contactMap.put("referral", false);
     contactMap.put("retargeted", false);
 
@@ -350,6 +359,9 @@ public class GenesysService {
         else if (cfv.getFieldName().equals("Lead Status")) {
           contactMap.put("lead_status", value);
         }
+        else if (cfv.getFieldName().equals("Lead Level")) {
+          contactMap.put("lead_level", cfv.getIntValue() == null ? "" : cfv.getIntValue().toString());
+        }
         else if (cfv.getFieldName().equals("Referral")) {
           contactMap.put("referral", cfv.getBooleanValue() == null ? false : cfv.getBooleanValue());
         }
@@ -371,5 +383,82 @@ public class GenesysService {
     else {
       return "+13852921523";
     }
+  }
+
+  private String getContactListName(String lead, String leadSourceDetail, String leadLevel) {
+    HashSet<String> levelOneLeadSourceDetails = new HashSet<>() {{
+      add("SolarReviews");
+      add("Solar Lead Factory");
+      add("RGR");
+      add("Modernize");
+      add("Energy Bill Cruncher");
+      add("Clean Energy Experts");
+      add("Clean Energy Authority");
+    }};
+
+    HashSet<String> levelTwoLeadSourceDetails = new HashSet<>() {{
+      add("Recursive Advertising");
+      add("LeadLabz");
+      add("Energy Bill Cruncher");
+      add("Blue Fire Leads");
+    }};
+
+    HashSet<String> manualCallsSources = new HashSet<>() {{
+      add("Retention");
+      add("Closer Gen");
+      add("Referral");
+      add("Setter Gen");
+      add("Retargeted");
+      add("Purchased Appointments");
+    }};
+
+    if (leadSourceDetail == null) {
+      leadSourceDetail = "";
+    }
+
+    if (leadLevel == null) {
+      leadLevel = "";
+    }
+
+    if (leadLevel.equals("1")) {
+      if (lead.equals("Paid Lead Gen")) {
+        if (levelOneLeadSourceDetails.contains(leadSourceDetail)) {
+          return "Level 1";
+        }
+      }
+    }
+    else if (leadLevel.equals("2")) {
+      if (lead.equals("Paid Lead Gen")) {
+        if (levelTwoLeadSourceDetails.contains(leadSourceDetail)) {
+          return "Level 3";
+        }
+      }
+    }
+    else if (leadLevel.equals("3")) {
+      if (lead.equals("Paid Lead Gen")) {
+        if (leadSourceDetail.equals("Best Company") || leadSourceDetail.equals("Clean Energy Exports")) {
+          return "Level 3";
+        }
+      }
+      else if (lead.equals("Paid Advertising")) {
+        if (leadSourceDetail.equals("Faraday") || leadSourceDetail.equals("Instagram") || leadSourceDetail.equals("Facebook")
+          || leadSourceDetail.equals("YouTube")) {
+          return "Level 3";
+        }
+      }
+      else if (lead.equals("Organic")) {
+        if (leadSourceDetail.equals("Digital Organic")) {
+          return "Level 3";
+        }
+      }
+    }
+    else if (leadLevel.equals("10")) {
+      return "InsideSales";
+    }
+    else if (manualCallsSources.contains(lead)) {
+      return "Manual Calls";
+    }
+
+    return null;
   }
 }

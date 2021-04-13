@@ -142,7 +142,6 @@
         p.contact_id,
         p.created_by_id,
         concat(u.first_name, ' ', u.last_name) as created_by,
-        comp.project_owner_readonly,
         comp.company_name,
         (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -157,12 +156,41 @@
                   WHERE up.id = p.user_position_id) o) AS owner,
         p.project_name,
         p.company_project_status_type_id,
-        cpst.project_status_type
+        cpst.project_status_type,
+        cot.status_read_only,
+        cot.owner_read_only,
+        coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(wlp)))
+                     FROM (
+                              SELECT wlp.id,
+                                     wlp.position_id as "positionId",
+                                     wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                     wlp.created_by_id as "createdById",
+                                     wlp.modified_by_id as "modifiedById",
+                                     wlp.archived
+                              FROM flow.white_listed_position wlp
+                              WHERE wlp.white_list_type_id = 3
+                                and wlp.company_id = comp.id
+                                AND wlp.archived is not true) wlp), '[]') AS "statusReadOnlyWhiteListedPositions",
+        coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(wlp)))
+                     FROM (
+                              SELECT wlp.id,
+                                     wlp.position_id as "positionId",
+                                     wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                     wlp.created_by_id as "createdById",
+                                     wlp.modified_by_id as "modifiedById",
+                                     wlp.archived
+                              FROM flow.white_listed_position wlp
+                              WHERE wlp.white_list_type_id = 4
+                                and wlp.company_id = comp.id
+                                AND wlp.archived is not true) wlp), '[]') AS "ownerReadOnlyWhiteListedPositions"
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.contact ct on ct.id = p.contact_id
       inner join flow.process pro on pro.id = cp.process_id
       inner join flow.company comp on cp.company_id = comp.id
+      inner join flow.company_object_type cot on cot.company_id = comp.id and cot.object_type_id = 1
       inner join flow."user" u on u.id = p.created_by_id
       left join flow.company_state cs on cs.id = p.company_state_id
       left join flow.state s on s.id = cs.state_id

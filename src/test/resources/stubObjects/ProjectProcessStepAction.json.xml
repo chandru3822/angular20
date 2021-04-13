@@ -1,0 +1,18 @@
+<json>
+  <projectProcessStepAction.action><![CDATA[
+  {
+    "id": 1,
+    "processStepId": 5,
+    "companyProcessStepStatusTypeId": 2,
+    "actionTypeId": 2,
+    "processStepStatusType": "complete",
+    "archived": false,
+    "alwaysEnabled": false,
+    "logicListChanged": null,
+    "alreadyTriggered": false,
+    "multipleUses": false,
+    "canPerform": true,
+    "projectProcessStepId": 123
+  }
+  ]]></projectProcessStepAction.action>
+</json>

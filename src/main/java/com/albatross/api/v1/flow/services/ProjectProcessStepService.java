@@ -890,37 +890,46 @@ public class ProjectProcessStepService {
       case 6:
       case 9:
         Long intFunctionResult = (functionResult != null) ? Long.valueOf(functionResult.toString()) : null;
-        switch(r.getDataTypeRequirementId().intValue()) {
-          case 20:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = intFunctionResult == null;
-                break;
-              case 2:
-                passed = intFunctionResult != null;
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
-          case 21:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = intFunctionResult != null;
-                break;
-              case 2:
-                passed = intFunctionResult == null;
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
+        if (r.getDataTypeRequirementId() == null) {
+          try {
+            Long reqValue = Long.parseLong(r.getRequirementValue());
+            passed = compareInt(intFunctionResult, reqValue, r.getOperatorTypeId());
+          } catch (Exception e) {
+            throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+          }
+        } else {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 20:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = intFunctionResult == null;
+                  break;
+                case 2:
+                  passed = intFunctionResult != null;
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+            case 21:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = intFunctionResult != null;
+                  break;
+                case 2:
+                  passed = intFunctionResult == null;
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+          }
         }
         break;
       case 7:

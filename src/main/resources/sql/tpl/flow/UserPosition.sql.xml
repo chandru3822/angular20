@@ -18,6 +18,24 @@
       order by upv.start_date desc
   ]]></userPosition.getAll>
 
+  <userPosition.getAllActive><![CDATA[
+      select distinct upv.user_position_id as id,
+                upv.user_id,
+                upv.archived,
+                upv.primary_flag,
+                upv.start_date,
+                upv.end_date,
+                upv.position,
+                upv.position_id,
+                upv.company_id
+        from flow.user_positions_vw upv
+        where upv.user_id = :userId
+          and ((upv.end_date is null and upv.start_date <= now())
+                 OR now() between upv.start_date and upv.end_date)
+          and upv.archived is not true
+        order by upv.start_date desc
+  ]]></userPosition.getAllActive>
+
   <userPosition.getOne><![CDATA[
       select distinct upv.user_position_id as id,
                 upv.user_id,

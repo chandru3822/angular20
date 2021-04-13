@@ -19,6 +19,9 @@
               <v-tab :to="`/settings/project/attachments?companyObjectTypeId=${companyObjectTypeId}`">
                 Attachment Types
               </v-tab>
+              <v-tab :to="`/settings/project/system?companyObjectTypeId=${companyObjectTypeId}`">
+                System
+              </v-tab>
             </v-tabs>
           </v-toolbar-items>
         </v-toolbar>

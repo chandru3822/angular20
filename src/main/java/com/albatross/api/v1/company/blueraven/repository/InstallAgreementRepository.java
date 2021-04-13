@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.services.LoanPalService;
 import com.albatross.api.v1.company.blueraven.services.PandaDocService;
+import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +39,16 @@ public class InstallAgreementRepository {
   private LoanPalService loanPalService;
 
   @Autowired
+  private SunlightService sunlightService;
+
+  @Autowired
   private PandaDocService pandaDocService;
 
   @Value(value = "${loanpal.api.baseUrl}")
-  private String baseUrl;
+  private String loanPalBaseUrl;
+
+  @Value(value = "${sunlight.api.portal}")
+  private String sunlightPortalUrl;
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
@@ -65,34 +72,52 @@ public class InstallAgreementRepository {
 
   @Data
   public static class PropLogDetail {
-    private String loanAmount;
+    private String loanAmount, loanTerm, interestRate, salesRepresentativeFirstName, salesRepresentativeLastName,
+      salesRepresentativeEmail, firstName, lastName, email, address, city, state, zip, phone, fullName;
+
+    Long projectId;
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
     Long projectId = request.getProjectId();
-    Boolean sendLoanpalDocs = request.getSendLoanpalDocs();
+    Boolean sendLoanDocs = request.getSendLoanDocs();
+
+    // TODO: Remove when Mobile supports sendLoanDocs parameter
+    if (request.getSendLoanpalDocs() != null) {
+      sendLoanDocs = request.getSendLoanpalDocs();
+    }
+
     request.validateNewRequest();
-    String resultMsg = "";
     String financier = getFinancierFromProposalLog(projectId, request.getProposalNbr());
+    String resultMsg = "";
 
-    sqlCache.update("installAgreement.setAgreementSent", request.toHashMap());
+    if (sendLoanDocs && isSunlightProject(financier)) {
+      // If credit is approved, send loan docs
+      try {
+        if (sunlightService.getCreditStatus(projectId).equals("Credit Approved")) {
+          sunlightService.sendLoanDocs(projectId);
+        }
+      } catch (JSONException ex){
+        log.error("IARQ: Error sending loan docs via Sunlight", ex.getMessage());
+        resultMsg = "Error sending loan docs through Sunlight";
+      }
+    }
+    else if (sendLoanDocs && isLoanPalProject(financier)) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("proposalNbr", request.getProposalNbr());
+      Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, PropLogDetail.class);
 
-    if (sendLoanpalDocs && financier != null && financier.equals("LoanPal")) {
       JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProjectId().toString());
       if (loanApplication != null) {
         try {
           JSONObject outcome = loanApplication.getJSONObject("outcome");
           String loanStatus = outcome.getString("status");
-          String loanPalId = loanApplication.getString("id");
+          String loanPalId = loanApplication.getString("loanPalId");
 
           JSONObject loanOptions = outcome.getJSONObject("loanOptions");
           String selectedLoanOption = null != loanOptions ? loanOptions.getString("id") : null;
 
-          //need to send totalSystemCost to loanpal before sending the loanpal docs
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("projectId", request.getProjectId());
-          params.put("proposalNbr", request.getProposalNbr());
-          Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getLoanAmountFromLog", params, PropLogDetail.class);
           if (propLogDetail.isPresent() && null != selectedLoanOption) {
             loanPalService.saveLoanFields(loanPalId, propLogDetail.get().getLoanAmount(), selectedLoanOption);
           }
@@ -127,11 +152,15 @@ public class InstallAgreementRepository {
   }
 
   public Boolean isCashProject(String financier) {
-    return financier != null && financier.toLowerCase().equals("cash");
+    return financier != null && financier.equalsIgnoreCase("cash");
   }
 
   public Boolean isLoanPalProject(String financier) {
-    return financier != null && financier.toLowerCase().equals("loanpal");
+    return financier != null && financier.equalsIgnoreCase("loanpal");
+  }
+
+  public Boolean isSunlightProject(String financier) {
+    return financier != null && financier.equalsIgnoreCase("sunlight");
   }
 
   public String getFinancierFromProposalLog(Long projectId, Long proposalNbr) {
@@ -199,7 +228,7 @@ public class InstallAgreementRepository {
     );
   }
 
-  public String generateLoanPal(Long projectId, Long proposalNbr) {
+  public String generateLoanApplication(Long projectId, Long proposalNbr) throws Exception {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", proposalNbr);
@@ -212,27 +241,42 @@ public class InstallAgreementRepository {
 
       if (deets.isPresent()) {
           PandaDocProjectDetails pd = deets.get();
-
-          String bothStreets = "";
-          if (pd.getMailingStreet1() != null) {
+          if (pd.getLoanType().contains("Sunlight")) {
+            Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, PropLogDetail.class);
+            try {
+              return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+            } catch (Exception e) {
+              return sunlightPortalUrl + "salesdashboard";
+            }
+          } else if (pd.getLoanType().contains("LoanPal")) {
+            // Check if this project has already had a credit check via Sunlight, if so throw error
+            Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
+            if (creditLastCheckedBy.isPresent()) {
+              String creditor = (String) creditLastCheckedBy.get();
+              if (creditor.equals("Sunlight")) {
+                throw new Exception(String.format("Unable to generate LoanPal application due to existing Sunlight application."));
+              }
+            }
+            String bothStreets = "";
+            if (pd.getMailingStreet1() != null) {
               bothStreets += pd.getMailingStreet1();
-          }
-          if (pd.getMailingStreet2() != null) {
+            }
+            if (pd.getMailingStreet2() != null) {
               bothStreets += " " + pd.getMailingStreet2();
-          }
+            }
 
-          bothStreets = bothStreets.trim();
-          String phoneNumber = "";
-          if (pd.getPhone() != null) {
+            bothStreets = bothStreets.trim();
+            String phoneNumber = "";
+            if (pd.getPhone() != null) {
               phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
               if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
-                  phoneNumber = phoneNumber.substring(1);
+                phoneNumber = phoneNumber.substring(1);
               }
-          }
+            }
 
-          try {
+            try {
               String financeOption = getFinanceOption(pd.getLoanTerm(), pd.getInterestRate());
-              URIBuilder b = new URIBuilder(baseUrl + financeOption + ".html");
+              URIBuilder b = new URIBuilder(loanPalBaseUrl + financeOption + ".html");
               b.addParameter("fname", s(pd.getCustomerFirstName()));
               b.addParameter("lname", s(pd.getCustomerLastName()));
               b.addParameter("street", bothStreets);
@@ -247,12 +291,16 @@ public class InstallAgreementRepository {
               b.addParameter("cost", s(pd.getTotalSystemPrice()));
               b.addParameter("refnum", s(pd.getProjectId()));
               return b.build().toString().replaceAll("\\+", "%20");
-          } catch (URISyntaxException e) {
+            } catch (URISyntaxException e) {
               log.error("IARQ: uri error {}", e.getMessage());
               e.printStackTrace();
+            }
           }
       }
-      return baseUrl;
+      // Store the latest proposal number used by this project
+      updateProposalNbr(projectId, proposalNbr);
+      sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
+      return loanPalBaseUrl;
   }
 
   private String getFinanceOption(String loanTerm, String interestRate) {
@@ -338,11 +386,19 @@ public class InstallAgreementRepository {
         financeOption = "flexpay598";
       }
     }
-    else {
+
+    if (financeOption.isEmpty()) {
       financeOption = "blueraven";
     }
 
     return financeOption;
+  }
+
+  private void updateProposalNbr(Long projectId, Long proposalNbr) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNbr", proposalNbr);
+    sqlCache.update("installAgreement.updateProposalNbr", params);
   }
 
   public void updateEmailAddress(Long projectId, String emailAddress) {

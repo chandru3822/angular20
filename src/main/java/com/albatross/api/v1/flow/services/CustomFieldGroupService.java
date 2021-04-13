@@ -105,36 +105,46 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.saveUseParentData", params);
   }
 
-  public void saveReadOnlyAndWhiteList(CustomField customField, Boolean savePositions) {
+  public void saveCfgaAndWhiteList(CustomField customField, Boolean savingReadOnly, Boolean savePositions, Long whiteListTypeId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.getId());
+    params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
+    params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+    params.put("whiteListTypeId", whiteListTypeId);
 
-    sqlCache.update("customFieldGroupAssignment.saveReadOnly", params);
+    //todo: this can totally be made better I just suck at coding and my brain is struggling
+    if(savingReadOnly) {
+      sqlCache.update("customFieldGroupAssignment.saveReadOnly", params);
+    } else {
+      sqlCache.update("customFieldGroupAssignment.saveHidden", params);
+    }
 
-    if(!customField.getCustomFieldGroupAssignmentReadOnly()) {
+    if ((savingReadOnly && !customField.getCustomFieldGroupAssignmentReadOnly()) || (!savingReadOnly && !customField.getCustomFieldGroupAssignmentHidden())) {
       // if field is not readonly archive any white listed positions for it
       sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositions", params);
-    } else if(null != savePositions && savePositions) {
+    } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
+      List<WhiteListedPosition> positionsToUse = savingReadOnly ? customField.getWhiteListedPositions() : customField.getHiddenWhiteListedPositions();
       List<Long> positionIdsUsed = customField.getWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
-      if(positionIdsUsed.size() > 0) {
+      if (positionIdsUsed.size() > 0) {
         sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
       } else {
         //this means they removed ALL white listed positions
         sqlCache.update("customFieldGroupAssignment.archiveAllWhiteListedPositions", params);
       }
 
-      for(WhiteListedPosition wlp : customField.getWhiteListedPositions()) {
+      for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
         //this insert checks if there is already a non-archived row with the same values
         sqlCache.update("customFieldGroupAssignment.insertWhiteListPosition", params);
       }
     }
+
 
   }
 

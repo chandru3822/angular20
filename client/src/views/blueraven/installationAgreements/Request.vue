@@ -81,8 +81,8 @@
                               </v-icon>
                           </div>
 
-                          <v-btn color="primaryButton" raised @click="openLoanpalApp()" class="white--text">
-                              LoanPal Application
+                          <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
+                              Loan Application
                           </v-btn>
                       </v-col>
                       <v-col>
@@ -98,8 +98,8 @@
                           <v-checkbox label="Send Spanish Installation Agreement"
                                       v-model="requestItem.isSpanish"
                           ></v-checkbox>
-                          <v-checkbox label="Send Loan Docs (LoanPal Only)"
-                                      v-model="requestItem.sendLoanpalDocs"
+                          <v-checkbox label="Send Loan Docs (Loan Products Only)"
+                                      v-model="requestItem.sendLoanDocs"
                           ></v-checkbox>
                       </v-col>
                   </v-row>
@@ -162,7 +162,7 @@
           email: '',
           proposalNbr: '',
           proposalNbrs: [],
-          sendLoanpalDocs: true,
+          sendLoanDocs: true,
           sendInstallationAgreement: false,
           isSpanish: false,
           projectId: ''
@@ -268,7 +268,7 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
-              if (e.message.includes('locate')) {
+              if (e.message != null && e.message.includes('locate')) {
                   this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a loan application for this project')
               }
               else {
@@ -278,21 +278,29 @@
               console.error('*** ERROR ***', e)
           }
       },
-      async openLoanpalApp() {
+      async openLoanApp() {
           try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
               if (!this.requestItem.proposalNbr) {
-                  console.error('*** ERROR ***', 'Error: Unable to generate LonaPal application without Proposal Number')
-                  this.snackbar = getSnackbar('ERROR', 'Unable to generate LonaPal application without Proposal Number')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  console.error('*** ERROR ***', 'Error: Unable to generate Loan application without Proposal Number')
+                  this.snackbar = getSnackbar('ERROR', 'Unable to generate Loan application without Proposal Number')
+                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  this.$store.commit(AppMutations.SET_LOADING, false)
                   return
               }
               const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.projectId+'/'+this.requestItem.proposalNbr, 'blueraven')
               window.open(data);
+              this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error generating LoanPal Application')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              if (e.data.message!= null) {
+                this.snackbar = getSnackbar('ERROR', e.data.message)
+              }
+              else {
+                this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
+              }
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
       async updateEmail(it) {

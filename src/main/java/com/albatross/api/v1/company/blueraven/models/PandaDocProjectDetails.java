@@ -15,7 +15,7 @@ public class PandaDocProjectDetails {
     private String customerFirstName, customerLastName, customerEmail;
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
         projectName, totalCashDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
-        loanTerm, interestRate;
+        loanTerm, interestRate, loanType;
 
     public String getTemplateName(Boolean isSpanish) {
         StringJoiner sj = new StringJoiner("_");
@@ -32,7 +32,7 @@ public class PandaDocProjectDetails {
             sj.add("Spanish");
         }
         sj.add(state);
-        sj.add(utilityCompany);
+        sj.add(mailingState + " - " + utilityCompany);
         sj.add(financier);
 
         return sj.toString();

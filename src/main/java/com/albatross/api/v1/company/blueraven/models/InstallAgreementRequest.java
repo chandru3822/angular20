@@ -21,7 +21,7 @@ public class InstallAgreementRequest {
   private String project_props_owner;
   private Long statusId;
   private Boolean sendInstallationAgreement;
-  private Boolean sendLoanpalDocs;
+  private Boolean sendLoanDocs, sendLoanpalDocs;
   private Boolean isSpanish;
   private Boolean request_successful;
 

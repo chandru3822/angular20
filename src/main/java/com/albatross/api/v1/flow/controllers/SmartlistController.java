@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldService;
+import com.albatross.api.v1.flow.services.ObjectTypeService;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ public class SmartlistController {
   private final SmartlistService smartlistService;
 
   private final CustomFieldService customFieldService;
+  private final ObjectTypeService objectTypeService;
 
   private final SecurityService securityService;
 
@@ -141,7 +143,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/customFieldObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyObjectType>> getCustomFieldObjectTypes() {
-      List<CompanyObjectType> types = customFieldService.getCompanyObjectTypes();
+      List<CompanyObjectType> types = objectTypeService.getCompanyObjectTypes();
       // Object types 3 (users) and 5 (orgs) are only available in smartlists through process steps, not as direct lists or fields
       List<CompanyObjectType> filteredTypes = types.stream()
           .filter(t -> t.getObjectTypeId() != 3 && t.getObjectTypeId() != 5)

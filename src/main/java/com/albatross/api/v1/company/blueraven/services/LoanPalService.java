@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,7 +42,7 @@ public class LoanPalService {
       HashMap<String, Object> data = new HashMap<>();
       data.put("Credit Check", creditCheck);
       data.put("Credit Decision Date", getCreditDecisionDate(application));
-      data.put("Partner Job ID", getLoanId(application));
+      data.put("Partner Job ID", application.getString("loanPalId"));
 
       String maxLoanAmount = getMaxLoanAmount(application);
       if (maxLoanAmount != null && !maxLoanAmount.isEmpty()) {
@@ -76,6 +77,9 @@ public class LoanPalService {
   }
 
   public JSONObject getApplicationByProjectId(String projectId) throws Exception {
+    JSONObject returnApplication = new JSONObject();
+    returnApplication.put("type", "LoanPal");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", Long.valueOf(projectId));
 
@@ -97,7 +101,7 @@ public class LoanPalService {
         String uri = "/applications/reference/" + projectId;
         HttpResponse res = GET(uri);
         if (res.getResponseCode() != 200) {
-            throw new Exception(String.format("Unable to locate LoanPal application for project %s: %s", projectId, res.getBody()));
+            throw new Exception(String.format("Unable to locate loan application for project %s: %s", projectId, res.getBody()));
         }
 
         applications = res.getJSONArray();
@@ -107,7 +111,16 @@ public class LoanPalService {
     }
 
     JSONObject application = applications.getJSONObject(0);
-    return getApplicationByLoanId(getLoanId(application));
+    JSONObject loanPalApp = getApplicationByLoanId(getLoanId(application));
+    JSONObject statusJson = loanPalApp.getJSONObject("loanStatus");
+    returnApplication.put("status", statusJson.getString("application"));
+    JSONObject applicationJson = new JSONObject();
+    applicationJson.put("application", statusJson.getString("application"));
+    returnApplication.put("loanStatus", applicationJson);
+    returnApplication.put("outcome", loanPalApp.getJSONObject("outcome"));
+    returnApplication.put("loanPalId", loanPalApp.getString("id"));
+    returnApplication.put("createdAt", loanPalApp.getString("createdAt"));
+    return returnApplication;
   }
 
   public JSONObject getApplicationByLoanId(String loanId) throws Exception {
@@ -148,6 +161,54 @@ public class LoanPalService {
     }
 
     return created.toLocalDate().toString();
+  }
+
+  // Used to standardize the status sent back to mobile for a loan
+  public String getLoanStatusForMobile(String creditStatus) {
+    HashSet<String> declinedStatus = new HashSet<>() {{
+      add("Credit Declined");
+      add("Declined");
+      add("Denied");
+      add("Project Withdrawn");
+    }};
+
+    HashSet<String> pendingStatus = new HashSet<>() {{
+      add("Credit Pending Review");
+      add("Pending");
+      add("New");
+    }};
+
+    HashSet<String> approvedStatus = new HashSet<>() {{
+      add("Change Order Pending");
+      add("Inspection Approved");
+      add("Inspection in Review");
+      add("Installation Approved");
+      add("Installation in Review");
+      add("Kitting in Review");
+      add("Loan Agreement Signed");
+      add("Notice to Proceed Approved");
+      add("Notice to Proceed in Review");
+      add("Permission to Operate in Review");
+      add("Permit Application Approved");
+      add("Permit Application in Review");
+      add("Project Completed");
+      add("PTO Payment Pending");
+      add("Approved");
+      add("Sent");
+    }};
+
+    if (approvedStatus.contains(creditStatus)) {
+      return "Approved";
+    }
+    else if (pendingStatus.contains(creditStatus)) {
+      return "Pending";
+    }
+    else if (declinedStatus.contains(creditStatus)) {
+      return "Denied";
+    }
+    else {
+      return creditStatus;
+    }
   }
 
   public String getMaxLoanAmount(JSONObject app) throws JSONException {
