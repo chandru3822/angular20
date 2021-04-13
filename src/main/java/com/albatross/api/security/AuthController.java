@@ -103,9 +103,7 @@ public class AuthController {
     Instant issuedAt = Instant.now();
     return new JwtClaims().setUserId(userId)
         .setIssuedAt(issuedAt)
-      .setExpiresAt(issuedAt.plus(Duration.ofSeconds(20L)));
-
-//        .setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
+        .setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
   }
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST,
