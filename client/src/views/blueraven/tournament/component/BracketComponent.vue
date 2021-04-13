@@ -82,17 +82,21 @@
             </div>
             <ul class="matchup" v-for="(m, i) in r.matches" :class="{'mb-4': getSpacingByIndex(idx, i)}">
               <v-radio-group v-model="m.winnerUserId">
-                <li class="team team-top" :class="{'current': isCurrentRound(r)}"
-                    @click="[showScoreData.userId = m.user1Id, showScoreData.user = m.user1Name, showScoreData.round = r, showModal = true]">
+                <li class="team team-top" :class="{'current': isCurrentRound(r)}">
                   <v-radio v-if="r.edit && m.user1Id && m.user2Id" :value="m.user1Id" class="d-inline-block"></v-radio>
-                  {{m.user1Name}}
-                  <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user1Score}}</span>
+                  <div class="d-inline-block one-hunned" @click="[showScoreData.userId = m.user1Id, showScoreData.user = m.user1Name, showScoreData.round = r, showModal = true]">
+                    {{m.user1Name}}
+                    <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user1Score}}</span>
+                  </div>
                 </li>
-                <li class="team team-bottom" :class="{'current': isCurrentRound(r)}"
-                    @click="[showScoreData.userId = m.user2Id, showScoreData.user = m.user2Name, showScoreData.round = r, showModal = true]">
+                <li class="team team-bottom" :class="{'current': isCurrentRound(r)}">
                   <v-radio small v-if="r.edit && m.user1Id && m.user2Id" :value="m.user2Id" class="d-inline-block"></v-radio>
-                  {{m.user2Name}}
-                  <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user2Score}}</span></li>
+                  <div class="d-inline-block one-hunned" @click="[showScoreData.userId = m.user2Id, showScoreData.user = m.user2Name, showScoreData.round = r, showModal = true]">
+                    {{m.user2Name}}
+                    <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user2Score}}</span>
+                  </div>
+                </li>
+
               </v-radio-group>
             </ul>
           </div>
@@ -211,7 +215,7 @@
         if(allMatchesHaveWinners) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            await putRequest(`/tournament/advance`, round.matches, 'blueraven')
+            await putRequest(`/tournament/${this.bracket.tournamentId}/advance`, round.matches, 'blueraven')
             round.edit = false
             this.roundRerenderKey++
             //maybe we dont have to do this but i am doing it for v1
