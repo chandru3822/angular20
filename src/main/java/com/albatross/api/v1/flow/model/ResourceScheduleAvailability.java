@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ResourceScheduleAvailability {
 
-  private Long id, resourceScheduleId, dayOfWeekId;
+  private Long id, resourceScheduleId, resourceSlotScheduleId, dayOfWeekId;
   private String startTime, endTime, dayOfWeek;
-  private Boolean archived;
+  private Boolean archived, useSlotSchedule;
 }

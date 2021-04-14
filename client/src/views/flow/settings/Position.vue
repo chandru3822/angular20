@@ -39,6 +39,10 @@
           <div class="mb-3">
             <label>Show in Scheduling Tool:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
+            <div class="ml-5" v-if="position.schedulable">
+              <label>Use Slot Schedules:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.useSlotSchedule">
+            </div>
           </div>
           <div class="mb-3">
             <label>Can Schedule Round Robins:</label>
@@ -139,6 +143,8 @@
             //we do this temp so that we only send up the values that need to be saved
             let tempCompanyFeatures = this.position?.companyFeatures?.filter(cf => cf.dirty)
             this.position.companyFeatures = tempCompanyFeatures
+            //if the position isn't schedulable, dont allow them to save a true value for useSlotSchedule
+            this.position.useSlotSchedule = this.position.schedulable ? this.position.useSlotSchedule : false
             const {data} = await putRequest(`/position/`, this.position)
             this.position = data
             this.accessControlKey++

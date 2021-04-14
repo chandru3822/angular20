@@ -263,6 +263,7 @@
                                           p.scheduler,
                                           up.position_id as "positionId",
                                           up.org_id as "orgId",
+                                          p.use_slot_schedule as "useSlotSchedule",
                                           o.company_state_id as "companyStateId",
                                           cs.state_id as "stateId",
                                           up.start_date as "startDate",

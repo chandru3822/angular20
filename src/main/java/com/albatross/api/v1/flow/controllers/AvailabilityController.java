@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -59,7 +60,7 @@ public class AvailabilityController {
   public void saveResourceAppointmentLength(@RequestBody AvailabilityService.AppointmentLength al) {
     availabilityService.saveResourceAppointmentLength(al);
   }
-  
+
   @PostMapping(value = "/auditOverride", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveOverrideInfoToAudit(@RequestBody AvailabilityService.OverrideAudit audit) {
     availabilityService.saveOverrideInfoToAudit(audit);
@@ -104,5 +105,26 @@ public class AvailabilityController {
   @GetMapping(value = "/cacheAvailability", produces = MediaType.APPLICATION_JSON_VALUE)
   public void cacheAvailability() {
     availabilityService.cacheAvailability();
+  }
+
+  //slot schedules
+  @GetMapping(value = "/slotSchedules", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<SlotSchedule> getSlotSchedules() {
+    return availabilityService.getAllSlotSchedules();
+  }
+
+  @GetMapping(value = "/slotSchedule/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<SlotSchedule> getSlotSchedule(@PathVariable Long id) {
+    return availabilityService.getSlotSchedule(id);
+  }
+
+  @PutMapping(value = "/slotSchedule", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<SlotSchedule> saveSlotSchedule(@RequestBody SlotSchedule slotSchedule) {
+    return availabilityService.saveSlotSchedule(slotSchedule);
+  }
+
+  @DeleteMapping(value = "/slotSchedule/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveSlotSchedule(@PathVariable Long id) {
+    availabilityService.deleteSlotSchedule(id);
   }
 }

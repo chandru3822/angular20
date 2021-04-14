@@ -43,6 +43,13 @@ Vue.use(Vue2Filters)
 Vue.use(VueMapbox, { mapboxgl: Mapbox });
 Vue.prototype.$filters = Vue.options.filters
 
+//this filter is only used for the zoneless time picker stuff
+Vue.filter('formatDateZoneless', function (value) {
+  if (value) {
+    return moment.utc(String(value), 'HH:mm:ss').format('h:mm a')
+  }
+})
+
 Vue.filter('formatDate', function (value, type, format, inputFormat) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats

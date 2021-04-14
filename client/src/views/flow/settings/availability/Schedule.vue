@@ -179,7 +179,7 @@
                     <thead class="v-data-table-header">
                     <tr>
                       <th>Work Day</th>
-                      <th :colspan="4">Hours</th>
+                      <th :colspan="4">{{ useSlotSchedule ? 'Schedule' : 'Hours'}}</th>
                     </tr>
                     </thead>
                   </template>
@@ -187,36 +187,52 @@
                   <template #item="{ item, index }">
                     <tr class="clickable" :class="{'shaded-row': index % 2}">
                       <td class="text-left">{{item.dayOfWeek}}</td>
-                      <td class="text-left">
-                        <DatetimePickerInput
-                          v-model="item.startTime"
-                          :timezone="timezone"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          type="time"
-                          format="h:mm a"
-                          :allowed-minutes="allowedMinutesStep"
-                          input-format="HH:mm:ss"
-                          label="Start Time"
-                        />
+                      <td class="text-left" v-if="useSlotSchedule">
+                        <v-select
+                          v-model="item.resourceSlotScheduleId"
+                          :items="slotSchedules"
+                          label="Schedule"
+                          item-text="scheduleName"
+                          item-value="id"
+                          clearable
+                          @change="item.startTime = null, item.endTime = null"
+                        >
+                          <template slot="item" slot-scope="data">
+                            <!-- HTML that describes how select should render items when the select is open -->
+                            {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
+                          </template>
+                        </v-select>
                       </td>
-                      <td>
-                        to
+                      <td class="text-left" v-else>
+                        <div class="flex-display">
+                          <DatetimePickerInput
+                            v-model="item.startTime"
+                            :timezone="timezone"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            type="time"
+                            format="h:mm a"
+                            :allowed-minutes="allowedMinutesStep"
+                            input-format="HH:mm:ss"
+                            label="Start Time"
+                            class="d-inline-block"
+                          />
+                          <div class="d-inline-block px-3 align-self-center">to</div>
+                          <DatetimePickerInput
+                            v-model="item.endTime"
+                            :timezone="timezone"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            type="time"
+                            format="h:mm a"
+                            :allowed-minutes="allowedMinutesStep"
+                            input-format="HH:mm:ss"
+                            label="End Time"
+                            class="d-inline-block"
+                          />
+                        </div>
                       </td>
-                      <td class="text-left">
-                        <DatetimePickerInput
-                          v-model="item.endTime"
-                          :timezone="timezone"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          type="time"
-                          format="h:mm a"
-                          :allowed-minutes="allowedMinutesStep"
-                          input-format="HH:mm:ss"
-                          label="End Time"
-                        />
-                      </td>
-                      <td class="text-left px-0" width="150px">
+                      <td class="text-left px-0" width="150px" v-if="!useSlotSchedule">
 
                         <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
@@ -266,7 +282,7 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startDate | formatDate('date')}} - {{item.endDate | formatDate('date')}}</td>
-              <td class="text-left">
+              <td class="text-right">
                 <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item)">
                   <v-icon v-if="userCanEdit">edit</v-icon>
@@ -324,7 +340,8 @@
     },
     props: {
       orgId: Number,
-      userId: Number
+      userId: Number,
+      useSlotSchedule: Boolean
     },
     data() {
       return {
@@ -344,6 +361,7 @@
         schedules: [],
         expanded: [],
         workDays: [],
+        slotSchedules: [],
         saveError: false,
         saveErrorMsg: ''
       }
@@ -352,6 +370,9 @@
       //reload the data if they switch back from the appointments tab
       this.getSchedules()
       this.getWorkDays()
+      if(this.useSlotSchedule) {
+        this.getSlotSchedules()
+      }
     },
     watch: {
       'orgId': function () {
@@ -375,6 +396,14 @@
       }
     },
     methods: {
+      buildTimeString(schedule) {
+        let timeString = '['
+        schedule?.slotTimes?.forEach((st,idx) => {
+          timeString += (this.$filters.formatDateZoneless(st.startTime) + '-' + this.$filters.formatDateZoneless(st.endTime) + (idx === schedule.slotTimes.length - 1 ? '' : ', '))
+        })
+        timeString += ']'
+        return timeString
+      },
       async getSchedules() {
         if(this.orgId || this.userId) {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -406,13 +435,26 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
+      async getSlotSchedules() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/availability/slotSchedules`)
+          this.slotSchedules = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Schedules')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
       async saveSchedule(sched, isNew) {
-
         //clone the schedule so the times don't change on the screen, they only change for the save to the db
         let s = cloneDeep(sched)
+        console.log('heheehehre',s)
 
         // filter out empties that dont need saved
-        s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.startTime != null || rsa.endTime != null) }) : []
+        s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.resourceSlotScheduleId != null || rsa.startTime != null || rsa.endTime != null) }) : []
         // modify the times for saving to db
         // s.resourceScheduleAvailability.forEach(rsa => {
         //   rsa.startTime = rsa.startTime != null ? moment(rsa.startTime, 'HH:mm:ss A Z').toDate() : null
@@ -449,7 +491,7 @@
             //   timeOverlap = true
             // }
           })
-          
+
           if(invalidStarts) {
             this.saveError = true
             this.saveErrorMsg = '* All work days with an end time must also have a start time'
@@ -486,6 +528,7 @@
               try {
                 let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
                 formattedTimestamps.forEach(ft => {
+                  console.log('randaLogger',ft)
                   ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
                   ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null
                 })
