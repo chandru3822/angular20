@@ -88,7 +88,7 @@ public class PandaDocService {
    * @throws Exception
    */
   private String findTemplateId(PandaDocProjectDetails deets, Boolean isSpanish) throws Exception {
-    String name = deets.getTemplateName(isSpanish);
+    String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
     String tplId = findTemplateIdByName(name);
 
     log.info("PANDADOC: Template Name we are looking for: {}", name);
@@ -97,7 +97,7 @@ public class PandaDocService {
     if (tplId == null) {
       log.warn("PANDADOC: falling back to generic utility company");
       deets.setUtilityCompany(pandaDoc.getGenericName());
-      name = deets.getTemplateName(isSpanish);
+      name = deets.getTemplateName(true, pandaDoc.getGenericName());
       tplId = findTemplateIdByName(name);
     }
 
