@@ -110,7 +110,7 @@
             <v-toolbar-items>
               <v-btn text v-if="userCanEdit"
                      :disabled="fieldsSaving"
-                     @click="[fieldsSaving = true, saveContact()]">Save</v-btn>
+                     @click="[fieldsSaving = true, validate()]">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -118,22 +118,26 @@
               <v-text-field text
                             label="First Name"
                             placeholder=" "
+                            :rules="nameRules"
                             :readonly="!userCanEdit"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
                             placeholder=" "
+                            :rules="nameRules"
                             :readonly="!userCanEdit"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
                             placeholder=" "
+                            :rules="addressRules"
                             :readonly="!userCanEdit"
                             @change="addressChanged = true"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
                             placeholder=" "
+                            :rules="cityRules"
                             @change="addressChanged = true"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
@@ -157,22 +161,24 @@
                             :rules="postalCodeRules"
                             maxlength="10"
                             v-model="contact.postalCode"></v-text-field>
+              <v-text-field text
+                            label="Phone"
+                            placeholder=" "
+                            :rules="phoneRules"
+                            :readonly="!userCanEdit"
+                            v-model="contact.phone"></v-text-field>
+              <v-text-field text
+                            label="Mobile"
+                            :readonly="!userCanEdit"
+                            :rules="phoneRules"
+                            placeholder=" "
+                            v-model="contact.mobile"></v-text-field>
+              <v-text-field text
+                            label="E-Mail"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            v-model="contact.email"></v-text-field>
             </v-form>
-            <v-text-field text
-                          label="Phone"
-                          placeholder=" "
-                          :readonly="!userCanEdit"
-                          v-model="contact.phone"></v-text-field>
-            <v-text-field text
-                          label="Mobile"
-                          :readonly="!userCanEdit"
-                          placeholder=" "
-                          v-model="contact.mobile"></v-text-field>
-            <v-text-field text
-                          label="E-Mail"
-                          placeholder=" "
-                          :readonly="!userCanEdit"
-                          v-model="contact.email"></v-text-field>
             <DatetimePickerInput
               v-model="contact.dateCreated"
               :timezone="timezone"
@@ -277,7 +283,6 @@ import constants from '@/helpers/constants'
 export default {
   name: 'Contact',
   components: {
-
     CustomValueInput,
     NotesAndActivity,
     DatetimePickerInput
@@ -288,6 +293,10 @@ export default {
       states: [],
       contact: {},
       postalCodeRules: constants.POSTAL_CODE_RULES,
+      cityRules: constants.CITY_RULES,
+      addressRules: constants.ADDRESS_RULES,
+      nameRules: constants.NAME_RULES,
+      phoneRules: constants.PHONE_RULES,
       deleteContactConfirm: false,
       addressChanged: false,
       isNumberOrHyphen,
@@ -323,6 +332,12 @@ export default {
     this.getNotes()
   },
   methods: {
+    validate () {
+      if (this.$refs.address.validate()) {
+        this.saveContact()
+      }
+      this.fieldsSaving = false;
+    },
     contactOwnerIsReadOnly() {
       if(this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
@@ -333,23 +348,6 @@ export default {
     async saveContact() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
-          if (this.contact?.phone?.length > 0 && (!this.contact?.phone?.match(phoneRegex) || this.contact?.phone?.length > 20)) {
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Phone field with a valid phone number')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.fieldsSaving = false;
-            return;
-          }
-
-          if (this.contact?.mobile?.length > 0 && (!this.contact?.mobile?.match(phoneRegex) || this.contact?.mobile?.length > 20)) {
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Mobile field with a valid phone number')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.fieldsSaving = false;
-            return;
-          }
-
         // save contact
           const {data} = await postRequest(`/contact`, this.contact)
           this.contact.projects = data.projects
