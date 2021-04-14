@@ -97,7 +97,7 @@ public class PandaDocService {
     if (tplId == null) {
       log.warn("PANDADOC: falling back to generic utility company");
       deets.setUtilityCompany(pandaDoc.getGenericName());
-      name = deets.getTemplateName(true, pandaDoc.getGenericName());
+      name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
       tplId = findTemplateIdByName(name);
     }
 
