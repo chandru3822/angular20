@@ -286,4 +286,9 @@
           match_advanced = true
     where id = :matchId;
   ]]></tournament.advanceMatch>
+
+  <tournament.insertLoserToLastChance><![CDATA[
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id)
+    values (:loserUserId, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 2), :userId)
+  ]]></tournament.insertLoserToLastChance>
 </sql>

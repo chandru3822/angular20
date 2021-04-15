@@ -17,7 +17,7 @@ public class PandaDocProjectDetails {
         projectName, totalCashDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
         loanTerm, interestRate, loanType;
 
-    public String getTemplateName(Boolean isSpanish) {
+    public String getTemplateName(Boolean isSpanish, String genericName) {
         StringJoiner sj = new StringJoiner("_");
 
         // If companyId is BRS
@@ -32,7 +32,14 @@ public class PandaDocProjectDetails {
             sj.add("Spanish");
         }
         sj.add(state);
-        sj.add(utilityCompany);
+
+        if (utilityCompany.equals(genericName)) {
+          sj.add(utilityCompany);
+        }
+        else {
+          sj.add(mailingState + " - " + utilityCompany);
+        }
+
         sj.add(financier);
 
         return sj.toString();

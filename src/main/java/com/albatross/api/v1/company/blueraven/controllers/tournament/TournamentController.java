@@ -121,8 +121,9 @@ public class TournamentController {
     tournamentService.advanceWinners(tournamentId, roundId, matches);
   }
 
-  @PutMapping(value = "/advance", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void advanceMatches(@RequestBody List<Match> matches) {
-    tournamentService.advanceMatches(matches);
+  @PutMapping(value = "/{tournamentId}/advance", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void advanceMatches(@PathVariable Long tournamentId,
+                             @RequestBody List<Match> matches) {
+    tournamentService.advanceMatches(tournamentId, matches);
   }
 }

@@ -243,7 +243,7 @@ public class TournamentService {
     }
   }
 
-  public void advanceMatches(List<Match> matches) {
+  public void advanceMatches(Long tournamentId, List<Match> matches) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -257,6 +257,11 @@ public class TournamentService {
       params.put("user2Score", m.getUser2Score());
       params.put("winnerUserId", m.getWinnerUserId());
       sqlCache.update("tournament.advanceMatch", params);
+
+      //put the losers into the last chance pool
+      params.put("tournamentId", tournamentId);
+      params.put("loserUserId", m.getWinnerUserId().equals(m.getUser1Id()) ? m.getUser2Id() : m.getUser1Id());
+      sqlCache.update("tournament.insertLoserToLastChance", params);
     }
   }
 
