@@ -19,17 +19,19 @@
             <v-col cols="12" sm="6">
               <v-text-field text
                             label="First Name"
-                            :rules="requiredRules"
+                            :rules="nameRules"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
-                            :rules="requiredRules"
+                            :rules="nameRules"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
+                            :rules="addressRules"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
+                            :rules="cityRules"
                             v-model="contact.city"></v-text-field>
               <v-select v-model="contact.companyStateId"
                         :items="states"
@@ -41,10 +43,11 @@
             <v-col cols="12" sm="6">
               <v-text-field text
                             label="Phone"
-                            :rules="requiredRules"
+                            :rules="phoneRules"
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
+                            :rules="phoneRules"
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
@@ -108,6 +111,10 @@ export default {
       isNumberOrHyphen,
       states: [],
       postalCodeRules: constants.POSTAL_CODE_RULES,
+      cityRules: constants.CITY_RULES,
+      addressRules: constants.ADDRESS_RULES,
+      phoneRules: constants.PHONE_RULES,
+      nameRules: constants.NAME_RULES,
       loadingInsertFields: true,
       countries: [],
       dirtyCfvs: [],
@@ -182,21 +189,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.contact.customFieldGroups = this.customFieldGroups
       try {
-        let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
-        if (this.contact?.phone?.length > 0 && (!this.contact?.phone?.match(phoneRegex) || this.contact?.phone?.length > 20)) {
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Phone field with a valid phone number')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          return;
-        }
-
-        if (this.contact?.mobile?.length > 0 && (!this.contact?.mobile?.match(phoneRegex) || this.contact?.mobile?.length > 20)) {
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Mobile field with a valid phone number')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          return;
-        }
-
         this.contact.companyId = this.companyId
         const {data} = await postRequest(`/contact`, this.contact)
         if(data && data.id) {
