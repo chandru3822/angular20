@@ -64,7 +64,8 @@
               {{item.fullName}}
             </td>
             <td class="text-center">
-              {{item.score || 0}}
+              <span v-if="item.score == null">--</span>
+              <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
               <v-btn text small class="clickable" @click="[showModal = true, showScoreUser = item]">

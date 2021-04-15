@@ -104,6 +104,11 @@ public class InstallAgreementController {
               return ResponseEntity.ok(sunlightApp.toString());
             }
           }
+          else {
+            // If no Loan Type is found, try LoanPal
+            JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
+            return ResponseEntity.ok(loanApp.toString());
+          }
       } catch (Exception e) {
           log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
           if (e.getMessage().contains("locate")) {
