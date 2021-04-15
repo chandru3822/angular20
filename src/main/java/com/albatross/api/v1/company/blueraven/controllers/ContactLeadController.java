@@ -144,4 +144,9 @@ public class ContactLeadController {
   public void updateContactInsideSales(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/envyusMedia", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactEnvyusMedia(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
