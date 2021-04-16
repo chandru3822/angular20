@@ -123,9 +123,7 @@
     <installAgreement.getLoanType>
       <![CDATA[
             select plh.loan_type from brs.proposal_log_history plh
-                 inner join brs.project_details pd on pd.project_id = plh.project_id
-                                                          and pd.proposal_nbr = plh.proposal_nbr
-            WHERE pd.project_id = :projectId;
+            WHERE project_id = :projectId and proposal_nbr = :proposalNbr;
             ]]>
     </installAgreement.getLoanType>
 
