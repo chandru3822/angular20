@@ -260,7 +260,7 @@
            total_promotion_amount,
            coalesce((select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0),
            (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id)
-        ) payments where payments.total_promotion_amount != payments.total_paid AND (payments.total_promotion_amount - payments.total_paid > 0)
+        ) payments where ROUND(payments.total_promotion_amount) != ROUND(payments.total_paid) AND (ROUND(payments.total_promotion_amount) - ROUND(payments.total_paid) > 0)
         ]]>
   </rebate.getPaymentsUnbalanced>
 
