@@ -366,7 +366,7 @@
           this.addNew = false
           let itemIndex = this.userPositions.indexOf(item)
 
-          let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
+          let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
             return (prev.level > current.level) ? prev : current
           })
           let itemId = item.id
