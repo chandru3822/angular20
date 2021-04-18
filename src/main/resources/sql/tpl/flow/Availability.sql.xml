@@ -14,6 +14,7 @@
                      select rsa.id,
                         rsa.resource_schedule_id as "resourceScheduleId",
                         dow.id as "dayOfWeekId",
+                        rsa.resource_slot_schedule_id as "resourceSlotScheduleId",
                         dow.day_of_week as "dayOfWeek",
                         rsa.start_time as "startTime",
                         rsa.end_time as "endTime",

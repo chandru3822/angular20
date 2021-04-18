@@ -451,7 +451,6 @@
       async saveSchedule(sched, isNew) {
         //clone the schedule so the times don't change on the screen, they only change for the save to the db
         let s = cloneDeep(sched)
-        console.log('heheehehre',s)
 
         // filter out empties that dont need saved
         s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.resourceSlotScheduleId != null || rsa.startTime != null || rsa.endTime != null) }) : []
@@ -528,7 +527,6 @@
               try {
                 let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
                 formattedTimestamps.forEach(ft => {
-                  console.log('randaLogger',ft)
                   ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
                   ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null
                 })
@@ -572,7 +570,8 @@
               dayOfWeekId: wd.id,
               dayOfWeek: wd.dayOfWeek,
               startTime: null,
-              endTime: null
+              endTime: null,
+              resourceSlotScheduleId: null
             })
           })
         }

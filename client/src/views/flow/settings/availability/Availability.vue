@@ -120,7 +120,6 @@
       useSlotSchedule() {
         if(this.userId) {
           let user = this.users.find(u => u.id === this.userId)
-          console.log('randaLogger',user)
           let useSlots = false
           user?.userPositions?.forEach(up => {
             if(up.useSlotSchedule) {
