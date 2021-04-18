@@ -86,24 +86,42 @@ public class InstallAgreementController {
       installAgreementRepository.updateEmailAddress(projectId, contact.getEmail());
   }
 
+  @GetMapping(value = "/loanStatus/{projectId}/{proposalNbr}")
+  public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId, @PathVariable String proposalNbr) {
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", Long.valueOf(projectId));
+      params.put("proposalNbr", Long.valueOf(proposalNbr));
+      Optional<Object> loanType = sqlCache.get("installAgreement.getLoanType", params, new SingleColumnRowMapper<>(Object.class));
+
+      if (loanType.isPresent()) {
+        String loan = loanType.get().toString();
+        if (loan.contains("LoanPal")) {
+          JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
+          return ResponseEntity.ok(loanApp.toString());
+        }
+        else if (loan.contains("Sunlight")) {
+          JSONObject sunlightApp = sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
+          return ResponseEntity.ok(sunlightApp.toString());
+        }
+      }
+    } catch (Exception e) {
+      log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+      if (e.getMessage().contains("locate")) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
+      }
+      else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+      }
+    }
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
+  }
+
   @GetMapping(value = "/loanStatus/{projectId}")
   public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId) {
       try {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("projectId", Long.valueOf(projectId));
-          Optional<Object> loanType = sqlCache.get("installAgreement.getLoanType", params, new SingleColumnRowMapper<>(Object.class));
-
-          if (loanType.isPresent()) {
-            String loan = loanType.get().toString();
-            if (loan.contains("LoanPal")) {
-              JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
-              return ResponseEntity.ok(loanApp.toString());
-            }
-            else if (loan.contains("Sunlight")) {
-              JSONObject sunlightApp = sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
-              return ResponseEntity.ok(sunlightApp.toString());
-            }
-          }
+        JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
+        return ResponseEntity.ok(loanApp.toString());
       } catch (Exception e) {
           log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
           if (e.getMessage().contains("locate")) {
@@ -113,6 +131,5 @@ public class InstallAgreementController {
               throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
           }
       }
-    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
   }
 }
