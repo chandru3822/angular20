@@ -195,6 +195,7 @@ public class LoanPalService {
       add("PTO Payment Pending");
       add("Approved");
       add("Sent");
+      add("Loan Agreement Sent");
     }};
 
     if (approvedStatus.contains(creditStatus)) {
