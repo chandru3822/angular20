@@ -201,6 +201,7 @@ public class SunlightService {
     returnApplication.put("type", "Sunlight");
     String creditStatus = getCreditStatus(projectId);
     returnApplication.put("status", loanPalService.getLoanStatusForMobile(creditStatus));
+    returnApplication.put("message", creditStatus);
     returnApplication.put("loanStatus", new JSONObject());
     return returnApplication;
   }
