@@ -63,6 +63,7 @@ public class SunlightService {
     if (sunlightHash.isPresent()) {
       hashId = sunlightHash.get().toString();
       setCreditLastCheckedBy(projectId, "Sunlight");
+      accessToken = generateToken();
       return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
     }
 
