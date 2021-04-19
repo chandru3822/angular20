@@ -99,6 +99,7 @@ BEGIN
                                                        inner join flow.list_of_value lov on lov.id = pd.first_appointment_missed_id
                                               where ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                                 and pd.first_appointment_missed_id is not null
+                                                AND pd.first_appointment_pitched is null
                                                 and pd.setter_user_id = p_user_id
                                               group by 1, 2, 3, 4
                                               union
@@ -112,6 +113,8 @@ BEGIN
                                                        inner join flow.list_of_value lov on lov.id = pd.first_appointment_not_pitched_or_missed_id
                                               where ((pd.first_appointment_not_pitched_or_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                                 and pd.first_appointment_not_pitched_or_missed_id in (58,56)
+                                                AND pd.first_appointment_pitched is null
+                                                AND pd.first_appointment_missed is null
                                                 and pd.setter_user_id = p_user_id
                                               group by 1, 2, 3, 4) as drilldown) as drilldown;
 
