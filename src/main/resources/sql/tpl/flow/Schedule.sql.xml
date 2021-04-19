@@ -165,7 +165,8 @@
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
-    select * from flow.get_availability()
+    select *
+    from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::int[], array[ :userIds ]::int[]);
  ]]></schedule.getAvailability>
 
   <schedule.getProjects><![CDATA[
