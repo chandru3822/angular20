@@ -39,6 +39,10 @@ public class PandaDocProjectDetails {
         else {
           sj.add(mailingState + " - " + utilityCompany);
         }
+        // Change financier to match what is in PandaDocs for Sunlight templates
+        if (financier.equals("Sunlight")) {
+          financier = "Sunlight Financial";
+        }
 
         sj.add(financier);
 
