@@ -41,10 +41,11 @@ public class PandaDocProjectDetails {
         }
         // Change financier to match what is in PandaDocs for Sunlight templates
         if (financier.equals("Sunlight")) {
-          financier = "Sunlight Financial";
+          sj.add("Sunlight Financial");
         }
-
-        sj.add(financier);
+        else {
+          sj.add(financier);
+        }
 
         return sj.toString();
     }
