@@ -32,7 +32,7 @@
           {
             label: 'Availability',
             path: `/settings/availability/main/schedule`,
-            display: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
+            display: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW')
           },
           {
             label: 'Slot Schedules',
