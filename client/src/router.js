@@ -666,28 +666,56 @@ export default new Router({
               },
             }, {
               path: 'availability',
-              name: 'availability',
+              name: 'availabilityHeader',
               meta: {title: 'Albatross - Settings'},
-              redirect: "availability/schedule",
               props: true,
               component: () => {
                 if (store.getters.userHasFeature('AVAILABILITY')) {
-                  return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Availability.vue')
+                  return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/AvailabilityHeader.vue')
                 } else {
                   return accessDenied()
                 }
               },
               children: [
                 {
-                  path: 'schedule',
+                  path: 'main',
+                  name: 'availability',
+                  meta: {title: 'Albatross - Settings'},
+                  // redirect: "availability/main/schedule",
+                  props: true,
+                  component: () => {
+                    if (store.getters.userHasFeature('AVAILABILITY')) {
+                      return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Availability.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  },
+                  children: [
+                    {
+                      path: 'schedule',
+                      meta: {title: 'Albatross - Settings'},
+                      props: true,
+                      component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Schedule.vue')
+                    }, {
+                      path: 'appointments',
+                      props: true,
+                      meta: {title: 'Albatross - Settings'},
+                      component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Appointments.vue')
+                    }
+                  ]
+                },
+                {
+                  path: 'slots',
+                  name: 'slotSchedules',
                   meta: {title: 'Albatross - Settings'},
                   props: true,
-                  component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Schedule.vue')
-                }, {
-                  path: 'appointments',
-                  props: true,
-                  meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Appointments.vue')
+                  component: () => {
+                    if (store.getters.userHasFeature('AVAILABILITY')) {
+                      return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/SlotSchedules.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  },
                 }
               ]
             }, {
