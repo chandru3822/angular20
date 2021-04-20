@@ -297,8 +297,7 @@ public class InstallAgreementRepository {
             }
           }
       }
-      // Store the latest proposal number used by this project
-      updateProposalNbr(projectId, proposalNbr);
+
       sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
       return loanPalBaseUrl;
   }
@@ -392,13 +391,6 @@ public class InstallAgreementRepository {
     }
 
     return financeOption;
-  }
-
-  private void updateProposalNbr(Long projectId, Long proposalNbr) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("proposalNbr", proposalNbr);
-    sqlCache.update("installAgreement.updateProposalNbr", params);
   }
 
   public void updateEmailAddress(Long projectId, String emailAddress) {
