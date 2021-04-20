@@ -112,14 +112,6 @@
         ]]>
     </installAgreement.updateEmailAddress>
 
-    <installAgreement.updateProposalNbr>
-      <![CDATA[
-            UPDATE brs.project_details
-            SET proposal_nbr = :proposalNbr
-            WHERE project_id = :projectId
-          ]]>
-    </installAgreement.updateProposalNbr>
-
     <installAgreement.getLoanType>
       <![CDATA[
             select plh.loan_type from brs.proposal_log_history plh
@@ -130,9 +122,7 @@
     <installAgreement.getSunlightHashId>
       <![CDATA[
               select plh.sunlight_hash_id from brs.proposal_log_history plh
-                   inner join brs.project_details pd on pd.project_id = plh.project_id
-                                                            and pd.proposal_nbr = plh.proposal_nbr
-              WHERE pd.project_id = :projectId;
+              WHERE plh.project_id = :projectId and plh.proposal_nbr = :proposalNbr;
               ]]>
     </installAgreement.getSunlightHashId>
 

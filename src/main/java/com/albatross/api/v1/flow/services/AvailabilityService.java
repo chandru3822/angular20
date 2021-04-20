@@ -557,6 +557,75 @@ public class AvailabilityService {
     sqlCache.update("availability.cacheAvailability", Collections.emptyMap());
   }
 
+  public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("scheduleName", slotSchedule.getScheduleName());
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+
+    Long id;
+    if(null != slotSchedule.getId()) {
+      id = slotSchedule.getId();
+      params.put("id", id);
+      sqlCache.update("availability.updateSlotSchedule", params);
+    } else {
+      id = sqlCache.updateReturningId("availability.insertSlotSchedule", params, "id").longValue();
+    }
+
+    //handle the slot times
+    if(null != slotSchedule.getSlotTimes()) {
+      for(SlotTime st : slotSchedule.getSlotTimes()) {
+        saveSlotTime(st, id);
+      }
+    }
+
+    return getSlotSchedule(id);
+  }
+
+  public void saveSlotTime(SlotTime slotTime, Long resourceSlotScheduleId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startTime", slotTime.getStartTime());
+    params.put("resourceSlotScheduleId", resourceSlotScheduleId);
+    params.put("endTime", slotTime.getEndTime());
+    params.put("userId", user.getId());
+
+    boolean archived = null == slotTime.getArchived() ? false : slotTime.getArchived();
+
+    if(null != slotTime.getId()) {
+      params.put("id", slotTime.getId());
+      //this update will also archive if needed
+      params.put("archived", archived);
+      sqlCache.update("availability.updateSlotTime", params);
+    } else if(null == slotTime.getArchived() || !slotTime.getArchived()){
+      sqlCache.update("availability.insertSlotTime", params);
+    }
+  }
+
+  public Optional<SlotSchedule> getSlotSchedule(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<SlotSchedule> result = sqlCache.get("availability.getSlotSchedule", params, new SlotScheduleMapper<>(SlotSchedule.class, om));
+    return result;
+  }
+
+  public List<SlotSchedule> getAllSlotSchedules() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<SlotSchedule> results = sqlCache.query("availability.getAllSlotSchedules", params, new SlotScheduleMapper<>(SlotSchedule.class, om));
+    return results;
+  }
+
+  public void deleteSlotSchedule(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", user.getId());
+    sqlCache.update("availability.deleteSlotSchedule", params);
+  }
+
   private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
     if (array != null && !array.isEmpty()) {
       try (Connection connection = dataSource.getConnection()) {
@@ -574,6 +643,22 @@ public class AvailabilityService {
 
     Optional<ResourceAppointment> result = sqlCache.get("availability.getAppointment", params, ResourceAppointment.class);
     return result.orElse(null);
+  }
+
+  public static class SlotScheduleMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public SlotScheduleMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<SlotTime>> slotTimesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "slotTimes",
+        new JsonCollectionDeserializer(slotTimesRef, objectMapper));
+    }
   }
 
   public static class ResourceScheduleMapper<T> extends BeanPropertyRowMapper<T> {
