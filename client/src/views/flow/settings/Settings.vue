@@ -148,7 +148,7 @@ export default {
         header: 'User Management',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/availability',
+        path: '/settings/availability/main/schedule',
         title: 'Availability',
         show: this.hasSettingsAccess || this.$store.getters.userHasFeature('AVAILABILITY')
       }, {

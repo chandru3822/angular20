@@ -113,9 +113,10 @@ public class LoanPalService {
     JSONObject application = applications.getJSONObject(0);
     JSONObject loanPalApp = getApplicationByLoanId(getLoanId(application));
     JSONObject statusJson = loanPalApp.getJSONObject("loanStatus");
-    returnApplication.put("status", statusJson.getString("application"));
+    returnApplication.put("status", getLoanStatusForMobile(statusJson.getString("application")));
     JSONObject applicationJson = new JSONObject();
     applicationJson.put("application", statusJson.getString("application"));
+    returnApplication.put("message", statusJson.getString("application"));
     returnApplication.put("loanStatus", applicationJson);
     returnApplication.put("outcome", loanPalApp.getJSONObject("outcome"));
     returnApplication.put("loanPalId", loanPalApp.getString("id"));
@@ -195,6 +196,7 @@ public class LoanPalService {
       add("PTO Payment Pending");
       add("Approved");
       add("Sent");
+      add("Loan Agreement Sent");
     }};
 
     if (approvedStatus.contains(creditStatus)) {
@@ -207,7 +209,7 @@ public class LoanPalService {
       return "Denied";
     }
     else {
-      return creditStatus;
+      return null;
     }
   }
 
