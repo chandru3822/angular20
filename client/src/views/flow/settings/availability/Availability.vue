@@ -100,11 +100,11 @@
         model: '',
         tabs: [ {
           label: 'Schedule',
-          path: '/settings/availability/schedule',
+          path: '/settings/availability/main/schedule',
           display: this.$store.getters.userHasFeature('AVAILABILITY')
         }, {
           label: 'Appointments',
-          path: '/settings/availability/appointments',
+          path: '/settings/availability/main/appointments',
           display: this.$store.getters.userHasFeature('AVAILABILITY')
         }]
       }

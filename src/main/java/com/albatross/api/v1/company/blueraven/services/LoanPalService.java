@@ -116,6 +116,7 @@ public class LoanPalService {
     returnApplication.put("status", getLoanStatusForMobile(statusJson.getString("application")));
     JSONObject applicationJson = new JSONObject();
     applicationJson.put("application", statusJson.getString("application"));
+    returnApplication.put("message", statusJson.getString("application"));
     returnApplication.put("loanStatus", applicationJson);
     returnApplication.put("outcome", loanPalApp.getJSONObject("outcome"));
     returnApplication.put("loanPalId", loanPalApp.getString("id"));

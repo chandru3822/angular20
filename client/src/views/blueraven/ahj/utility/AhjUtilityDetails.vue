@@ -241,6 +241,28 @@
                   Overview
                 </v-card-title>
                 <v-card-text class="mt-4">
+                  <div v-for="item in getCustomFieldsForGroup(25)" :key="item.id">
+                    <v-select v-model="item.intValue"
+                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                              :items="item.listOfValues"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              item-text="name"
+                              item-value="id"
+                              :label="item.fieldName"
+                              filled
+                    ></v-select>
+                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                                  v-model="item.textValue"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
+                                  @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                                  label="Other Value"
+                                  filled
+                                  class="other-field"
+                    ></v-text-field>
+                  </div>
+
                   <v-textarea v-model="ahjUtility.timelinesAndStages"
                               @change="dataWasChanged = true"
                               :readonly="!userCanEdit"
