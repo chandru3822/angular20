@@ -693,7 +693,7 @@
                 userIds = this.allUsers.map(u => u.id);
               }
               else {
-                userIds = this.users.filter(u => u.selected === true).map(u => u.id);
+                userIds = this.selectedUsers;
               }
 
               let params;
