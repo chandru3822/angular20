@@ -90,7 +90,6 @@ BEGIN
                                               where ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                                 and first_appointment_pitched_id is not null
                                                 and pd.setter_user_id = p_user_id
-                                                and pd.cancelled_date is null
                                               group by 1, 2, 3, 4
                                               union
                                               select pd.project_id,
@@ -105,7 +104,6 @@ BEGIN
                                                 and pd.first_appointment_missed_id is not null
                                                 AND pd.first_appointment_pitched is null
                                                 and pd.setter_user_id = p_user_id
-                                                and pd.cancelled_date is null
                                               group by 1, 2, 3, 4
                                               union
                                               select pd.project_id,
@@ -121,7 +119,6 @@ BEGIN
                                                 AND pd.first_appointment_pitched is null
                                                 AND pd.first_appointment_missed is null
                                                 and pd.setter_user_id = p_user_id
-                                                and pd.cancelled_date is null
                                               group by 1, 2, 3, 4) as drilldown) as drilldown;
 
             end case;
