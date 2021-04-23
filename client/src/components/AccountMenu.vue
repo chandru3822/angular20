@@ -95,7 +95,7 @@
         userId: this.$store.state.user.details.id,
         userFirstName: this.getFirstName(),
         headerColor: VUE_APP_ENV === 'local' ? 'pink' :
-                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
+                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' || VUE_APP_ENV === 'flux' ? 'orange' :
                      VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
         menuOpen: false,
         timezone: this.$store.state.user.details.timezone || {},

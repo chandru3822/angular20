@@ -88,7 +88,7 @@
         loadComplete: false,
         userId: this.$store.state.user.details.id,
         headerColor: VUE_APP_ENV === 'local' ? 'pink' :
-                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
+                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' || VUE_APP_ENV === 'flux' ? 'orange' :
                      VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
         menuOpen: false,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
