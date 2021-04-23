@@ -575,8 +575,10 @@ public class AvailabilityService {
     }
 
     //handle the slot times
-    for(SlotTime st : slotSchedule.getSlotTimes()) {
-      saveSlotTime(st, id);
+    if(null != slotSchedule.getSlotTimes()) {
+      for(SlotTime st : slotSchedule.getSlotTimes()) {
+        saveSlotTime(st, id);
+      }
     }
 
     return getSlotSchedule(id);
