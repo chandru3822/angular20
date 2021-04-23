@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer
 AS
 $BODY$
 declare
-    v_timezone varchar;
+    v_timezone text;
 BEGIN
 
     select t.timezone
@@ -26,7 +26,12 @@ BEGIN
     where p.id = p_project_id
     limit 1;
 
-    set TimeZone = v_timezone;
+    RAISE NOTICE 'HI: %', v_timezone;
+
+    EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';' ;
+--     EXECUTE 'SET TIME ZONE || v_timezone || ''';' ;
+--     set TimeZone = v_timezone;
+--     set TimeZone = 'US/Central';
 
     create temp table excluded_appointments as (
         with user_ids as (

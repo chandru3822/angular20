@@ -338,6 +338,7 @@
                                 up.start_date as "startDate",
                                 up.end_date as "endDate",
                                 up.primary_flag as "primaryFlag",
+                                p.use_slot_schedule as "useSlotSchedule",
                                 up.archived,
                                 (select json_agg(json_build_object(
                                      'orgId', h.org_id,
