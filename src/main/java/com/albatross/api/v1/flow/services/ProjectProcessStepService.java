@@ -36,8 +36,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -680,14 +679,18 @@ public class ProjectProcessStepService {
       case 1:
         // @TODO: Duped from the button logic, potentially combine
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate dateFunctionResult = (functionResult !=  null) ? LocalDate.parse(functionResult.toString(), dateFormatter) : null;
-        LocalDate nowForDate = LocalDate.now();
+        LocalDateTime dateFunctionResult = (functionResult !=  null) ? LocalDate.parse(functionResult.toString(), dateFormatter).atStartOfDay() : null;
+        LocalDateTime nowForDate = LocalDateTime.now();
         String secondaryDateValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+        ZonedDateTime zonedDateFunctionResult = (dateFunctionResult != null) ? dateFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
+        ZonedDateTime zonedDateNow = nowForDate.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
+
         switch (r.getDataTypeRequirementId().intValue()) {
           case 1:
             try {
               Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
-              passed = compareDates(dateFunctionResult, nowForDate.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
+              passed = compareDates(zonedDateFunctionResult, zonedDateNow.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
@@ -695,24 +698,24 @@ public class ProjectProcessStepService {
           case 2:
             try {
               Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
-              passed = compareDates(dateFunctionResult, nowForDate.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
+              passed = compareDates(zonedDateFunctionResult, zonedDateNow.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something?
             }
             break;
           case 3:
-            passed = compareDates(dateFunctionResult, nowForDate, r.getOperatorTypeId());
+            passed = compareDates(zonedDateFunctionResult, zonedDateNow, r.getOperatorTypeId());
             break;
           case 4:
             try {
-              passed = compareNullDate(dateFunctionResult, r.getOperatorTypeId());
+              passed = compareNullDate(zonedDateFunctionResult, r.getOperatorTypeId());
             } catch (IllegalArgumentException e) {
               //@TODO: something?
             }
             break;
           case 5:
             try {
-              passed = compareNonNullDate(dateFunctionResult, r.getOperatorTypeId());
+              passed = compareNonNullDate(zonedDateFunctionResult, r.getOperatorTypeId());
             } catch (IllegalArgumentException e) {
               //@TODO: something?
             }
@@ -725,11 +728,15 @@ public class ProjectProcessStepService {
         LocalDateTime timestampFunctionResult = (functionResult !=  null) ? LocalDateTime.parse(functionResult.toString(), dateTimeFormatter).withMinute(0).withSecond(0).withNano(0) : null;
         LocalDateTime nowForTimestamp =  LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
         String secondaryTimestampValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+        ZonedDateTime zoneTimestampFunctionResult = (timestampFunctionResult != null) ? timestampFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
+        ZonedDateTime zonedTimestampNow = nowForTimestamp.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
+
         switch (r.getDataTypeRequirementId().intValue()) {
           case 6:
             try {
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
-              passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.minusDays(Long.parseLong(secondaryTimestampValue)).toLocalDate(), r.getOperatorTypeId());
+              passed = compareDates(zoneTimestampFunctionResult, zonedTimestampNow.minusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
@@ -737,18 +744,18 @@ public class ProjectProcessStepService {
           case 7:
             try {
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
-              passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.plusDays(Long.parseLong(secondaryTimestampValue)).toLocalDate(), r.getOperatorTypeId());
+              passed = compareDates(zoneTimestampFunctionResult, zonedTimestampNow.plusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
             break;
           case 8:
-            passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.toLocalDate(), r.getOperatorTypeId());
+            passed = compareDates(zoneTimestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
             break;
           case 9:
             try {
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
-              passed = compareDateTimes(timestampFunctionResult, nowForTimestamp.minusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+              passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow.minusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
@@ -756,24 +763,24 @@ public class ProjectProcessStepService {
           case 10:
             try {
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
-              passed = compareDateTimes(timestampFunctionResult, nowForTimestamp.plusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+              passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow.plusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
             break;
           case 11:
-            passed = compareDateTimes(timestampFunctionResult, nowForTimestamp, r.getOperatorTypeId());
+            passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
             break;
           case 12:
             try {
-              passed = compareNullDateTime(timestampFunctionResult, r.getOperatorTypeId());
+              passed = compareNullDateTime(zoneTimestampFunctionResult, r.getOperatorTypeId());
             } catch (IllegalArgumentException e) {
               //@TODO: something?
             }
             break;
           case 13:
             try {
-              passed = compareNonNullDateTime(timestampFunctionResult, r.getOperatorTypeId());
+              passed = compareNonNullDateTime(zoneTimestampFunctionResult, r.getOperatorTypeId());
             } catch (IllegalArgumentException e) {
               //@TODO: something?
             }
@@ -1461,16 +1468,24 @@ public class ProjectProcessStepService {
 
   public boolean calculateTimestampRequirement(ProjectProcessStepRequirement r) throws Exception {
 
+    // Fallback to mountain time if there isn't a project specific timezone
+    if (r.getTimeZone() == null) {
+      r.setTimeZone("America/Denver");
+    }
+
     LocalDateTime fieldValue = (r.getTimestampValue() != null) ? r.getTimestampValue().toLocalDateTime().withMinute(0).withSecond(0).withNano(0) : null;
-    LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
     String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+    ZonedDateTime zonedFieldValue = (fieldValue != null) ? fieldValue.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
+    ZonedDateTime zonedNow = now.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
 
     boolean passed = false;
 
     if (null == r.getDataTypeRequirementId()) {
       try {
-        LocalDateTime reqValue = LocalDateTime.parse(r.getRequirementValue());
-        passed = compareDateTimes(fieldValue, reqValue, r.getOperatorTypeId());
+        ZonedDateTime zonedReqValue = LocalDateTime.parse(r.getRequirementValue()).atZone(ZoneId.of(r.getTimeZone()));
+        passed = compareDateTimes(zonedFieldValue, zonedReqValue, r.getOperatorTypeId());
       } catch (DateTimeParseException e) {
         throw new Exception(String.format("Unable to parse Timestamp type requirement value of: %s", r.getRequirementValue()));
       }
@@ -1479,7 +1494,7 @@ public class ProjectProcessStepService {
         case 6:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates((fieldValue != null) ? fieldValue.toLocalDate() : null, now.minusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? zonedFieldValue : null, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -1487,18 +1502,18 @@ public class ProjectProcessStepService {
         case 7:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates((fieldValue != null) ? fieldValue.toLocalDate() : null, now.plusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? zonedFieldValue : null, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
           break;
         case 8:
-          passed = compareDates((fieldValue != null) ? fieldValue.toLocalDate() : null, now.toLocalDate(), r.getOperatorTypeId());
+          passed = compareDates((fieldValue != null) ? zonedFieldValue : null, zonedNow, r.getOperatorTypeId());
           break;
         case 9:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDateTimes(fieldValue, now.minusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDateTimes(zonedFieldValue, zonedNow.minusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -1506,24 +1521,24 @@ public class ProjectProcessStepService {
         case 10:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDateTimes(fieldValue, now.plusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDateTimes(zonedFieldValue, zonedNow.plusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
           break;
         case 11:
-          passed = compareDateTimes(fieldValue, now, r.getOperatorTypeId());
+          passed = compareDateTimes(zonedFieldValue, zonedNow, r.getOperatorTypeId());
           break;
         case 12:
           try {
-            passed = compareNullDateTime(fieldValue, r.getOperatorTypeId());
+            passed = compareNullDateTime(zonedFieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
           break;
         case 13:
           try {
-            passed = compareNonNullDateTime(fieldValue, r.getOperatorTypeId());
+            passed = compareNonNullDateTime(zonedFieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
@@ -1533,7 +1548,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNullDateTime(ZonedDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1554,7 +1569,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNonNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNonNullDateTime(ZonedDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1575,7 +1590,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareDateTimes(LocalDateTime date, LocalDateTime compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDateTimes(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1601,9 +1616,18 @@ public class ProjectProcessStepService {
 
   public boolean calculateDateRequirement(ProjectProcessStepRequirement r) throws Exception {
 
-    LocalDate fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime().toLocalDate() : null;
-    LocalDate now = LocalDate.now();
+    // Fallback to mountain time if there isn't a project specific timezone
+    if (r.getTimeZone() == null) {
+      r.setTimeZone("America/Denver");
+    }
+
+    LocalDateTime fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime() : null;
+    LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
     String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+
+    ZonedDateTime zonedFieldValue = (fieldValue != null) ? fieldValue.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
+    ZonedDateTime zonedNow = now.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
 
     boolean passed = false;
 
@@ -1611,8 +1635,8 @@ public class ProjectProcessStepService {
       // do direct literal operator compare
       // try to make a date out of the requirement value
       try {
-        LocalDate reqValue = LocalDate.parse(r.getRequirementValue());
-        passed = compareDates(fieldValue, reqValue, r.getOperatorTypeId());
+        ZonedDateTime zonedReqValue = LocalDate.parse(r.getRequirementValue()).atStartOfDay().atZone(ZoneId.of(r.getTimeZone()));
+        passed = compareDates(zonedFieldValue, zonedReqValue, r.getOperatorTypeId());
       } catch (DateTimeParseException e) {
         throw new Exception(String.format("Unable to parse Date type requirement value of: %s", r.getRequirementValue()));
       }
@@ -1622,7 +1646,7 @@ public class ProjectProcessStepService {
         case 1:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(fieldValue, now.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(zonedFieldValue, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -1630,24 +1654,24 @@ public class ProjectProcessStepService {
         case 2:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(fieldValue, now.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(zonedFieldValue, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something?
           }
           break;
         case 3:
-          passed = compareDates(fieldValue, now, r.getOperatorTypeId());
+          passed = compareDates(zonedFieldValue, zonedNow, r.getOperatorTypeId());
           break;
         case 4:
           try {
-            passed = compareNullDate(fieldValue, r.getOperatorTypeId());
+            passed = compareNullDate(zonedFieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
           break;
         case 5:
           try {
-            passed = compareNonNullDate(fieldValue, r.getOperatorTypeId());
+            passed = compareNonNullDate(zonedFieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
@@ -1658,7 +1682,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNonNullDate(LocalDate date, Long operatorTypeId) throws Exception {
+  public boolean compareNonNullDate(ZonedDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1679,7 +1703,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNullDate(LocalDate date, Long operatorTypeId) throws Exception {
+  public boolean compareNullDate(ZonedDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1701,7 +1725,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareDates(LocalDate date, LocalDate compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDates(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
