@@ -1,5 +1,35 @@
 <template>
   <v-container class="pt-0" v-if="contact && contact.id">
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved fields.  Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
         <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
@@ -119,12 +149,14 @@
                             label="First Name"
                             placeholder=" "
                             :rules="nameRules"
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
                             placeholder=" "
                             :rules="nameRules"
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
@@ -132,13 +164,13 @@
                             placeholder=" "
                             :rules="addressRules"
                             :readonly="!userCanEdit"
-                            @change="addressChanged = true"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
                             placeholder=" "
                             :rules="cityRules"
-                            @change="addressChanged = true"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
               <v-select v-model="contact.companyStateId"
@@ -146,7 +178,7 @@
                         label="State"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
-                        @change="addressChanged = true"
+                        @change="[addressChanged = true, dirtySystemFields = true]"
                         item-text="state"
                         item-value="id"
               ></v-select>
@@ -154,7 +186,7 @@
                             label="Zip"
                             type="text"
                             placeholder=" "
-                            @change="addressChanged = true"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             counter
                             @keypress="isNumberOrHyphen"
@@ -165,17 +197,20 @@
                             label="Phone"
                             placeholder=" "
                             :rules="phoneRules"
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
                             :readonly="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             :rules="phoneRules"
                             placeholder=" "
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             placeholder=" "
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.email"></v-text-field>
             </v-form>
@@ -302,9 +337,13 @@ export default {
       isNumberOrHyphen,
       contactLoading: true,
       customFieldGroups: [],
+      unsavedFieldsModal: false,
+      toPath: null,
+      navigationOverride: false,
       notes: [],
       fieldsSaving: false,
       dirtyCfvs: [],
+      dirtySystemFields: false,
       owners: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
@@ -331,7 +370,22 @@ export default {
     this.getCustomFieldGroups()
     this.getNotes()
   },
+  beforeRouteLeave (to, from, next) {
+    // called when the route that renders this component is about to
+    // be navigated away from.
+    // has access to `this` component instance.
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields)) {
+      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      next()
+    } else {
+      this.toPath = to.path
+      this.unsavedFieldsModal = true
+    }
+  },
   methods: {
+    goToPath(path) {
+      this.$router.push(path)
+    },
     validate () {
       if (this.$refs.address.validate()) {
         this.saveContact()
@@ -351,6 +405,7 @@ export default {
         // save contact
           const {data} = await postRequest(`/contact`, this.contact)
           this.contact.projects = data.projects
+          this.dirtySystemFields = false
           await this.saveCustomFieldValues()
           // Save BlueRaven Solar Contacts to Genesys
           if (this.companyId === 3) {

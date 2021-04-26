@@ -1,5 +1,35 @@
 <template>
   <v-container class="pt-0">
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved fields.  Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12" style="padding-bottom: 0; padding-top: 0;" class="text-left">
         <v-btn small text :to="`/users`">
@@ -60,7 +90,7 @@
     </v-row>
     <v-row>
       <v-col cols="12" style="padding-top: 0">
-        <router-view/>
+        <router-view ref="userRouterViewContainer"/>
       </v-col>
 
     </v-row>
@@ -102,6 +132,9 @@
         userId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         userImage: {},
+        unsavedFieldsModal: false,
+        toPath: null,
+        navigationOverride: false,
         loadComplete: false,
         userStatusTypes: [],
         attachmentTypeId: 9,
@@ -112,7 +145,26 @@
       this.getUser()
       this.getUserImage()
     },
+    beforeRouteLeave (to, from, next) {
+      // called when the route that renders this component is about to
+      // be navigated away from.
+      // has access to `this` component instance.
+      let hasDirtyFields = false
+      if(typeof this.$refs.userRouterViewContainer?.hasDirtyFields === 'function') {
+        hasDirtyFields = this.$refs.userRouterViewContainer.hasDirtyFields()
+      }
+      if (this.navigationOverride || !hasDirtyFields) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
+    },
     methods: {
+      goToPath(path) {
+        this.$router.push(path)
+      },
       onImgError () {
         this.imageFailed = true
       },

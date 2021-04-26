@@ -104,6 +104,7 @@ export default {
       })
     }
   },
+
   methods: {
     // getProject: async function () {
     //   try {
@@ -112,7 +113,10 @@ export default {
     //   } catch (e) {
     //     logError(e)
     //   }
-    // },
+    // },=
+    getDirtyFieldsCount() {
+      return this.dirtyCfvs.length
+    },
     getProcessSteps: async function () {
       try {
       this.isProcessStepsLoading = true
