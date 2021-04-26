@@ -62,22 +62,11 @@
         <v-btn
           class="back-btn"
           text
-          v-if="this.dirtyCfvs.length === 0"
           :ripple="false"
           :to="`/project/${projectId}/details`">
           Back to Project
         </v-btn>
-        <v-dialog v-else width="500"
-          v-model="unsavedFieldsModal">
-          <template v-slot:activator="{ on }">
-            <v-btn
-              class="back-btn"
-              text
-              v-on="on"
-              :ripple="false">
-              Back to Project
-            </v-btn>
-          </template>
+        <v-dialog width="500" v-model="unsavedFieldsModal">
           <v-card>
             <v-card-title
               class="headline grey lighten-2"
@@ -101,7 +90,7 @@
               <v-btn
                 color="primaryCustom"
                 text
-                :to="`/project/${projectId}/details`">
+                @click="[navigationOverride = true, goToPath(toPath)]">
                 Yes
               </v-btn>
             </v-card-actions>
@@ -302,7 +291,6 @@
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
-            :dirty-cfv-count="dirtyCfvs.length"
             :projectProcessStepId="parseInt(projectProcessStepId)"
             :handleOnComplete="handleActionCompleted"
             :handleOnCompleteError="handleOnCompleteError"
@@ -394,6 +382,8 @@
         customFieldGroups: [],
         isProcessStepLoading: true,
         dirtyCfvs: [],
+        toPath: null,
+        navigationOverride: false,
         notes: [],
         project: {},
         displayChangeOwner: false,
@@ -432,7 +422,22 @@
         }
       }
     },
+    beforeRouteLeave (to, from, next) {
+      // called when the route that renders this component is about to
+      // be navigated away from.
+      // has access to `this` component instance.
+      if (this.navigationOverride || this.dirtyCfvs.length === 0) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
+    },
     methods: {
+      goToPath(path) {
+        this.$router.push(path)
+      },
       getStatusClass(rootTypeId) {
         return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
       },

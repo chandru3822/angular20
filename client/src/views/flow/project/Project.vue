@@ -1,5 +1,36 @@
 <template>
   <v-row id="project-container" v-if="!projectLoading && project && project.id">
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved fields.  Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-col cols="12" class="py-0">
       <v-row>
         <v-col cols="12" class="pb-0">
@@ -146,7 +177,7 @@
               Project Details
             </v-tab>
           </v-tabs>
-          <ProjectDetails :project="project" :selected-tab="selectedTab"></ProjectDetails>
+          <ProjectDetails ref="projectDetails" :project="project" :selected-tab="selectedTab"></ProjectDetails>
 
         </v-col>
         <v-col cols="12" md="6">
@@ -235,6 +266,9 @@
         statuses: [],
         project: {},
         states: [],
+        unsavedFieldsModal: false,
+        toPath: null,
+        navigationOverride: false,
         countries: [],
         projectLoading: true,
         breadcrumbs: [
@@ -252,7 +286,21 @@
       this.getStatuses()
       this.getProjectTabs()
     },
+    beforeRouteLeave (to, from, next) {
+      // has to get the dirty fields count from the child component then do the route nav protection here in the parent
+      let dirtyFieldsCount = this.$refs.projectDetails.getDirtyFieldsCount()
+      if (this.navigationOverride || dirtyFieldsCount === 0) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
+    },
     methods: {
+      goToPath(path) {
+        this.$router.push(path)
+      },
       projectOwnerIsReadOnly() {
         if(this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
           return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
