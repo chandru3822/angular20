@@ -189,7 +189,7 @@
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
           <template v-else-if="requirement.listOfValueId || requirement.customFieldSqlKey || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
-          <template v-else-if="requirement.listOfValues">{{requirement.listOfValues.map(v => ` ${v.name}`).toString()}}</template>
+          <template v-else-if="requirement.listOfValues">{{computeMutliSelectValue(requirement)}}</template>
         </td>
         <td v-if="canEdit" class="action-cell">
 <!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
@@ -348,6 +348,7 @@
 
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import {AppMutations} from '@/stores/AppStore'
 
 
 const newRequirementStructure = {
@@ -434,8 +435,16 @@ export default {
         customFieldSqlKey: null,
         companySystemListId: null,
         availableListOfValues: []
-      }
+      },
+      projectStatusTypes: [],
+      companyProjectStatusTypes: [],
+      processStepStatusTypes: [],
+      companyProcessStepStatusTypes: []
     }
+  },
+  created () {
+    this.getProjectStatusTypes()
+    this.getProcessStepStatusTypes()
   },
   updated () {
     if (this.resetForm) {
@@ -553,6 +562,28 @@ export default {
         }
       }
     },
+    async getProjectStatusTypes () {
+      try {
+        const [result, companyResult] = await Promise.all([getRequest(`/project/status`), getRequest(`/project/companyStatus`)])
+        this.projectStatusTypes = result.data
+        this.companyProjectStatusTypes = companyResult.data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async getProcessStepStatusTypes () {
+      try {
+        const [result, companyResult] = await Promise.all([getRequest(`/processStep/status`), getRequest(`/processStep/status/company`)])
+        this.processStepStatusTypes = result.data
+        this.companyProcessStepStatusTypes = companyResult.data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     addNewRequirement () {
       // Add the processStepId because system process step fields don't have a processStepId
       this.$emit('input', {
@@ -643,6 +674,14 @@ export default {
     checkSmartlistSystemList () {
       if (this.newRequirement?.selectedField?.smartlistSystemListId) {
         this.newRequirement.isCustomValue = true
+      }
+    },
+    computeMutliSelectValue(req) {
+      if (req.smartlistSystemListId === null) {
+        return req.listOfValues.map(v => ` ${v.name}`).toString()
+      } else {
+        //The backend returns incorrect listOfValues for smartlist field multiselects
+        return req.availableListOfValues.filter(v => req.listOfValueIds.includes(v.id)).map(v => ` ${v.name}`).toString()
       }
     }
   }
