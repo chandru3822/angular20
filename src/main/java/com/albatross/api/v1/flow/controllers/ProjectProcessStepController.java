@@ -128,7 +128,7 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId());
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);

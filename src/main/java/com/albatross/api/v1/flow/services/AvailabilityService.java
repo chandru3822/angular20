@@ -499,7 +499,7 @@ public class AvailabilityService {
         if (!results.isEmpty()) {
           if (null != results.get(0) && results.get(0).getSuccess()) {
 
-            projectProcessStepService.performAutoTriggerActions(request.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+            projectProcessStepService.performAutoTriggerActions(request.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
 
             //on success send email to the closer
             String closerEmail = results.get(0).getUserEmail();
