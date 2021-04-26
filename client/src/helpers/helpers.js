@@ -65,6 +65,16 @@ export async function putRequest (path, body, companyAbbreviation) {
   }
 }
 
+export async function putRequestWithRequestParams (path, body, params, companyAbbreviation) {
+  const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
+  try {
+    const {data, status} = await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params})
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 export async function deleteRequest (path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   // not returning data as part of a delete
