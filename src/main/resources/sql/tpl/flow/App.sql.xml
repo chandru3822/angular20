@@ -23,6 +23,18 @@
     LIMIT 1
   ]]></app.getLatestAppByAppTypeIdAndType>
 
+  <app.getMinVersionForType><![CDATA[
+    select minimum_required_build_number
+    from flow.app_type
+    where id = :appTypeId
+  ]]></app.getMinVersionForType>
+
+  <app.saveMinVersionForType><![CDATA[
+    update flow.app_type
+     set minimum_required_build_number = :minBuildNumber
+    where id = :appTypeId
+  ]]></app.saveMinVersionForType>
+
   <app.deleteById><![CDATA[
     UPDATE flow.app_attachment
     SET
