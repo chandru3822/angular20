@@ -8,11 +8,13 @@
       a.s3_key,
       a.size,
       a.archived,
+      ap.minimum_required_build_number,
       a.app_type_id,
       a.date_created,
       a.date_modified,
       a.show
     FROM flow.app_attachment a
+      INNER JOIN flow.app_type ap ON ap.id = a.app_type_id
     WHERE a.app_type_id = :appTypeId
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
@@ -41,6 +43,7 @@
       a.show,
       a.app_type_id,
       ap.app_type,
+      ap.minimum_required_build_number,
       a.date_created,
       a.date_modified,
       a.archived
