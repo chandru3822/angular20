@@ -70,7 +70,7 @@
                 </v-card>
               </v-dialog>
               <div v-if="r.roundNumber === bracket.rounds.length">
-                FINAL ROUND
+                FINALISTS
               </div>
               <div v-else>
                 Round {{r.roundNumber}}<br/>
@@ -178,7 +178,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/tournament/${this.bracket.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Final Round Advanced')
+          this.snackbar = getSnackbar('SUCCESS', 'Finalists Advanced')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
