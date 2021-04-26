@@ -265,6 +265,19 @@ public class TournamentService {
     }
   }
 
+  public void overrideMatchUser(Long matchId, Long userId, Boolean overrideUser1) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", user.getId());
+    params.put("userId", userId);
+    params.put("matchId", matchId);
+
+    String sqlKey = overrideUser1 ? "tournament.overrideMatchUser1" : "tournament.overrideMatchUser2";
+    sqlCache.update(sqlKey, params);
+  }
+
+
 
   public static class TournamentMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
