@@ -384,6 +384,12 @@
     created() {
       this.getCloserDetails()
     },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual user
+        this.$router.push(`/commissionManagement/users`)
+      },
+    },
     data() {
       return {
         snackbar: {},
@@ -399,6 +405,7 @@
         timezone: this.$store.state.user.details.timezone.value,
         overridePlans: [],
         newCommissionPlan: {},
+        positionId: this.$route.params.positionId,
         newOverridePlan: {},
         cloneOverridePlan: {},
         addNewCommissionPlan: false,
@@ -466,7 +473,7 @@
         if(this.addNewOverridePlan || this.addNewReceivingPlan) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/commissionManagement/overrides/active`, 'blueraven')
+            const {data} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}/active`, 'blueraven')
             this.overridePlans = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -534,7 +541,7 @@
           }
         } else if(type === 2) {
           if(isNew) {
-            url = `/commissionManagement/${item.id}/users`
+            url = `/commissionManagement/${item.id}/users/${this.positionId}`
           } else {
             url = `/commissionManagement/${item.id}/updateUser`
           }

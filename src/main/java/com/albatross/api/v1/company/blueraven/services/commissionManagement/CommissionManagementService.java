@@ -54,16 +54,15 @@ public class CommissionManagementService {
         params.put("name", commissionPlan.getName());
         params.put("description", commissionPlan.getDescription());
         params.put("total", commissionPlan.getTotal());
+        params.put("positionId", commissionPlan.getPositionId());
 
         User currentUser = securityService.getCurrentUser();
+        params.put("userId", currentUser.getId());
+
         String key = "commissionPlan.create";
 
-        if (commissionPlan.getId() == null) {
-            params.put("createdBy", currentUser.getId());
-
-        } else {
+        if (commissionPlan.getId() != null) {
             key = "commissionPlan.update";
-            params.put("updatedBy", currentUser.getId());
             params.put("id", commissionPlan.getId());
         }
 
@@ -82,8 +81,10 @@ public class CommissionManagementService {
         return sqlCache.query("commissionManagement.findAvailableMilestones", params, MilestoneType.class);
     }
 
-    public List<CommissionPlan> getCommissionPlans() {
-        return sqlCache.query("commissionManagement.getCommissionPlans", Collections.emptyMap(), CommissionPlan.class);
+    public List<CommissionPlan> getCommissionPlans(Long positionId) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("positionId", positionId);
+      return sqlCache.query("commissionManagement.getCommissionPlans", params, CommissionPlan.class);
     }
 
     public String findUserForCommissions(String search, String positions, Long planId) {
@@ -114,6 +115,17 @@ public class CommissionManagementService {
         return closers;
     }
 
+  public List<ClosersPlan> getSetters() {
+    List<ClosersPlan> closers = sqlCache.query("commissionManagement.getSetters", Collections.emptyMap(), new ClosersPlanMapper<>(ClosersPlan.class, om));
+    List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).collect(Collectors.toList());
+    Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
+    for (ClosersPlan closer : closers) {
+      boolean hasCommissionPlanGap = usersWithPlanGaps.contains(closer.getUserId());
+      closer.setHasCommissionPlanGap(hasCommissionPlanGap);
+    }
+    return closers;
+  }
+
     public List<Payroll> customerSearch(Long userId, String query) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", userId);
@@ -124,11 +136,12 @@ public class CommissionManagementService {
     public Optional<Long> clonePlan(Long id, CommissionPlan commissionPlan)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException,
                    PlanStartDateBeforeHireDate {
-        boolean isBackdatedPlan = validateBackdatedPlan(commissionPlan.getStartDate(), commissionPlan.getBackdateApprovalCreds());
+        boolean isBackdatedPlan = validateBackdatedPlan(commissionPlan.getStartDate(), commissionPlan.getBackdateApprovalCreds(), commissionPlan.getPositionId());
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);
         params.put("startDate", commissionPlan.getStartDate());
+        params.put("positionId", commissionPlan.getPositionId());
         params.put("createdBy", securityService.getCurrentUser().getId());
 
         try (Connection connection = dataSource.getConnection()) {
@@ -275,14 +288,14 @@ public class CommissionManagementService {
         return getSource(id);
     }
 
-    public boolean validateBackdatedPlan(PlanUser user)
-            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
-        Date startDate = user.getStartDate();
-        BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
-        return validateBackdatedPlan(startDate, approvalCreds);
-    }
+//    public boolean validateBackdatedPlan(PlanUser user)
+//            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+//        Date startDate = user.getStartDate();
+//        BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
+//        return validateBackdatedPlan(startDate, approvalCreds);
+//    }
 
-    public boolean validateBackdatedPlan(Date startDate, BackdatedPlanApprovalCredentials credentials)
+    public boolean validateBackdatedPlan(Date startDate, BackdatedPlanApprovalCredentials credentials, Long positionId)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         // if no start date is provided, then it doesn't make sense to say the clone is backdated
         if (startDate == null)
@@ -290,19 +303,21 @@ public class CommissionManagementService {
 
         final boolean IS_BACKDATED_PLAN = true;
 
-        List<Payroll> approvedPayrolls = payroll.getApprovedPayrolls();
-        Payroll mostRecent = approvedPayrolls.get(0);
-        if (startDate.before(mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
-            if (credentials == null) // throw exception if not credentials are provided
-                throw new BackdatedPlanApprovalRequiredException(startDate,
-                        mostRecent.getId(),
-                        mostRecent.getPeriodEnd());
-            if (!areValidBackdatedPlanApprovalCredentials(credentials)) // throw exception if credentials are inadequate
-                throw new BackdatedPlanApprovalBadCredentialsException();
-            // if we get here, we're all good! backdated change included appropriate approval credentials
-            return IS_BACKDATED_PLAN;
+        List<Payroll> approvedPayrolls = payroll.getApprovedPayrolls(positionId);
+        if (approvedPayrolls.size() > 0) {
+          Payroll mostRecent = approvedPayrolls.get(0);
+          if (startDate.before(mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
+              if (credentials == null) // throw exception if not credentials are provided
+                  throw new BackdatedPlanApprovalRequiredException(startDate,
+                          mostRecent.getId(),
+                          mostRecent.getPeriodEnd());
+              if (!areValidBackdatedPlanApprovalCredentials(credentials)) // throw exception if credentials are inadequate
+                  throw new BackdatedPlanApprovalBadCredentialsException();
+              // if we get here, we're all good! backdated change included appropriate approval credentials
+              return IS_BACKDATED_PLAN;
+          }
+          // not a backdated change, so nothing to validate
         }
-        // not a backdated change, so nothing to validate
         return !IS_BACKDATED_PLAN;
     }
 
@@ -346,12 +361,12 @@ public class CommissionManagementService {
         return false;
     }
 
-    public void insertUser(Long planId, PlanUser user) throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+    public void insertUser(Long planId, PlanUser user, Long positionId) throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         final BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
         final Date newStartDate = user.getStartDate();
         boolean isBackdatedPlan = newStartDate != null
                                   && startDateChanged(user)
-                                  && validateBackdatedPlan(newStartDate, approvalCreds);
+                                  && validateBackdatedPlan(newStartDate, approvalCreds, positionId);
 
         Map<String, Object> params = new HashMap<>();
         params.put("planId", planId);

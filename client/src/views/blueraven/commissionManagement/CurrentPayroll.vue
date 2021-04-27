@@ -159,7 +159,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }">
+              <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }" v-if="positionId === 1">
                 <td v-if="payrollStatus.showSelect">
                   <v-checkbox color="primaryCustom" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
@@ -257,6 +257,94 @@
                 <td class="text-left">{{item.current_pay_overrides || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.remaining_value_overrides || 0 | currency('$', 2) }}</td>
               </tr>
+              <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }" v-else>
+                <td v-if="payrollStatus.showSelect">
+                  <v-checkbox color="primaryCustom" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
+                </td>
+                <td class="text-left">{{item.project_id}}</td>
+                <td class="text-left">{{item.project_name }}</td>
+                <td class="text-left">{{item.setter }}</td>
+                <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
+                <td class="text-left">{{item.source_name }}</td>
+                <td class="text-left">{{item.cancelled_date }}</td>
+                <td class="text-left">{{item.closer_appointment_start  | formatDate('date') }}</td>
+                <td class="text-left">{{item.closer_appointment_outcome }}</td>
+                <td class="text-left">{{item.commission_plan }}</td>
+                <td class="text-left">{{item.commission_earned || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">
+                  {{ item.commission_adjustments || 0 | currency('$', 2) }}
+
+                  <v-dialog
+                    v-if="userCanAdd"
+                    v-model="item.dialog"
+                    width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-btn x-small color="primaryCustom" dark fab class="ml-2" v-on="on"
+                             @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]" >
+                        <v-icon>add</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title class="headline grey lighten-2" primary-title>
+                        Add Adjustment
+                      </v-card-title>
+                      <v-card-text class="pt-3">
+                        <strong>Type: </strong>Commission
+                        <v-text-field text
+                                      type="number"
+                                      label="Adjustment Amount"
+                                      prepend-icon="mdi-currency-usd"
+                                      persistent-hint
+                                      :hint="`Max allowed: ${$filters.currency(item.remaining_value, '$', 2)}`"
+                                      v-model.number="item.adjustment">
+                        </v-text-field>
+                        <v-textarea
+                          label="Notes"
+                          v-model="item.adjustmentNote"
+                        ></v-textarea>
+                        <v-data-table
+                          :headers="adjustmentHistoryHeaders"
+                          :items="item.adjustmentHistory"
+                          :fixed-header="true"
+                          :items-per-page="-1"
+                          disable-sort
+                          hide-default-footer
+                          class="elevation-1"
+                          v-if="item.adjustmentHistory && item.adjustmentHistory.length > 0"
+                        >
+                          <template #item.amount="{ item }">
+                            {{item.amount | currency('$', 2)}}
+                          </template>
+                          <template #item.created="{ item }">
+                            {{item.created | formatDate('date')}}
+                          </template>
+                        </v-data-table>
+                        <div v-else>
+                          No adjustments have been made for this project.
+                        </div>
+                      </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="item.dialog = false">
+                          Cancel
+                        </v-btn>
+                        <v-btn color="primaryCustom" class="white--text"
+                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
+                               @click="addAdjustment(item)">
+                          Add
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </td>
+                <td class="text-left">{{item.current_pay_commissions || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.override_plan }}</td>
+                <td class="text-left">{{item.override_earned || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.overrides_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.current_pay_overrides || 0 | currency('$', 2) }}</td>
+              </tr>
             </template>
 
             <template v-slot:body.append="{headers}">
@@ -293,7 +381,7 @@
   import { saveAs } from 'file-saver'
 
   export default {
-    name: 'Accounting',
+    name: 'CurrentPayroll',
     mixins: [Vue2Filters.mixin],
     components: {
 
@@ -303,6 +391,10 @@
       this.getCurrentPayroll()
     },
     watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        this.getCurrentPayroll()
+      },
       customerSearch (val) {
         if(!val) {
           this.customers = []
@@ -332,6 +424,7 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         customerSearch: null,
         customersLoading: false,
+        positionId: this.$store.state.brs.commissionPositionId,
         reps: [],
         repSearch: null,
         repsLoading: false,
@@ -350,7 +443,21 @@
           {text: 'Created By', value: 'createdBy', show: true},
           {text: 'Created', value: 'created', show: true},
         ],
-        headers: [
+        accountingData: [],
+        masterSelectedPayrollIds: [],
+        // options: {
+        //   // itemsPerPage: 100
+        //   itemsPerPage: 10
+        // },
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 500, 1000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        currentPayroll: {},
+        payrollStatus: {},
+        accountingSearch: {},
+        totalPay: null,
+        closerHeaders: [
           // {text: 'Select For Pay', value: 'select', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
           {text: 'Customer Name', value: 'customer_name', show: true},
@@ -381,20 +488,31 @@
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
           {text: 'Remaining Value Overrides', value: 'remaining_value_overrides', show: true},
         ],
-        accountingData: [],
-        masterSelectedPayrollIds: [],
-        // options: {
-        //   // itemsPerPage: 100
-        //   itemsPerPage: 10
-        // },
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 500, 1000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        currentPayroll: {},
-        payrollStatus: {},
-        accountingSearch: {},
-        totalPay: null,
+        setterHeaders: [
+          // {text: 'Select For Pay', value: 'select', show: true},
+          {text: 'Project ID', value: 'project_id', show: true},
+          {text: 'Customer Name', value: 'customer_name', show: true},
+          {text: 'Setter', value: 'setter', show: true},
+          {text: 'Current Pay', value: 'current_pay', show: true},
+          {text: 'Source', value: 'source_name', show: true},
+          {text: 'Cancelled', value: 'cancelled_date', show: true},
+          {text: 'Appointment Date', value: 'appointment_date', show: true},
+          {text: 'Appointment Outcome', value: 'appointment_outcome', show: true},
+          {text: 'Commission Plan', value: 'commission_plan', show: true},
+          {text: 'Commissions Earned', value: 'commission_earned', show: true},
+          {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
+          {text: 'Adjustment', value: 'commission_adjustments', width: 150, show: true},
+          {text: 'Commission Pay', value: 'current_pay_commissions', show: true},
+          {text: 'Override Plan', value: 'override_plan', show: true},
+          {text: 'Override Earned', value: 'override_earned', show: true},
+          {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
+          {text: 'Override Pay', value: 'current_pay_overrides', show: true},
+        ]
+      }
+    },
+    computed: {
+      headers() {
+        return this.positionId === 1 ? this.closerHeaders : this.setterHeaders
       }
     },
     methods: {
@@ -462,7 +580,7 @@
         try {
           let params = {
             projectId: item.project_id,
-            closerId: item.closer_user_id,
+            userId: item.user_id,
             adjustmentType: 'COMMISSION',
             maxAmount: item.remaining_value,
             amount: item.adjustment,
@@ -544,7 +662,7 @@
       async getCurrentPayroll () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/current`, 'blueraven')
+          const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
           this.currentPayroll = data
           this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
           this.getStatusColor()
@@ -572,7 +690,8 @@
             periodEnd: this.currentPayroll.periodEnd,
             projectId: this.accountingSearch.projectId,
             customerId: this.accountingSearch.customerId,
-            salesRepId: this.accountingSearch.salesRepId
+            salesRepId: this.accountingSearch.salesRepId,
+            positionId: this.positionId
           }
           if(this.currentPayroll?.status !== 'PENDING' && this.currentPayroll?.status !== 'REJECTED') {
             params.selectedProjectIds = this.currentPayroll.selectedProjectIds

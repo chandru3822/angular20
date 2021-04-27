@@ -19,5 +19,6 @@ public class AccountSearchRequest {
     private String cancelEndDate;
     private Long overridePlanId;
     private Long commissionPlanId;
+    private Long positionId;
     private List<Long> selectedProjectIds;
 }

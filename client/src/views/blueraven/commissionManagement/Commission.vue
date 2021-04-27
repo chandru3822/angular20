@@ -9,7 +9,7 @@
       <v-toolbar-items>
         <div class="commission-button-container">
           <v-btn color="primaryCustom" class="white--text mr-2"
-                 :disabled="!commission.name"
+                 :disabled="!commission.name || !commission.positionId"
                  v-if="userCanEdit"
                  @click="savePlan()">
             Save
@@ -223,7 +223,6 @@
                             v-model="commission.description"></v-text-field>
               <v-select v-model="commission.positionId"
                         :items="positions"
-                        :disabled="true"
                         no-data-text="No Users Available"
                         label="Position"
                         item-text="label"
@@ -395,7 +394,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <v-row v-if="planId">
+    <v-row v-if="planId && commission.positionId === 1">
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
@@ -778,6 +777,10 @@
       }
     },
     watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual commission plan
+        this.$router.push(`/commissionManagement/commissions`)
+      },
       $route(to, from) {
         // react to route changes...
         this.planId = to.params.id
@@ -859,7 +862,7 @@
         cloneDateError: false,
         commission: {
           users: [],
-          positionId: 1
+          positionId: null
         }
       }
     },
@@ -1075,8 +1078,9 @@
         if(this.addUser) {
           this.usersLoading = true
           try {
+            let positions = this.commission.positionId === 1 ? 'closers' : 'setters'
             let params = {
-              positions: 'closers',
+              positions,
               query,
               planId: this.planId
             }
@@ -1100,7 +1104,7 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/users`, params, 'blueraven')
+          const {data} = await postRequest(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, 'blueraven')
           this.commission.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -1136,7 +1140,11 @@
         if(this.addMilestone) {
           try {
             const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones`, 'blueraven')
-            this.milestones = data
+            if(this.commission.positionId === 1) {
+              this.milestones = data
+            } else {
+              this.milestones = data.filter(d => d.id === 1)
+            }
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')

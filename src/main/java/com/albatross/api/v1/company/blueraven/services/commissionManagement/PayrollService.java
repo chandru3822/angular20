@@ -37,16 +37,18 @@ public class PayrollService {
     private final DataSource dataSource;
     private final SecurityService securityService;
 
-    public Long findCurrentPayroll() {
-        List<Long> payrollIds = sqlCache.queryBySql("SELECT id FROM brs.payroll WHERE current IS TRUE", new HashMap<>(), new SingleColumnRowMapper<>(Long.class));
+    public Long findCurrentPayroll(Long positionId) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("positionId", positionId);
+      List<Long> payrollIds = sqlCache.query("payroll.getCurrentPayrollId", params, new SingleColumnRowMapper<>(Long.class));
 
-        if (payrollIds.size() > 1) {
-            log.error("COMMISSION: There are multiple payrolls marked as current and the first one will be returned.");
-        } else if (payrollIds.isEmpty()) {
-            log.error("COMMISSION: No Current Payroll Available");
-        }
+      if (payrollIds.size() > 1) {
+          log.error("COMMISSION: There are multiple payrolls marked as current and the first one will be returned.");
+      } else if (payrollIds.isEmpty()) {
+          log.error("COMMISSION: No Current Payroll Available");
+      }
 
-        return payrollIds.isEmpty() ? null : payrollIds.get(0);
+      return payrollIds.isEmpty() ? null : payrollIds.get(0);
     }
 
     public String payrollSearch(PayrollSearch searchQuery) {
@@ -56,7 +58,9 @@ public class PayrollService {
         params.put("customerName", searchQuery.getCustomerName());
         params.put("salesRepId", searchQuery.getSalesRepId());
         params.put("projectId", searchQuery.getProjectId());
-        Optional<String> results = sqlCache.get("payroll.search", params, new SingleColumnRowMapper<>(String.class));
+
+        String sqlKey = searchQuery.getPositionId() == 1 ? "payroll.searchClosers" : "payroll.searchSetters";
+        Optional<String> results = sqlCache.get(sqlKey, params, new SingleColumnRowMapper<>(String.class));
         return results.orElse("[]");
     }
 
@@ -66,9 +70,11 @@ public class PayrollService {
         return sqlCache.get("payroll.getById", params, new SingleColumnRowMapper<>(String.class));
     }
 
-    public List<Payroll> getApprovedPayrolls() {
+    public List<Payroll> getApprovedPayrolls(Long positionId) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("positionId", positionId);
         return sqlCache.query("payroll.getApprovedPayrolls",
-                Collections.emptyMap(),
+                params,
                 Payroll.class);
     }
 
@@ -96,7 +102,11 @@ public class PayrollService {
         setPayrollStatus(payrollId, PayrollStatus.APPROVED);
         addPayrollHistory(payrollId, PayrollActionType.APPROVED, null);
 
-        createPayroll();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("payrollId", payrollId);
+
+        Long positionId = sqlCache.queryForObject("payroll.getPositionId", params, Long.class);
+        createPayroll(positionId);
     }
 
     private Boolean copyPayrollToLedger(Long payrollId) {
@@ -170,14 +180,19 @@ public class PayrollService {
             params.put("selectedProjectIds", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
         }
 
-        Optional<String> bySql = sqlCache.get("payroll.getAccountReview", params, new SingleColumnRowMapper<>(String.class));
+        String sqlKey = request.getPositionId() == 1 ? "payroll.getAccountReviewForClosers" : "payroll.getAccountReviewForSetters";
+
+        Optional<String> bySql = sqlCache.get(sqlKey, params, new SingleColumnRowMapper<>(String.class));
         return bySql.orElse("[]");
     }
 
-    public String getPayrollSearchDetail(Long payrollId) {
+    public String getPayrollSearchDetail(Long payrollId, Long positionId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("payrollId", payrollId);
-        Optional<String> bySql = sqlCache.get("payroll.getPayrollSearchDetail", params, new SingleColumnRowMapper<>(String.class));
+        //todo:change the columns returned by the setter query
+
+        String sqlKey = positionId == 1 ? "payroll.getPayrollSearchDetailForClosers" : "payroll.getPayrollSearchDetailForSetters";
+        Optional<String> bySql = sqlCache.get(sqlKey, params, new SingleColumnRowMapper<>(String.class));
         return bySql.orElse("[]");
     }
 
@@ -199,9 +214,10 @@ public class PayrollService {
         }
     }
 
-    public String getAccountSummaryForCurrentPayroll() {
-        HashMap<String, Object> params = new HashMap<>();
-        return sqlCache.get("payroll.getCurrentSummary", params, new SingleColumnRowMapper<>(String.class)).orElse("[]");
+    public String getAccountSummaryForCurrentPayroll(Long positionId) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("positionId", positionId);
+      return sqlCache.get("payroll.getCurrentSummary", params, new SingleColumnRowMapper<>(String.class)).orElse("[]");
     }
 
     public String getAccountSummaryByPayrollId(Long payrollId) {
@@ -250,7 +266,7 @@ public class PayrollService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("payrollId", payrollId);
         params.put("projectId", adjustmentRequest.getProjectId());
-        params.put("closerId", adjustmentRequest.getCloserId());
+        params.put("userId", adjustmentRequest.getUserId());
         params.put("amount", adjustmentRequest.getAmount());
         params.put("note", adjustmentRequest.getNote());
         params.put("createdById", securityService.getCurrentUser().getId());
@@ -268,13 +284,14 @@ public class PayrollService {
         return adjustmentsOpt.orElse("[]");
     }
 
-    public boolean createPayroll() {
+    public boolean createPayroll(Long positionId) {
         Long currentUserId = securityService.getCurrentUser().getId();
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("currentUserId", currentUserId);
+        params.put("positionId", positionId);
 
-        Optional<Boolean> created = sqlCache.getBySql("SELECT brs.create_payroll(:currentUserId::int)", params, new SingleColumnRowMapper<>(Boolean.class));
+        Optional<Boolean> created = sqlCache.getBySql("SELECT brs.create_payroll(:currentUserId::int, :positionId::int)", params, new SingleColumnRowMapper<>(Boolean.class));
         if (created.isPresent()) {
             return created.get();
         }
@@ -302,7 +319,7 @@ public class PayrollService {
 
     @Data
     public static class PayrollAdjustmentRequest {
-        private Long projectId, closerId;
+        private Long projectId, userId;
         private Double amount;
         private String note;
 

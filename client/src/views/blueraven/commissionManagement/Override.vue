@@ -299,6 +299,7 @@
                           v-model="newReceivingUser.m1Allocation">
             </v-text-field>
           <v-text-field text
+                        v-if="positionId === 1"
                         type="number"
                         label="M2 Allocation"
                         v-model="newReceivingUser.m2Allocation">
@@ -338,11 +339,12 @@
                             v-model.number="item.m1Allocation">
               </v-text-field>
               <v-text-field text
+                            v-if="positionId === 1"
                             type="number"
                             label="M2 Allocation"
                             v-model.number="item.m2Allocation">
               </v-text-field>
-              <v-btn :disabled="!item.m1Allocation || !item.m2Allocation"
+              <v-btn :disabled="!item.m1Allocation || (positionId === 1 && !item.m2Allocation)"
                      @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
             </td>
           </template>
@@ -640,6 +642,10 @@
       }
     },
     watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual override plan
+        this.$router.push(`/commissionManagement/overrides`)
+      },
       $route(to, from) {
         // react to route changes...
         // this.$router.push({name: 'commission', params: {id: to.params.id}})
@@ -672,6 +678,7 @@
         dataLoading: true,
         cloneDialog: false,
         moment,
+        positionId: parseInt(this.$route.params.positionId),
         cloneStartDate: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
@@ -982,7 +989,7 @@
               startDate: this.newAssignedUser.startDate,
               endDate: this.newAssignedUser.endDate
             }
-            const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/assignedUsers`, params, 'blueraven')
+            const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/assignedUsers/${this.override.positionId}`, params, 'blueraven')
             this.override.assignedUsers.push(data)
             this.newAssignedUser = {}
             this.assignedUserSearch = null
@@ -1026,7 +1033,7 @@
               query,
               planId: this.override.id,
               isReceiving: true,
-              positionId: this.positionId
+              positionId: this.override.positionId
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
             this.receivingUsersToAdd = data
