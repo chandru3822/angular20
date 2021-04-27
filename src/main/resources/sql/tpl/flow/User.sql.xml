@@ -19,6 +19,7 @@
                 upv.position_id,
                 upv.user_position_id,
                 upv.phone_number,
+                upv.phone_extension,
                 upv.user_status_type_id,
                 ust.user_status_type,
                 upv.has_access,
@@ -41,7 +42,7 @@
             concat(u.first_name, ' ', u.last_name) AS full_name,
              u.email,
              null,null,
-             null,null,null,
+             null,null,null, null,
              null,null,ust.id as user_status_type_id,
              ust.user_status_type, ust.has_access,null
       from flow."user" u
@@ -119,6 +120,7 @@
           notification_type_id = :notificationTypeId,
           username = trim(:username),
           phone_number = trim(:phone),
+          phone_extension = trim(:phoneExtension),
           modified_by_id = :modifiedById,
           date_modified = now()
       where id = :id;
@@ -146,6 +148,7 @@
   <user.getOne><![CDATA[
       select u.id,
        u.phone_number,
+       u.phone_extension,
        u.email,
        u.notification_type_id,
        u.username,
@@ -206,6 +209,7 @@
   <user.getOneAlbatross><![CDATA[
       select u.id,
              u.phone_number,
+             u.phone_extension,
              u.email,
              u.notification_type_id,
              u.username,
@@ -294,6 +298,7 @@
        u.username,
        u.email,
        u.phone_number,
+       u.phone_extension,
        u.login_attempts,
        u.username,
        (select has_access
@@ -378,6 +383,7 @@
        u.notification_type_id,
        u.username,
        u.phone_number,
+       u.phone_extension,
        concat(u.first_name, ' ', u.last_name) AS full_name
     from flow.user u
       left join flow.user_company uc on uc.user_id = u.id
@@ -394,6 +400,7 @@
            u.last_name,
            u.email,
            u.phone_number,
+           u.phone_extension,
            concat(u.first_name, ' ', u.last_name) AS full_name,
            u.password,
            coalesce(u.default_company_id, uc.company_id) as company_id,

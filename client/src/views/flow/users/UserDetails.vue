@@ -46,6 +46,13 @@
                             placeholder=" "
                             v-model="user.phoneNumber"></v-text-field>
               <v-text-field text
+                            label="Phone Extension"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
+                            placeholder=" "
+                            v-model="user.phoneExtension"></v-text-field>
+              <v-text-field text
                             label="E-Mail"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
