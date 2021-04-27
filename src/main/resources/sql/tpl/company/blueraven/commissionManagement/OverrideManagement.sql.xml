@@ -194,7 +194,13 @@
                          opu.user_id as "userId",
                          concat(u.first_name, ' ', u.last_name) AS name,
                          p.position,
-                         p.id                               AS "positionId"
+                         p.id                               AS "positionId",
+                         (select cfv.text_value
+                          from flow.user_custom_field_value cfv
+                                 inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                            and cfga.archived is false
+                           and cfv.user_id = opu.user_id ) as "employeeId"
                        FROM brs.override_plan_receiving_user opu
                          INNER JOIN flow."user" u ON opu.user_id = u.id
                          INNER JOIN flow.user_position up ON u.id = up.user_id
@@ -212,7 +218,13 @@
                              p.position,
                              p.id                               AS "positionId",
                              opa.start_date                     AS "startDate",
-                             opa.end_date                       AS "endDate"
+                             opa.end_date                       AS "endDate",
+                             (select cfv.text_value
+                                from flow.user_custom_field_value cfv
+                                       inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                                where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                                  and cfga.archived is false
+                                 and cfv.user_id = opa.user_id ) as "employeeId"
                            FROM brs.override_plan_assigned_user opa
                              INNER JOIN flow."user" u ON opa.user_id = u.id
                              INNER JOIN flow.user_position up ON u.id = up.user_id
@@ -268,7 +280,13 @@ FROM (SELECT op.id,
                                               inner join flow.position p on p.id = up.position_id
                                      where up.user_id = u.id
 
-                                    )                                  AS position
+                                    )                                  AS position,
+                                    (select cfv.text_value
+                          from flow.user_custom_field_value cfv
+                                 inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                            and cfga.archived is false
+                           and cfv.user_id = opu.user_id ) as "employeeId"
                              FROM brs.override_plan_receiving_user opu
                                       INNER JOIN flow."user" u ON opu.user_id = u.id
                              WHERE override_plan_id = op.id
@@ -278,7 +296,13 @@ FROM (SELECT op.id,
                                     opa.user_id                        AS "userId",
                                     concat(u.first_name, ' ', u.last_name) AS name,
                                     opa.start_date                     AS "startDate",
-                                    opa.end_date                       AS "endDate"
+                                    opa.end_date                       AS "endDate",
+                                    (select cfv.text_value
+                                    from flow.user_custom_field_value cfv
+                                           inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                                    where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                                      and cfga.archived is false
+                                     and cfv.user_id = opa.user_id ) as "employeeId"
                              FROM brs.override_plan_assigned_user opa
                                       INNER JOIN flow."user" u ON opa.user_id = u.id
                                       INNER JOIN flow.user_position up ON u.id = up.user_id
@@ -382,7 +406,13 @@ FROM (SELECT u.id                                                             AS
              opa.user_id                        AS "userId",
              concat(u.first_name, ' ', u.last_name) AS name,
              opa.start_date                     AS "startDate",
-             opa.end_date                       AS "endDate"
+             opa.end_date                       AS "endDate",
+             (select cfv.text_value
+                from flow.user_custom_field_value cfv
+                       inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                  and cfga.archived is false
+                 and cfv.user_id = opa.user_id ) as "employeeId"
       FROM brs.override_plan_assigned_user opa
              INNER JOIN flow."user" u ON opa.user_id = u.id
              INNER JOIN flow.user_position up ON u.id = up.user_id
@@ -428,7 +458,13 @@ FROM (SELECT u.id                                                             AS
                WHEN op.position_id = 4
                  THEN up.position_id IN (4,5,6)
                END
-             )                                  AS position
+             )                                  AS position,
+             (select cfv.text_value
+                          from flow.user_custom_field_value cfv
+                                 inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                            and cfga.archived is false
+                           and cfv.user_id = opu.user_id ) as "employeeId"
       FROM brs.override_plan_receiving_user opu
              INNER JOIN brs.override_plan op ON opu.override_plan_id = op.id
              INNER JOIN flow."user" u ON opu.user_id = u.id
