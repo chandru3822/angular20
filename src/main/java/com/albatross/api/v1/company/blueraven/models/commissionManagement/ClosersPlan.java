@@ -24,5 +24,5 @@ public class ClosersPlan {
 
     private boolean hasCommissionPlanGap;
 
-    private Boolean isActiveCloser;
+    private Boolean isActiveUser;
 }

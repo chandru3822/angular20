@@ -76,11 +76,18 @@
     created() {
       this.getOverridePlans()
     },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        this.getOverridePlans()
+      }
+    },
     data() {
       return {
         snackbar: {},
         dataLoading: true,
         search: '',
+        positionId: this.$store.state.brs.commissionPositionId,
         headers: [
           {text: 'Name', value: 'name', show: true},
           {text: 'Description', value: 'description', show: true},
@@ -95,7 +102,7 @@
       async getOverridePlans () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/overrides`, 'blueraven')
+          const {data} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}`, 'blueraven')
           this.overridePlans = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
