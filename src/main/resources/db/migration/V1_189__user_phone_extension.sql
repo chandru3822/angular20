@@ -21,7 +21,7 @@ set phone_extension = (select text_value
 -- archive all the phone extension cfga's
 update flow.custom_field_group_assignment
 set archived = true
-where custom_field_id in (3664,9428,3663,3662,3661,3660,3659,3658,3657,3656,3655,3654,3653,3652,487,437)
+where custom_field_id in (3664,9428,3663,3662,3661,3660,3659,3658,3657,3656,3655,3654,3653,3652,487,437);
 
 -- add the trigger back
 create trigger user_view_trg
