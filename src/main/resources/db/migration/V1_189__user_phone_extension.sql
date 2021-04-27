@@ -1,10 +1,6 @@
 -- drop this trigger or else updating the user records takes forever
 drop trigger if exists user_view_trg on flow."user";
 
--- drop it so that the update can re-run in stage
-alter table flow."user"
-  drop column if exists phone_extension;
-
 alter table flow."user"
   add column if not exists phone_extension varchar(10);
 
