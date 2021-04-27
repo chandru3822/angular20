@@ -181,6 +181,7 @@
           op.id,
           op.name,
           op.description,
+          op.position_id as "positionId",
           op.total,
           ops.status_type AS status,
           count(au.*)
@@ -377,32 +378,17 @@ FROM (SELECT u.id                                                             AS
 
   <overridePlan.getAssignedUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
-    FROM (SELECT opa.id,
-                 opa.user_id                        AS "userId",
-                 concat(u.first_name, ' ', u.last_name) AS name,
-                 opa.start_date                     AS "startDate",
-                 opa.end_date                       AS "endDate",
-                 string_agg(DISTINCT p.position, ', ') FILTER (
-                 WHERE
-                   CASE WHEN op.position_id = 1
-                     THEN up.id IN (select up5.id
-                          from flow.user_position up5
-                                   inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
-                          where up5.primary_flag is true
-                            and up5.archived is false
-                            and cf.archived is false)
-                   WHEN op.position_id = 4
-                     THEN up.position_id IN (4,5,6)
-                   END
-                 )                                  AS position
-          FROM brs.override_plan_assigned_user opa
-                 INNER JOIN brs.override_plan op ON opa.override_plan_id = op.id
-                 INNER JOIN flow."user" u ON opa.user_id = u.id
-                 INNER JOIN flow.user_position up ON u.id = up.user_id
-                 INNER JOIN flow.position p ON up.position_id = p.id
-          WHERE op.id = :planId
-          AND up.active IS TRUE
-          GROUP BY 1, 2, 3, 4, 5, 6) u
+          FROM (SELECT opa.id,
+             opa.user_id                        AS "userId",
+             concat(u.first_name, ' ', u.last_name) AS name,
+             opa.start_date                     AS "startDate",
+             opa.end_date                       AS "endDate"
+      FROM brs.override_plan_assigned_user opa
+             INNER JOIN flow."user" u ON opa.user_id = u.id
+             INNER JOIN flow.user_position up ON u.id = up.user_id
+             INNER JOIN flow.position p ON up.position_id = p.id
+      WHERE opa.override_plan_id = :planId
+      GROUP BY 1, 2, 3, 4, 5) u
     ]]></overridePlan.getAssignedUsers>
 
   <overridePlan.getAssignedUser><![CDATA[

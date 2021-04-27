@@ -266,7 +266,7 @@ public class OverridePlanService {
     }
 
     @Transactional
-    public String updateAssignedUser(Long planId, OverrideAssignedUser assignedUser, Long positionId)
+    public String updateAssignedUser(Long planId, OverrideAssignedUser assignedUser, Long positionId, Boolean addUserToPlan)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         boolean isBackdatedPlan = validateBackdatedPlan(assignedUser, positionId);
 
@@ -292,10 +292,15 @@ public class OverridePlanService {
             sqlCache.update("overridePlan.appendAssignedNote", params);
         }
 
-        //if existing just return the one user, otherwise return the full updated list
-        return assignedUser.getId() != null
-          ? getAssignedUser(planId, assignedUser.getUserId())
-          : getOverrides(assignedUser.getUserId());
+      //this same endpoint is used when adding a user to a plan or when adding a plan to a user. and need to return different when adding to plan
+      //if existing just return the one user, otherwise return the full updated list
+      if(assignedUser.getId() != null) {
+        return getAssignedUser(planId, assignedUser.getUserId());
+      } else if(null != addUserToPlan && addUserToPlan) {
+        return getPlanAssignedUsers(planId);
+      } else {
+        return getOverrides(assignedUser.getUserId());
+      }
     }
 
     public String getPlanAssignedUsers(Long id){

@@ -199,12 +199,18 @@ public class CommissionManagementController {
     @PostMapping(value = "/{planId}/users/{positionId}")
     public ResponseEntity insertUser(@PathVariable Long planId,
                                      @PathVariable Long positionId,
+                                     @RequestParam(required = false) Boolean addUserToPlan,
                                      @RequestBody PlanUser user) {
         try {
             commissionManagementService.insertUser(planId, user, positionId);
-//            String users = commissionManagementService.getCommissionPlanUsers(planId);
-            String plans = commissionManagementService.getPlans(user.getUserId());
-            return ResponseEntity.ok(plans);
+            String response;
+            //this same endpoint is used when adding a user to a plan or when adding a plan to a user. need to return different response in each scenario
+            if(null != addUserToPlan && addUserToPlan) {
+              response = commissionManagementService.getCommissionPlanUsers(planId);
+            } else {
+              response = commissionManagementService.getPlans(user.getUserId());
+            }
+            return ResponseEntity.ok(response);
         } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),
