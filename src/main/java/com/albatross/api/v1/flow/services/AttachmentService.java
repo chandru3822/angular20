@@ -300,6 +300,19 @@ public class AttachmentService {
         return result.orElse(null);
     }
 
+    public Attachment update (Long id, Attachment attachment) {
+      User currentUser = securityService.getCurrentUser();
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", id);
+      params.put("filename", attachment.getFilename());
+      params.put("userId", currentUser.getId());
+
+      sqlCache.update("attachment.update", params);
+
+      return findById(id);
+    }
+
     /**
      * Upload a new Attachment to S3 using a custom S3 bucket name and key pattern.
      *

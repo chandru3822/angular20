@@ -9,7 +9,27 @@ export function getSnackbar(type, text) {
   return snackbar
 }
 
-export function isNumberOrHyphen (val) {
+export function getFileIcon(file) {
+  switch (file.fileExtension) {
+    case 'pdf':
+      return 'mdi-file-pdf-outline'
+    case 'doc':
+    case 'docx':
+      return 'mdi-file-word'
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+      return 'mdi-file-image'
+    case 'csv':
+    case 'xls':
+    case 'xlsx':
+      return 'mdi-file-table'
+    default: //basic file image
+      return 'insert_drive_file'
+  }
+}
+
+export function isNumberOrHyphen(val) {
   if (val.key !== '-' && isNaN(Number(val.key))) {
     return val.preventDefault();
   }
@@ -25,7 +45,7 @@ export function formatPhoneNumber(phoneNumberString) {
 }
 
 // functions
-export async function getRequest (path, companyAbbreviation) {
+export async function getRequest(path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
     const {data, status} = await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
@@ -35,7 +55,7 @@ export async function getRequest (path, companyAbbreviation) {
   }
 }
 
-export async function getRequestWithParams (path, params, companyAbbreviation) {
+export async function getRequestWithParams(path, params, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
     const {data, status} = await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, params)
@@ -45,7 +65,7 @@ export async function getRequestWithParams (path, params, companyAbbreviation) {
   }
 }
 
-export async function postRequest (path, body, companyAbbreviation) {
+export async function postRequest(path, body, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
     const {data, status} = await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body)
@@ -55,7 +75,7 @@ export async function postRequest (path, body, companyAbbreviation) {
   }
 }
 
-export async function putRequest (path, body, companyAbbreviation) {
+export async function putRequest(path, body, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
     const {data, status} = await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body)
@@ -65,7 +85,7 @@ export async function putRequest (path, body, companyAbbreviation) {
   }
 }
 
-export async function putRequestWithRequestParams (path, body, params, companyAbbreviation) {
+export async function putRequestWithRequestParams(path, body, params, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
     const {data, status} = await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params})
@@ -75,7 +95,7 @@ export async function putRequestWithRequestParams (path, body, params, companyAb
   }
 }
 
-export async function deleteRequest (path, companyAbbreviation) {
+export async function deleteRequest(path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   // not returning data as part of a delete
   try {
@@ -86,33 +106,33 @@ export async function deleteRequest (path, companyAbbreviation) {
   }
 }
 
-export function logError (e) {
+export function logError(e) {
   console.error('*** ERROR ***', e)
 }
 
-export function jsonToCsv (data) {
-    let csvData = []
+export function jsonToCsv(data) {
+  let csvData = []
 
-    for (let key in data[0]) {
-        csvData.push(`"${key}"`)
-        csvData.push(',')
+  for (let key in data[0]) {
+    csvData.push(`"${key}"`)
+    csvData.push(',')
+  }
+  csvData.pop()
+  csvData.push('\r\n')
+
+  data.map(function (item) {
+    for (let key in item) {
+      // if value isn't nullish, cast Numbers to string. Else empty string
+      let escapedCSV = (item[key]) ? item[key] + '' : '';
+      if (escapedCSV.match(/[,"\n]/)) {
+        escapedCSV = '"' + escapedCSV.replace(/\"/g, '""') + '"'
+      }
+      csvData.push(escapedCSV)
+      csvData.push(',')
     }
     csvData.pop()
     csvData.push('\r\n')
+  });
 
-    data.map(function(item) {
-        for (let key in item) {
-            // if value isn't nullish, cast Numbers to string. Else empty string
-            let escapedCSV = (item[key]) ? item[key] + '' : '';
-            if (escapedCSV.match(/[,"\n]/)) {
-                escapedCSV = '"' + escapedCSV.replace(/\"/g, '""') + '"'
-            }
-            csvData.push(escapedCSV)
-            csvData.push(',')
-        }
-        csvData.pop()
-        csvData.push('\r\n')
-    });
-
-    return csvData.join('')
+  return csvData.join('')
 }
