@@ -4,6 +4,22 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1">
           <v-toolbar-title>Commission Management</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <div class="position-selector">
+              <span class="d-inline-block">Position: </span>
+              <v-select
+                class="d-inline-block ml-3"
+                v-model="selectedPositionId"
+                :items="positions"
+                label=""
+                hide-details
+                item-text="label"
+                item-value="id"
+                @change="changeSelectedPosition(selectedPositionId)"
+              ></v-select>
+            </div>
+          </v-toolbar-items>
           <v-tabs :optional="false" color="primaryCustom"
                   slot="extension"
                   background-color="white" v-model="model" slider-color="primaryCustom">
@@ -20,7 +36,7 @@
 </template>
 
 <script>
-  import {AppMutations} from '@/stores/AppStore'
+  import {BrsMutations} from '@/stores/BrsStore'
 
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
@@ -30,31 +46,41 @@
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
+      },
+    },
+    created() {
+      if(!this.$store.state.brs.commissionPositionId) {
+        this.changeSelectedPosition(1)
       }
     },
     data() {
       return {
         snackbar: {},
         model: '',
+        selectedPositionId: this.$store.state.brs.commissionPositionId,
+        positions: [
+          {id: 1, label: 'Closer'},
+          {id: 4, label: 'Setter'}
+        ],
         tabs: [ {
-          label: 'Closers',
-          path: '/commissionManagement/closers',
+          label: 'Users',
+          path: `/commissionManagement/users`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Commissions',
-          path: '/commissionManagement/commissions',
+          path: `/commissionManagement/commissions`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Overrides',
-          path: '/commissionManagement/overrides',
+          path: `/commissionManagement/overrides`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Accounting Review',
-          path: '/commissionManagement/accounting/current',
+          path: `/commissionManagement/accounting/current`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Payroll Search',
-          path: '/commissionManagement/payroll',
+          path: `/commissionManagement/payroll`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         },
         //   {
@@ -69,7 +95,12 @@
         ]
       }
     },
-    methods: {}
+    methods: {
+      changeSelectedPosition(positionId) {
+        this.$store.commit(BrsMutations.SET_COMMISSION_POSITION_ID, positionId)
+        // this.$router.push(`/commissionManagement/${this.selectedPositionId}/users`)
+      }
+    }
   }
 </script>
 
@@ -77,6 +108,9 @@
 </style>
 
 <style lang="scss" scoped>
-
+.position-selector {
+  display: flex;
+  align-items: center;
+}
 </style>
 

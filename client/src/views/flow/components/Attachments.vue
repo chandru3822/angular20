@@ -22,13 +22,14 @@
         </v-col>
       </v-row>
       <v-row v-else>
-        <v-col cols="6" class="text-left" pb-0>
+        <v-col cols="6" class="text-left py-0">
           <v-btn @click="displayType = null">Back</v-btn>
         </v-col>
-        <v-col cols="6" class="pb-0">
+        <v-col cols="6" class="py-0">
             <v-file-input
               dense
               ref="fileInput"
+              hide-details
               :show-size="error.error"
               outlined
               label="Upload document"
@@ -38,58 +39,105 @@
         </v-col>
         <v-row class="d-flex flex-wrap justify-start">
           <v-col
-            cols="2"
+            cols="12"
             class="type"
-            v-for="a in drillDownAttachments"
           >
-            <div class="text-right">
-              <v-dialog
-                v-model="a.deleteConfirm"
-                width="500">
-                <template #activator="{ on }">
-                  <v-btn x-small text v-on="on">
-                    <v-icon>close</v-icon>
-                  </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                    class="headline grey lighten-2"
-                    primary-title>
-                    Confirm
-                  </v-card-title>
+            <v-data-table
+              :headers="headers"
+              :items="drillDownAttachments"
+              :fixed-header="true"
+              :items-per-page="-1"
+              :mobile-breakpoint="0"
+              hide-default-footer
+              hide-default-header
+              class="elevation-0 square-card attachment-table"
+              :key="renderTicker"
+            >
+              <template #no-data>
+                No Attachments Available
+              </template>
 
-                  <v-card-text class="pt-4">
-                    Are you sure you want to delete <strong>{{a.filename}}</strong>?
-                  </v-card-text>
+              <template #no-results>
+                No Attachments Available
+              </template>
 
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
+              <template #item="{ item }">
+                <tr  class="text-left"  :class="{'shaded-row': drillDownAttachments.indexOf(item) % 2}">
+                  <td class="text-left">
                     <v-btn
-                      @click="a.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primaryCustom"
+                      width="100%"
+                      icon
                       text
-                      @click="[a.archived = true, deleteAttachment(a.id)]">
-                      Yes
+                      :href="item.presignedUrl" class="type">
+                      <v-icon large color="grey">
+                        {{ getIconForFile(item) }}
+                      </v-icon>
                     </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
-            <div class=" d-flex flex-wrap justify-center">
-              <v-btn
-                width="100%"
-                icon
-                text
-                :href="a.presignedUrl" class="type">
-                <v-icon x-large color="grey">insert_drive_file</v-icon>
-              </v-btn>
-              <a :href="a.presignedUrl" class="type link text-center">{{ a.filename }}</a>
-            </div>
+                  </td>
+                  <td class="text-left">
+                    <a v-if="!item.edit" :href="item.presignedUrl"
+                       class="type link text-center">
+                      {{ item.editableName }}
+                    </a>
+                    <v-text-field
+                      v-else
+                      hide-details
+                      label="Filename"
+                      class="my-2"
+                      v-model="item.editableName"
+                    ></v-text-field>
+                  </td>
+                  <td class="text-right">
+                    <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
+                      <v-icon>edit</v-icon>
+                    </v-btn>
+                    <v-btn small text v-if="item.edit" @click="saveFilename(item)">
+                      <v-icon>save</v-icon>
+                    </v-btn>
+                    <v-btn small text v-if="item.edit" @click="[item.edit = false, renderTicker++]">
+                      cancel
+                    </v-btn>
+                    <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                      <template #activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text class="pt-4">
+                          Are you sure you want to delete <strong>{{item.filename}}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="[item.archived = true, deleteAttachment(item.id)]">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </td>
+                </tr>
+              </template>
+
+            </v-data-table>
           </v-col>
         </v-row>
       </v-row>
@@ -101,7 +149,7 @@
 <script>
 import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
+import {getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
 import {deleteAttachment} from '@/services/attachmentService'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
@@ -115,7 +163,13 @@ export default {
       displayType: null,
       typePath: null,
       attachmentPath: null,
-      error: {}
+      error: {},
+      renderTicker: 0,
+      headers: [
+        { text: null, value: 'fileIcon', show: true },
+        { text: null, value: 'filename', show: true },
+        { text: null, value: 'icons', show: true },
+      ],
     }
   },
   props: {
@@ -145,6 +199,31 @@ export default {
     }
   },
   methods: {
+    getIconForFile (item) {
+      return getFileIcon(item)
+    },
+    async saveFilename(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let newFileName = item.editableName
+        if(item.fileExtension) {
+          newFileName += '.' + item.fileExtension
+        }
+        item.filename = newFileName
+        const {data} = await putRequest(`/attachment/${item.id}`, item)
+        item.presignedUrl = data.presignedUrl
+        item.edit = false
+        this.renderTicker++
+        this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     fetchAttachmentTypes: async function () {
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
           projectId: this.projectId
@@ -156,6 +235,10 @@ export default {
     },
     fetchAttachments: async function () {
       const {data} = await getRequest(this.attachmentPath)
+      data.forEach(d => {
+        let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
+        d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
+      })
       this.attachments = data
     },
     drillDown: function(type) {
@@ -170,6 +253,7 @@ export default {
     },
     uploadDocument: async function (file) {
       try {
+        console.log('randaLogger',file)
         if(file && file.size > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           //reset error message when trying to upload new file
@@ -186,6 +270,9 @@ export default {
                 this.snackbar = getSnackbar('ERROR', error.message)
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               } else {
+                let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
+                newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
+
                 this.attachments = [...this.attachments, newAttachment]
               }
               this.$refs.fileInput.reset()
@@ -214,5 +301,9 @@ export default {
   .link {
     color: inherit;
     text-decoration: none;
+  }
+  .attachment-table {
+    border-top: solid 2px #E0E0E0;
+    border-bottom: solid 2px #E0E0E0;
   }
 </style>

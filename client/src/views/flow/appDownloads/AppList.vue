@@ -1,7 +1,29 @@
 <template>
   <v-main>
     <v-toolbar flat class="app-toolbar">
-      <v-toolbar-title class="app-title">{{isIos ? 'iOS' : 'Android'}}</v-toolbar-title>
+      <v-toolbar-title class="app-title">
+        {{isIos ? 'iOS' : 'Android'}}
+      </v-toolbar-title>
+      <v-spacer v-if="userCanEdit"></v-spacer>
+      <div v-if="userCanEdit">
+        <v-text-field
+          label="Min Required Version"
+          type="number"
+          :readonly="!editMinVersion"
+          :disabled="!editMinVersion"
+          hide-details
+          style="width: 125px;"
+          class="d-inline-block"
+          v-model.number="minVersion"
+        ></v-text-field>
+        <v-btn text x-small @click="editMinVersion = !editMinVersion" class="d-inline-block">
+          <v-icon v-if="!editMinVersion">edit</v-icon>
+          <v-icon v-else>close</v-icon>
+        </v-btn>
+        <v-btn text x-small v-if="editMinVersion" @click="saveMinVersion()" class="d-inline-block">
+          <v-icon>save</v-icon>
+        </v-btn>
+      </div>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn v-if="isIos" text @click="showIos = !showIos">
@@ -128,7 +150,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, putRequestWithRequestParams, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 
@@ -148,6 +170,9 @@ export default {
       snackbar: {},
       constants,
       showIos: true,
+      minVersion: null,
+      editMinVersion: false,
+      appTypeId: this.isIos ? 1 : 3,
       showAndroid: true,
       isMobile: false,
       headers: [
@@ -160,6 +185,7 @@ export default {
     }
   },
   created () {
+    this.getMinVersion()
     let userAgent = window.navigator.userAgent
     if(userAgent && userAgent.includes('Android')){
       this.showIos = false
@@ -172,6 +198,32 @@ export default {
   methods: {
     filterHeaders () {
       return this.headers.filter(header => header.show === true)
+    },
+    async saveMinVersion () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequestWithRequestParams(`/app/${this.appTypeId}/minVersion`, null, { minVersion: this.minVersion})
+        this.editMinVersion = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Min Version')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getMinVersion () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequestWithParams(`/app/${this.appTypeId}/minVersion`)
+        this.minVersion = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Min Version')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteApp(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)

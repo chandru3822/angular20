@@ -126,4 +126,11 @@ public class TournamentController {
                              @RequestBody List<Match> matches) {
     tournamentService.advanceMatches(tournamentId, matches);
   }
+
+  @PutMapping(value = "/match/{matchId}/userOverride", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void overrideMatchUser(@PathVariable Long matchId,
+                                @RequestParam Long userId,
+                                @RequestParam Boolean overrideUser1) {
+    tournamentService.overrideMatchUser(matchId, userId, overrideUser1);
+  }
 }

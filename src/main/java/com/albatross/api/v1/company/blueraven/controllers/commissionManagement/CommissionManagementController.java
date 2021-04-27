@@ -108,9 +108,9 @@ public class CommissionManagementController {
         return commissionManagementService.findAvailableMilestones(id);
     }
 
-    @GetMapping(value = "/plans")
-    public List<CommissionPlan> getCommissionPlans() {
-        return commissionManagementService.getCommissionPlans();
+    @GetMapping(value = "/plans/{positionId}")
+    public List<CommissionPlan> getCommissionPlans(@PathVariable Long positionId) {
+        return commissionManagementService.getCommissionPlans(positionId);
     }
 
     @GetMapping(value = "/plan/{planId}")
@@ -139,6 +139,11 @@ public class CommissionManagementController {
     @GetMapping(value = "/closers")
     public List<ClosersPlan> getClosers() {
         return commissionManagementService.getClosers();
+    }
+
+    @GetMapping(value = "/setters")
+    public List<ClosersPlan> getSetters() {
+      return commissionManagementService.getSetters();
     }
 
     @DeleteMapping(value = "/{id}/commissionUser/{commissionPlanUserId}")
@@ -191,11 +196,12 @@ public class CommissionManagementController {
         commissionManagementService.updatePlanUser(planId, user);
     }
 
-    @PostMapping(value = "/{planId}/users")
+    @PostMapping(value = "/{planId}/users/{positionId}")
     public ResponseEntity insertUser(@PathVariable Long planId,
+                                     @PathVariable Long positionId,
                                      @RequestBody PlanUser user) {
         try {
-            commissionManagementService.insertUser(planId, user);
+            commissionManagementService.insertUser(planId, user, positionId);
 //            String users = commissionManagementService.getCommissionPlanUsers(planId);
             String plans = commissionManagementService.getPlans(user.getUserId());
             return ResponseEntity.ok(plans);

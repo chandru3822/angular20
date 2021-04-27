@@ -19,6 +19,7 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         placeholder="Select a status..."
+                        @change="dirtySystemFields = true"
                         item-text="userStatusType"
                         item-value="id"
                         autocomplete="off">
@@ -27,36 +28,49 @@
                             label="First Name"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.lastName"></v-text-field>
               <v-text-field text
                             label="Phone"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.phoneNumber"></v-text-field>
+              <v-text-field text
+                            label="Phone Extension"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
+                            placeholder=" "
+                            v-model="user.phoneExtension"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.email"></v-text-field>
               <v-text-field text
                             label="Username"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.username"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <v-text-field text class="mt-4"
                             v-if="userIsAdmin"
                             label="Password"
+                            @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.newPassword"></v-text-field>
               <v-card color="#ffcac7" class="pa-4" v-if="user.loginAttempts >= 9">
@@ -164,7 +178,7 @@
           </div>
         </v-col>
         <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
-          <NotesAndActivity :showNotes="true" :showActivity="false"
+          <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
                             :notes="notes" :primaryId="parseInt(userId)"
                             type="User"
           ></NotesAndActivity>
@@ -207,6 +221,7 @@
         companies: [],
         dirtyCfvs: [],
         user: {},
+        dirtySystemFields: false,
         fieldsSaving: false,
         customFieldGroups: [],
         notes: [],
@@ -228,6 +243,12 @@
       this.getUserStatusTypes()
     },
     methods: {
+      hasDirtyFields() {
+        return this.dirtyCfvs.length > 0 || this.dirtySystemFields
+      },
+      hasDirtyNotes() {
+        return this.$refs.notes.hasUnsavedNotes()
+      },
       async saveUser() {
         let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
         if (this.user?.username?.length > 2) {
@@ -247,6 +268,7 @@
             // save dirty custom field values
             const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
             this.dirtyCfvs = []
+            this.dirtySystemFields = false
             this.user.newPassword = null
             this.customFieldGroups = data
             this.fieldsSaving = false

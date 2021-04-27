@@ -26,8 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -139,7 +138,7 @@ public class ProjectProcessStepServiceTests {
 
   @Test
   public void compareDatesTest() throws Exception {
-    LocalDate today = LocalDate.now();
+    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareDates(null, today, 1L)).isFalse();
     assertThat(projectProcessStepService.compareDates(null, today, 2L)).isTrue();
     assertThat(projectProcessStepService.compareDates(null, today, 3L)).isFalse();
@@ -159,11 +158,32 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 2L)).isTrue();
     assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 3L)).isTrue();
     assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 4L)).isFalse();
+
+    ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
+    assertThat(projectProcessStepService.compareDates(null, todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(null, todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(null, todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(null, todayMountain, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 4L)).isTrue();
+
+    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 3L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void compareNullDateTest() throws Exception {
-    LocalDate today = LocalDate.now();
+    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNullDate(null, 1L)).isTrue();
     assertThat(projectProcessStepService.compareNullDate(null, 2L)).isFalse();
     assertThat(projectProcessStepService.compareNullDate(null, 3L)).isFalse();
@@ -173,11 +193,17 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareNullDate(today, 2L)).isTrue();
     assertThat(projectProcessStepService.compareNullDate(today, 3L)).isFalse();
     assertThat(projectProcessStepService.compareNullDate(today, 4L)).isFalse();
+
+    ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
+    assertThat(projectProcessStepService.compareNullDate(todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDate(todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNullDate(todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDate(todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void compareNonNullDateTest() throws Exception {
-    LocalDate today = LocalDate.now();
+    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNonNullDate(null, 1L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDate(null, 2L)).isTrue();
     assertThat(projectProcessStepService.compareNonNullDate(null, 3L)).isFalse();
@@ -187,18 +213,24 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareNonNullDate(today, 2L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDate(today, 3L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDate(today, 4L)).isFalse();
+
+    ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
+    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void calculateDateRequirementTest() throws Exception {
-    LocalDate today = LocalDate.now();
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.date"), new TypeReference<ProjectProcessStepRequirement>(){});
+    LocalDateTime today = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.date"), new TypeReference<>(){});
     r.setDataTypeId(1L);
     r.setSecondaryRequirementValue("1");
 
     // Check date value of today
 
-    r.setDateValue(Timestamp.valueOf(today.atStartOfDay()));
+    r.setDateValue(Timestamp.valueOf(today));
     r.setDataTypeRequirementId(1L);
     r.setOperatorTypeId(1L);
     assertThat(projectProcessStepService.calculateDateRequirement(r)).isFalse();
@@ -243,7 +275,7 @@ public class ProjectProcessStepServiceTests {
 
     // Check past date value
 
-    r.setDateValue(Timestamp.valueOf(today.minusDays(3).atStartOfDay()));
+    r.setDateValue(Timestamp.valueOf(today.minusDays(3)));
     r.setDataTypeRequirementId(1L);
     r.setOperatorTypeId(1L);
     assertThat(projectProcessStepService.calculateDateRequirement(r)).isFalse();
@@ -288,7 +320,7 @@ public class ProjectProcessStepServiceTests {
 
     // Check future date value
 
-    r.setDateValue(Timestamp.valueOf(today.plusDays(3).atStartOfDay()));
+    r.setDateValue(Timestamp.valueOf(today.plusDays(3)));
     r.setDataTypeRequirementId(1L);
     r.setOperatorTypeId(1L);
     assertThat(projectProcessStepService.calculateDateRequirement(r)).isFalse();
@@ -383,7 +415,7 @@ public class ProjectProcessStepServiceTests {
 
   @Test
   public void compareDateTimesTest() throws Exception {
-    LocalDateTime today = LocalDateTime.now();
+    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareDateTimes(null, today, 1L)).isFalse();
     assertThat(projectProcessStepService.compareDateTimes(null, today, 2L)).isTrue();
     assertThat(projectProcessStepService.compareDateTimes(null, today, 3L)).isFalse();
@@ -403,11 +435,32 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 2L)).isTrue();
     assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 3L)).isTrue();
     assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 4L)).isFalse();
+
+    ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
+    assertThat(projectProcessStepService.compareDateTimes(null, todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(null, todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(null, todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(null, todayMountain, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain, todayMountain, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain, todayMountain, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain, todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain, todayMountain, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.minusHours(1), todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.minusHours(1), todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.minusHours(1), todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.minusHours(1), todayMountain, 4L)).isTrue();
+
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.plusHours(1), todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.plusHours(1), todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.plusHours(1), todayMountain, 3L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(todayMountain.plusHours(1), todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void compareNullDateTimeTest() throws Exception {
-    LocalDateTime today = LocalDateTime.now();
+    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNullDateTime(null, 1L)).isTrue();
     assertThat(projectProcessStepService.compareNullDateTime(null, 2L)).isFalse();
     assertThat(projectProcessStepService.compareNullDateTime(null, 3L)).isFalse();
@@ -417,11 +470,17 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareNullDateTime(today, 2L)).isTrue();
     assertThat(projectProcessStepService.compareNullDateTime(today, 3L)).isFalse();
     assertThat(projectProcessStepService.compareNullDateTime(today, 4L)).isFalse();
+
+    ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
+    assertThat(projectProcessStepService.compareNullDateTime(todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDateTime(todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNullDateTime(todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDateTime(todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void compareNonNullDateTimeTest() throws Exception {
-    LocalDateTime today = LocalDateTime.now();
+    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNonNullDateTime(null, 1L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDateTime(null, 2L)).isTrue();
     assertThat(projectProcessStepService.compareNonNullDateTime(null, 3L)).isFalse();
@@ -431,11 +490,17 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareNonNullDateTime(today, 2L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDateTime(today, 3L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDateTime(today, 4L)).isFalse();
+
+    ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
+    assertThat(projectProcessStepService.compareNonNullDateTime(todayMountain, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNonNullDateTime(todayMountain, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDateTime(todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDateTime(todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void calculateTimestampRequirementTest() throws Exception {
-    LocalDateTime today = LocalDateTime.now();
+    LocalDateTime today = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
     ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.timestamp"), new TypeReference<ProjectProcessStepRequirement>(){});
     r.setDataTypeId(2L);
     r.setSecondaryRequirementValue("1");

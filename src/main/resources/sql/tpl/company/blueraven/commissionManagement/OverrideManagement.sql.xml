@@ -35,7 +35,7 @@
   <overridePlan.clone><![CDATA[
     SELECT clone_override_plan AS id
     FROM brs.clone_override_plan(
-    :planId::int, :startDate:: DATE, :assignedUsers::int[], :receivingUsers::int[], :createdBy::int, :userId::int)
+    :planId::int, :startDate:: DATE, :assignedUsers::int[], :receivingUsers::int[], :createdBy::int, :userId::int, :positionId::int)
     ]]></overridePlan.clone>
 
   <overridePlan.getPlanStatus><![CDATA[
@@ -227,6 +227,7 @@
           LEFT JOIN brs.override_plan_assigned_user au ON op.id = au.override_plan_id
         where case when :excludeInactive is true then
           op.status_id != 3 else 1=1 end
+          and op.position_id = :positionId
         GROUP BY op.id, op.name, op.description, op.total, ops.status_type
         ORDER BY op.name
      ) t

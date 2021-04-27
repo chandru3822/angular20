@@ -140,7 +140,7 @@ public class SmartlistService {
                     field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
                 }
             } else if (field.getCompanySystemListId() != null) {
-                field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds(), field.getCompanyId()));
+              field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds(), field.getCompanyId()));
             }
         }
 
@@ -454,7 +454,9 @@ public class SmartlistService {
     // Get smartlist system lists
     withClause.append(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
     withClause.append(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -538,46 +540,54 @@ public class SmartlistService {
 
         final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
-        if (f.getSmartlistSystemListId() == 1 || f.getSmartlistSystemListId() == 3) {
+        if (List.of(1L, 3L, 5L).contains(f.getSmartlistSystemListId())) {
           location = String.format("(select name from \"%s\" where \"%s\".id = %s.%s)", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn());
-        } else if (f.getSmartlistSystemListId() == 2) {
+        } else if (f.getSmartlistSystemListId() == 2 || f.getSmartlistSystemListId() == 4) {
 
-          if (smartlist.getObjectTypeId() == 4) {
-            location = String.format("(" +
-              "select name " +
-              "from \"%s\" " +
-              "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
-              "where \"%s\".id = cpsst.process_step_status_type_id)", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable);
-          } else {
-            String ppsTable;
+//          if (smartlist.getObjectTypeId() == 4) {
+//            location = String.format("(" +
+//              "select name " +
+//              "from \"%s\" " +
+//              "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
+//              "where \"%s\".id = cpsst.process_step_status_type_id)", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable);
+//          } else {
+          String ppsTable;
 
-            try {
-              ppsTable = joinTables.stream()
-                .filter(t -> t.getProcessStepId() != null && f.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
-                .map(t -> {
-                  if (t.getPpsTable() != null) {
-                    return t.getPpsTable();
-                  } else {
-                    return t.getValueReferenceTable();
-                  }
-                })
-                .findFirst()
-                .orElse(null);
+          try {
+            ppsTable = joinTables.stream()
+              .filter(t -> t.getProcessStepId() != null && f.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
+              .map(t -> {
+                if (t.getPpsTable() != null) {
+                  return t.getPpsTable();
+                } else {
+                  return t.getValueReferenceTable();
+                }
+              })
+              .findFirst()
+              .orElse(null);
 
-              if (ppsTable == null) {
-                ppsTable = UUID.randomUUID().toString();
-              }
-            } catch (NullPointerException e) {
+            if (ppsTable == null) {
               ppsTable = UUID.randomUUID().toString();
             }
+          } catch (NullPointerException e) {
+            ppsTable = UUID.randomUUID().toString();
+          }
 
+          if (f.getSmartlistSystemListId() == 2) {
             location = String.format("(" +
               "select name " +
               "from \"%s\" " +
-              "left join flow.company_process_step_status_type cpsst on cpsst.id = \"%s\".%s " +
-              "where \"%s\".id = cpsst.process_step_status_type_id)", smartlistSystemListTable, ppsTable, f.getJoinColumn(), smartlistSystemListTable);
+              "inner join %s cpsst on cpsst.id = \"%s\".%s " +
+              "where \"%s\".id = cpsst.id)", smartlistSystemListTable, f.getJoinTable(), ppsTable, f.getJoinColumn(), smartlistSystemListTable);
+          } else {
+            location = String.format("(" +
+              "select name " +
+              "from \"%s\" " +
+              "inner join %s cpsst on cpsst.id = \"%s\".%s " +
+              "where \"%s\".id = cpsst.process_step_status_type_id)", smartlistSystemListTable, f.getJoinTable(), ppsTable, f.getJoinColumn(), smartlistSystemListTable);
           }
         }
+//        }
       }
       // If field is custom, else it's system
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
@@ -608,7 +618,7 @@ public class SmartlistService {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
       } else if(f.getDataTypeId() == 2) {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
-      } else if (f.getDataTypeId() == 7) {
+      } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
           query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
           final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
@@ -648,6 +658,7 @@ public class SmartlistService {
       case 1:
         query.append(" from flow.project ");
         query.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id ");
+        query.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id ");
         query.append(" left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
         query.append(" left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
         query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
@@ -805,13 +816,13 @@ public class SmartlistService {
             String referenceTable = "";
             final String smartlistSystemListTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
 
-            if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
+            if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
               if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::int, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
                 referenceTable = UUID.randomUUID().toString();
                 final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
               }
-            } else if (r.getSmartlistSystemListId() == 2) {
+            } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
               String joinTable;
               try {
                 joinTable = joinTables.stream()
@@ -840,14 +851,16 @@ public class SmartlistService {
                 }
               }
 
-              final String tempCpsst = UUID.randomUUID().toString();
-              additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id ", tempCpsst, tempCpsst, joinTable));
-
               referenceTable = UUID.randomUUID().toString();
-              final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", 2, r.getCompanyId());
-              additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = \"%s\".process_step_status_type_id ", subquery, referenceTable, referenceTable, tempCpsst));
+              additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id ", referenceTable, referenceTable, joinTable));
+
+              if (r.getSmartlistSystemListId() == 4) {
+                final String newReferenceTable = UUID.randomUUID().toString();
+                additionalJoins.append(String.format(" left join flow.process_step_status_type \"%s\" on \"%s\".id = \"%s\".process_step_status_type_id ", newReferenceTable, newReferenceTable, referenceTable));
+                referenceTable = newReferenceTable;
+              }
             }
-            referenceLocation = String.format("\"%s\".id", referenceTable);
+            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
@@ -1082,6 +1095,8 @@ public class SmartlistService {
     query.append("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
     query.append("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
     query.append("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
+    query.append("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
+    query.append("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -1122,9 +1137,9 @@ public class SmartlistService {
 
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system list
-        if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
-          referenceLocation = String.format("%s.%s", r.getJoinTable(), r.getJoinColumn());
-        } else if (r.getSmartlistSystemListId() == 2) {
+        if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
+          referenceLocation = (r.getSmartlistSystemListId() == 1) ? String.format("%s.%s", r.getJoinTable(), r.getJoinColumn()) : String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
+        } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
           if (r.getPpsTable() == null) {
@@ -1136,7 +1151,8 @@ public class SmartlistService {
           }
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
-          referenceLocation = String.format("\"%s\".process_step_status_type_id", processStepStatusTable);
+          final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist field
@@ -1286,14 +1302,22 @@ public class SmartlistService {
         if (f.getSmartlistSystemListId() != null) {
           final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
-          if (f.getSmartlistSystemListId() == 1 || f.getSmartlistSystemListId() == 3) {
+          if (List.of(1L, 3L, 5L).contains(f.getSmartlistSystemListId())) {
             selectFields.append(String.format("(select name from \"%s\" where \"%s\".id = %s.%s) as \"%s\", ", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn(), f.getId()));
-          } else if (f.getSmartlistSystemListId() == 2) {
-            selectFields.append(String.format("(" +
-              "select name " +
-              "from \"%s\" " +
-              "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
-              "where \"%s\".id = cpsst.process_step_status_type_id) as \"%s\", ", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable, f.getId()));
+          } else if (f.getSmartlistSystemListId() == 2 || f.getSmartlistSystemListId() == 4) {
+            if (f.getSmartlistSystemListId() == 2) {
+              selectFields.append(String.format("(" +
+                "select name " +
+                "from \"%s\" " +
+                "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
+                "where \"%s\".id = cpsst.id) as \"%s\", ", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable, f.getId()));
+            } else {
+              selectFields.append(String.format("(" +
+                "select name " +
+                "from \"%s\" " +
+                "inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.%s " +
+                "where \"%s\".id = cpsst.process_step_status_type_id) as \"%s\", ", smartlistSystemListTable, f.getJoinColumn(), smartlistSystemListTable, f.getId()));
+            }
           }
 
         } else if (f.getProcessStepId() != null) {
@@ -1363,8 +1387,11 @@ public class SmartlistService {
 
       fromClause.append(" flow.project_process_step ");
       fromClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
+      fromClause.append(" inner join flow.process_step_status_type on flow.process_step_status_type.id = flow.company_process_step_status_type.process_step_status_type_id");
       fromClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
       fromClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
+      fromClause.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id");
+      fromClause.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id");
       fromClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
       fromClause.append(" inner join \"projects\" on \"projects\".id = flow.project_process_step.project_id");
 
@@ -1444,10 +1471,15 @@ public class SmartlistService {
 
         if (r.getSmartlistSystemListId() != null) {
           //smartlist system list
-          if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
+          if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
             referenceLocation = String.format("%s.%s", r.getJoinTable(), r.getJoinColumn());
           } else if (r.getSmartlistSystemListId() == 2) {
+            referenceLocation = "flow.company_process_step_status_type.id";
+          } else if (r.getSmartlistSystemListId() == 4) {
             referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
+          }
+          if (r.getSmartlistSystemListId() != 1) {
+            referenceLocation = String.format("array[%s]::int[]", referenceLocation);
           }
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist field

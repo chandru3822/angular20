@@ -60,12 +60,20 @@
       this.viewSummary()
       this.getCurrentPayroll()
     },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        this.viewSummary()
+        this.getCurrentPayroll()
+      }
+    },
     data() {
       return {
         snackbar: {},
         payrollSummary: [],
         currentPayroll: {},
         dataLoading: false,
+        positionId: this.$store.state.brs.commissionPositionId,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 500],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -83,7 +91,7 @@
       async getCurrentPayroll () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/current`, 'blueraven')
+          const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
           this.currentPayroll = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -97,7 +105,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/payroll/current/summary`, 'blueraven')
+          const {data} = await getRequest(`/payroll/current/summary/${this.positionId}`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

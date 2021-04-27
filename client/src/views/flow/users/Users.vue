@@ -175,10 +175,11 @@
                 </v-autocomplete>
                 <v-checkbox v-else-if="header.selectFilter" v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
                 <v-text-field outlined
-                              v-else
+                              v-else-if="header.value !== 'phoneExtension'"
                               hide-details
                               class="filter-input"
                     v-model="filters[header.value]" @input="debounceGetUsers"></v-text-field>
+                <div v-else style="height: 35px;"></div>
               </th>
             </tr>
             </thead>
@@ -193,6 +194,7 @@
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.lastName}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.email}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneNumber}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneExtension}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.userStatusType}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.position || 'N/A'}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable" v-for="(f, index) in orgFilters" :key="index">
@@ -362,6 +364,7 @@
           { text: 'Last Name', value: 'lastName', show: true, width: '125px' },
           { text: 'Email', value: 'email', show: true, width: '275px' },
           { text: 'Phone', value: 'phone', show: true, width: '115px' },
+          { text: 'Ext', value: 'phoneExtension', show: true, width: '75px' },
           { text: 'User Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
           { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
         ],
@@ -693,7 +696,7 @@
                 userIds = this.allUsers.map(u => u.id);
               }
               else {
-                userIds = this.users.filter(u => u.selected === true).map(u => u.id);
+                userIds = this.selectedUsers;
               }
 
               let params;

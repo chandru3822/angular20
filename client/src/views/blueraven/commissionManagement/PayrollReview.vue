@@ -89,8 +89,9 @@
         },
         payrollSummary: [],
         payrollStatus: {},
+        positionId: this.$store.state.brs.commissionPositionId,
         payrollId: this.$route.params.id,
-        headers: [
+        closerHeaders: [
           {text: 'Project ID', value: 'projectId', show: true},
           {text: 'Customer Name', value: 'customerName', show: true},
           {text: 'System Size (kW)', value: 'systemSize', show: true},
@@ -116,11 +117,43 @@
           {text: 'Remaining Value Overrides', value: 'remainingValueOverrides', show: true},
           {text: 'Current Pay', value: 'currentPay', show: true},
         ],
+        setterHeaders: [
+          // {text: 'Select For Pay', value: 'select', show: true},
+          {text: 'Project ID', value: 'project_id', show: true},
+          {text: 'Customer Name', value: 'project_name', show: true},
+          {text: 'Setter', value: 'sales_rep', show: true},
+          {text: 'Current Pay', value: 'current_pay', show: true},
+          {text: 'Source', value: 'source_name', show: true},
+          {text: 'Cancelled', value: 'cancelled_date', show: true},
+          {text: 'Appointment Date', value: 'closer_appointment_start', show: true},
+          {text: 'Appointment Outcome', value: 'closer_appointment_outcome', show: true},
+          {text: 'Commission Plan', value: 'commission_plan', show: true},
+          {text: 'Commissions Earned', value: 'commissions_earned', show: true},
+          {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
+          {text: 'Adjustment', value: 'commission_adjustment', width: 150, show: true},
+          {text: 'Commission Pay', value: 'current_pay_commissions', show: true},
+          {text: 'Override Plan', value: 'override_plan', show: true},
+          {text: 'Override Earned', value: 'override_earned', show: true},
+          {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
+          {text: 'Override Pay', value: 'current_pay_overrides', show: true},
+        ]
       }
     },
     created() {
       this.getPayroll()
       this.getPayrollSnapshot()
+    },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        //they can't switch between Setter/Closer while on an actual payroll
+        this.$router.push(`/commissionManagement/payroll`)
+      }
+    },
+    computed: {
+      headers() {
+        return this.positionId === 1 ? this.closerHeaders : this.setterHeaders
+      }
     },
     methods: {
       async getPayroll() {
@@ -141,7 +174,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/payroll/${this.payrollId}/snapshot`, 'blueraven')
+          const {data} = await getRequest(`/payroll/${this.payrollId}/snapshot/${this.positionId}`, 'blueraven')
           this.dataLoading = false
           this.payrollSnapshot = data
 
@@ -195,37 +228,66 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Payroll Review.csv'
-          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
-          csvData += '\n'
+          let csvData = ''
 
-          this.payrollSnapshot.forEach(p => {
-            csvData +=
-              p.projectId + ',' +
-              p.customerName + ',' +
-              p.systemSize + ',' +
-              p.salesRep + ',' +
-              p.source + ',' +
-              p.stage + ',' +
-              p.cancelled + ',' +
-              p.installAgreementSigned + ',' +
-              p.finalDesignSigned + ',' +
-              p.financialAgreementSent + ',' +
-              p.percentOfCashDeposit + ',' +
-              p.sc + ',' +
-              p.commissionPlan + ',' +
-              p.commissionsEarned + ',' +
-              p.commissionPaidToDate + ',' +
-              p.commissionAdjustment + ',' +
-              p.currentPayCommissions + ',' +
-              p.remainingValueCommissions + ',' +
-              p.overridePlan + ',' +
-              p.overrideEarned + ',' +
-              p.overridesPaidToDate + ',' +
-              p.currentPayOverrides + ',' +
-              p.remainingValueOverrides + ',' +
-              p.currentPay
-            csvData += '\n';
-          })
+          if(this.payroll.positionId === 1) {
+            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+            csvData += '\n'
+
+            this.payrollSnapshot.forEach(p => {
+              csvData +=
+                p.projectId + ',' +
+                p.customerName + ',' +
+                p.systemSize + ',' +
+                p.salesRep + ',' +
+                p.source + ',' +
+                p.stage + ',' +
+                p.cancelled + ',' +
+                p.installAgreementSigned + ',' +
+                p.finalDesignSigned + ',' +
+                p.financialAgreementSent + ',' +
+                p.percentOfCashDeposit + ',' +
+                p.sc + ',' +
+                p.commissionPlan + ',' +
+                p.commissionsEarned + ',' +
+                p.commissionPaidToDate + ',' +
+                p.commissionAdjustment + ',' +
+                p.currentPayCommissions + ',' +
+                p.remainingValueCommissions + ',' +
+                p.overridePlan + ',' +
+                p.overrideEarned + ',' +
+                p.overridesPaidToDate + ',' +
+                p.currentPayOverrides + ',' +
+                p.remainingValueOverrides + ',' +
+                p.currentPay
+              csvData += '\n';
+            })
+          } else {
+            csvData += 'Project ID,Customer Name,Setter,Current Pay,Source,Cancelled,Appointment Date,Appointment Outcome,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Override Plan,Override Earned,Overrides Paid to Date,Override Pay'
+            csvData += '\n'
+
+            this.payrollSnapshot.forEach(p => {
+              csvData +=
+                p.project_id + ',' +
+                p.project_name + ',' +
+                p.sales_rep + ',' +
+                p.current_pay + ',' +
+                p.source_name + ',' +
+                p.cancelled + ',' +
+                p.closer_appointment_start + ',' +
+                p.closer_appointment_outcome + ',' +
+                p.commission_plan + ',' +
+                p.commissions_earned + ',' +
+                p.commission_paid_to_date + ',' +
+                p.commission_adjustment + ',' +
+                p.current_pay_commissions + ',' +
+                p.override_plan + ',' +
+                p.override_earned + ',' +
+                p.overrides_paid_to_date + ',' +
+                p.current_pay_overrides
+              csvData += '\n';
+            })
+          }
 
           let blob = new Blob([csvData], {
             type: 'text/csv;charset=utf-8'

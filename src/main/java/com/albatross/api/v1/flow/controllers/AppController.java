@@ -19,38 +19,49 @@ import java.util.List;
 public class AppController {
 
 
-    private final AppService appService;
+  private final AppService appService;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<AppAttachment> getApps() {
-        return appService.getAttachmentsByType(AttachmentType.APP_DOWNLOAD.id);
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AppAttachment> getApps() {
+    return appService.getAttachmentsByType(AttachmentType.APP_DOWNLOAD.id);
+  }
+
+  @GetMapping(value="/{appTypeId}/minVersion", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Long getMinVersionForType(@PathVariable Long appTypeId) {
+    return appService.getMinVersionForType(appTypeId);
+  }
+
+  @PutMapping(value="/{appTypeId}/minVersion", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveMinVersionForType(@PathVariable Long appTypeId,
+                                    @RequestParam Long minVersion) {
+    appService.saveMinVersionForType(appTypeId, minVersion);
+  }
+
+  @GetMapping(value = "/latest/{appTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public AppAttachment getLastestBuild(@PathVariable Long appTypeId) {
+    if (appTypeId == 2) {
+      appTypeId = 1L;
+    } else if (appTypeId == 4) {
+      appTypeId = 3L;
     }
+    return appService.getLatestAppByAppTypeIdAndType(appTypeId, AttachmentType.APP_DOWNLOAD.id);
+  }
 
-    @GetMapping(value = "/latest/{appTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public AppAttachment getLastestBuild(@PathVariable Long appTypeId) {
-        if(appTypeId == 2) {
-            appTypeId = 1L;
-        } else if(appTypeId == 4) {
-            appTypeId = 3L;
-        }
-        return appService.getLatestAppByAppTypeIdAndType(appTypeId, AttachmentType.APP_DOWNLOAD.id);
-    }
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteApp(@PathVariable Long id) {
+    appService.delete(id);
+  }
 
-    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteApp(@PathVariable Long id) {
-        appService.delete(id);
-    }
+  @PutMapping(value = "/show", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void getApps(@RequestBody AppAttachment attachment) {
+    appService.showOrHideAttachment(attachment);
+  }
 
-    @PutMapping(value = "/show", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void getApps(@RequestBody AppAttachment attachment) {
-        appService.showOrHideAttachment(attachment);
-    }
+  @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
+  public AppAttachment uploadDocument(@RequestBody AppAttachment appAttachment) throws IOException {
 
-    @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
-    public AppAttachment uploadDocument(@RequestBody AppAttachment appAttachment) throws IOException {
+    AppAttachment newRecord = appService.insertAttachmentRecord(appAttachment);
 
-        AppAttachment newRecord = appService.insertAttachmentRecord(appAttachment);
-
-        return newRecord;
-    }
+    return newRecord;
+  }
 }
