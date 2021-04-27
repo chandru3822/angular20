@@ -584,6 +584,7 @@
         let params = {
           receivingUsers: this.cloneOverridePlan.receivingUsers.filter(r => r.selected).map(r => r.userId),
           assignedUsers: this.cloneOverridePlan.assignedUsers.filter(r => r.selected).map(r => r.userId),
+          positionId: this.cloneOverridePlan.positionId,
           userId: this.userId,
           backdateApprovalCreds: null,
         }

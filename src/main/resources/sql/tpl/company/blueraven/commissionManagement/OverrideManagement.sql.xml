@@ -181,6 +181,7 @@
           op.id,
           op.name,
           op.description,
+          op.position_id as "positionId",
           op.total,
           ops.status_type AS status,
           count(au.*)
