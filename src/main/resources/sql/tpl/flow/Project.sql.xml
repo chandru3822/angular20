@@ -282,6 +282,7 @@
       a.size,
       a.date_created,
       a.date_modified,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.filename,
       a.attachment_type_id,
       a.content_type,
