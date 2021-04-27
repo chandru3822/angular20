@@ -127,7 +127,7 @@ export default {
   created () {
     //todo: use only for testing
     if(VUE_APP_ENV === 'local') {
-      this.setFakeContact()
+      // this.setFakeContact()
     }
     this.getCompanyStates()
     this.getCountries()
@@ -177,6 +177,9 @@ export default {
       try {
         const {data} = await getCountries(parseInt(this.companyId))
         this.countries = data
+        if(this.countries?.length === 1) {
+          this.contact.companyCountryId = this.countries[0].id
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
