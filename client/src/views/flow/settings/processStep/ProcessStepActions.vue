@@ -1159,7 +1159,10 @@
                     </v-btn>
                   </v-card>
                   <v-divider></v-divider>
-                  <v-btn v-if="userCanEdit" @click="updateAction(item)" class="mt-4 ml-3">
+                  <div v-if="actionLogicError" class="error-text ml-3 mt-3">
+                    <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
+                  </div>
+                  <v-btn v-if="userCanEdit" @click="validateActionLogicString(item, true)" class="mt-4 ml-3">
                     <v-icon class="mr-2">save</v-icon>
                     Save Changes
                   </v-btn>
@@ -1179,7 +1182,7 @@
                   <td class="text-left">{{item.projectStatusType || 'N/A'}}</td>
                   <td>
                     <div style="display: flex; float: right;">
-                      <v-btn small text @click="[actionExpanded = [item], selectedActionIndex = index]"
+                      <v-btn small text @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                              v-if="!actionExpanded.includes(item)">
                         <v-icon>edit</v-icon>
                       </v-btn>
@@ -1361,6 +1364,8 @@
         ],
         addChildProcess: false,
         addChildFunction: false,
+        actionLogicError: false,
+        actionLogicErrorMsg: '',
         newChildProcessStep: {},
         cancelledCompanyStatuses: [],
         activeStatusesAssignedToStep: [],
@@ -1371,7 +1376,27 @@
         childFunctions: [],
         addChildLink: false,
         selectedLink: {},
-        availableLinks: []
+        availableLinks: [],
+
+        //action logic string stuff
+        invalidTypeCombos: [
+          '1,2', // open and close paren next to each other
+          '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
+          '0,0', // two requirements right next to each other
+          '3,4', // AND OR next to each other
+          '1,3', // open paren then AND
+          '1,4', // open paren then OR
+          '5,2', // not then close paren
+          '5,3', // not then and
+          '5,4', // not then or
+          '3,3', // and and
+          '4,4', // or or
+          '5,5', // not not
+          '0,5', // requirement then not ...needs and/or in between
+        ],
+        //doing these as strings since the filtered list will be too
+        invalidFirsts: ['2', '3', '4'],
+        invalidLasts: ['1', '3', '4', '5']
       }
     },
     computed: {},
@@ -2122,6 +2147,46 @@
             this.loadDataTypeRequirements(dataTypeToUse)
           }
         }
+      },
+      validateActionLogicString (item, saveChanges) {
+        // using 0 to represent a logic item using a requirement
+        // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
+
+        //filter the logic list to exclude any archived
+        let nonArchivedLogic = item.processStepLogicList.filter(l => !l.archived)
+
+        //compare number of open vs closing paren (probably not a perfect check but catches a lot)
+        let countOpenParen = nonArchivedLogic?.filter(l => l.operationTypeId === 1)?.length
+        let countCloseParen = nonArchivedLogic?.filter(l => l.operationTypeId === 2)?.length
+
+        // turn the operation type ids into a string we can compare to invalid sequences
+        let operationTypeString = nonArchivedLogic?.map(l => l.operationTypeId ?? 0).toString()
+
+        // get the first and last operations to compare to invalid first and last options
+        let firstOperationTypeId = operationTypeString.charAt(0)
+        let lastOperationTypeId = operationTypeString.slice(-1)
+
+        if(countOpenParen !== countCloseParen) {
+          this.actionLogicError = true
+          this.actionLogicErrorMsg = 'Logic is missing opening or closing parenthesis.'
+        } else if ( this.invalidTypeCombos.some(v => operationTypeString.includes(v)) ) {
+          this.actionLogicError = true
+          this.actionLogicErrorMsg = 'Logic is invalid.'
+        } else if ( this.invalidFirsts.includes(firstOperationTypeId) ) {
+          this.actionLogicError = true
+          this.actionLogicErrorMsg = 'Invalid first logic operation.'
+        } else if ( this.invalidLasts.includes(lastOperationTypeId) ) {
+          this.actionLogicError = true
+          this.actionLogicErrorMsg = 'Invalid last logic operation.'
+        } else {
+          this.actionLogicError = false
+          this.actionLogicErrorMsg = ''
+          if(saveChanges) {
+            this.updateAction(item)
+          }
+        }
+
+
       }
     }
 
