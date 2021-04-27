@@ -12,7 +12,7 @@ BEGIN
                                        primary_flag, start_date, end_date, archived, company_state_id,
                                        user_archived, position_schedulable, position_scheduler,
                                        position, position_id, user_position_id, company_id, email,
-                                       phone_number, available_to_children,
+                                       phone_number, phone_extension, available_to_children,
                                        user_status_type_id, has_access)
         (select u.id                             as user_id,
                 u.first_name,
@@ -35,6 +35,7 @@ BEGIN
                 p.company_id                     as company_id,
                 u.email,
                 u.phone_number,
+                u.phone_extension,
                 p.available_to_children,
                 (select ust.id
                  from flow.company_user_status cus

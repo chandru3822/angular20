@@ -33,7 +33,8 @@ select u.id                                      as user_id,
               and cus.user_id = u.id
               and cus.archived is not true) as has_access,
        p.scheduler                             as position_scheduler,
-       o.company_state_id
+       o.company_state_id,
+       u.phone_extension
 from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id

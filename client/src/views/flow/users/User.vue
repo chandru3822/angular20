@@ -10,7 +10,8 @@
         </v-card-title>
 
         <v-card-text class="pt-4">
-          You have unsaved fields.  Are you sure you want to continue without saving?
+          You have unsaved {{getDirtyText()}}. <br/>
+          Are you sure you want to continue without saving?
         </v-card-text>
 
         <v-divider></v-divider>
@@ -133,6 +134,8 @@
         companyId: this.$store.state.user.details.companyId,
         userImage: {},
         unsavedFieldsModal: false,
+        hasDirtyFields: false,
+        hasDirtyNotes: false,
         toPath: null,
         navigationOverride: false,
         loadComplete: false,
@@ -149,11 +152,15 @@
       // called when the route that renders this component is about to
       // be navigated away from.
       // has access to `this` component instance.
-      let hasDirtyFields = false
       if(typeof this.$refs.userRouterViewContainer?.hasDirtyFields === 'function') {
-        hasDirtyFields = this.$refs.userRouterViewContainer.hasDirtyFields()
+        this.hasDirtyFields = this.$refs.userRouterViewContainer.hasDirtyFields()
       }
-      if (this.navigationOverride || !hasDirtyFields) {
+
+      if(typeof this.$refs.userRouterViewContainer?.hasDirtyNotes === 'function') {
+        this.hasDirtyNotes = this.$refs.userRouterViewContainer.hasDirtyNotes()
+      }
+
+      if (this.navigationOverride || (!this.hasDirtyFields && !this.hasDirtyNotes)) {
         //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
         next()
       } else {
@@ -162,6 +169,10 @@
       }
     },
     methods: {
+      getDirtyText() {
+        return this.hasDirtyNotes && this.hasDirtyFields ?
+          'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
+      },
       goToPath(path) {
         this.$router.push(path)
       },

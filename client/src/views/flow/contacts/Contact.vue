@@ -10,7 +10,8 @@
         </v-card-title>
 
         <v-card-text class="pt-4">
-          You have unsaved fields.  Are you sure you want to continue without saving?
+          You have unsaved {{getDirtyText()}}. <br/>
+          Are you sure you want to continue without saving?
         </v-card-text>
 
         <v-divider></v-divider>
@@ -182,6 +183,15 @@
                         item-text="state"
                         item-value="id"
               ></v-select>
+              <v-select v-model="contact.companyCountryId"
+                        :items="countries"
+                        label="Country"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        @change="[addressChanged = true, dirtySystemFields = true]"
+                        item-text="country"
+                        item-value="id"
+              ></v-select>
               <v-text-field text
                             label="Zip"
                             type="text"
@@ -279,7 +289,7 @@
         </div>
       </v-col>
       <v-col cols="12" md="6" class="text-left">
-        <NotesAndActivity :showNotes="true" :showActivity="false"
+        <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(contactId)"
                           type="Contact"
         ></NotesAndActivity>
@@ -312,6 +322,7 @@ import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, isNumberOrHyphen, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
+import {getCountries} from '@/services/countryService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
 
@@ -326,6 +337,7 @@ export default {
     return {
       snackbar: {},
       states: [],
+      countries: [],
       contact: {},
       postalCodeRules: constants.POSTAL_CODE_RULES,
       cityRules: constants.CITY_RULES,
@@ -342,6 +354,7 @@ export default {
       navigationOverride: false,
       notes: [],
       fieldsSaving: false,
+      hasDirtyNotes: false,
       dirtyCfvs: [],
       dirtySystemFields: false,
       owners: [],
@@ -366,6 +379,7 @@ export default {
   created () {
     this.getContact()
     this.getCompanyStates()
+    this.getCountries()
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
@@ -374,7 +388,8 @@ export default {
     // called when the route that renders this component is about to
     // be navigated away from.
     // has access to `this` component instance.
-    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields)) {
+    this.hasDirtyNotes = this.$refs.notes.hasUnsavedNotes()
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields && !this.hasDirtyNotes)) {
       //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
       next()
     } else {
@@ -383,6 +398,10 @@ export default {
     }
   },
   methods: {
+    getDirtyText() {
+      return this.hasDirtyNotes && (this.dirtyCfvs.length > 0 || this.dirtySystemFields) ?
+        'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
+    },
     goToPath(path) {
       this.$router.push(path)
     },
@@ -559,6 +578,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCountries () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCountries(parseInt(this.companyId))
+        this.countries = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

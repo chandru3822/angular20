@@ -121,6 +121,7 @@ public class UserService {
     params.put("firstName", user.getFirstName());
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
+    params.put("phoneExtension", user.getPhoneExtension());
     params.put("email", user.getEmail());
     params.put("notificationTypeId", user.getNotificationTypeId());
     params.put("username", user.getUsername());
