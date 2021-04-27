@@ -51,4 +51,4 @@ HELP.md
 src/main/resources/application-local.properties
 src/main/resources/application-local-flux.properties
 src/main/resources/application-local-prod.properties
-src/main/resources/local-fw-file-placeholder.sql
+src/main/resources/zz_local/**
