@@ -75,6 +75,16 @@ export async function postRequest(path, body, companyAbbreviation) {
   }
 }
 
+export async function postRequestWithRequestParams(path, body, params, companyAbbreviation) {
+  const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
+  try {
+    const {data, status} = await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params})
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 export async function putRequest(path, body, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {

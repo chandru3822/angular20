@@ -760,7 +760,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
+  import {getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
 
   export default {
     name: 'Commission',
@@ -1104,7 +1104,7 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, 'blueraven')
+          const {data} = await postRequestWithRequestParams(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, { addUserToPlan: true }, 'blueraven')
           this.commission.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
