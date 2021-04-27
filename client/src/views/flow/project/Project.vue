@@ -10,7 +10,8 @@
         </v-card-title>
 
         <v-card-text class="pt-4">
-          You have unsaved fields.  Are you sure you want to continue without saving?
+          You have unsaved {{getDirtyText()}}. <br/>
+          Are you sure you want to continue without saving?
         </v-card-text>
 
         <v-divider></v-divider>
@@ -199,7 +200,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <ActiveProcessSteps v-if="secondaryTab === 1" :project="project"></ActiveProcessSteps>
-          <ProjectNotes v-if="secondaryTab === 2"></ProjectNotes>
+          <ProjectNotes ref="projectNotes" v-if="secondaryTab === 2"></ProjectNotes>
           <Messaging v-if="secondaryTab === 3" :primaryId="parseInt(projectId)"/>
         </v-col>
       </v-row>
@@ -269,6 +270,8 @@
         unsavedFieldsModal: false,
         toPath: null,
         navigationOverride: false,
+        hasDirtyNotes: false,
+        dirtyFieldsCount: null,
         countries: [],
         projectLoading: true,
         breadcrumbs: [
@@ -288,8 +291,13 @@
     },
     beforeRouteLeave (to, from, next) {
       // has to get the dirty fields count from the child component then do the route nav protection here in the parent
-      let dirtyFieldsCount = this.$refs.projectDetails.getDirtyFieldsCount()
-      if (this.navigationOverride || dirtyFieldsCount === 0) {
+      this.dirtyFieldsCount = this.$refs.projectDetails.getDirtyFieldsCount()
+
+      if(typeof this.$refs.projectNotes?.hasDirtyNotes === 'function') {
+        this.hasDirtyNotes = this.$refs.projectNotes.hasDirtyNotes()
+      }
+
+      if (this.navigationOverride || (this.dirtyFieldsCount === 0 && !this.hasDirtyNotes)) {
         //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
         next()
       } else {
@@ -298,6 +306,10 @@
       }
     },
     methods: {
+      getDirtyText() {
+        return this.hasDirtyNotes && this.dirtyFieldsCount > 0 ?
+          'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
+      },
       goToPath(path) {
         this.$router.push(path)
       },

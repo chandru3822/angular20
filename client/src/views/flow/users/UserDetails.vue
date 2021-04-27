@@ -171,7 +171,7 @@
           </div>
         </v-col>
         <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
-          <NotesAndActivity :showNotes="true" :showActivity="false"
+          <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
                             :notes="notes" :primaryId="parseInt(userId)"
                             type="User"
           ></NotesAndActivity>
@@ -238,6 +238,9 @@
     methods: {
       hasDirtyFields() {
         return this.dirtyCfvs.length > 0 || this.dirtySystemFields
+      },
+      hasDirtyNotes() {
+        return this.$refs.notes.hasUnsavedNotes()
       },
       async saveUser() {
         let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
