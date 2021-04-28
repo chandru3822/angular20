@@ -22,8 +22,14 @@ export function getFileIcon(file) {
       return 'mdi-file-image'
     case 'csv':
     case 'xls':
+    case 'xlsb':
+    case 'xlsm':
     case 'xlsx':
       return 'mdi-file-table'
+    case 'dxf':
+    case 'dtf':
+    case 'dwg':
+      return 'mdi-file-cad'
     default: //basic file image
       return 'insert_drive_file'
   }

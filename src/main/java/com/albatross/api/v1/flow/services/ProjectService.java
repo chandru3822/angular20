@@ -267,7 +267,11 @@ public class ProjectService {
   public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
+    // Get project attachments
     List<Attachment> attachments = sqlCache.query("project.getAttachments", params, Attachment.class);
+    // Get project process step attachments
+    List<Attachment> ppsAttachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachmentsForProjectId", params, Attachment.class);
+    attachments.addAll(ppsAttachments);
     return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 

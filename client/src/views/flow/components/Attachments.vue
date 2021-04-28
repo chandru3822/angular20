@@ -22,10 +22,14 @@
         </v-col>
       </v-row>
       <v-row v-else>
-        <v-col cols="6" class="text-left py-0">
+        <v-col cols="4" class="text-left" pb-0>
           <v-btn @click="displayType = null">Back</v-btn>
         </v-col>
-        <v-col cols="6" class="py-0">
+        <v-col cols="3" class="text-left py-0">
+          <v-checkbox label="Show non-primary Documents"
+                      v-model="showNonPrimaryDocs"></v-checkbox>
+        </v-col>
+        <v-col cols="5" class="py-3">
             <v-file-input
               dense
               ref="fileInput"
@@ -87,7 +91,15 @@
                       v-model="item.editableName"
                     ></v-text-field>
                   </td>
-                  <td class="text-right">
+                  <td>
+                    <span class="text-center" v-if="item.projectProcessStepId != null">
+                      {{ item.processStepName }} - {{ item.projectProcessStepId }}<br/>
+                      <strong>Primary:</strong> {{ item.main ? 'Y' : 'N' }}<br/>
+                      <strong>Uploaded By:</strong> {{item.uploadedBy}}<br/>
+                      <strong>Uploaded Date: </strong>{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}<br/>
+                    </span>
+                  </td>
+                  <td class="text-right" v-if="projectProcessStepId == null && item.projectProcessStepId != null">
                     <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
                       <v-icon>edit</v-icon>
                     </v-btn>
@@ -170,6 +182,7 @@ export default {
         { text: null, value: 'filename', show: true },
         { text: null, value: 'icons', show: true },
       ],
+      showNonPrimaryDocs: false
     }
   },
   props: {
@@ -194,9 +207,14 @@ export default {
       if (this.displayType === null) {
         return []
       } else {
-        return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
+        if (this.showNonPrimaryDocs) {
+          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
+        }
+        else {
+          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.main)
+        }
       }
-    }
+    },
   },
   methods: {
     getIconForFile (item) {
