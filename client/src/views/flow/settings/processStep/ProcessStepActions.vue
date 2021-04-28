@@ -2153,23 +2153,40 @@
         // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
 
         //filter the logic list to exclude any archived
-        let nonArchivedLogic = item.processStepLogicList.filter(l => !l.archived)
+        let nonArchivedLogic = item.processStepLogicList?.filter(l => !l.archived)
 
         //compare number of open vs closing paren (probably not a perfect check but catches a lot)
         let countOpenParen = nonArchivedLogic?.filter(l => l.operationTypeId === 1)?.length
         let countCloseParen = nonArchivedLogic?.filter(l => l.operationTypeId === 2)?.length
 
+        //get the type ids so we can loop through them and count parens as we go
+        let operationTypeIds = nonArchivedLogic?.map(l => l.operationTypeId ?? 0)
+        let openCount = 0, closeCount = 0, parenProblem = false
+
+        //this part checks the parens more closely based on the order they appear in
+        operationTypeIds?.forEach(id => {
+          if(id === 1) {
+            openCount++
+          } else if (id === 2) {
+            closeCount++
+          }
+          //after each id, check if close > open. if so, there is a problem
+          if(closeCount > openCount) {
+            parenProblem = true
+          }
+        })
+
         // turn the operation type ids into a string we can compare to invalid sequences
-        let operationTypeString = nonArchivedLogic?.map(l => l.operationTypeId ?? 0).toString()
+        let operationTypeString = operationTypeIds?.toString()
 
         // get the first and last operations to compare to invalid first and last options
-        let firstOperationTypeId = operationTypeString.charAt(0)
-        let lastOperationTypeId = operationTypeString.slice(-1)
+        let firstOperationTypeId = operationTypeString?.charAt(0)
+        let lastOperationTypeId = operationTypeString?.slice(-1)
 
-        if(countOpenParen !== countCloseParen) {
+        if(countOpenParen !== countCloseParen || parenProblem) {
           this.actionLogicError = true
           this.actionLogicErrorMsg = 'Logic is missing opening or closing parenthesis.'
-        } else if ( this.invalidTypeCombos.some(v => operationTypeString.includes(v)) ) {
+        } else if ( this.invalidTypeCombos.some(v => operationTypeString?.includes(v)) ) {
           this.actionLogicError = true
           this.actionLogicErrorMsg = 'Logic is invalid.'
         } else if ( this.invalidFirsts.includes(firstOperationTypeId) ) {
