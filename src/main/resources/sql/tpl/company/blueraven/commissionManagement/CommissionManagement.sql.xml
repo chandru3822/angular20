@@ -793,7 +793,7 @@ FROM (SELECT cp.id,
     <commissionPlan.clone><![CDATA[
     SELECT clone_commission_plan AS id
     FROM brs.clone_commission_plan(
-    :planId::int, :startDate::DATE, :users::int[], :createdBy::int, :positionId::int)
+    :planId::int, :startDate::DATE, :users::int[], :createdBy::int)
     ]]></commissionPlan.clone>
 
     <commissionPlan.approve><![CDATA[

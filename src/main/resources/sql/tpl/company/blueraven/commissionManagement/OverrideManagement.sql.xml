@@ -35,7 +35,7 @@
   <overridePlan.clone><![CDATA[
     SELECT clone_override_plan AS id
     FROM brs.clone_override_plan(
-    :planId::int, :startDate:: DATE, :assignedUsers::int[], :receivingUsers::int[], :createdBy::int, :userId::int, :positionId::int)
+    :planId::int, :startDate:: DATE, :assignedUsers::int[], :receivingUsers::int[], :createdBy::int, :userId::int)
     ]]></overridePlan.clone>
 
   <overridePlan.getPlanStatus><![CDATA[

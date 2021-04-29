@@ -229,6 +229,7 @@ FROM (SELECT *
                         s.override_earned as "overrideEarned",
                         s.override_plan as "overridePlan",
                         s.override_plan_id as "overridePlanId",
+                        s.overrides_paid_to_date as "overridesPaidToDate",
                         s.payroll_id as "payrollId",
                         s.percent_of_cash_deposit as "percentOfCashDeposit",
                         s.remaining_value as "remainingValue",
