@@ -26,12 +26,7 @@ BEGIN
     where p.id = p_project_id
     limit 1;
 
-    RAISE NOTICE 'HI: %', v_timezone;
-
     EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';' ;
---     EXECUTE 'SET TIME ZONE || v_timezone || ''';' ;
---     set TimeZone = v_timezone;
---     set TimeZone = 'US/Central';
 
     create temp table excluded_appointments as (
         with user_ids as (
@@ -77,6 +72,7 @@ BEGIN
           and ((start_time between p_start_time and p_end_time
         or ra.end_time between p_start_time and p_end_time)
               or (ra.start_time < p_start_time and ra.end_time > p_end_time))
+
     );
 
     return query
@@ -123,7 +119,10 @@ BEGIN
                                          inner join flow.resource_slot_schedule rss on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
                                          inner join flow.resource_slot_time rst on rss.id = rst.resource_slot_schedule_id and rst.archived is false
                                          inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
-                                where p.id = p_project_id
+                                         left join flow.excluded_resource_slot_time erst on erst.resource_slot_time_id = rst.id and
+                                                                                            erst.resource_schedule_availability_id = rsa.id
+                                                                                            and erst.archived is false
+                                where p.id = p_project_id and erst.id is null
                                   and case when rs.end_date is not null then
                                                p_available_date::date between rs.start_date and rs.end_date
                                            else
