@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_total_overrides( p_payroll_id integer,p_project_ids bigint[],p_user_id integer)
+CREATE OR REPLACE FUNCTION brs.get_total_overrides( p_payroll_id integer,p_project_ids bigint[],p_user_id integer,p_position_id integer)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE
@@ -21,8 +21,9 @@ BEGIN
           inner join flow.project p on p.id = pcl.project_id
         WHERE pcl.project_id = any(p_project_ids)  and
               pcl.ledger_type_id = 3
-        and pcl.closer_id = p_user_id
+        and pcl.user_id = p_user_id
                    and  pcl.payroll_id < p_payroll_id
+          and pcl.position_id = p_position_id
 
       --  group by dcl.closer_id
 --         SELECT coalesce(sum(docs.total), 0)

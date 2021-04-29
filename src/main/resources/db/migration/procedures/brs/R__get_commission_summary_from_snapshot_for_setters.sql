@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION blueraven.get_commission_summary_from_snapshot(integer);
 
-CREATE OR REPLACE FUNCTION brs.get_commission_summary_from_snapshot(p_payroll_id INTEGER)
+CREATE OR REPLACE FUNCTION brs.get_commission_summary_from_snapshot_for_setters(p_payroll_id INTEGER)
   RETURNS  JSON AS
 $BODY$
 declare
@@ -28,13 +28,13 @@ BEGIN
                                             FROM brs.project_commission_ledger pcl
                                             WHERE ledger_type_id = 3
                                               AND pcl.user_id = u.id
-                                              and pcl.position_id = 1
+                                              and pcl.position_id = 4
                                               AND payroll_id = p_payroll_id
                                               AND project_id IN (SELECT project_id
-                                                              FROM brs.project_commission_snapshot dcs
+                                                              FROM brs.setter_project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
                                               AND pcl.user_id IN (SELECT sales_rep_id
-                                                                FROM brs.project_commission_snapshot dcs
+                                                                FROM brs.setter_project_commission_snapshot dcs
                                                                 WHERE dcs.payroll_id = p_payroll_id)), 0)
                                     -
                                   coalesce((SELECT sum(paid_to_date)
@@ -42,16 +42,16 @@ BEGIN
                                             WHERE ledger_type_id = 3
                                               AND payroll_id < p_payroll_id
                                               AND pcl2.user_id = u.id
-                                              and pcl2.position_id = 1
+                                              and pcl2.position_id = 4
                                               AND project_id IN (SELECT project_id
-                                                              FROM brs.project_commission_snapshot dcs
+                                                              FROM brs.setter_project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
                                               AND pcl2.user_id IN (SELECT sales_rep_id
-                                                                FROM brs.project_commission_snapshot dcs
+                                                                FROM brs.setter_project_commission_snapshot dcs
                                                                 WHERE dcs.payroll_id = p_payroll_id)), 0)
                                                                               AS total_overrides,
                                   sum(coalesce(dcs.commission_adjustment, 0))    total_adjustments
-                           FROM brs.project_commission_snapshot dcs
+                           FROM brs.setter_project_commission_snapshot dcs
                                   INNER JOIN flow.user u ON u.id = dcs.sales_rep_id
 --                                   left join lateral (select * from flow.get_value_for_custom_field(4 ,
 --                                                                                                    58,
@@ -78,31 +78,31 @@ BEGIN
                                             WHERE ledger_type_id = 3
                                               AND payroll_id = p_payroll_id
                                               AND pcl3.user_id = u.id
-                                              and pcl3.position_id = 1
+                                              and pcl3.position_id = 4
                                               AND project_id IN (SELECT project_id
-                                                              FROM brs.project_commission_snapshot dcs
+                                                              FROM brs.setter_project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
                                               AND pcl3.user_id NOT IN (SELECT sales_rep_id
-                                                                    FROM brs.project_commission_snapshot
+                                                                    FROM brs.setter_project_commission_snapshot
                                                                     WHERE payroll_id = p_payroll_id)), 0)
                                     -
                                   coalesce((SELECT sum(paid_to_date)
                                             FROM brs.project_commission_ledger pcl4
                                             WHERE ledger_type_id = 3
                                               AND pcl4.user_id = u.id
-                                              and pcl4.position_id = 1
+                                              and pcl4.position_id = 4
                                               AND payroll_id < p_payroll_id
                                               AND project_id IN (SELECT project_id
-                                                              FROM brs.project_commission_snapshot dcs
+                                                              FROM brs.setter_project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
                                               AND pcl4.user_id NOT IN (SELECT sales_rep_id
-                                                                    FROM brs.project_commission_snapshot
+                                                                    FROM brs.setter_project_commission_snapshot
                                                                     WHERE payroll_id = p_payroll_id)), 0)
                                     AS total_overrides,
                                   0    total_adjustments
-                           FROM brs.project_override_commission_snapshot docs
-                                  INNER JOIN brs.project_commission_snapshot dcs
-                                    ON dcs.id = docs.project_commission_snapshot_id
+                           FROM brs.setter_project_override_commission_snapshot docs
+                                  INNER JOIN brs.setter_project_commission_snapshot dcs
+                                    ON dcs.id = docs.setter_project_commission_snapshot_id
                                   INNER JOIN flow.user u ON u.id = docs.user_id
                                   INNER JOIN brs.project_commission_ledger dcl3 ON dcl3.project_id = dcs.project_id
 --                                   left join lateral (select * from flow.get_value_for_custom_field(4 ,
@@ -111,7 +111,7 @@ BEGIN
 --                                                                                                    4)as employee_id) as employee_id on true
                            WHERE dcs.payroll_id = p_payroll_id
                              AND docs.user_id NOT IN (SELECT sales_rep_id
-                                                      FROM brs.project_commission_snapshot dcs1
+                                                      FROM brs.setter_project_commission_snapshot dcs1
                                                       WHERE dcs1.payroll_id = p_payroll_id)
                          --                              AND dcs.deal_id IN (SELECT deal_id
                          --                                                  FROM blueraven.deal_commission_snapshot dcs1
@@ -138,7 +138,7 @@ BEGIN
                                                     INNER JOIN flow.project d5 ON d5.id = dcl5.project_id
                                              WHERE ledger_type_id = 3
                                                AND dcl5.user_id = u.id
-                                               and dcl5.position_id = 1
+                                               and dcl5.position_id = 4
                                                AND payroll_id = 0
                                                AND dcl5.project_id = d.id), 0))
                                     AS total_overrides,
@@ -148,16 +148,16 @@ BEGIN
                                   INNER JOIN flow.user u ON u.id = dcl3.user_id
                                   inner join brs.payroll p  on p.id = dcl3.payroll_id
                            WHERE dcl3.ledger_type_id = 3
-                             and dcl3.position_id = 1
+                             and dcl3.position_id = 4
                              AND dcl3.payroll_id = 0
                              AND d.id = any(p.selected_project_ids)
                              AND dcl3.user_id NOT IN (SELECT dcs1.user_id
                                                         FROM brs.project_commission_ledger dcs1
                                                         WHERE dcs1.payroll_id = p_payroll_id
                                                           AND dcs1.ledger_type_id = 3
-                                                          and dcs1.position_id = 1)
+                                                          and dcs1.position_id = 4)
                              AND u.id NOT IN (SELECT sales_rep_id
-                                              FROM brs.project_commission_snapshot dcs1
+                                              FROM brs.setter_project_commission_snapshot dcs1
                                               WHERE dcs1.payroll_id = p_payroll_id)
                            GROUP BY u.id, u.first_name, u.last_name--, employee_id.employee_id
                           , d.id

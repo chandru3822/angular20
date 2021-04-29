@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.insert_commissions_on_project(p_project_id integer)
+CREATE OR REPLACE FUNCTION brs.insert_setter_commission_on_project(p_project_id integer)
     RETURNS void
     LANGUAGE plpgsql
 AS
@@ -19,16 +19,16 @@ BEGIN
     select count(1)
     into v_override_plan_found
     from brs.project_override po
-    inner join brs.override_plan op on po.override_plan_id = op.id and op.position_id = 1
+    inner join brs.override_plan op on po.override_plan_id = op.id and op.position_id = 4
     where project_id = p_project_id;
 
     select count(1)
     into v_commission_plan_found
     from brs.project_commission pc
-    inner join brs.commission_plan cp on pc.commission_plan_id = cp.id and cp.position_id = 1
+    inner join brs.commission_plan cp on pc.commission_plan_id = cp.id and cp.position_id = 4
     where project_id = p_project_id;
 
-    select pd.closer_user_id
+    select pd.setter_user_id
     into v_user_id
     from brs.project_details pd
     where project_id = p_project_id;
@@ -49,7 +49,7 @@ BEGIN
               when opau.end_date is not null then
                   (now() AT TIME ZONE 'US/Mountain') <= opau.end_date
               else 1 = 1 end
-    and op.position_id = 1;
+    and op.position_id = 4;
 
     select cp.id
     into v_commission_plan_id
@@ -60,7 +60,7 @@ BEGIN
               when cpu.end_date is not null then
                   (now() AT TIME ZONE 'US/Mountain') <= cpu.end_date
               else 1 = 1 end
-    and cp.position_id = 1;
+    and cp.position_id = 4;
 
     --     select rp.id
 --     into v_residual_plan_id

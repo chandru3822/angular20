@@ -229,7 +229,7 @@
                         item-value="id"
               ></v-select>
               <v-text-field text
-                            label="Rate per kW ($)"
+                            :label="payRateText"
                             type="number"
                             :disabled="commission.id && commission.statusType !== 'PENDING'"
                             v-model.number="commission.total"></v-text-field>
@@ -800,6 +800,7 @@
       return {
         snackbar: {},
         cloneDialog: false,
+        payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         addUser: false,
         newUser: {},
         usersToAdd: [],
@@ -949,7 +950,7 @@
         //sum of m1 and m2 payment = rate per kw
         let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
         if(sum !== this.commission.total) {
-          this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
+          this.errorMessages.push(`The sum of all milestone payment amounts must equal the ${this.payRateText}. `)
         }
       },
       planHasActiveUsers () {
