@@ -900,7 +900,7 @@
         })
 
         if(!this.cloneDateError) {
-          this.clonePlan(commission.users, cloneStartDate)
+          this.clonePlan(this.commission.users, this.cloneStartDate)
           this.cloneDialog = false;
         }
       },
