@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION brs.create_payroll(
-  IN p_current_user INTEGER
+  IN p_current_user INTEGER,
+  in p_position_id integer
 )
   RETURNS BOOLEAN
 LANGUAGE plpgsql AS
@@ -8,10 +9,11 @@ BEGIN
 
   --   set any active to false
   UPDATE brs.payroll
-  SET current = FALSE;
+  SET current = FALSE
+  where position_id = p_position_id;
 
-  INSERT INTO brs.payroll (created, updated, created_by, updated_by, current)
-  VALUES (now(), now(), p_current_user, p_current_user, TRUE);
+  INSERT INTO brs.payroll (created, updated, created_by, updated_by, current,position_id)
+  VALUES (now(), now(), p_current_user, p_current_user, TRUE,p_position_id);
 
   RETURN TRUE;
 

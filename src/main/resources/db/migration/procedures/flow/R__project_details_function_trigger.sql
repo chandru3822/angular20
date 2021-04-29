@@ -15,8 +15,8 @@ declare
     v_closer_name                varchar;
     v_pd_closer_user_position_id integer;
     v_project_creator            varchar;
-    v_new_project_status_type_id    integer;
-    v_old_project_status_type_id    integer;
+    v_new_project_status_type_id integer;
+    v_old_project_status_type_id integer;
     v_cancelled_date             timestamp;
     v_on_hold_date               timestamp;
     v_off_hold_date              timestamp;
@@ -75,7 +75,7 @@ BEGIN
              inner join flow.company_project_status_type cpst on pst.id = cpst.project_status_type_id
     where cpst.id = old.company_project_status_type_id;
 
-    select on_hold_date,off_hold_date
+    select on_hold_date, off_hold_date
     into v_on_hold_date,v_off_hold_date
     from brs.project_details
     where project_id = new.id;
@@ -102,7 +102,7 @@ BEGIN
         update brs.project_details
         set cancelled_date = v_cancelled_date
         where project_id = new.id;
---         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+        --         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
 --         select 99999999,
 --                concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
 --                (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
@@ -119,7 +119,7 @@ BEGIN
         update brs.project_details
         set cancelled_date = v_cancelled_date
         where project_id = new.id;
---         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+        --         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
 --         select 99999999,
 --                concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
 --                (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
@@ -135,7 +135,7 @@ BEGIN
         v_on_hold_date = now();
         v_off_hold_date = null;
         update brs.project_details
-        set on_hold_date = v_on_hold_date,
+        set on_hold_date  = v_on_hold_date,
             off_hold_date = v_off_hold_date
         where project_id = new.id;
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 2 then
@@ -143,8 +143,8 @@ BEGIN
         v_off_hold_date = null;
         v_cancelled_date = null;
         update brs.project_details
-        set on_hold_date = v_on_hold_date,
-            off_hold_date = v_off_hold_date,
+        set on_hold_date   = v_on_hold_date,
+            off_hold_date  = v_off_hold_date,
             cancelled_date = v_cancelled_date
         where project_id = new.id;
     end if;
@@ -156,36 +156,36 @@ BEGIN
                                         project_time_zone, project_state_id, project_state_abbreviation, contact_name,
                                         setter_user_position_id, setter_user_id, closer_user_id,
                                         closer_user_position_id, closer_name,
-                                        project_creator, contact_id,project_created_date,
-                                        company_project_status_type_id,company_project_status_type)
+                                        project_creator, contact_id, project_created_date,
+                                        company_project_status_type_id, company_project_status_type)
         values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
                 new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
                 v_owner_user_position_id, v_owner_user_id, v_user_id,
                 coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
-                v_project_creator, new.contact_id,new.date_created,
-                new.company_project_status_type_id,v_company_project_status);
+                v_project_creator, new.contact_id, new.date_created,
+                new.company_project_status_type_id, v_company_project_status);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
-        set contact_email              = v_contact_email,
-            contact_phone              = v_contact_phone,
-            contact_mobile_phone       = v_contact_mobile_phone,
-            project_street1            = new.street1,
-            project_city               = new.city,
-            project_postal_code        = new.postal_code,
-            project_time_zone          = new.time_zone,
-            project_state_id           = v_state_id,
-            project_state_abbreviation = v_state_abbrev,
-            contact_name               = v_contact_name,
-            setter_user_position_id    = v_owner_user_position_id,
-            setter_user_id             = v_owner_user_id,
-            closer_name                = v_closer_name,
-            closer_user_position_id    = coalesce(new.user_position_id, v_pd_closer_user_position_id),
-            closer_user_id             = v_user_id,
-            project_creator            = v_project_creator,
-            contact_id                 = new.contact_id,
-            project_created_date       = new.date_created,
+        set contact_email                  = v_contact_email,
+            contact_phone                  = v_contact_phone,
+            contact_mobile_phone           = v_contact_mobile_phone,
+            project_street1                = new.street1,
+            project_city                   = new.city,
+            project_postal_code            = new.postal_code,
+            project_time_zone              = new.time_zone,
+            project_state_id               = v_state_id,
+            project_state_abbreviation     = v_state_abbrev,
+            contact_name                   = v_contact_name,
+            setter_user_position_id        = v_owner_user_position_id,
+            setter_user_id                 = v_owner_user_id,
+            closer_name                    = v_closer_name,
+            closer_user_position_id        = coalesce(new.user_position_id, v_pd_closer_user_position_id),
+            closer_user_id                 = v_user_id,
+            project_creator                = v_project_creator,
+            contact_id                     = new.contact_id,
+            project_created_date           = new.date_created,
             company_project_status_type_id = new.company_project_status_type_id,
-            company_project_status_type = v_company_project_status
+            company_project_status_type    = v_company_project_status
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
@@ -230,11 +230,11 @@ BEGIN
     select pps.project_id
     into v_project_id1
     from flow.project_process_step pps
-    inner join flow.process_step ps on pps.process_step_id = ps.id
+             inner join flow.process_step ps on pps.process_step_id = ps.id
     where pps.id = new.project_process_step_id;
 
 
-    select cf.field_name,cf.parent_custom_field_id
+    select cf.field_name, cf.parent_custom_field_id
     into v_field_name,v_parent_custom_field_id
     from flow.custom_field_group_assignment cfga
              inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
@@ -280,12 +280,23 @@ BEGIN
         end if;
 
         if new.int_value in (2, 1139, 1140) then
+
+            update brs.project_details
+            set setter_milestone_pay = coalesce(v_timestamp_value, now())
+            where project_id = v_project_id1
+             and setter_milestone_pay is null;
+
             update brs.project_details
             set first_appointment_pitched    = coalesce(v_timestamp_value, now()),
                 first_appointment_pitched_id = new.int_value
             where project_id = v_project_id1
               and first_appointment_pitched is null;
         elsif new.int_value in (3) then
+            update brs.project_details
+            set setter_milestone_pay = coalesce(v_timestamp_value, now())
+            where project_id = v_project_id1
+              and setter_milestone_pay is null;
+
             update brs.project_details
             set first_appointment_missed    = coalesce(v_timestamp_value, now()),
                 first_appointment_missed_id = new.int_value
@@ -302,7 +313,7 @@ BEGIN
     elsif v_parent_custom_field_id = 9958 and
           new.timestamp_value is not null then
         update brs.project_details
-        set first_appointment = new.timestamp_value,
+        set first_appointment        = new.timestamp_value,
             first_appointment_pps_id = new.project_process_step_id
         where project_id = v_project_id1
           and first_appointment is null;
@@ -350,10 +361,11 @@ BEGIN
                                                                                                                               into v_value; end case;
                     v_value = v_value || '::text';
                 end if;
-                v_project_id2 = coalesce(v_project_id,v_project_id1);
+                v_project_id2 = coalesce(v_project_id, v_project_id1);
                 v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
-                          where project_id = $$ || v_project_id2||$$ and
-                          case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.field_to_update||
+                          where project_id = $$ || v_project_id2 || $$ and
+                          case when $$ || v_record.update_first_value_only || $$ is true then $$ ||
+                        v_record.field_to_update ||
                         $$ is null else 1=1 end $$;
                 begin
                     execute v_sql;
@@ -396,12 +408,16 @@ BEGIN
                             end case;
                     elsif v_record.field_to_update in ('installation_resource', 'permit_pack_submittal_resource',
                                                        'in_house_mpu_permit_submittal_resource',
-                                                       'permit_pickup_resource','ac_compressor_relocation_resource',
-                                                      'as_built_permit_pickup_resource','as_built_permit_submission_resource',
-                                                      'in_house_mpu_permit_pickup_resource','in_house_mpu_resource',
-                                                      'installation_closeout_resource','non_standard_installation_resource',
-                                                      'outsource_mpu_resource','reroof_resource','structural_upgrade_resource',
-                                                      'tree_trimming_resource','trenching_resource','work_order_resource') then
+                                                       'permit_pickup_resource', 'ac_compressor_relocation_resource',
+                                                       'as_built_permit_pickup_resource',
+                                                       'as_built_permit_submission_resource',
+                                                       'in_house_mpu_permit_pickup_resource', 'in_house_mpu_resource',
+                                                       'installation_closeout_resource',
+                                                       'non_standard_installation_resource',
+                                                       'outsource_mpu_resource', 'reroof_resource',
+                                                       'structural_upgrade_resource',
+                                                       'tree_trimming_resource', 'trenching_resource',
+                                                       'work_order_resource') then
 
                         case when new.int_value is null then select 'null' into v_value;
                             else
@@ -410,7 +426,7 @@ BEGIN
                                 from flow.org o
                                 where o.id = new.int_value;
                             end case;
-                       -- raise notice 'value&&&&&&&&&&&& = %',v_value;
+                        -- raise notice 'value&&&&&&&&&&&& = %',v_value;
                     elsif v_record.list_of_value_id is not null then
                         case when new.int_value is null then select 'null' into v_value;
                             else
@@ -427,10 +443,11 @@ BEGIN
                     end if;
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
                             v_value || $$
-                            where project_id = $$ || v_project_id2||$$ and
-                    case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.second_field_to_update||
+                            where project_id = $$ || v_project_id2 || $$ and
+                    case when $$ || v_record.update_first_value_only || $$ is true then $$ ||
+                            v_record.second_field_to_update ||
                             $$ is null else 1=1 end $$;
-                   -- raise notice 'what is the sql %',v_sql;
+                    -- raise notice 'what is the sql %',v_sql;
                     begin
                         execute v_sql;
                     exception
@@ -462,14 +479,14 @@ BEGIN
 
     select ps.parent_process_step_id
     into v_parent_process_step_id
-    from  flow.process_step ps
+    from flow.process_step ps
     where new.process_step_id = ps.id;
 
     if v_parent_process_step_id = 3166 and new.process_step_complete_date is not null then
         update brs.project_details
         set complete_date_booking = new.process_step_complete_date
-        where project_id = new.project_id and
-            complete_date_booking is null;
+        where project_id = new.project_id
+          and complete_date_booking is null;
     elsif v_parent_process_step_id = 3241 and new.process_step_complete_date is not null then
         update brs.project_details
         set complete_date_final_design_completion = new.process_step_complete_date
@@ -551,7 +568,7 @@ BEGIN
             elsif v_field_to_update = 'sales_dev_representative_id' then
                 case when new.int_value is null then select 'null' into v_value;
                     else
-                        select quote_literal(coalesce(u.first_name,' ')||' '||coalesce(u.last_name,' '))
+                        select quote_literal(coalesce(u.first_name, ' ') || ' ' || coalesce(u.last_name, ' '))
                         into v_value
                         from flow.user_position up
                                  inner join flow.user u on up.user_id = u.id
