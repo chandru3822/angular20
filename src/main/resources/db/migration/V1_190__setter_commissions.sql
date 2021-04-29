@@ -5,7 +5,7 @@ set position_id = 1;
 
 
 drop index if exists  brs.pcl_position_id_idx;
-create index brs.pcl_position_id_idx
+create index pcl_position_id_idx
     on brs.project_commission_ledger (position_id);
 
 drop index if exists  brs.cp_position_id_idx;
