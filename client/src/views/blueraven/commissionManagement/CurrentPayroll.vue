@@ -538,6 +538,7 @@
         const val = await this.saveChangesToPayroll(true)
         //dont submit for approval if the save changes request failed
         if(val) {
+          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
           let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
           let params = {
             payDate: this.payDate
