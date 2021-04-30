@@ -136,7 +136,8 @@
        psat.modified_by_id as "modifiedById",
        at.attachment_type as "attachmentType",
        psat.display_order as "displayOrder",
-       psat.archived
+       psat.archived,
+       psat.read_only
     FROM flow.project_attachment_type psat
            inner join flow.attachment_type at on at.id = psat.attachment_type_id
     where psat.company_id = :companyId
@@ -192,4 +193,14 @@
             date_modified = now()
     where id = :id
   ]]></attachmentType.updateTypeOrderInProject>
+
+  <attachmentType.updateReadyOnly>
+    <![CDATA[
+      update flow.project_attachment_type
+        set read_only = :readOnly,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+      where id = :id
+    ]]>
+  </attachmentType.updateReadyOnly>
 </sql>

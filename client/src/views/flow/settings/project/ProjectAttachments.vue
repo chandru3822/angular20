@@ -35,6 +35,7 @@
                 <v-list-item-content>
                   {{a.attachmentType}}
                 </v-list-item-content>
+                <v-checkbox  style="display: flex; justify-content: flex-end" v-model="a.readOnly" label="Read-Only" @change="updateReadOnly(a)"></v-checkbox>
                 <v-dialog
                   v-if="userCanEdit"
                   v-model="a.deleteConfirm"
@@ -202,6 +203,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async updateReadOnly(attachmentType) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/attachmentType/updateReadOnly/`, attachmentType)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>
