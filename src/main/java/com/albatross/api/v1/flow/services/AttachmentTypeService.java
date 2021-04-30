@@ -77,6 +77,17 @@ public class AttachmentTypeService {
     sqlCache.update("attachmentType.updateTypeOrderInProject", params);
   }
 
+  public void updateReadOnly(ProjectAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("readOnly", attachmentType.getReadOnly());
+
+    sqlCache.update("attachmentType.updateReadyOnly", params);
+  }
+
   public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

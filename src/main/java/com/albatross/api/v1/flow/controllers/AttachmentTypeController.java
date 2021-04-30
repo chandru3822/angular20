@@ -42,6 +42,11 @@ public class AttachmentTypeController {
     attachmentTypeService.updateOrderInProject(attachmentTypes);
   }
 
+  @PutMapping(value = "/updateReadOnly", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateReadOnly(@RequestBody ProjectAttachmentType projectAttachmentType) {
+    attachmentTypeService.updateReadOnly(projectAttachmentType);
+  }
+
   @GetMapping(value = "/typesForStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long id) {
     return attachmentTypeService.getAvailableTypesForProcessStep(id);

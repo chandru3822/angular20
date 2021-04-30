@@ -29,7 +29,7 @@
           <v-checkbox label="Show non-primary Documents"
                       v-model="showNonPrimaryDocs"></v-checkbox>
         </v-col>
-        <v-col cols="5" class="py-3">
+        <v-col cols="5" class="py-3" v-if="!displayType.readOnly">
             <v-file-input
               dense
               ref="fileInput"
