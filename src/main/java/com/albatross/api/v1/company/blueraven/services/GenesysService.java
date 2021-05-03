@@ -201,7 +201,9 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
+    GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
+    goclr.setPageSize(100);
+    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
 
     String lead = (String) contactMap.get("lead_source");
     String leadSourceDetail = (String) contactMap.get("lead_source_detail");
@@ -217,7 +219,7 @@ public class GenesysService {
 
     String contactListId = "";
     for (ContactList cl: contactListEntity.getEntities()) {
-      if (cl.getName().equals(lead)) {
+      if (cl.getName().equals(contactListName)) {
         contactListId = cl.getId();
         break;
       }
