@@ -166,7 +166,7 @@ public class GenesysService {
     Contact contact = contactService.getContact(contactId);
     WritableDialerContact wdc = new WritableDialerContact();
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
     contactMap.put("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
@@ -258,7 +258,7 @@ public class GenesysService {
 
     Contact contact = contactService.getContact(contactId);
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
