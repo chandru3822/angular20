@@ -436,7 +436,7 @@ public class GenesysService {
     }
     else if (leadLevel.equals("3")) {
       if (lead.equals("Paid Lead Gen")) {
-        if (leadSourceDetail.equals("Best Company") || leadSourceDetail.equals("Clean Energy Exports")) {
+        if (leadSourceDetail.equals("Best Company") || leadSourceDetail.equals("Clean Energy Experts")) {
           return "Level 3";
         }
       }
