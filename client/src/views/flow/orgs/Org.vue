@@ -1,5 +1,35 @@
 <template>
   <v-container>
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved fields.  Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="org-header elevation-1">
       <v-col cols="12" class="text-left">
@@ -22,12 +52,14 @@
                           label="Organization Name"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
+                          @change="dirtySystemFields = true"
                           v-model="org.orgName"></v-text-field>
             <v-select v-model="org.orgTypeId"
                       :items="orgTypes"
                       label="Organization Type"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
+                      @change="dirtySystemFields = true"
                       item-text="orgType"
                       item-value="id"
                       @input="getOrgsByType(org.orgTypeId)"
@@ -36,12 +68,14 @@
                       :items="parents"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
+                      @change="dirtySystemFields = true"
                       label="Parent Organization"
                       item-text="orgName"
                       item-value="id"
             ></v-select>
             <v-select v-model="org.companyStateId"
                       :items="states"
+                      @change="dirtySystemFields = true"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       label="State"
@@ -51,6 +85,7 @@
             <v-autocomplete v-model="org.companyTimezoneId"
                       :items="companyTimezones"
                       label="Time Zone"
+                      @change="dirtySystemFields = true"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       item-text="timezone"
@@ -58,15 +93,15 @@
             ></v-autocomplete>
             <div class="mb-3">
               <label>Active:</label>
-              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.activeFlag">
+              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.activeFlag" @change="dirtySystemFields = true">
             </div>
             <div class="mb-3">
               <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.schedulable">
+              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.schedulable" @change="dirtySystemFields = true">
             </div>
             <div class="mb-3" v-if="$store.getters.isParent(parentId)">
               <label>Make available in children:</label>
-              <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
+              <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit" @change="dirtySystemFields = true"
                      class="ml-3" v-model="org.availableToChildren">
             </div>
           </v-card>
@@ -121,6 +156,10 @@
         org: {},
         customFieldGroups: [],
         orgTypes: [],
+        unsavedFieldsModal: false,
+        toPath: null,
+        navigationOverride: false,
+        dirtySystemFields: false,
         parents: [],
         dirtyCfvs: [],
         companyTimezones: [],
@@ -140,7 +179,22 @@
       this.getOrgsByType(this.org.parentOrgTypeId)
       this.getCompanyStates()
     },
+    beforeRouteLeave (to, from, next) {
+      // called when the route that renders this component is about to
+      // be navigated away from.
+      // has access to `this` component instance.
+      if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields)) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
+    },
     methods: {
+      goToPath(path) {
+        this.$router.push(path)
+      },
       async saveOrg() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         // this.org.customFieldGroups = this.customFieldGroups
@@ -149,6 +203,7 @@
           // update dirty field values
           const {data} = await postRequest(`/customFieldValues/org/${this.orgId}`, this.dirtyCfvs)
           this.dirtyCfvs = []
+          this.dirtySystemFields = false
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

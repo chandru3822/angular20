@@ -15,7 +15,7 @@ public class ProjectAttachmentType {
 
   private Long id, attachmentTypeId, createdById, modifiedById, companyId, displayOrder;
   private String attachmentType;
-  private Boolean archived;
+  private Boolean archived, readOnly;
   private Date dateCreated, dateModified;
 }
 

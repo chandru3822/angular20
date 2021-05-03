@@ -21,9 +21,10 @@
             Select All Qualifying
           </v-btn>
           <v-btn v-if="userCanEdit"
-                 :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced"
+                 :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || matchesNotGenerated"
                  color="primary" class="white--text" @click="advanceSelectedToBracket()">
-            <span v-if="!pool.advanced">Advance Selected to Bracket</span>
+            <span v-if="matchesNotGenerated">Must Generate Matches</span>
+            <span v-else-if="!pool.advanced">Advance Selected to Bracket</span>
             <span v-else>Pool Has Been Advanced</span>
           </v-btn>
         </v-toolbar-items>
@@ -119,6 +120,7 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         lastQualifiedUserScore: null,
         tournamentUserCount: 0,
+        matchesNotGenerated: false,
         minRowsPerPage: 0,
         dataLoading: true,
         pool: {},
@@ -143,6 +145,7 @@
         this.pool = {}
         this.poolUsers = []
         this.selectedUsers = []
+        this.matchesNotGenerated = false
         this.tournamentUserCount = 0
         await this.getTournament()
         this.getPool()
@@ -286,6 +289,9 @@
           this.tournament = data
           this.tournament?.brackets?.forEach(b => {
             this.tournamentUserCount += b.numberOfUsers
+            if(!b.matchesGenerated) {
+              this.matchesNotGenerated = true
+            }
           })
           this.minRowsPerPage = this.tournamentUserCount > 100 ? this.tournamentUserCount : 100
         } catch (e) {

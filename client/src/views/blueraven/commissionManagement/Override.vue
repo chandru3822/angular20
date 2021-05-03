@@ -237,7 +237,7 @@
               <v-text-field text
                             :readonly="!userCanEdit"
                             :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"
-                            label="Rate per kW ($)"
+                            :label="payRateText"
                             v-model="override.total"></v-text-field>
             </v-card>
           </v-col>
@@ -299,6 +299,7 @@
                           v-model="newReceivingUser.m1Allocation">
             </v-text-field>
           <v-text-field text
+                        v-if="positionId === 1"
                         type="number"
                         label="M2 Allocation"
                         v-model="newReceivingUser.m2Allocation">
@@ -310,7 +311,7 @@
         </v-card>
         <v-divider v-if="addAssignedUser"></v-divider>
         <v-data-table
-            :headers="receivingHeaders"
+            :headers="visibleReceivingHeaders"
             :items="override.receivingUsers"
             :fixed-header="true"
             :items-per-page="-1"
@@ -338,11 +339,12 @@
                             v-model.number="item.m1Allocation">
               </v-text-field>
               <v-text-field text
+                            v-if="positionId === 1"
                             type="number"
                             label="M2 Allocation"
                             v-model.number="item.m2Allocation">
               </v-text-field>
-              <v-btn :disabled="!item.m1Allocation || !item.m2Allocation"
+              <v-btn :disabled="!item.m1Allocation || (positionId === 1 && !item.m2Allocation)"
                      @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
             </td>
           </template>
@@ -352,7 +354,7 @@
               <td class="text-left">{{item.name}}</td>
               <td class="text-left">{{item.employeeId}}</td>
               <td class="text-left">{{item.m1Allocation}}</td>
-              <td class="text-left">{{item.m2Allocation}}</td>
+              <td class="text-left" v-if="positionId !== 4">{{item.m2Allocation}}</td>
               <td>
                 <v-btn small text @click="expanded = [item]"
                        v-if="override.status === 'PENDING' && !expanded.includes(item)">
@@ -623,7 +625,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
   export default {
     name: 'Override',
@@ -639,7 +641,17 @@
         this.dataLoading = false
       }
     },
+    computed: {
+      visibleReceivingHeaders() {
+        console.log('randaLogger', this.positionId)
+        return this.receivingHeaders.filter(header => header.show === true)
+      },
+    },
     watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual override plan
+        this.$router.push(`/commissionManagement/overrides`)
+      },
       $route(to, from) {
         // react to route changes...
         // this.$router.push({name: 'commission', params: {id: to.params.id}})
@@ -672,6 +684,8 @@
         dataLoading: true,
         cloneDialog: false,
         moment,
+        positionId: this.$store.state.brs.commissionPositionId,
+        payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         cloneStartDate: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
@@ -693,7 +707,7 @@
           {text: 'Name', value: 'name', show: true},
           {text: 'Employee ID', value: 'employeeId', show: true},
           {text: 'M1 Allocation', value: 'm1Allocation', show: true},
-          {text: 'M2 Allocation', value: 'm2Allocation', show: true},
+          {text: 'M2 Allocation', value: 'm2Allocation', show: this.$store.state.brs.commissionPositionId !== 4},
           {text: '', value: 'icons', show: true},
         ],
         override: {
@@ -746,13 +760,13 @@
       },
       checkErrorMessages () {
         this.errorMessages = []
-        //sum of all m1 and m2's should equal rate per kw$
+        //sum of all m1 and m2's should equal rate per kw$ (or base pay for setter)
         let sum = 0
         this.override?.receivingUsers?.forEach(ru => {
           sum += ru.m1Allocation + ru.m2Allocation
         })
         if(sum !== this.override.total) {
-          this.errorMessages.push('The sum of all milestone allocations must equal the Rate per kW. ')
+          this.errorMessages.push(`The sum of all milestone allocations must equal the ${this.payRateText}. `)
         }
       },
       planHasActiveUsers () {
@@ -982,8 +996,8 @@
               startDate: this.newAssignedUser.startDate,
               endDate: this.newAssignedUser.endDate
             }
-            const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/assignedUsers`, params, 'blueraven')
-            this.override.assignedUsers.push(data)
+            const {data} = await postRequestWithRequestParams(`/commissionManagement/overrides/${this.override.id}/assignedUsers/${this.override.positionId}`, params, { addUserToPlan: true }, 'blueraven')
+            this.override.assignedUsers = data
             this.newAssignedUser = {}
             this.assignedUserSearch = null
             this.addAssignedUser = false
@@ -1026,7 +1040,7 @@
               query,
               planId: this.override.id,
               isReceiving: true,
-              positionId: this.positionId
+              positionId: this.override.positionId
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
             this.receivingUsersToAdd = data
@@ -1061,8 +1075,8 @@
               m2Allocation: this.newReceivingUser.m2Allocation
             }
             const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUsers`, params, 'blueraven')
-            this.checkErrorMessages()
             this.override.receivingUsers.push(data)
+            this.checkErrorMessages()
             this.newReceivingUser = {
               m1Allocation: 0,
               m2Allocation: 0
@@ -1086,6 +1100,7 @@
           this.override.receivingUsers = this.override.receivingUsers.filter(au => {
             return au.userId !== receivingUserId
           })
+          this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

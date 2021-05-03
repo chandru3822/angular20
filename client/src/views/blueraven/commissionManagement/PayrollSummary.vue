@@ -57,11 +57,20 @@
     created() {
       this.viewSummary()
     },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual payroll
+        this.$router.push(`/commissionManagement/payroll`)
+
+      }
+    },
     data() {
       return {
         snackbar: {},
         payrollSummary: [],
         dataLoading: false,
+        positionId: this.$store.state.brs.commissionPositionId,
+        payrollId: parseInt(this.$route.params.id),
         headers: [
           { text: 'Sales Rep', value: 'closer_user', show: true },
           { text: 'Total Commission', value: 'total_commission', show: true },
@@ -81,7 +90,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/payroll/${this.$route.params.id}/summary`, 'blueraven')
+          const {data} = await getRequest(`/payroll/${this.payrollId}/summary/`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

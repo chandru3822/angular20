@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION flow.get_project_process_step_requirements_with_value
                  company_function_id int, fail_if_no_reference_step_found boolean, reference_process_step_id int, requirement_nbr int, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id int, modified_by_id int,
                  archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
                  process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
-                 company_system_list_id int, system_list_option_id int, custom_sql_option_id int, project_custom_field_value_id int, project_process_step_id int, text_value text,
+                 company_system_list_id int, system_list_option_id int, custom_sql_option_id int, time_zone varchar, project_custom_field_value_id int, project_process_step_id int, text_value text,
                  date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value int, int_array_value json, system_list_option_ids json,
                  data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
                  company_function_params json, available_list_of_values json) AS
@@ -46,6 +46,7 @@ BEGIN
       cf.company_system_list_id,
       psr.system_list_option_id,
       psr.custom_sql_option_id,
+      p.time_zone,
       case when pps1.id is not null then ppscfv1.id else ppscfv.id end as project_custom_field_value_id,
       case when pps1.id is not null then ppscfv1.project_process_step_id else ppscfv.project_process_step_id end as "projectprocessStepId",
       case when psr.process_step_requirement_type_id = 1 then

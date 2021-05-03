@@ -170,8 +170,9 @@ BEGIN
                                 FROM flow.project p1
                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                          inner join brs.project_override po on po.project_id = p1.id
+                                         inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
                                          INNER JOIN brs.override_plan_receiving_user opru
-                                                    ON opru.override_plan_id = po.override_plan_id
+                                                    ON opru.override_plan_id = op.id
                                          INNER JOIN flow.user u ON u.id = opru.user_id
                                 where p1.id = p.id)
                                UNION
@@ -186,41 +187,42 @@ BEGIN
                                 FROM flow.project p1
                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                          inner join brs.project_override po on po.project_id = p1.id
+                                         inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
                                          INNER JOIN brs.override_plan_receiving_user opru
-                                                    ON opru.override_plan_id = po.override_plan_id
+                                                    ON opru.override_plan_id = op.id
                                          INNER JOIN flow.user u ON u.id = opru.user_id
                                 where p1.id = p.id)) AS _overrides_per_user),
                         (SELECT op.name AS override_plan
                          FROM brs.override_plan op
                                   inner join brs.project_override po on po.override_plan_id = op.id
-                         WHERE po.project_id = p.id
+                         WHERE po.project_id = p.id and op.position_id = 1
                         )                                                       AS override_plan,
                         (SELECT ops.status_type AS override_plan_status
                          FROM brs.override_plan op
                                   inner join brs.project_override po on po.override_plan_id = op.id
                                   inner join brs.override_plan_status ops on ops.id = op.status_id
-                         WHERE po.project_id = p.id
+                         WHERE po.project_id = p.id and op.position_id = 1
                         )                                                       AS override_plan_status,
                         (SELECT op.id AS override_plan_id
                          FROM brs.override_plan op
                                   inner join brs.project_override po on po.override_plan_id = op.id
-                         WHERE po.project_id = p.id
+                         WHERE po.project_id = p.id and op.position_id = 1
                         )                                                       AS override_plan_id,
                         (SELECT cp.name AS commission_plan
                          FROM brs.commission_plan cp
                                   inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                         WHERE pc.project_id = p.id
+                         WHERE pc.project_id = p.id and cp.position_id = 1
                         )                                                       AS commission_plan,
                         (SELECT cps.status_type AS commission_plan_status
                          FROM brs.commission_plan cp
                                   inner join brs.project_commission pc on pc.commission_plan_id = cp.id
                                   inner join brs.commission_plan_status cps on cps.id = cp.status_id
-                         WHERE pc.project_id = p.id
+                         WHERE pc.project_id = p.id and cp.position_id = 1
                         )                                                       AS commission_plan_status,
                         (SELECT cp.id AS commission_plan_id
                          FROM brs.commission_plan cp
                                   inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                         WHERE pc.project_id = p.id
+                         WHERE pc.project_id = p.id and cp.position_id = 1
                         )                                                       AS commission_plan_id,
 
                         (SELECT coalesce(round(cp.total*pd.system_size::numeric
@@ -229,14 +231,14 @@ BEGIN
                                          0) total
                          FROM flow.project p2
                                   inner join brs.project_commission pc on pc.project_id = p2.id
-                                  inner join brs.commission_plan cp on pc.commission_plan_id = cp.id
+                                  inner join brs.commission_plan cp on pc.commission_plan_id = cp.id and cp.position_id = 1
                                   left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.milestone_id = 2 and  cpsa.source_id = pd.source
                          where p2.id = p.id) AS total_commissions,
                         coalesce(
                                 (select pd.system_size::numeric * op2.total
                                  from brs.override_plan op2
                                           inner join brs.project_override po on op2.id = po.override_plan_id
-                                 where po.project_id = p.id),
+                                 where po.project_id = p.id and op2.position_id = 1),
                                 0)                                                          AS total_overrides,
                         coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
@@ -249,7 +251,7 @@ BEGIN
                                  FROM flow.project p1
                                           inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                           inner join brs.project_commission pc on pc.project_id = p1.id
-                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
+                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
                                           left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.source_id = pd.source
                                                 and cpsa.milestone_id = 1
@@ -264,7 +266,7 @@ BEGIN
                                  FROM flow.project p1
                                           inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                           inner join brs.project_commission pc on pc.project_id = p1.id
-                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
+                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
                                           left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id and cpa.milestone_id = 2   and cpsa.source_id = pd.source
                                  WHERE p1.id = p.id),0) AS commission_earned,
@@ -277,7 +279,7 @@ BEGIN
                                  FROM flow.project p1
                                           inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                           inner join brs.project_override po on po.project_id = p1.id
-                                          inner join brs.override_plan op on op.id = po.override_plan_id
+                                          inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
                                  WHERE p1.id = p.id),0) + coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::NUMERIC
@@ -287,7 +289,7 @@ BEGIN
                                  FROM flow.project p1
                                           inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                           inner join brs.project_override po on po.project_id = p1.id
-                                          inner join brs.override_plan op on op.id = po.override_plan_id
+                                          inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
                                  WHERE p1.id = p.id),0) AS override_earned,
                         coalesce(brs.get_ledger_adjustment_current_totals( p_payroll_id,array[p.id],1),0) AS commission_adjustments,
                         --TODO implement this at a later date.
@@ -295,13 +297,15 @@ BEGIN
                         (SELECT coalesce(sum(amount), 0)
                          FROM brs.project_commission_ledger dcl
                          WHERE dcl.project_id = p.id::integer
-                           AND dcl.ledger_type_id = 1)
+                           AND dcl.ledger_type_id = 1
+                           and dcl.position_id = 1)
                             AS commission_paid_to_date,
                         (
                             SELECT coalesce(sum(dcl.paid_to_date), 0)
                             FROM brs.project_commission_ledger dcl
                             WHERE dcl.project_id = p.id  and
                                     dcl.ledger_type_id = 3
+                              and dcl.position_id = 1
                         ) /*+
           (
             select coalesce(sum(amount),0)

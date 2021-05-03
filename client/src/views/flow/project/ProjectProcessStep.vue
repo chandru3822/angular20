@@ -5,7 +5,7 @@
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/project/${project.id}/details`">{{ project.projectName}}</router-link>
+          {{ project.projectName}}
         </div>
         <div class="project-subtitle">
           {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
@@ -63,8 +63,39 @@
           class="back-btn"
           text
           :ripple="false"
-          :to="`/project/${projectId}/details`">Back to Project
+          :to="`/project/${projectId}/details`">
+          Back to Project
         </v-btn>
+        <v-dialog width="500" v-model="unsavedFieldsModal">
+          <v-card>
+            <v-card-title
+              class="headline grey lighten-2"
+              primary-title
+            >
+              Confirm
+            </v-card-title>
+
+            <v-card-text class="pt-4">
+              You have unsaved fields.  Are you sure you want to continue without saving?
+            </v-card-text>
+
+            <v-divider></v-divider>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                @click="unsavedFieldsModal = false">
+                No
+              </v-btn>
+              <v-btn
+                color="primaryCustom"
+                text
+                @click="[navigationOverride = true, goToPath(toPath)]">
+                Yes
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <!--    {{usingUniqueView}}-->
       </v-col>
 
@@ -328,6 +359,7 @@
     data() {
       return {
         snackbar: {},
+        unsavedFieldsModal: false,
         minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
         roundRobinNumberOfDays: 7,
         availabilityDateField: {fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
@@ -350,6 +382,8 @@
         customFieldGroups: [],
         isProcessStepLoading: true,
         dirtyCfvs: [],
+        toPath: null,
+        navigationOverride: false,
         notes: [],
         project: {},
         displayChangeOwner: false,
@@ -388,7 +422,22 @@
         }
       }
     },
+    beforeRouteLeave (to, from, next) {
+      // called when the route that renders this component is about to
+      // be navigated away from.
+      // has access to `this` component instance.
+      if (this.navigationOverride || this.dirtyCfvs.length === 0) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
+    },
     methods: {
+      goToPath(path) {
+        this.$router.push(path)
+      },
       getStatusClass(rootTypeId) {
         return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
       },

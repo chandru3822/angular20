@@ -49,4 +49,6 @@ HELP.md
 
 ### local props files ###
 src/main/resources/application-local.properties
+src/main/resources/application-local-flux.properties
 src/main/resources/application-local-prod.properties
+src/main/resources/zz_local/**

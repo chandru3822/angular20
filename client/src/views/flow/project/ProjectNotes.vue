@@ -3,6 +3,7 @@
   <v-col cols="12" lg="12" class="text-left">
 
     <NotesAndActivity
+      ref="notes"
       :showNotes="true"
       :showActivity="false"
       :notes="notes"
@@ -38,6 +39,9 @@ export default {
   },
   computed: {},
   methods: {
+    hasDirtyNotes () {
+      return this.$refs.notes.hasUnsavedNotes()
+    },
     getNotes: async function () {
       try {
         const {data} = await getRequestWithParams(`/note/getProjectNotes`, {

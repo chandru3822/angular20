@@ -18,12 +18,14 @@ BEGIN
 
     select count(1)
     into v_override_plan_found
-    from brs.project_override
+    from brs.project_override po
+    inner join brs.override_plan op on po.override_plan_id = op.id and op.position_id = 1
     where project_id = p_project_id;
 
     select count(1)
     into v_commission_plan_found
-    from brs.project_commission
+    from brs.project_commission pc
+    inner join brs.commission_plan cp on pc.commission_plan_id = cp.id and cp.position_id = 1
     where project_id = p_project_id;
 
     select pd.closer_user_id
@@ -46,7 +48,8 @@ BEGIN
       and case
               when opau.end_date is not null then
                   (now() AT TIME ZONE 'US/Mountain') <= opau.end_date
-              else 1 = 1 end;
+              else 1 = 1 end
+    and op.position_id = 1;
 
     select cp.id
     into v_commission_plan_id
@@ -56,7 +59,8 @@ BEGIN
       and case
               when cpu.end_date is not null then
                   (now() AT TIME ZONE 'US/Mountain') <= cpu.end_date
-              else 1 = 1 end;
+              else 1 = 1 end
+    and cp.position_id = 1;
 
     --     select rp.id
 --     into v_residual_plan_id

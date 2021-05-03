@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
+import { BrsStore } from '@/stores/BrsStore'
 import { AppStore } from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import {postRequest, deleteRequest, getRequest, getRequestWithParams} from "./helpers/helpers";
@@ -32,6 +33,7 @@ const store = new Vuex.Store({
   ],
   modules: {
     user: UserStore,
+    brs: BrsStore,
     app: AppStore
   },
   mutations: {

@@ -1,5 +1,36 @@
 <template>
   <v-container class="pt-0" v-if="contact && contact.id">
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved {{getDirtyText()}}. <br/>
+          Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
         <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
@@ -119,12 +150,14 @@
                             label="First Name"
                             placeholder=" "
                             :rules="nameRules"
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
                             placeholder=" "
                             :rules="nameRules"
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
@@ -132,13 +165,13 @@
                             placeholder=" "
                             :rules="addressRules"
                             :readonly="!userCanEdit"
-                            @change="addressChanged = true"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
                             placeholder=" "
                             :rules="cityRules"
-                            @change="addressChanged = true"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
               <v-select v-model="contact.companyStateId"
@@ -146,15 +179,24 @@
                         label="State"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
-                        @change="addressChanged = true"
+                        @change="[addressChanged = true, dirtySystemFields = true]"
                         item-text="state"
+                        item-value="id"
+              ></v-select>
+              <v-select v-model="contact.companyCountryId"
+                        :items="countries"
+                        label="Country"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        @change="[addressChanged = true, dirtySystemFields = true]"
+                        item-text="country"
                         item-value="id"
               ></v-select>
               <v-text-field text
                             label="Zip"
                             type="text"
                             placeholder=" "
-                            @change="addressChanged = true"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             counter
                             @keypress="isNumberOrHyphen"
@@ -165,17 +207,20 @@
                             label="Phone"
                             placeholder=" "
                             :rules="phoneRules"
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
                             :readonly="!userCanEdit"
+                            @change="dirtySystemFields = true"
                             :rules="phoneRules"
                             placeholder=" "
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             placeholder=" "
+                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.email"></v-text-field>
             </v-form>
@@ -244,7 +289,7 @@
         </div>
       </v-col>
       <v-col cols="12" md="6" class="text-left">
-        <NotesAndActivity :showNotes="true" :showActivity="false"
+        <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(contactId)"
                           type="Contact"
         ></NotesAndActivity>
@@ -277,6 +322,7 @@ import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, isNumberOrHyphen, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
+import {getCountries} from '@/services/countryService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
 
@@ -291,6 +337,7 @@ export default {
     return {
       snackbar: {},
       states: [],
+      countries: [],
       contact: {},
       postalCodeRules: constants.POSTAL_CODE_RULES,
       cityRules: constants.CITY_RULES,
@@ -302,9 +349,14 @@ export default {
       isNumberOrHyphen,
       contactLoading: true,
       customFieldGroups: [],
+      unsavedFieldsModal: false,
+      toPath: null,
+      navigationOverride: false,
       notes: [],
       fieldsSaving: false,
+      hasDirtyNotes: false,
       dirtyCfvs: [],
+      dirtySystemFields: false,
       owners: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
@@ -327,11 +379,32 @@ export default {
   created () {
     this.getContact()
     this.getCompanyStates()
+    this.getCountries()
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
   },
+  beforeRouteLeave (to, from, next) {
+    // called when the route that renders this component is about to
+    // be navigated away from.
+    // has access to `this` component instance.
+    this.hasDirtyNotes = this.$refs.notes.hasUnsavedNotes()
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields && !this.hasDirtyNotes)) {
+      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      next()
+    } else {
+      this.toPath = to.path
+      this.unsavedFieldsModal = true
+    }
+  },
   methods: {
+    getDirtyText() {
+      return this.hasDirtyNotes && (this.dirtyCfvs.length > 0 || this.dirtySystemFields) ?
+        'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
+    },
+    goToPath(path) {
+      this.$router.push(path)
+    },
     validate () {
       if (this.$refs.address.validate()) {
         this.saveContact()
@@ -351,6 +424,7 @@ export default {
         // save contact
           const {data} = await postRequest(`/contact`, this.contact)
           this.contact.projects = data.projects
+          this.dirtySystemFields = false
           await this.saveCustomFieldValues()
           // Save BlueRaven Solar Contacts to Genesys
           if (this.companyId === 3) {
@@ -504,6 +578,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCountries () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCountries(parseInt(this.companyId))
+        this.countries = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

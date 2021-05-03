@@ -54,7 +54,7 @@
             path: '/ahj/' + this.ahjId + '/inspection'
           },
           {
-            label: 'Design',
+            label: 'Design Requirements',
             path: '/ahj/' + this.ahjId + '/design'
           }
         ]

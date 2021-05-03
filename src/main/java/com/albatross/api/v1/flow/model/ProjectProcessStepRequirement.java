@@ -15,7 +15,8 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
   private Timestamp timestampValue, dateValue;
 
-  private String textValue;
+  // `timeZone` is the project's timezone
+  private String textValue, timeZone;
 
   private BigDecimal numericValue;
 

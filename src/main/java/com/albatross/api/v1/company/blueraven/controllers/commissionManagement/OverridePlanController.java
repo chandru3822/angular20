@@ -27,14 +27,14 @@ public class OverridePlanController {
     private final OverridePlanService overridePlanService;
     private final CommissionManagementService commissionManagementService;
 
-    @GetMapping(value = "")
-    public String getOverridePlans() {
-        return overridePlanService.findOverridePlans(false);
+    @GetMapping(value = "/plans/{positionId}")
+    public String getOverridePlans(@PathVariable Long positionId) {
+        return overridePlanService.findOverridePlans(positionId, false);
     }
 
-    @GetMapping(value = "/active")
-    public String getActiveOverridePlans() {
-        return overridePlanService.findOverridePlans(true);
+    @GetMapping(value = "/plans/{positionId}/active")
+    public String getActiveOverridePlans(@PathVariable Long positionId) {
+        return overridePlanService.findOverridePlans(positionId,true);
     }
 
     @GetMapping(value = "/_search")
@@ -143,11 +143,14 @@ public class OverridePlanController {
         return userDetail != null ? ResponseEntity.ok(userDetail) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping(value = "/{id}/assignedUsers")
+    @PostMapping(value = "/{id}/assignedUsers/{positionId}")
     public ResponseEntity addAssignedUser(@PathVariable Long id,
+                                          @PathVariable Long positionId,
+                                          @RequestParam(required = false) Boolean addUserToPlan,
                                           @RequestBody OverridePlanService.OverrideAssignedUser assignedUser) {
         try {
-            String result = overridePlanService.updateAssignedUser(id, assignedUser);
+
+            String result = overridePlanService.updateAssignedUser(id, assignedUser, positionId, addUserToPlan);
             return ResponseEntity.ok(result);
         } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");

@@ -15,7 +15,7 @@
           <v-divider></v-divider>
           <v-data-table
               :headers="headers"
-              :items="closers"
+              :items="users"
               :fixed-header="true"
               :items-per-page="50"
               :loading="dataLoading"
@@ -24,17 +24,17 @@
               class="elevation-1"
           >
             <template #no-data>
-              No available closers
+              No available users
             </template>
 
             <template #no-results>
-              No available closers
+              No available users
             </template>
 
             <template #item="{ item, index }">
               <tr class="vertical-top" :class="{'shaded-row': index % 2}">
                 <td class="text-left pt-1">
-                  <v-btn text :to="{ name: 'closer', params: {id: item.id} }">
+                  <v-btn text :to="{ name: 'commissionUser', params: {id: item.id} }">
                     {{item.name}}
                   </v-btn>
                 </td>
@@ -81,40 +81,48 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
-    name: 'Closers',
+    name: 'Users',
 
     created() {
-      this.getClosers()
+      this.getUsers()
     },
     data() {
       return {
         snackbar: {},
         dataLoading: true,
         search: '',
+        positionId: this.$store.state.brs.commissionPositionId,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000]
         },
         headers: [
-          {text: 'Closer Name', value: 'name', show: true},
+          {text: 'User', value: 'name', show: true},
           {text: 'Commissions Assigned To', value: 'commissionPlan', show: true},
           {text: 'Overrides Assigned To', value: 'overridePlan', show: true},
           {text: 'Receiving Overrides From', value: 'receivingPlan', show: true},
           {text: 'Has Commission Plan Gap', value: 'hasCommissionPlanGap', show: true},
         ],
-        closers: []
+        users: []
+      }
+    },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        this.getUsers()
       }
     },
     methods: {
-      async getClosers () {
+      async getUsers () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
-          this.closers = data.filter(d => d.isActiveCloser)
+          let url = this.positionId === 1 ? '/commissionManagement/closers' : '/commissionManagement/setters'
+          const {data} = await getRequest(url, 'blueraven')
+          this.users = data.filter(d => d.isActiveUser)
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Closers')
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

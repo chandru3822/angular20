@@ -9,7 +9,7 @@
       <v-toolbar-items>
         <div class="commission-button-container">
           <v-btn color="primaryCustom" class="white--text mr-2"
-                 :disabled="!commission.name"
+                 :disabled="!commission.name || !commission.positionId"
                  v-if="userCanEdit"
                  @click="savePlan()">
             Save
@@ -223,14 +223,13 @@
                             v-model="commission.description"></v-text-field>
               <v-select v-model="commission.positionId"
                         :items="positions"
-                        :disabled="true"
                         no-data-text="No Users Available"
                         label="Position"
                         item-text="label"
                         item-value="id"
               ></v-select>
               <v-text-field text
-                            label="Rate per kW ($)"
+                            :label="payRateText"
                             type="number"
                             :disabled="commission.id && commission.statusType !== 'PENDING'"
                             v-model.number="commission.total"></v-text-field>
@@ -395,7 +394,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <v-row v-if="planId">
+    <v-row v-if="planId && commission.positionId === 1">
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
@@ -761,7 +760,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
+  import {getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
 
   export default {
     name: 'Commission',
@@ -778,6 +777,10 @@
       }
     },
     watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual commission plan
+        this.$router.push(`/commissionManagement/commissions`)
+      },
       $route(to, from) {
         // react to route changes...
         this.planId = to.params.id
@@ -797,6 +800,7 @@
       return {
         snackbar: {},
         cloneDialog: false,
+        payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         addUser: false,
         newUser: {},
         usersToAdd: [],
@@ -859,7 +863,7 @@
         cloneDateError: false,
         commission: {
           users: [],
-          positionId: 1
+          positionId: null
         }
       }
     },
@@ -896,7 +900,7 @@
         })
 
         if(!this.cloneDateError) {
-          this.clonePlan(commission.users, cloneStartDate)
+          this.clonePlan(this.commission.users, this.cloneStartDate)
           this.cloneDialog = false;
         }
       },
@@ -946,7 +950,7 @@
         //sum of m1 and m2 payment = rate per kw
         let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
         if(sum !== this.commission.total) {
-          this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
+          this.errorMessages.push(`The sum of all milestone payment amounts must equal the ${this.payRateText}. `)
         }
       },
       planHasActiveUsers () {
@@ -1075,8 +1079,9 @@
         if(this.addUser) {
           this.usersLoading = true
           try {
+            let positions = this.commission.positionId === 1 ? 'closers' : 'setters'
             let params = {
-              positions: 'closers',
+              positions,
               query,
               planId: this.planId
             }
@@ -1100,7 +1105,7 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/users`, params, 'blueraven')
+          const {data} = await postRequestWithRequestParams(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, { addUserToPlan: true }, 'blueraven')
           this.commission.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -1136,7 +1141,11 @@
         if(this.addMilestone) {
           try {
             const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones`, 'blueraven')
-            this.milestones = data
+            if(this.commission.positionId === 1) {
+              this.milestones = data
+            } else {
+              this.milestones = data.filter(d => d.id === 1)
+            }
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')

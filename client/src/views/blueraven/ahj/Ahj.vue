@@ -69,7 +69,7 @@
                 <span v-else>
                   <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
                   <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design Requirements</router-link>
                 </span>
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
@@ -190,9 +190,9 @@
       ],
       headers: [
         { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 300, show: true },
-        { text: null, value: null, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
+        { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
+        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
+        { text: null, value: null, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 400 }
       ],
       ahjs: [],
       editedItem: {
