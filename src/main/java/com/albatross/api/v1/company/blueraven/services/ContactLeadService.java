@@ -309,7 +309,7 @@ public class ContactLeadService {
     }
 
     try {
-      if (ricochetEnabled) {
+      if (ricochetEnabled && !cl.getLeadLevel().equals(1L)) {
         postToRicochet(ricochetLead, params);
       }
       else {
