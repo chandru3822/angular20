@@ -308,8 +308,8 @@ public class ContactLeadService {
       log.error(msg, e.getMessage());
     }
 
-    try {
-      if (ricochetEnabled && !cl.getLeadLevel().equals(1L)) {
+    try { // TODO: Re-add this -     && !cl.getLeadLevel().equals(1L)
+      if (ricochetEnabled) {
         postToRicochet(ricochetLead, params);
       }
       else {
