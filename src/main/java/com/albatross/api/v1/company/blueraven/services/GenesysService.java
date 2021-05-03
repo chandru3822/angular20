@@ -386,87 +386,17 @@ public class GenesysService {
   }
 
   private String getContactListName(String lead, String leadSourceDetail, String leadLevel) {
-    HashSet<String> levelOneLeadSourceDetails = new HashSet<>() {{
-      add("SolarReviews");
-      add("Solar Lead Factory");
-      add("SolarLeadFactory");
-      add("RGR");
-      add("Modernize");
-      add("Energy Bill Cruncher");
-      add("EnergyBillCruncher");
-      add("Clean Energy Experts");
-      add("CleanEnergyExperts");
-      add("Clean Energy Authority");
-      add("CleanEnergyAuthority");
-    }};
-
-    HashSet<String> levelTwoLeadSourceDetails = new HashSet<>() {{
-      add("Recursive Advertising");
-      add("RecursiveAdvertising");
-      add("LeadLabz");
-      add("Energy Bill Cruncher");
-      add("EnergyBillCruncher");
-      add("Blue Fire Leads");
-      add("BlueFireLeads");
-    }};
-
-    HashSet<String> manualCallsSources = new HashSet<>() {{
-      add("Retention");
-      add("Closer Gen");
-      add("CloserGen");
-      add("Referral");
-      add("Setter Gen");
-      add("SetterGen");
-      add("Retargeted");
-      add("Purchased Appointments");
-      add("PurchasedAppointments");
-    }};
-
-    if (leadSourceDetail == null) {
-      leadSourceDetail = "";
-    }
-
-    if (leadLevel == null) {
-      leadLevel = "";
-    }
-
     if (leadLevel.equals("1")) {
-      if (lead.equals("Paid Lead Gen")) {
-        if (levelOneLeadSourceDetails.contains(leadSourceDetail)) {
-          return "Level 1";
-        }
-      }
+      return "Level 1";
     }
     else if (leadLevel.equals("2")) {
-      if (lead.equals("Paid Lead Gen")) {
-        if (levelTwoLeadSourceDetails.contains(leadSourceDetail)) {
-          return "Level 3";
-        }
-      }
+      return "Level 2";
     }
     else if (leadLevel.equals("3")) {
-      if (lead.equals("Paid Lead Gen")) {
-        if (leadSourceDetail.equals("Best Company") || leadSourceDetail.equals("Clean Energy Experts")) {
-          return "Level 3";
-        }
-      }
-      else if (lead.equals("Paid Advertising")) {
-        if (leadSourceDetail.equals("Faraday") || leadSourceDetail.equals("Instagram") || leadSourceDetail.equals("Facebook")
-          || leadSourceDetail.equals("YouTube")) {
-          return "Level 3";
-        }
-      }
-      else if (lead.equals("Organic")) {
-        if (leadSourceDetail.equals("Digital Organic")) {
-          return "Level 3";
-        }
-      }
+      return "Level 3";
     }
-    else if (leadLevel.equals("10")) {
+    else if (lead.equals("Paid Advertising") && leadSourceDetail.equals("InsideSales")) {
       return "InsideSales";
-    }
-    else if (manualCallsSources.contains(lead)) {
-      return "Manual Calls";
     }
 
     return null;
