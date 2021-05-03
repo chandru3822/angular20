@@ -613,10 +613,15 @@
           this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
           this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
           this.getStatusColor()
+          if(null != this.currentPayroll.periodEnd) {
+            await this.getAccountingData()
+          } else {
+            this.dataLoading = false
+            this.accountingData = []
+          }
           if(!keepLoading) {
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          // await this.getAccountingData()
           return true
         } catch (e) {
           console.error('*** ERROR ***', e)
