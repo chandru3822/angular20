@@ -69,7 +69,7 @@
                         placeholder="Select one..."
                         item-text="processName"
                         return-object
-                        class="mt-2"
+                        class="mt-2 qa-process-selector"
               ></v-select>
               <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
                 Add Project
