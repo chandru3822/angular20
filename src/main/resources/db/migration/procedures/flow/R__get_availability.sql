@@ -98,8 +98,12 @@ BEGIN
                              inner join flow.org o on o.id = up.org_id
                              inner join flow.company_timezone ct on o.company_timezone_id = ct.id
                              inner join flow.timezone t on ct.timezone_id = t.id
+                             left join flow.excluded_resource_slot_time erst on erst.resource_slot_time_id = rst.id and
+                                                                                erst.resource_schedule_availability_id = rsa.id
+                                                                                and erst.archived is false
                       where rs.archived is not true
                         and rsa.archived is not true
+                        and erst.id is null
                         and up.primary_flag is true
                         and up.archived is false
                         and up.start_date <= now()
