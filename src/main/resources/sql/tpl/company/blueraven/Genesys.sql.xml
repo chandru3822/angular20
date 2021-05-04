@@ -42,7 +42,7 @@
       left outer join flow.state s on s.id = cs.state_id
       inner join flow.company_country cc on cc.id = c.company_country_id
       inner join flow.country ct on ct.id = cc.country_id
-    where c.phone = :phone
+    where regexp_replace(c.phone, '[^0-9]', '', 'g') ILIKE '%' || :phone
      and case when :isParent then c.company_id = any (select id
                                                  from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else c.company_id = :companyId end
