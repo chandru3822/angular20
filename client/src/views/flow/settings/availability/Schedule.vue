@@ -202,6 +202,14 @@
                             {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
                           </template>
                         </v-select>
+                        <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
+                          <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
+                            <input type="checkbox"
+                                   @change="changeExcludedSlots(item, slot.id)"
+                                   :checked="!item.excludedResourceSlotTimeIds.includes(slot.id)">
+                            {{slot.startTime | formatDateZoneless()}} - {{slot.endTime | formatDateZoneless()}}
+                          </div>
+                        </v-card>
                       </td>
                       <td class="text-left" v-else>
                         <div class="flex-display">
@@ -396,6 +404,18 @@
       }
     },
     methods: {
+      changeExcludedSlots(item, slotId) {
+        if(item.excludedResourceSlotTimeIds.includes(slotId)) {
+          //remove it if already in
+          item.excludedResourceSlotTimeIds = item.excludedResourceSlotTimeIds.filter(e => e !== slotId)
+        } else {
+          //else add it
+          item.excludedResourceSlotTimeIds.push(slotId)
+        }
+      },
+      getMatchingSlots(resourceSlotScheduleId) {
+        return this.slotSchedules.find(ss => ss.id = resourceSlotScheduleId)?.slotTimes
+      },
       buildTimeString(schedule) {
         let timeString = '['
         schedule?.slotTimes?.forEach((st,idx) => {

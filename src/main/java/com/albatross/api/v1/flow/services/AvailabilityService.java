@@ -168,9 +168,15 @@ public class AvailabilityService {
     boolean archived = null == rsa.getArchived() ? false : rsa.getArchived();
     boolean hasId = null != rsa.getId();
     HashMap<String, Object> params = new HashMap<>();
+
     //JIC - if a slot id gets sent in, null out the start and end time
-    params.put("startTime", null == rsa.getResourceSlotScheduleId() ? rsa.getStartTime() : null);
-    params.put("endTime", null == rsa.getResourceSlotScheduleId() ? rsa.getEndTime() : null);
+    if(null != rsa.getResourceSlotScheduleId()) {
+      rsa.setStartTime(null);
+      rsa.setEndTime(null);
+    }
+
+    params.put("startTime", rsa.getStartTime());
+    params.put("endTime", rsa.getEndTime());
     params.put("dayOfWeekId", rsa.getDayOfWeekId());
     params.put("companyId", user.getCompanyId());
     params.put("resourceScheduleId", resourceScheduleId);
@@ -188,6 +194,26 @@ public class AvailabilityService {
       sqlCache.update("availability.updateHours", params);
     } else if ((null != rsa.getResourceSlotScheduleId()) || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
       sqlCache.update("availability.insertHours", params);
+    }
+
+    //handle the saving of excluded slot times
+    if(null != rsa.getResourceSlotScheduleId()) {
+      //if it is a slot schedule
+      HashMap<String, Object> excludedParams = new HashMap<>();
+      excludedParams.put("excludedResourceSlotTimeIds", rsa.getExcludedResourceSlotTimeIds().isEmpty() ? null : rsa.getExcludedResourceSlotTimeIds());
+      //adding this param cuz sql array null checks are too hard for me
+      excludedParams.put("excludedIsEmpty", rsa.getExcludedResourceSlotTimeIds().isEmpty());
+      excludedParams.put("resourceScheduleAvailabilityId", rsa.getId());
+      excludedParams.put("userId", user.getId());
+
+      //delete any existing excluded slots that are no longer in the excluded array
+      sqlCache.update("availability.archiveUnusedExcludedSlots", excludedParams);
+
+      //add any excluded slots that do not already exist - if there are any sent in
+      if(!rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
+        sqlCache.update("availability.addExcludedSlots", excludedParams);
+      }
+
     }
   }
 
