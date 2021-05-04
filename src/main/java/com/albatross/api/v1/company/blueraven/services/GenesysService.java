@@ -71,8 +71,13 @@ public class GenesysService {
   public Contact getContactByPhone(String phoneNumber) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    String cleanPhoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+    if (phoneNumber.startsWith("1")) {
+      phoneNumber.substring(1);
+    }
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("phone", phoneNumber);
+    params.put("phone", cleanPhoneNumber);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
@@ -173,8 +178,8 @@ public class GenesysService {
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
     contactMap.put("street1", contact.getStreet1() != null ? contact.getStreet1() : "");
     contactMap.put("street2", contact.getStreet2() != null ? contact.getStreet2() : "");
-    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone() : "");
-    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile() : "");
+    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "");
+    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("contact_type", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("Lead Main State", "");
@@ -266,8 +271,8 @@ public class GenesysService {
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
     contactMap.put("street1", contact.getStreet1() != null ? contact.getStreet1() : "");
     contactMap.put("street2", contact.getStreet2() != null ? contact.getStreet2() : "");
-    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone() : "");
-    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile() : "");
+    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "");
+    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("Total Call Attempts", "");
     contactMap.put("Contacted Call Attempts", "");
