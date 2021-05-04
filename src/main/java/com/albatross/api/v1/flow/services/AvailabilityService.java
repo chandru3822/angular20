@@ -139,7 +139,10 @@ public class AvailabilityService {
         }
       }
       for (ResourceScheduleAvailability rsa : ra.getResourceScheduleAvailability()) {
-        saveAvailability(rsa, id);
+        //only try save if there is an id or it has one of the 3 scheduling fields. otherwise it is just a blank day
+        if(null != rsa.getId() || (rsa.getResourceSlotScheduleId() != null || rsa.getStartTime() != null || rsa.getEndTime() != null)) {
+          saveAvailability(rsa, id);
+        }
       }
     }
 
