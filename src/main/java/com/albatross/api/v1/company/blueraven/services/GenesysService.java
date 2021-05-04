@@ -81,7 +81,7 @@ public class GenesysService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
-    Optional<Contact> result = sqlCache.get("genesys.getContactByPhone", params, new ContactService.ContactMapper<>(Contact.class, om));
+    Optional<Contact> result = sqlCache.get("genesys.getContactIdByPhone", params, new ContactService.ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
