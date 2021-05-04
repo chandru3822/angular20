@@ -63,7 +63,8 @@
           class="back-btn"
           text
           :ripple="false"
-          :to="`/project/${projectId}/details`">
+          :to="`/project/${projectId}/details`"
+          id="qa-back-to-project">
           Back to Project
         </v-btn>
         <v-dialog width="500" v-model="unsavedFieldsModal">
@@ -201,9 +202,10 @@
             />
             <v-btn color="primaryCustom" v-if="cfg.uniqueBehaviorTypeId === 1" class="white--text"
                    :disabled="uniqueAlreadyHasValue"
+                   id="qa-round-robin-button"
                    @click="showRoundRobin = !showRoundRobin">Round Robin
             </v-btn>
-            <div v-if="cfg.uniqueBehaviorTypeId === 1 && showRoundRobin">
+            <div v-if="cfg.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
               <v-toolbar flat color="transparent">
                 <v-toolbar-title>Lead Allocation</v-toolbar-title>
               </v-toolbar>
@@ -221,12 +223,14 @@
                   <div class="text-right" v-if="availabilityDateField.dateValue">
                     <v-btn color="primaryCustom" dark class="white--text"
                            :loading="searchLoading"
+                           id="qa-round-robin-search"
                            @click="getAvailableTimeSlots">
                       Search
                     </v-btn>
                   </div>
                   <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
                             v-model="selectedTimeSlot"
+                            id="qa-round-robin-time-select"
                             :items="timeSlots"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
@@ -245,7 +249,7 @@
                   </div>
                   <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
                     <v-btn color="primaryCustom" class="white--text"
-                           @click="saveCloserAppointment">
+                           @click="saveCloserAppointment" id="qa-round-robin-save">
                       Save Appointment
                     </v-btn>
                   </div>
