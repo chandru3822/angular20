@@ -66,7 +66,7 @@
               </template>
 
               <template #item="{ item }">
-                <tr  class="text-left"  :class="{'shaded-row': drillDownAttachments.indexOf(item) % 2}">
+                <tr  class="text-left"  :class="{'primary-row': item.main}">
                   <td class="text-left">
                     <v-btn
                       width="100%"
@@ -323,5 +323,8 @@ export default {
   .attachment-table {
     border-top: solid 2px #E0E0E0;
     border-bottom: solid 2px #E0E0E0;
+  }
+  .primary-row{
+    background-color: #ebf5ff !important;
   }
 </style>
