@@ -73,7 +73,7 @@ public class GenesysService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     String cleanPhoneNumber = phoneNumber.replaceAll("[^0-9]", "");
     if (phoneNumber.startsWith("1")) {
-      phoneNumber.substring(1);
+      cleanPhoneNumber = phoneNumber.substring(1);
     }
 
     HashMap<String, Object> params = new HashMap<>();
