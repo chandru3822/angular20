@@ -230,7 +230,7 @@
                   </div>
                   <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
                             v-model="selectedTimeSlot"
-                            id="qa-round-robin-time-select"
+                            class="qa-round-robin-time-select"
                             :items="timeSlots"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
