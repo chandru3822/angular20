@@ -99,7 +99,7 @@
                       <strong>Uploaded Date: </strong>{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}<br/>
                     </span>
                   </td>
-                  <td class="text-right" v-if="projectProcessStepId == null && item.projectProcessStepId != null">
+                  <td class="text-right" v-if="(projectProcessStepId == null && item.projectProcessStepId == null) || projectProcessStepId != null">
                     <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
                       <v-icon>edit</v-icon>
                     </v-btn>
