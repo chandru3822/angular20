@@ -1050,7 +1050,11 @@ public class SmartlistService {
               } else if (r.getDataTypeRequirementId() != null && List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
                 whereClause.append(String.format(" date_trunc('hour', %s) %s date_trunc('hour', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
               } else {
-                whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                if (r.getSmartlistSystemListId() != null) {
+                  whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+                } else {
+                  whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                }
               }
             }
           }
@@ -1252,7 +1256,11 @@ public class SmartlistService {
           } else if (List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
             projectsWhereClause.append(String.format(" date_trunc('hour', %s) %s date_trunc('hour', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
           } else {
-            projectsWhereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+            if (r.getSmartlistSystemListId() != null) {
+              projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+            } else {
+              projectsWhereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+            }
           }
         }
       }
@@ -1597,7 +1605,11 @@ public class SmartlistService {
             } else if (List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
               whereClause.append(String.format(" date_trunc('hour', %s) %s date_trunc('hour', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+              if (r.getSmartlistSystemListId() != null) {
+                whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+              } else {
+                whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+              }
             }
           }
         }
@@ -1823,7 +1835,7 @@ public class SmartlistService {
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 5:
                 if (r.getSmartlistSystemListId() != null) {
-                  return r.getListOfValueId();
+                  return String.format("sort(array[%s]::int[])", r.getListOfValueId());
                 }
                 if (r.getIsCustomValue()) {
                     return requirementValue;
