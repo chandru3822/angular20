@@ -6,7 +6,7 @@
           Add Schedule
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
-          <v-card-title>Add Schedule</v-card-title>
+          <v-card-title>Add New Schedule</v-card-title>
           <DatetimePickerInput
             v-model="newSchedule.startDate"
             :timezone="this.timezone"
@@ -21,7 +21,6 @@
             :format="'MMMM DD, YYYY'"
             label="End Date"
           />
-
           <v-data-table
             :items="newSchedule.resourceScheduleAvailability"
             :fixed-header="true"
@@ -51,7 +50,32 @@
             <template #item="{ item, index }">
               <tr class="clickable" :class="{'shaded-row': index % 2}">
                 <td class="text-left">{{item.dayOfWeek}}</td>
-                <td class="text-left">
+                <td class="text-left" v-if="useSlotSchedule">
+                  <v-select
+                    v-model="item.resourceSlotScheduleId"
+                    :items="slotSchedules"
+                    label="Schedule"
+                    item-text="scheduleName"
+                    item-value="id"
+                    clearable
+                    @change="item.startTime = null, item.endTime = null"
+                  >
+                    <template slot="item" slot-scope="data">
+                      <!-- HTML that describes how select should render items when the select is open -->
+                      {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
+                    </template>
+                  </v-select>
+
+                  <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
+                    <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
+                      <input type="checkbox"
+                             @change="changeExcludedSlots(item, slot.id)"
+                             :checked="!item.excludedResourceSlotTimeIds.includes(slot.id)">
+                      {{slot.startTime | formatDateZoneless()}} - {{slot.endTime | formatDateZoneless()}}
+                    </div>
+                  </v-card>
+                </td>
+                <td class="text-left" v-else>
                   <DatetimePickerInput
                     v-model="item.startTime"
                     :timezone="timezone"
@@ -59,11 +83,7 @@
                     format="h:mm a"
                     label="Start Time"
                   />
-                </td>
-                <td>
-                  to
-                </td>
-                <td class="text-left">
+                  <div class="d-inline-block px-3 align-self-center">to</div>
                   <DatetimePickerInput
                     v-model="item.endTime"
                     :timezone="timezone"
@@ -72,7 +92,7 @@
                     label="End Time"
                   />
                 </td>
-                <td class="text-left px-0" width="150px">
+                <td class="text-left px-0" width="150px"  v-if="!useSlotSchedule">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
                       <v-btn text small v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'down')">
@@ -589,6 +609,7 @@
             this.newSchedule.resourceScheduleAvailability.push({
               dayOfWeekId: wd.id,
               dayOfWeek: wd.dayOfWeek,
+              excludedResourceSlotTimeIds: [],
               startTime: null,
               endTime: null,
               resourceSlotScheduleId: null

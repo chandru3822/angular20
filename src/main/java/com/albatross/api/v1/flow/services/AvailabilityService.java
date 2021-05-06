@@ -186,17 +186,20 @@ public class AvailabilityService {
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
     params.put("createdById", user.getId());
 
+    Long rsaId = null;
     //if existing and archived, or existing and they send in null start and end time
     if (hasId && (archived || (null == rsa.getResourceSlotScheduleId() && (null == rsa.getStartTime() && null == rsa.getEndTime())))) {
+      rsaId = rsa.getId();
       params.put("id", rsa.getId());
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.archiveHours", params);
     } else if (hasId) {
+      rsaId = rsa.getId();
       params.put("id", rsa.getId());
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateHours", params);
     } else if ((null != rsa.getResourceSlotScheduleId()) || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
-      sqlCache.update("availability.insertHours", params);
+      rsaId = sqlCache.updateReturningId("availability.insertHours", params, "id").longValue();
     }
 
     //handle the saving of excluded slot times
@@ -206,7 +209,7 @@ public class AvailabilityService {
       excludedParams.put("excludedResourceSlotTimeIds", rsa.getExcludedResourceSlotTimeIds().isEmpty() ? null : rsa.getExcludedResourceSlotTimeIds());
       //adding this param cuz sql array null checks are too hard for me
       excludedParams.put("excludedIsEmpty", rsa.getExcludedResourceSlotTimeIds().isEmpty());
-      excludedParams.put("resourceScheduleAvailabilityId", rsa.getId());
+      excludedParams.put("resourceScheduleAvailabilityId", rsaId);
       excludedParams.put("userId", user.getId());
 
       //delete any existing excluded slots that are no longer in the excluded array
