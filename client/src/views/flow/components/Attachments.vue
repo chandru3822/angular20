@@ -163,6 +163,7 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
 import {deleteAttachment} from '@/services/attachmentService'
+import orderBy from 'lodash.orderby'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
@@ -257,7 +258,8 @@ export default {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
       })
-      this.attachments = data
+
+      this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
     drillDown: function(type) {
      this.displayType = type
