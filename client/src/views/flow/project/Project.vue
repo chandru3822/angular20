@@ -153,8 +153,11 @@
                 item-text="projectStatusType"
                 item-value="id"
                 @change="updateStatus"
-                label="Project Status"
+                label="Project Stage"
               />
+              <div class="text-left project-stage" v-if="Object.keys(project).length > 0 && project.companyProjectStatusTypeId !== null && statuses.length > 0">
+                Status: {{ projectStage }}
+              </div>
             </v-col>
           </v-row>
         </v-col>
@@ -303,6 +306,11 @@
       } else {
         this.toPath = to.path
         this.unsavedFieldsModal = true
+      }
+    },
+    computed: {
+      projectStage() {
+        return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType
       }
     },
     methods: {
@@ -474,6 +482,11 @@
 
   .project-company-subheader {
     font-size: 12px;
+  }
+
+  .project-stage {
+    font-size: 12px;
+    margin-top: -10px;
   }
 </style>
 
