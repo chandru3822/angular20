@@ -253,6 +253,8 @@ public class AttachmentService {
         Attachment attachment = attachments.get(0);
         setAttachmentUrl(storageBucket, attachment);
         setAttachmentPresignedUrl(storageBucket, attachment);
+        //all project attachments are considered "main"
+        attachment.setMain(true);
         return attachment;
     }
 
