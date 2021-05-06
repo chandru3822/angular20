@@ -26,6 +26,12 @@ constants.POSTAL_CODE_RULES = [
   v => /^\d{5}(?:[-\s]\d{4})?$/.test(v) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 
+constants.POSTAL_CODE_REQUIRED_RULES = [
+  v => !!v || "Field is required",
+  v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 characters',
+  v => /^\d{5}(?:[-\s]\d{4})?$/.test(v) || "Postal Code must be a valid format: ##### or #####-####"
+]
+
 constants.CITY_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
   v => /^[-.a-zA-Z0-9\s]+$/.test(v) || "City must only contain alphanumeric, hyphen, period, or whitespace characters"
@@ -41,9 +47,21 @@ constants.PHONE_RULES = [
   v => /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v) || "Please reformat the Phone field with a valid phone number"
 ]
 
+constants.PHONE_REQUIRED_RULES = [
+  v => !!v || "Field is required",
+  v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+  v => /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v) || "Please reformat the Phone field with a valid phone number"
+]
+
 constants.NAME_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-  v => /^[-.&//a-zA-Z0-9\s]+$/.test(v) || "Please reformat the Phone field with a valid phone number"
+  v => (!v || (/^[-.&//a-zA-Z0-9\s]+$/.test(v) )) || "Cannot contain special characters"
+]
+
+constants.NAME_REQUIRED_RULES = [
+  v => !!v || "Field is required",
+  v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
+  v => /^[-.&//a-zA-Z0-9\s]+$/.test(v) || "Cannot contain special characters"
 ]
 
 

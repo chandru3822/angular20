@@ -20,7 +20,7 @@
               <v-text-field text
                             label="First Name"
                             id="qa-first-name-field"
-                            :rules="nameRules"
+                            :rules="nameRequiredRules"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
@@ -120,11 +120,12 @@ export default {
       contact: {},
       isNumberOrHyphen,
       states: [],
-      postalCodeRules: constants.POSTAL_CODE_RULES,
+      postalCodeRules: constants.POSTAL_CODE_REQUIRED_RULES,
       cityRules: constants.CITY_RULES,
       addressRules: constants.ADDRESS_RULES,
-      phoneRules: constants.PHONE_RULES,
+      phoneRules: constants.PHONE_REQUIRED_RULES,
       nameRules: constants.NAME_RULES,
+      nameRequiredRules: constants.NAME_REQUIRED_RULES,
       loadingInsertFields: true,
       countries: [],
       dirtyCfvs: [],
