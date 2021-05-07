@@ -32,6 +32,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
 
+    @Value(value = "${spring.profiles.active}")
+    private String springProfile;
+
+    @Value(value = "${app.home_url}")
+    private String homeUrl;
+
     @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
     private Boolean processFutureAppointments;
 
@@ -70,6 +76,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Scheduled(fixedDelayString = "${app.cron.sendSms.delay:20000}")
     public void sendSmsNotifications() {
         if (sendSmsNotifications) {
+            log.info("WTF: {} : {}", springProfile, homeUrl);
             smsService.processMessages();
 
             // Update the status for any text messages that Twilio has recently told us about.
