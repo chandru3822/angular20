@@ -1003,14 +1003,14 @@ export default new Router({
           },
           children: [
             {
-              path: 'closers',
+              path: 'users',
               meta: {title: 'Albatross - Commissions'},
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Closers.vue'),
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Users.vue'),
             }, {
-              path: 'closers/:id',
+              path: 'users/:id',
               meta: {title: 'Albatross - Commissions'},
-              name: 'closer',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Closer.vue'),
+              name: 'commissionUser',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/User.vue'),
             }, {
               path: 'commissions',
               name: 'commissions',

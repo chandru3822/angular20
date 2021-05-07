@@ -10,7 +10,7 @@
       <v-card-text  v-if="constants.IS_MOBILE">
         <v-btn text class="mr-3" to="/contacts">Cancel</v-btn>
         <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields"
-               @click="validate" >Save</v-btn>
+               @click="validate" id="qa-add-contact-save"  >Save</v-btn>
       </v-card-text>
 
       <v-form ref="contactForm">
@@ -19,23 +19,28 @@
             <v-col cols="12" sm="6">
               <v-text-field text
                             label="First Name"
-                            :rules="nameRules"
+                            id="qa-first-name-field"
+                            :rules="nameRequiredRules"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
+                            id="qa-last-name-field"
                             :rules="nameRules"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
+                            id="qa-address-field"
                             :rules="addressRules"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
+                            id="qa-city-field"
                             :rules="cityRules"
                             v-model="contact.city"></v-text-field>
               <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
+                        id="qa-state-field"
                         item-text="state"
                         item-value="id"
               ></v-select>
@@ -44,17 +49,21 @@
               <v-text-field text
                             label="Phone"
                             :rules="phoneRules"
+                            id="qa-phone-field"
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
+                            id="qa-mobile-field"
                             :rules="phoneRules"
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
+                            id="qa-email-field"
                             :rules="emailRules"
                             v-model="contact.email"></v-text-field>
               <v-text-field text
                             label="Zip Code"
+                            id="qa-zip-field"
                             counter
                             maxlength="10"
                             @keypress="isNumberOrHyphen"
@@ -63,6 +72,7 @@
               <v-select v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
+                        id="qa-country-field"
                         item-text="country"
                         item-value="id"
               ></v-select>
@@ -110,11 +120,12 @@ export default {
       contact: {},
       isNumberOrHyphen,
       states: [],
-      postalCodeRules: constants.POSTAL_CODE_RULES,
+      postalCodeRules: constants.POSTAL_CODE_REQUIRED_RULES,
       cityRules: constants.CITY_RULES,
       addressRules: constants.ADDRESS_RULES,
-      phoneRules: constants.PHONE_RULES,
+      phoneRules: constants.PHONE_REQUIRED_RULES,
       nameRules: constants.NAME_RULES,
+      nameRequiredRules: constants.NAME_REQUIRED_RULES,
       loadingInsertFields: true,
       countries: [],
       dirtyCfvs: [],
@@ -127,7 +138,7 @@ export default {
   created () {
     //todo: use only for testing
     if(VUE_APP_ENV === 'local') {
-      this.setFakeContact()
+      // this.setFakeContact()
     }
     this.getCompanyStates()
     this.getCountries()
@@ -177,6 +188,9 @@ export default {
       try {
         const {data} = await getCountries(parseInt(this.companyId))
         this.countries = data
+        if(this.countries?.length === 1) {
+          this.contact.companyCountryId = this.countries[0].id
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

@@ -75,10 +75,17 @@
     created() {
       this.getCommissions()
     },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        this.getCommissions()
+      }
+    },
     data() {
       return {
         snackbar: {},
         dataLoading: true,
+        positionId: this.$store.state.brs.commissionPositionId,
         search: '',
         headers: [
           {text: 'Plan Name', value: 'name', show: true},
@@ -93,7 +100,7 @@
       async getCommissions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/plans`, 'blueraven')
+          const {data} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
           this.commissions = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

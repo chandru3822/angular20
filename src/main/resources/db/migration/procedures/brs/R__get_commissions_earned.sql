@@ -37,7 +37,7 @@ BEGIN
                                FROM flow.project p1
                                         inner join milestone_one_projects mop on mop.project_id = p1.id and mop.milestone_one_complete_date::date <= p_period_end
                                         inner join brs.project_commission pc on pc.project_id = p1.id
-                                        inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
+                                        inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
                                         inner join brs.commission_plan_allocation cpa
                                                    on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
                                         left join brs.commission_plan_source_allocation cpsa
@@ -60,7 +60,7 @@ BEGIN
                                FROM flow.project p1
                                         inner join milestone_two_projects mtp on mtp.project_id = p1.id and mtp.milestone_two_complete_date::date <= p_period_end
                                         inner join brs.project_commission pc on pc.project_id = p1.id
-                                        inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
+                                        inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
                                         inner join brs.commission_plan_allocation cpa
                                                    on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
                                         left join brs.commission_plan_source_allocation cpsa

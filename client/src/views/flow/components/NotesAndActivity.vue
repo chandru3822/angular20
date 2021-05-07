@@ -18,6 +18,7 @@
             <v-textarea class="py-2" hide-details
                         auto-grow
                         rows="4"
+                        @change="dirtyNote = true"
                         background-color="#F2F6F8"
                         filled v-model="note.note">
             </v-textarea>
@@ -40,7 +41,7 @@
           <v-btn color="primaryCustom" class="white--text"
                  :disabled="!note.note || savingNote"
                  @click="saveNote(note)">Save</v-btn>
-          <v-btn text v-if="note.note" @click="note={}">
+          <v-btn text v-if="note.note" @click="[note={}, dirtyNote = false]">
             <span>cancel</span>
           </v-btn>
         </div>
@@ -80,6 +81,7 @@
                 <v-textarea class="py-2" hide-details
                             auto-grow
                             rows="4"
+                            @change="dirtyNote = true"
                             background-color="#F2F6F8"
                             filled v-model="item.note"></v-textarea>
 
@@ -101,7 +103,7 @@
                 <v-btn color="primaryCustom" class="white--text"
                        :disabled="!item.note"
                        @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save</v-btn>
-                <v-btn text @click="[item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
+                <v-btn text @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
                   <span>cancel</span>
                 </v-btn>
               </div>
@@ -195,6 +197,7 @@
                 <v-textarea solo v-model="item.reply"
                             hide-details
                             auto-grow
+                            @change="dirtyNote = true"
                             rows="1"
                             placeholder="Add a comment..." class="mt-1"></v-textarea>
 
@@ -233,6 +236,7 @@
                 >
                   <v-textarea class="py-2" hide-details
                               auto-grow
+                              @change="dirtyNote = true"
                               rows="4"
                               background-color="#F2F6F8"
                               filled v-model="cn.note"></v-textarea>
@@ -256,7 +260,7 @@
                   <v-btn color="primaryCustom" class="white--text"
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save</v-btn>
-                  <v-btn text @click="[cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
+                  <v-btn text @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
                     <span>cancel</span>
                   </v-btn>
                 </div>
@@ -366,6 +370,7 @@ export default {
       snackbar: {},
       addNote: false,
       note: {},
+      dirtyNote: false,
       savingNote: false,
       userId: this.$store.state.user.details.id,
       noteOptions: [
@@ -387,6 +392,9 @@ export default {
     this.getUsers()
   },
   methods: {
+    hasUnsavedNotes() {
+      return this.dirtyNote
+    },
     async deleteNote(n, isChildNote, item) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
@@ -428,6 +436,7 @@ export default {
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.dirtyNote = false
         this.savingNote = false
       } catch (e) {
         console.error('*** ERROR ***', e)

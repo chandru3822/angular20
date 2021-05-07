@@ -108,9 +108,9 @@ public class CommissionManagementController {
         return commissionManagementService.findAvailableMilestones(id);
     }
 
-    @GetMapping(value = "/plans")
-    public List<CommissionPlan> getCommissionPlans() {
-        return commissionManagementService.getCommissionPlans();
+    @GetMapping(value = "/plans/{positionId}")
+    public List<CommissionPlan> getCommissionPlans(@PathVariable Long positionId) {
+        return commissionManagementService.getCommissionPlans(positionId);
     }
 
     @GetMapping(value = "/plan/{planId}")
@@ -139,6 +139,11 @@ public class CommissionManagementController {
     @GetMapping(value = "/closers")
     public List<ClosersPlan> getClosers() {
         return commissionManagementService.getClosers();
+    }
+
+    @GetMapping(value = "/setters")
+    public List<ClosersPlan> getSetters() {
+      return commissionManagementService.getSetters();
     }
 
     @DeleteMapping(value = "/{id}/commissionUser/{commissionPlanUserId}")
@@ -191,14 +196,21 @@ public class CommissionManagementController {
         commissionManagementService.updatePlanUser(planId, user);
     }
 
-    @PostMapping(value = "/{planId}/users")
+    @PostMapping(value = "/{planId}/users/{positionId}")
     public ResponseEntity insertUser(@PathVariable Long planId,
+                                     @PathVariable Long positionId,
+                                     @RequestParam(required = false) Boolean addUserToPlan,
                                      @RequestBody PlanUser user) {
         try {
-            commissionManagementService.insertUser(planId, user);
-//            String users = commissionManagementService.getCommissionPlanUsers(planId);
-            String plans = commissionManagementService.getPlans(user.getUserId());
-            return ResponseEntity.ok(plans);
+            commissionManagementService.insertUser(planId, user, positionId);
+            String response;
+            //this same endpoint is used when adding a user to a plan or when adding a plan to a user. need to return different response in each scenario
+            if(null != addUserToPlan && addUserToPlan) {
+              response = commissionManagementService.getCommissionPlanUsers(planId);
+            } else {
+              response = commissionManagementService.getPlans(user.getUserId());
+            }
+            return ResponseEntity.ok(response);
         } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),

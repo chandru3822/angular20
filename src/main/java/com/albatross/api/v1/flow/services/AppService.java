@@ -135,6 +135,23 @@ public class AppService {
     return attachments;
   }
 
+  public Long getMinVersionForType(Long appTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("appTypeId", appTypeId);
+
+    Long minVersion = sqlCache.queryForObject("app.getMinVersionForType", params, Long.class);
+
+    return minVersion;
+  }
+
+  public void saveMinVersionForType(Long appTypeId, Long minBuildNumber) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("appTypeId", appTypeId);
+    params.put("minBuildNumber", minBuildNumber);
+
+    sqlCache.update("app.saveMinVersionForType", params);
+  }
+
   public void showOrHideAttachment(AppAttachment attachment) {
     User currentUser = securityService.getCurrentUser();
 

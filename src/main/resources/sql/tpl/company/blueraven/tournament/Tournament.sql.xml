@@ -291,4 +291,20 @@
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id)
     values (:loserUserId, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 2), :userId)
   ]]></tournament.insertLoserToLastChance>
+
+  <tournament.overrideMatchUser1><![CDATA[
+    update brs.tournament_match
+    set user_1_id = :userId,
+        date_modified = now(),
+        modified_by_id = :currentUserId
+    where id = :matchId
+  ]]></tournament.overrideMatchUser1>
+
+  <tournament.overrideMatchUser2><![CDATA[
+    update brs.tournament_match
+    set user_2_id = :userId,
+        date_modified = now(),
+        modified_by_id = :currentUserId
+    where id = :matchId
+  ]]></tournament.overrideMatchUser2>
 </sql>

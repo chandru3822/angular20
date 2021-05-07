@@ -1,6 +1,23 @@
 <sql>
   <attachment.findById><![CDATA[
-    SELECT *
+    SELECT id,
+       attachment_type_id,
+       company_id,
+       filename,
+       content_type,
+       s3_key,
+       size,
+       archived,
+       substring(filename, '\.([^\.]+)$') as file_extension,
+       date_created,
+       date_modified,
+       created_by_id,
+       modified_by_id,
+       migrated_deal_id,
+       migrated_deal_resource_id,
+       show,
+       migrated_new_deal_id,
+       migrated_new_deal_resource_id
     FROM flow.attachment
     WHERE id = :id
   ]]></attachment.findById>
@@ -13,6 +30,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.archived,
       src.source_id,
       a.date_created,
@@ -32,6 +50,7 @@
       a.s3_key,
       a.size,
       a.show,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
       a.date_created,
       a.date_modified,
@@ -49,6 +68,7 @@
       a.id,
       a.attachment_type_id,
       a.content_type,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.filename,
       a.s3_key,
       a.size,
@@ -74,6 +94,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
       a.archived
     FROM flow.attachment a
@@ -93,6 +114,7 @@
       a.s3_key,
       a.size,
       a.archived,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
       a.date_created,
       a.date_modified
@@ -150,6 +172,12 @@
     where at.id = :id
   ]]></attachment.getAttachmentType>
 
-
+  <attachment.update><![CDATA[
+    update flow.attachment
+    set filename = :filename,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></attachment.update>
 
 </sql>

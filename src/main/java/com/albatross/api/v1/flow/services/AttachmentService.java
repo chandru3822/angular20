@@ -253,6 +253,8 @@ public class AttachmentService {
         Attachment attachment = attachments.get(0);
         setAttachmentUrl(storageBucket, attachment);
         setAttachmentPresignedUrl(storageBucket, attachment);
+        //all project attachments are considered "main"
+        attachment.setMain(true);
         return attachment;
     }
 
@@ -298,6 +300,19 @@ public class AttachmentService {
 
         Optional<AttachmentType> result = sqlCache.get("attachment.getAttachmentType", params, AttachmentType.class);
         return result.orElse(null);
+    }
+
+    public Attachment update (Long id, Attachment attachment) {
+      User currentUser = securityService.getCurrentUser();
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", id);
+      params.put("filename", attachment.getFilename());
+      params.put("userId", currentUser.getId());
+
+      sqlCache.update("attachment.update", params);
+
+      return findById(id);
     }
 
     /**
