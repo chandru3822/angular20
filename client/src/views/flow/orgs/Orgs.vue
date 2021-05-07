@@ -42,15 +42,18 @@
               <td>
                 <v-text-field dense outlined hide-details
                               v-model="search.type"
+                              @blur="setLocalStorage"
                               placeholder="Type"></v-text-field>
               </td>
               <td>
                 <v-text-field dense outlined hide-details
                               v-model="search.parent"
+                              @blur="setLocalStorage"
                               placeholder="Parent"></v-text-field>
               </td>
               <td>
                 <v-text-field dense outlined hide-details
+                              @blur="setLocalStorage"
                               v-model="search.active" placeholder="Active"></v-text-field>
               </td>
             </tr>

@@ -110,7 +110,35 @@ public class LoanPalService {
         }
     }
 
-    JSONObject application = applications.getJSONObject(0);
+    JSONObject application = null;
+    int approvedWithStipsIndex = -1;
+    if (applications.length() > 1) {
+      for (int i = 0; i < applications.length(); i++) {
+        JSONObject app = applications.getJSONObject(i);
+        if (app.getJSONObject("status").getString("application").equals("Approved")) {
+          application = app;
+          break;
+        }
+        else if (app.getJSONObject("status").getString("application").equals("ApprovedWithStips")) {
+          approvedWithStipsIndex = i;
+        }
+      }
+      // If no Approved loan was found
+      if (application == null) {
+        // If an ApprovedWithStips loan exists
+        if (approvedWithStipsIndex != -1) {
+          application = applications.getJSONObject(approvedWithStipsIndex);
+        }
+        else {
+          // If no Approved or ApprovedWithStips loans are found, use the last/most recent loan application
+          application = applications.getJSONObject(applications.length() - 1);
+        }
+      }
+    }
+    else {
+      application = applications.getJSONObject(0);
+    }
+
     JSONObject loanPalApp = getApplicationByLoanId(getLoanId(application));
     JSONObject statusJson = loanPalApp.getJSONObject("loanStatus");
     returnApplication.put("status", getLoanStatusForMobile(statusJson.getString("application")));

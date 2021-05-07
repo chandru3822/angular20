@@ -146,9 +146,11 @@ public class OverridePlanController {
     @PostMapping(value = "/{id}/assignedUsers/{positionId}")
     public ResponseEntity addAssignedUser(@PathVariable Long id,
                                           @PathVariable Long positionId,
+                                          @RequestParam(required = false) Boolean addUserToPlan,
                                           @RequestBody OverridePlanService.OverrideAssignedUser assignedUser) {
         try {
-            String result = overridePlanService.updateAssignedUser(id, assignedUser, positionId);
+
+            String result = overridePlanService.updateAssignedUser(id, assignedUser, positionId, addUserToPlan);
             return ResponseEntity.ok(result);
         } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");

@@ -466,7 +466,13 @@ FROM (SELECT cp.id,
                            u.id                               AS "userId",
                            cpu.start_date                     AS "startDate",
                            cpu.end_date                       AS "endDate",
-                           false                              as "archived"
+                           false                              as "archived",
+                           (select cfv.text_value
+                          from flow.user_custom_field_value cfv
+                                 inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                            and cfga.archived is false
+                           and cfv.user_id = cpu.user_id ) as "employeeId"
                     FROM brs.commission_plan_user cpu
                              INNER JOIN flow.user u ON cpu.user_id = u.id
                              INNER JOIN flow.user_position up ON up.user_id = u.id
@@ -498,7 +504,13 @@ FROM (SELECT cp.id,
                WHEN cp.position_id = 4
                  THEN up.position_id IN (4,5,6)
                END
-             )                                  AS position
+             )                                  AS position,
+             (select cfv.text_value
+                          from flow.user_custom_field_value cfv
+                                 inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
+                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                            and cfga.archived is false
+                           and cfv.user_id = cpu.user_id ) as "employeeId"
       FROM brs.commission_plan_user cpu
              INNER JOIN brs.commission_plan cp ON cpu.commission_plan_id = cp.id
              INNER JOIN flow.user u ON cpu.user_id = u.id
@@ -781,7 +793,7 @@ FROM (SELECT cp.id,
     <commissionPlan.clone><![CDATA[
     SELECT clone_commission_plan AS id
     FROM brs.clone_commission_plan(
-    :planId::int, :startDate::DATE, :users::int[], :createdBy::int, :positionId::int)
+    :planId::int, :startDate::DATE, :users::int[], :createdBy::int)
     ]]></commissionPlan.clone>
 
     <commissionPlan.approve><![CDATA[

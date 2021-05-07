@@ -22,8 +22,14 @@ export function getFileIcon(file) {
       return 'mdi-file-image'
     case 'csv':
     case 'xls':
+    case 'xlsb':
+    case 'xlsm':
     case 'xlsx':
       return 'mdi-file-table'
+    case 'dxf':
+    case 'dtf':
+    case 'dwg':
+      return 'mdi-file-cad'
     default: //basic file image
       return 'insert_drive_file'
   }
@@ -69,6 +75,16 @@ export async function postRequest(path, body, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
     const {data, status} = await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function postRequestWithRequestParams(path, body, params, companyAbbreviation) {
+  const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
+  try {
+    const {data, status} = await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params})
     return {data, status}
   } catch (e) {
     throw e

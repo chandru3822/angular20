@@ -229,7 +229,7 @@
                         item-value="id"
               ></v-select>
               <v-text-field text
-                            label="Rate per kW ($)"
+                            :label="payRateText"
                             type="number"
                             :disabled="commission.id && commission.statusType !== 'PENDING'"
                             v-model.number="commission.total"></v-text-field>
@@ -760,7 +760,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
+  import {getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
 
   export default {
     name: 'Commission',
@@ -800,6 +800,7 @@
       return {
         snackbar: {},
         cloneDialog: false,
+        payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         addUser: false,
         newUser: {},
         usersToAdd: [],
@@ -899,7 +900,7 @@
         })
 
         if(!this.cloneDateError) {
-          this.clonePlan(commission.users, cloneStartDate)
+          this.clonePlan(this.commission.users, this.cloneStartDate)
           this.cloneDialog = false;
         }
       },
@@ -949,7 +950,7 @@
         //sum of m1 and m2 payment = rate per kw
         let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
         if(sum !== this.commission.total) {
-          this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
+          this.errorMessages.push(`The sum of all milestone payment amounts must equal the ${this.payRateText}. `)
         }
       },
       planHasActiveUsers () {
@@ -1104,7 +1105,7 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, 'blueraven')
+          const {data} = await postRequestWithRequestParams(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, { addUserToPlan: true }, 'blueraven')
           this.commission.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

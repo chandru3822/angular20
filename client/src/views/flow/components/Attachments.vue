@@ -22,10 +22,14 @@
         </v-col>
       </v-row>
       <v-row v-else>
-        <v-col cols="6" class="text-left py-0">
+        <v-col cols="4" class="text-left" pb-0>
           <v-btn @click="displayType = null">Back</v-btn>
         </v-col>
-        <v-col cols="6" class="py-0">
+        <v-col cols="3" class="text-left py-0">
+          <v-checkbox label="Show non-primary Documents"
+                      v-model="showNonPrimaryDocs"></v-checkbox>
+        </v-col>
+        <v-col cols="5" class="py-3" v-if="!displayType.readOnly">
             <v-file-input
               dense
               ref="fileInput"
@@ -62,7 +66,7 @@
               </template>
 
               <template #item="{ item }">
-                <tr  class="text-left"  :class="{'shaded-row': drillDownAttachments.indexOf(item) % 2}">
+                <tr  class="text-left"  :class="{'primary-row': item.main}">
                   <td class="text-left">
                     <v-btn
                       width="100%"
@@ -87,7 +91,15 @@
                       v-model="item.editableName"
                     ></v-text-field>
                   </td>
-                  <td class="text-right">
+                  <td>
+                    <span class="text-center" v-if="item.projectProcessStepId != null">
+                      {{ item.processStepName }} - {{ item.projectProcessStepId }}<br/>
+                      <strong>Primary:</strong> {{ item.main ? 'Y' : 'N' }}<br/>
+                      <strong>Uploaded By:</strong> {{item.uploadedBy}}<br/>
+                      <strong>Uploaded Date: </strong>{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}<br/>
+                    </span>
+                  </td>
+                  <td class="text-right" v-if="(projectProcessStepId == null && item.projectProcessStepId == null) || projectProcessStepId != null">
                     <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
                       <v-icon>edit</v-icon>
                     </v-btn>
@@ -151,6 +163,7 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
 import {deleteAttachment} from '@/services/attachmentService'
+import orderBy from 'lodash.orderby'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
@@ -170,6 +183,7 @@ export default {
         { text: null, value: 'filename', show: true },
         { text: null, value: 'icons', show: true },
       ],
+      showNonPrimaryDocs: false
     }
   },
   props: {
@@ -194,9 +208,14 @@ export default {
       if (this.displayType === null) {
         return []
       } else {
-        return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
+        if (this.showNonPrimaryDocs) {
+          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
+        }
+        else {
+          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.main)
+        }
       }
-    }
+    },
   },
   methods: {
     getIconForFile (item) {
@@ -239,7 +258,8 @@ export default {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
       })
-      this.attachments = data
+
+      this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
     drillDown: function(type) {
      this.displayType = type
@@ -305,5 +325,8 @@ export default {
   .attachment-table {
     border-top: solid 2px #E0E0E0;
     border-bottom: solid 2px #E0E0E0;
+  }
+  .primary-row{
+    background-color: #ebf5ff !important;
   }
 </style>

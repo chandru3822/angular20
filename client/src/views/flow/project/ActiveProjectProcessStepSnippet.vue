@@ -7,6 +7,7 @@
         :items="steps"
         :fixed-header="true"
         :items-per-page="-1"
+        id="qa-process-step-table"
         hide-default-footer
         disable-sort
         class="elevation-0"
@@ -21,13 +22,13 @@
 
         <template #item="{ item, index }">
           <tr>
-            <td class="text-left">
+            <td class="text-left" id="qa-process-link">
               <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`">{{ item.projectProcessStepId }}</router-link>
             </td>
-            <td class="text-left">{{item.processStepName}}</td>
-            <td class="text-left">{{ item.dateCreated | formatDate('timestamp') }}</td>
-            <td class="text-left">{{ item.owner && item.owner.fullName }}</td>
-            <td class="text-left">{{item.processStepStatusType}}</td>
+            <td class="text-left" id="qa-process-step-name">{{item.processStepName}}</td>
+            <td class="text-left" id="qa-process-date-created">{{ item.dateCreated | formatDate('timestamp') }}</td>
+            <td class="text-left" id="qa-process-owner-name">{{ item.owner && item.owner.fullName }}</td>
+            <td class="text-left" id="qa-process-status">{{item.processStepStatusType}}</td>
           </tr>
         </template>
 

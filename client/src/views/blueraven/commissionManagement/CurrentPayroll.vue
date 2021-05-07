@@ -351,7 +351,7 @@
               <tr>
                 <td v-for="(header,i) in headers" :key="i" class="font-weight-bold">
 
-                  <div v-if="header.value === 'closer'">
+                  <div v-if="header.value === 'closer' || header.value === 'setter'">
                     Total Pay:
                   </div>
                   <div v-if="header.value === 'current_pay'">
@@ -538,6 +538,7 @@
         const val = await this.saveChangesToPayroll(true)
         //dont submit for approval if the save changes request failed
         if(val) {
+          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
           let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
           let params = {
             payDate: this.payDate
@@ -609,12 +610,18 @@
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.currentPayroll = data
+          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
           this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
           this.getStatusColor()
+          if(null != this.currentPayroll.periodEnd) {
+            await this.getAccountingData()
+          } else {
+            this.dataLoading = false
+            this.accountingData = []
+          }
           if(!keepLoading) {
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          // await this.getAccountingData()
           return true
         } catch (e) {
           console.error('*** ERROR ***', e)

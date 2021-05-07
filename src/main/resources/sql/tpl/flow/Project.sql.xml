@@ -287,7 +287,8 @@
       a.attachment_type_id,
       a.content_type,
       a.s3_key,
-      a.archived
+      a.archived,
+      true as main
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
     where pa.project_id = :projectId

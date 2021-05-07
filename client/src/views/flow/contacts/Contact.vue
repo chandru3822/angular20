@@ -50,6 +50,7 @@
                            color="primaryCustom"
                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
+                           id="qa-create-project-button"
                            @click="getAvailableProcesses">
                       Add Project
                     </v-btn>
@@ -64,12 +65,13 @@
               <v-select v-model="selectedProcess"
                         :items="availableProcesses"
                         label="Process"
+                        id="qa-process-selector"
                         placeholder="Select one..."
                         item-text="processName"
                         return-object
-                        class="mt-2"
+                        class="mt-2 qa-process-selector"
               ></v-select>
-              <v-btn text :disabled="!selectedProcess" @click="convertToCustomer">
+              <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
                 Add Project
               </v-btn>
             </v-card>
@@ -148,6 +150,7 @@
             <v-form ref="address">
               <v-text-field text
                             label="First Name"
+                            id="qa-first-name-field"
                             placeholder=" "
                             :rules="nameRules"
                             @change="dirtySystemFields = true"
@@ -155,6 +158,7 @@
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
                             label="Last Name"
+                            id="qa-last-name-field"
                             placeholder=" "
                             :rules="nameRules"
                             @change="dirtySystemFields = true"
@@ -162,6 +166,7 @@
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
+                            id="qa-address-field"
                             placeholder=" "
                             :rules="addressRules"
                             :readonly="!userCanEdit"
@@ -169,6 +174,7 @@
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
+                            id="qa-city-field"
                             placeholder=" "
                             :rules="cityRules"
                             @change="[addressChanged = true, dirtySystemFields = true]"
@@ -177,6 +183,7 @@
               <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
+                        id="qa-state-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         @change="[addressChanged = true, dirtySystemFields = true]"
@@ -186,6 +193,7 @@
               <v-select v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
+                        id="qa-country-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         @change="[addressChanged = true, dirtySystemFields = true]"
@@ -195,6 +203,7 @@
               <v-text-field text
                             label="Zip"
                             type="text"
+                            id="qa-zip-field"
                             placeholder=" "
                             @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
@@ -205,6 +214,7 @@
                             v-model="contact.postalCode"></v-text-field>
               <v-text-field text
                             label="Phone"
+                            id="qa-phone-field"
                             placeholder=" "
                             :rules="phoneRules"
                             @change="dirtySystemFields = true"
@@ -212,6 +222,7 @@
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
+                            id="qa-mobile-field"
                             :readonly="!userCanEdit"
                             @change="dirtySystemFields = true"
                             :rules="phoneRules"
@@ -219,6 +230,7 @@
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
+                            id="qa-email-field"
                             placeholder=" "
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
@@ -237,7 +249,7 @@
               v-model="deleteContactConfirm"
               width="500">
               <template #activator="{ on }">
-                <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on">
+                <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
                   Delete Contact
                 </v-btn>
               </template>
@@ -257,13 +269,14 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn
-                    @click="deleteContactConfirm = false">
+                    @click="deleteContactConfirm = false" id="qa-delete-contact-no">
                     No
                   </v-btn>
                   <v-btn
                     color="primaryCustom"
                     text
-                    @click="deleteContact">
+                    @click="deleteContact"
+                    id="qa-delete-contact-yes">
                     Yes
                   </v-btn>
                 </v-card-actions>

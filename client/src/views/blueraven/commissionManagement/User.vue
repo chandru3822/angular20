@@ -397,6 +397,7 @@
         overrideErrorObj: {},
         dataLoading: true,
         overrideSelectedIndex: null,
+        positionId: this.$store.state.brs.commissionPositionId,
         selectedIndex: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
@@ -405,7 +406,6 @@
         timezone: this.$store.state.user.details.timezone.value,
         overridePlans: [],
         newCommissionPlan: {},
-        positionId: this.$route.params.positionId,
         newOverridePlan: {},
         cloneOverridePlan: {},
         addNewCommissionPlan: false,
@@ -458,7 +458,7 @@
         if(this.addNewCommissionPlan) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/commissionManagement/plans`, 'blueraven')
+            const {data} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
             this.commissionPlans = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -584,6 +584,7 @@
         let params = {
           receivingUsers: this.cloneOverridePlan.receivingUsers.filter(r => r.selected).map(r => r.userId),
           assignedUsers: this.cloneOverridePlan.assignedUsers.filter(r => r.selected).map(r => r.userId),
+          positionId: this.cloneOverridePlan.positionId,
           userId: this.userId,
           backdateApprovalCreds: null,
         }
