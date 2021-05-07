@@ -76,7 +76,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Scheduled(fixedDelayString = "${app.cron.sendSms.delay:20000}")
     public void sendSmsNotifications() {
         if (sendSmsNotifications) {
-            log.info("WTF: {} : {}", springProfile, homeUrl);
             smsService.processMessages();
 
             // Update the status for any text messages that Twilio has recently told us about.
