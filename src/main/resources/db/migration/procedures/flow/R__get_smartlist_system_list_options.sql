@@ -26,13 +26,12 @@ begin
               cpsst.archived is not true
         order by name;
     when p_smartlist_system_list_id = 3 then
-      -- company project status
+      -- project status
       return query
-        select cpst.id,
-               cpst.project_status_type as name
-        from flow.company_project_status_type cpst
-        where cpst.company_id = p_company_id and
-              cpst.archived is not true
+        select pst.id,
+               pst.project_status_type as name
+        from flow.project_status_type pst
+        where pst.archived is not true
         order by name;
     when p_smartlist_system_list_id = 4 then
       -- process step status (category)
@@ -43,12 +42,13 @@ begin
         where psst.archived is not true
         order by name;
     when p_smartlist_system_list_id = 5 then
-      -- project status (stage)
+      -- company project status (stage)
       return query
-        select pst.id,
-               pst.project_status_type as name
-        from flow.project_status_type pst
-        where pst.archived is not true
+        select cpst.id,
+               cpst.project_status_type as name
+        from flow.company_project_status_type cpst
+        where cpst.company_id = p_company_id and
+              cpst.archived is not true
         order by name;
     end case;
 end;

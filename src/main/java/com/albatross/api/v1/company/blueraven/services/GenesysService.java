@@ -71,12 +71,17 @@ public class GenesysService {
   public Contact getContactByPhone(String phoneNumber) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    String cleanPhoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+    if (phoneNumber.startsWith("1")) {
+      cleanPhoneNumber = phoneNumber.substring(1);
+    }
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("phone", phoneNumber);
+    params.put("phone", cleanPhoneNumber);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
-    Optional<Contact> result = sqlCache.get("genesys.getContactByPhone", params, new ContactService.ContactMapper<>(Contact.class, om));
+    Optional<Contact> result = sqlCache.get("genesys.getContactIdByPhone", params, new ContactService.ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
@@ -166,15 +171,15 @@ public class GenesysService {
     Contact contact = contactService.getContact(contactId);
     WritableDialerContact wdc = new WritableDialerContact();
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
     contactMap.put("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
     contactMap.put("street1", contact.getStreet1() != null ? contact.getStreet1() : "");
     contactMap.put("street2", contact.getStreet2() != null ? contact.getStreet2() : "");
-    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone() : "");
-    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile() : "");
+    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "");
+    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("contact_type", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("Lead Main State", "");
@@ -201,7 +206,9 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
+    GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
+    goclr.setPageSize(100);
+    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
 
     String lead = (String) contactMap.get("lead_source");
     String leadSourceDetail = (String) contactMap.get("lead_source_detail");
@@ -217,7 +224,7 @@ public class GenesysService {
 
     String contactListId = "";
     for (ContactList cl: contactListEntity.getEntities()) {
-      if (cl.getName().equals(lead)) {
+      if (cl.getName().equals(contactListName)) {
         contactListId = cl.getId();
         break;
       }
@@ -256,7 +263,7 @@ public class GenesysService {
 
     Contact contact = contactService.getContact(contactId);
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
@@ -264,8 +271,8 @@ public class GenesysService {
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
     contactMap.put("street1", contact.getStreet1() != null ? contact.getStreet1() : "");
     contactMap.put("street2", contact.getStreet2() != null ? contact.getStreet2() : "");
-    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone() : "");
-    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile() : "");
+    contactMap.put("phone", contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "");
+    contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("Total Call Attempts", "");
     contactMap.put("Contacted Call Attempts", "");
@@ -386,77 +393,17 @@ public class GenesysService {
   }
 
   private String getContactListName(String lead, String leadSourceDetail, String leadLevel) {
-    HashSet<String> levelOneLeadSourceDetails = new HashSet<>() {{
-      add("SolarReviews");
-      add("Solar Lead Factory");
-      add("RGR");
-      add("Modernize");
-      add("Energy Bill Cruncher");
-      add("Clean Energy Experts");
-      add("Clean Energy Authority");
-    }};
-
-    HashSet<String> levelTwoLeadSourceDetails = new HashSet<>() {{
-      add("Recursive Advertising");
-      add("LeadLabz");
-      add("Energy Bill Cruncher");
-      add("Blue Fire Leads");
-    }};
-
-    HashSet<String> manualCallsSources = new HashSet<>() {{
-      add("Retention");
-      add("Closer Gen");
-      add("Referral");
-      add("Setter Gen");
-      add("Retargeted");
-      add("Purchased Appointments");
-    }};
-
-    if (leadSourceDetail == null) {
-      leadSourceDetail = "";
-    }
-
-    if (leadLevel == null) {
-      leadLevel = "";
-    }
-
     if (leadLevel.equals("1")) {
-      if (lead.equals("Paid Lead Gen")) {
-        if (levelOneLeadSourceDetails.contains(leadSourceDetail)) {
-          return "Level 1";
-        }
-      }
+      return "Level 1";
     }
     else if (leadLevel.equals("2")) {
-      if (lead.equals("Paid Lead Gen")) {
-        if (levelTwoLeadSourceDetails.contains(leadSourceDetail)) {
-          return "Level 3";
-        }
-      }
+      return "Level 2";
     }
     else if (leadLevel.equals("3")) {
-      if (lead.equals("Paid Lead Gen")) {
-        if (leadSourceDetail.equals("Best Company") || leadSourceDetail.equals("Clean Energy Experts")) {
-          return "Level 3";
-        }
-      }
-      else if (lead.equals("Paid Advertising")) {
-        if (leadSourceDetail.equals("Faraday") || leadSourceDetail.equals("Instagram") || leadSourceDetail.equals("Facebook")
-          || leadSourceDetail.equals("YouTube")) {
-          return "Level 3";
-        }
-      }
-      else if (lead.equals("Organic")) {
-        if (leadSourceDetail.equals("Digital Organic")) {
-          return "Level 3";
-        }
-      }
+      return "Level 3";
     }
-    else if (leadLevel.equals("10")) {
+    else if (lead.equals("Paid Advertising") && leadSourceDetail.equals("InsideSales")) {
       return "InsideSales";
-    }
-    else if (manualCallsSources.contains(lead)) {
-      return "Manual Calls";
     }
 
     return null;

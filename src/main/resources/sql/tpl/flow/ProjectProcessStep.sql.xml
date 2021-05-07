@@ -34,6 +34,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
            inner join flow."user" u ON a.created_by_id = u.id
     where ppsa.project_process_step_id = :projectProcessStepId
       and a.archived is not true
+    order by pps.main desc, pps.date_created desc
   ]]></projectProcessStep.getProjectProcessStepAttachments>
 
   <projectProcessStep.getProjectProcessStepAttachmentsForProjectId><![CDATA[
@@ -59,6 +60,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
            inner join flow."user" u ON a.created_by_id = u.id
     where pps.project_id = :projectId
       and a.archived is not true
+    order by pps.main desc, pps.date_created desc
   ]]></projectProcessStep.getProjectProcessStepAttachmentsForProjectId>
 
   <projectProcessStep.addAttachment><![CDATA[

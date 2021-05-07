@@ -66,7 +66,7 @@
               </template>
 
               <template #item="{ item }">
-                <tr  class="text-left"  :class="{'shaded-row': drillDownAttachments.indexOf(item) % 2}">
+                <tr  class="text-left"  :class="{'primary-row': item.main}">
                   <td class="text-left">
                     <v-btn
                       width="100%"
@@ -99,7 +99,7 @@
                       <strong>Uploaded Date: </strong>{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}<br/>
                     </span>
                   </td>
-                  <td class="text-right" v-if="projectProcessStepId == null && item.projectProcessStepId != null">
+                  <td class="text-right" v-if="(projectProcessStepId == null && item.projectProcessStepId == null) || projectProcessStepId != null">
                     <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
                       <v-icon>edit</v-icon>
                     </v-btn>
@@ -163,6 +163,7 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
 import {deleteAttachment} from '@/services/attachmentService'
+import orderBy from 'lodash.orderby'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
@@ -257,7 +258,8 @@ export default {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
       })
-      this.attachments = data
+
+      this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
     drillDown: function(type) {
      this.displayType = type
@@ -323,5 +325,8 @@ export default {
   .attachment-table {
     border-top: solid 2px #E0E0E0;
     border-bottom: solid 2px #E0E0E0;
+  }
+  .primary-row{
+    background-color: #ebf5ff !important;
   }
 </style>
