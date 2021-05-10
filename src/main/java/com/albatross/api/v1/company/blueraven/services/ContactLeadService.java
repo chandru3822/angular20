@@ -309,7 +309,8 @@ public class ContactLeadService {
     }
 
     try {
-      if (ricochetEnabled && !cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)) {
+      if (ricochetEnabled && !cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
+            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L)) {
         postToRicochet(ricochetLead, params);
       }
       else {
@@ -390,6 +391,11 @@ public class ContactLeadService {
       leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
       saveCustomFieldValue(leadSourceDetail, contactId, leadOwnerUserId);
     }
+    // Set Lead Level to 3 for Hubspot contacts
+    CustomFieldValue leadLevel = new CustomFieldValue();
+    leadLevel.setCustomFieldGroupAssignmentId(20977L);
+    leadLevel.setIntValue(3L);
+    saveCustomFieldValue(leadLevel, contactId, leadOwnerUserId);
 
     // handles saving 'Hubspot ID' custom field
     CustomFieldValue hubspotId = new CustomFieldValue();
