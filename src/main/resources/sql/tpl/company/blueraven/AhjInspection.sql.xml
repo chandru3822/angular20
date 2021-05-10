@@ -376,6 +376,7 @@
           documentation_note = :documentationNote,
           mpu_inspection_note = :mpuInspectionNote,
 
+          required_inspection_types = :requiredInspectionTypes,
           inspection_time_window = :inspectionTimeWindow,
           brs_inspection_rep = :brsInspectionRep,
           portal_url = :portalUrl,
@@ -413,6 +414,7 @@
           documentation_note = :documentationNote,
           mpu_inspection_note = :mpuInspectionNote,
 
+          required_inspection_types = :requiredInspectionTypes,
           inspection_time_window = :inspectionTimeWindow,
           brs_inspection_rep = :brsInspectionRep,
           portal_url = :portalUrl,

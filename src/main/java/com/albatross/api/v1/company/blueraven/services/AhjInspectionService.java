@@ -80,6 +80,7 @@ public class AhjInspectionService {
     params.put("timeWindow", inspection.getTimeWindow());
     params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
     params.put("timeWindowPhone", inspection.getTimeWindowPhone());
+    params.put("requiredInspectionTypes", inspection.getRequiredInspectionTypes());
 
     // NOTES
     params.put("schedulingNote", inspection.getSchedulingNote());
