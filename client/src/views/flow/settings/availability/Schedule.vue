@@ -58,7 +58,7 @@
                     item-text="scheduleName"
                     item-value="id"
                     clearable
-                    @change="item.startTime = null, item.endTime = null"
+                    @change="[item.startTime = null, item.endTime = null]"
                   >
                     <template slot="item" slot-scope="data">
                       <!-- HTML that describes how select should render items when the select is open -->
@@ -434,7 +434,7 @@
         }
       },
       getMatchingSlots(resourceSlotScheduleId) {
-        return this.slotSchedules.find(ss => ss.id = resourceSlotScheduleId)?.slotTimes
+        return this.slotSchedules.find(ss => ss.id === resourceSlotScheduleId)?.slotTimes
       },
       buildTimeString(schedule) {
         let timeString = '['
