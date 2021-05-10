@@ -222,11 +222,13 @@
 
           await this.getOverrideUsers(user1)
           this.showScoreData.user = user1 ? m.user1Name : m.user2Name
+          this.showScoreData.userId = user1 ? m.user1Id : m.user2Id
           this.showScoreData.matchId = m.id
           this.showScoreData.isUser1 = user1
           this.showOverrideModal = true
         } else {
           this.showScoreData.user = user1 ? m.user1Name : m.user2Name
+          this.showScoreData.userId = user1 ? m.user1Id : m.user2Id
           this.showScoreData.round = r
           this.showModal = true
         }

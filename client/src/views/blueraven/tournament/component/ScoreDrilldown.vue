@@ -93,16 +93,16 @@
     watch: {
       //this is all dumb. i cant figure out how to make a dialog reload the "created" function when it is opened for a second time
       'userId': async function () {
-        this.onLoad()
+        await this.onLoad()
       },
       'tournamentId': async function () {
-        this.onLoad()
+        await this.onLoad()
       },
       'endDate': async function () {
-        this.onLoad()
+        await this.onLoad()
       },
       'startDate': async function () {
-        this.onLoad()
+        await this.onLoad()
       }
     },
     data() {
@@ -117,7 +117,7 @@
       }
     },
     async created() {
-      this.onLoad()
+      await this.onLoad()
     },
     methods: {
       async onLoad () {

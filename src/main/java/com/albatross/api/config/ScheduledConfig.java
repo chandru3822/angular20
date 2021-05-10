@@ -32,6 +32,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
 
+    @Value(value = "${spring.profiles.active}")
+    private String springProfile;
+
+    @Value(value = "${app.home_url}")
+    private String homeUrl;
+
     @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
     private Boolean processFutureAppointments;
 
