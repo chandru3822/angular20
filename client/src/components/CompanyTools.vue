@@ -87,9 +87,9 @@
         tourneysLoading: false,
         loadComplete: false,
         userId: this.$store.state.user.details.id,
-        headerColor: VUE_APP_ENV === 'local' ? 'pink' :
-                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' || VUE_APP_ENV === 'flux' ? 'orange' :
-                     VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
+        headerColor: VUE_APP_ENV === 'local' ? constants.LOCAL_COLOR :
+                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' || VUE_APP_ENV === 'flux' ?  constants.STAGE_COLOR :
+                     VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
         menuOpen: false,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
       }
