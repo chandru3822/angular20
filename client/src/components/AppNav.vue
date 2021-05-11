@@ -117,7 +117,8 @@ export default {
       companyTools: [],
       model: '',
       headerColor: VUE_APP_ENV === 'local' ? constants.LOCAL_COLOR :
-                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' || VUE_APP_ENV === 'flux' ?  constants.STAGE_COLOR :
+                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ?  constants.STAGE_COLOR :
+                   VUE_APP_ENV === 'flux' ? constants.FLUX_COLOR :
                    VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
       tabs: [ {
         label: 'Contacts',
