@@ -1,3 +1,44 @@
+CREATE OR REPLACE FUNCTION flow.project_details_from_contact()
+    RETURNS TRIGGER AS
+$$
+declare
+    v_owner_user_position_id     integer;
+    v_owner_user_id              integer;
+    v_project_ids                 integer[];
+BEGIN
+    select  owner_user_position_id, up.user_id
+    into v_owner_user_position_id,v_owner_user_id
+    from flow.contact c
+             left join flow.user_position up on up.id = c.owner_user_position_id
+    where c.id = new.id;
+
+
+    select array_agg(id)
+    into v_project_ids
+    from flow.project
+    where contact_id = new.id;
+
+        update brs.project_details
+        set
+            setter_user_position_id        = v_owner_user_position_id,
+            setter_user_id                 = v_owner_user_id
+        where project_id = any(v_project_ids);
+
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+drop trigger if exists project_project_details_for_contact_trg on flow.contact;
+CREATE TRIGGER project_project_details_for_contact_trg
+    after update
+    ON flow.contact
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.project_details_from_contact();
+
+
+
+
 CREATE OR REPLACE FUNCTION flow.project_details()
     RETURNS TRIGGER AS
 $$
