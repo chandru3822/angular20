@@ -24,6 +24,7 @@ BEGIN
             inner join flow.project_process_step pps2 on pps2.id = s1.id
             inner join flow.project_process_step_custom_field_value ppscfv  on pps2.id = ppscfv.project_process_step_id
                 and ppscfv.custom_field_group_assignment_id = p_custom_field_group_assignment_id
+          where s1.id != p_project_process_step_id
     limit 1;
 END
 $BODY$
