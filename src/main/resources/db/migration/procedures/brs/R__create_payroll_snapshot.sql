@@ -68,7 +68,7 @@ BEGIN
                         d.project_id,
                         d.customer_name,
                         d.system_size,
-                        d.closer_user_id,
+                        d.user_id,
                         d.closer,
                         d.source_name,
                         d.cancelled_date,
