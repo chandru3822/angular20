@@ -32,6 +32,7 @@
                 </v-btn>
 
                 <v-btn
+                  v-if="smartlist.id"
                   text
                   @click="copy"
                 >
