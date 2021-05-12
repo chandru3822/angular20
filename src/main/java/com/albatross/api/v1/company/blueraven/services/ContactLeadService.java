@@ -7,9 +7,7 @@ import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.services.HubspotWebhookService;
-import com.albatross.api.v1.flow.services.SMSService;
-import com.albatross.api.v1.flow.services.UserPositionService;
+import com.albatross.api.v1.flow.services.*;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -38,6 +34,7 @@ public class ContactLeadService {
 
   private final SMSService smsService;
   private final SecurityService securityService;
+  private final SystemListService systemListService;
   private final UserPositionService userPositionService;
 
   public void saveContactLead(ContactLead cl) {
@@ -292,6 +289,21 @@ public class ContactLeadService {
       cfvList.add(leadPrice);
     }
 
+    // handles saving 'Referral Generation Representative' custom field
+    if (cl.getReferralGenerationRepresentative() != null) {
+      // Get Referral Generation Representative list of values
+      List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(2L, true, Arrays.asList(494L, 76L), null, 3L);
+      ListOfValue selectedValue = listOfValues.stream().filter(l -> l.getName().equals(cl.getReferralGenerationRepresentative())).findFirst().orElse(null);
+      CustomFieldValue refGenerationRepresentative = new CustomFieldValue();
+      refGenerationRepresentative.setFieldName("Referral Generation Representative");
+      if (selectedValue != null) {
+        refGenerationRepresentative.setCustomFieldGroupAssignmentId(19178L);
+        refGenerationRepresentative.setIntValue(selectedValue.getId());
+        refGenerationRepresentative.setFieldValue(cl.getReferralGenerationRepresentative());
+        cfvList.add(refGenerationRepresentative);
+      }
+    }
+
     for (CustomFieldValue cfv: cfvList) {
       saveCustomFieldValue(cfv, contactId, currentUser.getId());
     }
@@ -344,7 +356,9 @@ public class ContactLeadService {
     return customFieldDropdownValueId.orElse("null");
   }
 
+  // Used to process Hubspot contact CustomFieldValues
   public void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
+    ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     params.put("leadOwnerUserId", leadOwnerUserId);
@@ -355,16 +369,19 @@ public class ContactLeadService {
     // handles saving 'Lead Status' custom field
     if (!leadStatusId.equalsIgnoreCase("null")) {
       CustomFieldValue leadStatus = new CustomFieldValue();
+      leadStatus.setFieldName("Lead Status");
       leadStatus.setCustomFieldGroupAssignmentId(399L);
       leadStatus.setIntValue(Long.parseLong(leadStatusId));
+      leadStatus.setFieldValue("New");
       saveCustomFieldValue(leadStatus, contactId, leadOwnerUserId);
+      cfvList.add(leadStatus);
     }
 
     // handles saving 'Lead Source' custom field
     if (!lead.getLead_source().isBlank()) {
       String leadSourceId = checkIfCustomFieldDropdownValueExists(520, lead.getLead_source());
       CustomFieldValue leadSource = new CustomFieldValue();
-
+      leadSource.setFieldName("Lead Source");
       if (leadSourceId.equalsIgnoreCase("null")) {
         params.put("listOfValueId", 520);
         params.put("customFieldDropdownValue", lead.getLead_source());
@@ -373,13 +390,16 @@ public class ContactLeadService {
 
       leadSource.setCustomFieldGroupAssignmentId(395L);
       leadSource.setIntValue(Long.parseLong(leadSourceId));
+      leadSource.setFieldValue(lead.getLead_source());
       saveCustomFieldValue(leadSource, contactId, leadOwnerUserId);
+      cfvList.add(leadSource);
     }
 
     // handles saving 'Lead Source Detail' custom field
     if (!lead.getLead_source_detail().isBlank()) {
       String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, lead.getLead_source_detail());
       CustomFieldValue leadSourceDetail = new CustomFieldValue();
+      leadSourceDetail.setFieldName("Lead Source Detail");
 
       if (leadSourceDetailId.equalsIgnoreCase("null")) {
         params.put("listOfValueId", 543);
@@ -389,13 +409,17 @@ public class ContactLeadService {
 
       leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
       leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
+      leadSourceDetail.setFieldValue(lead.getLead_source_detail());
       saveCustomFieldValue(leadSourceDetail, contactId, leadOwnerUserId);
+      cfvList.add(leadSourceDetail);
     }
     // Set Lead Level to 3 for Hubspot contacts
     CustomFieldValue leadLevel = new CustomFieldValue();
     leadLevel.setCustomFieldGroupAssignmentId(20977L);
+    leadLevel.setFieldName("Lead Level");
     leadLevel.setIntValue(3L);
     saveCustomFieldValue(leadLevel, contactId, leadOwnerUserId);
+    cfvList.add(leadLevel);
 
     // handles saving 'Hubspot ID' custom field
     CustomFieldValue hubspotId = new CustomFieldValue();
@@ -408,6 +432,18 @@ public class ContactLeadService {
     }
 
     saveCustomFieldValue(hubspotId, contactId, leadOwnerUserId);
+
+    try {
+      genesysService.addContact(contactId, cfvList);
+    } catch (ApiException e) {
+      JSONObject apiException = new JSONObject(e.getRawBody());
+      String msg = "GENE: Error adding contact: {}";
+      log.error(msg, apiException.getString("message"));
+    }
+    catch (Exception e) {
+      String msg = "GENE: Error adding Hubspot contact";
+      log.error(msg);
+    }
   }
 
   private void postToRicochet(RicochetLead lead, HashMap<String, Object> params) throws Exception {
