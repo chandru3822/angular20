@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details_for_setters(p_payr
                      project_id                                  INTEGER,
                      customer_id                                 INT,
                      project_name                               VARCHAR,
-                     setter_user_id                              bigint,
+                     user_id                              bigint,
                      setter                                      TEXT,
                      setter_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,

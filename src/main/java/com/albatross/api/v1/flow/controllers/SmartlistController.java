@@ -185,4 +185,9 @@ public class SmartlistController {
     smartlistService.toggleType(smartlistId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+  @PostMapping(value = "/{smartlistId}/copy")
+  public ResponseEntity<Smartlist> copySmartlist(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.copy((smartlistId)), HttpStatus.OK);
+  }
 }
