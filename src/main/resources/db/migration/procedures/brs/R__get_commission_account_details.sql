@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      customer_id                                 INT,
                      customer_name                               VARCHAR,
                      system_size                                 NUMERIC(10,2),
-                     closer_user_id                              bigint,
+                     user_id                              bigint,
                      closer                                      TEXT,
                      closer_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,

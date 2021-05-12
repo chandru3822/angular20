@@ -271,6 +271,44 @@ public class SmartlistService {
       return sqlCache.query("smartlist.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
   }
 
+  @Transactional
+  public Smartlist copy(Long smartlistId) {
+
+    User user = securityService.getCurrentUser();
+    Smartlist smartlist = getSmartlist(smartlistId);
+
+    if (smartlist.getId() == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No smartlist with given ID", new RuntimeException());
+    }
+
+    long copyNumber = 0L;
+    String newName;
+    boolean unique;
+
+    do {
+      newName = String.format("%s (%s)", smartlist.getName(), ++copyNumber);
+      unique = sqlCache.queryForObject("smartlist.isNameUnique", Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
+    } while (!unique);
+
+    Smartlist newSmartlist = new Smartlist();
+    newSmartlist.setName(newName);
+    newSmartlist.setCompanyObjectTypeId(smartlist.getCompanyObjectTypeId());
+    newSmartlist.setShared(smartlist.isShared());
+    newSmartlist.setViewObjectTypeId(smartlist.getViewObjectTypeId());
+    newSmartlist.setMainProcessSteps(smartlist.isMainProcessSteps());
+    newSmartlist.setProjectDetails(smartlist.isProjectDetails());
+
+    HashMap<String, Object> params = om.convertValue(newSmartlist, HashMap.class);
+    params.put("ownerId", user.getId());
+    params.put("createdById", user.getId());
+    Long newSmartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
+
+    sqlCache.update("smartlist.copyAssignedFields", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));
+    sqlCache.update("smartlist.copyRequirements", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));
+
+    return getSmartlist(newSmartlistId);
+  }
+
   public SmartlistResult getSmartlistResults(Long smartlistId) {
     Smartlist smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {

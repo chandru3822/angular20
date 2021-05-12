@@ -126,9 +126,7 @@ public class PandaDocService {
     JSONObject out = resp.getJSON();
 
     JSONArray templates = out.getJSONArray("results");
-    if (templates.length() == 1) {
-      tplId = templates.getJSONObject(0).getString("id");
-    } else if (templates.length() > 1) {
+    if (templates.length() > 0) {
       log.warn("PANDADOC: found multiple templates matching tag={}: {}", name, templates);
       for (int i = 0; i < templates.length(); i++) {
         JSONObject tpl = templates.getJSONObject(i);
