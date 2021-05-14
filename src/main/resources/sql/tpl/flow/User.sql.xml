@@ -598,7 +598,7 @@
   ]]></user.findByUserUuid>
 
   <user.mentionableUsers><![CDATA[
-      select u.id, u.first_name,
+      select u.id, u.first_name, u.last_name,
              concat(u.first_name, ' ', u.last_name, ' (', u.email, ')') AS full_name,
              u.email
       from flow."user" u
