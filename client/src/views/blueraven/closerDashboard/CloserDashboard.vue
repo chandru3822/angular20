@@ -3009,8 +3009,6 @@
 
       toggleSelectAllReps () {
         this.$nextTick(() => {
-          console.log('randaLogger', this.repData)
-          console.log('randaLogger', this.repData)
           if (this.selectAllReps) {
             this.repModel = []
             this.repLengthOverride = false

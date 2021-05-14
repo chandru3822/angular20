@@ -75,10 +75,11 @@ public class CommissionManagementService {
         return sqlCache.query("commissionManagement.findActiveMilestones", Collections.emptyMap(), MilestoneType.class);
     }
 
-    public List<MilestoneType> findAvailableMilestones(Long planId) {
+    public List<MilestoneType> findAvailableMilestones(Long planId, Long positionId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        return sqlCache.query("commissionManagement.findAvailableMilestones", params, MilestoneType.class);
+        String sql = positionId == 4 ? "commissionManagement.findAvailableMilestonesForSetters" : "commissionManagement.findAvailableMilestonesForClosers";
+        return sqlCache.query(sql, params, MilestoneType.class);
     }
 
     public List<CommissionPlan> getCommissionPlans(Long positionId) {
@@ -251,6 +252,8 @@ public class CommissionManagementService {
         params.put("planId", planId);
         params.put("allocation", milestone.getAllocation());
         params.put("milestoneTypeId", milestone.getMilestoneTypeId());
+        params.put("min", milestone.getMin());
+        params.put("max", milestone.getMax());
 
         Long id = sqlCache.updateReturningId("commissionManagement.saveMilestone", params, "id").longValue();
         return getCommissionPlanAllocationMilestone(id);
@@ -260,6 +263,8 @@ public class CommissionManagementService {
         Map<String, Object> params = new HashMap<>();
         params.put("allocation", milestone.getAllocation());
         params.put("id", milestone.getCommissionPlanAllocationId());
+        params.put("min", milestone.getMin());
+        params.put("max", milestone.getMax());
 
         sqlCache.update("commissionManagement.updateMilestone", params);
     }

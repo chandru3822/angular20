@@ -231,6 +231,7 @@
               <v-text-field text
                             :label="payRateText"
                             type="number"
+                            v-if="commission.positionId === 1"
                             :disabled="commission.id && commission.statusType !== 'PENDING'"
                             v-model.number="commission.total"></v-text-field>
             </v-card>
@@ -284,24 +285,43 @@
                     autocomplete="off">
           </v-select>
           <v-text-field text
+                        v-if="commission.positionId === 1"
                         type="number"
                         label="Milestone Payment $"
                         v-model.number="selectedMilestone.allocation">
           </v-text-field>
+          <div v-if="commission.positionId === 4">
+            <v-text-field text
+                          type="number"
+                          @input="checkMinMaxMilestones(selectedMilestone)"
+                          label="Minimum Pitches"
+                          v-model.number="selectedMilestone.min">
+              </v-text-field>
+              <v-text-field text
+                            @input="checkMinMaxMilestones(selectedMilestone)"
+                            type="number"
+                            label="Maximum Pitches"
+                            v-model.number="selectedMilestone.max">
+              </v-text-field>
+          </div>
+          <div class="error-text mb-3" v-if="milestoneError">
+            {{milestoneErrorMsg}}
+          </div>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addMilestoneToPlan()"
-                 :disabled="!selectedMilestone.id || !selectedMilestone.allocation">
+                 :disabled="!selectedMilestone.id || (!selectedMilestone.allocation && !selectedMilestone.min) || milestoneError">
             Add
           </v-btn>
         </v-card>
         <v-divider v-if="addMilestone"></v-divider>
         <v-data-table
-          :headers="milestoneHeaders"
+          :headers="displayedMilestoneHeaders"
           :items="commission.milestones"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
           :loading="dataLoading"
           single-expand
+          item-key="commissionPlanAllocationId"
           :expanded.sync="milestoneExpanded"
           hide-default-footer
           class="elevation-1"
@@ -317,11 +337,29 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
               <v-text-field text
+                            v-if="commission.positionId === 1"
                             type="number"
                             label="Milestone Payment $"
                             v-model.number="item.allocation">
               </v-text-field>
-              <v-btn :disabled="!item.allocation"
+              <div v-if="commission.positionId === 4">
+                <v-text-field text
+                              @input="checkMinMaxMilestones(item)"
+                              type="number"
+                              label="Minimum Pitches"
+                              v-model.number="item.min">
+                </v-text-field>
+                <v-text-field text
+                              type="number"
+                              @input="checkMinMaxMilestones(item)"
+                              label="Maximum Pitches"
+                              v-model.number="item.max">
+                </v-text-field>
+              </div>
+              <div class="error-text mb-3" v-if="milestoneError">
+                {{milestoneErrorMsg}}
+              </div>
+              <v-btn :disabled="(!item.allocation && !item.min) || milestoneError"
                      @click="[milestoneExpanded = [], updateMilestone(item)]">Save</v-btn>
             </td>
           </template>
@@ -329,7 +367,9 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.milestoneType}}</td>
-              <td class="text-left">{{item.allocation}}</td>
+              <td class="text-left" v-if="commission.positionId === 1">{{item.allocation}}</td>
+              <td class="text-left" v-if="commission.positionId === 4">{{item.min}}</td>
+              <td class="text-left" v-if="commission.positionId === 4">{{item.max}}</td>
               <td>
                 <v-btn small text @click="milestoneExpanded = [item]"
                        v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
@@ -769,6 +809,11 @@
 
       DatetimePickerInput
     },
+    computed: {
+      displayedMilestoneHeaders () {
+        return this.milestoneHeaders.filter(h => h.show || h.positionId === this.commission?.positionId)
+      }
+    },
     created() {
       if(this.planId) {
         this.getCommissionDetails()
@@ -850,9 +895,13 @@
         ],
         milestoneHeaders: [
           {text: 'Milestone', value: 'milestoneType', show: true},
-          {text: 'Milestone Payment ($)', value: 'allocation', show: true},
+          {text: 'Milestone Payment ($)', value: 'allocation', positionId: 1},
+          {text: 'Minimum Pitches', value: 'min', positionId: 4},
+          {text: 'Maximum Pitches', value: 'max', positionId: 4},
           {text: '', value: 'icons', show: true},
         ],
+        milestoneError: false,
+        milestoneErrorMsg: '',
         addMilestone: false,
         selectedMilestone: {},
         milestones: [],
@@ -870,6 +919,31 @@
 
 
     methods: {
+      checkMinMaxMilestones (item) {
+        this.milestoneError = false
+        if(this.commission.positionId === 4) {
+          if(item.min === null || item.min === '') {
+            this.milestoneError = true
+            this.milestoneErrorMsg = 'All milestones must have a minimum.'
+          } else if(item.max && item.max < item.min) {
+            this.milestoneError = true
+            this.milestoneErrorMsg = 'Milestones minimum cannot be greater than the maximum.'
+          } else {
+            this.commission.milestones.forEach(m => {
+              if((m.max === null || m.max === '') && (item.max === null || item.max === '')) {
+                this.milestoneError = true
+                this.milestoneErrorMsg = 'Cannot have 2 milestones without a maximum.'
+              } else if(item.commissionPlanAllocationId !== m.commissionPlanAllocationId &&
+                ((item.min >= m.min && item.min <= m.max) ||
+                  (item.max >= m.min && item.max <= m.max) ||
+                    ((item.min >= m.min || item.max >= m.min) && (m.max === null || m.max === '')) )) {
+                this.milestoneError = true
+                this.milestoneErrorMsg = 'Milestones cannot overlap.'
+              }
+            })
+          }
+        }
+      },
       async getCommissionDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -948,9 +1022,11 @@
           this.errorMessages.push('The Rate per kW cannot be zero.')
         }
         //sum of m1 and m2 payment = rate per kw
-        let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
-        if(sum !== this.commission.total) {
-          this.errorMessages.push(`The sum of all milestone payment amounts must equal the ${this.payRateText}. `)
+        if(this.commission?.positionId === 1) {
+          let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
+          if(sum !== this.commission.total) {
+            this.errorMessages.push(`The sum of all milestone payment amounts must equal the ${this.payRateText}. `)
+          }
         }
       },
       planHasActiveUsers () {
@@ -1140,12 +1216,8 @@
       async getMilestones() {
         if(this.addMilestone) {
           try {
-            const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones`, 'blueraven')
-            if(this.commission.positionId === 1) {
-              this.milestones = data
-            } else {
-              this.milestones = data.filter(d => d.id === 1)
-            }
+            const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones/${this.commission.positionId}`, 'blueraven')
+            this.milestones = data
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')
@@ -1171,7 +1243,9 @@
         try {
           let params = {
             milestoneTypeId: this.selectedMilestone.id,
-            allocation: this.selectedMilestone.allocation
+            allocation: this.selectedMilestone.allocation,
+            min: this.selectedMilestone.min,
+            max: this.selectedMilestone.max
           }
           const {data} = await postRequest(`/commissionManagement/${this.planId}/milestone`, params, 'blueraven')
           this.commission.milestones.push(data)
@@ -1298,7 +1372,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
+      }
     }
   }
 </script>
