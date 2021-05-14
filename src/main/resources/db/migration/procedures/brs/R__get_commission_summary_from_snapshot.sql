@@ -25,26 +25,28 @@ BEGIN
                                   (sum(coalesce(commissions_earned, 0)) -
                                    sum(coalesce(commission_paid_to_date, 0))) AS total_commissions,
                                   coalesce((SELECT sum(amount)
-                                            FROM brs.project_commission_ledger
+                                            FROM brs.project_commission_ledger pcl
                                             WHERE ledger_type_id = 3
-                                              AND closer_id = u.id
+                                              AND pcl.user_id = u.id
+                                              and pcl.position_id = 1
                                               AND payroll_id = p_payroll_id
                                               AND project_id IN (SELECT project_id
                                                               FROM brs.project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
-                                              AND closer_id IN (SELECT sales_rep_id
+                                              AND pcl.user_id IN (SELECT sales_rep_id
                                                                 FROM brs.project_commission_snapshot dcs
                                                                 WHERE dcs.payroll_id = p_payroll_id)), 0)
                                     -
                                   coalesce((SELECT sum(paid_to_date)
-                                            FROM brs.project_commission_ledger
+                                            FROM brs.project_commission_ledger pcl2
                                             WHERE ledger_type_id = 3
                                               AND payroll_id < p_payroll_id
-                                              AND closer_id = u.id
+                                              AND pcl2.user_id = u.id
+                                              and pcl2.position_id = 1
                                               AND project_id IN (SELECT project_id
                                                               FROM brs.project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
-                                              AND closer_id IN (SELECT sales_rep_id
+                                              AND pcl2.user_id IN (SELECT sales_rep_id
                                                                 FROM brs.project_commission_snapshot dcs
                                                                 WHERE dcs.payroll_id = p_payroll_id)), 0)
                                                                               AS total_overrides,
@@ -72,26 +74,28 @@ BEGIN
                                  -- employee_id.employee_id,
                                   0 AS total_commissions,
                                   coalesce((SELECT sum(amount)
-                                            FROM brs.project_commission_ledger
+                                            FROM brs.project_commission_ledger pcl3
                                             WHERE ledger_type_id = 3
                                               AND payroll_id = p_payroll_id
-                                              AND closer_id = u.id
+                                              AND pcl3.user_id = u.id
+                                              and pcl3.position_id = 1
                                               AND project_id IN (SELECT project_id
                                                               FROM brs.project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
-                                              AND closer_id NOT IN (SELECT sales_rep_id
+                                              AND pcl3.user_id NOT IN (SELECT sales_rep_id
                                                                     FROM brs.project_commission_snapshot
                                                                     WHERE payroll_id = p_payroll_id)), 0)
                                     -
                                   coalesce((SELECT sum(paid_to_date)
-                                            FROM brs.project_commission_ledger
+                                            FROM brs.project_commission_ledger pcl4
                                             WHERE ledger_type_id = 3
-                                              AND closer_id = u.id
+                                              AND pcl4.user_id = u.id
+                                              and pcl4.position_id = 1
                                               AND payroll_id < p_payroll_id
                                               AND project_id IN (SELECT project_id
                                                               FROM brs.project_commission_snapshot dcs
                                                               WHERE payroll_id = p_payroll_id)
-                                              AND closer_id NOT IN (SELECT sales_rep_id
+                                              AND pcl4.user_id NOT IN (SELECT sales_rep_id
                                                                     FROM brs.project_commission_snapshot
                                                                     WHERE payroll_id = p_payroll_id)), 0)
                                     AS total_overrides,
@@ -133,22 +137,25 @@ BEGIN
                                              FROM brs.project_commission_ledger dcl5
                                                     INNER JOIN flow.project d5 ON d5.id = dcl5.project_id
                                              WHERE ledger_type_id = 3
-                                               AND closer_id = u.id
+                                               AND dcl5.user_id = u.id
+                                               and dcl5.position_id = 1
                                                AND payroll_id = 0
                                                AND dcl5.project_id = d.id), 0))
                                     AS total_overrides,
                                   0    total_adjustments
                            FROM brs.project_commission_ledger dcl3
                                   INNER JOIN flow.project d ON d.id = dcl3.project_id
-                                  INNER JOIN flow.user u ON u.id = dcl3.closer_id
+                                  INNER JOIN flow.user u ON u.id = dcl3.user_id
                                   inner join brs.payroll p  on p.id = dcl3.payroll_id
                            WHERE dcl3.ledger_type_id = 3
+                             and dcl3.position_id = 1
                              AND dcl3.payroll_id = 0
                              AND d.id = any(p.selected_project_ids)
-                             AND dcl3.closer_id NOT IN (SELECT dcs1.closer_id
+                             AND dcl3.user_id NOT IN (SELECT dcs1.user_id
                                                         FROM brs.project_commission_ledger dcs1
                                                         WHERE dcs1.payroll_id = p_payroll_id
-                                                          AND dcl3.ledger_type_id = 3)
+                                                          AND dcs1.ledger_type_id = 3
+                                                          and dcs1.position_id = 1)
                              AND u.id NOT IN (SELECT sales_rep_id
                                               FROM brs.project_commission_snapshot dcs1
                                               WHERE dcs1.payroll_id = p_payroll_id)

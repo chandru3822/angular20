@@ -36,20 +36,24 @@
               <td>
                 <v-text-field dense outlined hide-details
                               v-model="search.org"
+                              @blur="setLocalStorage"
                               placeholder="Organization"></v-text-field>
               </td>
               <td>
                 <v-text-field dense outlined hide-details
                               v-model="search.type"
+                              @blur="setLocalStorage"
                               placeholder="Type"></v-text-field>
               </td>
               <td>
                 <v-text-field dense outlined hide-details
                               v-model="search.parent"
+                              @blur="setLocalStorage"
                               placeholder="Parent"></v-text-field>
               </td>
               <td>
                 <v-text-field dense outlined hide-details
+                              @blur="setLocalStorage"
                               v-model="search.active" placeholder="Active"></v-text-field>
               </td>
             </tr>
@@ -81,6 +85,7 @@
 
     data () {
       return {
+        initialLoad: true,
         snackbar: {},
         constants,
         delay: 500,
@@ -145,12 +150,31 @@
     watch: {
       options: {
         handler () {
-          this.getOrgs()
+          if(!this.initialLoad) {
+            this.getOrgs()
+          }
         },
         deep: true,
       },
     },
+    beforeRouteEnter(to, from, next) {
+      //if coming to this page from the project details - use the previously used searchQuery
+      next((vm) => {
+        if(from?.fullPath.includes('/org/')) {
+          let localOrgSearch = localStorage.getItem('orgSearch')
+          if(localOrgSearch !== null) {
+            vm.search = JSON.parse(localStorage.getItem('orgSearch'))
+          }
+        } else {
+          localStorage.removeItem('orgSearch')
+        }
+        vm.getOrgs()
+      });
+    },
     methods: {
+      setLocalStorage () {
+        localStorage.setItem('orgSearch', JSON.stringify(this.search))
+      },
       clickRow(id){
         this.$router.push({name: 'org', params: {id}})
       },
@@ -162,6 +186,7 @@
         try {
           const {data} = await getRequestWithParams(`/org`)
           this.orgs = data
+          this.initialLoad = false
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -223,8 +223,8 @@
         attachmentTypeId: 463,
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true },
-          {text: 'Project Status', value: 'projectStatusType', show: true},
-          {text: 'Category', value: 'rootProjectStatusType', show: true},
+          {text: 'Project Stage', value: 'projectStatusType', show: true},
+          {text: 'Status', value: 'rootProjectStatusType', show: true},
           {text: 'Initial', value: 'initial', show: true},
           {text: 'Icon', value: 'icon', show: true},
           {text: '', value: 'icons', show: true},

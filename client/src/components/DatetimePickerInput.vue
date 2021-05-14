@@ -4,6 +4,7 @@
   :close-on-content-click="false"
   transition="scale-transition"
   offset-y
+  content-class="qa-date-menu"
   max-width="290px"
   min-width="290px"
 >
@@ -29,6 +30,7 @@
   <v-date-picker
     v-if="showDate"
     v-model="date"
+    class="qa-date-picker"
     :min="minDate"
     :max="maxDate"
     @click:date="saveDate()"
@@ -41,12 +43,13 @@
   <v-time-picker
     v-model="localTime"
     v-if="showTime"
+    class="qa-time-picker"
     :allowed-minutes="allowedMinutes"
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
-    <v-btn text color="primaryCustom" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primaryCustom" @click="saveTime()">OK</v-btn>
+    <v-btn text color="primaryCustom" class="qa-date-cancel" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primaryCustom" class="qa-date-ok" @click="saveTime()">OK</v-btn>
   </v-time-picker>
 </v-menu>
 </template>

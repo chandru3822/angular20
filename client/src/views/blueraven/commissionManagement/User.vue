@@ -384,6 +384,12 @@
     created() {
       this.getCloserDetails()
     },
+    watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        //they can't switch between Setter/Closer while on an actual user
+        this.$router.push(`/commissionManagement/users`)
+      },
+    },
     data() {
       return {
         snackbar: {},
@@ -391,6 +397,7 @@
         overrideErrorObj: {},
         dataLoading: true,
         overrideSelectedIndex: null,
+        positionId: this.$store.state.brs.commissionPositionId,
         selectedIndex: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
@@ -451,7 +458,7 @@
         if(this.addNewCommissionPlan) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/commissionManagement/plans`, 'blueraven')
+            const {data} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
             this.commissionPlans = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -466,7 +473,7 @@
         if(this.addNewOverridePlan || this.addNewReceivingPlan) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/commissionManagement/overrides/active`, 'blueraven')
+            const {data} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}/active`, 'blueraven')
             this.overridePlans = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -534,7 +541,7 @@
           }
         } else if(type === 2) {
           if(isNew) {
-            url = `/commissionManagement/${item.id}/users`
+            url = `/commissionManagement/${item.id}/users/${this.positionId}`
           } else {
             url = `/commissionManagement/${item.id}/updateUser`
           }
@@ -577,6 +584,7 @@
         let params = {
           receivingUsers: this.cloneOverridePlan.receivingUsers.filter(r => r.selected).map(r => r.userId),
           assignedUsers: this.cloneOverridePlan.assignedUsers.filter(r => r.selected).map(r => r.userId),
+          positionId: this.cloneOverridePlan.positionId,
           userId: this.userId,
           backdateApprovalCreds: null,
         }

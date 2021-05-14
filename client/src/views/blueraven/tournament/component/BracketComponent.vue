@@ -10,6 +10,44 @@
         ></ScoreDrilldown>
       </v-dialog>
 
+      <v-dialog v-model="showOverrideModal" class="square-card" width="500">
+        <v-card>
+          <v-card-title
+            class="headline grey lighten-2"
+            primary-title>
+            Bracket User Override
+          </v-card-title>
+          <v-card-text class="pt-4">
+            <v-autocomplete
+              v-model="overrideUser"
+              :items="overrideUsers"
+              label="Select a user"
+              item-text="fullName"
+              return-object
+            ></v-autocomplete>
+
+            <div v-if="overrideUser.id">
+              <strong>{{ showScoreData.user }} will be replaced by {{ overrideUser.fullName }}</strong>
+            </div>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="[overrideUser = {}, showOverrideModal = false]">
+              Cancel
+            </v-btn>
+            <v-btn @click="overrideMatchUser"
+                   :disabled="!overrideUser.id"
+                   color="primaryCustom" class="white--text">
+              Save
+            </v-btn>
+          </v-card-actions>
+
+        </v-card>
+      </v-dialog>
+
       <div class="container">
         <div class="split split-one">
           <div class="round"
@@ -70,7 +108,7 @@
                 </v-card>
               </v-dialog>
               <div v-if="r.roundNumber === bracket.rounds.length">
-                FINAL ROUND
+                FINALISTS
               </div>
               <div v-else>
                 Round {{r.roundNumber}}<br/>
@@ -84,14 +122,14 @@
               <v-radio-group v-model="m.winnerUserId">
                 <li class="team team-top" :class="{'current': isCurrentRound(r)}">
                   <v-radio v-if="r.edit && m.user1Id && m.user2Id" :value="m.user1Id" class="d-inline-block"></v-radio>
-                  <div class="d-inline-block one-hunned" @click="[showScoreData.userId = m.user1Id, showScoreData.user = m.user1Name, showScoreData.round = r, showModal = true]">
+                  <div class="d-inline-block one-hunned" @click="handleMatchUserClick(r, m, true)">
                     {{m.user1Name}}
                     <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user1Score}}</span>
                   </div>
                 </li>
                 <li class="team team-bottom" :class="{'current': isCurrentRound(r)}">
                   <v-radio small v-if="r.edit && m.user1Id && m.user2Id" :value="m.user2Id" class="d-inline-block"></v-radio>
-                  <div class="d-inline-block one-hunned" @click="[showScoreData.userId = m.user2Id, showScoreData.user = m.user2Name, showScoreData.round = r, showModal = true]">
+                  <div class="d-inline-block one-hunned" @click="handleMatchUserClick(r, m, false)">
                     {{m.user2Name}}
                     <span class="score" v-if="r.roundNumber !== bracket.rounds.length">{{m.user2Score}}</span>
                   </div>
@@ -107,7 +145,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, putRequestWithRequestParams, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ScoreDrilldown from "./ScoreDrilldown"
 
@@ -134,9 +172,14 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         showModal: false,
+        overrideUser: {},
+        overrideUsers: [],
+        showOverrideModal: false,
         showScoreData: {
           userId: null,
           user: null,
+          isUser1: null,
+          matchId: null,
           round: {}
         },
         roundRerenderKey: 0,
@@ -147,6 +190,49 @@
 
     },
     methods: {
+      async getOverrideUsers() {
+        try {
+          const {data} = await getRequest(`/user/active`)
+          this.overrideUsers = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async overrideMatchUser() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequestWithRequestParams(`/tournament/match/${this.showScoreData.matchId}/userOverride`, null, { userId: this.overrideUser.id , overrideUser1: this.showScoreData.isUser1 }, 'blueraven')
+          this.roundRerenderKey++
+          //maybe we dont have to do this but i am doing it for v1
+          window.location.reload(true)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.dataLoading = false
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async handleMatchUserClick(r, m, user1) {
+        if(r.edit) {
+
+          await this.getOverrideUsers(user1)
+          this.showScoreData.user = user1 ? m.user1Name : m.user2Name
+          this.showScoreData.userId = user1 ? m.user1Id : m.user2Id
+          this.showScoreData.matchId = m.id
+          this.showScoreData.isUser1 = user1
+          this.showOverrideModal = true
+        } else {
+          this.showScoreData.user = user1 ? m.user1Name : m.user2Name
+          this.showScoreData.userId = user1 ? m.user1Id : m.user2Id
+          this.showScoreData.round = r
+          this.showModal = true
+        }
+      },
       getSpacingByIndex(roundIndex, matchIndex) {
         return this.reverse ? roundIndex === this.bracket?.rounds?.length - 1 && matchIndex % 2 !== 0 : roundIndex === 0 && matchIndex % 2 !== 0
       },
@@ -178,7 +264,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/tournament/${this.bracket.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Final Round Advanced')
+          this.snackbar = getSnackbar('SUCCESS', 'Finalists Advanced')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

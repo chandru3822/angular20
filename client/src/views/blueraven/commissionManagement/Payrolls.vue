@@ -112,6 +112,10 @@
       this.getPayrollData()
     },
     watch: {
+      '$store.state.brs.commissionPositionId': function () {
+        this.positionId = this.$store.state.brs.commissionPositionId
+        this.getPayrollData()
+      },
       repSearch (val) {
         if(!val) {
           this.reps = []
@@ -130,6 +134,7 @@
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         reps: [],
+        positionId: this.$store.state.brs.commissionPositionId,
         repSearch: null,
         repsLoading: false,
         dataLoading: false,
@@ -150,6 +155,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = this.payrollSearch
+          this.payrollSearch.positionId = this.positionId
           const {data} = await postRequest(`/payroll/search`, params, 'blueraven')
           this.payrollData = data
           this.dataLoading = false

@@ -21,12 +21,47 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       a.attachment_type_id,
       a.content_type,
       a.s3_key,
-      a.archived
+      a.archived,
+      substring(filename, '\.([^\.]+)$') as file_extension,
+      ps.process_step_name,
+      ppsa.project_process_step_id,
+      pps.main,
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy
     from flow.project_process_step_attachment ppsa
            inner join flow.attachment a on a.id = ppsa.attachment_id
+           inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
+           inner join flow.process_step ps on ps.id = pps.process_step_id
+           inner join flow."user" u ON a.created_by_id = u.id
     where ppsa.project_process_step_id = :projectProcessStepId
       and a.archived is not true
+    order by pps.main desc, pps.date_created desc
   ]]></projectProcessStep.getProjectProcessStepAttachments>
+
+  <projectProcessStep.getProjectProcessStepAttachmentsForProjectId><![CDATA[
+    select
+      a.id,
+      a.size,
+      a.date_created,
+      a.date_modified,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key,
+      a.archived,
+      substring(filename, '\.([^\.]+)$') as file_extension,
+      ps.process_step_name,
+      ppsa.project_process_step_id,
+      pps.main,
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+    from flow.project_process_step_attachment ppsa
+           inner join flow.attachment a on a.id = ppsa.attachment_id
+           inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
+           inner join flow.process_step ps on ps.id = pps.process_step_id
+           inner join flow."user" u ON a.created_by_id = u.id
+    where pps.project_id = :projectId
+      and a.archived is not true
+    order by pps.main desc, pps.date_created desc
+  ]]></projectProcessStep.getProjectProcessStepAttachmentsForProjectId>
 
   <projectProcessStep.addAttachment><![CDATA[
     insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id)

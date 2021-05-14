@@ -367,7 +367,6 @@
               </v-list-item-content>
             </template>
           </v-autocomplete>
-
           <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
                           v-model="repModel"
                           :items="repData"
@@ -1369,6 +1368,7 @@
         filteredFunnelDrilldownData: [],
         funnelDrilldownRowCount: 0,
         totalSystemSize: 0,
+        repLengthOverride: false,
         footerProps: {
           showFirstLastPage: !constants.IS_MOBILE,
           firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
@@ -1486,7 +1486,7 @@
         return 'check_box_outline_blank'
       },
       selectAllReps () {
-        return this.repModel.length === this.repData.length
+        return this.repModel.length === this.repData.length || this.repLengthOverride
       },
       selectSomeReps () {
         return this.repModel.length > 0 && !this.selectAllReps
@@ -2282,6 +2282,7 @@
 
         this.officeModel.forEach(org => orgs.push(org.org_id))
 
+        let modelOverride = false
         if (useRepDataInstead) {
           this.repData.forEach((rep, index) => {
             reps.push(rep.user_id)
@@ -2289,18 +2290,25 @@
             //   this.districtModel = []
             //   this.regionModel = []
             //   this.officeModel = []
-              if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
+              if (this.repDataSelectAll && this.repDataMaster?.length > this.maxRepLimit) {
+                modelOverride = true
                 this.repModel = [
-                  {user_id: -1, name: 'All Reps', active: true}
+                  {user_id: -2, name: 'All Filtered Reps', active: true}
                 ]
                 this.repData = [
-                  {user_id: -1, name: 'All Reps', active: true}
+                  {user_id: -2, name: 'All Filtered Reps', active: true}
                 ]
               }
             }
           })
         } else {
           this.repModel.forEach(rep => reps.push(rep.user_id))
+        }
+
+        if(modelOverride) {
+          reps = []
+          //this gets used when there are more than 1000 users selected
+          this.repDataMaster.forEach(rep => reps.push(rep.user_id))
         }
 
         const requestBody = {
@@ -3003,11 +3011,15 @@
         this.$nextTick(() => {
           if (this.selectAllReps) {
             this.repModel = []
+            this.repLengthOverride = false
             this.apptsToFdcPipelineData = []
           }  else {
             if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
+              //this is different than clicking the All Reps button and needs to be filtered.
+              // -2 was updated to mean - select all reps in the selected orgs
+              this.repLengthOverride = true
               this.repModel = [
-                {user_id: -1, name: 'All Reps', active: true}
+                {user_id: -2, name: 'All Filtered Reps', active: true}
               ]
               this.doRepWatcher()
             } else {

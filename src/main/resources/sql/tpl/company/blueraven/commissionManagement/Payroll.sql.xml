@@ -8,6 +8,20 @@
                WHERE payroll_id = :payrollId ) AS sub_rows
     ]]></payroll.snapshotByPayrollId>
 
+  <payroll.getPositionId><![CDATA[
+        SELECT position_id
+        from brs.payroll
+        where id = :payrollId
+    ]]></payroll.getPositionId>
+
+
+  <payroll.getCurrentPayrollId><![CDATA[
+        SELECT id
+        FROM brs.payroll
+        WHERE current IS TRUE
+        AND position_id = :positionId
+    ]]></payroll.getCurrentPayrollId>
+
     <payroll.getById><![CDATA[
     SELECT row_to_json(payroll) AS payroll
     FROM (SELECT p.id,
@@ -30,7 +44,7 @@
           WHERE p.id = :payrollId) payroll
     ]]></payroll.getById>
 
-    <payroll.search><![CDATA[
+    <payroll.searchClosers><![CDATA[
         SELECT array_to_json(array_agg(row_to_json(sub_rows)))
         FROM (SELECT p.period_end as "periodEnd",
                      p.id,
@@ -43,7 +57,8 @@
                        INNER JOIN flow.project prj ON dcs.project_id = prj.id
                        INNER JOIN brs.project_details pd on pd.project_id = prj.id
                        LEFT JOIN brs.project_override_commission_snapshot docs ON docs.project_commission_snapshot_id = dcs.id
-              WHERE CASE WHEN :startDate:: DATE IS NOT NULL
+              WHERE p.position_id = 1
+                AND CASE WHEN :startDate:: DATE IS NOT NULL
                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
                 AND CASE WHEN :customerName:: TEXT IS NOT NULL
                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
@@ -56,32 +71,62 @@
 
               GROUP BY p.id, p.period_end
               ORDER BY p.period_end desc) AS sub_rows
-    ]]></payroll.search>
+    ]]></payroll.searchClosers>
+
+  <payroll.searchSetters><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM (SELECT p.period_end as "periodEnd",
+                     p.id,
+                     p.description,
+                     (SELECT sum(dcs1.current_pay)
+                      FROM brs.setter_project_commission_snapshot dcs1
+                      WHERE dcs1.payroll_id = p.id) AS "currentPay"
+              FROM brs.payroll p
+                       INNER JOIN brs.setter_project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                       INNER JOIN flow.project prj ON dcs.project_id = prj.id
+                       INNER JOIN brs.project_details pd on pd.project_id = prj.id
+                       LEFT JOIN brs.setter_project_override_commission_snapshot docs ON docs.setter_project_commission_snapshot_id = dcs.id
+              WHERE p.position_id = 4
+                AND CASE WHEN :startDate:: DATE IS NOT NULL
+                             THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                             THEN lower(dcs.project_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                         ELSE 1 = 1 END
+                AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
+                             THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                         ELSE 1 = 1 END
+                AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                             THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
+
+              GROUP BY p.id, p.period_end
+              ORDER BY p.period_end desc) AS sub_rows
+    ]]></payroll.searchSetters>
 
     <payroll.getApprovedPayrolls>
       <![CDATA[
         SELECT DISTINCT p.id, p.period_end
         FROM brs.payroll p
         WHERE  p.payroll_status_id = 3 -- 3 means APPROVED
+        and p.position_id = :positionId
         ORDER BY p.period_end DESC, p.id DESC;
       ]]>
     </payroll.getApprovedPayrolls>
     <payroll.addCommissionAdjustment><![CDATA[
         INSERT INTO brs.payroll_adjustment (payroll_id,
                                                       project_id,
-                                                      closer_id,
+                                                      user_id,
                                                       amount,
                                                       note,
                                                       payroll_adjustment_type_id,
                                                       created_by,
                                                       created)
-        VALUES (:payrollId, :projectId, :closerId, :amount, :note, :adjustmentTypeId, :createdById, now());
+        VALUES (:payrollId, :projectId, :userId, :amount, :note, :adjustmentTypeId, :createdById, now());
     ]]></payroll.addCommissionAdjustment>
 
     <payroll.getCommissionAdjustments><![CDATA[
       SELECT array_to_json(array_agg(row_to_json(history)))
       FROM (SELECT
-             pa.closer_id as "closerId",
+             pa.user_id as "userId",
              pa.amount,
              pa.note,
              pat.adjustment_type as "adjustmentType",
@@ -134,24 +179,32 @@
     ]]></payroll.checkSummaryPreparationStatus>
 
     <payroll.getCurrentSummary><![CDATA[
-        SELECT brs.get_commission_summary()
+        SELECT brs.get_commission_summary(:positionId::int)
     ]]></payroll.getCurrentSummary>
 
     <payroll.getSummary><![CDATA[
-        SELECT CASE WHEN p.payroll_status_id = 3
-            THEN brs.get_commission_summary_from_snapshot(p.id)
-            ELSE brs.get_commission_summary() END
+        SELECT CASE WHEN p.payroll_status_id = 3 and p.position_id = 1
+              THEN brs.get_commission_summary_from_snapshot(p.id)
+            WHEN p.payroll_status_id = 3 and p.position_id = 4
+              THEN brs.get_commission_summary_from_snapshot_for_setters(p.id)
+            ELSE brs.get_commission_summary(p.position_id) END
         FROM brs.payroll p
         WHERE id = :payrollId
     ]]></payroll.getSummary>
 
-    <payroll.getAccountReview><![CDATA[
+    <payroll.getAccountReviewForClosers><![CDATA[
      SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT *
       FROM brs.get_commission_account_details(:payrollId::int, :selectedProjectIds::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
-    ]]></payroll.getAccountReview>
+    ]]></payroll.getAccountReviewForClosers>
 
-    <payroll.getPayrollSearchDetail><![CDATA[
+  <payroll.getAccountReviewForSetters><![CDATA[
+     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+FROM (SELECT *
+      FROM brs.get_commission_account_details_for_setters(:payrollId::int, :selectedProjectIds::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+    ]]></payroll.getAccountReviewForSetters>
+
+    <payroll.getPayrollSearchDetailForClosers><![CDATA[
         SELECT array_to_json(array_agg(row_to_json(sub_rows)))
         FROM (
                  SELECT s.cancelled,
@@ -176,6 +229,7 @@ FROM (SELECT *
                         s.override_earned as "overrideEarned",
                         s.override_plan as "overridePlan",
                         s.override_plan_id as "overridePlanId",
+                        s.overrides_paid_to_date as "overridesPaidToDate",
                         s.payroll_id as "payrollId",
                         s.percent_of_cash_deposit as "percentOfCashDeposit",
                         s.remaining_value as "remainingValue",
@@ -194,5 +248,43 @@ FROM (SELECT *
                  WHERE payroll_id = :payrollId
              ) AS sub_rows
 
-    ]]></payroll.getPayrollSearchDetail>
+    ]]></payroll.getPayrollSearchDetailForClosers>
+
+  <payroll.getPayrollSearchDetailForSetters><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM (
+                 SELECT s.project_id,
+                     p.contact_id,
+                     s.project_name,
+                     s.sales_rep_id,
+                     s.sales_rep,
+                     s.source as source_name,
+                     s.cancelled as cancelled_date,
+                     s.closer_appointment_start,
+                     s.closer_appointment_outcome,
+                     s.override_plan,
+                     s.override_plan_id,
+                     s.commission_plan,
+                     s.commission_plan_id,
+                     s.total_commissions,
+                     s.total_overrides,
+                     s.commissions_earned,
+                     s.override_earned,
+                     s.commission_adjustment,
+                     s.override_adjustment,
+                     s.commission_paid_to_date,
+                     s.overrides_paid_to_date,
+                     s.current_pay,
+                     s.current_pay_commissions,
+                     s.current_pay_overrides,
+                     s.remaining_value,
+                     s.remaining_value_commissions,
+                     s.remaining_value_overrides,
+                     s.project_total_value
+              FROM brs.setter_project_commission_snapshot s
+                     INNER JOIN flow.project p ON s.project_id = p.id
+                WHERE payroll_id = :payrollId
+             ) AS sub_rows
+
+    ]]></payroll.getPayrollSearchDetailForSetters>
 </xml>

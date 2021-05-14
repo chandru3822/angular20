@@ -104,15 +104,11 @@ export default {
       })
     }
   },
+
   methods: {
-    // getProject: async function () {
-    //   try {
-    //     const {data} = await getRequest(`/project/${this.projectId}`)
-    //     this.project = data
-    //   } catch (e) {
-    //     logError(e)
-    //   }
-    // },
+    getDirtyFieldsCount() {
+      return this.dirtyCfvs.length
+    },
     getProcessSteps: async function () {
       try {
       this.isProcessStepsLoading = true

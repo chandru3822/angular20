@@ -82,7 +82,11 @@
                 </v-card>
               </v-dialog>
 
-              <v-btn text color="primary" v-if="!b.matchesGenerated" class="white--text" @click="[b.addRound = !b.addRound, bracketRerenderKey++]">
+              <v-btn v-if="b.maxRounds" text disabled color="primary" class="white--text">
+                <span>Max Rounds Reached</span>
+              </v-btn>
+              <v-btn text color="primary" v-else-if="!b.matchesGenerated" class="white--text"
+                     @click="[b.addRound = !b.addRound, rerenderBracket()]">
                 <span v-if="!b.addRound">Add Round</span>
                 <span v-else>Cancel</span>
               </v-btn>
@@ -207,6 +211,12 @@
                     {{item.roundNumber}}
                   </td>
                   <td class="text-left">
+                    {{ getNumberOfUsers(b, item) }}
+                  </td>
+                  <td class="text-left">
+                    {{ getNumberOfMatches(b, item) }}
+                  </td>
+                  <td class="text-left">
                     <span v-if="!item.edit">{{item.startDate | formatDate('date', 'MM/DD/YYYY')}}</span>
                     <DatetimePickerInput
                       v-else
@@ -227,6 +237,11 @@
                       :format="'MMMM DD, YYYY'"
                       label="End Date"
                     />
+                  </td>
+                  <td>
+                    <div v-if="index === b.rounds.length - 1">
+                      NOTE: This is the final round, it is for displaying the finalists. It will not actually be played.
+                    </div>
                   </td>
                   <td class="text-right">
                     <v-btn small text @click="[item.edit = !item.edit, rerenderKey++]">
@@ -326,18 +341,44 @@
         userId: this.$store.state.user.details.id,
         headers: [
           {text: 'Round', value: 'roundNumber', show: true},
+          {text: 'Users', value: 'users', show: true},
+          {text: 'Matches', value: 'matches', show: true},
           {text: 'Start Date', value: 'startDate', show: true},
           {text: 'End Date', value: 'endDate', show: true},
+          {text: null, value: 'notes', show: true},
           {text: null, value: 'icons', show: true}
         ]
       }
     },
     computed: {},
     methods: {
+      rerenderBracket() {
+        this.bracketRerenderKey++
+      },
+      getNumberOfUsers(bracket, round) {
+        if(round.roundNumber === 1) {
+          return bracket.numberOfUsers
+        } else {
+          let counter = bracket.numberOfUsers
+          for(let i = 1; i < round.roundNumber; i++) {
+            counter = counter / 2
+          }
+          return counter
+        }
+      },
+      getNumberOfMatches(bracket, round) {
+        let numUsers = this.getNumberOfUsers(bracket, round)
+        if(numUsers <= 1) {
+          bracket.maxRounds = true
+        }
+        return numUsers > 1 ? numUsers / 2 : 'None'
+      },
       async replicateBracket(b) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/tournament/bracket/replicate`, b, 'blueraven')
+          // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
+          data.maxRounds = false
           this.tournament.brackets.push(data)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -365,6 +406,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
+          // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
+          data?.brackets?.forEach(b => {
+            b.maxRounds = false
+          })
           this.tournament = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -399,6 +444,8 @@
               tournamentId: this.tournament.id
             }
             const {data} = await postRequest(`/tournament/bracket`, param, 'blueraven')
+            // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
+            data.maxRounds = false
             this.tournament.brackets.push(data)
             this.addBracket = false
             this.newBracket = {}
@@ -462,6 +509,8 @@
           }
           const {data} = await putRequest(`/tournament/round/${roundId}/delete`, param, 'blueraven')
           bracket.rounds = data.rounds
+          // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
+          bracket.maxRounds = false
           this.snackbar = getSnackbar('SUCCESS', 'Round Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

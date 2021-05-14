@@ -112,9 +112,10 @@ public class OverridePlanService {
         return findOverridePlanDetail(planId);
     }
 
-    public String findOverridePlans(Boolean excludeInactive) {
+    public String findOverridePlans(Long positionId, Boolean excludeInactive) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("excludeInactive", excludeInactive);
+        params.put("positionId", positionId);
         List<String> query = sqlCache.query("overridePlan.listAll", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
     }
@@ -140,13 +141,14 @@ public class OverridePlanService {
 
     @Transactional
     public Optional<Long> cloneOverridePlan(Long id, CloneOverridePlan overridePlan, Long userId) throws SQLException, BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
-        boolean isBackdated = validateBackdatedPlan(overridePlan.getStartDate(), overridePlan.getBackdateApprovalCreds());
+        boolean isBackdated = validateBackdatedPlan(overridePlan.getStartDate(), overridePlan.getBackdateApprovalCreds(), overridePlan.getPositionId());
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);
         params.put("startDate", overridePlan.getStartDate());
         params.put("createdBy", securityService.getCurrentUser().getId());
         params.put("userId", userId);
+        params.put("positionId", overridePlan.getPositionId());
 
         Array assignedUsersArray = createSqlArrayOfType("int", overridePlan.getAssignedUsers());
         params.put("assignedUsers", assignedUsersArray);
@@ -264,9 +266,9 @@ public class OverridePlanService {
     }
 
     @Transactional
-    public String updateAssignedUser(Long planId, OverrideAssignedUser assignedUser)
+    public String updateAssignedUser(Long planId, OverrideAssignedUser assignedUser, Long positionId, Boolean addUserToPlan)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
-        boolean isBackdatedPlan = validateBackdatedPlan(assignedUser);
+        boolean isBackdatedPlan = validateBackdatedPlan(assignedUser, positionId);
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
@@ -290,10 +292,15 @@ public class OverridePlanService {
             sqlCache.update("overridePlan.appendAssignedNote", params);
         }
 
-        //if existing just return the one user, otherwise return the full updated list
-        return assignedUser.getId() != null
-          ? getAssignedUser(planId, assignedUser.getUserId())
-          : getOverrides(assignedUser.getUserId());
+      //this same endpoint is used when adding a user to a plan or when adding a plan to a user. and need to return different when adding to plan
+      //if existing just return the one user, otherwise return the full updated list
+      if(assignedUser.getId() != null) {
+        return getAssignedUser(planId, assignedUser.getUserId());
+      } else if(null != addUserToPlan && addUserToPlan) {
+        return getPlanAssignedUsers(planId);
+      } else {
+        return getOverrides(assignedUser.getUserId());
+      }
     }
 
     public String getPlanAssignedUsers(Long id){
@@ -389,13 +396,13 @@ public class OverridePlanService {
         return null;
     }
 
-    private boolean validateBackdatedPlan(OverrideAssignedUser user)
+    private boolean validateBackdatedPlan(OverrideAssignedUser user, Long positionId)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         Date startDate = user.getStartDate();
-        return validateBackdatedPlan(startDate, user.getApprovalCreds());
+        return validateBackdatedPlan(startDate, user.getApprovalCreds(), positionId);
     }
 
-    private boolean validateBackdatedPlan(Date startDate, BackdatedPlanApprovalCredentials credentials)
+    private boolean validateBackdatedPlan(Date startDate, BackdatedPlanApprovalCredentials credentials, Long positionId)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         final boolean IS_BACKDATED_PLAN = true;
 
@@ -403,17 +410,19 @@ public class OverridePlanService {
         if (startDate == null)
             return false;
 
-        List<Payroll> approvedPayrolls = payroll.getApprovedPayrolls();
-        Payroll mostRecent = approvedPayrolls.get(0);
-        if (startDate.before(mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
-            if (credentials == null) // throw exception if not credentials are provided
-                throw new BackdatedPlanApprovalRequiredException(startDate,
-                        mostRecent.getId(),
-                        mostRecent.getPeriodEnd());
-            if (!areValidBackdatedPlanApprovalCredentials(credentials)) // throw exception if credentials are inadequate
-                throw new BackdatedPlanApprovalBadCredentialsException();
-            // if we get here, we're all good! backdated change included appropriate approval credentials
-            return IS_BACKDATED_PLAN;
+        List<Payroll> approvedPayrolls = payroll.getApprovedPayrolls(positionId);
+        if(approvedPayrolls.size() > 0) {
+          Payroll mostRecent = approvedPayrolls.get(0);
+          if (startDate.before(mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
+              if (credentials == null) // throw exception if not credentials are provided
+                  throw new BackdatedPlanApprovalRequiredException(startDate,
+                          mostRecent.getId(),
+                          mostRecent.getPeriodEnd());
+              if (!areValidBackdatedPlanApprovalCredentials(credentials)) // throw exception if credentials are inadequate
+                  throw new BackdatedPlanApprovalBadCredentialsException();
+              // if we get here, we're all good! backdated change included appropriate approval credentials
+              return IS_BACKDATED_PLAN;
+          }
         }
         // not a backdated change, so nothing to validate
         return !IS_BACKDATED_PLAN;

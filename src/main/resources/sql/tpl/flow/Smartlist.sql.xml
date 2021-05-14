@@ -168,7 +168,7 @@ select sf.id as "smartlistFieldId",
        null as "processStepName",
        cdt.data_type_id as "dataTypeId",
        case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
-       null as "allowMultiple",
+       cdt.allow_multiple as "allowMultiple",
        case when sf.smartlist_system_list_id is null then '[]' else
          (select to_jsonb(array_agg(row_to_json(rows))) from (
            select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
@@ -236,12 +236,14 @@ select null as "smartlistFieldId",
        ps.process_step_name as "processStepName",
        null as "dataTypeId",
        null as "hasListValues",
-       null as "allowMultiple",
+       cdt.allow_multiple as "allowMultiple",
        null as "listOfValues"
 from flow.custom_field_group_assignment cfga
 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
 inner join flow.process_step ps on ps.id = cfg.process_step_id
+inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
 where cot.object_type_id = :objectTypeId and
       cot.company_id = :companyId and
       cfga.ancillary_custom_field_group_assignment_id is not null and
@@ -548,7 +550,7 @@ select sr.id,
        case when sf.smartlist_system_list_id is not null then true else
          case when sr.smartlist_field_id is not null then cdt.has_list_values else cdt1.has_list_values end
        end as has_list_values,
-       cdt1.allow_multiple,
+       case when sr.smartlist_field_id is not null then cdt.allow_multiple else cdt1.allow_multiple end as allow_multiple,
        case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
@@ -665,7 +667,7 @@ select sr.id,
        case when sf.smartlist_system_list_id is not null then true else
          case when sr.smartlist_field_id is not null then cdt.has_list_values else cdt1.has_list_values end
        end as has_list_values,
-       cdt1.allow_multiple,
+       case when sr.smartlist_field_id is not null then cdt.allow_multiple else cdt1.allow_multiple end as allow_multiple,
        case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
@@ -683,14 +685,23 @@ select sr.id,
            'dataTypeValue', dtr.data_type_value,
            'secondaryRequirement', dtr.secondary_requirement
        ) end as data_type_requirement,
-       coalesce((
+       case when cf.list_of_value_id is not null then
+         coalesce((
          select array_to_json(array_agg(row_to_json(lov))) from (
            select
              lv.id,
              lv.name
            from flow.list_of_value lv
            where lv.id = any(sr.list_of_value_ids)
-        ) lov), '[]') as list_of_values,
+        ) lov), '[]')
+        when sf.smartlist_system_list_id is not null then
+        (select array_to_json(array_agg(row_to_json(rows))) from (
+             select id, name
+             from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+            where id = any(sr.list_of_value_ids)
+           ) rows)
+       else null
+       end as list_of_values,
         case
           when cf.list_of_value_id is not null then
             coalesce((
@@ -738,6 +749,7 @@ select sr.id,
                 cf.company_data_type_id as "companyDataTypeId",
                 cdt.data_type_id as "dataTypeId",
                 cdt.has_list_values as "hasListValues",
+--              @TODO: `listOfValues` is incorrect for smartlist fields that are smartlist system lists. Should correct here like `available_list_of_values` above
                 coalesce((
                              SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                              FROM (
@@ -833,7 +845,7 @@ where id = :requirementId
 ]]></smartlist.deleteRequirement>
 
 <smartlist.getSmartlistSystemList><![CDATA[
-select * from flow.get_smartlist_system_list_options(:smartlistSystemListId::int, :companyId::int)
+select id, name from flow.get_smartlist_system_list_options(:smartlistSystemListId::int, :companyId::int)
 ]]></smartlist.getSmartlistSystemList>
 
 <smartlist.getLogic><![CDATA[
@@ -886,5 +898,27 @@ set archived = true,
 where smartlist_id = :smartlistId and
       archived is not true;
 ]]></smartlist.clearFieldsAndRequirements>
+
+<smartlist.isNameUnique><![CDATA[
+select case when count(1) > 0 then false else true end
+from flow.smartlist s
+inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+where lower(s.name) = lower(:name::text) and
+      cot.company_id = :companyId and
+      s.archived is not true
+]]></smartlist.isNameUnique>
+
+<smartlist.copyAssignedFields><![CDATA[
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order, process_step_id, project_details_column)
+select :newId, smartlist_field_id, custom_field_group_assignment_id, :userId, display_order, process_step_id, project_details_column from flow.smartlist_field_assignment
+where smartlist_id = :oldId and archived is not true
+]]></smartlist.copyAssignedFields>
+
+<smartlist.copyRequirements><![CDATA[
+insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, created_by_id, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column)
+select :newId, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, :userId, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column
+from flow.smartlist_requirement
+where smartlist_id = :oldId and archived is not true
+]]></smartlist.copyRequirements>
 </sql>
 

@@ -144,8 +144,10 @@ BEGIN
             foo2.self_gen,
             foo2.average_availability,
             coalesce(foo2.manual_allocation,
+                    case when foo2.sum_manual_allocation is null then
+                     foo2.score else
                      foo2.score *
-                     (1 - foo2.sum_manual_allocation::numeric)::numeric)::numeric as score
+                     (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric as score
     from (
 
         select foo1.user_id,
@@ -227,8 +229,10 @@ BEGIN
         group by foo1.score,foo1.average_availability,foo1.user_id, foo1.closer_name, foo1.lead_gen_fdc, foo1.self_gen,foo1.manual_allocation,
                  foo1.sum_manual_allocation, coalesce(foo1.average_availability, 0), coalesce(foo1.score, 0)) as foo2
     group by foo2.user_id, foo2.closer_name, foo2.lead_gen_fdc, foo2.self_gen, foo2.average_availability, coalesce(foo2.manual_allocation,
-                     foo2.score *
-                     (1 - foo2.sum_manual_allocation::numeric)::numeric)::numeric;
+                                                                                                                   case when foo2.sum_manual_allocation is null then
+                                                                                                                            foo2.score else
+                                                                                                                                foo2.score *
+                                                                                                                                (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric;
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

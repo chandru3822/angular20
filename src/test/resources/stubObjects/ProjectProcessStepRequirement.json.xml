@@ -310,7 +310,8 @@
       "intValue": null,
       "projectId": 203346,
       "intArrayValue": [],
-      "companyFunctionParams": null
+      "companyFunctionParams": null,
+      "timeZone": "America/Denver"
     }
   ]]></projectProcessStepRequirement.date>
 
@@ -384,7 +385,8 @@
       "intValue": null,
       "projectId": 203346,
       "intArrayValue": [],
-      "companyFunctionParams": null
+      "companyFunctionParams": null,
+      "timeZone": "America/Denver"
     }
   ]]></projectProcessStepRequirement.timestamp>
 

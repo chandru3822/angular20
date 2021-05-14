@@ -11,7 +11,7 @@ import java.util.Date;
 public class PayrollSearch {
 
     private String customerName;
-    private Long salesRepId, projectId;
+    private Long salesRepId, projectId, positionId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date startDate, endDate;

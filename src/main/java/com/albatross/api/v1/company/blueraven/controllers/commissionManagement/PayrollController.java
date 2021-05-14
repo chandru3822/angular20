@@ -26,9 +26,9 @@ public class PayrollController {
 
     private final PayrollService payrollService;
 
-    @GetMapping(value = "/current")
-    public ResponseEntity<?> getCurrentPayroll() {
-        Long currentPayrollId = payrollService.findCurrentPayroll();
+    @GetMapping(value = "/current/{positionId}")
+    public ResponseEntity<?> getCurrentPayroll(@PathVariable Long positionId) {
+        Long currentPayrollId = payrollService.findCurrentPayroll(positionId);
         if (currentPayrollId == null) {
             return ResponseEntity.notFound().build();
         }
@@ -79,9 +79,9 @@ public class PayrollController {
         payrollService.rejectPayroll(payrollId);
     }
 
-    @GetMapping(value = "/{payrollId}/snapshot")
-    public String getPayrollSnapshot(@PathVariable Long payrollId) {
-        return payrollService.getPayrollSearchDetail(payrollId);
+    @GetMapping(value = "/{payrollId}/snapshot/{positionId}")
+    public String getPayrollSnapshot(@PathVariable Long payrollId, @PathVariable Long positionId) {
+        return payrollService.getPayrollSearchDetail(payrollId, positionId);
     }
 
     @GetMapping(value = "/{payrollId}/adjustments")
@@ -106,10 +106,10 @@ public class PayrollController {
         return response.toString();
     }
 
-    @GetMapping(value = "/current/summary")
-    public ResponseEntity<String> getCurrentPayrollSummary() {
+    @GetMapping(value = "/current/summary/{positionId}")
+    public ResponseEntity<String> getCurrentPayrollSummary(@PathVariable Long positionId) {
         try {
-            String summary = payrollService.getAccountSummaryForCurrentPayroll();
+            String summary = payrollService.getAccountSummaryForCurrentPayroll(positionId);
             return ResponseEntity.ok(summary);
         } catch (Exception e) {
             log.error("COMMISSION: payroll account summary error {}", e.getMessage());

@@ -2,15 +2,17 @@
   <v-container class="pa-0">
     <v-row>
       <v-col cols="12">
-        <v-app-bar dense tabs color="white" class="elevation-1">
-          <v-tabs :optional="true" color="primaryCustom"
-                  background-color="white" v-model="model" slider-color="primaryCustom">
-            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
-              {{tab.label}}
-            </v-tab>
-          </v-tabs>
-        </v-app-bar>
-        <router-view></router-view>
+        <div>
+          <v-app-bar dense tabs color="white" class="elevation-1">
+            <v-tabs :optional="true" color="primaryCustom"
+                    background-color="white" v-model="model" slider-color="primaryCustom">
+              <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
+                {{tab.label}}
+              </v-tab>
+            </v-tabs>
+          </v-app-bar>
+          <router-view></router-view>
+        </div>
       </v-col>
     </v-row>
 
@@ -34,16 +36,17 @@
         model: '',
         tabs: [ {
           label: 'Current Payroll',
-          path: '/commissionManagement/accounting/current',
+          path: `/commissionManagement/accounting/current/`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Summary',
-          path: '/commissionManagement/accounting/summary',
+          path: `/commissionManagement/accounting/summary/`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }]
       }
     },
-    methods: {}
+    methods: {
+    }
   }
 </script>
 
