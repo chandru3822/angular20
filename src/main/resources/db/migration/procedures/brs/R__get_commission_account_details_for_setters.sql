@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details_for_setters(p_payr
                      project_id                                  INTEGER,
                      customer_id                                 INT,
                      project_name                               VARCHAR,
-                     setter_user_id                              bigint,
+                     user_id                              bigint,
                      setter                                      TEXT,
                      setter_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,
@@ -189,7 +189,7 @@ BEGIN
                           inner join flow.company_user_status cus  on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                           left join flow.list_of_value lov_source on lov_source.id = pd.source
-                 WHERE pd.setter_milestone_pay::date > '2021-03-31' and
+                 WHERE pd.setter_milestone_pay::date >= '2021-05-03' and
                      CASE WHEN p_project_ids IS NOT NULL
                               THEN p.id = ANY(p_project_ids) ELSE
                          pd.setter_milestone_pay::date <= v_period_end_date  END

@@ -585,7 +585,7 @@
             adjustmentType: 'COMMISSION',
             maxAmount: item.remaining_value,
             amount: item.adjustment,
-            note: item.adjustementNote
+            note: item.adjustmentNote
           }
           await postRequest(`/payroll/${this.currentPayroll.id}/adjustments`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Adjustment Added')

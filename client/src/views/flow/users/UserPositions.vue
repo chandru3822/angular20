@@ -399,6 +399,7 @@
           this.newPosition = {}
           this.addNew = false
           this.expanded = []
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Position')

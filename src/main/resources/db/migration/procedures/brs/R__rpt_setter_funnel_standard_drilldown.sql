@@ -67,8 +67,7 @@ BEGIN
                                                                   then null
                                                               else pd.closer_appointment_outcome
                                                               end) = lov.id
-                where pd.source = 525 --Setter Gen
-                    and (pd.first_appointment_pitched is not null
+                where (pd.first_appointment_pitched is not null
                         or pd.first_appointment_missed is not null
                         or pd.first_appointment_not_pitched_or_missed is not null
                         or pd.first_appointment is not null
@@ -133,8 +132,7 @@ BEGIN
                                                                   then null
                                                               else pd.closer_appointment_outcome
                                                               end) = lov.id
-                where pd.source = 525 --Setter Gen
-                    and (case when pd.first_appointment_pitched is not null
+                where  (case when pd.first_appointment_pitched is not null
                                   then pd.first_appointment_pitched_id != 4 --Cancelled
                               when pd.first_appointment_pitched is null
                                   and pd.first_appointment_missed is not null
@@ -212,8 +210,7 @@ BEGIN
                                                                   then pd.first_appointment_missed_id
                                                               else pd.closer_appointment_outcome
                                                               end) = lov.id
-                where pd.source = 525 --Setter Gen
-                    and (case when pd.first_appointment_pitched is not null
+                where  (case when pd.first_appointment_pitched is not null
                                   then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                               when pd.first_appointment_pitched is null
                                   and pd.first_appointment_missed is not null
@@ -290,8 +287,7 @@ BEGIN
                                                                   then null
                                                               else pd.closer_appointment_outcome
                                                               end) = lov.id
-                where pd.source = 525 --Setter Gen
-                    and (pd.first_appointment_pitched is not null
+                where  (pd.first_appointment_pitched is not null
                         or pd.first_appointment_missed is not null
                         or pd.first_appointment_not_pitched_or_missed is not null
                         or pd.first_appointment is not null
@@ -358,8 +354,7 @@ BEGIN
                                                                   then null
                                                               else pd.closer_appointment_outcome
                                                               end) = lov.id
-                where pd.source = 525 --Setter Gen
-                    and (case when pd.first_appointment_pitched is not null
+                where  (case when pd.first_appointment_pitched is not null
                                   then pd.first_appointment_pitched_id != 4 --Cancelled
                               when pd.first_appointment_pitched is null
                                   and pd.first_appointment_missed is not null
@@ -439,8 +434,7 @@ BEGIN
                                                                   then pd.first_appointment_missed_id
                                                               else pd.closer_appointment_outcome
                                                               end) = lov.id
-                where pd.source = 525 --Setter Gen
-                    and (case when pd.first_appointment_pitched is not null
+                where  (case when pd.first_appointment_pitched is not null
                                   then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                               when pd.first_appointment_pitched is null
                                   and pd.first_appointment_missed is not null

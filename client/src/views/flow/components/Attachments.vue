@@ -273,7 +273,6 @@ export default {
     },
     uploadDocument: async function (file) {
       try {
-        console.log('randaLogger',file)
         if(file && file.size > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           //reset error message when trying to upload new file

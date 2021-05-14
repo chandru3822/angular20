@@ -32,6 +32,15 @@
                 </v-btn>
 
                 <v-btn
+                  v-if="smartlist.id"
+                  text
+                  @click="copy"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                  <span v-if="!constants.mobile">Duplicate</span>
+                </v-btn>
+
+                <v-btn
                   v-if="canEdit"
                   text
                   @click="validateForm"
@@ -816,6 +825,21 @@ export default {
         logError(e)
         this.smartlist.projectDetails = !this.smartlist.projectDetails
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async copy () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/smartlist/${this.smartlist.id}/copy`)
+        this.$router.push('/smartlist')
+        this.snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error duplicating smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
