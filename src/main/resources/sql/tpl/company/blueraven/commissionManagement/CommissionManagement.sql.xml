@@ -9,7 +9,7 @@
         where active is true
     ]]></commissionManagement.findActiveMilestones>
 
-    <commissionManagement.findAvailableMilestones><![CDATA[
+  <commissionManagement.findAvailableMilestonesForClosers><![CDATA[
         with t1 as (SELECT
             id
         FROM brs.milestone_type
@@ -20,7 +20,14 @@
         select mt.*
         from brs.milestone_type mt
             inner join t1 on t1.id = mt.id
-    ]]></commissionManagement.findAvailableMilestones>
+          where mt.position_id = 1
+    ]]></commissionManagement.findAvailableMilestonesForClosers>
+
+    <commissionManagement.findAvailableMilestonesForSetters><![CDATA[
+        select mt.*
+        from brs.milestone_type mt
+            where mt.position_id = 4
+    ]]></commissionManagement.findAvailableMilestonesForSetters>
 
     <commissionManagement.getUserPayrolls><![CDATA[
         select p.id,
@@ -426,11 +433,13 @@ FROM (SELECT cp.id,
                                 select cpa.id as "commissionPlanAllocationId",
                                        cpa.milestone_id as "milestoneId",
                                        cpa.allocation,
+                                       cpa.min,
+                                       cpa.max,
                                        mt.milestone_type as "milestoneType"
                                 from brs.commission_plan_allocation cpa
                                          inner join brs.milestone_type mt on mt.id = milestone_id
                                 where cpa.commission_plan_id = cp.id
-                                order by mt.display_order
+                                order by mt.display_order, cpa.min, cpa.max
                                 ) AS mt), '[]') AS milestones,
              coalesce((SELECT array_to_json(array_agg(row_to_json(sources)))
               FROM (SELECT cpsa.id,
@@ -649,6 +658,8 @@ FROM (SELECT cp.id,
       FROM (select cpa.id as "commissionPlanAllocationId",
          cpa.milestone_id as "milestoneId",
          cpa.allocation,
+         cpa.min,
+         cpa.max,
          mt.milestone_type as "milestoneType"
       from brs.commission_plan_allocation cpa
           inner join brs.milestone_type mt on mt.id = milestone_id
@@ -657,13 +668,15 @@ FROM (SELECT cp.id,
   ]]></commissionManagement.getCommissionPlanAllocationMilestone>
 
     <commissionManagement.saveMilestone><![CDATA[
-      INSERT INTO brs.commission_plan_allocation (allocation, commission_plan_id, milestone_id)
-      VALUES (:allocation, :planId, :milestoneTypeId)
+      INSERT INTO brs.commission_plan_allocation (allocation, commission_plan_id, milestone_id, min, max)
+      VALUES (:allocation, :planId, :milestoneTypeId, :min, :max)
     ]]></commissionManagement.saveMilestone>
 
     <commissionManagement.updateMilestone><![CDATA[
       UPDATE brs.commission_plan_allocation
-       SET allocation = :allocation
+       SET allocation = :allocation,
+           min = :min,
+           max = :max
        WHERE id = :id
     ]]></commissionManagement.updateMilestone>
 

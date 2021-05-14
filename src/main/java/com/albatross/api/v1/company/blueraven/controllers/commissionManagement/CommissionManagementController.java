@@ -103,9 +103,10 @@ public class CommissionManagementController {
         return commissionManagementService.findActiveMilestones();
     }
 
-    @GetMapping(value = "/{id}/availableMilestones")
-    public List<CommissionManagementService.MilestoneType> getAvailableMilestones(@PathVariable Long id) {
-        return commissionManagementService.findAvailableMilestones(id);
+    @GetMapping(value = "/{id}/availableMilestones/{positionId}")
+    public List<CommissionManagementService.MilestoneType> getAvailableMilestones(@PathVariable Long id,
+                                                                                  @PathVariable Long positionId) {
+        return commissionManagementService.findAvailableMilestones(id, positionId);
     }
 
     @GetMapping(value = "/plans/{positionId}")
@@ -154,7 +155,7 @@ public class CommissionManagementController {
 
     @PostMapping(value = "/{planId}/milestone")
     public String saveMilestone(@PathVariable Long planId,
-                              @RequestBody Milestone milestone) {
+                                @RequestBody Milestone milestone) {
         return commissionManagementService.saveMilestone(planId, milestone);
     }
 
