@@ -273,7 +273,9 @@ export default {
       this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
     drillDown: function(type) {
-     this.displayType = type
+      this.displayType = type
+      //not sure why i am having to unset this value
+      this.dragTypeId = null
     },
     getTypeCount: function(typeId) {
       try {
