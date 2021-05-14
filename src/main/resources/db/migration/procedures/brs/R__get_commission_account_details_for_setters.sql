@@ -82,6 +82,20 @@ BEGIN
                    end                                                            AS remaining_value_overrides,
                coalesce(foo.total_commissions,0) + coalesce(foo.total_overrides,0) AS project_total_value
         FROM (
+                with details as (
+                    select foo.setter_user_id,cpa2.allocation
+                    from (
+                    select pd3.setter_user_id,pc.commission_plan_id,count(1) as pitched_count
+                    from brs.project_details pd3
+                    inner join brs.project_commission pc on pc.project_id = pd3.project_id
+                    inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 4
+                    where pd3.setter_milestone_pay::date >= '2021-04-15'
+                    and pd3.setter_milestone_pay <= v_period_end_date
+                    and pd3.first_appointment_not_pitched_or_missed <= v_period_end_date and pd3.first_appointment_not_pitched_or_missed >= (v_period_end_date) - 7
+                    group by pd3.setter_user_id,pc.commission_plan_id)as foo
+                    inner join brs.commission_plan_allocation cpa2 on cpa2.commission_plan_id = foo.commission_plan_id and
+                                                                      ((foo.pitched_count between cpa2.min and cpa2.max) or (foo.pitched_count > cpa2.max))
+                )
                  SELECT p.id as project_id,
                         c.id as customer_id,
                         p.project_name,
@@ -131,12 +145,7 @@ BEGIN
                          WHERE pc.project_id = p.id  and cp.position_id = 4
                         )                                                       AS commission_plan_id,
 
-                        (SELECT coalesce(cp.total,
-                                         0) total
-                         FROM flow.project p2
-                                  inner join brs.project_commission pc on pc.project_id = p2.id
-                                  inner join brs.commission_plan cp on pc.commission_plan_id = cp.id and cp.position_id = 4
-                         where p2.id = p.id) AS total_commissions,
+                        0::numeric AS total_commissions,
                         coalesce(
                                 (select op2.total
                                  from brs.override_plan op2
@@ -144,16 +153,11 @@ BEGIN
                                  where po.project_id = p.id and op2.position_id = 4),
                                 0)                                                          AS total_overrides,
                         coalesce(
-                                (SELECT case when pd.cancelled_date is not null then
+                                (case when pd.cancelled_date is not null then
                                                  0::NUMERIC
-                                             else coalesce(cpa.allocation,
-                                                           0) end total
-                                 FROM flow.project p1
-                                          inner join brs.project_details pd on p1.id = pd.project_id
-                                          inner join brs.project_commission pc on pc.project_id = p1.id
-                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 4
-                                          inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
-                                 WHERE p1.id = p.id ),0)  AS commission_earned,
+                                             else coalesce(d.allocation,
+                                                           0) end
+                                 ),0)  AS commission_earned,
                         coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::numeric
@@ -184,12 +188,13 @@ BEGIN
                  FROM flow.project p
                          -- inner join milestone1 mop on mop.project_id = p.id
                           inner join brs.project_details pd on pd.project_id = p.id
+                          inner join details d on d.setter_user_id = pd.setter_user_id
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.setter_user_id
                           inner join flow.company_user_status cus  on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                           left join flow.list_of_value lov_source on lov_source.id = pd.source
-                 WHERE pd.setter_milestone_pay::date >= '2021-05-03' and
+                 WHERE pd.setter_milestone_pay::date >= '2021-04-15' and
                      CASE WHEN p_project_ids IS NOT NULL
                               THEN p.id = ANY(p_project_ids) ELSE
                          pd.setter_milestone_pay::date <= v_period_end_date  END
