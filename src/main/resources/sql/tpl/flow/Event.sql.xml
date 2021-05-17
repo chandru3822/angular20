@@ -1,0 +1,36 @@
+<sql>
+  <event.getAllForCompany><![CDATA[
+    select *
+    from flow.event
+    where company_id = :companyId
+    and archived is not true
+    order by event_name
+  ]]></event.getAllForCompany>
+
+  <event.get><![CDATA[
+    select *
+    from flow.event
+    where id = :id
+  ]]></event.get>
+
+  <event.delete><![CDATA[
+      update flow.event
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where id = :eventId
+  ]]></event.delete>
+
+  <event.update><![CDATA[
+      update flow.event
+      set modified_by_id = :modifiedById,
+          date_modified = now(),
+          event_name = :name
+      where id = :id;
+  ]]></event.update>
+
+  <event.insert><![CDATA[
+      insert into flow.event (company_id, event_name, created_by_id)
+        values (:companyId, :name, :createdById)
+  ]]></event.insert>
+</sql>

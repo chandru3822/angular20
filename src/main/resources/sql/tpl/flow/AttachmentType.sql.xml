@@ -203,4 +203,69 @@
       where id = :id
     ]]>
   </attachmentType.updateReadyOnly>
+
+  <attachmentType.getEventTypes><![CDATA[
+      select eat.id,
+       at.attachment_type,
+       eat.attachment_type_id,
+       eat.event_id,
+       eat.date_created,
+       eat.date_modified,
+       eat.created_by_id,
+       eat.modified_by_id,
+       eat.archived
+    from flow.event_attachment_type eat
+    inner join flow.attachment_type at on at.id = eat.attachment_type_id
+    where
+      eat.event_id = :eventId and
+      eat.archived is not true
+    order by eat.display_order
+  ]]></attachmentType.getEventTypes>
+
+  <attachmentType.getAvailableTypesForEvent><![CDATA[
+    select at.*
+      from flow.attachment_type at
+    where at.archived is not true
+      and at.company_id = :companyId
+      and at.is_system is not true
+      and not exists (
+        select event_id
+        from flow.event_attachment_type eat
+        where eat.attachment_type_id = at.id
+          and eat.event_id = :id
+          and eat.archived is not true
+          and at.is_system is not true
+      )
+     order by at.attachment_type
+
+  ]]></attachmentType.getAvailableTypesForEvent>
+
+  <attachmentType.getEventType><![CDATA[
+    SELECT eat.id,
+       eat.attachment_type_id as "attachmentTypeId",
+       eat.created_by_id as "createdById",
+       eat.event_id as "eventId",
+       eat.modified_by_id as "modifiedById",
+       eat.display_order as "displayOrder",
+       at.attachment_type as "attachmentType",
+       eat.archived
+    FROM flow.event_attachment_type eat
+           inner join flow.attachment_type at on at.id = eat.attachment_type_id
+    where eat.id = :id
+  ]]></attachmentType.getEventType>
+
+  <attachmentType.insertEventType><![CDATA[
+    insert into flow.event_attachment_type (attachment_type_id, event_id, created_by_id, date_created, display_order)
+    values (:attachmentTypeId, :eventId, :createdById, now(), (select coalesce(max(display_order) + 1, 0) from flow.event_attachment_type where event_id = :eventId and archived is not true))
+  ]]></attachmentType.insertEventType>
+
+  <attachmentType.deleteEventType>
+    <![CDATA[
+        update flow.event_attachment_type
+        set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+        where id = :id
+    ]]>
+  </attachmentType.deleteEventType>
 </sql>

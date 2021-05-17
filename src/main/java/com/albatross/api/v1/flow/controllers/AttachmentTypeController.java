@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.EventAttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.model.ProjectAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
@@ -102,4 +103,24 @@ public class AttachmentTypeController {
     return attachmentTypeService.insertType(type);
   }
 
+  //event types
+  @GetMapping(value = "/eventTypes/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<EventAttachmentType>> getEventTypes(@PathVariable Long eventId) {
+    return new ResponseEntity<>(attachmentTypeService.getEventTypes(eventId), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/eventType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<EventAttachmentType> insertEventType(@RequestBody EventAttachmentType attachmentType) {
+    return attachmentTypeService.insertEventType(attachmentType);
+  }
+
+  @GetMapping(value = "/typesForEvent/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAvailableTypesForEvent (@PathVariable Long id) {
+    return attachmentTypeService.getAvailableTypesForEvent(id);
+  }
+
+  @DeleteMapping(value = "/eventType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteEventType(@PathVariable Long id) {
+    attachmentTypeService.deleteEventType(id);
+  }
 }

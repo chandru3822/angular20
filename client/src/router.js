@@ -645,6 +645,40 @@ export default new Router({
                 }
               ]
             }, {
+              path: 'events',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/Events.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'event/:id',
+              name: 'EventSettings',
+              meta: {title: 'Albatross - Settings'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/Event.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'customFieldGroups',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventCustomFieldGroups.vue'),
+                },
+                {
+                  path: 'attachments',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventAttachments.vue'),
+                }
+              ]
+            }, {
               path: 'functions',
               meta: {title: 'Albatross - Settings'},
               component: () => {

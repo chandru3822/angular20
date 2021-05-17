@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
-import com.albatross.api.v1.flow.model.AttachmentType;
-import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
-import com.albatross.api.v1.flow.model.ProjectAttachmentType;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -226,6 +223,48 @@ public class AttachmentTypeService {
         "id").longValue();
 
     return getType(type.getCompanyId(), id);
+  }
+
+  public List<EventAttachmentType> getEventTypes(Long eventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    return sqlCache.query("attachmentType.getEventTypes", params, EventAttachmentType.class);
+  }
+
+  public List<AttachmentType> getAvailableTypesForEvent(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getAvailableTypesForEvent", params, AttachmentType.class);
+    return attachmentTypes;
+  }
+
+  public Optional<EventAttachmentType> insertEventType(EventAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    Long id = sqlCache.updateReturningId("attachmentType.insertEventType",
+      ImmutableMap.of("createdById", currentUser.getId(),
+        "attachmentTypeId", attachmentType.getAttachmentTypeId(),
+        "eventId", attachmentType.getEventId()), "id").longValue();
+
+    return getEventType(id);
+  }
+
+  public Optional<EventAttachmentType> getEventType(Long id) {
+    Optional<EventAttachmentType> result = sqlCache.get("attachmentType.getEventType",
+      ImmutableMap.of("id", id), EventAttachmentType.class);
+
+    return result;
+  }
+
+  public void deleteEventType(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    sqlCache.update("attachmentType.deleteEventType",
+      ImmutableMap.of("id", id,
+        "modifiedById", currentUser.getId()));
   }
 
 
