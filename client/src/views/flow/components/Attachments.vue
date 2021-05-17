@@ -12,13 +12,21 @@
       <v-row v-if="displayType === null" class="d-flex justify-start">
         <v-col
           cols="2"
+          :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
           class="type text-center pb-0"
           @click="drillDown(type)"
+          @dragenter="dragTypeId=type.attachmentTypeId"
+          @dragleave="dragTypeId=null"
+          @dragend="dragTypeId=null"
+          @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
+          @dragover.prevent="dragTypeId=type.attachmentTypeId"
           v-for="type in attachmentTypes"
         >
-          <v-icon x-large color="yellow accent-4">folder</v-icon>
-          <div>{{ type.attachmentType }}</div>
-          <div>{{`(${getTypeCount(type.attachmentTypeId)})`}}</div>
+          <div>
+            <v-icon x-large color="yellow accent-4" @dragleave.prevent>folder</v-icon>
+            <div @dragleave.prevent>{{ type.attachmentType }} {{type.attachmentTypeId}}</div>
+            <div @dragleave.prevent>{{`(${getTypeCount(type.attachmentTypeId)})`}}</div>
+          </div>
         </v-col>
       </v-row>
       <v-row v-else>
@@ -29,17 +37,19 @@
           <v-checkbox label="Show non-primary Documents"
                       v-model="showNonPrimaryDocs"></v-checkbox>
         </v-col>
-        <v-col cols="5" class="py-3" v-if="!displayType.readOnly">
+        <v-col cols="5" class="py-3" v-if="!displayType.readOnly" >
+          <div @drop.prevent="addDragDocument" @dragover.prevent>
             <v-file-input
               dense
               ref="fileInput"
               hide-details
               :show-size="error.error"
               outlined
-              label="Upload document"
+              label="Upload File"
               @change="uploadDocument"
             />
           <span class="error-text" v-if="error.message">{{error.message}}</span>
+        </div>
         </v-col>
         <v-row class="d-flex flex-wrap justify-start">
           <v-col
@@ -174,6 +184,7 @@ export default {
       attachmentTypes: [],
       attachments: [],
       displayType: null,
+      dragTypeId: null,
       typePath: null,
       attachmentPath: null,
       error: {},
@@ -262,7 +273,9 @@ export default {
       this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
     drillDown: function(type) {
-     this.displayType = type
+      this.displayType = type
+      //not sure why i am having to unset this value
+      this.dragTypeId = null
     },
     getTypeCount: function(typeId) {
       try {
@@ -271,9 +284,12 @@ export default {
         return 0
       }
     },
-    uploadDocument: async function (file) {
+    addDragDocument: async function (e, attachmentTypeId) {
+      let file = e.dataTransfer.files[0]
+      await this.uploadDocument(file, attachmentTypeId)
+    },
+    uploadDocument: async function (file, attachmentTypeId) {
       try {
-        console.log('randaLogger',file)
         if(file && file.size > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           //reset error message when trying to upload new file
@@ -281,7 +297,7 @@ export default {
           // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
           await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
             file,
-            attachmentTypeId: this.displayType.attachmentTypeId,
+            attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
             projectId: this.projectId,
             projectProcessStepId: this.projectProcessStepId,
             callback: async (newAttachment, error) => {
@@ -295,7 +311,7 @@ export default {
 
                 this.attachments = [...this.attachments, newAttachment]
               }
-              this.$refs.fileInput.reset()
+              this.$refs?.fileInput?.reset()
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           })
@@ -328,5 +344,8 @@ export default {
   }
   .primary-row{
     background-color: #ebf5ff !important;
+  }
+  .file-hover {
+    background: #F6F7F8;
   }
 </style>
