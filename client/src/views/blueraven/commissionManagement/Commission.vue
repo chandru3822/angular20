@@ -265,7 +265,7 @@
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
-            Milestones
+            {{levelText}}s
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -279,15 +279,14 @@
         <v-card v-if="addMilestone" class="square-card text-left pa-5">
           <v-select v-model="selectedMilestone.id"
                     :items="milestones"
-                    label="Select a Milestone..."
+                    :label="`Select a ${levelText}...`"
                     item-text="milestoneType"
                     item-value="id"
                     autocomplete="off">
           </v-select>
           <v-text-field text
-                        v-if="commission.positionId === 1"
                         type="number"
-                        label="Milestone Payment $"
+                        :label="`${levelText} Payment $`"
                         v-model.number="selectedMilestone.allocation">
           </v-text-field>
           <div v-if="commission.positionId === 4">
@@ -327,19 +326,18 @@
           class="elevation-1"
         >
           <template #no-data>
-            No available milestones
+            No available {{levelText}}s
           </template>
 
           <template #no-results>
-            No available milestones
+            No available {{levelText}}s
           </template>
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
               <v-text-field text
-                            v-if="commission.positionId === 1"
                             type="number"
-                            label="Milestone Payment $"
+                            :label="`${levelText} Payment $`"
                             v-model.number="item.allocation">
               </v-text-field>
               <div v-if="commission.positionId === 4">
@@ -359,7 +357,7 @@
               <div class="error-text mb-3" v-if="milestoneError">
                 {{milestoneErrorMsg}}
               </div>
-              <v-btn :disabled="(!item.allocation && !item.min) || milestoneError"
+              <v-btn :disabled="!item.allocation || (commission.positionId === 4 && !item.min) || milestoneError"
                      @click="[milestoneExpanded = [], updateMilestone(item)]">Save</v-btn>
             </td>
           </template>
@@ -367,9 +365,9 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.milestoneType}}</td>
-              <td class="text-left" v-if="commission.positionId === 1">{{item.allocation}}</td>
               <td class="text-left" v-if="commission.positionId === 4">{{item.min}}</td>
               <td class="text-left" v-if="commission.positionId === 4">{{item.max}}</td>
+              <td class="text-left">{{item.allocation}}</td>
               <td>
                 <v-btn small text @click="milestoneExpanded = [item]"
                        v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
@@ -407,8 +405,11 @@
                       Confirm
                     </v-card-title>
 
-                    <v-card-text>
+                    <v-card-text v-if="commission.positionId === 1">
                       Are you sure you want to delete this milestone: <strong>{{ item.milestoneType }}</strong>?
+                    </v-card-text>
+                    <v-card-text v-else>
+                      Are you sure you want to delete this tier: <strong>{{ item.milestoneType }}: {{item.min}} - {{item.max}}</strong>?
                     </v-card-text>
 
                     <v-divider></v-divider>
@@ -846,6 +847,7 @@
         snackbar: {},
         cloneDialog: false,
         payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
+        levelText: this.$store.state.brs.commissionPositionId === 4 ? 'Tier' : 'Milestone',
         addUser: false,
         newUser: {},
         usersToAdd: [],
@@ -894,10 +896,10 @@
           {text: '', value: 'icons', show: true},
         ],
         milestoneHeaders: [
-          {text: 'Milestone', value: 'milestoneType', show: true},
-          {text: 'Milestone Payment ($)', value: 'allocation', positionId: 1},
+          {text: this.$store.state.brs.commissionPositionId === 4 ? 'Tier' : 'Milestone', value: 'milestoneType', show: true},
           {text: 'Minimum Pitches', value: 'min', positionId: 4},
           {text: 'Maximum Pitches', value: 'max', positionId: 4},
+          {text: this.$store.state.brs.commissionPositionId === 4 ? 'Tier Payment ($)' : 'Milestone Payment ($)', value: 'allocation', show: true},
           {text: '', value: 'icons', show: true},
         ],
         milestoneError: false,
@@ -1218,6 +1220,9 @@
           try {
             const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones/${this.commission.positionId}`, 'blueraven')
             this.milestones = data
+            // if(this.commission.positionId === 4) {
+            //   this.selectedMilestone.id = this.milestones[0].id
+            // }
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')
@@ -1263,7 +1268,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Milestone Deleted')
+          this.snackbar = getSnackbar('SUCCESS', `${levelText} Deleted`)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission.milestones = this.commission.milestones.filter(m => {
             return m.commissionPlanAllocationId !== commissionPlanAllocationId
@@ -1272,7 +1277,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Milestone')
+          this.snackbar = getSnackbar('ERROR', `Error Deleting ${levelText}`)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
