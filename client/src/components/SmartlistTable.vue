@@ -52,7 +52,10 @@
                   :key="key"
                   class="text-left"
                 >
+                  <router-link class="no-text-decoration" :to="type === 'PROJECT' ? `/project/${row.project_id}/details` :
+                                                              type === 'CONTACT' ? `/contact/${row.contact_id}` : ''">
                     {{field}}
+                  </router-link>
                 </td>
               </template>
             </tr>
@@ -82,7 +85,8 @@ export default {
         ExportDialog
     },
     props: {
-        smartlistId: Number
+        smartlistId: Number,
+        type: String
     },
     data () {
         return {
