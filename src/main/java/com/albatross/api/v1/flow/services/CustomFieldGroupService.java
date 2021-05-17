@@ -199,7 +199,7 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupId", groupId);
@@ -210,6 +210,9 @@ public class CustomFieldGroupService {
       // as of right now, judson says a field can be native to multiple process steps, but not within the same process step, i think this query does that now
       params.put("processStepId", processStepId);
       results = sqlCache.query("customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep", params, CustomField.class);
+    } else if (null != eventId) {
+      params.put("eventId", eventId);
+      results = sqlCache.query("customFieldGroupAssignment.getAvailableNativeFieldsForEvent", params, CustomField.class);
     } else {
       results = sqlCache.query("customFieldGroupAssignment.getAvailableCustomFieldsInGroup", params, CustomField.class);
     }
@@ -224,6 +227,7 @@ public class CustomFieldGroupService {
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
+    params.put("eventId", customFieldGroup.getEventId());
     params.put("createdById", user.getId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
@@ -239,6 +243,29 @@ public class CustomFieldGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
+    params.put("companyId", currentUser.getCompanyId());
+    Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+
+    CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+
+    if(null != customFieldGroup.getEventTypeId() && null != customFieldGroup.getSchedulingFields()) {
+      List<CustomField> newFieldList = new ArrayList<>();
+      for(CustomField cf : customFieldGroup.getSchedulingFields()) {
+        cf.setCustomFieldGroupId(cfg.getId());
+        CustomField newCf = addFieldToGroup(cf);
+        newFieldList.add(newCf);
+      }
+      cfg.setCustomFields(newFieldList);
+    }
+
+    return cfg;
+  }
+
+  public CustomFieldGroup addEventCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.EVENT.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
 

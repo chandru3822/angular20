@@ -146,7 +146,7 @@
         this.getEvents()
       }, 500),
       goToEvent(eventId) {
-        this.$router.push({path: `/settings/event/${eventId}/customFieldGroups`})
+        this.$router.push({path: `/settings/event/${eventId}/components`})
       },
       async getEvents () {
         this.$store.commit(AppMutations.SET_LOADING, true)

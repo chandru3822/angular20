@@ -88,8 +88,9 @@ public class CustomFieldGroupController {
   @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long companyObjectTypeId,
                                                             @RequestParam Long groupId,
-                                                            @RequestParam(required = false) Long processStepId) {
-    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId);
+                                                            @RequestParam(required = false) Long processStepId,
+                                                            @RequestParam(required = false) Long eventId) {
+    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId, eventId);
   }
 
   @PostMapping(value = "/addCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,6 +101,11 @@ public class CustomFieldGroupController {
   @PostMapping(value = "/addProcessStepCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public CustomFieldGroup addProcessStepCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
     return customFieldGroupService.addProcessStepCustomFieldGroup(customFieldGroup);
+  }
+
+  @PostMapping(value = "/addEventCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addEventCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addEventCustomFieldGroup(customFieldGroup);
   }
 
   @Data

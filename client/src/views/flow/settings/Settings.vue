@@ -187,6 +187,10 @@ export default {
         title: 'Organization Types',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/eventStatuses',
+        title: 'Event Statuses',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/processStepStatuses',
         title: 'Process Step Statuses',
         show: this.hasSettingsAccess

@@ -1,15 +1,20 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.Event;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +45,7 @@ public class EventService {
   public Event getEvent(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<Event> result = sqlCache.get("event.get", params,  Event.class);
+    Optional<Event> result = sqlCache.get("event.get", params,  new EventMapper<>(Event.class, om));
     return result.orElse(null);
   }
 
@@ -72,6 +77,111 @@ public class EventService {
     Long id = sqlCache.updateReturningId("event.insert", params, "id").longValue();
 
     return getEvent(id);
+  }
+
+  public List<EventStatusType> getEventStatuses() {
+    List<EventStatusType> results = sqlCache.query("event.getStatuses", Collections.emptyMap(), EventStatusType.class);
+
+    return results;
+  }
+
+  public List<EventStatusType> getCompanyEventStatuses() {
+    User currentUser = securityService.getCurrentUser();
+    Long companyId = currentUser.getCompanyId();
+
+    // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
+    List<EventStatusType> results = sqlCache.query("event.getCompanyStatuses",
+      ImmutableMap.of("companyId", companyId), EventStatusType.class);
+
+    return results;
+  }
+
+  public Optional<EventStatusType> getOneCompanyEventStatusType(Long id) {
+    Optional<EventStatusType> result = sqlCache.get("event.getOneCompanyStatus",
+      ImmutableMap.of("id", id), EventStatusType.class);
+
+    return result;
+  }
+
+  public Optional<EventStatusType> saveCompanyEventStatus(EventStatusType status) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", currentUser.getId());
+    params.put("rootEventStatusTypeId", status.getEventStatusTypeId());
+    params.put("eventStatusType", status.getEventStatusType());
+    params.put("companyId", currentUser.getCompanyId());
+    Long id;
+
+    if(null != status.getId()) {
+      id = status.getId();
+      params.put("id", id);
+      params.put("displayOrder", status.getDisplayOrder());
+      sqlCache.update("event.updateCompanyStatus", params);
+    } else {
+      id = sqlCache.updateReturningId("event.insertCompanyStatus", params, "id").longValue();
+    }
+
+    return getOneCompanyEventStatusType(id);
+  }
+
+  public void deleteCompanyEventStatus(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", currentUser.getId());
+    params.put("id", id);
+
+    sqlCache.update("event.deleteCompanyStatus", params);
+  }
+
+  public Optional<EventCompanyEventStatusType> assignStatusToEvent(Long companyEventStatusTypeId, Long eventId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    params.put("companyEventStatusTypeId", companyEventStatusTypeId);
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("event.assignStatusToEvent", params, "id").longValue();
+    return getEventCompanyProcessStepStatusType(id);
+  }
+
+  public Optional<EventCompanyEventStatusType> getEventCompanyProcessStepStatusType(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<EventCompanyEventStatusType> result = sqlCache.get("event.getEventCompanyEventStatusType", params, EventCompanyEventStatusType.class);
+    return result;
+  }
+
+  public List<CompanyEventStatusType> getAvailableForEvent(Long eventId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    params.put("companyId", user.getCompanyId());
+
+    List<CompanyEventStatusType> companyEventStatusTypes = sqlCache.query("event.availableForEvent", params, CompanyEventStatusType.class);
+    return companyEventStatusTypes;
+  }
+
+  public static class EventMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public EventMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<List<CustomFieldGroup>>() {};
+      bw.registerCustomEditor(List.class, "customFieldGroups",
+        new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
+
+      TypeReference<List<EventCompanyEventStatusType>> companyEventStatusTypeRef = new TypeReference<List<EventCompanyEventStatusType>>() {};
+      bw.registerCustomEditor(List.class, "companyEventStatusTypes",
+        new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
+    }
   }
 
 }

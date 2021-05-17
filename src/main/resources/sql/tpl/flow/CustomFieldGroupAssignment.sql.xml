@@ -231,6 +231,28 @@
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep>
 
+  <customFieldGroupAssignment.getAvailableNativeFieldsForEvent><![CDATA[
+    select cf.id,cf.field_name, cfot.company_object_type_id
+    from flow.custom_field_object_type cfot
+             inner join flow.custom_field cf on cf.id = cfot.custom_field_id
+             inner join flow.company_object_type cot on cot.id = cfot.company_object_type_id
+    where cot.id = :companyObjectTypeId
+      and cfot.archived is not true
+      and cf.archived is not true
+        except
+    select cf.id,cf.field_name, cfg.company_object_type_id
+    from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+             inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.id = :companyObjectTypeId
+      and cfg.event_id = :eventId
+      and cfga.archived is not true
+      and cfg.archived is not true
+      and cf.archived is not true
+    order by field_name
+  ]]></customFieldGroupAssignment.getAvailableNativeFieldsForEvent>
+
   <customFieldGroupAssignment.getCustomField><![CDATA[
     SELECT cfga.id,
            cfga.id as custom_field_group_assignment_id,

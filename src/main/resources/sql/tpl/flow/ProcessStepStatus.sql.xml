@@ -94,8 +94,7 @@
     ]]>
   </processStepStatus.assignStatusToProcessStep>
 
-  <processStepStatus.getProcessStepCompanyProcessStepStatusType>
-    <![CDATA[
+  <processStepStatus.getProcessStepCompanyProcessStepStatusType><![CDATA[
       select pscpsst.*,
              ps.process_step_name,
              cpsst.process_step_status_type,
@@ -107,8 +106,7 @@
           inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
           inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
       where pscpsst.id = :id
-    ]]>
-  </processStepStatus.getProcessStepCompanyProcessStepStatusType>
+  ]]></processStepStatus.getProcessStepCompanyProcessStepStatusType>
 
   <processStepStatus.deleteStatusFromProcessStep>
     <![CDATA[

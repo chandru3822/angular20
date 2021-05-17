@@ -591,6 +591,16 @@ export default new Router({
                 }
               ]
             }, {
+              path: 'eventStatuses',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventStatuses" */ './views/flow/settings/EventStatuses.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'processStepStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -673,9 +683,9 @@ export default new Router({
                   component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventCustomFieldGroups.vue'),
                 },
                 {
-                  path: 'attachments',
+                  path: 'components',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventAttachments.vue'),
+                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventComponents.vue'),
                 }
               ]
             }, {

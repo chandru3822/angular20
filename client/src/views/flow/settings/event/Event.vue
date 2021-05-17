@@ -10,11 +10,11 @@
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs>
+              <v-tab :to="`/settings/event/${eventId}/components`">
+                Components
+              </v-tab>
               <v-tab :to="`/settings/event/${eventId}/customFieldGroups`">
                 Custom Field Groups
-              </v-tab>
-              <v-tab :to="`/settings/event/${eventId}/attachments`">
-                Attachment Types
               </v-tab>
             </v-tabs>
           </v-toolbar-items>

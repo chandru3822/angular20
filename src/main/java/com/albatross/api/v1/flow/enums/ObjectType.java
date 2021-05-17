@@ -5,7 +5,8 @@ public enum ObjectType {
     CONTACT(2L),
     USER(3L),
     PROCESS_STEP(4L),
-    ORGANIZATION(5L);
+    ORGANIZATION(5L),
+    EVENT(6L);
 
     public final Long id;
 

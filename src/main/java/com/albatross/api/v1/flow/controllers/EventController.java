@@ -1,13 +1,16 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Event;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.EventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -45,5 +48,37 @@ public class EventController {
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Event insertEvent(@RequestBody Event event) {
     return eventService.insertEvent(event);
+  }
+
+  //status stuff
+  @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<EventStatusType>> getEventStatuses() {
+    return new ResponseEntity<>(eventService.getEventStatuses(), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<EventStatusType>> getCompanyProjectStatuses() {
+    return new ResponseEntity<>(eventService.getCompanyEventStatuses(), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Optional<EventStatusType>> saveCompanyProjectStatus(@RequestBody EventStatusType status) {
+    return new ResponseEntity<>(eventService.saveCompanyEventStatus(status), HttpStatus.OK);
+  }
+
+  @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteCompanyProjectStatus(@PathVariable Long id) {
+    eventService.deleteCompanyEventStatus(id);
+  }
+
+  @PostMapping(value = "/status/assignCompanyStatus/{companyStatusTypeId}/toEvent/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<EventCompanyEventStatusType> assignStatusToEvent(@PathVariable Long companyStatusTypeId,
+                                                                   @PathVariable Long eventId) {
+    return eventService.assignStatusToEvent(companyStatusTypeId, eventId);
+  }
+
+  @GetMapping(value = "/status/company/availableForEvent/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyEventStatusType> getAvailableForEvent (@PathVariable Long id) {
+    return eventService.getAvailableForEvent(id);
   }
 }
