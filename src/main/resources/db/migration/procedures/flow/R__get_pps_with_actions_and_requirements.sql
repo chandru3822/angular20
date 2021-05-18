@@ -237,7 +237,25 @@ BEGIN
                 where psa.process_step_id = ps.id and
                     psa.archived is not true
                  order by psa.display_order
-            ) a), '[]') as "actions"
+            ) a), '[]') as "actions",
+             coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(events)))
+                        FROM (
+                               SELECT ppse.id,
+                                      ppse.archived,
+                                      ppse.process_step_event_id as "processStepEventId",
+                                      ppse.company_event_status_type_id as "companyEventStatusTypeId",
+                                      cest.event_status_type as "eventStatusType",
+                                      ppse.created_by_id as "createdById",
+                                      ppse.modified_by_id as "modifiedById",
+                                      e.event_name as "eventName"
+                               FROM flow.project_process_step_event ppse
+                                    inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+                                    left join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+                                    inner join flow.event e on pse.event_id = e.id
+                               WHERE ppse.project_process_step_id = pps.id
+                                 and ppse.archived is not true
+                             ) events), '[]') AS "projectProcessStepEvents"
          from reqs, flow.project_process_step pps
                         inner join flow.process_step ps on ps.id = pps.process_step_id
                         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id

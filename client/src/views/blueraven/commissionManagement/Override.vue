@@ -643,7 +643,6 @@
     },
     computed: {
       visibleReceivingHeaders() {
-        console.log('randaLogger', this.positionId)
         return this.receivingHeaders.filter(header => header.show === true)
       },
     },

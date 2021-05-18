@@ -2,11 +2,14 @@
   <processStepEvent.getStepEvents><![CDATA[
     select pse.id,
            pse.process_step_id,
+           pse.initial_company_event_status_type_id,
+           cest.event_status_type as initial_event_status_type,
            pse.event_id,
            pse.archived,
            e.event_name
     from flow.process_step_event pse
       inner join flow.event e on pse.event_id = e.id
+      left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
     where pse.process_step_id = :processStepId
     and pse.archived is not true
   ]]></processStepEvent.getStepEvents>
@@ -41,6 +44,15 @@
     insert into flow.process_step_event(process_step_id, event_id, created_by_id)
     values (:processStepId, :eventId, :createdById)
   ]]></processStepEvent.addEventToStep>
+
+  <processStepEvent.updateStepEvent><![CDATA[
+    update flow.process_step_event
+    set initial_company_event_status_type_id = :initialCompanyEventStatusTypeId,
+        date_modified = now(),
+        modified_by_id = :userId
+    where process_step_id = :processStepId
+    and event_id = :eventId
+  ]]></processStepEvent.updateStepEvent>
 
   <processStepEvent.deleteEventFromStep><![CDATA[
     update flow.process_step_event

@@ -315,6 +315,9 @@ public class ProjectProcessStepService {
 
       TypeReference<List<ProjectProcessStepRequirement>> requirementsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "autoTriggeredActionRequirements", new JsonCollectionDeserializer(requirementsRef, objectMapper));
+
+      TypeReference<List<ProjectProcessStepEvent>> ppsEventsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "projectProcessStepEvents", new JsonCollectionDeserializer(ppsEventsRef, objectMapper));
     }
   }
 

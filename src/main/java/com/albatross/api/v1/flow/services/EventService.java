@@ -85,6 +85,14 @@ public class EventService {
     return results;
   }
 
+  public List<CompanyEventStatusType> getAssignedEventStatuses(Long eventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    List<CompanyEventStatusType> results = sqlCache.query("event.getAssignedStatuses", params, CompanyEventStatusType.class);
+
+    return results;
+  }
+
   public List<EventStatusType> getCompanyEventStatuses() {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();

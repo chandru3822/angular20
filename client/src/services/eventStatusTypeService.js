@@ -2,10 +2,7 @@ import {getRequest, getRequestWithParams} from '@/helpers/helpers'
 
 export async function getCompanyEventStatusTypes(projectId) {
   try {
-    let params = {
-      projectId
-    }
-    const {data} = await getRequestWithParams(`/event/companyStatus`, { params })
+    const {data} = await getRequest(`/event/companyStatus`)
     return {data, status}
   } catch (e) {
     throw e
@@ -23,6 +20,15 @@ export async function getEventStatusTypes() {
 }
 
 export async function getAvailableForEvent(eventId) {
+  try {
+    const {data} = await getRequest(`/event/status/company/availableForEvent/${eventId}`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function getAssignedToEvent(eventId) {
   try {
     const {data} = await getRequest(`/event/status/company/availableForEvent/${eventId}`)
     return {data, status}

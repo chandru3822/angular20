@@ -168,7 +168,7 @@
       </v-col>
       <v-col cols="12" lg="6" class="text-left pt-0">
         <v-col class="pt-0">
-          <ProjectProcessStepEvents></ProjectProcessStepEvents>
+          <ProjectProcessStepEvents :project-process-step-events="processStep.projectProcessStepEvents"></ProjectProcessStepEvents>
         </v-col>
         <!--    process field groups-->
         <v-col
@@ -189,12 +189,12 @@
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card class="pa-4"
+          <v-card class="pa-4 square-card"
                   v-if="cfg.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
             A state and postal code are required on the project to continue with scheduling. Please return to the
             project screen and update.
           </v-card>
-          <v-card class="pa-3" v-else>
+          <v-card class="pa-3 square-card" v-else>
             <CustomValueInput
               v-for="(field, idx) in cfg.customFieldValues"
               :key="idx"

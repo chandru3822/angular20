@@ -40,6 +40,13 @@ public class ProcessStepEventController {
     return processStepEventService.addEventToStep(stepId, eventId);
   }
 
+  @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateStepEvent (@PathVariable Long stepId,
+                               @PathVariable Long eventId,
+                               @RequestBody ProcessStepEvent processStepEvent) {
+    processStepEventService.updateStepEvent(stepId, eventId, processStepEvent);
+  }
+
   @DeleteMapping(value = "/{processStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteEventFromStep (@PathVariable Long processStepEventId) {
     processStepEventService.deleteEventFromStep(processStepEventId);

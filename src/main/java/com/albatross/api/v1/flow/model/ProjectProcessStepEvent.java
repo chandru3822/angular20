@@ -9,10 +9,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ProcessStepEvent {
+public class ProjectProcessStepEvent {
 
-  private Long id, processStepId, eventId, initialCompanyEventStatusTypeId;
-  private String eventName, initialEventStatusType;
+  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId;
+  private String eventName, eventStatusType;
   private Boolean archived;
 }
 

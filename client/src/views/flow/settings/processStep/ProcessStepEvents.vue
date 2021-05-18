@@ -49,21 +49,37 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedEventIndex % 2}">
-                  hello world
+                  <v-autocomplete
+                    v-model="selectedEvent.initialCompanyEventStatusTypeId"
+                    :items="companyEventStatuses"
+                    label="Initial Event Status"
+                    item-text="eventStatusType"
+                    item-value="id"
+                  >
+                    <template slot="item" slot-scope="data">
+                      <!-- HTML that describes how select should render items when the select is open -->
+                      {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
+                    </template>
+                  </v-autocomplete>
+                  <v-btn class="white--text"
+                         color="primaryButton"
+                         @click="saveEventDetails(item)"
+                  >Save</v-btn>
                 </td>
               </template>
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left" style="width: 65px">{{item.eventName}}</td>
+                  <td class="text-left">{{item.eventName}}</td>
+                  <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
                     <div style="display: flex; justify-content: flex-end">
-                      <v-btn small text @click="[expanded = [item], selectedEventIndex = index]"
+                      <v-btn small text @click="[expanded = [item], selectedEvent = item, getAssignedEventStatusTypes(), selectedEventIndex = index]"
                              v-if="!expanded.includes(item)">
                         <v-icon v-if="item.immutable">expand_more</v-icon>
                         <v-icon v-else>edit</v-icon>
                       </v-btn>
-                      <v-btn small text @click="[expanded = [], selectedEventIndex = null]"
+                      <v-btn small text @click="[expanded = [], selectedEventIndex = null, selectedEvent = {}]"
                              v-if="expanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
@@ -126,6 +142,7 @@
     getRequestWithParams,
     getSnackbar
   } from '@/helpers/helpers'
+  import {getAvailableForEvent} from "@/services/eventStatusTypeService";
 
   export default {
     name: 'ProcessStepEvents',
@@ -134,6 +151,8 @@
       return {
         snackbar: {},
         expandEvents: true,
+        companyEventStatuses: [],
+        selectedEvent: {},
         selectedEventIndex: null,
         expanded: [],
         processStepId: this.$route.params.id,
@@ -141,6 +160,7 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         headers: [
           {text: 'Event', value: 'eventName', show: true},
+          {text: 'Initial Status', value: 'initialEventStatusType', show: true},
           {text: null, value: 'icons', show: true}
         ],
         addNewEvent: false,
@@ -154,6 +174,17 @@
       await this.getEvents()
     },
     methods: {
+      async getAssignedEventStatusTypes() {
+          try {
+            const {data} = await getRequest(`/event/${this.selectedEvent.eventId}/status`)
+            this.companyEventStatuses = data
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.companyStatusesLoading = false
+          }
+      },
       async getEvents() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -213,6 +244,20 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveEventDetails(psEvent) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}`, psEvent)
+          this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

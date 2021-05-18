@@ -60,6 +60,17 @@ public class ProcessStepEventService {
     return getProcessStepEvent(id);
   }
 
+  public void updateStepEvent(Long processStepId, Long eventId, ProcessStepEvent processStepEvent) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+    params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
+    params.put("userId", currentUser.getId());
+    params.put("eventId", eventId);
+    sqlCache.update("processStepEvent.updateStepEvent", params);
+  }
+
   public void deleteEventFromStep(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

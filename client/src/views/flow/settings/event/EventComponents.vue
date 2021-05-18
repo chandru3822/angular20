@@ -338,8 +338,6 @@ export default {
       }
     },
     filterAssignedEventStatusTypes() {
-      console.log('randaLogger',this.event)
-      console.log('randaLogger',this.event?.companyEventStatusTypes)
       return orderBy(this.event?.companyEventStatusTypes?.filter(u => {
         return !u.archived
       }), [f => f.eventStatusType])
