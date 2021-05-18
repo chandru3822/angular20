@@ -206,9 +206,9 @@ public class AvailabilityService {
     if(null != rsa.getResourceSlotScheduleId()) {
       //if it is a slot schedule
       HashMap<String, Object> excludedParams = new HashMap<>();
-      excludedParams.put("excludedResourceSlotTimeIds", rsa.getExcludedResourceSlotTimeIds().isEmpty() ? null : rsa.getExcludedResourceSlotTimeIds());
+      excludedParams.put("excludedResourceSlotTimeIds", null == rsa.getExcludedResourceSlotTimeIds() || rsa.getExcludedResourceSlotTimeIds().isEmpty() ? null : rsa.getExcludedResourceSlotTimeIds());
       //adding this param cuz sql array null checks are too hard for me
-      excludedParams.put("excludedIsEmpty", rsa.getExcludedResourceSlotTimeIds().isEmpty());
+      excludedParams.put("excludedIsEmpty", null == rsa.getExcludedResourceSlotTimeIds() || rsa.getExcludedResourceSlotTimeIds().isEmpty());
       excludedParams.put("resourceScheduleAvailabilityId", rsaId);
       excludedParams.put("userId", user.getId());
 
@@ -216,7 +216,7 @@ public class AvailabilityService {
       sqlCache.update("availability.archiveUnusedExcludedSlots", excludedParams);
 
       //add any excluded slots that do not already exist - if there are any sent in
-      if(!rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
+      if(null != rsa.getExcludedResourceSlotTimeIds() && !rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
         sqlCache.update("availability.addExcludedSlots", excludedParams);
       }
 
