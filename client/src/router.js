@@ -588,6 +588,10 @@ export default new Router({
                   path: 'actions',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/processStep/ProcessStepActions.vue'),
+                }, {
+                  path: 'events',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "processStepEvents" */ './views/flow/settings/processStep/ProcessStepEvents.vue'),
                 }
               ]
             }, {

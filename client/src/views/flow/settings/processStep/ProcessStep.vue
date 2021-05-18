@@ -83,6 +83,10 @@
           {
             label: 'Actions',
             path: `/settings/processStep/${this.$route.params.id}/actions`,
+          },
+          {
+            label: 'events',
+            path: `/settings/processStep/${this.$route.params.id}/events`,
           }
         ]
       }
