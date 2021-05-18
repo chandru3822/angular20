@@ -24,7 +24,7 @@
         >
           <div>
             <v-icon x-large color="yellow accent-4" @dragleave.prevent>folder</v-icon>
-            <div @dragleave.prevent>{{ type.attachmentType }} {{type.attachmentTypeId}}</div>
+            <div @dragleave.prevent>{{ type.attachmentType }}</div>
             <div @dragleave.prevent>{{`(${getTypeCount(type.attachmentTypeId)})`}}</div>
           </div>
         </v-col>
