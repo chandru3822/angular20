@@ -6,12 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -34,6 +32,17 @@ public class ProcessStepEventController {
   @GetMapping(value = "/available", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepEvent> getAvailableEventsForStep (@PathVariable Long stepId) {
     return processStepEventService.getAvailableEventsForStep(stepId);
+  }
+
+  @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEvent> addEventToStep (@PathVariable Long stepId,
+                                                    @PathVariable Long eventId) {
+    return processStepEventService.addEventToStep(stepId, eventId);
+  }
+
+  @DeleteMapping(value = "/{processStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteEventFromStep (@PathVariable Long processStepEventId) {
+    processStepEventService.deleteEventFromStep(processStepEventId);
   }
 
 }

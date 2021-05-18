@@ -167,7 +167,9 @@
         </v-toolbar>
       </v-col>
       <v-col cols="12" lg="6" class="text-left pt-0">
-
+        <v-col class="pt-0">
+          <ProjectProcessStepEvents></ProjectProcessStepEvents>
+        </v-col>
         <!--    process field groups-->
         <v-col
           class="pt-0"
@@ -340,6 +342,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
+  import ProjectProcessStepEvents from '@/views/flow/project/ProjectProcessStepEvents'
   import Links from '@/views/flow/components/Links'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
@@ -358,7 +361,8 @@
       Attachments,
       CustomValueInput,
       DatetimePickerInput,
-      ProjectProcessStepStatus
+      ProjectProcessStepStatus,
+      ProjectProcessStepEvents
     },
     data() {
       return {

@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -40,4 +42,29 @@ public class ProcessStepEventService {
     return results;
   }
 
+  public Optional<ProcessStepEvent> getProcessStepEvent(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<ProcessStepEvent> result = sqlCache.get("processStepEvent.get", params, ProcessStepEvent.class);
+    return result;
+  }
+
+  public Optional<ProcessStepEvent> addEventToStep(Long processStepId, Long eventId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+    params.put("createdById", currentUser.getId());
+    params.put("eventId", eventId);
+    Long id = sqlCache.updateReturningId("processStepEvent.addEventToStep", params, "id").longValue();
+    return getProcessStepEvent(id);
+  }
+
+  public void deleteEventFromStep(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.getId());
+    sqlCache.update("processStepEvent.deleteEventFromStep", params);
+  }
 }

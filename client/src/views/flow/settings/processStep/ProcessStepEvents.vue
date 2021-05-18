@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[getAvailableEvents()]" text v-if="userCanAdd">
+            <v-btn @click="[addNewEvent = !addNewEvent, getAvailableEvents()]" text v-if="userCanAdd">
               <v-icon v-if="!addNewEvent">add</v-icon>
               {{ addNewEvent ? 'Cancel' : 'Add Event'}}
             </v-btn>
@@ -18,12 +18,96 @@
         </v-toolbar>
         <v-row v-if="addNewEvent">
           <v-col cols="12">
-            <v-select v-model="newEvent.eventId"
+            <v-select v-model="newEventId"
                       :items="availableEvents"
                       label="Select Event"
                       item-value="id"
                       item-text="eventName"
+                      @input="addEventToProcessStep"
             ></v-select>
+          </v-col>
+        </v-row>
+        <v-row v-if="expandEvents">
+          <v-col cols="12" class="pt-0">
+            <v-data-table
+              :headers="headers"
+              :items="filterEvents()"
+              :items-per-page="-1"
+              :mobile-breakpoint="0"
+              single-expand
+              :expanded.sync="expanded"
+              hide-default-footer
+              class="elevation-1 fix-column-width-bug square-card"
+            >
+              <template #no-data>
+                No events for this process step
+              </template>
+
+              <template #no-results>
+                No events for this process step
+              </template>
+
+              <template #expanded-item="{ headers, item }">
+                <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedEventIndex % 2}">
+                  hello world
+                </td>
+              </template>
+
+              <template #item="{ item, index }">
+                <tr :class="{'shaded-row': index % 2}">
+                  <td class="text-left" style="width: 65px">{{item.eventName}}</td>
+                  <td>
+                    <div style="display: flex; justify-content: flex-end">
+                      <v-btn small text @click="[expanded = [item], selectedEventIndex = index]"
+                             v-if="!expanded.includes(item)">
+                        <v-icon v-if="item.immutable">expand_more</v-icon>
+                        <v-icon v-else>edit</v-icon>
+                      </v-btn>
+                      <v-btn small text @click="[expanded = [], selectedEventIndex = null]"
+                             v-if="expanded.includes(item)">cancel
+                      </v-btn>
+                      <v-dialog
+                        v-if="userCanEdit"
+                        v-model="item.deleteConfirm"
+                        width="500">
+                        <template #activator="{ on }">
+                          <v-btn small text v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                            class="headline grey lighten-2"
+                            primary-title>
+                            Confirm
+                          </v-card-title>
+
+                          <v-card-text class="pt-4">
+                            Are you sure you want to delete this event?
+                          </v-card-text>
+
+                          <v-divider></v-divider>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                              @click="item.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                              color="primaryCustom"
+                              text
+                              @click="deleteEventFromStep(item)">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </v-data-table>
           </v-col>
         </v-row>
       </v-col>
@@ -50,19 +134,17 @@
       return {
         snackbar: {},
         expandEvents: true,
+        selectedEventIndex: null,
+        expanded: [],
         processStepId: this.$route.params.id,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         headers: [
-          {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
-          {text: 'Type', value: 'processStepRequirementType', show: true},
-          {text: 'Details', value: 'custom', show: true},
-          {text: 'Operator', value: 'operatorType', show: true},
-          {text: 'Value', value: 'requirementValue', show: true},
+          {text: 'Event', value: 'eventName', show: true},
           {text: null, value: 'icons', show: true}
         ],
         addNewEvent: false,
-        newEvent: {},
+        newEventId: null,
         events: [],
         availableEvents: []
       }
@@ -86,22 +168,54 @@
         }
       },
       async getAvailableEvents() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/event/available`)
-          this.availableEvents = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        if(this.addNewEvent) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/processStep/${this.processStepId}/event/available`)
+            this.availableEvents = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       filterEvents() {
         return this.events.filter(e => {
           return !e.archived
         })
+      },
+      async addEventToProcessStep() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.newEventId}`)
+          this.events.push(data)
+          this.newEventId = null
+          this.addNewEvent = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteEventFromStep(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/processStep/${this.processStepId}/event/${item.id}`)
+          item.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
     }
 
