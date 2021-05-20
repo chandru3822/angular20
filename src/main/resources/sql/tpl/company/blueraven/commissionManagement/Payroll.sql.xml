@@ -28,6 +28,7 @@
                  p.period_end                                              AS "periodEnd",
                  p.paid_date                                               AS "paidDate",
                  p.description,
+                 p.position_id as "positionId",
                  p.selected_project_ids                                       AS "selectedProjectIds",
                  ps.payroll_status                                         AS "status",
                  p.current,
