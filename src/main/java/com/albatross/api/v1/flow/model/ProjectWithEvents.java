@@ -19,7 +19,7 @@ public class ProjectWithEvents {
   @Data
   public static class ProjectEvent {
     private Long projectProcessStepId, processStepId, eventTypeId;
-    private String processStepName, resourceName, eventType;
+    private String processStepName, resourceName, eventType, phone, mobile;
     private Timestamp start, end;
   }
 }

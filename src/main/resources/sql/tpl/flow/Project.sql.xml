@@ -280,6 +280,7 @@
     select
       a.id,
       a.size,
+      a.uuid,
       a.date_created,
       a.date_modified,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
@@ -294,6 +295,26 @@
     where pa.project_id = :projectId
       and a.archived is not true
   ]]></project.getAttachments>
+
+  <project.getAttachmentById><![CDATA[
+    select
+      a.id,
+      a.uuid,
+      a.size,
+      a.date_created,
+      a.date_modified,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key,
+      a.archived,
+      true as main
+    from flow.project_attachment pa
+           inner join flow.attachment a on a.id = pa.attachment_id
+    where pa.id = :id
+      and a.archived is not true
+  ]]></project.getAttachmentById>
 
   <project.addAttachment><![CDATA[
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)

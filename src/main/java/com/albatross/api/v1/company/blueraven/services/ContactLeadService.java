@@ -442,7 +442,7 @@ public class ContactLeadService {
     }
     catch (Exception e) {
       String msg = "GENE: Error adding Hubspot contact";
-      log.error(msg);
+      log.error(msg, e);
     }
   }
 

@@ -21,7 +21,7 @@ public class ScheduleEvent {
     userId;
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,
       state, processStepStatusType, startFieldName, endFieldName, resourceFieldName, eventType,
-      street1, city, stateAbbreviation, postalCode;
+      street1, city, stateAbbreviation, postalCode, phone, mobile;
   private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly;
 
   private Double latitude, longitude;
