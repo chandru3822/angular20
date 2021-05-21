@@ -13,9 +13,10 @@
     select *
     from flow.company c
     where c.parent_company_id is not null
+    and c.archived is false
     and not exists (
-        select cf.id from flow.company_function cf where db_function_id = :dbFunctionId and cf.company_id = c.id
-        )
+      select cf.id from flow.company_function cf where db_function_id = :dbFunctionId and cf.company_id = c.id and cf.archived is false
+    )
     order by c.parent_company_id, c.company_name
   ]]></dbFunction.getAvailableCompanies>
 

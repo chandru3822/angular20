@@ -29,6 +29,7 @@
                                                           from flow.company c
                                                                    inner join flow.user_company uc on uc.company_id = c.id
                                                           where user_id = :userId
+                                                          and c.archived is false
                                                       ) as foo
                                                           inner join flow.company c1 on c1.level = foo.level
                                                           inner join flow.user_company uc1
