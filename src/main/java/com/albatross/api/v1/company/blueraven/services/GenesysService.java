@@ -244,6 +244,8 @@ public class GenesysService {
     if (contactListId.isEmpty()) {
       return;
     }
+    // Remove lead level from the parameters sent to Genesys, since it is not needed
+    contactMap.remove("lead_level");
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
     // Store the Genesys Contact ID
@@ -333,6 +335,9 @@ public class GenesysService {
       return;
     }
 
+    // Remove lead level from the parameters sent to Genesys, since it is not needed
+    contactMap.remove("lead_level");
+
     // Try with the Contact ID first (for imported contacts)
     // if that doesn't work use the Genesys Agent ID (newly created Contacts)
     try {
@@ -351,7 +356,7 @@ public class GenesysService {
     contactMap.put("lead_source", "");
     contactMap.put("lead_source_detail", "");
     contactMap.put("lead_status", "");
-    //contactMap.put("lead_level", "");
+    contactMap.put("lead_level", "");
     contactMap.put("referral", false);
     contactMap.put("retargeted", false);
 
@@ -382,9 +387,9 @@ public class GenesysService {
         else if (cfv.getFieldName().equals("Lead Status")) {
           contactMap.put("lead_status", value);
         }
-        /*else if (cfv.getFieldName().equals("Lead Level")) {
+        else if (cfv.getFieldName().equals("Lead Level")) {
           contactMap.put("lead_level", cfv.getIntValue() == null ? "" : cfv.getIntValue().toString());
-        }*/
+        }
         else if (cfv.getFieldName().equals("Referral")) {
           contactMap.put("referral", cfv.getBooleanValue() == null ? false : cfv.getBooleanValue());
         }
