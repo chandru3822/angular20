@@ -9,6 +9,8 @@
     select p.id,
            p.project_name,
            c.id as contact_id,
+           c.phone,
+           c.mobile,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(steps)))
                         FROM (
@@ -118,6 +120,8 @@
         c.id as contact_id,
         c.first_name as contact_first_name,
         c.last_name as contact_last_name,
+        c.phone,
+        c.mobile,
         p.latitude,
         p.longitude,
         p.street1,
