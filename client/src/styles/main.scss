@@ -258,6 +258,16 @@ label[for="adminOriginatorSelect"] {
   }
 }
 
+/* this helps when trying to turn an entire row into a right-clickable row */
+.router-link-td {
+  text-decoration: none !important;
+  display: flex;
+  width: 100% !important;
+  height: 100% !important;
+  align-items: center;
+  padding: 0 10px;
+}
+
 /* currently toolbar doesn't support multi line titles */
 .toolbar-subtitle {
   font-size: 14px;
