@@ -17,7 +17,22 @@
   <processStepEvent.getAvailableEventsForStep><![CDATA[
       select e.id,
              e.event_name,
-             e.archived
+             e.archived,
+             coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(statuses)))
+                  FROM (
+                         select
+                           cest.id,
+                           cest.event_status_type as "eventStatusType",
+                           ecest.archived,
+                           est.event_status_type as "rootEventStatusType",
+                           cest.event_status_type_id as "eventStatusTypeId"
+                         from flow.event_company_event_status_type ecest
+                                inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+                                inner join flow.event_status_type est on cest.event_status_type_id = est.id
+                         where ecest.event_id = e.id
+                           and ecest.archived is not true
+                       ) statuses), '[]') AS "companyEventStatusTypes"
       from flow.event e
       where e.archived is not true
       and not exists (
@@ -31,18 +46,21 @@
 
   <processStepEvent.get><![CDATA[
     select pse.id,
-           pse.process_step_id,
-           pse.event_id,
-           e.event_name,
-           pse.archived
+       pse.process_step_id,
+       pse.event_id,
+       pse.initial_company_event_status_type_id,
+       cest.event_status_type as initialEventStatusType,
+      e.event_name,
+      pse.archived
     from flow.process_step_event pse
-    inner join flow.event e on pse.event_id = e.id
+         inner join flow.event e on pse.event_id = e.id
+      inner join flow.company_event_status_type cest on pse.initial_company_event_status_type_id = cest.id
     where pse.id = :id
   ]]></processStepEvent.get>
 
   <processStepEvent.addEventToStep><![CDATA[
-    insert into flow.process_step_event(process_step_id, event_id, created_by_id)
-    values (:processStepId, :eventId, :createdById)
+    insert into flow.process_step_event(process_step_id, event_id, created_by_id, initial_company_event_status_type_id)
+    values (:processStepId, :eventId, :createdById, :initialCompanyEventStatusTypeId)
   ]]></processStepEvent.addEventToStep>
 
   <processStepEvent.updateStepEvent><![CDATA[

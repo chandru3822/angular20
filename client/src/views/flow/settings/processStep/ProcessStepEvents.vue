@@ -18,13 +18,26 @@
         </v-toolbar>
         <v-row v-if="addNewEvent">
           <v-col cols="12">
-            <v-select v-model="newEventId"
+            <v-select v-model="newEvent"
                       :items="availableEvents"
                       label="Select Event"
                       item-value="id"
                       item-text="eventName"
-                      @input="addEventToProcessStep"
+                      return-object
             ></v-select>
+            <v-select v-if="newEvent.id"
+                      v-model="newEvent.initialCompanyEventStatusTypeId"
+                      :items="newEvent.companyEventStatusTypes"
+                      label="Select Initial Status"
+                      item-value="id"
+                      item-text="eventStatusType"
+            ></v-select>
+            <v-btn class="white--text"
+                   color="primaryButton"
+                   :disabled="!newEvent.id || !newEvent.initialCompanyEventStatusTypeId"
+                   @click="addEventToProcessStep">
+              Save
+            </v-btn>
           </v-col>
         </v-row>
         <v-row v-if="expandEvents">
@@ -152,6 +165,7 @@
         snackbar: {},
         expandEvents: true,
         companyEventStatuses: [],
+        newEventStatuses: [],
         selectedEvent: {},
         selectedEventIndex: null,
         expanded: [],
@@ -164,7 +178,7 @@
           {text: null, value: 'icons', show: true}
         ],
         addNewEvent: false,
-        newEventId: null,
+        newEvent: {},
         events: [],
         availableEvents: []
       }
@@ -221,9 +235,13 @@
       async addEventToProcessStep() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.newEventId}`)
+          let params = {
+            eventId: this.newEvent.id,
+            initialCompanyEventStatusTypeId: this.newEvent.initialCompanyEventStatusTypeId
+          }
+          const {data} = await postRequest(`/processStep/${this.processStepId}/event`, params)
           this.events.push(data)
-          this.newEventId = null
+          this.newEvent = {}
           this.addNewEvent = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -253,6 +271,7 @@
         try {
           await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}`, psEvent)
           this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
+          this.expanded = []
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

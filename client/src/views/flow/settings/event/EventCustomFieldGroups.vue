@@ -23,17 +23,21 @@
             <div v-if="showScheduleGroupCheckbox()" class="mb-3">
               <label>Schedule Group:</label>
               <input type="checkbox" class="ml-2" v-model="newGroup.schedulable"
-                     @change="[getSchedulingFields(), getEventTypes()]">
+                     :disabled="forceFirstGroupSchedulable"
+                     @change="[getSchedulingFields()]">
+              <div v-if="forceFirstGroupSchedulable">
+                * Events require a scheduling group to be added before any other groups.
+              </div>
             </div>
             <div v-if="newGroup.schedulable">
-              <v-select
-                v-model="newGroup.eventTypeId"
-                :items="eventTypes"
-                label="Scheduling Tool Event Type"
-                placeholder="Select One..."
-                item-text="eventType"
-                item-value="id"
-              ></v-select>
+<!--              <v-select-->
+<!--                v-model="newGroup.eventTypeId"-->
+<!--                :items="eventTypes"-->
+<!--                label="Scheduling Tool Event Type"-->
+<!--                placeholder="Select One..."-->
+<!--                item-text="eventType"-->
+<!--                item-value="id"-->
+<!--              ></v-select>-->
               <div v-for="(sf, index) in schedulingFields" :key="index">
                 <v-select v-model="newGroup.schedulingFields[index]"
                           text
@@ -50,12 +54,12 @@
           <v-btn
             color="primaryCustom"
             class="white--text mr-2"
-            :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
+            :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length)))"
             @click="saveFieldGroup()">
             Save
           </v-btn>
           <v-btn
-            @click="[newGroup = { schedulingFields: [], schedulable: false }, createNew = false]">
+            @click="[newGroup = { schedulingFields: [], schedulable: forceFirstGroupSchedulable }, createNew = false]">
             Cancel
           </v-btn>
         </v-card>
@@ -75,11 +79,11 @@
               class="elevation-1 fix-column-width-bug event-cfg-table square-card"
             >
               <template #no-data>
-                No custom for this process step
+                No custom field groups for this event
               </template>
 
               <template #no-results>
-                No actions for this process step
+                No custom field groups for this event
               </template>
 
               <template #item="{ item, index }">
@@ -107,7 +111,7 @@
                   </td>
                   <td>
                     <div class="item-icons">
-                      <v-btn v-if="!item.eventTypeId && userCanAdd" small text
+                      <v-btn v-if="userCanAdd" small text
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                         <v-icon v-else>add</v-icon>
@@ -369,7 +373,7 @@
                             </div>
                           </v-list-item-content>
                           <v-menu offset-y
-                                  v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="!cf.scheduleFieldTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
@@ -389,12 +393,12 @@
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
+                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit && !cf.scheduleFieldTypeId">
                             <v-icon>edit</v-icon>
                           </v-btn>
 
                           <v-dialog
-                            v-if="!item.eventTypeId && userCanEdit"
+                            v-if="!cf.scheduleFieldTypeId && userCanEdit"
                             v-model="cf.deleteConfirm"
                             width="500">
                             <template v-slot:activator="{ on }">
@@ -513,6 +517,7 @@ export default {
       componentKey: 0,
       deleteError: false,
       deleteHeader: null,
+      forceFirstGroupSchedulable: false,
       deleteText: null,
       fieldsInUse: [],
       positions: [],
@@ -572,6 +577,11 @@ export default {
       try {
         const {data} = await getRequest(`/event/${this.eventId}`)
         this.event = data
+        if(this.event?.customFieldGroups?.length === 0) {
+          this.newGroup.schedulable = true
+          this.forceFirstGroupSchedulable = true
+          await this.getSchedulingFields()
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -601,7 +611,6 @@ export default {
         this.newGroup.eventId = this.$route.params.id
 
         this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
-        this.newGroup.eventTypeId = this.newGroup.schedulable ? this.newGroup.eventTypeId : null
 
         const {data} = await postRequest(`/customFieldGroup/addEventCustomFieldGroup`, this.newGroup)
         this.localCustomFieldGroups.push(data)
@@ -857,7 +866,7 @@ export default {
       if (this.newGroup.schedulable) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields`)
+          const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
           this.schedulingFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

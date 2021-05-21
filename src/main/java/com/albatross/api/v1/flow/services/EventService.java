@@ -161,14 +161,14 @@ public class EventService {
     return result;
   }
 
-  public List<CompanyEventStatusType> getAvailableForEvent(Long eventId) {
+  public List<CompanyEventStatusType> getAvailableStatusesForEvent(Long eventId) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("eventId", eventId);
     params.put("companyId", user.getCompanyId());
 
-    List<CompanyEventStatusType> companyEventStatusTypes = sqlCache.query("event.availableForEvent", params, CompanyEventStatusType.class);
+    List<CompanyEventStatusType> companyEventStatusTypes = sqlCache.query("event.availableStatusesForEvent", params, CompanyEventStatusType.class);
     return companyEventStatusTypes;
   }
 

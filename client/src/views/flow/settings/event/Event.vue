@@ -49,7 +49,7 @@
             text: 'Back',
             disabled: false,
             exact: true,
-            to: `/settings`
+            to: `/settings/events`
           },
         ]
       }

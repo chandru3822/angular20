@@ -34,10 +34,10 @@ public class ProcessStepEventController {
     return processStepEventService.getAvailableEventsForStep(stepId);
   }
 
-  @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepEvent> addEventToStep (@PathVariable Long stepId,
-                                                    @PathVariable Long eventId) {
-    return processStepEventService.addEventToStep(stepId, eventId);
+                                                    @RequestBody ProcessStepEvent processStepEvent) {
+    return processStepEventService.addEventToStep(stepId, processStepEvent);
   }
 
   @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)

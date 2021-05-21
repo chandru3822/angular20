@@ -87,7 +87,7 @@ public class EventController {
   }
 
   @GetMapping(value = "/status/company/availableForEvent/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyEventStatusType> getAvailableForEvent (@PathVariable Long id) {
-    return eventService.getAvailableForEvent(id);
+  public List<CompanyEventStatusType> getAvailableStatusesForEvent (@PathVariable Long id) {
+    return eventService.getAvailableStatusesForEvent(id);
   }
 }

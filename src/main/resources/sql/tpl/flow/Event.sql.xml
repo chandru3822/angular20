@@ -54,6 +54,7 @@
                                                              cfga.field_order as "fieldOrder",
                                                              cfga.archived,
                                                              cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
                                                              cfga.hidden as "customFieldGroupAssignmentHidden",
                                                              cf.field_name as "fieldName",
                                                              cfg1.group_name as "groupName",
@@ -105,6 +106,7 @@
                                                              cfga.field_order as "fieldOrder",
                                                              cfga.archived,
                                                              cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
                                                              cfga.hidden as "customFieldGroupAssignmentHidden",
                                                              cf.field_name as "fieldName",
                                                              cfg1.group_name as "groupName",
@@ -255,7 +257,7 @@
       where ecest.id = :id
   ]]></event.getEventCompanyEventStatusType>
 
-  <event.availableForEvent><![CDATA[
+  <event.availableStatusesForEvent><![CDATA[
       select cest.*,
              est.event_status_type as root_event_status_type
       from flow.company_event_status_type cest
@@ -270,5 +272,5 @@
             and ecest.event_id = :eventId
         )
       order by cest.event_status_type
-  ]]></event.availableForEvent>
+  ]]></event.availableStatusesForEvent>
 </sql>

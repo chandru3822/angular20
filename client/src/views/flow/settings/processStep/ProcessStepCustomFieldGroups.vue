@@ -885,7 +885,7 @@
         if (this.newGroup.schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields`)
+            const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/2`)
             this.schedulingFields = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
