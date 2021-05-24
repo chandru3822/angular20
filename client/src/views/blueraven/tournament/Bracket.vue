@@ -112,6 +112,7 @@
 
 }
 .bracket-row {
+  padding-right: 50px;
   display: flex;
   justify-content: space-between;
 }

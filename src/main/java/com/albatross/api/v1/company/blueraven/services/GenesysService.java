@@ -169,13 +169,20 @@ public class GenesysService {
     return false;
   }
 
-  public void addContact(Long contactId, List<CustomFieldValue> values) throws IOException, ApiException {
+  public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot) throws IOException, ApiException {
     // Only add contacts if we are in Prod
     if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
       return;
     }
 
-    Contact contact = contactService.getContact(contactId);
+    Contact contact;
+    if (isHubspot) {
+      contact = contactService.getHubspotContact(contactId);
+    }
+    else {
+      contact = contactService.getContact(contactId);
+    }
+
     WritableDialerContact wdc = new WritableDialerContact();
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
