@@ -41,6 +41,11 @@ public class ContactLeadService {
     RicochetLead ricochetLead = new RicochetLead();
     User currentUser = securityService.getCurrentUser();
 
+    log.info(
+      "CONTACTLEAD: Received new contact information from a Contact Lead. {}" +
+        cl.toString()
+    );
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", CleanString.replaceApostrophe(cl.getFirstName()));
     params.put("lastName", CleanString.replaceApostrophe(cl.getLastName()));
