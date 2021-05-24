@@ -280,6 +280,7 @@
     select
       a.id,
       a.size,
+      a.uuid,
       a.date_created,
       a.date_modified,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
@@ -295,6 +296,26 @@
       and a.archived is not true
   ]]></project.getAttachments>
 
+  <project.getAttachmentById><![CDATA[
+    select
+      a.id,
+      a.uuid,
+      a.size,
+      a.date_created,
+      a.date_modified,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key,
+      a.archived,
+      true as main
+    from flow.project_attachment pa
+           inner join flow.attachment a on a.id = pa.attachment_id
+    where pa.id = :id
+      and a.archived is not true
+  ]]></project.getAttachmentById>
+
   <project.addAttachment><![CDATA[
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)
     values (:attachmentId, :projectId, :createdById)
@@ -309,27 +330,7 @@
   ]]></project.updateOwner>
 
   <project.getOwners><![CDATA[
-    select u.id as user_id,
-       u.first_name,
-       u.last_name,
-       concat(u.first_name, ' ', u.last_name) as full_name,
-       up.id as user_position_id,
-       p.position,
-       up.position_id
-    from flow.user_position up
-             inner join flow.position p on up.position_id = p.id
-             inner join flow."user" u on up.user_id = u.id
-             inner join flow.company_user_status cust on cust.user_id = u.id
-             inner join flow.user_status_type ust on ust.id = cust.user_status_type_id and ust.company_id = p.company_id
-    where up.archived is not true
-      and ust.has_access is true
-      and case when :isParent then
-                       p.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-               else p.company_id = :companyId end
-                   and up.start_date <= now()
-                    and (up.end_date is null or up.end_date >= now())
-                   and p.project_owner is true
-    order by u.first_name, u.last_name
+    select * from flow.get_project_available_owners(:companyId::int, :parentCompanyId::int, :isParent::bool)
   ]]></project.getOwners>
 
   <project.getDefaultProjectStatusTypeByCompanyId><![CDATA[

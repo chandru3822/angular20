@@ -119,28 +119,35 @@ public class GenesysService {
       params.put("isParent", isParent);
       params.put("companyId", user.getCompanyId());
       List<String> appointments = sqlCache.query("genesys.getContactAppointments", params, new SingleColumnRowMapper<>(String.class));
-      JSONArray appointmentsJson = new JSONArray(appointments.get(0));
-      JSONObject appointmentJson = appointmentsJson.getJSONObject(0);
-      if (!appointmentJson.isNull("first_appointment_pitched")) {
-        contactJson.put("appointmentPitched", true);
-      }
-      else {
+      try {
+        JSONArray appointmentsJson = new JSONArray(appointments.get(0));
+        JSONObject appointmentJson = appointmentsJson.getJSONObject(0);
+        if (!appointmentJson.isNull("first_appointment_pitched")) {
+          contactJson.put("appointmentPitched", true);
+        }
+        else {
+          contactJson.put("appointmentPitched", false);
+        }
+
+        if (!appointmentJson.isNull("first_appointment")) {
+          contactJson.put("appointment", true);
+        }
+        else {
+          contactJson.put("appointment", false);
+        }
+
+        if (appointmentJson.has("future_appointment") && !appointmentJson.isNull("future_appointment")) {
+          contactJson.put("futureAppointment", appointmentJson.getBoolean("future_appointment"));
+        }
+        else {
+          contactJson.put("futureAppointment", false);
+        }
+      } catch (Exception e) {
         contactJson.put("appointmentPitched", false);
-      }
-
-      if (!appointmentJson.isNull("first_appointment")) {
-        contactJson.put("appointment", true);
-      }
-      else {
         contactJson.put("appointment", false);
-      }
-
-      if (appointmentJson.has("future_appointment") && !appointmentJson.isNull("future_appointment")) {
-        contactJson.put("futureAppointment", appointmentJson.getBoolean("future_appointment"));
-      }
-      else {
         contactJson.put("futureAppointment", false);
       }
+
     }
     else {
       contactJson.put("existingCustomer", false);
@@ -181,12 +188,14 @@ public class GenesysService {
     contactMap.put("phone", contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "");
     contactMap.put("mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("contact_type", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("Lead Main State", "");
     contactMap.put("Total Call Attempts", "");
     contactMap.put("Contacted Call Attempts", "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
+    /*
+    No longer required by Genesys, commenting out in case needed in the future
+    contactMap.put("contact_type", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
+    contactMap.put("Lead Main State", "");
     contactMap.put("CallRecordLastAttempt-mobile", "");
     contactMap.put("CallRecordLastResult-mobile", "");
     contactMap.put("CallRecordLastAgentWrapup-mobile", "");
@@ -194,6 +203,8 @@ public class GenesysService {
     contactMap.put("SmsLastResult-mobile", "");
     contactMap.put("Callable-mobile", 1);
     contactMap.put("AutomaticTimeZone-mobile", "");
+    */
+    contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
@@ -233,6 +244,8 @@ public class GenesysService {
     if (contactListId.isEmpty()) {
       return;
     }
+    // Remove lead level from the parameters sent to Genesys, since it is not needed
+    contactMap.remove("lead_level");
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
     // Store the Genesys Contact ID
@@ -278,6 +291,9 @@ public class GenesysService {
     contactMap.put("Contacted Call Attempts", "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
+
+    /*
+    No longer required by Genesys, commenting out in case needed in the future
     contactMap.put("CallRecordLastAttempt-mobile", "");
     contactMap.put("CallRecordLastResult-mobile", "");
     contactMap.put("CallRecordLastAgentWrapup-mobile", "");
@@ -285,6 +301,8 @@ public class GenesysService {
     contactMap.put("SmsLastResult-mobile", "");
     contactMap.put("Callable-mobile", 1);
     contactMap.put("AutomaticTimeZone-mobile", "");
+    */
+    contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
@@ -316,6 +334,9 @@ public class GenesysService {
     if (contactListId.isEmpty()) {
       return;
     }
+
+    // Remove lead level from the parameters sent to Genesys, since it is not needed
+    contactMap.remove("lead_level");
 
     // Try with the Contact ID first (for imported contacts)
     // if that doesn't work use the Genesys Agent ID (newly created Contacts)

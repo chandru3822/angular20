@@ -82,17 +82,38 @@
 
           <template #item="{ item, index }">
 
-            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
-              <td class="text-left">{{item.fullName}}</td>
-              <td class="text-left">{{item.owner ? item.owner.fullName : ''}}</td>
-              <td class="text-left">{{item.state}}</td>
-              <td class="text-left">{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</td>
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
+                  {{item.fullName}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
+                  {{item.owner ? item.owner.fullName : ''}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
+                  {{item.state}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
+                  {{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
+                </router-link>
+              </td>
             </tr>
           </template>
         </v-data-table>
 
         <SmartlistTable
           class="mt-3"
+          :type="'CONTACT'"
           v-else
           :smartlistId="selectedSmartlistId"
           @row-selected="goToContact"

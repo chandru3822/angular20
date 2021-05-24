@@ -67,19 +67,44 @@
           </template>
 
           <template #item="{item: project}">
-            <tr class="clickable"
-                @click="$router.push({name: 'projectDetails', params: {projectId: project.id}})">
-              <td class="text-left">{{project.id}}</td>
-              <td class="text-left">{{project.projectName}}</td>
-              <td class="text-left">{{project.stateAbbreviation}}</td>
-              <td class="text-left">{{project.projectStatusType}}</td>
-              <td class="text-left">{{project.dateCreated | formatDate('date')}}</td>
+            <tr class="clickable">
+              <td class="text-left pa-0">
+                <router-link class="router-link-td elevation-0 square-card"
+                        color="transparent" :to="`/project/${project.id}/details`">
+                  {{project.id}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
+                  {{project.projectName}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
+                  {{project.stateAbbreviation}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
+                  {{project.projectStatusType}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
+                  {{project.dateCreated | formatDate('date')}}
+                </router-link>
+              </td>
             </tr>
           </template>
         </v-data-table>
 
         <SmartlistTable
           class="mt-3"
+          :type="'PROJECT'"
           v-else
           :smartlistId="selectedSmartlistId"
           @row-selected="goToSelectedProject"
@@ -168,6 +193,9 @@
       }
     },
     methods: {
+      goToRoute(projectId) {
+        this.$router.push({name: 'projectDetails', params: {projectId: projectId}})
+      },
       async getProjects() {
         const {page, itemsPerPage} = this.options
         try {

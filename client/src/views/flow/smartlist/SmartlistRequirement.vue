@@ -77,7 +77,8 @@
             getProcessStepFieldData(),
             checkSmartlistSystemList(),
             getContactOwners(),
-            getProcessStepOwners()
+            getProcessStepOwners(),
+            getProjectOwners()
           ]"
         />
       </template>
@@ -558,6 +559,20 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getProjectOwners () {
+      // @TODO It's bad this checks for the field name since it might change. Make better
+      if (this.newRequirement.objectTypeId === 1 && this.newRequirement.selectedField.name === 'Project Owner') {
+        try {
+          const {data} = await getRequest(`/project/owners`)
+          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          this.newRequirement.selectedField.hasListValues = true
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching project owners')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
