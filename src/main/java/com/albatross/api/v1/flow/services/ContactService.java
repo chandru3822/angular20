@@ -93,6 +93,16 @@ public class ContactService {
     return result.orElse(null);
   }
 
+  public Contact getHubspotContact(Long contactId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", 3L);
+    params.put("contactId", contactId);
+    params.put("parentCompanyId", 2L);
+    params.put("isParent", false);
+    Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
+    return result.orElse(null);
+  }
+
   public Contact getContactByProjectId(Long projectId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
