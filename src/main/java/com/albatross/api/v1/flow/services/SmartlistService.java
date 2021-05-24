@@ -1423,6 +1423,8 @@ public class SmartlistService {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
             } else if (f.getDataTypeId() == 7) {
               selectFields.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(\"%s\".%s)), ',')) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+            } else if (f.getDataTypeId() == 8) {
+              selectFields.append(String.format(" \"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
             } else {
               selectFields.append(String.format(" \"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
             }
