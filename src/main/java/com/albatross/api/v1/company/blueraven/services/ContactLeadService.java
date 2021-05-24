@@ -309,7 +309,7 @@ public class ContactLeadService {
     }
 
     try {
-      genesysService.addContact(contactId, cfvList);
+      genesysService.addContact(contactId, cfvList, false);
     } catch (ApiException e) {
       JSONObject apiException = new JSONObject(e.getRawBody());
       String msg = "GENE: Error adding contact: {}";
@@ -357,7 +357,7 @@ public class ContactLeadService {
   }
 
   // Used to process Hubspot contact CustomFieldValues
-  public void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
+  public void processHubspotCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
@@ -434,7 +434,7 @@ public class ContactLeadService {
     saveCustomFieldValue(hubspotId, contactId, leadOwnerUserId);
 
     try {
-      genesysService.addContact(contactId, cfvList);
+      genesysService.addContact(contactId, cfvList, true);
     } catch (ApiException e) {
       JSONObject apiException = new JSONObject(e.getRawBody());
       String msg = "GENE: Error adding contact: {}";
