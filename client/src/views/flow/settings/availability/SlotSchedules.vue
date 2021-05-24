@@ -196,7 +196,7 @@
 
           schedule.slotTimes?.forEach((st, stIdx) => {
             //verify that no slot start time is >= the slot end time
-            if(!st.startTime || !st.endTime) {
+            if(!st.archived && (!st.startTime || !st.endTime)) {
               this.saveError = true
               this.saveErrorMsg = 'Slot Start and End Times cannot be empty'
             } else if(moment(st.startTime, 'HH:mm').isSameOrAfter(moment(st.endTime, 'HH:mm'))) {
@@ -268,8 +268,8 @@
 </style>
 
 <style lang="scss" scoped>
-  .schedule-wrap {
+.schedule-wrap {
 
-  }
+}
 </style>
 

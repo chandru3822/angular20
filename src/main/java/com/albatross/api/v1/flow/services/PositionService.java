@@ -83,6 +83,7 @@ public class PositionService {
     params.put("orgTypeId", p.getOrgTypeId());
     params.put("position", p.getPosition());
     params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
+    params.put("useSlotSchedule", null != p.getUseSlotSchedule() ? p.getUseSlotSchedule() : false);
     params.put("scheduler", null != p.getScheduler() ? p.getScheduler() : false);
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
@@ -112,6 +113,7 @@ public class PositionService {
     params.put("orgTypeId", p.getOrgTypeId());
     params.put("position", p.getPosition());
     params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
+    params.put("useSlotSchedule", null != p.getUseSlotSchedule() ? p.getUseSlotSchedule() : false);
     params.put("scheduler", null != p.getScheduler() ? p.getScheduler() : false);
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);

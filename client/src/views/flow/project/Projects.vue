@@ -68,31 +68,35 @@
 
           <template #item="{item: project}">
             <tr class="clickable">
-              <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/project/${project.id}/details`">
+              <td class="text-left pa-0">
+                <router-link class="router-link-td elevation-0 square-card"
+                        color="transparent" :to="`/project/${project.id}/details`">
                   {{project.id}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
                   {{project.projectName}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
                   {{project.stateAbbreviation}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
                   {{project.projectStatusType}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/project/${project.id}/details`">
                   {{project.dateCreated | formatDate('date')}}
                 </router-link>
-
               </td>
             </tr>
           </template>

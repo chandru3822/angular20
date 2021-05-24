@@ -78,7 +78,7 @@ public class ScheduleService {
     return result;
   }
 
-  public List<ScheduleAvailability> getAvailabilityForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
+  public String getAvailabilityForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
     HashMap<String, Object> params = new HashMap<>();
 
     params.put("userIds", esp.getUserIds());
@@ -86,7 +86,7 @@ public class ScheduleService {
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
 
-    List<ScheduleAvailability> results = sqlCache.query("schedule.getAvailability", params, ScheduleAvailability.class);
+    String results = sqlCache.queryForObject("schedule.getAvailability", params, String.class);
 
     return results;
   }

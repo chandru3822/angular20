@@ -722,7 +722,11 @@ select sr.id,
             (select array_to_json(array_agg(row_to_json(rows))) from (
              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
            ) rows)
-          when sf.reference_table = 'flow.user' and ot.id = 2 then
+          when sf.reference_table = 'flow.project_user' and ot.id = 1 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_project_available_owners(:companyId::int, :parentCompanyId::int, :inParentCompany::bool)
+            ) rows)
+          when sf.reference_table = 'flow.contact_user' and ot.id = 2 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
             ) rows)
