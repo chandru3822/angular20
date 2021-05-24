@@ -710,7 +710,7 @@ export default new Router({
                   meta: {title: 'Albatross - Settings'},
                   props: true,
                   component: () => {
-                    if (store.getters.userHasFeature('AVAILABILITY')) {
+                    if (store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')) {
                       return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/SlotSchedules.vue')
                     } else {
                       return accessDenied()
