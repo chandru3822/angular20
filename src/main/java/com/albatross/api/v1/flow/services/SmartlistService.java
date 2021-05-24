@@ -249,7 +249,7 @@ public class SmartlistService {
   public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
     User user = securityService.getCurrentUser();
     Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany, "parentCompanyId", user.getHighestParentCompanyId());
     List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
     if (includeListValues) {
@@ -633,6 +633,8 @@ public class SmartlistService {
         location = String.format("\"%s\".%s", referenceTable, column);
       } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
         location = (f.getObjectTypeId() != 4) ? f.getReferenceColumn() : String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name)", f.getValueReferenceTable(), f.getValueReferenceTable());
+      } else if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
+        location = f.getReferenceColumn();
       } else {
         if (smartlist.getObjectTypeId() == 4) {
           location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
@@ -695,20 +697,24 @@ public class SmartlistService {
     switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
         query.append(" from flow.project ");
+        query.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id ");
+        query.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id ");
         query.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id ");
         query.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id ");
         query.append(" left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
-        query.append(" left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
-        query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
+        query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
+        query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
 
         whereClause.append(" flow.project.archived is not true and ");
         whereClause.append(String.format(" flow.company_project_status_type.company_id = any(%s) and ", companySubquery));
         break;
       case 2:
         query.append("  from flow.contact ");
+        query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
+        query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
         query.append(" left join flow.project on flow.project.contact_id = flow.contact.id ");
-        query.append(" left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
-        query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
+        query.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id ");
+        query.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id ");
 
         whereClause.append(" flow.project.archived is not true and ");
         whereClause.append(String.format(" flow.contact.company_id = any(%s) and ", companySubquery));
@@ -755,7 +761,7 @@ public class SmartlistService {
             } else if (!f.getAllowMultiple()) {
               query.append(String.format(" left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, valueTable));
             }
-          } else {
+          } else if (!Objects.equals(f.getReferenceTable(), "flow.project_user") && !Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
             if (f.getJoinTable() != null && f.getJoinColumn() != null) {
               query.append(String.format(" left join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), joinAlias, joinAlias, f.getJoinTable(), f.getJoinColumn()));
             } else {
@@ -1011,6 +1017,10 @@ public class SmartlistService {
                   } else {
                     if (Objects.equals(r.getReferenceTable(), "flow.user")) {
                       referenceLocation = "flow.user_position.id";
+                    } else if (Objects.equals(r.getReferenceTable(), "flow.project_user")) {
+                      referenceLocation = "\"project_user_position\".id";
+                    } else if (Objects.equals(r.getReferenceTable(), "flow.contact_user")) {
+                      referenceLocation = "\"contact_user_position\".id";
                     } else {
                       // see if table we need is already been joined, if so use it
                       final String table = joinTables.stream()
@@ -1158,7 +1168,11 @@ public class SmartlistService {
 
     projectsClause.append("select distinct flow.project.id ");
     projectsClause.append("from flow.project ");
+    projectsClause.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id");
+    projectsClause.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id");
     projectsClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
+    projectsClause.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id");
+    projectsClause.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id");
 
     requirements.forEach(r -> {
 
@@ -1285,13 +1299,17 @@ public class SmartlistService {
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+      } else if(Objects.equals(r.getReferenceTable(), "flow.project_user")) {
+        projectsWhereClause.append(String.format("\"project_user_position\".id = %s and ", requirementValue));
+      } else if(Objects.equals(r.getReferenceTable(), "flow.contact_user")) {
+        projectsWhereClause.append(String.format("\"contact_user_position\".id = %s and ", requirementValue));
       } else {
         if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          if (List.of(1L, 2L, 3L, 6L, 7L, 8L).contains(r.getDataTypeRequirementId())) {
+          if (r.getDataTypeRequirementId() != null && List.of(1L, 2L, 3L, 6L, 7L, 8L).contains(r.getDataTypeRequirementId())) {
             projectsWhereClause.append(String.format(" date_trunc('day', %s) %s date_trunc('day', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
-          } else if (List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
+          } else if (r.getDataTypeRequirementId() != null && List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
             projectsWhereClause.append(String.format(" date_trunc('hour', %s) %s date_trunc('hour', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
           } else {
             if (r.getSmartlistSystemListId() != null) {
@@ -1430,7 +1448,11 @@ public class SmartlistService {
                 selectFields.append(String.format(" \"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
               }
             } else {
-              selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
+                selectFields.append(String.format("%s as \"%s\", ", f.getReferenceColumn(), f.getId()));
+              } else {
+                selectFields.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             }
           }
         }
@@ -1448,9 +1470,13 @@ public class SmartlistService {
       fromClause.append(" inner join flow.process_step_status_type on flow.process_step_status_type.id = flow.company_process_step_status_type.process_step_status_type_id");
       fromClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = " + processStepId);
       fromClause.append(" inner join flow.project on flow.project.id = project_process_step.project_id and flow.project.archived is not true");
+      fromClause.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id");
+      fromClause.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id");
       fromClause.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id");
       fromClause.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id");
       fromClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
+      fromClause.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id");
+      fromClause.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id");
       fromClause.append(" inner join \"projects\" on \"projects\".id = flow.project_process_step.project_id");
 
       withClause.append(fromClause.toString());
@@ -1542,7 +1568,13 @@ public class SmartlistService {
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist field
           if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
-            referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+             if(Objects.equals(r.getReferenceTable(), "flow.project_user")) {
+               referenceLocation = "\"project_user_position\".id";
+            } else if(Objects.equals(r.getReferenceTable(), "flow.contact_user")) {
+               referenceLocation = "\"contact_user_position\".id";
+            } else {
+               referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+             }
           } else if (r.getObjectTypeId() == 4) {
             String joinTable;
             try {

@@ -115,6 +115,7 @@
                   v-model="appt.location"
                   placeholder=" "
                   label="Location (optional)"
+                  @input="appt.reloadCoordinates = true"
                 ></v-text-field>
                 <DatetimePickerInput
                   v-model="appt.startTime"

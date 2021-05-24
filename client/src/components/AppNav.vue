@@ -116,9 +116,10 @@ export default {
       companies: [],
       companyTools: [],
       model: '',
-      headerColor: VUE_APP_ENV === 'local' ? 'pink' :
-                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
-                   VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
+      headerColor: VUE_APP_ENV === 'local' ? constants.LOCAL_COLOR :
+                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ?  constants.STAGE_COLOR :
+                   VUE_APP_ENV === 'flux' ? constants.FLUX_COLOR :
+                   VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
       tabs: [ {
         label: 'Contacts',
         path: '/contacts',

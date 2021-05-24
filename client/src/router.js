@@ -1234,3 +1234,4 @@ async function getUser() {
 function accessDenied() {
   return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
 }
+

@@ -9,9 +9,24 @@ CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer
             )
 AS
 $BODY$
-
+declare
+    v_timezone text;
 BEGIN
 
+    select t.timezone
+    into v_timezone
+    from flow.project p
+             inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
+             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+             inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
+             inner join flow.user_position up on up.user_id = pczu.user_id and up.primary_flag is true
+             inner join flow.org o on o.id = up.org_id
+             inner join flow.company_timezone ct on o.company_timezone_id = ct.id
+             inner join flow.timezone t on ct.timezone_id = t.id
+    where p.id = p_project_id
+    limit 1;
+
+    EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';' ;
 
     create temp table excluded_appointments as (
         with user_ids as (
@@ -57,6 +72,7 @@ BEGIN
           and ((start_time between p_start_time and p_end_time
         or ra.end_time between p_start_time and p_end_time)
               or (ra.start_time < p_start_time and ra.end_time > p_end_time))
+
     );
 
     return query
@@ -65,13 +81,6 @@ BEGIN
                  select user_id,
                         foo1.scheduled_start_time,
                         scheduled_end_time,
-                        closer_end_time,
-                        (select count(1) > 0
-                         from excluded_appointments ea
-                         where ea.user_id = foo1.user_id
-                           and id < 0
-                           and (ea.end_time = foo1.scheduled_start_time
-                               or ea.start_time = foo1.scheduled_end_time)) as personal_appointments,
                         (select count(1) < 1
                          from excluded_appointments
                          where excluded_appointments.user_id = foo1.user_id
@@ -89,54 +98,43 @@ BEGIN
                  from (
                           select user_id,
                                  available_times                                                          as scheduled_start_time,
-                                 (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time,
-                                 closer_end_time
+                                 (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time
                           from (
-                                   select pczu.user_id,
-                                          generate_series(
-                                                  (case when rsa.end_time between '00:00:00'::time and '08:00:00'::time
-                                                      and rsa.start_time between '00:00:00'::time and '08:00:00'::time then
-                                                            ($$'$$ || p_available_date::date + 1 || $$'$$ || rsa.start_time)::timestamp
-                                                        else
-                                                            ($$'$$ || p_available_date::date || $$'$$ || rsa.start_time)::timestamp end ),
-                                                  (case
-                                                       when rsa.end_time between '00:00:00'::time and '08:00:00'::time
-                                                           and rsa.start_time between '00:00:00'::time and '08:00:00'::time then
-                                                                   $$'$$ || p_available_date::date + 1 || $$'$$
-                                                       when rsa.end_time > rsa.start_time
-                                                           then $$'$$ || p_available_date::date || $$'$$
-                                                       else $$'$$ || p_available_date::date + 1 || $$'$$ end ||
-                                                   rsa.end_time)::timestamp --  - (default_appointment_length || ' minutes')::interval
-                                              , interval '30 min')    available_times,
-                                          90 as default_appointment_length,
-                                          (rsa.end_time - (90 || ' minutes')::interval) closer_end_time
-                                   from flow.project p
-                                            inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
-                                            inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-                                            inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                                            inner join flow.resource_schedule rs on rs.user_id = pczu.user_id and rs.archived is false
-                                                and p_available_date >= rs.start_date and case when rs.end_date is not null then
-                                                                                                   p_available_date <= rs.end_date
-                                                                                            else 1=1 end
-                                            inner join flow.resource_schedule_availability rsa
-                                                       on rsa.resource_schedule_id = rs.id
-                                                           and rsa.archived is false
-                                                           and rsa.day_of_week_id = extract(dow from p_available_date::date)
-                                            inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
-                                   where p.id = p_project_id
-                                     and case when rs.end_date is not null then
-                                            p_available_date::date between rs.start_date and rs.end_date
-                                         else
-                                             p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
+                              select pczu.user_id,
+                                       ($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp with time zone at time zone 'UTC' as available_times,
+                                       90 as default_appointment_length
+
+                                from flow.project p
+                                         inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
+                                         inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+                                         inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
+                                         inner join flow.resource_schedule rs on rs.user_id = pczu.user_id and rs.archived is false
+                                    and p_available_date >= rs.start_date and case when rs.end_date is not null then
+                                                                                       p_available_date <= rs.end_date
+                                                                               else 1=1 end
+                                         inner join flow.resource_schedule_availability rsa
+                                                    on rsa.resource_schedule_id = rs.id
+                                                        and rsa.archived is false
+                                                        and rsa.day_of_week_id = extract(dow from p_available_date::date)
+                                         inner join flow.resource_slot_schedule rss on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
+                                         inner join flow.resource_slot_time rst on rss.id = rst.resource_slot_schedule_id and rst.archived is false
+                                         inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
+                                         left join flow.excluded_resource_slot_time erst on erst.resource_slot_time_id = rst.id and
+                                                                                            erst.resource_schedule_availability_id = rsa.id
+                                                                                            and erst.archived is false
+                                where p.id = p_project_id and erst.id is null
+                                  and case when rs.end_date is not null then
+                                               p_available_date::date between rs.start_date and rs.end_date
+                                           else
+                                                   p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
         where  foo2.available is true and
                 foo2.scheduled_start_time > now()  + interval '30 minutes'
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;
-
+    set TimeZone = 'UTC';
     drop table if exists excluded_appointments;
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE
                      COST 100
                      ROWS 1000;
-
