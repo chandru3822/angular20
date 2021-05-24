@@ -241,7 +241,7 @@
         return r.id === this.bracket?.firstNonAdvancedRound?.id
       },
       canAdvanceWinners(r) {
-        let allMatchesHaveUsers = true
+        let allMatchesHaveUsers = !!(r.matches && r.matches.length !== 0)
         r.matches.forEach(m => {
           if(!m.user1Id || !m.user2Id) {
             allMatchesHaveUsers = false
