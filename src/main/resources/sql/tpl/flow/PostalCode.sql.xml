@@ -257,9 +257,11 @@
        pc.postal_code_zone_id,
        pc.postal_code,
        pc.archived
-    from flow.postal_code pc
-    where pc.postal_code = :postalCode
-      and archived is not true
+from flow.postal_code pc
+  inner join flow.postal_code_zone pcz on pc.postal_code_zone_id = pcz.id
+where pc.postal_code = :postalCode
+  and pc.archived is not true
+and pcz.archived is not true
   ]]></postalCode.checkForExisting>
 
 </sql>

@@ -71,7 +71,7 @@ public class GenesysController {
   @PostMapping(value = "/contact/{id}")
   public ResponseEntity addContact(@RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
     try {
-      genesysService.addContact(id, values);
+      genesysService.addContact(id, values, false);
       return ResponseEntity.ok("Contact successfully added.");
     } catch (ApiException e) {
       JSONObject apiException = new JSONObject(e.getRawBody());

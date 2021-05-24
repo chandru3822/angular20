@@ -115,7 +115,7 @@ public class HubspotWebhookService {
         Long contactId = sqlCache.updateReturningId("hubspotWebhook.saveLead", params, "id").longValue();
 
         // saves 'Lead Status', 'Lead Source', 'Lead Source Detail', and 'Hubspot ID'
-        contactLeadService.processCustomFieldValues(lead, contactId, 2371412L);
+        contactLeadService.processHubspotCustomFieldValues(lead, contactId, 2371412L);
 
         log.info("HUBSPOT: New HubSpot contact information was successfully saved to database for Contact ID " + contactId + " / Hubspot ID " + lead.getHubspot_id());
         return contactId;
