@@ -88,7 +88,7 @@ public class ScheduleService {
 
     String results = sqlCache.queryForObject("schedule.getAvailability", params, String.class);
 
-    return results;
+    return null == results ? "[]": results;
   }
 
   // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
