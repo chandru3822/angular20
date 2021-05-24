@@ -8,6 +8,7 @@
        p.archived,
        p.schedulable,
        p.scheduler,
+       p.use_slot_schedule,
        p.contact_owner,
        p.available_to_children,
        ot.org_level_id,
@@ -29,6 +30,7 @@
            ot.org_type,
            p.archived,
            p.schedulable,
+           p.use_slot_schedule,
            p.scheduler,
            p.available_to_children
     from flow.position p
@@ -48,6 +50,7 @@
            p.id as position_id,
            p.org_type_id,
            ot.org_type,
+           p.use_slot_schedule,
            p.archived,
            p.schedulable,
            p.scheduler,
@@ -67,6 +70,7 @@
            ot.org_type,
            p.archived,
            p.schedulable,
+           p.use_slot_schedule,
            p.scheduler,
            p.contact_owner,
            p.project_owner,
@@ -106,8 +110,8 @@
   ]]></position.getOne>
 
   <position.insert><![CDATA[
-    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner, project_owner)
-    values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner)
+    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner, project_owner, use_slot_schedule)
+    values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner, :useSlotSchedule)
   ]]></position.insert>
 
   <position.update><![CDATA[
@@ -116,6 +120,7 @@
             org_type_id = :orgTypeId,
             modified_by_id = :modifiedById,
             schedulable = :schedulable,
+            use_slot_schedule = :useSlotSchedule,
             scheduler = :scheduler,
             available_to_children = :availableToChildren,
             contact_owner = :contactOwner,

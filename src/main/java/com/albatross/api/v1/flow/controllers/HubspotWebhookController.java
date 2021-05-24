@@ -18,7 +18,7 @@ public class HubspotWebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/contact")
     public void saveContact(@RequestBody HubspotContact contact) throws Exception {
-        log.info(
+        /*log.info(
             "HUBSPOT: Received new contact information from HubSpot. " +
                 "hubspotId: {}, " +
                 "First Name: {}, " +
@@ -32,6 +32,11 @@ public class HubspotWebhookController {
                 contact.getProperties().getPhone().getValue(),
                 contact.getProperties().getEmail().getValue(),
                 contact.getProperties().getZip().getValue()
+        );*/
+
+        log.info(
+          "HUBSPOT: Received new contact information from HubSpot. {}" +
+          contact.toString()
         );
 
         RicochetLead lead = new RicochetLead();

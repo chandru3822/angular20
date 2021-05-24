@@ -52,8 +52,9 @@
                   :key="key"
                   class="text-left"
                 >
-                  <router-link class="no-text-decoration" :to="type === 'PROJECT' ? `/project/${row.project_id}/details` :
-                                                              type === 'CONTACT' ? `/contact/${row.contact_id}` : ''">
+                  <router-link class="router-link-td elevation-0 square-card"
+                               color="transparent" :to="type === 'PROJECT' ? `/project/${row.project_id}/details` :
+                                                        type === 'CONTACT' ? `/contact/${row.contact_id}` : ''">
                     {{field}}
                   </router-link>
                 </td>

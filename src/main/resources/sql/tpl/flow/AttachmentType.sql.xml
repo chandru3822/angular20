@@ -41,6 +41,7 @@
             where pat.attachment_type_id = at.id
               and pat.archived is not true
         )
+        order by at.attachment_type
   ]]></attachmentType.getAttachmentTypesForProject>
 
   <attachmentType.getProcessStepType><![CDATA[

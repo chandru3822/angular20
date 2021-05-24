@@ -1,11 +1,11 @@
 <template>
   <v-container>
     <v-row id="closer-availability-container">
-      <v-col cols="12" md="4" class="map-row">
-        <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
-             :zoom="state.mapZoom" :map-resources="mapResources"></Map>
-      </v-col>
-      <v-col cols="12" md="8" class="map-row" style="overflow: auto;">
+<!--      <v-col cols="12" md="4" class="map-row">-->
+<!--        <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"-->
+<!--             :zoom="state.mapZoom" :map-resources="mapResources"></Map>-->
+<!--      </v-col>-->
+      <v-col cols="12" md="12" class="map-row" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"

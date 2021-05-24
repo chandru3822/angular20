@@ -83,8 +83,8 @@ BEGIN
                                  upv.user_position_id
                           from flow.user_positions_vw upv
                                    inner join flow.user u on u.id = upv.user_id
-                                   inner join flow.user_position up on u.id = up.user_id and up.position_id in (1,2,3,133,237,517) and up.primary_flag is true
-                                                                 and upv.archived is not true and up.id = upv.user_position_id
+                                   inner join flow.user_position up on u.id = up.user_id and up.position_id in (1,2,3,133,237,517)
+                                                                 and up.archived is not true and up.id = upv.user_position_id
                                    inner join flow.org o on o.id = up.org_id
                       ) as sub_rows  order by active desc, name) as sub_rows;
         else

@@ -78,8 +78,8 @@
         return this.tabs.filter(tab => tab.display)
       },
       resourceProps() {
-        if (this.userId) { return { userId: this.userId }}
-        if (this.orgId) { return { orgId: this.orgId }}
+        if (this.userId) { return { userId: this.userId, useSlotSchedule: this.useSlotSchedule() }}
+        if (this.orgId) { return { orgId: this.orgId, useSlotSchedule: false }}
       }
     },
     data() {
@@ -117,6 +117,19 @@
       }
     },
     methods: {
+      useSlotSchedule() {
+        if(this.userId) {
+          let user = this.users.find(u => u.id === this.userId)
+          let useSlots = false
+          user?.userPositions?.forEach(up => {
+            if(up.useSlotSchedule) {
+              useSlots = true
+            }
+          })
+          return useSlots
+        }
+        return false
+      },
       async getOrgs() {
         this.orgsLoading = true
         try {

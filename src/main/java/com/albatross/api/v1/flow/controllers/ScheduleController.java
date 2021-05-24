@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.ProjectWithEvents;
-import com.albatross.api.v1.flow.model.ScheduleAvailability;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.services.ScheduleService;
 import lombok.Data;
@@ -38,7 +37,7 @@ public class ScheduleController {
   }
 
   @PostMapping(value = "/availability", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ScheduleAvailability> getAvailabilityForCompanyByOrgAndUser(@RequestBody EventSearchParams params) {
+  public String getAvailabilityForCompanyByOrgAndUser(@RequestBody EventSearchParams params) {
     return scheduleService.getAvailabilityForCompanyByOrgAndUser(params);
   }
 

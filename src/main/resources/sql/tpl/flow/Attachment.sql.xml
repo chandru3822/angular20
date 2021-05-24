@@ -7,6 +7,7 @@
        content_type,
        s3_key,
        size,
+       uuid,
        archived,
        substring(filename, '\.([^\.]+)$') as file_extension,
        date_created,
@@ -20,7 +21,20 @@
        migrated_new_deal_resource_id
     FROM flow.attachment
     WHERE id = :id
+      and archived is not true
   ]]></attachment.findById>
+
+  <attachment.getAttachmentForUuidCheck><![CDATA[
+    SELECT
+      a.id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.uuid
+    FROM flow.attachment a
+    WHERE a.id = :id
+      AND a.archived IS NOT TRUE
+  ]]></attachment.getAttachmentForUuidCheck>
 
   <attachment.getAttachmentById><![CDATA[
     SELECT
@@ -28,15 +42,14 @@
       a.attachment_type_id,
       a.content_type,
       a.filename,
+      a.uuid,
       a.s3_key,
       a.size,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.archived,
-      src.source_id,
       a.date_created,
       a.date_modified
     FROM flow.attachment a
-      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
     WHERE a.id = :id
       AND a.archived IS NOT TRUE
   ]]></attachment.getAttachmentById>
@@ -49,6 +62,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.uuid,
       a.show,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
@@ -72,6 +86,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.uuid,
       a.archived,
       src.source_id,
       a.date_created,
@@ -92,6 +107,7 @@
       a.attachment_type_id,
       a.content_type,
       a.filename,
+      a.uuid,
       a.s3_key,
       a.size,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
@@ -113,6 +129,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.uuid,
       a.archived,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
@@ -127,8 +144,8 @@
   ]]></attachment.getAttachmentBySourceAndTypeForUserList>
 
   <attachment.create><![CDATA[
-    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, attachment_type_id, company_id)
-    VALUES(:filename, :contentType, :key, :size, now(), :createdById, :attachmentTypeId, :companyId)
+    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, attachment_type_id, company_id, uuid)
+    VALUES(:filename, :contentType, :key, :size, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4())
   ]]></attachment.create>
 
   <attachment.addToJoinTable><![CDATA[

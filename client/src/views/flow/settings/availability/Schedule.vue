@@ -6,7 +6,7 @@
           Add Schedule
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
-          <v-card-title>Add Schedule</v-card-title>
+          <v-card-title>Add New Schedule</v-card-title>
           <DatetimePickerInput
             v-model="newSchedule.startDate"
             :timezone="this.timezone"
@@ -21,7 +21,6 @@
             :format="'MMMM DD, YYYY'"
             label="End Date"
           />
-
           <v-data-table
             :items="newSchedule.resourceScheduleAvailability"
             :fixed-header="true"
@@ -51,7 +50,32 @@
             <template #item="{ item, index }">
               <tr class="clickable" :class="{'shaded-row': index % 2}">
                 <td class="text-left">{{item.dayOfWeek}}</td>
-                <td class="text-left">
+                <td class="text-left" v-if="useSlotSchedule">
+                  <v-select
+                    v-model="item.resourceSlotScheduleId"
+                    :items="slotSchedules"
+                    label="Schedule"
+                    item-text="scheduleName"
+                    item-value="id"
+                    clearable
+                    @change="[item.startTime = null, item.endTime = null]"
+                  >
+                    <template slot="item" slot-scope="data">
+                      <!-- HTML that describes how select should render items when the select is open -->
+                      {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
+                    </template>
+                  </v-select>
+
+                  <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
+                    <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
+                      <input type="checkbox"
+                             @change="changeExcludedSlots(item, slot.id)"
+                             :checked="!item.excludedResourceSlotTimeIds.includes(slot.id)">
+                      {{slot.startTime | formatDateZoneless()}} - {{slot.endTime | formatDateZoneless()}}
+                    </div>
+                  </v-card>
+                </td>
+                <td class="text-left" v-else>
                   <DatetimePickerInput
                     v-model="item.startTime"
                     :timezone="timezone"
@@ -59,11 +83,7 @@
                     format="h:mm a"
                     label="Start Time"
                   />
-                </td>
-                <td>
-                  to
-                </td>
-                <td class="text-left">
+                  <div class="d-inline-block px-3 align-self-center">to</div>
                   <DatetimePickerInput
                     v-model="item.endTime"
                     :timezone="timezone"
@@ -72,7 +92,7 @@
                     label="End Time"
                   />
                 </td>
-                <td class="text-left px-0" width="150px">
+                <td class="text-left px-0" width="150px"  v-if="!useSlotSchedule">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
                       <v-btn text small v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'down')">
@@ -179,7 +199,7 @@
                     <thead class="v-data-table-header">
                     <tr>
                       <th>Work Day</th>
-                      <th :colspan="4">Hours</th>
+                      <th :colspan="4">{{ useSlotSchedule ? 'Schedule' : 'Hours'}}</th>
                     </tr>
                     </thead>
                   </template>
@@ -187,36 +207,60 @@
                   <template #item="{ item, index }">
                     <tr class="clickable" :class="{'shaded-row': index % 2}">
                       <td class="text-left">{{item.dayOfWeek}}</td>
-                      <td class="text-left">
-                        <DatetimePickerInput
-                          v-model="item.startTime"
-                          :timezone="timezone"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          type="time"
-                          format="h:mm a"
-                          :allowed-minutes="allowedMinutesStep"
-                          input-format="HH:mm:ss"
-                          label="Start Time"
-                        />
+                      <td class="text-left" v-if="useSlotSchedule">
+                        <v-select
+                          v-model="item.resourceSlotScheduleId"
+                          :items="slotSchedules"
+                          label="Schedule"
+                          item-text="scheduleName"
+                          item-value="id"
+                          clearable
+                          @change="item.startTime = null, item.endTime = null"
+                        >
+                          <template slot="item" slot-scope="data">
+                            <!-- HTML that describes how select should render items when the select is open -->
+                            {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
+                          </template>
+                        </v-select>
+                        <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
+                          <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
+                            <input type="checkbox"
+                                   @change="changeExcludedSlots(item, slot.id)"
+                                   :checked="!item.excludedResourceSlotTimeIds.includes(slot.id)">
+                            {{slot.startTime | formatDateZoneless()}} - {{slot.endTime | formatDateZoneless()}}
+                          </div>
+                        </v-card>
                       </td>
-                      <td>
-                        to
+                      <td class="text-left" v-else>
+                        <div class="flex-display">
+                          <DatetimePickerInput
+                            v-model="item.startTime"
+                            :timezone="timezone"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            type="time"
+                            format="h:mm a"
+                            :allowed-minutes="allowedMinutesStep"
+                            input-format="HH:mm:ss"
+                            label="Start Time"
+                            class="d-inline-block"
+                          />
+                          <div class="d-inline-block px-3 align-self-center">to</div>
+                          <DatetimePickerInput
+                            v-model="item.endTime"
+                            :timezone="timezone"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            type="time"
+                            format="h:mm a"
+                            :allowed-minutes="allowedMinutesStep"
+                            input-format="HH:mm:ss"
+                            label="End Time"
+                            class="d-inline-block"
+                          />
+                        </div>
                       </td>
-                      <td class="text-left">
-                        <DatetimePickerInput
-                          v-model="item.endTime"
-                          :timezone="timezone"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          type="time"
-                          format="h:mm a"
-                          :allowed-minutes="allowedMinutesStep"
-                          input-format="HH:mm:ss"
-                          label="End Time"
-                        />
-                      </td>
-                      <td class="text-left px-0" width="150px">
+                      <td class="text-left px-0" width="150px" v-if="!useSlotSchedule">
 
                         <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
@@ -266,7 +310,7 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startDate | formatDate('date')}} - {{item.endDate | formatDate('date')}}</td>
-              <td class="text-left">
+              <td class="text-right">
                 <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item)">
                   <v-icon v-if="userCanEdit">edit</v-icon>
@@ -324,7 +368,8 @@
     },
     props: {
       orgId: Number,
-      userId: Number
+      userId: Number,
+      useSlotSchedule: Boolean
     },
     data() {
       return {
@@ -344,6 +389,7 @@
         schedules: [],
         expanded: [],
         workDays: [],
+        slotSchedules: [],
         saveError: false,
         saveErrorMsg: ''
       }
@@ -352,6 +398,9 @@
       //reload the data if they switch back from the appointments tab
       this.getSchedules()
       this.getWorkDays()
+      if(this.useSlotSchedule) {
+        this.getSlotSchedules()
+      }
     },
     watch: {
       'orgId': function () {
@@ -375,6 +424,26 @@
       }
     },
     methods: {
+      changeExcludedSlots(item, slotId) {
+        if(item.excludedResourceSlotTimeIds.includes(slotId)) {
+          //remove it if already in
+          item.excludedResourceSlotTimeIds = item.excludedResourceSlotTimeIds.filter(e => e !== slotId)
+        } else {
+          //else add it
+          item.excludedResourceSlotTimeIds.push(slotId)
+        }
+      },
+      getMatchingSlots(resourceSlotScheduleId) {
+        return this.slotSchedules.find(ss => ss.id === resourceSlotScheduleId)?.slotTimes
+      },
+      buildTimeString(schedule) {
+        let timeString = '['
+        schedule?.slotTimes?.forEach((st,idx) => {
+          timeString += (this.$filters.formatDateZoneless(st.startTime) + '-' + this.$filters.formatDateZoneless(st.endTime) + (idx === schedule.slotTimes.length - 1 ? '' : ', '))
+        })
+        timeString += ']'
+        return timeString
+      },
       async getSchedules() {
         if(this.orgId || this.userId) {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -406,13 +475,25 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
+      async getSlotSchedules() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/availability/slotSchedules`)
+          this.slotSchedules = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Schedules')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
       async saveSchedule(sched, isNew) {
-
         //clone the schedule so the times don't change on the screen, they only change for the save to the db
         let s = cloneDeep(sched)
 
         // filter out empties that dont need saved
-        s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.startTime != null || rsa.endTime != null) }) : []
+        s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.resourceSlotScheduleId != null || rsa.startTime != null || rsa.endTime != null) }) : []
         // modify the times for saving to db
         // s.resourceScheduleAvailability.forEach(rsa => {
         //   rsa.startTime = rsa.startTime != null ? moment(rsa.startTime, 'HH:mm:ss A Z').toDate() : null
@@ -449,7 +530,7 @@
             //   timeOverlap = true
             // }
           })
-          
+
           if(invalidStarts) {
             this.saveError = true
             this.saveErrorMsg = '* All work days with an end time must also have a start time'
@@ -528,8 +609,10 @@
             this.newSchedule.resourceScheduleAvailability.push({
               dayOfWeekId: wd.id,
               dayOfWeek: wd.dayOfWeek,
+              excludedResourceSlotTimeIds: [],
               startTime: null,
-              endTime: null
+              endTime: null,
+              resourceSlotScheduleId: null
             })
           })
         }

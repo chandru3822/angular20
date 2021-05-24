@@ -84,22 +84,26 @@
 
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/contact/${item.id}`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
                   {{item.fullName}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/contact/${item.id}`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
                   {{item.owner ? item.owner.fullName : ''}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/contact/${item.id}`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
                   {{item.state}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="no-text-decoration" :to="`/contact/${item.id}`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             color="transparent" :to="`/contact/${item.id}`">
                   {{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
                 </router-link>
               </td>

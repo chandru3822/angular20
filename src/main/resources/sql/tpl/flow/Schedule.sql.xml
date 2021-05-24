@@ -9,6 +9,8 @@
     select p.id,
            p.project_name,
            c.id as contact_id,
+           c.phone,
+           c.mobile,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(steps)))
                         FROM (
@@ -118,6 +120,8 @@
         c.id as contact_id,
         c.first_name as contact_first_name,
         c.last_name as contact_last_name,
+        c.phone,
+        c.mobile,
         p.latitude,
         p.longitude,
         p.street1,
@@ -165,45 +169,8 @@
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
-    with dates as (
-        select :startTime::date + d.date as date,
-               extract(dow from :startTime::date + d.date) as day_of_week_id
-        from generate_series(0, 99) as d(date)
-        where :startTime::date + d.date BETWEEN :startTime::date and :endTime::date - 1
-    )
-    select coalesce(rs.user_id, rs.org_id) as resource_id,
-           (concat(d.date, ' ', rsa.start_time))::timestamp as "start",
-           case when (concat(d.date, ' ', rsa.start_time))::timestamp > (concat(d.date, ' ', rsa.end_time))::timestamp
-            then (concat(d.date + 1, ' ', rsa.end_time))::timestamp
-            else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
-           rsa.day_of_week_id,
-           false as all_day,
-           null as title,
-           'inverse-background' as rendering,
-           case when rs.org_id is not null then 1 else 2 end as system_list_type_id
-    from dates d
-             inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
-             inner join flow.resource_schedule rs on rs.id = rsa.resource_schedule_id and ((d.date between rs.start_date and rs.end_date) OR (d.date >= rs.start_date and rs.end_date is null))
-    where rs.archived is not true
-      and rsa.archived is not true
-      and ( rs.org_id = any (array[ :orgIds ]::int[])
-        OR rs.user_id = any (array[ :userIds ]::int[]) )
-    union all
-    select coalesce(ra.user_id, ra.org_id) as resource_id,
-           ra.start_time as "start",
-           ra.end_time as "end",
-           null::int,
-           ra.all_day,
-           ra.title,
-           'background' as rendering,
-           case when ra.org_id is not null then 1 else 2 end as system_list_type_id
-    from flow.resource_appointment ra
-    where (ra.start_time between :startTime::timestamp and :endTime::timestamp
-            or ra.end_time between :startTime::timestamp and :endTime::timestamp
-            or ra.start_time <= :startTime::timestamp and :endTime::timestamp <= ra.end_time)
-      and ra.archived is not true
-      and ( ra.org_id = any (array[ :orgIds ]::int[])
-        OR ra.user_id = any (array[ :userIds ]::int[]) )
+    select *
+    from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::int[], array[ :userIds ]::int[]);
  ]]></schedule.getAvailability>
 
   <schedule.getProjects><![CDATA[
