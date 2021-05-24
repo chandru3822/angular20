@@ -44,7 +44,7 @@ BEGIN
                              case
                                when (concat(d.date, ' ', rsa.start_time))::timestamp >
                                     (concat(d.date, ' ', rsa.end_time))::timestamp
-                                 then (concat(d.date + interval '1 day', ' ', rsa.end_time))::timestamp
+                                 then (concat((d.date + interval '1 day')::date, ' ', rsa.end_time))::timestamp
                                else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
                              rsa.day_of_week_id                                        as "dayOfWeekId",
                              false                                                     as "allDay",
