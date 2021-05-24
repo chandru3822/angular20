@@ -608,7 +608,7 @@
             endTime: this.calendarEndTime
           }
           const {data} = await postRequest(`/schedule/availability`, params)
-          data.forEach(d => {
+          data?.forEach(d => {
             //this is really stupid.  in full calendar an all day appt strips off the time. and just uses the date.
             //so an end time of '2020-12-31 23:59:59' will strip off the time and not include it in the all day range
             //so your event will appear to end on the 30th
