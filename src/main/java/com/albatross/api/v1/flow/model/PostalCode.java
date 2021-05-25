@@ -13,6 +13,6 @@ public class PostalCode {
 
   private Long id, postalCodeZoneId;
   private String postalCode;
-  private Boolean archived;
+  private Boolean archived, postalCodeZoneArchived;
   private List<User> users;
 }
