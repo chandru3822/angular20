@@ -219,40 +219,15 @@ public class GenesysService {
     contactMap.put("date_created", formatter.format(calendar.getTime()));
 
     getCfvValues(contactMap, values);
-
     wdc.setData(contactMap);
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
-    goclr.setPageSize(100);
-    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
-
-    String lead = (String) contactMap.get("lead_source");
-    String leadSourceDetail = (String) contactMap.get("lead_source_detail");
-    String leadLevel = (String) contactMap.get("lead_level");
-    if (lead.isEmpty()) {
+    String contactListId = getContactListId(contactMap, apiInstance);
+    // If no Contact  List is found
+    if (contactListId == null) {
       return;
     }
-
-    String contactListName = getContactListName(lead, leadSourceDetail, leadLevel);
-    if (contactListName == null) {
-      return;
-    }
-
-    String contactListId = "";
-    for (ContactList cl: contactListEntity.getEntities()) {
-      if (cl.getName().equals(contactListName)) {
-        contactListId = cl.getId();
-        break;
-      }
-    }
-    // If no Contact List match was found
-    if (contactListId.isEmpty()) {
-      return;
-    }
-    // Remove lead level from the parameters sent to Genesys, since it is not needed
-    contactMap.remove("lead_level");
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
     // Store the Genesys Contact ID
@@ -323,30 +298,14 @@ public class GenesysService {
     getCfvValues(contactMap, customFieldGroups.get(0).getCustomFieldValues());
 
     dc.setData(contactMap);
-    // Get the list of contacts
+
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(new GetOutboundContactlistsRequest());
-
-    String lead = (String) contactMap.get("lead_source");
-    if (lead.isEmpty()) {
+    String contactListId = getContactListId(contactMap, apiInstance);
+    // If no Contact  List is found
+    if (contactListId == null) {
       return;
     }
-
-    String contactListId = "";
-    for (ContactList cl: contactListEntity.getEntities()) {
-      if (cl.getName().equals(lead)) {
-        contactListId = cl.getId();
-        break;
-      }
-    }
-    // If no Contact List match was found
-    if (contactListId.isEmpty()) {
-      return;
-    }
-
-    // Remove lead level from the parameters sent to Genesys, since it is not needed
-    contactMap.remove("lead_level");
 
     // Try with the Contact ID first (for imported contacts)
     // if that doesn't work use the Genesys Agent ID (newly created Contacts)
@@ -438,5 +397,38 @@ public class GenesysService {
     }
 
     return null;
+  }
+  // Get the Genesys id of the Contact List from Genesys
+  private String getContactListId(HashMap<String, Object> contactMap, OutboundApi apiInstance) throws IOException, ApiException {
+    GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
+    goclr.setPageSize(100);
+    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
+
+    String lead = (String) contactMap.get("lead_source");
+    String leadSourceDetail = (String) contactMap.get("lead_source_detail");
+    String leadLevel = (String) contactMap.get("lead_level");
+    if (lead.isEmpty()) {
+      return null;
+    }
+
+    String contactListName = getContactListName(lead, leadSourceDetail, leadLevel);
+    if (contactListName == null) {
+      return null;
+    }
+
+    String contactListId = "";
+    for (ContactList cl: contactListEntity.getEntities()) {
+      if (cl.getName().equals(contactListName)) {
+        contactListId = cl.getId();
+        break;
+      }
+    }
+    // If no Contact List match was found
+    if (contactListId.isEmpty()) {
+      return null;
+    }
+    // Remove lead level from the parameters sent to Genesys, since it is not needed
+    contactMap.remove("lead_level");
+    return contactListId;
   }
 }
