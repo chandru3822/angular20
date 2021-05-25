@@ -187,10 +187,17 @@ public class PostalCodeService {
     params.put("createdById", user.getId());
 
     Optional<PostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCode.class);
-    if(result.isPresent()) {
+    if(result.isPresent() && !result.get().getPostalCodeZoneArchived()) {
       HashMap<String, Object> errorObj = new HashMap<>();
       errorObj.put("message", "Error: Postal Code Already In Use");
       return ResponseEntity.badRequest().body(errorObj);
+    } else if (result.isPresent() && result.get().getPostalCodeZoneArchived()) {
+      //if the postal code zone has been deleted, then just update the record instead of adding a new row
+      //this feels like the wrong way. but i wanted to keep the unique constraint without archiving all postal codes when a zone is archived
+      params.put("id", result.get().getId());
+      sqlCache.update("postalCode.updateZoneCode", params);
+
+      return ResponseEntity.ok(getZonePostalCode(result.get().getId()));
     } else {
       Long id = sqlCache.updateReturningId("postalCode.addZoneCode", params, "id").longValue();
       return ResponseEntity.ok(getZonePostalCode(id));
