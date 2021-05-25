@@ -317,6 +317,9 @@ public class GenesysService {
     contactMap.put("date_created", formatter.format(calendar.getTime()));
 
     List<CustomFieldGroup> customFieldGroups = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), contactId);
+    List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
+    // Add Lead Level custom field so that value gets pulled
+    values.add(customFieldGroups.get(1).getCustomFieldValues().stream().filter(cfg -> cfg.getCustomFieldId().equals(10982L)).findFirst().orElse(null));
     getCfvValues(contactMap, customFieldGroups.get(0).getCustomFieldValues());
 
     dc.setData(contactMap);
