@@ -143,6 +143,15 @@
     where pczu.id = :id
   ]]></postalCode.getZoneUser>
 
+  <postalCode.updateZoneCode><![CDATA[
+      update flow.postal_code
+      set archived = false,
+          date_modified = now(),
+          modified_by_id = :createdById,
+          postal_code_zone_id = :postalCodeZoneId
+      where id = :id
+  ]]></postalCode.updateZoneCode>
+
   <postalCode.addZoneCode><![CDATA[
     insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id)
     values (:postalCodeZoneId, trim(:postalCode), now(), :createdById)
@@ -256,10 +265,12 @@
     select pc.id,
        pc.postal_code_zone_id,
        pc.postal_code,
-       pc.archived
-    from flow.postal_code pc
-    where pc.postal_code = :postalCode
-      and archived is not true
+       pc.archived,
+       pcz.archived as postal_code_zone_archived
+from flow.postal_code pc
+  inner join flow.postal_code_zone pcz on pc.postal_code_zone_id = pcz.id
+where pc.postal_code = :postalCode
+  and pc.archived is not true
   ]]></postalCode.checkForExisting>
 
 </sql>
