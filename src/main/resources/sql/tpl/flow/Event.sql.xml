@@ -59,6 +59,7 @@
                                                              cf.field_name as "fieldName",
                                                              cfg1.group_name as "groupName",
                                                              e.event_name as "eventName",
+                                                             null as "processStepName",
                                                              ot.object_type as "objectType",
                                                              coalesce((
                                                                         SELECT array_to_json(array_agg(row_to_json(links)))
@@ -110,6 +111,7 @@
                                                              cfga.hidden as "customFieldGroupAssignmentHidden",
                                                              cf.field_name as "fieldName",
                                                              cfg1.group_name as "groupName",
+                                                             null as "eventName",
                                                              ps.process_step_name as "processStepName",
                                                              ot.object_type as "objectType",
                                                              '[]' as whiteListedPositions,

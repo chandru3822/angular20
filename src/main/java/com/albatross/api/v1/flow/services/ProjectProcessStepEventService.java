@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
 import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.User;
@@ -24,6 +25,7 @@ public class ProjectProcessStepEventService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final CustomFieldValueService customFieldValueService;
 
   public Optional<ProjectProcessStepEvent> insertPpsEvent(Long projectProcessStepId, ProcessStepEvent processStepEvent) {
     User user = securityService.getCurrentUser();
@@ -42,6 +44,9 @@ public class ProjectProcessStepEventService {
     params.put("id", id);
 
     Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.get", params, ProjectProcessStepEvent.class);
+    if(result.isPresent()) {
+      result.get().setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
+    }
     return result;
   }
 

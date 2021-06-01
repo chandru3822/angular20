@@ -5,9 +5,20 @@
   ]]></projectProcessStepEvent.insertEvent>
 
   <projectProcessStepEvent.get><![CDATA[
-    select *
-    from flow.project_process_step_event
-    where id = :id
+    select ppse.*,
+       e.event_name
+    from flow.project_process_step_event ppse
+    inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+    inner join flow.event e on pse.event_id = e.id
+    where ppse.id = :id
   ]]></projectProcessStepEvent.get>
+
+  <projectProcessStepEvent.getCompanyId><![CDATA[
+    select e.company_id
+    from flow.project_process_step_event ppse
+    inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+    inner join flow.event e on pse.event_id = e.id
+    where ppse.id = :sourceId
+  ]]></projectProcessStepEvent.getCompanyId>
 
 </sql>

@@ -122,6 +122,8 @@ public class CustomFieldValueService {
       Long companyId;
       if(objectType.equals("user")) {
         companyId = user.getCompanyId();
+      } else if(objectType.equals("event")) {
+        companyId = sqlCache.queryForObject("projectProcessStepEvent.getCompanyId", params, Long.class);
       } else {
         companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
       }
