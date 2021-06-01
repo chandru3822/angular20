@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class ProjectProcessStepEvent {
 
-  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId;
+  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, eventId;
   private String eventName, eventStatusType;
   private List<CustomFieldGroup> customFieldGroups;
   private Boolean archived;

@@ -87,6 +87,9 @@
                  color="primaryButton"
           >Save Event</v-btn>
         </v-col>
+        <v-row>
+          <Attachments :project-process-step-event-id="selectedEvent.id" :event-id="selectedEvent.eventId" :project-process-step-id="projectProcessStepId" />
+        </v-row>
       </div>
     </v-card>
   </v-main>
@@ -98,11 +101,13 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getCustomFieldReadOnly} from "@/services/customFieldService";
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
+  import Attachments from '@/views/flow/components/Attachments'
 
   export default {
     name: 'ProjectProcessStepEvents',
     components: {
-      CustomValueInput
+      CustomValueInput,
+      Attachments
     },
     props: {
       projectProcessStepEvents: Array,
@@ -116,7 +121,7 @@
         projectId: this.$route.params.projectId,
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
-        projectProcessStepId: this.$route.params.processStepId,
+        projectProcessStepId: parseInt(this.$route.params.processStepId),
         processStepId: this.$route.query.processStepId,
         processStepEvents: [],
         headers: [

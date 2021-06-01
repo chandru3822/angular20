@@ -200,15 +200,20 @@ export default {
   props: {
     projectId: Number,
     processStepId: Number,
-    projectProcessStepId: Number
+    projectProcessStepId: Number,
+    eventId: Number,
+    projectProcessStepEventId: Number
   },
   created () {
     if (this.projectId) {
       this.typePath = '/projectTypes'
       this.attachmentPath = `/project/${this.projectId}/attachments`
-    } else if (this.projectProcessStepId) {
+    } else if (this.processStepId) {
       this.typePath = `/processStepTypes/${this.processStepId}`
       this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+    } else if (this.eventId) {
+      this.typePath = `/eventTypes/${this.eventId}`
+      this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
     }
 
     this.fetchAttachmentTypes()
@@ -295,11 +300,12 @@ export default {
           //reset error message when trying to upload new file
           this.error = {}
           // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-          await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
+          await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : this.processStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD, {
             file,
             attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
             projectId: this.projectId,
             projectProcessStepId: this.projectProcessStepId,
+            projectProcessStepEventId: this.projectProcessStepEventId,
             callback: async (newAttachment, error) => {
               if(error) {
                 this.error = error

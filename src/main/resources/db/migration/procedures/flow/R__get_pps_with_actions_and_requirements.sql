@@ -248,6 +248,7 @@ BEGIN
                                       cest.event_status_type as "eventStatusType",
                                       ppse.created_by_id as "createdById",
                                       ppse.modified_by_id as "modifiedById",
+                                      pse.event_id as "eventId",
                                       e.event_name as "eventName"
                                FROM flow.project_process_step_event ppse
                                     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
