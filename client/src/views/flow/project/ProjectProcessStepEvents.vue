@@ -55,15 +55,10 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <br/>
-        {{selectedEvent}}
-        <br/>
-        {{userIsAdmin}}
-        <br/>
         <v-col
           v-if="selectedEvent && selectedEvent.id"
           class="pt-0"
-          v-for="(cfg, index) in ppsEventCfgs"
+          v-for="(cfg, index) in selectedEvent.customFieldGroups"
           :key="index"
         >
           <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
@@ -79,7 +74,6 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card flat class="pa-3">
-            {{cfg.customFieldValues[0]}}
             <CustomValueInput
               v-for="(field, idx) in cfg.customFieldValues"
               :key="idx"
@@ -118,7 +112,6 @@
         snackbar: {},
         selectedEvent: {},
         dirtyCfvs: [],
-        ppsEventCfgs: [],
         timezone: this.$store.state.user.details.timezone.value,
         projectId: this.$route.params.projectId,
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
@@ -175,7 +168,7 @@
       getEventCfgs: async function (ppsEvent) {
         try {
           const {data} = await getRequest(`/customFieldValues/event/${ppsEvent.id}`)
-          this.ppsEventCfgs = data
+          this.selectedEvent.customFieldGroups = data
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
