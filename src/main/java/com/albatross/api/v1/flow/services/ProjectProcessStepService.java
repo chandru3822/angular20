@@ -1728,11 +1728,11 @@ public class ProjectProcessStepService {
   public boolean compareDates(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
 
     if (date != null) {
-      date = date.withHour(0);
+      date = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
     if (compareDate != null) {
-      compareDate = compareDate.withHour(0);
+      compareDate = compareDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
     boolean passed = false;
