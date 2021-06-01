@@ -382,7 +382,7 @@ public class GenesysService {
     }
   }
 
-  private String getContactListName(String lead, String leadSourceDetail, String leadLevel) {
+  private String getContactListName(String leadLevel) {
     if (leadLevel.equals("1")) {
       return "Level 1";
     }
@@ -392,7 +392,7 @@ public class GenesysService {
     else if (leadLevel.equals("3")) {
       return "Level 3";
     }
-    else if (lead.equals("Paid Advertising") && leadSourceDetail.equals("InsideSales")) {
+    else if (leadLevel.equals("10")) {
       return "InsideSales";
     }
 
@@ -404,14 +404,8 @@ public class GenesysService {
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
 
-    String lead = (String) contactMap.get("lead_source");
-    String leadSourceDetail = (String) contactMap.get("lead_source_detail");
     String leadLevel = (String) contactMap.get("lead_level");
-    if (lead.isEmpty()) {
-      return null;
-    }
-
-    String contactListName = getContactListName(lead, leadSourceDetail, leadLevel);
+    String contactListName = getContactListName(leadLevel);
     if (contactListName == null) {
       return null;
     }
