@@ -59,7 +59,7 @@ BEGIN
                                                   on pps.company_process_step_status_type_id = cpsst.id
                                        inner join flow.process_step_status_type psst
                                                   on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-                              where pps.process_step_id = 35
+                              where pps.process_step_id = 3365
                               group by pps.project_id
                           )
                      select p.id                                              as project_id,
