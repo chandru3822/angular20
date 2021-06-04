@@ -143,11 +143,11 @@
             <v-toolbar-items>
               <v-btn text v-if="userCanEdit"
                      :disabled="fieldsSaving"
-                     @click="[fieldsSaving = true, validate()]">Save</v-btn>
+                     @click="validate(true)">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <v-form ref="address">
+            <v-form ref="addressForm">
               <v-text-field text
                             label="First Name"
                             id="qa-first-name-field"
@@ -216,7 +216,7 @@
                             label="Phone"
                             id="qa-phone-field"
                             placeholder=" "
-                            :rules="phoneRules"
+                            :rules="contactPhoneRule"
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.phone"></v-text-field>
@@ -225,7 +225,7 @@
                             id="qa-mobile-field"
                             :readonly="!userCanEdit"
                             @change="dirtySystemFields = true"
-                            :rules="phoneRules"
+                            :rules="contactPhoneRule"
                             placeholder=" "
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
@@ -346,6 +346,17 @@ export default {
     NotesAndActivity,
     DatetimePickerInput
   },
+  watch: {
+    contact: {
+      // This will let Vue know to look inside the array
+      deep: true,
+
+      // We have to move our method to a handler field
+      handler() {
+        this.validate(false)
+      }
+    }
+  },
   data () {
     return {
       snackbar: {},
@@ -356,7 +367,12 @@ export default {
       cityRules: constants.CITY_RULES,
       addressRules: constants.ADDRESS_RULES,
       nameRules: constants.NAME_RULES,
-      phoneRules: constants.PHONE_RULES,
+      contactPhoneRule: [
+        () => ((this.contact.phone != null && this.contact.phone !== '') || (this.contact.mobile != null && this.contact.mobile !== '')) || "Phone or Mobile is required",
+        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
+        v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
+      ],
       deleteContactConfirm: false,
       addressChanged: false,
       isNumberOrHyphen,
@@ -418,11 +434,13 @@ export default {
     goToPath(path) {
       this.$router.push(path)
     },
-    validate () {
-      if (this.$refs.address.validate()) {
-        this.saveContact()
+    async validate (saveContact) {
+      let valid = this.$refs.addressForm?.validate()
+      if (valid && saveContact) {
+        this.fieldsSaving = false;
+        await this.saveContact()
+        this.fieldsSaving = false;
       }
-      this.fieldsSaving = false;
     },
     contactOwnerIsReadOnly() {
       if(this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
