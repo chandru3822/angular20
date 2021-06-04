@@ -160,11 +160,7 @@ public class ProjectProcessStepService {
     params.put("cancelledStatusTypeId", cancelledCompanyProcessStepStatusTypeId);
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
-    //check for un-run automatic actions
-    // only run for self if the new status type is active
-    if(runAutoTriggers && processStepStatusTypeId == 1) {
-      performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails(), callingProcessStepActionId);
-    }
+
     //check for any actions using this PS - Status as a requirement - including SELF if active
     //run auto triggers for those actions
     List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
@@ -1731,11 +1727,11 @@ public class ProjectProcessStepService {
   public boolean compareDates(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
 
     if (date != null) {
-      date = date.withHour(0);
+      date = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
     if (compareDate != null) {
-      compareDate = compareDate.withHour(0);
+      compareDate = compareDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
     boolean passed = false;
