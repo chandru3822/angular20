@@ -19,7 +19,7 @@ BEGIN
              from flow.project_process_step pps
                       inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
                       inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-             where pps.process_step_id = 35
+             where pps.process_step_id = 3365
              group by project_id
          )
     select (select coalesce(sum(total),0)
