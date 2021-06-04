@@ -160,11 +160,7 @@ public class ProjectProcessStepService {
     params.put("cancelledStatusTypeId", cancelledCompanyProcessStepStatusTypeId);
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
-    //check for un-run automatic actions
-    // only run for self if the new status type is active
-    if(runAutoTriggers && processStepStatusTypeId == 1) {
-      performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails(), callingProcessStepActionId);
-    }
+
     //check for any actions using this PS - Status as a requirement - including SELF if active
     //run auto triggers for those actions
     List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
