@@ -5,14 +5,13 @@
         Add Contact
         <v-spacer></v-spacer>
         <v-btn v-if="!constants.IS_MOBILE" text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primaryCustom white--text" :disabled="loadingInsertFields" @click="validate">Save</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" color="primaryCustom white--text" :disabled="loadingInsertFields" @click="validate(true)">Save</v-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
         <v-btn text class="mr-3" to="/contacts">Cancel</v-btn>
         <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields"
-               @click="validate" id="qa-add-contact-save"  >Save</v-btn>
+               @click="validate(true)" id="qa-add-contact-save"  >Save</v-btn>
       </v-card-text>
-
       <v-form ref="contactForm">
         <v-container>
           <v-row>
@@ -48,13 +47,13 @@
             <v-col cols="12" sm="6">
               <v-text-field text
                             label="Phone"
-                            :rules="phoneRules"
+                            :rules="contactPhoneRule"
                             id="qa-phone-field"
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
+                            :rules="contactPhoneRule"
                             id="qa-mobile-field"
-                            :rules="phoneRules"
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
@@ -123,9 +122,15 @@ export default {
       postalCodeRules: constants.POSTAL_CODE_REQUIRED_RULES,
       cityRules: constants.CITY_RULES,
       addressRules: constants.ADDRESS_RULES,
-      phoneRules: constants.PHONE_REQUIRED_RULES,
+      // phoneRules: constants.PHONE_REQUIRED_RULES,
       nameRules: constants.NAME_RULES,
       nameRequiredRules: constants.NAME_REQUIRED_RULES,
+      contactPhoneRule: [
+        () => ((this.contact.phone != null && this.contact.phone !== '') || (this.contact.mobile != null && this.contact.mobile !== '')) || "Phone or Mobile is required",
+        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
+        v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
+      ],
       loadingInsertFields: true,
       countries: [],
       dirtyCfvs: [],
@@ -133,6 +138,17 @@ export default {
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
       companyId: this.$route.query.cid || this.$store.state.user.details.companyId,
+    }
+  },
+  watch: {
+    contact: {
+      // This will let Vue know to look inside the array
+      deep: true,
+
+      // We have to move our method to a handler field
+      handler() {
+        this.validate(false)
+      }
     }
   },
   created () {
@@ -145,8 +161,11 @@ export default {
     this.getCustomFieldGroups()
   },
   methods: {
-    validate () {
-      if (this.$refs.contactForm.validate()) {
+    validate (saveContact) {
+
+      let valid = this.$refs.contactForm.validate()
+      console.log('VALID', valid)
+      if (valid && saveContact) {
         this.saveContact()
       }
     },

@@ -275,16 +275,16 @@ BEGIN
                                               coalesce((SELECT sum(paid_to_date)
                                                         FROM brs.project_commission_ledger dcl
                                                         WHERE ledger_type_id = 3
-                                                          AND dcl.user_id = user_id
+                                                          AND dcl.user_id = docs.user_id
                                                           and dcl.project_id = dcs.project_id
                                                           and dcl.position_id = 4),
                                                        0)     AS paid_to_date
                                        FROM brs.setter_project_override_commission_snapshot docs
                                                 INNER JOIN brs.setter_project_commission_snapshot dcs
                                                            ON dcs.id = docs.setter_project_commission_snapshot_id
-                                       WHERE payroll_id = p_payroll_id
-                                         and project_id = d.project_id
-                                       GROUP BY user_id, project_id)
+                                       WHERE dcs.payroll_id = p_payroll_id
+                                         and dcs.project_id = d.project_id
+                                       GROUP BY docs.user_id, project_id)
                     INSERT
                     INTO brs.project_commission_ledger (payroll_id,
                                                         project_id,
