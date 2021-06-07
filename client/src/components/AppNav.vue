@@ -18,6 +18,7 @@
         <v-app-bar dense id="header" :color="headerColor" tabs dark style="z-index: 1001;">
           <v-menu data-app left
                   offset-y
+                  v-if="companies.length > 1"
                   :max-height="`calc(100vh - 20px)`"
                   v-model="menuOpen"
                   class="account-menu"
@@ -28,7 +29,7 @@
                 <v-icon v-else>mdi-office-building</v-icon>
               </v-btn>
             </template>
-            <v-list v-if="companies.length > 1">
+            <v-list>
               <v-list-item v-for="(item, index) in companies" :key="index"
                            :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
                            @click="[menuOpen = false, changeContext(item.id)]">
@@ -36,6 +37,11 @@
               </v-list-item>
             </v-list>
           </v-menu>
+          <v-btn icon v-else to="/home"
+                 :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
+            <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
+            <v-icon v-else>mdi-office-building</v-icon>
+          </v-btn>
           <v-menu v-if="constants.IS_MOBILE" data-app left
                   offset-y
                   :max-height="`calc(100vh - 20px)`"
