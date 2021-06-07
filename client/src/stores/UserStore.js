@@ -104,7 +104,7 @@ export const UserStore = {
     },
     isParent: state => parentId => {
       // is albatross or parentId is null
-      return parentId === 1 || parentId == null
+      return parentId === 1
     },
     isCompanyRoot: state => companyId => {
       return companyId === 1
