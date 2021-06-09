@@ -702,7 +702,7 @@ FROM (SELECT cp.id,
                             INNER JOIN flow.position p ON p.id = up.position_id
                        WHERE (
                                CASE WHEN :positions = 'closers'
-                                         THEN array[p1.id] = any (select cf.system_list_option_ids
+                                         THEN array[p.id] = any (select cf.system_list_option_ids
                                                                   from flow.custom_field cf
                                                                   where cf.parent_custom_field_id = 9959 and cf.company_id = 3)
                                     WHEN :positions = 'setters'
