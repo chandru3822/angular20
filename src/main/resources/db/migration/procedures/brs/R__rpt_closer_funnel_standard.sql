@@ -25,7 +25,9 @@ BEGIN
                                            inner join brs.project_details pd on pd.project_id = pps.project_id
                                   where pps.process_step_id = 1
                                     and pd.company_id = v_company_id
-                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                                    and (((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                                          OR ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                              between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date)
                               select id,
                                      name,
                                      display_order,
@@ -1214,7 +1216,9 @@ BEGIN
                                            inner join brs.project_details pd on pd.project_id = pps.project_id
                                   where pps.process_step_id = 1
                                     and pd.company_id = v_company_id
-                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                                    and (((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                                         OR ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                            between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date)
                               select id,
                                      name,
                                      display_order,
