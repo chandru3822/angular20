@@ -43,7 +43,7 @@ BEGIN
                                from brs.project_details pd
                                         inner join flow.project p on p.id = pd.project_id
                                         inner join flow.contact c on c.id = p.contact_id
-                                        inner join flow.contact_custom_field_value ccfv
+                                        left join flow.contact_custom_field_value ccfv
                                                    on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
                                where pd.final_design_complete_date is not null
                                  and pd.cancelled_date is null
