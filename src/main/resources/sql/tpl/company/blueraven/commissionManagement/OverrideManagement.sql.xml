@@ -371,7 +371,7 @@ FROM (SELECT u.id                                                             AS
                                              INNER JOIN flow.position p ON p.id = up.position_id
                                     WHERE  (
                                                CASE WHEN :positionId = 1
-                                                        THEN array[p.id] = any (select cf.system_list_option_ids
+                                                        THEN array[p.id] = any (select unnest(cf.system_list_option_ids)
                                                                                   from flow.custom_field cf
                                                                                   where cf.parent_custom_field_id = 9959 and cf.company_id = 3)
                                                     WHEN :positionId = 4
