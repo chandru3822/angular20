@@ -34,7 +34,7 @@ public class ProcessStepEventService {
   public List<ProcessStepEvent> getStepEvents(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    List<ProcessStepEvent> results = sqlCache.query("processStepEvent.getStepEvents", params, ProcessStepEvent.class);
+    List<ProcessStepEvent> results = sqlCache.query("processStepEvent.getStepEvents", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
     return results;
   }
 
@@ -48,7 +48,7 @@ public class ProcessStepEventService {
   public Optional<ProcessStepEvent> getProcessStepEvent(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<ProcessStepEvent> result = sqlCache.get("processStepEvent.get", params, ProcessStepEvent.class);
+    Optional<ProcessStepEvent> result = sqlCache.get("processStepEvent.get", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
     return result;
   }
 
@@ -83,6 +83,43 @@ public class ProcessStepEventService {
     sqlCache.update("processStepEvent.deleteEventFromStep", params);
   }
 
+  public Optional<ProcessStepEventAction> getStepEventAction(Long processStepEventActionId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", processStepEventActionId);
+    Optional<ProcessStepEventAction> result = sqlCache.get("processStepEvent.getStepEventAction", params, ProcessStepEventAction.class);
+    return result;
+  }
+
+  public Optional<ProcessStepEventAction> addStepEventAction(Long processStepId, Long eventId, ProcessStepEventAction processStepEventAction) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
+    params.put("actionName", processStepEventAction.getActionName());
+    params.put("userId", currentUser.getId());
+    params.put("processStepEventId", eventId);
+
+    Long id;
+
+    if(null != processStepEventAction.getId()) {
+      id = processStepEventAction.getId();
+      params.put("id", id);
+      sqlCache.update("processStepEvent.updateStepEventAction", params);
+    } else {
+      id = sqlCache.updateReturningId("processStepEvent.addStepEventAction", params, "id").longValue();
+    }
+    return getStepEventAction(id);
+  }
+
+  public void deleteActionFromEvent(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.getId());
+    sqlCache.update("processStepEvent.deleteActionFromEvent", params);
+  }
+
   public static class ProcessStepEventMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -94,9 +131,12 @@ public class ProcessStepEventService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<CompanyEventStatusType>> companyEventStatusTypeRef = new TypeReference<>() {};
-
       bw.registerCustomEditor(List.class, "companyEventStatusTypes",
         new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
+
+      TypeReference<List<ProcessStepEventAction>> processStepEventActionRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "processStepEventActions",
+        new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
     }
   }
 }

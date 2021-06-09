@@ -17,5 +17,6 @@ public class ProcessStepEvent {
   private String eventName, initialEventStatusType;
   private Boolean archived;
   private List<CompanyEventStatusType> companyEventStatusTypes;
+  private List<ProcessStepEventAction> processStepEventActions;
 }
 

@@ -6,7 +6,25 @@
            cest.event_status_type as initial_event_status_type,
            pse.event_id,
            pse.archived,
-           e.event_name
+           e.event_name,
+                  coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(psea)))
+                  FROM (
+                         SELECT psea.id,
+                                psea.action_name as "actionName",
+                                psea.process_step_event_id as "processStepEventId",
+                                psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                psea.company_event_status_type_id as "companyEventStatusTypeId",
+                                psea.created_by_id as "createdById",
+                                psea.modified_by_id as "modifiedById",
+                                cpsst.process_step_status_type as "processStepStatusType",
+                                cest.event_status_type as "eventStatusType",
+                                psea.archived
+                          FROM flow.process_step_event_action psea
+                            left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+                            left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+                         WHERE psea.process_step_event_id = pse.id
+                           AND psea.archived is not true) psea), '[]') AS "processStepEventActions"
     from flow.process_step_event pse
       inner join flow.event e on pse.event_id = e.id
       left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
@@ -51,7 +69,25 @@
        pse.initial_company_event_status_type_id,
        cest.event_status_type as initialEventStatusType,
       e.event_name,
-      pse.archived
+      pse.archived,
+             coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(psea)))
+                  FROM (
+                         SELECT psea.id,
+                                psea.action_name as "actionName",
+                                psea.process_step_event_id as "processStepEventId",
+                                psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                psea.company_event_status_type_id as "companyEventStatusTypeId",
+                                psea.created_by_id as "createdById",
+                                psea.modified_by_id as "modifiedById",
+                                cpsst.process_step_status_type as "processStepStatusType",
+                                cest.event_status_type as "eventStatusType",
+                                psea.archived
+                          FROM flow.process_step_event_action psea
+                            left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+                            left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+                         WHERE psea.process_step_event_id = pse.id
+                           AND psea.archived is not true) psea), '[]') AS "processStepEventActions"
     from flow.process_step_event pse
          inner join flow.event e on pse.event_id = e.id
       inner join flow.company_event_status_type cest on pse.initial_company_event_status_type_id = cest.id
@@ -80,4 +116,36 @@
     where id = :id
   ]]></processStepEvent.deleteEventFromStep>
 
+  <processStepEvent.addStepEventAction><![CDATA[
+    insert into flow.process_step_event_action(process_step_event_id, company_event_status_type_id, company_process_step_status_type_id, action_name, created_by_id)
+    values(:processStepEventId, :companyEventStatusTypeId, :companyProcessStepStatusTypeId, :actionName, :userId)
+  ]]></processStepEvent.addStepEventAction>
+
+  <processStepEvent.updateStepEventAction><![CDATA[
+    update flow.process_step_event_action
+      set company_event_status_type_id = :companyEventStatusTypeId,
+          action_name = :actionName,
+          company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+          modified_by_id = :userId,
+          date_modified = now()
+    where id = :id
+  ]]></processStepEvent.updateStepEventAction>
+
+  <processStepEvent.getStepEventAction><![CDATA[
+    select  psea.*,
+            cpsst.process_step_status_type as "processStepStatusType",
+            cest.event_status_type as "eventStatusType"
+    from flow.process_step_event_action psea
+      left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+      left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+    where psea.id = :id
+  ]]></processStepEvent.getStepEventAction>
+
+  <processStepEvent.deleteActionFromEvent><![CDATA[
+    update flow.process_step_event_action
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></processStepEvent.deleteActionFromEvent>
 </sql>

@@ -6,7 +6,8 @@
 
   <projectProcessStepEvent.get><![CDATA[
     select ppse.*,
-       e.event_name
+       e.event_name,
+       pse.event_id
     from flow.project_process_step_event ppse
     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
     inner join flow.event e on pse.event_id = e.id

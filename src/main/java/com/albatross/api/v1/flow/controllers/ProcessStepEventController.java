@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.ProcessStepEventAction;
 import com.albatross.api.v1.flow.services.ProcessStepEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,19 @@ public class ProcessStepEventController {
   @DeleteMapping(value = "/{processStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteEventFromStep (@PathVariable Long processStepEventId) {
     processStepEventService.deleteEventFromStep(processStepEventId);
+  }
+
+  //event actions
+  @PostMapping(value = "/{eventId}/action", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEventAction> addStepEventAction (@PathVariable Long stepId,
+                                 @PathVariable Long eventId,
+                                 @RequestBody ProcessStepEventAction processStepEventAction) {
+    return processStepEventService.addStepEventAction(stepId, eventId, processStepEventAction);
+  }
+
+  @DeleteMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteStepEventAction (@PathVariable Long actionId) {
+    processStepEventService.deleteActionFromEvent(actionId);
   }
 
 }
