@@ -146,7 +146,7 @@ public class SmartlistController {
       List<CompanyObjectType> types = objectTypeService.getCompanyObjectTypes();
       // Object types 3 (users) and 5 (orgs) are only available in smartlists through process steps, not as direct lists or fields
       List<CompanyObjectType> filteredTypes = types.stream()
-          .filter(t -> t.getObjectTypeId() != 3 && t.getObjectTypeId() != 5)
+          .filter(t -> t.getObjectTypeId() != 3 && t.getObjectTypeId() != 5 && t.getObjectTypeId() != 6)
           .collect(Collectors.toList());
       return new ResponseEntity<>(filteredTypes, HttpStatus.OK);
   }
