@@ -213,8 +213,8 @@ BEGIN
                              where cf.parent_custom_field_id = 10428
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), coalesce(round((round((non_standard_work_1_cost::numeric),2) + round((non_standard_work_2_cost::numeric),2) +
-                                                                                             round((non_standard_work_3_cost::numeric),2)),2),0),
+                               and cfg.process_step_id = p_process_step_id), coalesce(round((round((coalesce(non_standard_work_1_cost::numeric,0)),2) + round((coalesce(non_standard_work_2_cost::numeric,0)),2) +
+                                                                                             round((coalesce(non_standard_work_3_cost::numeric,0)),2)),2),0),
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
