@@ -29,6 +29,12 @@ public class ProjectProcessStepEventController {
     return projectProcessStepEventService.insertPpsEvent(ppsId, processStepEvent);
   }
 
+  @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProjectProcessStepEvent> getPpsEvent(@PathVariable Long ppsId,
+                                                       @PathVariable Long eventId) {
+    return projectProcessStepEventService.getPpsEvent(eventId);
+  }
+
   @GetMapping(value = "/{projectProcessStepEventId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getProjectProcessStepEventAttachments(@PathVariable Long projectProcessStepEventId,
                                                                                 @PathVariable(required = false) Boolean isMobile) {

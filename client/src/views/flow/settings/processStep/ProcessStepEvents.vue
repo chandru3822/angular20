@@ -581,6 +581,7 @@
           const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/saveRequiredField/${requiredFieldCfga}`)
           console.log('randaLogger HI', data)
           this.requiredFieldCfga = null
+          action?.requiredFields?.push(data)
           this.addRequiredField = false
           this.snackbar = getSnackbar('SUCCESS', 'Required Field Added To Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

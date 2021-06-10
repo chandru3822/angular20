@@ -35,7 +35,7 @@
 
           <template #item="{ item }">
             <tr  class="clickable text-left" :class="{'shaded-row': projectProcessStepEvents.indexOf(item) % 2}"
-              @click="[selectedEvent = item, getEventCfgs(item)]">
+              @click="[selectedEvent = item, getEventCfgs(item), getEventDetails(item)]">
               <td class="text-left">{{ item.eventName }}</td>
               <td class="text-left">{{ item.eventStatusType }}</td>
             </tr>
@@ -50,7 +50,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text class="pl-1 pr-2 mb-2" @click="selectedEvent = {}">
+            <v-btn text class="pl-1 pr-2 mb-2" @click="[selectedEvent = {}, eventDetails = {}]">
               <v-icon>close</v-icon>
             </v-btn>
           </v-toolbar-items>
@@ -82,11 +82,19 @@
               :field="field"
             />
           </v-card>
-          <v-btn class="white--text mr-0 save-btn"
-                 @click="updateFieldGroups"
-                 color="primaryButton"
-          >Save Event</v-btn>
         </v-col>
+        <v-btn class="white--text mr-0 save-btn"
+               @click="updateFieldGroups"
+               color="primaryButton"
+        >Save Event</v-btn>
+        <v-btn class="white--text save-btn mx-2"
+               color="primaryButton"
+               @click="reqFieldsTemp = action.requiredFields"
+                v-for="(action, idx) in eventDetails.eventActions"
+                :key="idx">
+          {{action.actionName}}
+        </v-btn>
+        {{reqFieldsTemp}}
         <v-row>
           <Attachments :project-process-step-event-id="selectedEvent.id" :event-id="selectedEvent.eventId" :project-process-step-id="projectProcessStepId" />
         </v-row>
@@ -116,6 +124,8 @@
       return {
         snackbar: {},
         selectedEvent: {},
+        reqFieldsTemp: [],
+        eventDetails: {},
         dirtyCfvs: [],
         timezone: this.$store.state.user.details.timezone.value,
         projectId: this.$route.params.projectId,
@@ -174,6 +184,17 @@
         try {
           const {data} = await getRequest(`/customFieldValues/event/${ppsEvent.id}`)
           this.selectedEvent.customFieldGroups = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getEventDetails: async function (ppsEvent) {
+        try {
+          const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppsEvent.id}`)
+          this.eventDetails = data
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')

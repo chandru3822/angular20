@@ -7,7 +7,40 @@
   <projectProcessStepEvent.get><![CDATA[
     select ppse.*,
        e.event_name,
-       pse.event_id
+       pse.event_id,
+        coalesce((
+            SELECT array_to_json(array_agg(row_to_json(psea)))
+            FROM (
+                   SELECT psea.id,
+                          psea.action_name as "actionName",
+                          psea.process_step_event_id as "processStepEventId",
+                          psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                          psea.company_event_status_type_id as "companyEventStatusTypeId",
+                          psea.created_by_id as "createdById",
+                          psea.modified_by_id as "modifiedById",
+                          cpsst.process_step_status_type as "processStepStatusType",
+                          cest.event_status_type as "eventStatusType",
+                          psea.archived,
+                          coalesce((
+                                     SELECT array_to_json(array_agg(row_to_json(psearf)))
+                                     FROM (
+                                            select psearf.id,
+                                                   psearf.process_step_event_action_id as "processStepEventActionId",
+                                                   psearf.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                   psearf.archived,
+                                                   cf.field_name as "fieldName",
+                                                   cfg.group_name as "groupName"
+                                            from flow.process_step_event_action_required_field psearf
+                                                   inner join flow.custom_field_group_assignment cfga on psearf.custom_field_group_assignment_id = cfga.id
+                                                   inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                                            where psearf.archived is false
+                                              and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "requiredFields"
+                   FROM flow.process_step_event_action psea
+                          left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+                          left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+                   WHERE psea.process_step_event_id = pse.id
+                     AND psea.archived is not true) psea), '[]') AS "eventActions"
     from flow.project_process_step_event ppse
     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
     inner join flow.event e on pse.event_id = e.id

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -10,10 +11,14 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +43,7 @@ public class ProjectProcessStepEventService {
   private final CustomFieldValueService customFieldValueService;
   private final AttachmentService attachmentService;
   private final AmazonS3 s3;
+  private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -58,7 +64,7 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.get", params, ProjectProcessStepEvent.class);
+    Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.get", params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
     if(result.isPresent()) {
       result.get().setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
     }
@@ -120,6 +126,22 @@ public class ProjectProcessStepEventService {
     sqlCache.update("projectProcessStepEvent.addAttachment", params);
 
     return attachmentService.findById(attachmentId);
+  }
+
+  public static class PpsEventMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public PpsEventMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "eventActions",
+        new JsonCollectionDeserializer(eventActionsRef, objectMapper));
+    }
   }
 
 }

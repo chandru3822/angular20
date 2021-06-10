@@ -16,6 +16,7 @@ public class ProjectProcessStepEvent {
   private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, eventId;
   private String eventName, eventStatusType;
   private List<CustomFieldGroup> customFieldGroups;
+  private List<ProcessStepEventAction> eventActions;
   private Boolean archived;
 }
 
