@@ -275,4 +275,5 @@
         )
       order by cest.event_status_type
   ]]></event.availableStatusesForEvent>
+
 </sql>

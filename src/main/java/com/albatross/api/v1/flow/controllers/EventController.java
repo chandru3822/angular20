@@ -1,9 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.CompanyEventStatusType;
-import com.albatross.api.v1.flow.model.Event;
-import com.albatross.api.v1.flow.model.EventCompanyEventStatusType;
-import com.albatross.api.v1.flow.model.EventStatusType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.EventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -90,4 +87,5 @@ public class EventController {
   public List<CompanyEventStatusType> getAvailableStatusesForEvent (@PathVariable Long id) {
     return eventService.getAvailableStatusesForEvent(id);
   }
+
 }

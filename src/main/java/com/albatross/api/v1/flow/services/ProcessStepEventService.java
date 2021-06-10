@@ -120,6 +120,40 @@ public class ProcessStepEventService {
     sqlCache.update("processStepEvent.deleteActionFromEvent", params);
   }
 
+  public Optional<ProcessStepEventActionRequiredField> addRequiredFieldToAction(Long eventId, Long actionId, Long cfgaId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("actionId", actionId);
+    params.put("cfgaId", cfgaId);
+    params.put("userId", currentUser.getId());
+    Long id = sqlCache.updateReturningId("processStepEvent.addRequiredFieldToAction", params, "id").longValue();
+    return getActionRequiredField(id);
+  }
+
+  public void deleteRequiredField(Long eventId, Long actionId, Long requiredFieldId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("requiredFieldId", requiredFieldId);
+    params.put("userId", currentUser.getId());
+    sqlCache.update("processStepEvent.deleteRequiredField", params);
+  }
+
+  public Optional<ProcessStepEventActionRequiredField> getActionRequiredField(Long requiredFieldId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", requiredFieldId);
+    Optional<ProcessStepEventActionRequiredField> result = sqlCache.get("processStepEvent.getActionRequiredField", params, ProcessStepEventActionRequiredField.class);
+    return result;
+  }
+
+  public List<CustomField> getAvailableFieldsForEvent(Long eventId, Long actionId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    params.put("actionId", actionId);
+
+    List<CustomField> results = sqlCache.query("processStepEvent.getAvailableCustomFields", params, CustomField.class);
+    return results;
+  }
+
   public static class ProcessStepEventMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

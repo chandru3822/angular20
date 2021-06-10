@@ -1,7 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
 import com.albatross.api.v1.flow.model.ProcessStepEventAction;
+import com.albatross.api.v1.flow.model.ProcessStepEventActionRequiredField;
 import com.albatross.api.v1.flow.services.ProcessStepEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +66,27 @@ public class ProcessStepEventController {
   @DeleteMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteStepEventAction (@PathVariable Long actionId) {
     processStepEventService.deleteActionFromEvent(actionId);
+  }
+
+  @PostMapping(value = "/{eventId}/action/{actionId}/saveRequiredField/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEventActionRequiredField> addRequiredField(@PathVariable Long eventId,
+                                                                        @PathVariable Long actionId,
+                                                                        @PathVariable Long cfgaId) {
+    return processStepEventService.addRequiredFieldToAction(eventId, actionId, cfgaId);
+  }
+
+  @DeleteMapping(value = "/{eventId}/action/{actionId}/requiredField/{requiredFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteRequiredField(@PathVariable Long eventId,
+                                                                        @PathVariable Long actionId,
+                                                                        @PathVariable Long requiredFieldId) {
+    processStepEventService.deleteRequiredField(eventId, actionId, requiredFieldId);
+  }
+
+  //custom field stuff
+  @GetMapping(value = "/{eventId}/action/{actionId}/availableFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getAvailableFieldsForEvent(@PathVariable Long eventId,
+                                                      @PathVariable Long actionId) {
+    return processStepEventService.getAvailableFieldsForEvent(eventId, actionId);
   }
 
 }
