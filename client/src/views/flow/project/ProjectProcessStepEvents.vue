@@ -55,6 +55,9 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <div class="error-text" v-if="eventActionMissingRequirements">
+          The following fields are required to perform the selected action.
+        </div>
         <v-col
           v-if="selectedEvent && selectedEvent.id"
           class="pt-0"
@@ -83,15 +86,15 @@
             />
           </v-card>
         </v-col>
-        <v-btn class="white--text mr-0 save-btn"
-               @click="updateFieldGroups"
+        <v-btn class="white--text mr-2 mb-2 save-btn"
+               @click="[updateFieldGroups(), eventActionMissingRequirements = false]"
                color="primaryButton"
         >Save Event</v-btn>
-        <v-btn class="white--text save-btn mx-2"
+        <v-btn class="white--text save-btn mb-2 mr-2"
                color="primaryButton"
-               @click="reqFieldsTemp = action.requiredFields"
-                v-for="(action, idx) in eventDetails.eventActions"
-                :key="idx">
+               @click="validateActionRequirements(action)"
+                v-for="action in eventDetails.eventActions"
+                :key="action.id">
           {{action.actionName}}
         </v-btn>
         {{reqFieldsTemp}}
@@ -125,6 +128,7 @@
         snackbar: {},
         selectedEvent: {},
         reqFieldsTemp: [],
+        eventActionMissingRequirements: false,
         eventDetails: {},
         dirtyCfvs: [],
         timezone: this.$store.state.user.details.timezone.value,
@@ -145,6 +149,15 @@
     },
     computed: {},
     methods: {
+      validateActionRequirements: async function (action) {
+        this.reqFieldsTemp = action.requiredFields
+        if(action?.requiredFields?.length > 0) {
+          this.eventActionMissingRequirements = true
+        } else {
+          this.eventActionMissingRequirements = false
+          console.log('WE WOULD DO THE ACITON')
+        }
+      },
       addEvent: async function (pse) {
         try {
           const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
