@@ -440,6 +440,7 @@ import constants from '@/helpers/constants'
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
 import { saveAs } from 'file-saver'
+import {DateTime} from 'luxon'
 
 export default {
   name: 'Smartlist',
@@ -798,7 +799,7 @@ export default {
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
-        saveAs(blob, "smartlist.csv");
+        saveAs(blob, `${this.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
