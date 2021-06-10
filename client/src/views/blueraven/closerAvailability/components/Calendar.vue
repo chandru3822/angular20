@@ -223,7 +223,7 @@
         postalCodeZoneUsers: [],
         postalCodeZoneUserValuesChanged: false,
         countSelected: 0,
-        maxSelectionAllowed: 10,
+        maxSelectionAllowed: 20,
         countErrorMessage: 'Maximum Selection Reached',
         selectedPostalCodeZoneUsers: [],
         postalCodeZoneUsersLoading: true,
