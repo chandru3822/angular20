@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.dmfs.rfc5545.DateTime;
+import org.dmfs.rfc5545.Duration;
 import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
 import org.dmfs.rfc5545.recur.RecurrenceRule;
 import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
@@ -452,7 +453,12 @@ public class AvailabilityService {
       DateTime recurringStartDate = new DateTime(TimeZone.getTimeZone("UTC"), Integer.parseInt(recurringStartYear), Integer.parseInt(recurringStartMonth) - 1, Integer.parseInt(recurringStartDay), Integer.parseInt(recurringStartHour), Integer.parseInt(recurringStartMinute), 00);
 
       RecurrenceRule rule = new RecurrenceRule((ra.getRecurrence()));
-      RecurrenceRuleIterator it = rule.iterator(recurringStartDate);
+
+      //doDayOffset = repeating by day of week AND frontend said local date and utc are different
+      boolean doDayOffset = null != rule.getByDayPart() && !rule.getByDayPart().isEmpty() && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
+
+      //if doDayOffSet subtract 1 from the recurring start date in the rule so it will check the right day to start on (sign: subtract/add the duration)
+      RecurrenceRuleIterator it = rule.iterator(doDayOffset ? recurringStartDate.addDuration(new Duration(-1, 1, 0)) : recurringStartDate);
 
       // Arbitrary limit for recurring events that never end.
       boolean limitReached = false;
@@ -461,6 +467,10 @@ public class AvailabilityService {
       //todo: get list of events for the event id
       while (it.hasNext() && !limitReached) {
         LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+        if(doDayOffset) {
+          //if doDayOffset, add one to the start date of the event because the event knows to repeat on a specific day of week but the utc date is a different day of week
+          currentEventStart = currentEventStart.plusDays(1);
+        }
         LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
         //if the recurring event start time is greater than 1 year from now, stop adding appointments
         if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
