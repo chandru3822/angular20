@@ -197,16 +197,18 @@
                             outlined
                             multiple
                             dense
+                            hide-details
                             return-object
-                            @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2, false)"
-                            :menu-props="{closeOnContentClick: true}">
+                            ref="repSelect"
+                            @input="repValuesChanged = true">
+
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ repModel.length }} Checked
                 </span>
               </template>
               <template v-if="repData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllReps">
+                <v-list-item @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
                   <v-list-item-action>
                     <v-icon>{{ repSelectIcon }}</v-icon>
                   </v-list-item-action>
@@ -860,6 +862,8 @@
       isSetterMgr: false,
       isSetterRegional: false,
       selectedQuarter: 1,
+      repValuesChanged: false,
+      modelOverride: false,
       headers: [
         { text: '', value: '', show: true, sortable: false },
         { text: 'Name', value: 'customer_name', show: true },
@@ -916,6 +920,10 @@
       officeData: [],
       repModel: [],
       repData: [],
+      repDataMaster: [],
+      //if we allow users to "Select All" when there are more than this the UI slows to a halt
+      maxRepLimit: 1000,
+      repDataSelectAll: false,
       pipelineDateRanges: [
         { label: 'Yesterday', value: 'yesterday' },
         { label: 'Last Week', value: 'lastWeek' },
@@ -1057,6 +1065,18 @@
       }
     },
     methods: {
+      doRepWatcher() {
+        if(this.repValuesChanged) {
+          if (this.isSetter || this.isSetterMgr || this.isSetterRegional) {
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
+          } else if (this.selectAllReps) {
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
+          } else {
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
+          }
+          this.repValuesChanged = false
+        }
+      },
       async switchTabs (tabNum) {
         this.tabNum = tabNum
 
@@ -1727,6 +1747,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
           this.repData = res
+          this.repDataMaster = cloneDeep(res)
 
           if (preSelectLists) {
             this.repModel = cloneDeep(this.repData)
@@ -1814,28 +1835,36 @@
 
         this.officeModel.forEach(org => orgs.push(org.org_id))
 
+        this.modelOverride = false
         if (useRepDataInstead) {
           this.repData.forEach((rep, index) => {
             reps.push(rep.user_id)
 
             if (index === this.repData.length - 1) {
-              this.districtModel = []
-              this.regionModel = []
-              this.officeModel = []
+              // this.districtModel = []
+              // this.regionModel = []
+              // this.officeModel = []
 
-              this.repModel = [
-                {user_id: -1, name: 'All Reps', active: true}
-              ]
-
-              this.repData = [
-                {user_id: -1, name: 'All Reps', active: true}
-              ]
+              if (this.repDataSelectAll && this.repDataMaster?.length > this.maxRepLimit) {
+                this.modelOverride = true
+                this.repModel = [
+                  {user_id: -2, name: 'All Filtered Reps', active: true}
+                ]
+                this.repData = [
+                  {user_id: -2, name: 'All Filtered Reps', active: true}
+                ]
+              }
             }
           })
         } else {
           this.repModel.forEach(rep => reps.push(rep.user_id))
         }
 
+        if(this.modelOverride) {
+          reps = []
+          //this gets used when there are more than 1000 users selected
+          this.repDataMaster.forEach(rep => reps.push(rep.user_id))
+        }
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const requestBody = {
@@ -1845,7 +1874,6 @@
             start: moment(start).format('YYYY-MM-DD'),
             end: moment(end).format('YYYY-MM-DD')
           }
-
           await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
             data.forEach(row => {
               // EXPECTATION column
@@ -2117,13 +2145,17 @@
           if (this.selectAllReps) {
             this.repModel = []
             this.funnelStats = []
-          } else if (!this.selectAllReps && (this.isSetter || this.isSetterMgr || this.isSetterRegional)) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            this.repModel = cloneDeep(this.repData)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           } else {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)
+            if (!this.selectAllReps && (this.isSetter || this.isSetterMgr || this.isSetterRegional)) {
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              // this.repModel = cloneDeep(this.repData)
+              // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+              this.doRepWatcher()
+            } else {
+              this.repModel = cloneDeep(this.repData)
+              //the pipeline load gets called automatically when the menu closes
+              // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)
+            }
           }
         })
       },
@@ -2132,8 +2164,7 @@
         let reps = []
         let orgs = []
         let start, end
-
-        reps = this.repModel.map(rep => rep.user_id)
+        reps = this.modelOverride ? this.repDataMaster.map(rep => rep.user_id) : this.repModel.map(rep => rep.user_id)
         orgs = this.officeModel.map(org => org.org_id)
 
         switch (dateRange) {
@@ -2243,6 +2274,15 @@
       $(window).bind('resize', this.checkWindowWidth)
       this.checkWindowWidth()
       $(window).bind('resize', this.fixFunnelTopMargin)
+
+      this.myDynamicRepWatcher = this.$watch(
+        () => this.$refs.repSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.repModel.length > 0) {
+            this.doRepWatcher()
+          }
+        })
     },
     beforeDestroy () {
       $(window).unbind('resize')
