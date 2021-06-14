@@ -365,11 +365,14 @@
               appt.endTime = moment(appt.endTime).endOf('day').utc().format()
             }
 
+            //if the local date and the utc date are different, set the startTimeOffsetDay to true so the server knows what to do
+            let localAndUtcSame = moment(moment(appt.startTime).format('YYYY-MM-DD')).isSame(moment(appt.startTime).utc().format('YYYY-MM-DD'))
 
             let params = {
               orgId: this.orgId,
               userId: this.userId,
-              ...appt
+              ...appt,
+              startTimeOffsetDay: !localAndUtcSame
             }
             const {data} = await postRequest(`/availability/appointment`, params)
             this.addNew = false
