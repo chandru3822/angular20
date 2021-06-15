@@ -1067,12 +1067,12 @@
     methods: {
       doRepWatcher() {
         if(this.repValuesChanged) {
-          if (this.isSetter || this.isSetterMgr || this.isSetterRegional) {
+          if (this.isSetter) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
           } else if (this.selectAllReps) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
           } else {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
           }
           this.repValuesChanged = false
         }
@@ -2146,7 +2146,7 @@
             this.repModel = []
             this.funnelStats = []
           } else {
-            if (!this.selectAllReps && (this.isSetter || this.isSetterMgr || this.isSetterRegional)) {
+            if (!this.selectAllReps && this.isSetter) {
               this.$store.commit(AppMutations.SET_LOADING, true)
               // this.repModel = cloneDeep(this.repData)
               // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
