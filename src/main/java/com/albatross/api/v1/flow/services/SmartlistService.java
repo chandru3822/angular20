@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -369,7 +369,7 @@ public class SmartlistService {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
     }
 
-//    log.info("*** {}", query);
+    log.info("*** {}", query);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     if (results.isEmpty()) {
@@ -503,6 +503,11 @@ public class SmartlistService {
 
     StringBuilder query = new StringBuilder(" select");
 
+    if (List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+      query.append(" flow.project.id as project_id, ");
+      query.append(" flow.contact.id as contact_id, ");
+    }
+
     for (SmartlistFieldAssignment f : fields) {
 
       if (f.getProcessStepId() != null) {
@@ -631,7 +636,7 @@ public class SmartlistService {
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
         final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", referenceTable, column);
-      } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
+      } else if (Objects.equals(f.getReferenceTable(), "flow.user") && f.getObjectTypeId() != 3) {
         location = (f.getObjectTypeId() != 4) ? f.getReferenceColumn() : String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name)", f.getValueReferenceTable(), f.getValueReferenceTable());
       } else if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
         location = f.getReferenceColumn();
@@ -687,10 +692,7 @@ public class SmartlistService {
     }
 
     // Remove comma from last select field
-    query.deleteCharAt(query.length() - 1);
-
-    query.append(" flow.project.id as project_id,");
-    query.append(" flow.contact.id as contact_id");
+    query.deleteCharAt(query.length() - 2);
 
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
@@ -709,7 +711,7 @@ public class SmartlistService {
         whereClause.append(String.format(" flow.company_project_status_type.company_id = any(%s) and ", companySubquery));
         break;
       case 2:
-        query.append("  from flow.contact ");
+        query.append(" from flow.contact ");
         query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
         query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
         query.append(" left join flow.project on flow.project.contact_id = flow.contact.id ");
@@ -719,21 +721,25 @@ public class SmartlistService {
         whereClause.append(" flow.project.archived is not true and ");
         whereClause.append(String.format(" flow.contact.company_id = any(%s) and ", companySubquery));
         break;
-      case 4:
-        query.append("  from flow.project_process_step ");
-        query.append(" inner join flow.process_step on flow.process_step.id = flow.project_process_step.process_step_id ");
+      case 3:
+        query.append(" from flow.user ");
+        query.append(" left join flow.user_position on flow.user_position.user_id = flow.user.id ");
+        query.append(" left join flow.org on flow.org.id = flow.user_position.org_id ");
+        query.append(" left join flow.org_type on flow.org_type.id = flow.org.org_type_id ");
+        query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
 
-        if (!usedProcessStepIds.isEmpty()) {
-          query.append(String.format("and flow.project_process_step.process_step_id = any('{%s}')", usedProcessStepIds.stream().map(String::valueOf).collect(Collectors.joining(","))));
-        }
+        whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
 
-        query.append(" left join flow.project on flow.project.id = flow.project_process_step.project_id  ");
-        query.append(" left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
-        query.append(" left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
-        query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
+        // @TODO: if primary flag is true
+        whereClause.append(" flow.user_position.primary_flag is true and ");
 
-        whereClause.append(" flow.project.archived is not true and ");
-        whereClause.append(String.format(" flow.process_step.company_id = any(%s) and ", companySubquery));
+        // @TODO: if active flag is false
+        // assume mountain time for date comparisons
+        LocalDateTime dateTimeNow = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
+        ZonedDateTime zonedNow = dateTimeNow.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("America/Denver"));
+        String now = zonedNow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
+
         break;
     }
 
@@ -741,10 +747,18 @@ public class SmartlistService {
       final String joinAlias = (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null) || Objects.equals(f.getAllowMultiple(), true)) ? f.getValueReferenceTable() : f.getReferenceTable();
 
       if (f.getSmartlistSystemListId() == null) {
-        if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
+        if (List.of(1L, 2L, 3L).contains(f.getObjectTypeId())) {
 
-          final String joinField = (f.getObjectTypeId() == 1) ? "project_id" : "contact_id";
-          final String joinedTable = (f.getObjectTypeId() == 1) ? "project" : "contact";
+          String joinField;
+          String joinedTable;
+
+          if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
+            joinField = (f.getObjectTypeId() == 1) ? "project_id" : "contact_id";
+            joinedTable = (f.getObjectTypeId() == 1) ? "project" : "contact";
+          } else {
+            joinField = "user_id";
+            joinedTable = "user";
+          }
 
           if ((f.getHasListValues() != null && f.getHasListValues()) || f.getCustomFieldSqlKey() != null) {
 
@@ -907,6 +921,10 @@ public class SmartlistService {
             referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
+//              SmartlistQuery smartlistQuery = addCustomFieldRequirement(r, joinTables, smartlist);
+//
+//              query.append(smartlistQ)
+
             String referenceColumn;
             if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
               referenceColumn = "int_value";
@@ -969,8 +987,19 @@ public class SmartlistService {
 
                           referenceLocation = "\"" + customSqlUuid + "\".id";
                       } else {
-                        final String joinField = (r.getObjectTypeId() == 1) ? "project_id" : "contact_id";
-                        final String joinedTable = (r.getObjectTypeId() == 1) ? "project" : "contact";
+//                        final String joinField = (r.getObjectTypeId() == 1) ? "project_id" : "contact_id";
+//                        final String joinedTable = (r.getObjectTypeId() == 1) ? "project" : "contact";
+
+                        String joinField;
+                        String joinedTable;
+
+                        if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
+                          joinField = (r.getObjectTypeId() == 1) ? "project_id" : "contact_id";
+                          joinedTable = (r.getObjectTypeId() == 1) ? "project" : "contact";
+                        } else {
+                          joinField = "user_id";
+                          joinedTable = "user";
+                        }
 
                         query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.%s.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, joinField, joinedTable, valueUuid, r.getCustomFieldGroupAssignmentId()));
                         referenceLocation = "\"" + valueUuid + "\"." + referenceColumn;
@@ -1752,6 +1781,84 @@ public class SmartlistService {
 
     return query.toString();
   }
+
+//  private SmartlistQuery addCustomFieldRequirement(SmartlistRequirement r, List<SmartlistFieldAssignment> joinTables, Smartlist s) {
+//
+//    SmartlistQuery query = new SmartlistQuery();
+//
+//    String referenceColumn;
+//    if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
+//      referenceColumn = "int_value";
+//    } else if (r.getCustomFieldSqlKey() != null) {
+//      referenceColumn = "id";
+//    } else {
+//      referenceColumn = getReferenceColumn(r.getDataTypeId());
+//    }
+//
+//    // see if table we need is already been joined, if so use it
+//    final String referenceTable = joinTables.stream()
+//      .filter(t -> t.getCustomFieldGroupAssignmentId()!= null && t.getCustomFieldGroupAssignmentId().equals(r.getCustomFieldGroupAssignmentId()))
+//      .map(t -> {
+//        if (t.getValueReferenceTable() != null) {
+//          return t.getValueReferenceTable();
+//        } else {
+//          return t.getReferenceTable();
+//        }
+//      })
+//      .findFirst()
+//      .orElse(null);
+//
+//    if (referenceTable != null) {
+//      query.setReferenceLocation("\"" + referenceTable + "\"." + referenceColumn);
+//    } else {
+//      // Do a new join from custom field value table based on object type
+//      if (r.getObjectTypeId() == 4) {
+//
+//        final String ppsUUID = UUID.randomUUID().toString();
+//        final String ppscfvUUID = UUID.randomUUID().toString();
+//
+//        query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId())));
+//        if (s.isMainProcessSteps()) {
+//          query.setAdditionalJoins(query.getAdditionalJoins().append(String.format("and \"%s\".main is true ", ppsUUID)));
+//        }
+//
+//        if (r.getCustomFieldSqlKey() != null) {
+//          final String  customSqlUuid = UUID.randomUUID().toString();
+//
+//          query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), customSqlUuid, customSqlUuid, ppsUUID, customSqlUuid, r.getCustomFieldGroupAssignmentId())));
+//          query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", r.getCustomFieldSqlKey(), ppscfvUUID, ppscfvUUID, customSqlUuid)));
+//        } else {
+//          query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, r.getCustomFieldGroupAssignmentId())));
+//        }
+//
+//        query.setReferenceLocation("\"" + ppscfvUUID + "\"." + referenceColumn);
+//      } else {
+//        final String valueUuid = UUID.randomUUID().toString();
+//
+//        if (r.getCustomFieldSqlKey() != null) {
+//
+//          final String customSqlUuid = UUID.randomUUID().toString();
+//
+//          if (r.getObjectTypeId() == 1) {
+//            query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, valueUuid, r.getCustomFieldGroupAssignmentId())));
+//          } else if (r.getObjectTypeId() == 2) {
+//            query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join %s \"%s\" on \"%s\".contact_id = flow.contact.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, valueUuid, r.getCustomFieldGroupAssignmentId())));
+//          }
+//          query.setAdditionalJoins(query.getAdditionalJoins().append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", r.getCustomFieldSqlKey(), customSqlUuid, customSqlUuid, valueUuid)));
+//
+//          query.setReferenceLocation("\"" + customSqlUuid + "\".id");
+//        } else {
+//          final String joinField = (r.getObjectTypeId() == 1) ? "project_id" : "contact_id";
+//          final String joinedTable = (r.getObjectTypeId() == 1) ? "project" : "contact";
+//
+//          query.setQuery(query.getQuery().append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.%s.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, joinField, joinedTable, valueUuid, r.getCustomFieldGroupAssignmentId())));
+//          query.setReferenceLocation("\"" + valueUuid + "\"." + referenceColumn);
+//        }
+//      }
+//    }
+//
+//    return query;
+//  }
 
   private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers) {
     CsvSchema.Builder builder = CsvSchema.builder();
