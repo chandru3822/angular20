@@ -239,7 +239,7 @@ public class ProjectProcessStepService {
     }
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId, Long callingProcessStepActionId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -272,7 +272,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring project process step is active
       if(step.getProcessStepStatusTypeId() == 1) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId);
       }
     }
 
@@ -468,7 +468,7 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId());
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId());
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), action.getId());
