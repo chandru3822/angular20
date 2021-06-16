@@ -479,7 +479,7 @@ FROM (SELECT cp.id,
                            (select cfv.text_value
                           from flow.user_custom_field_value cfv
                                  inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
-                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                          where cfga.custom_field_id  = 454
                             and cfga.archived is false
                            and cfv.user_id = cpu.user_id ) as "employeeId"
                     FROM brs.commission_plan_user cpu
@@ -517,7 +517,7 @@ FROM (SELECT cp.id,
              (select cfv.text_value
                           from flow.user_custom_field_value cfv
                                  inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
-                          where cfga.custom_field_id in (9902,9400,3287,3286,3285,3284,3283,3282,3281,3280,3279,3278,3277,3276,3275,454,404)
+                          where cfga.custom_field_id  = 454
                             and cfga.archived is false
                            and cfv.user_id = cpu.user_id ) as "employeeId"
       FROM brs.commission_plan_user cpu
