@@ -174,7 +174,7 @@
         requiredRules: constants.BASIC_REQUIRED_RULE,
         emailRules: constants.EMAIL_RULES,
         companyId: this.$store.state.user.details.companyId,
-        userPositionPanel: undefined,
+        userPositionPanel: 0,
         positions: [],
         filters: [],
         timezone: this.$store.state.user.details.timezone.value,

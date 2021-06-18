@@ -41,6 +41,7 @@
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from "@/stores/AppStore"
+import moment from 'moment'
 
 export default {
   name: 'Messaging',
@@ -99,7 +100,7 @@ export default {
           // called when the user sends a message
           let params;
           try {
-            if (message.type == 'file') {
+            if (message.type === 'file') {
                 let mediaUrls = []
                 let formData = new FormData()
                 formData.append('file', message.data.file)
@@ -128,6 +129,7 @@ export default {
             await postRequest(`/communication/sendTextsForProject`, params)
 
             //dont add to the ui unless the message goes thru successfully
+            message.data.meta = moment().format('M/D/YYYY h:mm a')
             this.messageList = [ ...this.messageList, message ]
             this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1
           } catch (e) {
@@ -185,7 +187,8 @@ export default {
                         data: {
                             file: {
                                 name: u.message,
-                                url: u.mediaUrls[0]
+                                url: u.mediaUrls[0],
+                                meta: this.$filters.formatDate(u.created, 'timestamp')
                             }
                         }
                     }
@@ -194,7 +197,10 @@ export default {
                      msg = {
                         type: 'text',
                         author: msgFrom,
-                        data: {text: u.message}
+                        data: {
+                          text: u.message,
+                          meta: this.$filters.formatDate(u.created, 'timestamp')
+                        }
                     }
                 }
 

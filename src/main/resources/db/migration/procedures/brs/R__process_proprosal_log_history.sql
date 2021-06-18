@@ -188,8 +188,30 @@ BEGIN
                                         thirteen_year_payoff,
                                         fourteen_year_payoff,
                                         fifteen_year_payoff,
-                                        twenty_year_payoff
-  )
+                                        twenty_year_payoff,
+                                        monthly_cost_today_after_solar,
+                                        monthly_cost_5_years_after_solar,
+                                        monthly_cost_5_years_before_solar,
+                                        twenty_five_year_cost_before_solar,
+                                        twenty_five_year_savings_after_solar,
+                                        monthly_payment_first_5_years_tax_to_loan,
+                                        monthly_payment_first_5_years_tax_and_savings_to_loan,
+                                        monthly_payment_6_to_24_years_tax_to_loan,
+                                        monthly_payment_6_to_24_years_tax_and_savings_to_loan,
+                                        monthly_payment_first_5_years_no_incentive,
+                                        monthly_payment_6_to_24_years_no_incentive,
+                                        smart_start_months_19_to_60_monthly_rebate,
+                                        month_19_required_payment,
+                                        month_0_to_18_loan_payment,
+                                        month_0_to_18_net_payment,
+                                        month_19_to_60_net_payment,
+                                        month_60_plus_net_payment,
+                                        total_ancillary_cost,
+                                        loan_product,
+                                        number_of_promotion_payments,
+                                        promotion_payment_amount,
+                                        proposal_tool_version
+)
   VALUES (new.proposal->>'_filename',
     new.project_id,
     new.proposal->>'Full Name',
@@ -375,8 +397,30 @@ BEGIN
           new.proposal->>'13 Year Payoff',
           new.proposal->>'14 Year Payoff',
           new.proposal->>'15 Year Payoff',
-          new.proposal->>'20 Year Payoff'
-  );
+          new.proposal->>'20 Year Payoff',
+          new.proposal->>'Monthly Cost Today After Solar',
+          new.proposal->>'Monthly Cost 5 Years After Solar',
+          new.proposal->>'Monthly Cost 5 Years Before Solar',
+          new.proposal->>'25 Year Cost Before Solar',
+          new.proposal->>'25 Year Savings After Solar',
+          new.proposal->>'Monthly Payment First 5 Years Tax To Loan',
+          new.proposal->>'Monthly Payment First 5 Years Tax And Savings To Loan',
+          new.proposal->>'Monthly Payment 6 To 24 Years Tax To Loan',
+          new.proposal->>'Monthly Payment 6 To 24 Years Tax And Savings To Loan',
+          new.proposal->>'Monthly Payment First 5 Years No Incentive',
+          new.proposal->>'Monthly Payment 6 To 24 Years No Incentive',
+          new.proposal->>'Smart Start Months 19 To 60 Monthly Rebate',
+          new.proposal->>'Month 19 Required Payment',
+          new.proposal->>'Month 0 To 18 Loan Payment',
+          new.proposal->>'Month 0 To 18 Net Payment',
+          new.proposal->>'Month 19 To 60 Net Payment',
+          new.proposal->>'Month 60 Plus Net Payment',
+          new.proposal->>'Total Ancillary Cost',
+          new.proposal->>'Loan Product',
+          new.proposal->>'Number of Promotion Payments',
+          new.proposal->>'Promotion Payment Amount',
+          new.proposal->>'Proposal Tool Version'
+         );
   RETURN NEW;
 END;
 $$;

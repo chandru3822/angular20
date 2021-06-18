@@ -10,7 +10,7 @@ BEGIN
   select array_agg(distinct foo3.user_id)
   into v_user_sluts
   from (
-         select foo2.user_id
+         select distinct foo2.user_id
          from (
                 select foo.user_id
                 from (
@@ -22,7 +22,7 @@ BEGIN
   select array_agg(distinct foo3.user_id)
   into v_user_non_sluts
   from (
-         select foo2.user_id
+         select distinct foo2.user_id
          from (
                 select foo.user_id
                 from (
@@ -103,6 +103,7 @@ BEGIN
                                                                                 and erst.archived is false
                       where rs.archived is not true
                         and rsa.archived is not true
+                        and rst.archived is not true
                         and erst.id is null
                         and up.primary_flag is true
                         and up.archived is false
