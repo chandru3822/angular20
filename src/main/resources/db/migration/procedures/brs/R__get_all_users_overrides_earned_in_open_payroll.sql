@@ -28,6 +28,30 @@ BEGIN
     where id = p_payroll_id;
 
     case when v_position_id = 1 then
+
+      create temp table milestone_one_projects as (
+        select pps.project_id, min(process_step_complete_date) milestone_one_complete_date
+        from flow.project_process_step pps
+               inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+               inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+        where pps.process_step_id = 175
+        group by pps.project_id
+      );
+      create index milestone1_project_id on milestone_one_projects(project_id);
+      create index milestone1_milestone_one_complete_date on milestone_one_projects(milestone_one_complete_date);
+
+      create temp table milestone_two_projects as (
+        select coalesce(pps.project_id,pd.project_id) as project_id, coalesce(min(process_step_complete_date),pd.substantial_completion_date)::date milestone_two_complete_date
+        from brs.project_details pd
+               left join flow.project_process_step pps on pps.project_id = pd.project_id and pps.process_step_id = 3365
+               left join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+               left join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+        group by pps.project_id,pd.project_id,pd.substantial_completion_date
+
+      );
+      create index milestone2_project_id on milestone_two_projects(project_id);
+      create index milestone2_milestone_two_complete_date on milestone_two_projects(milestone_two_complete_date);
+
         RETURN QUERY
             select foo.project_id,
                    foo.closer,
@@ -42,26 +66,24 @@ BEGIN
                    foo.milestone2_amount,
                    foo.plan_total                            as plan_total
             from (
-                     with milestone_one_projects as (
-                         select pps.project_id, min(process_step_complete_date) milestone_one_complete_date
-                         from flow.project_process_step pps
-                                  inner join flow.company_process_step_status_type cpsst
-                                             on pps.company_process_step_status_type_id = cpsst.id
-                                  inner join flow.process_step_status_type psst
-                                             on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-                         where pps.process_step_id = 175
-                         group by pps.project_id
-                     ),
-                          milestone_two_projects as (
-                              select pps.project_id, min(process_step_complete_date) milestone_two_complete_date
-                              from flow.project_process_step pps
-                                       inner join flow.company_process_step_status_type cpsst
-                                                  on pps.company_process_step_status_type_id = cpsst.id
-                                       inner join flow.process_step_status_type psst
-                                                  on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-                              where pps.process_step_id = 3365
-                              group by pps.project_id
-                          )
+--                      with milestone_one_projects as (
+--                          select pps.project_id, min(process_step_complete_date) milestone_one_complete_date
+--                          from flow.project_process_step pps
+--                                   inner join flow.company_process_step_status_type cpsst
+--                                              on pps.company_process_step_status_type_id = cpsst.id
+--                                   inner join flow.process_step_status_type psst
+--                                              on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+--                          where pps.process_step_id = 175
+--                          group by pps.project_id
+--                      ),
+--                           milestone_two_projects as (
+--                               select coalesce(pps.project_id,pd.project_id) as project_id, coalesce(min(process_step_complete_date),pd.substantial_completion_date)::date milestone_two_complete_date
+--                               from brs.project_details pd
+--                                        left join flow.project_process_step pps on pps.project_id = pd.project_id and pps.process_step_id = 3365
+--                                        left join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+--                                        left join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+--                               group by pps.project_id,pd.project_id,pd.substantial_completion_date
+--                           )
                      select p.id                                              as project_id,
                             u.first_name || ' ' || u.last_name                as closer,
                             p.project_name                                    as project_name,
@@ -127,6 +149,9 @@ BEGIN
                               inner join flow.user u on u.id = opru1.user_id
                      where p1.id = p_payroll_id
                        and op.position_id = 1) as foo;
+
+        drop table milestone_one_projects;
+        drop table milestone_two_projects;
 
         when v_position_id = 4 then
             RETURN QUERY

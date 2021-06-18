@@ -138,26 +138,27 @@ public class ProjectProcessStepServiceTests {
 
   @Test
   public void compareDatesTest() throws Exception {
-    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
-    assertThat(projectProcessStepService.compareDates(null, today, 1L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(null, today, 2L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(null, today, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(null, today, 4L)).isFalse();
+    LocalDateTime today = LocalDateTime.now();
+    ZonedDateTime zonedToday = today.atZone(ZoneId.of("UTC"));
+    assertThat(projectProcessStepService.compareDates(null, zonedToday, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(null, zonedToday, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(null, zonedToday, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(null, zonedToday, 4L)).isFalse();
 
-    assertThat(projectProcessStepService.compareDates(today, today, 1L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(today, today, 2L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(today, today, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(today, today, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today, zonedToday, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today, zonedToday, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today, zonedToday, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today, zonedToday, 4L)).isFalse();
 
-    assertThat(projectProcessStepService.compareDates(today.minusDays(1), today, 1L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(today.minusDays(1), today, 2L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(today.minusDays(1), today, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(today.minusDays(1), today, 4L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), zonedToday, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), zonedToday, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), zonedToday, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), zonedToday, 4L)).isTrue();
 
-    assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 1L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 2L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 3L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(today.plusDays(1), today, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), zonedToday, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), zonedToday, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), zonedToday, 3L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), zonedToday, 4L)).isFalse();
 
     ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
     assertThat(projectProcessStepService.compareDates(null, todayMountain, 1L)).isFalse();
@@ -165,25 +166,26 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareDates(null, todayMountain, 3L)).isFalse();
     assertThat(projectProcessStepService.compareDates(null, todayMountain, 4L)).isFalse();
 
-    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 1L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 2L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(todayMountain, todayMountain, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today, todayMountain, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today, todayMountain, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today, todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today, todayMountain, 4L)).isFalse();
 
-    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 1L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 2L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(todayMountain.minusDays(1), todayMountain, 4L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), todayMountain, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.minusDays(1), todayMountain, 4L)).isTrue();
 
-    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 1L)).isFalse();
-    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 2L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 3L)).isTrue();
-    assertThat(projectProcessStepService.compareDates(todayMountain.plusDays(1), todayMountain, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), todayMountain, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), todayMountain, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), todayMountain, 3L)).isTrue();
+    assertThat(projectProcessStepService.compareDates(today.plusDays(1), todayMountain, 4L)).isFalse();
   }
 
   @Test
   public void compareNullDateTest() throws Exception {
-    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
+    LocalDateTime today = LocalDateTime.now();
+    ZonedDateTime zonedToday = today.atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNullDate(null, 1L)).isTrue();
     assertThat(projectProcessStepService.compareNullDate(null, 2L)).isFalse();
     assertThat(projectProcessStepService.compareNullDate(null, 3L)).isFalse();
@@ -195,15 +197,16 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareNullDate(today, 4L)).isFalse();
 
     ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
-    assertThat(projectProcessStepService.compareNullDate(todayMountain, 1L)).isFalse();
-    assertThat(projectProcessStepService.compareNullDate(todayMountain, 2L)).isTrue();
-    assertThat(projectProcessStepService.compareNullDate(todayMountain, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareNullDate(todayMountain, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDate(today, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDate(today, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNullDate(today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDate(today, 4L)).isFalse();
   }
 
   @Test
   public void compareNonNullDateTest() throws Exception {
-    ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
+    LocalDateTime today = LocalDateTime.now();
+    ZonedDateTime zonedToday = today.atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNonNullDate(null, 1L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDate(null, 2L)).isTrue();
     assertThat(projectProcessStepService.compareNonNullDate(null, 3L)).isFalse();
@@ -215,10 +218,10 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.compareNonNullDate(today, 4L)).isFalse();
 
     ZonedDateTime todayMountain = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0).withZoneSameInstant(ZoneId.of("America/Denver"));
-    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 1L)).isTrue();
-    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 2L)).isFalse();
-    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 3L)).isFalse();
-    assertThat(projectProcessStepService.compareNonNullDate(todayMountain, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDate(today, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNonNullDate(today, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDate(today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDate(today, 4L)).isFalse();
   }
 
   @Test

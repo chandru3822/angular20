@@ -66,7 +66,7 @@
             </template>
             <template v-slot:prepend-item>
               <v-list-item
-                  v-if="postalCodeZoneUsers.length <= 10"
+                  v-if="postalCodeZoneUsers.length <= 20"
                   ripple
                   @click="toggleSelectAllPostalCodeZoneUsers()">
                 <v-list-item-action>
@@ -75,7 +75,7 @@
                 <v-list-item-title>Select All</v-list-item-title>
               </v-list-item>
               <v-divider
-                v-if="postalCodeZoneUsers.length <= 10"
+                v-if="postalCodeZoneUsers.length <= 20"
                 class="mt-2"
               ></v-divider>
             </template>

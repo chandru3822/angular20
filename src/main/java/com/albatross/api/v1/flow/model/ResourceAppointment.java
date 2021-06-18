@@ -15,7 +15,7 @@ public class ResourceAppointment {
   private String title, description, location, recurrence, recurringEventId, recurringEventEndType;
   private Double latitude, longitude;
   private Date startTime, endTime, recurringStartTime, recurringEndTime;
-  private Boolean archived, allDay, repeat;
+  private Boolean archived, allDay, repeat, startTimeOffsetDay;
 
   //i am having trouble with date comparisons of different types and converting back and forth. going to just use a string for comparison for now _rn
   String startTimeString, endTimeString;

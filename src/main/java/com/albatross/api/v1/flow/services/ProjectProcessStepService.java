@@ -239,7 +239,7 @@ public class ProjectProcessStepService {
     }
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId, Long callingProcessStepActionId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -272,7 +272,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring project process step is active
       if(step.getProcessStepStatusTypeId() == 1) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId);
       }
     }
 
@@ -471,7 +471,7 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId());
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId());
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), action.getId());
@@ -689,7 +689,7 @@ public class ProjectProcessStepService {
           case 1:
             try {
               Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
-              passed = compareDates(zonedDateFunctionResult, zonedDateNow.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
+              passed = compareDates(dateFunctionResult, zonedDateNow.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
@@ -697,24 +697,24 @@ public class ProjectProcessStepService {
           case 2:
             try {
               Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
-              passed = compareDates(zonedDateFunctionResult, zonedDateNow.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
+              passed = compareDates(dateFunctionResult, zonedDateNow.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something?
             }
             break;
           case 3:
-            passed = compareDates(zonedDateFunctionResult, zonedDateNow, r.getOperatorTypeId());
+            passed = compareDates(dateFunctionResult, zonedDateNow, r.getOperatorTypeId());
             break;
           case 4:
             try {
-              passed = compareNullDate(zonedDateFunctionResult, r.getOperatorTypeId());
+              passed = compareNullDate(dateFunctionResult, r.getOperatorTypeId());
             } catch (IllegalArgumentException e) {
               //@TODO: something?
             }
             break;
           case 5:
             try {
-              passed = compareNonNullDate(zonedDateFunctionResult, r.getOperatorTypeId());
+              passed = compareNonNullDate(dateFunctionResult, r.getOperatorTypeId());
             } catch (IllegalArgumentException e) {
               //@TODO: something?
             }
@@ -735,7 +735,7 @@ public class ProjectProcessStepService {
           case 6:
             try {
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
-              passed = compareDates(zoneTimestampFunctionResult, zonedTimestampNow.minusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+              passed = compareDates(timestampFunctionResult, zonedTimestampNow.minusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
@@ -743,13 +743,13 @@ public class ProjectProcessStepService {
           case 7:
             try {
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
-              passed = compareDates(zoneTimestampFunctionResult, zonedTimestampNow.plusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+              passed = compareDates(timestampFunctionResult, zonedTimestampNow.plusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
             break;
           case 8:
-            passed = compareDates(zoneTimestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
+            passed = compareDates(timestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
             break;
           case 9:
             try {
@@ -1493,7 +1493,7 @@ public class ProjectProcessStepService {
         case 6:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates((fieldValue != null) ? zonedFieldValue : null, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -1501,13 +1501,13 @@ public class ProjectProcessStepService {
         case 7:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates((fieldValue != null) ? zonedFieldValue : null, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
           break;
         case 8:
-          passed = compareDates((fieldValue != null) ? zonedFieldValue : null, zonedNow, r.getOperatorTypeId());
+          passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow, r.getOperatorTypeId());
           break;
         case 9:
           try {
@@ -1624,8 +1624,6 @@ public class ProjectProcessStepService {
     LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
     String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
-
-    ZonedDateTime zonedFieldValue = (fieldValue != null) ? fieldValue.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
     ZonedDateTime zonedNow = now.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
 
     boolean passed = false;
@@ -1635,7 +1633,7 @@ public class ProjectProcessStepService {
       // try to make a date out of the requirement value
       try {
         ZonedDateTime zonedReqValue = LocalDate.parse(r.getRequirementValue()).atStartOfDay().atZone(ZoneId.of(r.getTimeZone()));
-        passed = compareDates(zonedFieldValue, zonedReqValue, r.getOperatorTypeId());
+        passed = compareDates(fieldValue, zonedReqValue, r.getOperatorTypeId());
       } catch (DateTimeParseException e) {
         throw new Exception(String.format("Unable to parse Date type requirement value of: %s", r.getRequirementValue()));
       }
@@ -1645,7 +1643,7 @@ public class ProjectProcessStepService {
         case 1:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(zonedFieldValue, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(fieldValue, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -1653,24 +1651,24 @@ public class ProjectProcessStepService {
         case 2:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(zonedFieldValue, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(fieldValue, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something?
           }
           break;
         case 3:
-          passed = compareDates(zonedFieldValue, zonedNow, r.getOperatorTypeId());
+          passed = compareDates(fieldValue, zonedNow, r.getOperatorTypeId());
           break;
         case 4:
           try {
-            passed = compareNullDate(zonedFieldValue, r.getOperatorTypeId());
+            passed = compareNullDate(fieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
           break;
         case 5:
           try {
-            passed = compareNonNullDate(zonedFieldValue, r.getOperatorTypeId());
+            passed = compareNonNullDate(fieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
@@ -1681,7 +1679,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNonNullDate(ZonedDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNonNullDate(LocalDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1702,7 +1700,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNullDate(ZonedDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNullDate(LocalDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -1724,7 +1722,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareDates(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDates(LocalDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
 
     if (date != null) {
       date = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
@@ -1738,16 +1736,16 @@ public class ProjectProcessStepService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        passed = Objects.equals(date, compareDate);
+        passed = Objects.equals(date, compareDate.toLocalDateTime());
         break;
       case 2:
-        passed = !Objects.equals(date, compareDate);
+        passed = !Objects.equals(date, compareDate.toLocalDateTime());
         break;
       case 3:
-        passed = date != null && date.isAfter(compareDate);
+        passed = date != null && date.isAfter(compareDate.toLocalDateTime());
         break;
       case 4:
-        passed = date != null && date.isBefore(compareDate);
+        passed = date != null && date.isBefore(compareDate.toLocalDateTime());
         break;
       default:
         throw new Exception(String.format("Unable to parse data type of Date with operator of ID: %s", operatorTypeId));
