@@ -103,8 +103,8 @@ export const UserStore = {
       return state.details.highestCompanyId === 1
     },
     isParent: state => parentId => {
-      // is albatross or parentId is null
-      return parentId === 1 || parentId == null
+      // is albatross or parentId is null (no longer checking for parentId is null due to single context)
+      return parentId === 1
     },
     isCompanyRoot: state => companyId => {
       return companyId === 1
