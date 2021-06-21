@@ -344,6 +344,11 @@ public class ProjectService {
       new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
+  public List<ProjectEvent> getEventsByProjectId(Long projectId) {
+    return sqlCache.query("project.getEventsByProjectId",
+      ImmutableMap.of("projectId", projectId), ProjectEvent.class);
+  }
+
   public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();

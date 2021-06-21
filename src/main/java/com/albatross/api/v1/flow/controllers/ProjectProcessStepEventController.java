@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.ProcessStepEventAction;
 import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,14 @@ public class ProjectProcessStepEventController {
                                                                             @RequestParam Long attachmentTypeId,
                                                                             @RequestParam("file") MultipartFile file) throws IOException {
     return new ResponseEntity<>(projectProcessStepEventService.addAttachment(file, projectProcessStepEventId, attachmentTypeId), HttpStatus.OK);
+  }
+
+  //action
+  @PostMapping(value = "/{eventId}/action/perform", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void performStepEventAction (@PathVariable Long ppsId,
+                                      @PathVariable Long eventId,
+                                      @RequestBody ProcessStepEventAction processStepEventAction) {
+    projectProcessStepEventService.performStepEventAction(ppsId, eventId, processStepEventAction);
   }
 
 }

@@ -229,7 +229,7 @@ public class ScheduleService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProjectWithEvents.ProjectEvent>> eventsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectEvent>> eventsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "events",
           new JsonCollectionDeserializer(eventsRef, objectMapper));
     }

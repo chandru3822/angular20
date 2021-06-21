@@ -101,6 +101,12 @@
 
     <v-col  class="pt-0 px-0">
       <v-row class="pt-0">
+        <UpcomingEvents :projectId="projectId"/>
+      </v-row>
+    </v-col>
+
+    <v-col  class="pt-0 px-0">
+      <v-row class="pt-0">
         <Attachments :projectId="projectId"/>
       </v-row>
     </v-col>
@@ -116,6 +122,7 @@ import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectP
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
+import UpcomingEvents from '@/views/flow/project/UpcomingEvents'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
@@ -126,7 +133,8 @@ export default {
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
     Attachments,
-    AddProcessStep
+    AddProcessStep,
+    UpcomingEvents
   },
   props: {
     project: Object

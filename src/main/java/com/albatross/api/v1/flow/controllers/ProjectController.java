@@ -79,6 +79,11 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/{projectId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectEvent>> getProjectEvents(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/{projectId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getProjectAttachments(@PathVariable Long projectId,
                                                                 @PathVariable(required = false) Boolean isMobile) {

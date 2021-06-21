@@ -47,9 +47,18 @@
         <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
           <v-toolbar-title>
             {{selectedEvent.eventName}}
+
           </v-toolbar-title>
           <v-spacer></v-spacer>
+          <div>
+            <v-text-field text
+                          label="Event Status"
+                          disabled readonly
+                          v-model.number="selectedEvent.eventStatusType"></v-text-field>
+          </div>
+          <v-spacer></v-spacer>
           <v-toolbar-items>
+
             <v-btn text class="pl-1 pr-2 mb-2" @click="[selectedEvent = {}, eventDetails = {}]">
               <v-icon>close</v-icon>
             </v-btn>
@@ -58,43 +67,46 @@
         <div class="error-text" v-if="eventActionMissingRequirements">
           The following fields are required to perform the selected action.
         </div>
-        <v-col
-          v-if="selectedEvent && selectedEvent.id"
-          class="pt-0"
-          v-for="(cfg, index) in selectedEvent.customFieldGroups"
-          :key="index"
-        >
-          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-            <v-toolbar-title>
-<!--              <v-btn small text v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"-->
-<!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
-<!--                <v-icon>mdi-calendar</v-icon>-->
-<!--              </v-btn>-->
-              {{cfg.groupName}}
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card flat class="pa-3">
-            <CustomValueInput
-              v-for="(field, idx) in cfg.customFieldValues"
-              :key="idx"
-              :callback="populateDirtyCfvs"
-              :readonly="getReadOnly(field)"
-              :field="field"
-            />
-          </v-card>
-        </v-col>
+        <v-form ref="eventFieldForm">
+          <v-col
+            v-if="selectedEvent && selectedEvent.id"
+            class="pt-0"
+            v-for="(cfg, index) in selectedEvent.customFieldGroups"
+            :key="cfg.id"
+          >
+            <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+              <v-toolbar-title>
+  <!--              <v-btn small text v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"-->
+  <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
+  <!--                <v-icon>mdi-calendar</v-icon>-->
+  <!--              </v-btn>-->
+                {{cfg.groupName}}
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card flat class="pa-3">
+              <CustomValueInput
+                v-for="(field, idx) in cfg.customFieldValues"
+                :key="idx"
+                :required="field.required"
+                :callback="populateDirtyCfvs"
+                :readonly="getReadOnly(field)"
+                :field="field"
+              />
+            </v-card>
+          </v-col>
+        </v-form>
         <v-btn class="white--text mr-2 mb-2 save-btn"
                @click="[updateFieldGroups(), eventActionMissingRequirements = false]"
                color="primaryButton"
         >Save Event</v-btn>
         <v-btn class="white--text save-btn mb-2 mr-2"
                color="primaryButton"
-               @click="validateActionRequirements(action)"
-                v-for="action in eventDetails.eventActions"
-                :key="action.id">
+               @click="[attemptedAction = action, validateActionRequirements(action)]"
+                v-for="(action, i) in eventDetails.eventActions"
+                :key="i">
           {{action.actionName}}
         </v-btn>
         {{reqFieldsTemp}}
@@ -127,6 +139,7 @@
       return {
         snackbar: {},
         selectedEvent: {},
+        attemptedAction: {},
         reqFieldsTemp: [],
         eventActionMissingRequirements: false,
         eventDetails: {},
@@ -142,20 +155,59 @@
           { text: 'Event', value: 'eventName', show: true },
           { text: 'Status', value: 'eventStatusType', show: true },
         ],
+        doTest: false
       }
     },
     async created() {
       await this.getProcessStepEvents()
     },
+    // watch: {
+    //   doTest: function () {
+    //     this.$nextTick(() => {
+    //       console.log('WHY TF', this.$refs.eventFieldForm.validate())
+    //       this.eventActionMissingRequirements = this.$refs.eventFieldForm.validate()
+    //     })
+    //   }
+    // },
     computed: {},
     methods: {
+      // getFieldRequired(field) {
+      //   console.log('attempt',this.attemptedAction)
+      //   if(this.attemptedAction?.id && this.attemptedAction?.reqFields?.length > 0) {
+      //     console.log('randaLogger', field)
+      //     return true
+      //   }
+      //   return false
+      // },
       validateActionRequirements: async function (action) {
-        this.reqFieldsTemp = action.requiredFields
-        if(action?.requiredFields?.length > 0) {
-          this.eventActionMissingRequirements = true
-        } else {
-          this.eventActionMissingRequirements = false
-          console.log('WE WOULD DO THE ACITON')
+        // this.reqFieldsTemp = action.requiredFields
+        // if(action?.requiredFields?.length > 0) {
+        //   let test = false
+        //   this.selectedEvent?.customFieldGroups?.forEach(cfg => {
+        //     cfg?.customFieldValues?.forEach(cf => {
+        //       let match = action?.requiredFields?.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+        //       if(match) {
+        //         cf.required = true
+        //         test = true
+        //       }
+        //     })
+        //   })
+        // } else {
+        //   this.eventActionMissingRequirements = false
+        //   console.log('WE WOULD DO THE ACITON')
+        // }
+        this.doEventAction(action)
+      },
+      doEventAction: async function (action) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/perform`, action)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       addEvent: async function (pse) {
@@ -222,6 +274,7 @@
           // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
           // save dirty custom field values
           console.log('randaLogger', this.dirtyCfvs)
+          this.$refs.eventFieldForm.resetValidation()
           const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
           this.dirtyCfvs = []
           this.customFieldGroups = data

@@ -89,4 +89,20 @@
     values (:attachmentId, :projectProcessStepEventId, :createdById)
   ]]></projectProcessStepEvent.addAttachment>
 
+  <projectProcessStepEvent.updateCompanyEventStatus><![CDATA[
+    update flow.project_process_step_event
+    set company_event_status_type_id = :companyEventStatusTypeId,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :projectProcessStepEventId
+  ]]></projectProcessStepEvent.updateCompanyEventStatus>
+
+  <projectProcessStepEvent.randaHacking><![CDATA[
+    update flow.project_process_step
+      set company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :ppsId
+  ]]></projectProcessStepEvent.randaHacking>
+
 </sql>

@@ -7,12 +7,12 @@
   </v-col>
 
   <v-col class="d-flex justify-start align-self-start py-0">
-
     <DatetimePickerInput
       v-if="field.dataTypeId === 1"
       v-model="field.dateValue"
       :timezone="this.timezone"
       :type="'date'"
+      :required="required"
       :min-date="minDate"
       :max-date="maxDate"
       :format="'MMMM DD, YYYY'"
@@ -36,6 +36,7 @@
     <v-checkbox
       v-if="field.dataTypeId === 3"
       v-model="field.booleanValue"
+      :required="required"
       :label="field.fieldName"
       :rules="getRequiredRule()"
       :disabled="readonly"
@@ -46,6 +47,7 @@
     <v-text-field
       v-if="field.dataTypeId === 4"
       text
+      :required="required"
       :readonly="readonly"
       placeholder=" "
       :rules="getRequiredRule()"
@@ -59,6 +61,7 @@
       v-if="field.dataTypeId === 5"
       auto-grow
       rows="1"
+      :required="required"
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
@@ -71,6 +74,7 @@
     <v-text-field
       v-if="field.dataTypeId === 6 && !field.hasListValues"
       text
+      :required="required"
       :readonly="readonly"
       :label="field.fieldName"
       placeholder=" "
@@ -84,6 +88,7 @@
       v-if="field.dataTypeId === 6 && field.hasListValues"
       v-model="field.intValue"
       text
+      :required="required"
       :clearable="!readonly"
       :readonly="readonly"
       :disabled="readonly"
@@ -99,6 +104,7 @@
     <v-autocomplete
       v-if="field.dataTypeId === 7"
       text
+      :required="required"
       multiple
       placeholder=" "
       :items="field.listOfValues"
@@ -117,6 +123,7 @@
       v-if="field.dataTypeId === 8"
       v-model="field.intValue"
       text
+      :required="required"
       :clearable="!readonly"
       :readonly="readonly"
       :disabled="readonly"
@@ -133,6 +140,7 @@
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
+      :required="required"
       :clearable="!readonly"
       :items="field.listOfValues"
       :label="field.fieldName"

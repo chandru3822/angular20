@@ -18,9 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,6 +43,7 @@ public class ProjectProcessStepEventService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
+  private final ProjectProcessStepService projectProcessStepService;
   private final AttachmentService attachmentService;
   private final AmazonS3 s3;
   private final ObjectMapper om;
@@ -69,6 +72,46 @@ public class ProjectProcessStepEventService {
       result.get().setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
     }
     return result;
+  }
+
+  public void performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
+    /*
+     **High level pseudo logic:**
+
+     * gather required data
+     * set the event to the desired status IF not already in that status
+     * set the process step to the desired status IF not already in that status
+     * do i need to perform auto triggers again if the PS status changed?  ...probably
+     */
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
+    params.put("actionName", processStepEventAction.getActionName());
+    params.put("userId", currentUser.getId());
+    params.put("ppsId", ppsId);
+    params.put("projectProcessStepEventId", eventId);
+
+    log.info("WE WILL PERFORM ACTION: {}", processStepEventAction.getActionName());
+
+    Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(eventId);
+    if(ppse.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
+    } else {
+      //check if event is already in the desired status, then update the ppse status to the desired status if not already in it
+      if(null != processStepEventAction.getCompanyEventStatusTypeId() && !ppse.get().getCompanyEventStatusTypeId().equals(processStepEventAction.getCompanyEventStatusTypeId())) {
+        sqlCache.update("projectProcessStepEvent.updateCompanyEventStatus", params);
+      }
+    }
+
+    ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+    //check if pps is already in the desired status, then update the pps status to the desired status if not already in it
+    if(null != processStepEventAction.getCompanyProcessStepStatusTypeId() && !pps.getCompanyProcessStepStatusTypeId().equals(processStepEventAction.getCompanyProcessStepStatusTypeId())) {
+      //this is a total hack just to see it update.  needs to follow all the same rules as the other types of actions re: cancellations, reactivations, etc
+      sqlCache.update("projectProcessStepEvent.randaHacking", params);
+    }
+
   }
 
   public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {
