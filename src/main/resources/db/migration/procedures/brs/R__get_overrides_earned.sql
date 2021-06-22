@@ -15,12 +15,12 @@ BEGIN
         group by project_id
     ),
          milestone_two_projects as (
-             select project_id, min(process_step_complete_date) milestone_two_complete_date
-             from flow.project_process_step pps
-                      inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-                      inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-             where pps.process_step_id = 3365
-             group by project_id
+             select coalesce(pps.project_id,pd.project_id) as project_id, coalesce(min(process_step_complete_date),pd.substantial_completion_date)::date milestone_two_complete_date
+             from brs.project_details pd
+                      left join flow.project_process_step pps on pps.project_id = pd.project_id and pps.process_step_id = 3365
+                      left join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+                      left join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+             group by pps.project_id,pd.project_id,pd.substantial_completion_date
          )
     select (select coalesce(sum(total),0)
             from (SELECT case

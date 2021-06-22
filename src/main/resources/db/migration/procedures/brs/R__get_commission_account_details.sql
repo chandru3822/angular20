@@ -87,12 +87,12 @@ BEGIN
     create index milestone1_project_id on milestone1(project_id);
     create index milestone1_milestone_one_complete_date on milestone1(milestone_one_complete_date);
     create temp table milestone2 as (
-        select pps.project_id, min(process_step_complete_date) milestone_two_complete_date
-        from flow.project_process_step pps
-                 inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-                 inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-        where pps.process_step_id = 3365
-        group by pps.project_id
+        select coalesce(pps.project_id,pd.project_id) as project_id, coalesce(min(process_step_complete_date),pd.substantial_completion_date)::date milestone_two_complete_date
+        from brs.project_details pd
+                 left join flow.project_process_step pps on pps.project_id = pd.project_id and pps.process_step_id = 3365
+                 left join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+                 left join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+        group by pps.project_id,pd.project_id,pd.substantial_completion_date
 
     );
 
