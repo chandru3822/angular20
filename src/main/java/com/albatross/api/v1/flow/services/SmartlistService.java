@@ -706,6 +706,7 @@ public class SmartlistService {
         query.append(" left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
         query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
         query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
+        query.append(" left join flow.org on flow.org.id = \"project_user_position\".org_id ");
 
         whereClause.append(" flow.project.archived is not true and ");
         whereClause.append(String.format(" flow.company_project_status_type.company_id = any(%s) and ", companySubquery));
@@ -717,6 +718,7 @@ public class SmartlistService {
         query.append(" left join flow.project on flow.project.contact_id = flow.contact.id ");
         query.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id ");
         query.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id ");
+        query.append(" left join flow.org on flow.org.id = \"contact_user_position\".org_id ");
 
         whereClause.append(" flow.project.archived is not true and ");
         whereClause.append(String.format(" flow.contact.company_id = any(%s) and ", companySubquery));
