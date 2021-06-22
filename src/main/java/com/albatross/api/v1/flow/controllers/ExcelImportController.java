@@ -220,7 +220,7 @@ public class ExcelImportController {
       }
     }
     //todo: verify that the project exists and return a pretty error if it doesnt
-    Long blueRavenCorporateCompanyId = 2L;
+    Long blueRavenCorporateCompanyId = 3L;
     Boolean projectExists = projectService.projectExistsInHierarchy(design.getProjectId().longValue(), blueRavenCorporateCompanyId);
 
     if(projectExists) {
