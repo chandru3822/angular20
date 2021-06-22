@@ -484,6 +484,11 @@ export default new Router({
                   path: 'types',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
+                },  {
+                  path: 'type/:id',
+                  name: 'workQueueType',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueType.vue'),
                 }, {
                   path: 'categories',
                   component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/WorkQueueCategories.vue'),

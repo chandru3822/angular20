@@ -26,25 +26,25 @@
                           label="Work Queue Type">
             </v-text-field>
             <v-autocomplete
-                v-model="newType.workQueueCategoryId"
-                :items="workQueueCategories"
-                label="Work Queue Category"
-                item-text="workQueueCategory"
-                item-value="id"
+              v-model="newType.workQueueCategoryId"
+              :items="workQueueCategories"
+              label="Work Queue Category"
+              item-text="workQueueCategory"
+              item-value="id"
             ></v-autocomplete>
             <v-btn :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
           </div>
           <v-data-table
-              :headers="headers"
-              :items="filterWorkQueueTypes()"
-              :fixed-header="true"
-              :items-per-page="-1"
-              single-expand
-              :sort-desc="[false]"
-              :sort-by="['workQueueCategoryDisplayOrder','displayOrder']"
-              :expanded.sync="expanded"
-              hide-default-footer
-              class="elevation-1 mt-1"
+            :headers="headers"
+            :items="filterWorkQueueTypes()"
+            :fixed-header="true"
+            :items-per-page="-1"
+            single-expand
+            :sort-desc="[false]"
+            :sort-by="['workQueueCategoryDisplayOrder','displayOrder']"
+            :expanded.sync="expanded"
+            hide-default-footer
+            class="elevation-1 mt-1"
           >
             <template #no-data>
               No available fields
@@ -63,30 +63,20 @@
                   </v-btn>
                 </td>
                 <td class="text-left">
-                  <v-text-field class="one-hunned" v-if="selectedWorkQueueTypeId === item.id" v-model="item.workQueueType"></v-text-field>
-                  <div v-else>{{item.workQueueType}}</div>
+                  {{item.workQueueType}}
                 </td>
                 <td class="text-left">
-                  <v-autocomplete
-                      v-if="selectedWorkQueueTypeId === item.id"
-                      v-model="item.workQueueCategoryId"
-                      :items="workQueueCategories"
-                      label="Work Queue Category"
-                      item-text="workQueueCategory"
-                      item-value="id"
-                  ></v-autocomplete>
-                  <div v-else>{{item.workQueueCategory}}</div>
+                  {{item.workQueueCategory}}
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
                     <v-btn class="clickable" small text v-if="userCanEdit">
-                      <v-icon v-if="selectedWorkQueueTypeId === item.id" @click="saveType(item)">save</v-icon>
-                      <v-icon v-else @click="selectedWorkQueueTypeId = item.id">edit</v-icon>
+                      <v-icon @click="goToDetails(item)">edit</v-icon>
                     </v-btn>
                     <v-dialog
-                        v-model="item.deleteConfirm"
-                        v-if="userCanDelete"
-                        width="500">
+                      v-model="item.deleteConfirm"
+                      v-if="userCanDelete"
+                      width="500">
                       <template v-slot:activator="{ on }">
                         <v-btn small text class="clickable" v-on="on">
                           <v-icon>delete</v-icon>
@@ -94,8 +84,8 @@
                       </template>
                       <v-card>
                         <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
+                          class="headline grey lighten-2"
+                          primary-title
                         >
                           Confirm
                         </v-card-title>
@@ -109,13 +99,13 @@
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn
-                              @click="item.deleteConfirm = false">
+                            @click="item.deleteConfirm = false">
                             No
                           </v-btn>
                           <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="[item.archived = true, deleteType(item.id)]">
+                            color="primaryCustom"
+                            text
+                            @click="[item.archived = true, deleteType(item.id)]">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -277,24 +267,6 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveType(wt) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.selectedWorkQueueTypeId = null
-          const {data} = await putRequest(`/workQueueType/type`, wt)
-          wt.workQueueCategoryId = data.workQueueCategoryId
-          wt.workQueueCategory = data.workQueueCategory
-          wt.workQueueType = data.workQueueType
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       filterWorkQueueTypes () {
         return this.workQueueTypes.filter(wqt => { return !wqt.archived})
       },
@@ -314,6 +286,9 @@
           }
         }
       },
+      goToDetails (item) {
+        this.$router.push({name: 'workQueueType', params: {id: item.id}})
+      }
     },
     async created() {
       this.getWorkQueueTypes()
