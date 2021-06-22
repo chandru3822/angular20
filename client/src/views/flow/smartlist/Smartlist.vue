@@ -254,7 +254,7 @@
             <v-autocomplete
               v-model="newField.objectTypeId"
               label="Object Type"
-              :items="companyObjectTypes"
+              :items="filteredCompanyObjectTypes"
               item-value="objectTypeId"
               item-text="objectType"
               @input="getAvailableFields"
@@ -353,7 +353,7 @@
 
     <SmartlistRequirement
       :requirements="requirements"
-      :company-object-types="companyObjectTypes"
+      :company-object-types="filteredCompanyObjectTypes"
       :reset-form="resetRequirementForm"
       :disabled="!smartlist.id"
       :can-edit="canEdit"
@@ -510,6 +510,19 @@ export default {
     filteredProjectDetailsRequirements () {
       const columnNames = this.requirements.map(r => r.projectDetailsColumn)
       return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
+    },
+    filteredCompanyObjectTypes () {
+      if (this.smartlist.id) {
+        let objectTypeIds = []
+        if ([1, 2, 4].includes(this.smartlist.objectTypeId)) {
+          objectTypeIds = [1, 2, 4]
+        } else {
+          objectTypeIds = [3, 5]
+        }
+        return this.companyObjectTypes.filter(t => objectTypeIds.includes(t.objectTypeId))
+      } else {
+        return this.companyObjectTypes
+      }
     }
   },
   methods: {
