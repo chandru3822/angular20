@@ -1069,7 +1069,7 @@ public class SmartlistService {
                   }
                 }
               } else {
-                if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
+                if (List.of(1, 2, 3, 5).contains(r.getObjectTypeId().intValue())) {
                   referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
                 } else if (r.getObjectTypeId() == 4) {
                   String joinTable = null;
