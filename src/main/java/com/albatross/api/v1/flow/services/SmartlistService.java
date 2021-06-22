@@ -636,7 +636,7 @@ public class SmartlistService {
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
         final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", referenceTable, column);
-      } else if (Objects.equals(f.getReferenceTable(), "flow.user") && f.getObjectTypeId() != 3) {
+      } else if (Objects.equals(f.getReferenceTable(), "flow.user") && f.getObjectTypeId() != 3 && f.getObjectTypeId() != 5) {
         location = (f.getObjectTypeId() != 4) ? f.getReferenceColumn() : String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name)", f.getValueReferenceTable(), f.getValueReferenceTable());
       } else if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
         location = f.getReferenceColumn();
