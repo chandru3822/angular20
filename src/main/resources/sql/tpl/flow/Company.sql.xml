@@ -31,7 +31,7 @@
                                                           where user_id = :userId
                                                           and c.archived is false
                                                       ) as foo
-                                                          inner join flow.company c1 on c1.level = foo.level
+                                                          inner join flow.company c1 on c1.level = foo.level and c1.archived is false
                                                           inner join flow.user_company uc1
                                                                      on uc1.company_id = c1.id and uc1.user_id = :userId
                                                  limit 1))
@@ -59,7 +59,7 @@
             and uc.archived is not true
             and c.archived is not true
           ) as foo
-          inner join flow.company c1 on c1.level = foo.level
+          inner join flow.company c1 on c1.level = foo.level and c1.archived is false
           inner join flow.user_company uc1 on uc1.company_id = c1.id and uc1.user_id = :userId
             where uc1.archived is not true
             and c1.archived is not true
