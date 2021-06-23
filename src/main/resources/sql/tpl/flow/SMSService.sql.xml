@@ -323,6 +323,7 @@
             lastMessageSent,
             lastMessageReceived,
             sms.message_read
+          order by sms.id desc
           ]]>
     </sms.getSmsQueue>
 
