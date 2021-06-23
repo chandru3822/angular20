@@ -785,6 +785,17 @@ export default new Router({
             }
           },
         }, {
+          path: '/smsQueue',
+          name: 'smsQueue',
+          meta: {title: 'Albatross - SMS Queue'},
+          component: () => {
+            if (store.getters.userHasFeature('SMS_QUEUE')) {
+              return import (/*webpackChunkName: "smsQueue" */ './views/flow/smsQueue/SmsQueue.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+        }, {
           path: '/projects',
           name: 'projects',
           meta: {title: 'Albatross - Projects'},
