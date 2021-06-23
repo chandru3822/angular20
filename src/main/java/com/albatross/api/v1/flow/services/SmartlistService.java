@@ -505,6 +505,10 @@ public class SmartlistService {
     withClause.append(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
     withClause.append(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
     withClause.append(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, 3::int)), ");
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -593,7 +597,7 @@ public class SmartlistService {
 
         final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
-        if (List.of(1L, 3L, 5L).contains(f.getSmartlistSystemListId())) {
+        if (List.of(1, 3, 5, 6, 7, 8, 9).contains(f.getSmartlistSystemListId().intValue())) {
           location = String.format("(select name from \"%s\" where \"%s\".id = %s.%s)", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn());
         } else if (f.getSmartlistSystemListId() == 2 || f.getSmartlistSystemListId() == 4) {
 
@@ -737,11 +741,13 @@ public class SmartlistService {
         query.append(" from flow.user ");
         query.append(" left join flow.user_position on flow.user_position.user_id = flow.user.id ");
         query.append(" left join flow.position on flow.position.id = flow.user_position.position_id ");
+        query.append(" left join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
+        query.append(" left join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id ");
         query.append(" left join flow.org on flow.org.id = flow.user_position.org_id ");
         query.append(" left join flow.org_type on flow.org_type.id = flow.org.org_type_id ");
         query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
 
-        whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
 
         // @TODO: if primary flag is true
         whereClause.append(" flow.user_position.primary_flag is true and ");
@@ -759,6 +765,7 @@ public class SmartlistService {
         query.append(" left join flow.user_position on flow.user_position.user_id = flow.org.id ");
         query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
         query.append(" left join flow.position on flow.position.id = flow.user_position.position_id ");
+        query.append(" left join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
         query.append(" left join flow.org_type on flow.org_type.id = flow.org.org_type_id ");
         query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
 
@@ -901,7 +908,7 @@ public class SmartlistService {
             String referenceTable = "";
             final String smartlistSystemListTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
 
-            if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
+            if (List.of(1, 3, 5, 6, 7, 8, 9).contains(r.getSmartlistSystemListId().intValue())) {
               if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::int, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
                 referenceTable = UUID.randomUUID().toString();
                 final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
