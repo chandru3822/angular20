@@ -101,7 +101,7 @@ public class SmartlistService {
   }
 
   @Transactional
-  public void toggleType(Long smartlistId) {
+  public void toggleProjectDetails(Long smartlistId) {
     Smartlist smartlist = this.getSmartlist(smartlistId);
 
     if (smartlist == null) {
@@ -112,6 +112,16 @@ public class SmartlistService {
     this.updateSmartlist(smartlist);
 
     sqlCache.update("smartlist.clearFieldsAndRequirements", Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
+  @Transactional
+  public void updateObjectType(Smartlist smartlist) {
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
+    }
+
+    updateSmartlist(smartlist);
+    sqlCache.update("smartlist.clearFieldsAndRequirements", Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
   }
 
   public boolean isNameUnique(String name) {
