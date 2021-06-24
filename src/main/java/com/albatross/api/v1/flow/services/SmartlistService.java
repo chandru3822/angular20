@@ -761,8 +761,9 @@ public class SmartlistService {
 
         whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
 
-        // @TODO: if primary flag is true
-        whereClause.append(" flow.user_position.primary_flag is true and ");
+        if (smartlist.isPrimaryUserPosition()) {
+          whereClause.append(" flow.user_position.primary_flag is true and ");
+        }
 
         // @TODO: if active flag is false, maybe this should be a user status requirement though
         // assume mountain time for date comparisons
@@ -782,6 +783,10 @@ public class SmartlistService {
         query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
 
         whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
+
+        if (smartlist.isPrimaryUserPosition()) {
+          whereClause.append(" flow.user_position.primary_flag is true and ");
+        }
         break;
     }
 
