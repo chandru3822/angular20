@@ -171,8 +171,9 @@
           </draggable>
         </v-list>
 
-        <v-btn text @click="buildSql">
-          RANDA TEST BUILD SQL
+        <v-btn color="primaryCustom" class="white--text build-sql" @click="buildSql" v-if="is7oaksAdmin || userId === 2350555">
+          <div>BUILD SQL</div>
+          <div>(only 7oaks and Judson)</div>
         </v-btn>
         <div>
           {{sql}}
@@ -215,6 +216,7 @@
         workQueueTypeId: this.$route.params.id,
         workQueueType: {},
         sql: '',
+        is7oaksAdmin: this.$store.getters.isFullAdmin,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
@@ -400,5 +402,9 @@
 </script>
 
 <style scoped lang="scss">
-
+.build-sql {
+  position: absolute;
+  bottom: 10px;
+  right: 25px;
+}
 </style>

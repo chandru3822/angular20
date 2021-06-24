@@ -1,5 +1,5 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container id="work-queue-types-container">
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -45,13 +45,10 @@
             :headers="headers"
             :items="filterWorkQueueTypes()"
             :fixed-header="true"
-            :items-per-page="-1"
-            single-expand
+            :items-per-page="50"
             :search="search"
             :sort-desc="[false]"
             :sort-by="['workQueueCategoryDisplayOrder','displayOrder']"
-            :expanded.sync="expanded"
-            hide-default-footer
             class="elevation-1 mt-1"
           >
             <template #no-data>
@@ -198,7 +195,7 @@
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Type', value: 'workQueueType', show: true },
           { text: 'Category', value: 'workQueueCategory', show: true },
-          { text: null, value: 'icons', show: true }
+          { text: null, value: 'icons', show: true, width: 150 }
         ],
       }
     },
@@ -307,6 +304,16 @@
   }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+#work-queue-types-container .v-data-table__wrapper {
+  max-height: calc(100vh - 350px);
+  min-height: 300px;
+}
 
+#work-queue-types-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
 </style>
