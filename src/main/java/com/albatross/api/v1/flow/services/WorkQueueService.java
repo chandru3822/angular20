@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PGobject;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -113,7 +114,29 @@ public class WorkQueueService {
     final String query = smartlistService.buildSql(smartlist, fields);
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
-    return new SmartlistResult(fields, results);
+    List<Map<String, Object>> randasResults = new ArrayList<>();
+
+    for (Map<String, Object> result: results) {
+
+      Map<String, Object> newResult = new HashMap<>();
+
+      for(Map.Entry<String, Object> entry: result.entrySet()) {
+        if (result.get(entry.getKey()) != null) {
+          if (Objects.equals(entry.getValue().getClass(), PGobject.class)) {
+            newResult.put(entry.getKey(), ((PGobject) entry.getValue()).getValue());
+          } else {
+            newResult.put(entry.getKey(), entry.getValue());
+          }
+        } else {
+          newResult.put(entry.getKey(), entry.getValue());
+        }
+
+      }
+
+      randasResults.add(newResult);
+    }
+
+    return new SmartlistResult(fields, randasResults);
   }
 
   public String buildSql(Long smartlistId) {
