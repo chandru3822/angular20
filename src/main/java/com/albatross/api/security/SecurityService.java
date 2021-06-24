@@ -104,8 +104,8 @@ public class SecurityService implements UserDetailsService {
           user = new User();
           user.setCompanyId(3L);
           user.setHighestCompanyId(3L);
-          user.setParentCompanyId(2L);
-          user.setHighestParentCompanyId(2L);
+          user.setParentCompanyId(3L);
+          user.setHighestParentCompanyId(3L);
           user.setId(details.getId());
         } else {
           user = userService.findUserById(details.getId());

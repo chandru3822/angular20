@@ -1,22 +1,28 @@
 package com.albatross.api.v1.flow.model;
 
 import com.albatross.api.v1.flow.enums.RecipientType;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
-import org.joda.time.DateTime;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Date;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class SMSQueueItem {
 
     private Long id, userId, recipient_type_id;
-    private String firstName, lastName, email, message;
-    private String messageGroup, messageSid, messageStatus, fromPhone, toPhone, errorMessage;
+    private String firstName, lastName, fullName, email, message;
+    private String messageGroup, messageSid, messageStatus, fromPhone, toPhone, errorMessage, projectStatus;
     private List<String> mediaUrls;
+    private boolean priority, messageRead;
+    private Owner owner;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private DateTime created, updated, twilioCreated, twilioSent, twilioDelivered;
+    private Date created, updated, twilioCreated, twilioSent, twilioDelivered, lastMessageSent, lastMessageReceived;
+
+    public boolean getPrioirty() {return priority;}
+    public boolean getMessageRead() {return messageRead;}
 
     public String getFullname() {
         return String.format("%s %s", firstName, lastName);

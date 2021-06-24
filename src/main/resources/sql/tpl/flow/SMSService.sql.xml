@@ -139,9 +139,9 @@
     <sms.queue.insert>
         <![CDATA[
             WITH sq AS (INSERT INTO flow.sms_queue (
-              message_group,user_id,message,media_urls,to_phone,recipient_type_id
+              message_group,user_id,message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id
             ) VALUES (
-              :messageGroup,:userId,:message,:mediaUrls,:toPhone,:recipientTypeId
+              :messageGroup,:userId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId
             )
             RETURNING id,user_id,message,media_urls,
               message_group,message_sid,message_status,error_message,
@@ -279,4 +279,66 @@
         LIMIT 1
         ]]>
     </sms.reply.fetch>
+
+    <sms.getSmsQueue>
+      <![CDATA[
+          SELECT max(sms.id) as id,
+            sms.user_id,
+            concat(c.first_name, ' ', c.last_name) AS full_name,
+            sms.to_phone,
+            sms.priority,
+            (select cpst.project_status_type from flow.project p
+                inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+            where p.contact_id = sms.user_id
+                order by p.id desc limit 1) as projectStatus,
+            sms.message,
+            sms.twilio_created as lastMessageSent,
+            (select max(sr.date_received) from flow.sms_reply sr where sr.from_phone = sms.to_phone group by sr.from_phone) as lastMessageReceived,
+            (select (u.first_name || ' ' || u.last_name || ' - ' || p.position)  from flow.user u
+              inner join flow.user_position up on up.user_id = u.id
+              inner join flow.position p on p.id = up.position_id
+             where u.id = sms.message_sent_by_user_id and up.primary_flag is true and up.archived is not true) as lastMessageSentBy,
+            (SELECT row_to_json(o)
+            FROM (SELECT u.id as "userId",
+                     u.first_name as "firstName",
+                     u.last_name as "lastName",
+                     concat(u.first_name, ' ', u.last_name) as "fullName",
+                     pos.position,
+                     up.id as "userPositionId"
+                  FROM flow."user" u
+                    inner join flow.user_position up on up.user_id = u.id
+                    inner join flow.position pos on pos.id = up.position_id
+                  WHERE up.id = sms.owner_user_position_id) o) AS owner,
+            sms.message_read
+          FROM flow.sms_queue sms
+             INNER JOIN flow.contact c ON sms.user_id = c.id
+                where sms.id in (select max(sq.id) from flow.sms_queue sq group by sq.user_id)
+          group by
+            sms.id,
+            sms.user_id,
+            concat(c.first_name, ' ', c.last_name),
+            sms.to_phone,
+            sms.priority,
+            sms.message,
+            lastMessageSent,
+            lastMessageReceived,
+            sms.message_read
+          order by sms.id desc
+          ]]>
+    </sms.getSmsQueue>
+
+    <sms.update>
+      <![CDATA[
+          update flow.sms_queue
+          set priority = :priority,
+              owner_user_position_id = :ownerUserPositionId,
+              message_read = :messageRead
+            where id = :smsId
+          ]]>
+    </sms.update>
+
+    <sms.getOwners><![CDATA[
+      select * from flow.get_sms_available_owners(:companyId::int, :parentCompanyId::int, :isParent::bool)
+    ]]></sms.getOwners>
+
 </sql>
