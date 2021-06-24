@@ -313,6 +313,12 @@
         return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType
       }
     },
+    mounted () {
+      // Navigate to the Communication tab if coming from SMS Queue screen
+      if (this.$route.query.secondaryTab != null && parseInt(this.$route.query.secondaryTab) == 3) {
+        this.secondaryTab = 3
+      }
+    },
     methods: {
       getDirtyText() {
         return this.hasDirtyNotes && this.dirtyFieldsCount > 0 ?
