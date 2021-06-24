@@ -113,7 +113,6 @@
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
-  import orderBy from 'lodash.orderby'
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
 
   export default {
@@ -177,6 +176,8 @@
             this.snackbar = getSnackbar('SUCCESS', 'Org Type Added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
+            ot.level = data.level
+            ot.orgParentType = data.orgParentType
             this.expanded = []
             this.snackbar = getSnackbar('SUCCESS', 'Org Type Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -206,7 +207,7 @@
 
 <style lang="scss">
   #hierarchy-container .v-data-table__wrapper {
-    height: calc(100vh - 350px);
+    height: calc(100vh - 200px);
     min-height: 300px;
   }
 </style>
