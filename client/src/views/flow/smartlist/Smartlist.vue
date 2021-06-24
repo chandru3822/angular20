@@ -182,7 +182,14 @@
 
                 <v-col cols="4" md="2">
 
+                  <v-checkbox
+                    v-if="isUserOrgObjectType"
+                    v-model="smartlist.primaryUserPosition"
+                    label="Primary Position"
+                  />
+
                   <v-dialog
+                    v-if="!isUserOrgObjectType"
                     v-model="showToggleDialog"
                     width="500"
                   >
@@ -528,6 +535,13 @@ export default {
     },
     isProcessStepObjectType () {
       return this.smartlist.companyObjectTypeId !== null && this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id === 4
+    },
+    isUserOrgObjectType () {
+      if (this.smartlist.companyObjectTypeId !== null) {
+        const objectTypeId = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id
+        return objectTypeId && [3, 5].includes(objectTypeId)
+      }
+      return false
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
@@ -894,11 +908,13 @@ export default {
     async toggleSmartlistObjectType () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
-        await putRequest((`/smartlist/${this.smartlist.id}/toggleObjectType`), this.smartlist)
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
-        this.originalObjectTypeId = companyObjectType.objectTypeId
         this.smartlist.objectTypeId = companyObjectType.objectTypeId
+
+        const {data} = await putRequest((`/smartlist/${this.smartlist.id}/toggleObjectType`), this.smartlist)
+
+        this.smartlist = data
+        this.originalObjectTypeId = data.objectTypeId
         this.assignedFields = []
         this.requirements = []
       } catch (e) {

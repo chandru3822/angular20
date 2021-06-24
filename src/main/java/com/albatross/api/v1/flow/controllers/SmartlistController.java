@@ -187,14 +187,13 @@ public class SmartlistController {
   }
 
   @PutMapping(value = "/{smartlistId}/toggleObjectType", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
+  public ResponseEntity<Smartlist> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
     User user = securityService.getCurrentUser();
     if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("EDIT", "ADMIN"))) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    smartlistService.updateObjectType(smartlist);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return new ResponseEntity<>(smartlistService.updateObjectType(smartlist), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{smartlistId}/copy")

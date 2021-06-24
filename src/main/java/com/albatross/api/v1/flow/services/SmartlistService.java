@@ -84,7 +84,7 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
     }
 
-    final boolean updatingName = !existingSmartlist.getName().trim().toLowerCase().equals(smartlist.getName().trim().toLowerCase());
+    final boolean updatingName = !existingSmartlist.getName().trim().equalsIgnoreCase(smartlist.getName().trim().toLowerCase());
 
     if (updatingName && !this.isNameUnique(smartlist.getName())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
@@ -115,13 +115,25 @@ public class SmartlistService {
   }
 
   @Transactional
-  public void updateObjectType(Smartlist smartlist) {
+  public Smartlist updateObjectType(Smartlist smartlist) {
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
     }
 
+    smartlist.setProjectDetails(false);
+
+    if (!List.of(3, 5).contains(smartlist.getObjectTypeId().intValue())) {
+      smartlist.setPrimaryUserPosition(false);
+    }
+
+    if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+      smartlist.setPrimaryUserPosition(true);
+      smartlist.setMainProcessSteps(true);
+    }
+
     updateSmartlist(smartlist);
     sqlCache.update("smartlist.clearFieldsAndRequirements", Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
+    return getSmartlist(smartlist.getId());
   }
 
   public boolean isNameUnique(String name) {
