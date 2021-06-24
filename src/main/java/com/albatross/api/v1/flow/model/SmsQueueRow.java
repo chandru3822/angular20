@@ -10,7 +10,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class SmsQueueRow {
 
-  private Long id, userId;
+  private Long id, userId, projectId;
   private String fullName, message, projectStatus, lastMessageSentBy;
   private boolean priority, messageRead;
   private Owner owner;
