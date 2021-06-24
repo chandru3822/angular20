@@ -7,6 +7,13 @@
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="exportCsv" v-if="results.length > 0">
+              <v-icon class="mr-2">mdi-cloud-download</v-icon>
+              Export
+            </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
         <v-data-table
             :headers="filterHeaders()"
@@ -31,22 +38,22 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left underline">
                 <v-btn text small :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${item.contactId}`">
-                  {{item.projectName}}
+                  {{item['Project Name']}}
                 </v-btn>
               </td>
-              <td class="text-left">{{item.processStepName}}</td>
-              <td class="text-left">{{item.processStepStatusType}}</td>
-              <td class="text-left">{{item.daysInQueue}}</td>
-              <td class="text-left">{{item.stateAbbreviation}}</td>
-              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item.proposalDueDate  | formatDate('timestamp')}}</td>
+              <td class="text-left">{{item['Process Step Name']}}</td>
+              <td class="text-left">{{item['Process Step Status Type']}}</td>
+              <td class="text-left">{{item['Days In Queue']}}</td>
+              <td class="text-left">{{item['State Abbreviation']}}</td>
+              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item['Proposal Due Date']  | formatDate('timestamp')}}</td>
               <td class="text-left">
-                <div v-if="item.owner">{{item.owner}}</div>
+                <div v-if="item['Owner']">{{item['Owner']}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
               <td class="text-left">
-                <div v-if="item.activeProcessSteps">
+                <div v-if="item['Active Process Steps']">
                   <span v-for="aps in parseActiveProcessSteps(item)">
                     {{ aps.processStepName }}
                   </span>
@@ -58,7 +65,7 @@
               <td class="notes-column">
                 <div class="flex-display align-center" >
                   <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
-                    {{item.notes[0].note}}
+                    {{item['Notes'][0].note}}
                   </pre>
                   <v-spacer></v-spacer>
                   <v-btn small fab text @click="item.showNotesModal = true">
@@ -69,7 +76,7 @@
                   v-model="item.showNotesModal"
                 >
                   <v-card class="wqt-notes-container">
-                    <v-card-title class="primary-custom-bg white--text">{{ item.projectName }} - {{item.processStepName}}</v-card-title>
+                    <v-card-title class="primary-custom-bg white--text">{{ item['Project Name'] }} - {{item['Process Step Name']}}</v-card-title>
                     <v-card-text class="py-3">
                       <NotesAndActivity
                         :showNotes="true"
@@ -109,10 +116,19 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import { saveAs } from 'file-saver'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+  import {DateTime} from 'luxon'
   import constants from '@/helpers/constants'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {
+    getRequest,
+    getRequestWithParams,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getSnackbar,
+    logError
+  } from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueueDrilldown',
@@ -152,7 +168,6 @@
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
-          { text: 'Notes', value: 'notes', show: true, width: 350 },
         ],
       }
     },
@@ -167,6 +182,22 @@
     computed: {},
     async created() {},
     methods: {
+      async exportCsv () {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data} = await getRequest(`/smartlist/${this.smartlistId}/csv`)
+          let blob = new Blob([data], {
+            type: 'text/csv;charset=utf-8'
+          });
+          saveAs(blob, `${this.results[0].workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+        } catch (e) {
+          this.snackbar = getSnackbar('ERROR', e.message)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          logError(e)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       parseActiveProcessSteps(item) {
         return JSON.parse(item?.activeProcessSteps?.value)
       },

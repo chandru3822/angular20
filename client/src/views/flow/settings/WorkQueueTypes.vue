@@ -34,12 +34,20 @@
             ></v-autocomplete>
             <v-btn :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
           </div>
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
           <v-data-table
             :headers="headers"
             :items="filterWorkQueueTypes()"
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
+            :search="search"
             :sort-desc="[false]"
             :sort-by="['workQueueCategoryDisplayOrder','displayOrder']"
             :expanded.sync="expanded"
@@ -171,6 +179,7 @@
       return {
         snackbar: {},
         constants,
+        search: '',
         masterWorkQueueTypes: [],
         workQueueTypes: [],
         workQueueCategories: [],

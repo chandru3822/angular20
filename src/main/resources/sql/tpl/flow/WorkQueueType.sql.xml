@@ -31,6 +31,13 @@
     where wqt.id = :id
   ]]></workQueueType.getType>
 
+  <workQueueType.addSmartlist><![CDATA[
+    insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details, work_queue_type_id)
+    values (:workQueueType,
+            (select id from flow.company_object_type cot where cot.company_id = :companyId and cot.object_type_id = 4),
+            false, 99999999, :createdById, 1, true, false, :workQueueTypeId)
+]]></workQueueType.addSmartlist>
+
   <workQueueType.deleteType><![CDATA[
     update flow.work_queue_type
     set archived = true,

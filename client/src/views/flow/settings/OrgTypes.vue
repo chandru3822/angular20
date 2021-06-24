@@ -191,7 +191,9 @@
       },
       filteredOrgTypes(orgLevelId) {
         // filter list so they cannot select a parent that is further down in the hierarchy than self
+        console.log('randaLogger',orgLevelId)
         const orgLevel = this.levels.find(l => l.id === orgLevelId)
+        console.log('randaLogger',orgLevel)
         return this.orgTypes.filter(ot => {
           return ot.level < orgLevel.level
         })

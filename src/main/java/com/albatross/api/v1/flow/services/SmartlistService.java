@@ -375,7 +375,7 @@ public class SmartlistService {
     if (results.isEmpty()) {
       return writeEmptyCsv(fields);
     } else {
-      return writeCsv(results, fields);
+      return writeCsv(results, fields, null != smartlist.getWorkQueueTypeId());
     }
   }
 
@@ -534,7 +534,98 @@ public class SmartlistService {
         "     ), ");
     }
 
-    StringBuilder query = new StringBuilder(" select");
+    StringBuilder query = new StringBuilder(" select ");
+
+    if(null != smartlist.getWorkQueueTypeId()) {
+      query.append(
+        "       flow.project.project_name                                                                             as \"Project Name\",\n" +
+        "       flow.process_step.process_step_name                                                                   as \"Process Step Name\",\n" +
+        "       cpsst.process_step_status_type                                                                        as \"Process Step Status Type\",\n" +
+        "       DATE_PART('day', now() - flow.project_process_step.date_created)                                      as \"Days In Queue\",\n" +
+        "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
+        "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
+          "       coalesce((\n" +
+          "                    SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))\n" +
+          "                    FROM (\n" +
+          "                             select ps2.process_step_name as \"processStepName\",\n" +
+          "                                    ps2.id                as \"processStepId\"\n" +
+          "                             from flow.project_process_step pps2\n" +
+          "                                      inner join flow.process_step ps2 on ps2.id = pps2.process_step_id\n" +
+          "                                      inner join flow.company_process_step_status_type cpsst2\n" +
+          "                                                 on cpsst2.id = pps2.company_process_step_status_type_id\n" +
+          "                                      inner join flow.process_step_status_type psst2\n" +
+          "                                                 on psst2.id = cpsst2.process_step_status_type_id\n" +
+          "                             where pps2.project_id = flow.project.id\n" +
+          "                               and cpsst2.process_step_status_type_id = 1\n" +
+          "                               and pps2.archived is not true\n" +
+          "                               and pps2.id != flow.project_process_step.id\n" +
+          "                             order by ps2.process_step_name) activeProcessSteps), '[]') AS \"activeProcessSteps\",\n" +
+        "       flow.process_step.id                                                                                  as \"processStepId\",\n" +
+        "       flow.project_process_step.id                                                                          as \"projectProcessStepId\",\n" +
+        "       wqt.work_queue_type                                                                                   as \"workQueueType\",\n" +
+        "       wqt.id                                                                                                as \"workQueueTypeId\",\n" +
+        "       pswqt.id                                                                                              as \"processStepWorkQueueTypeId\",\n" +
+        "       flow.project_process_step.project_id                                                                  as \"projectId\",\n" +
+        "       flow.project.company_project_status_type_id                                                           as \"companyProjectStatusTypeId\",\n" +
+        "       cpst.project_status_type_id                                                                           as \"projectStatusTypeId\",\n" +
+        "       flow.project.contact_id                                                                               as \"contactId\",\n" +
+        "       to_char(coalesce(flow.project_process_step.date_modified, flow.project_process_step.date_created), 'MM-DD-YYYY HH12:MI:SS AM')             as \"lastUpdated\",\n" +
+        "       coalesce((\n" +
+        "                    SELECT array_to_json(array_agg(row_to_json(owningPositions)))\n" +
+        "                    FROM (\n" +
+        "                             SELECT pspop.id,\n" +
+        "                                    pspop.process_step_process_id as \"processStepProcessId\",\n" +
+        "                                    pspop.position_id             as \"positionId\",\n" +
+        "                                    pspop.archived\n" +
+        "                             FROM flow.process_step_process_owning_position pspop\n" +
+        "                                      inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id\n" +
+        "                             WHERE psp.process_step_id = flow.process_step.id\n" +
+        "                               and pspop.archived is not true) owningPositions), '[]')  AS \"owningPositions\",\n" +
+        "       coalesce((\n" +
+        "                    SELECT array_to_json(array_agg(row_to_json(notes)))\n" +
+        "                    FROM (\n" +
+        "                             select n.id,\n" +
+        "                                    n.note,\n" +
+        "                                    n.archived,\n" +
+        "                                    n.parent_id as \"parentId\",\n" +
+        "                                    n.date_created as \"dateCreated\",\n" +
+        "                                    n.date_modified as \"dateModified\",\n" +
+        "                                    n.created_by_id as \"createdById\",\n" +
+        "                                    concat(creator.first_name, ' ', creator.last_name) as \"createdBy\",\n" +
+        "                                    n.modified_by_id as \"modifiedById\",\n" +
+        "                                    pn.project_process_step_id as \"projectProcessStepId\",\n" +
+        "                                    pn.process_step_work_queue_type_id as \"processStepWorkQueueTypeId\",\n" +
+        "                                    coalesce((\n" +
+        "                                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))\n" +
+        "                                                 FROM (\n" +
+        "                                                          select n2.id,\n" +
+        "                                                                 n2.note,\n" +
+        "                                                                 n2.archived,\n" +
+        "                                                                 n2.date_created as \"dateCreated\",\n" +
+        "                                                                 n2.date_modified as \"dateModified\",\n" +
+        "                                                                 n2.created_by_id as \"createdById\",\n" +
+        "                                                                 concat(creator2.first_name, ' ', creator2.last_name) as \"createdBy\",\n" +
+        "                                                                 n2.modified_by_id as \"modifiedById\",\n" +
+        "                                                                 pn2.project_process_step_id as \"projectProcessStepId\",\n" +
+        "                                                                 pn2.process_step_work_queue_type_id as \"processStepWorkQueueTypeId\"\n" +
+        "                                                          from flow.note n2\n" +
+        "                                                                   inner join flow.project_process_step_process_step_work_queue_type_note pn2 on pn2.note_id = n2.id\n" +
+        "                                                                   inner join flow.user creator2 on creator2.id = n2.created_by_id\n" +
+        "                                                          where n2.archived is not true\n" +
+        "                                                            and n2.parent_id = n.id\n" +
+        "                                                          order by n2.date_created\n" +
+        "                                                      ) childNotes), '[]') AS \"childNotes\"\n" +
+        "                             from flow.note n\n" +
+        "                                      inner join flow.project_process_step_process_step_work_queue_type_note pn on pn.note_id = n.id\n" +
+        "                                      inner join flow.user creator on creator.id = n.created_by_id\n" +
+        "                             where n.archived is not true\n" +
+        "                               and n.parent_id is null\n" +
+        "                               and pn.project_process_step_id = flow.project_process_step.id\n" +
+        "                               and pn.process_step_work_queue_type_id = pswqt.id\n" +
+        "                             order by n.date_created desc\n" +
+        "\n" +
+        "                         ) notes), '[]') AS \"notes\", \n");
+    }
 
     for (SmartlistFieldAssignment f : fields) {
 
@@ -681,7 +772,7 @@ public class SmartlistService {
         }
       }
 
-      if (f.getReferenceTable().equals("flow.process_step")) {
+      if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
         if (smartlist.getObjectTypeId() == 4) {
           query.append(String.format("  (select %s from %s where %s.id = %s) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getProcessStepId(), f.getName()));
         } else {
@@ -723,7 +814,7 @@ public class SmartlistService {
     query.deleteCharAt(query.length() - 1);
 
     query.append(" flow.project.id as project_id,");
-    query.append(" flow.contact.id as contact_id");
+    query.append(" flow.contact.id as contact_id ");
 
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
@@ -772,93 +863,7 @@ public class SmartlistService {
       }
     } else {
       //this is all required for the work queue stuff
-      query.append(", flow.process_step.id                                                                            as \"processStepId\",\n" +
-        "       flow.project.project_name                                                                             as \"projectName\",\n" +
-        "       flow.project_process_step.id                                                                          as \"projectProcessStepId\",\n" +
-        "       wqt.work_queue_type                                                                                   as \"workQueueType\",\n" +
-        "       st.abbreviation                                                                                       as \"stateAbbreviation\",\n" +
-        "       wqt.id                                                                                                as \"workQueueTypeId\",\n" +
-        "       pswqt.id                                                                                              as \"processStepWorkQueueTypeId\",\n" +
-        "       flow.project_process_step.project_id                                                                  as \"projectId\",\n" +
-        "       flow.process_step.process_step_name                                                                   as \"processStepName\",\n" +
-        "       cpsst.process_step_status_type                                                                        as \"processStepStatusType\",\n" +
-        "       flow.project.company_project_status_type_id                                                           as \"companyProjectStatusTypeId\",\n" +
-        "       DATE_PART('day', now() - flow.project_process_step.date_created)                                      as \"daysInQueue\",\n" +
-        "       cpst.project_status_type_id                                                                           as \"projectStatusTypeId\",\n" +
-        "       flow.project.contact_id                                                                               as \"contactId\",\n" +
-        "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"owner\",\n" +
-        "       coalesce(flow.project_process_step.date_modified, flow.project_process_step.date_created)             as \"lastUpdated\",\n" +
-        "       coalesce((\n" +
-        "                    SELECT array_to_json(array_agg(row_to_json(owningPositions)))\n" +
-        "                    FROM (\n" +
-        "                             SELECT pspop.id,\n" +
-        "                                    pspop.process_step_process_id as \"processStepProcessId\",\n" +
-        "                                    pspop.position_id             as \"positionId\",\n" +
-        "                                    pspop.archived\n" +
-        "                             FROM flow.process_step_process_owning_position pspop\n" +
-        "                                      inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id\n" +
-        "                             WHERE psp.process_step_id = flow.process_step.id\n" +
-        "                               and pspop.archived is not true) owningPositions), '[]')  AS \"owningPositions\",\n" +
-        "       coalesce((\n" +
-        "                    SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))\n" +
-        "                    FROM (\n" +
-        "                             select ps2.process_step_name as \"processStepName\",\n" +
-        "                                    ps2.id                as \"processStepId\"\n" +
-        "                             from flow.project_process_step pps2\n" +
-        "                                      inner join flow.process_step ps2 on ps2.id = pps2.process_step_id\n" +
-        "                                      inner join flow.company_process_step_status_type cpsst2\n" +
-        "                                                 on cpsst2.id = pps2.company_process_step_status_type_id\n" +
-        "                                      inner join flow.process_step_status_type psst2\n" +
-        "                                                 on psst2.id = cpsst2.process_step_status_type_id\n" +
-        "                             where pps2.project_id = flow.project.id\n" +
-        "                               and cpsst2.process_step_status_type_id = 1\n" +
-        "                               and pps2.archived is not true\n" +
-        "                               and pps2.id != flow.project_process_step.id\n" +
-        "                             order by ps2.process_step_name) activeProcessSteps), '[]') AS \"activeProcessSteps\",\n" +
-        "       coalesce((\n" +
-        "                    SELECT array_to_json(array_agg(row_to_json(notes)))\n" +
-        "                    FROM (\n" +
-        "                             select n.id,\n" +
-        "                                    n.note,\n" +
-        "                                    n.archived,\n" +
-        "                                    n.parent_id as \"parentId\",\n" +
-        "                                    n.date_created as \"dateCreated\",\n" +
-        "                                    n.date_modified as \"dateModified\",\n" +
-        "                                    n.created_by_id as \"createdById\",\n" +
-        "                                    concat(creator.first_name, ' ', creator.last_name) as \"createdBy\",\n" +
-        "                                    n.modified_by_id as \"modifiedById\",\n" +
-        "                                    pn.project_process_step_id as \"projectProcessStepId\",\n" +
-        "                                    pn.process_step_work_queue_type_id as \"processStepWorkQueueTypeId\",\n" +
-        "                                    coalesce((\n" +
-        "                                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))\n" +
-        "                                                 FROM (\n" +
-        "                                                          select n2.id,\n" +
-        "                                                                 n2.note,\n" +
-        "                                                                 n2.archived,\n" +
-        "                                                                 n2.date_created as \"dateCreated\",\n" +
-        "                                                                 n2.date_modified as \"dateModified\",\n" +
-        "                                                                 n2.created_by_id as \"createdById\",\n" +
-        "                                                                 concat(creator2.first_name, ' ', creator2.last_name) as \"createdBy\",\n" +
-        "                                                                 n2.modified_by_id as \"modifiedById\",\n" +
-        "                                                                 pn2.project_process_step_id as \"projectProcessStepId\",\n" +
-        "                                                                 pn2.process_step_work_queue_type_id as \"processStepWorkQueueTypeId\"\n" +
-        "                                                          from flow.note n2\n" +
-        "                                                                   inner join flow.project_process_step_process_step_work_queue_type_note pn2 on pn2.note_id = n2.id\n" +
-        "                                                                   inner join flow.user creator2 on creator2.id = n2.created_by_id\n" +
-        "                                                          where n2.archived is not true\n" +
-        "                                                            and n2.parent_id = n.id\n" +
-        "                                                          order by n2.date_created\n" +
-        "                                                      ) childNotes), '[]') AS \"childNotes\"\n" +
-        "                             from flow.note n\n" +
-        "                                      inner join flow.project_process_step_process_step_work_queue_type_note pn on pn.note_id = n.id\n" +
-        "                                      inner join flow.user creator on creator.id = n.created_by_id\n" +
-        "                             where n.archived is not true\n" +
-        "                               and n.parent_id is null\n" +
-        "                               and pn.project_process_step_id = flow.project_process_step.id\n" +
-        "                               and pn.process_step_work_queue_type_id = pswqt.id\n" +
-        "                             order by n.date_created desc\n" +
-        "\n" +
-        "                         ) notes), '[]') AS \"notes\"\n" +
+      query.append(
         "from flow.project\n" +
         "         inner join flow.contact on flow.contact.id = flow.project.contact_id" +
         "         left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id\n" +
@@ -1909,7 +1914,30 @@ public class SmartlistService {
   }
 
   private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers) {
+    return writeCsv(data, headers, false);
+  }
+
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist) {
     CsvSchema.Builder builder = CsvSchema.builder();
+
+    if(workQueueSmartlist) {
+      String[] wqHeaders = {
+        "owner",
+        "stateAbbreviation",
+        "daysInQueue",
+        "processStepStatusType",
+        "processStepName",
+        "projectName"
+//        "owningPositions",
+//        "activeProcessSteps",
+//        "notes",
+      };
+      for(String header : wqHeaders) {
+        SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
+        sfa.setName(header);
+        headers.add(0, sfa);
+      }
+    }
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
     for (int i = 0; i < data.size(); i++) {
@@ -1920,8 +1948,30 @@ public class SmartlistService {
 //      }
       r.remove("project_id");
       r.remove("contact_id");
+      if(workQueueSmartlist) {
+        r.remove("processStepId");
+        r.remove("projectProcessStepId");
+        r.remove("workQueueType");
+        r.remove("workQueueTypeId");
+        r.remove("processStepWorkQueueTypeId");
+        r.remove("projectId");
+        r.remove("projectStatusTypeId");
+        r.remove("companyProjectStatusTypeId");
+        r.remove("contactId");
+        r.remove("lastUpdated");
+        r.remove("owningPositions");
+        r.remove("activeProcessSteps");
+        r.remove("notes");
+      }
+
+//      HashMap<String, Object> test = new HashMap<>();
+//      test.put("processStepId", r.get("processStepId"));
+//      data.set(i, test);
       data.set(i, r);
     }
+
+//    headers.remove(1);
+//    headers.get(0).setName("processStepId");
 
     for (SmartlistFieldAssignment f : headers) {
       builder.addColumn(f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
