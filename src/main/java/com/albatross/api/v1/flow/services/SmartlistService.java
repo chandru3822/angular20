@@ -752,7 +752,7 @@ public class SmartlistService {
         // @TODO: if primary flag is true
         whereClause.append(" flow.user_position.primary_flag is true and ");
 
-        // @TODO: if active flag is false
+        // @TODO: if active flag is false, maybe this should be a user status requirement though
         // assume mountain time for date comparisons
         LocalDateTime dateTimeNow = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
         ZonedDateTime zonedNow = dateTimeNow.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("America/Denver"));
@@ -762,14 +762,13 @@ public class SmartlistService {
         break;
       case 5:
         query.append(" from flow.org ");
-        query.append(" left join flow.user_position on flow.user_position.user_id = flow.org.id ");
+        query.append(" left join flow.user_position on flow.user_position.org_id = flow.org.id ");
         query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
         query.append(" left join flow.position on flow.position.id = flow.user_position.position_id ");
         query.append(" left join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
         query.append(" left join flow.org_type on flow.org_type.id = flow.org.org_type_id ");
         query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
 
-        // @TODO: if primary flag is true
         whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
         break;
     }
