@@ -544,22 +544,36 @@ public class SmartlistService {
         "       DATE_PART('day', now() - flow.project_process_step.date_created)                                      as \"Days In Queue\",\n" +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
-          "       coalesce((\n" +
-          "                    SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))\n" +
-          "                    FROM (\n" +
-          "                             select ps2.process_step_name as \"processStepName\",\n" +
-          "                                    ps2.id                as \"processStepId\"\n" +
-          "                             from flow.project_process_step pps2\n" +
-          "                                      inner join flow.process_step ps2 on ps2.id = pps2.process_step_id\n" +
-          "                                      inner join flow.company_process_step_status_type cpsst2\n" +
-          "                                                 on cpsst2.id = pps2.company_process_step_status_type_id\n" +
-          "                                      inner join flow.process_step_status_type psst2\n" +
-          "                                                 on psst2.id = cpsst2.process_step_status_type_id\n" +
-          "                             where pps2.project_id = flow.project.id\n" +
-          "                               and cpsst2.process_step_status_type_id = 1\n" +
-          "                               and pps2.archived is not true\n" +
-          "                               and pps2.id != flow.project_process_step.id\n" +
-          "                             order by ps2.process_step_name) activeProcessSteps), '[]') AS \"activeProcessSteps\",\n" +
+          " (select array_to_string(array(\n" +
+          "                                    select ps2.process_step_name\n" +
+          "                                    from flow.project_process_step pps2\n" +
+          "                                           inner join flow.process_step ps2 on ps2.id = pps2.process_step_id\n" +
+          "                                           inner join flow.company_process_step_status_type cpsst2\n" +
+          "                                                      on cpsst2.id = pps2.company_process_step_status_type_id\n" +
+          "                                           inner join flow.process_step_status_type psst2\n" +
+          "                                                      on psst2.id = cpsst2.process_step_status_type_id\n" +
+          "                                    where pps2.project_id = flow.project.id\n" +
+          "                                      and cpsst2.process_step_status_type_id = 1\n" +
+          "                                      and pps2.archived is not true\n" +
+          "                                      and pps2.id != flow.project_process_step.id\n" +
+          "                                    order by ps2.process_step_name\n" +
+          "                                  ), ', ')) as \"Active Process Steps\",\n" +
+//          "       coalesce((\n" +
+//          "                    SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))\n" +
+//          "                    FROM (\n" +
+//          "                             select ps2.process_step_name as \"processStepName\",\n" +
+//          "                                    ps2.id                as \"processStepId\"\n" +
+//          "                             from flow.project_process_step pps2\n" +
+//          "                                      inner join flow.process_step ps2 on ps2.id = pps2.process_step_id\n" +
+//          "                                      inner join flow.company_process_step_status_type cpsst2\n" +
+//          "                                                 on cpsst2.id = pps2.company_process_step_status_type_id\n" +
+//          "                                      inner join flow.process_step_status_type psst2\n" +
+//          "                                                 on psst2.id = cpsst2.process_step_status_type_id\n" +
+//          "                             where pps2.project_id = flow.project.id\n" +
+//          "                               and cpsst2.process_step_status_type_id = 1\n" +
+//          "                               and pps2.archived is not true\n" +
+//          "                               and pps2.id != flow.project_process_step.id\n" +
+//          "                             order by ps2.process_step_name) activeProcessSteps), '[]') AS \"Active Process Steps\",\n" +
         "       flow.process_step.id                                                                                  as \"processStepId\",\n" +
         "       flow.project_process_step.id                                                                          as \"projectProcessStepId\",\n" +
         "       wqt.work_queue_type                                                                                   as \"workQueueType\",\n" +
@@ -580,7 +594,7 @@ public class SmartlistService {
         "                             FROM flow.process_step_process_owning_position pspop\n" +
         "                                      inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id\n" +
         "                             WHERE psp.process_step_id = flow.process_step.id\n" +
-        "                               and pspop.archived is not true) owningPositions), '[]')  AS \"owningPositions\",\n" +
+        "                               and pspop.archived is not true) owningPositions), '[]')  AS \"Owning Positions\",\n" +
         "       coalesce((\n" +
         "                    SELECT array_to_json(array_agg(row_to_json(notes)))\n" +
         "                    FROM (\n" +
@@ -624,7 +638,7 @@ public class SmartlistService {
         "                               and pn.process_step_work_queue_type_id = pswqt.id\n" +
         "                             order by n.date_created desc\n" +
         "\n" +
-        "                         ) notes), '[]') AS \"notes\", \n");
+        "                         ) notes), '[]') AS \"Notes\", \n");
     }
 
     for (SmartlistFieldAssignment f : fields) {
@@ -1922,14 +1936,14 @@ public class SmartlistService {
 
     if(workQueueSmartlist) {
       String[] wqHeaders = {
-        "owner",
-        "stateAbbreviation",
-        "daysInQueue",
-        "processStepStatusType",
-        "processStepName",
-        "projectName"
+        "Active Process Steps",
+        "Owner",
+        "State Abbreviation",
+        "Days In Queue",
+        "Process Step Status Type",
+        "Process Step Name",
+        "Project Name",
 //        "owningPositions",
-//        "activeProcessSteps",
 //        "notes",
       };
       for(String header : wqHeaders) {
@@ -1959,9 +1973,9 @@ public class SmartlistService {
         r.remove("companyProjectStatusTypeId");
         r.remove("contactId");
         r.remove("lastUpdated");
-        r.remove("owningPositions");
-        r.remove("activeProcessSteps");
-        r.remove("notes");
+        r.remove("Owning Positions");
+//        r.remove("Active Process Steps");
+        r.remove("Notes");
       }
 
 //      HashMap<String, Object> test = new HashMap<>();

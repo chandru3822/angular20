@@ -53,11 +53,7 @@
                 </v-btn>
               </td>
               <td class="text-left">
-                <div v-if="item['Active Process Steps']">
-                  <span v-for="aps in parseActiveProcessSteps(item)">
-                    {{ aps.processStepName }}
-                  </span>
-                </div>
+                {{item['Active Process Steps']}}
               </td>
               <td v-for="c in customColumns">
                 {{item[c.name]}}
@@ -65,14 +61,15 @@
               <td class="notes-column">
                 <div class="flex-display align-center" >
                   <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
-                    {{item['Notes'][0].note}}
+                     {{item.notes[0].note}}
                   </pre>
                   <v-spacer></v-spacer>
-                  <v-btn small fab text @click="item.showNotesModal = true">
+                  <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
                 <v-dialog
+                  :key="ytfDoWeNeedThis"
                   v-model="item.showNotesModal"
                 >
                   <v-card class="wqt-notes-container">
@@ -95,7 +92,7 @@
                       <v-btn
                         color="primaryCustom"
                         class="white--text mr-2 mb-3"
-                        @click="item.showNotesModal = false"
+                        @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
                       >
                         Close
                       </v-btn>
@@ -142,6 +139,7 @@
         showNotesModal: false,
         selectedPps: {},
         constants,
+        ytfDoWeNeedThis: 0,
         showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
@@ -198,9 +196,6 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      parseActiveProcessSteps(item) {
-        return JSON.parse(item?.activeProcessSteps?.value)
-      },
       filterHeaders () {
         return this.headers.filter(header => header.show === true)
       },
@@ -208,7 +203,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options
         try {
-          console.log('again',this.smartlistId)
           const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
               smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
@@ -219,12 +213,21 @@
           // this.results = data.content
           // this.totalItems = data.totalElements
           this.results = data.data
+
+          //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
+          this.results.forEach(r => {
+            r.showNotesModal = false
+            r.notes = JSON.parse(r['Notes'])
+            // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
+            r.owningPositions = JSON.parse(r['Owning Positions'])
+          })
+
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
             this.headers.push( { text: c.name, value: c.name, show: true })
           })
           //add the notes column to the end
-          this.headers.push({ text: 'Notes', value: 'notes', show: true })
+          this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -252,8 +255,7 @@
       },
       userCanOwnProcessStep(item) {
         let canAssign = false
-        let jsonOwningPositions = JSON.parse(item?.owningPositions?.value)
-        jsonOwningPositions?.forEach(op => {
+        item.owningPositions.forEach(op => {
           let positionMatch = this.userPositions.find(up => up.positionId === op.positionId)
           if(positionMatch !== null && positionMatch !== undefined) {
             canAssign = true
@@ -310,5 +312,10 @@
 
 .wqt-notes-container {
   min-height: 400px;
+}
+
+.active-ps-container {
+  list-style-type: none;
+  padding-left: 0;
 }
 </style>
