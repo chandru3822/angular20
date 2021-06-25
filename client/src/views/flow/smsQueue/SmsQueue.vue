@@ -46,7 +46,11 @@
       <template #item="{ item }">
         <tr class="text-left" :class="{'shaded-row': displayedProjects.indexOf(item) % 2}">
           <td><v-checkbox v-model="item.priority" @change="updateMessage(item)"></v-checkbox></td>
-          <td class="text-left">{{ item.fullName }}</td>
+          <td class="text-left">
+            <router-link text :to="`/project/${item.projectId}?secondaryTab=3`">
+              {{ item.fullName }}
+            </router-link>
+          </td>
           <td class="text-left">{{ item.projectStatus }}</td>
           <td class="text-left truncated">{{ item.message }}</td>
           <td class="text-left">{{ item.lastMessageReceived | formatDate('timestamp', 'M/D/YYYY h:mm a')}}</td>
