@@ -238,8 +238,8 @@ BEGIN
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-        raise notice 'cfga% value %',_key,_value;
-        --perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
+        --raise notice 'cfga% value %',_key,_value;
+        perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
     END LOOP;
 
 
