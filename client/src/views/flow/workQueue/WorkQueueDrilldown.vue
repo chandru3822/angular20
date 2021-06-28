@@ -15,11 +15,18 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
         <v-data-table
             :headers="filterHeaders()"
             :items="results"
+            :search="search"
             :fixed-header="true"
-            disable-sort
             :loading="dataLoading"
             :options.sync="options"
             :footer-props="footerProps"
@@ -139,6 +146,7 @@
         showNotesModal: false,
         selectedPps: {},
         constants,
+        search: '',
         ytfDoWeNeedThis: 0,
         showPropCustom: false,
         dataLoading: true,
@@ -158,27 +166,30 @@
         },
         userPositions: this.$store.state.user.details.userPositions,
         headers: [
-          { text: 'Project', value: 'projectName', show: true },
-          { text: 'Process Step', value: 'processStepName', show: true },
-          { text: 'Status', value: 'processStepStatus', show: true },
-          { text: 'Days In Queue', value: 'daysInQueue', show: true },
-          { text: 'State', value: 'stateAbbreviation', show: true },
+          { text: 'Project', value: 'Project Name', show: true },
+          { text: 'Process Step', value: 'Process Step Name', show: true },
+          { text: 'Status', value: 'Process Step Status Type', show: true },
+          { text: 'Days In Queue', value: 'Days In Queue', show: true },
+          { text: 'State', value: 'State Abbreviation', show: true },
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
-          { text: 'Owner', value: 'owner', show: true },
+          { text: 'Owner', value: 'Owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
         ],
       }
     },
     watch: {
-      options: {
-        handler () {
-          this.getWorkDetails()
-        },
-        deep: true,
-      },
+      //this is used if you are calling paginated results. which doesn't happen with smartlists, they just return the entire data set
+      // options: {
+      //   handler () {
+      //     this.getWorkDetails()
+      //   },
+      //   deep: true,
+      // },
     },
     computed: {},
-    async created() {},
+    async created() {
+      await this.getWorkDetails()
+    },
     methods: {
       async exportCsv () {
         try {
@@ -207,8 +218,8 @@
               smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
-              page: page - 1,
-              size: itemsPerPage
+              // page: page - 1,
+              // size: itemsPerPage
             }})
           // this.results = data.content
           // this.totalItems = data.totalElements
