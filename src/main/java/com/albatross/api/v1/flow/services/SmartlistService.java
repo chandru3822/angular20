@@ -1499,7 +1499,7 @@ public class SmartlistService {
     projectsClause.append(projectsValueJoins.toString());
     projectsClause.append(" where" + projectsWhereClause.toString());
 
-    projectsClause.append("flow.project.archived is not true");
+    projectsClause.append(" flow.project.archived is not true");
 
     query.append(String.format("\"projects\" as (%s), ", projectsClause.toString()));
 
