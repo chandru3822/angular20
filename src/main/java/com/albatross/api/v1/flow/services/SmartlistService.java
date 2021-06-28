@@ -363,7 +363,8 @@ public class SmartlistService {
     log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
     String query;
 
-    if (smartlist.getObjectTypeId() == 4) {
+    //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
+    if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
