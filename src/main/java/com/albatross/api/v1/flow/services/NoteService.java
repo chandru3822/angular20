@@ -126,7 +126,7 @@ public class NoteService {
 
     Note fetchedNote = getNote(noteId);
     fetchedNote.setPrimaryId(note.getPrimaryId());
-    // Match for Full Name (Email)
+    // Match for firstName lastName (Email)
     Pattern mentionedNameRegex = Pattern.compile("\\B@([a-zA-Z-\\s*()]+)\\s(\\S+) \\(([^)]+)\\)");
     Matcher m = mentionedNameRegex.matcher(fetchedNote.getNote());
     // If mention(s) are found in the Note
