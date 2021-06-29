@@ -10,7 +10,7 @@
               <v-tab :to="`/settings/workQueue/types`">
                 Types
               </v-tab>
-              <v-tab :to="`/settings/workQueue/categories`">
+              <v-tab v-if="userCanAccessCategories" :to="`/settings/workQueue/categories`">
                 Categories
               </v-tab>
             </v-tabs>
@@ -38,6 +38,7 @@
       return {
         snackbar: {},
         constants,
+        userCanAccessCategories: this.$store.getters.userHasFeature('SETTINGS')
       }
     },
     computed: {},

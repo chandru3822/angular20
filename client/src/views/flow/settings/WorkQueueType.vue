@@ -29,7 +29,7 @@
             </div>
 
           </div>
-          <div class="text-right" v-if="userCanEdit">
+          <div class="text-right" v-if="userCanEdit || userIsAdmin">
             <v-btn text v-if="!editType" class="" @click="[editType = !editType]">
               <v-icon>edit</v-icon>
             </v-btn>
@@ -51,7 +51,7 @@
           <v-spacer />
           <v-toolbar-items>
             <v-btn
-              v-if="!showNewFieldForm && userCanEdit"
+              v-if="!showNewFieldForm && (userCanEdit || userIsAdmin)"
               text
               @click="showNewFieldForm = true"
             >
@@ -116,7 +116,7 @@
 
         <v-list dense>
           <v-list-item>
-            <v-list-item-action v-if="userCanEdit">
+            <v-list-item-action v-if="userCanEdit || userIsAdmin">
               <v-icon></v-icon>
             </v-list-item-action>
 
@@ -138,19 +138,19 @@
           <v-divider />
 
           <draggable
-            :disabled="!userCanEdit"
+            :disabled="!userCanEdit && !userIsAdmin"
             v-model="assignedFields"
             @change="reorderFields"
             group="assignedFields"
           >
 
             <v-list-item
-              :class="{grab: userCanEdit}"
+              :class="{grab: userCanEdit || userIsAdmin}"
               v-for="(field, index) in assignedFields"
               :key="field.id"
             >
 
-              <v-list-item-action v-if="userCanEdit">
+              <v-list-item-action v-if="userCanEdit || userIsAdmin">
                 <v-icon>drag_handle</v-icon>
               </v-list-item-action>
 
@@ -164,7 +164,7 @@
               </v-list-item-content>
 
               <v-list-item-action class="clickable">
-                <v-icon v-if="userCanEdit" @click="deleteField(index)">delete</v-icon>
+                <v-icon v-if="userCanDelete" @click="deleteField(index)">delete</v-icon>
                 <v-icon v-else></v-icon>
               </v-list-item-action>
             </v-list-item>
@@ -221,7 +221,8 @@
         companyId: this.$store.state.user.details.companyId,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
       }
     },
     computed: {},
