@@ -173,7 +173,7 @@
           { text: 'State', value: 'State Abbreviation', show: true },
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'Owner', show: true },
-          { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
+          { text: 'Active Process Steps', value: 'Active Process Steps', show: true },
         ],
       }
     },
