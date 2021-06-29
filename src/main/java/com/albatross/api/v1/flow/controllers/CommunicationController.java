@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
@@ -46,6 +47,9 @@ public class CommunicationController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SecurityService securityService;
+
     @GetMapping(value = "/defaultEmailTemplate", produces = "text/html")
     public String getDefaultEmailTemplate() throws Exception {
         return communicationService.getDefaultEmailTemplate();
@@ -53,6 +57,7 @@ public class CommunicationController {
 
     @PostMapping(value = "/sendTextsForProject")
     public HashMap<String, Object> sendTextsForProject(@RequestBody SendTextsRequest sendTexts) {
+        User user = securityService.getCurrentUser();
         String groupId = UUID.randomUUID().toString();
         Long contactId = sendTexts.getUserIDs().get(0);
         Contact contact = contactService.getContact(contactId);
@@ -61,7 +66,7 @@ public class CommunicationController {
         try {
           String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
           communicationService.queueTextMessagesForProject(groupId, contact, safePhone,
-              sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
+              sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs(), user.getId());
 
           return new HashMap<String, Object>() {{
               put("messageGroup", groupId);

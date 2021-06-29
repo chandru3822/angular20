@@ -7,6 +7,7 @@
              left join flow.org_type parent on parent.id = ot.org_parent_type_id
              inner join flow.org_level ol on ol.id = ot.org_level_id
     where ot.company_id = :companyId
+    and ot.archived is false
     order by ol.level, ot.org_type
   ]]></orgType.getAllForCompany>
 
@@ -21,6 +22,7 @@
     where case when :isParent
             then ot.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else ot.company_id = :companyId end
+      and  ot.archived is false
     order by ot.org_type
   ]]></orgType.getSchedulableForCompany>
 

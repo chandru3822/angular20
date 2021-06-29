@@ -74,6 +74,7 @@
            p.scheduler,
            p.contact_owner,
            p.project_owner,
+           p.sms_owner,
            p.available_to_children,
            coalesce((
                SELECT array_to_json(array_agg(row_to_json(companyFeatures)))
@@ -110,8 +111,8 @@
   ]]></position.getOne>
 
   <position.insert><![CDATA[
-    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner, project_owner, use_slot_schedule)
-    values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner, :useSlotSchedule)
+    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner, project_owner, sms_owner. use_slot_schedule)
+    values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner, :smsOwner, :useSlotSchedule)
   ]]></position.insert>
 
   <position.update><![CDATA[
@@ -125,6 +126,7 @@
             available_to_children = :availableToChildren,
             contact_owner = :contactOwner,
             project_owner = :projectOwner,
+            sms_owner = :smsOwner,
             date_modified = now()
     where id = :id
   ]]></position.update>
