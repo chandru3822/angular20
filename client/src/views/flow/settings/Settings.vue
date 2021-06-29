@@ -200,7 +200,8 @@ export default {
       }, {
         path: '/settings/workQueue/types',
         title: 'Work Queue',
-        show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
+        // show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
+        show: true
       }, {
         header: 'Processes',
         show: this.hasSettingsAccess
