@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
@@ -9,6 +10,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -22,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -57,22 +62,31 @@ public class SMSService {
     private final String webhookPayloadKey = "twilio-webhook-payload";
     private final String webhookPayloadErrorsKey = "twilio-webhook-payload:errors";
     private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+    private final SecurityService securityService;
 
-    public Optional<SMSQueuePage> getSmsQueue(String groupId, Pageable pageable) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("groupId", groupId);
-        params.put("page_size", pageable.getPageSize());
-        params.put("page_number", pageable.getPageNumber());
-        params.put("offset", pageable.getOffset());
 
-        String where = "(:groupId::varchar IS NULL OR message_group = :groupId)";
-        return sqlCache.get(
-                "sms.queue.fetch_page",
-                params,
-                new SMSQueuePageMapper<>(SMSQueuePage.class, om),
-                where,
-                where
-        );
+    public Page<SmsQueueRow> getSmsQueue(Pageable pageable) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("page_size", pageable.getPageSize());
+      params.put("page_number", pageable.getPageNumber());
+      params.put("offset", pageable.getOffset());
+      List<SmsQueueRow> results = sqlCache.query("sms.getSmsQueue", params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
+
+      Integer count = 10000;
+      Page<SmsQueueRow> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+      return page;
+    }
+
+    public List<Owner> getOwners() {
+      User user = securityService.getCurrentUser();
+      Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+      return sqlCache.query("project.getOwners",
+        ImmutableMap.of(
+          "companyId", user.getCompanyId(),
+          "isParent", isParent,
+          "parentCompanyId", user.getHighestParentCompanyId()),
+        Owner.class);
     }
 
     public List<SMSQueueExportItem> exportSmsQueue() {
@@ -105,7 +119,7 @@ public class SMSService {
         return results;
     }
 
-    public SMSQueueItem queueMessage(String messageGroup, Long userId, String toPhone, String message, List<URI> mediaURLs, RecipientType recipientType) {
+    public SMSQueueItem queueMessage(String messageGroup, Long userId, String toPhone, String message, List<URI> mediaURLs, RecipientType recipientType, Long sentByUserId) {
         String queueInsert = sqlCache.getByKey("sms.queue.insert");
 
         MapSqlParameterSource source = new MapSqlParameterSource();
@@ -115,6 +129,7 @@ public class SMSService {
         source.addValue("toPhone", toPhone);
         source.addValue("mediaUrls", null);
         source.addValue("recipientTypeId", recipientType.ordinal());
+        source.addValue("messageSentByUserId", sentByUserId);
 
         if (mediaURLs != null && !mediaURLs.isEmpty()) {
 
@@ -378,6 +393,15 @@ public class SMSService {
         return type;
     }
 
+    public void updateSms(SMSQueueItem smsQueueItem) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("smsId", smsQueueItem.getId());
+      params.put("priority", smsQueueItem.getPrioirty());
+      params.put("messageRead", smsQueueItem.getMessageRead());
+      params.put("ownerUserPositionId", smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);
+      sqlCache.update("sms.update", params);
+    }
+
     public void saveReply(TwilioMessageRequest sms) {
         log.info("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
 
@@ -457,13 +481,8 @@ public class SMSService {
 
         @Override
         protected void initBeanWrapper(BeanWrapper bw) {
-            TypeReference<List<SMSQueueItem>> listTypeRef = new TypeReference<List<SMSQueueItem>>() {
-            };
-            bw.registerCustomEditor(
-                    List.class,
-                    "items",
-                    new JsonCollectionDeserializer(listTypeRef, om));
-
+          TypeReference<Owner> ownerRef = new TypeReference<>() {};
+          bw.registerCustomEditor(Object.class, "owner", new JsonCollectionDeserializer(ownerRef, om));
         }
     }
 
