@@ -85,12 +85,16 @@ public class WorkQueueTypeService {
 
   public Optional<WorkQueueType> insertType(WorkQueueType type) {
     User user = securityService.getCurrentUser();
-    Long id = sqlCache.updateReturningId("workQueueType.insertType",
-        ImmutableMap.of("workQueueType", type.getWorkQueueType(),
-            "createdById", user.getId(),
-            "workQueueCategoryId", type.getWorkQueueCategoryId(),
-            "companyId", user.getCompanyId()),
-        "id").longValue();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("workQueueType", type.getWorkQueueType());
+    params.put("createdById", user.getId());
+    params.put("workQueueCategoryId", type.getWorkQueueCategoryId());
+    params.put("companyId", user.getCompanyId());
+    Long id = sqlCache.updateReturningId("workQueueType.insertType", params, "id").longValue();
+
+    //any time a work queue type is created we need to create a smartlist placeholder for any custom fields in the dropdown
+    params.put("workQueueTypeId", id);
+    sqlCache.update("workQueueType.addSmartlist", params);
 
     return getType(id);
   }

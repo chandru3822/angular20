@@ -7,15 +7,28 @@
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="exportCsv" v-if="results.length > 0">
+              <v-icon class="mr-2">mdi-cloud-download</v-icon>
+              Export
+            </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
         <v-data-table
             :headers="filterHeaders()"
             :items="results"
+            :search="search"
             :fixed-header="true"
-            disable-sort
             :loading="dataLoading"
             :options.sync="options"
-            :server-items-length="totalItems"
             :footer-props="footerProps"
             class="elevation-1 mt-1"
             @click:row="clickRow"
@@ -32,40 +45,42 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left underline">
                 <v-btn text small :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${item.contactId}`">
-                  {{item.projectName}}
+                  {{item['Project Name']}}
                 </v-btn>
               </td>
-              <td class="text-left">{{item.processStepName}}</td>
-              <td class="text-left">{{item.processStepStatusType}}</td>
-              <td class="text-left">{{item.daysInQueue}}</td>
-              <td class="text-left">{{item.stateAbbreviation}}</td>
-              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item.proposalDueDate  | formatDate('timestamp')}}</td>
+              <td class="text-left">{{item['Process Step Name']}}</td>
+              <td class="text-left">{{item['Process Step Status Type']}}</td>
+              <td class="text-left">{{item['Days In Queue']}}</td>
+              <td class="text-left">{{item['State Abbreviation']}}</td>
+              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item['Proposal Due Date']  | formatDate('timestamp')}}</td>
               <td class="text-left">
-                <div v-if="item.owner">{{item.owner}}</div>
+                <div v-if="item['Owner']">{{item['Owner']}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
               <td class="text-left">
-                <div v-for="aps in item.activeProcessSteps">
-                  {{ aps.processStepName }}
-                </div>
+                {{item['Active Process Steps']}}
+              </td>
+              <td v-for="c in customColumns">
+                {{item[c.name]}}
               </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
                   <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
-                    {{item.notes[0].note}}
+                     {{item.notes[0].note}}
                   </pre>
                   <v-spacer></v-spacer>
-                  <v-btn small fab text @click="item.showNotesModal = true">
+                  <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
                 <v-dialog
+                  :key="ytfDoWeNeedThis"
                   v-model="item.showNotesModal"
                 >
                   <v-card class="wqt-notes-container">
-                    <v-card-title class="primary-custom-bg white--text">{{ item.projectName }} - {{item.processStepName}}</v-card-title>
+                    <v-card-title class="primary-custom-bg white--text">{{ item['Project Name'] }} - {{item['Process Step Name']}}</v-card-title>
                     <v-card-text class="py-3">
                       <NotesAndActivity
                         :showNotes="true"
@@ -84,7 +99,7 @@
                       <v-btn
                         color="primaryCustom"
                         class="white--text mr-2 mb-3"
-                        @click="item.showNotesModal = false"
+                        @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
                       >
                         Close
                       </v-btn>
@@ -105,10 +120,19 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import { saveAs } from 'file-saver'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+  import {DateTime} from 'luxon'
   import constants from '@/helpers/constants'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {
+    getRequest,
+    getRequestWithParams,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getSnackbar,
+    logError
+  } from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueueDrilldown',
@@ -122,12 +146,16 @@
         showNotesModal: false,
         selectedPps: {},
         constants,
+        search: '',
+        ytfDoWeNeedThis: 0,
         showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
+        smartlistId: this.$route.query.smartlistId,
         unassigned: this.$route.query.unassigned,
         results: [],
+        customColumns: [],
         totalItems: 0,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000],
@@ -138,29 +166,47 @@
         },
         userPositions: this.$store.state.user.details.userPositions,
         headers: [
-          { text: 'Project', value: 'projectName', show: true },
-          { text: 'Process Step', value: 'processStepName', show: true },
-          { text: 'Status', value: 'processStepStatus', show: true },
-          { text: 'Days In Queue', value: 'daysInQueue', show: true },
-          { text: 'State', value: 'stateAbbreviation', show: true },
+          { text: 'Project', value: 'Project Name', show: true },
+          { text: 'Process Step', value: 'Process Step Name', show: true },
+          { text: 'Status', value: 'Process Step Status Type', show: true },
+          { text: 'Days In Queue', value: 'Days In Queue', show: true },
+          { text: 'State', value: 'State Abbreviation', show: true },
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
-          { text: 'Owner', value: 'owner', show: true },
+          { text: 'Owner', value: 'Owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
-          { text: 'Notes', value: 'notes', show: true, width: 350 },
         ],
       }
     },
     watch: {
-      options: {
-        handler () {
-          this.getWorkDetails()
-        },
-        deep: true,
-      },
+      //this is used if you are calling paginated results. which doesn't happen with smartlists, they just return the entire data set
+      // options: {
+      //   handler () {
+      //     this.getWorkDetails()
+      //   },
+      //   deep: true,
+      // },
     },
     computed: {},
-    async created() {},
+    async created() {
+      await this.getWorkDetails()
+    },
     methods: {
+      async exportCsv () {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data} = await getRequest(`/smartlist/${this.smartlistId}/csv`)
+          let blob = new Blob([data], {
+            type: 'text/csv;charset=utf-8'
+          });
+          saveAs(blob, `${this.results[0].workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+        } catch (e) {
+          this.snackbar = getSnackbar('ERROR', e.message)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          logError(e)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       filterHeaders () {
         return this.headers.filter(header => header.show === true)
       },
@@ -169,13 +215,30 @@
         const { page, itemsPerPage } = this.options
         try {
           const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
+              smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
-              page: page - 1,
-              size: itemsPerPage
+              // page: page - 1,
+              // size: itemsPerPage
             }})
-          this.results = data.content
-          this.totalItems = data.totalElements
+          // this.results = data.content
+          // this.totalItems = data.totalElements
+          this.results = data.data
+
+          //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
+          this.results.forEach(r => {
+            r.showNotesModal = false
+            r.notes = JSON.parse(r['Notes'])
+            // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
+            r.owningPositions = JSON.parse(r['Owning Positions'])
+          })
+
+          this.customColumns = data.headers
+          this.customColumns.forEach(c => {
+            this.headers.push( { text: c.name, value: c.name, show: true })
+          })
+          //add the notes column to the end
+          this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -203,7 +266,7 @@
       },
       userCanOwnProcessStep(item) {
         let canAssign = false
-        item?.owningPositions?.forEach(op => {
+        item.owningPositions.forEach(op => {
           let positionMatch = this.userPositions.find(up => up.positionId === op.positionId)
           if(positionMatch !== null && positionMatch !== undefined) {
             canAssign = true
@@ -260,5 +323,10 @@
 
 .wqt-notes-container {
   min-height: 400px;
+}
+
+.active-ps-container {
+  list-style-type: none;
+  padding-left: 0;
 }
 </style>
