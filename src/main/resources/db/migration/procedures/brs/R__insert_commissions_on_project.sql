@@ -13,8 +13,15 @@ declare
     v_custom_field_group_assignment_id integer;
     v_override_plan_found              bigint;
     v_commission_plan_found             bigint;
+    v_start_date                       timestamp;
 BEGIN
 
+    select min(process_step_complete_date) milestone_one_complete_date
+    into v_start_date
+    from flow.project_process_step pps
+             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+             inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+    where pps.process_step_id = 175 and pps.project_id = p_project_id;
 
     select count(1)
     into v_override_plan_found
@@ -44,10 +51,10 @@ BEGIN
     from brs.override_plan op
              inner join brs.override_plan_assigned_user opau
                         on opau.override_plan_id = op.id and opau.user_id = v_user_id
-    where (now() AT TIME ZONE 'US/Mountain') >= opau.start_date
+    where v_start_date >= opau.start_date
       and case
               when opau.end_date is not null then
-                  (now() AT TIME ZONE 'US/Mountain') <= opau.end_date
+                      v_start_date <= opau.end_date
               else 1 = 1 end
     and op.position_id = 1;
 
@@ -55,10 +62,10 @@ BEGIN
     into v_commission_plan_id
     from brs.commission_plan cp
              inner join brs.commission_plan_user cpu on cpu.commission_plan_id = cp.id and cpu.user_id = v_user_id
-    where (now() AT TIME ZONE 'US/Mountain') >= cpu.start_date
+    where v_start_date >= cpu.start_date
       and case
               when cpu.end_date is not null then
-                  (now() AT TIME ZONE 'US/Mountain') <= cpu.end_date
+                      v_start_date <= cpu.end_date
               else 1 = 1 end
     and cp.position_id = 1;
 
