@@ -10,7 +10,7 @@
           <v-col cols="3" md="2">
             <v-select v-model="selectedRegionalManager"
                       :items="regionalManagers"
-                      label="Regional Institution Manager"
+                      label="Regional Installation Manager"
                       item-text="fullName"
                       @change="getInstallationCrew()"
                       return-object
