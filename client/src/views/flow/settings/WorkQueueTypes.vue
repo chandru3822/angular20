@@ -63,7 +63,7 @@
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn v-if="userCanEdit && selectedWorkQueueCategoryId !== -1" text icon small class="handle">
+                  <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text icon small class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -75,7 +75,7 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text v-if="userCanEdit">
+                    <v-btn class="clickable" small text v-if="userCanEdit || userIsAdmin">
                       <v-icon @click="goToDetails(item)">edit</v-icon>
                     </v-btn>
                     <v-dialog
@@ -190,6 +190,7 @@
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'),
         expanded: [],
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },

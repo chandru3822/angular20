@@ -52,7 +52,6 @@
               <td class="text-left">{{item['Process Step Status Type']}}</td>
               <td class="text-left">{{item['Days In Queue']}}</td>
               <td class="text-left">{{item['State Abbreviation']}}</td>
-              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item['Proposal Due Date']  | formatDate('timestamp')}}</td>
               <td class="text-left">
                 <div v-if="item['Owner']">{{item['Owner']}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
@@ -171,7 +170,6 @@
           { text: 'Status', value: 'Process Step Status Type', show: true },
           { text: 'Days In Queue', value: 'Days In Queue', show: true },
           { text: 'State', value: 'State Abbreviation', show: true },
-          { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'Owner', show: true },
           { text: 'Active Process Steps', value: 'Active Process Steps', show: true },
         ],

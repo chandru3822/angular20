@@ -165,6 +165,7 @@
          where up.user_id = u.id
            and up.primary_flag is true
            and up.archived is not true
+           limit 1
          ) as primary_position,
        concat(u.first_name, ' ', u.last_name) AS full_name,
        uc.company_id,
