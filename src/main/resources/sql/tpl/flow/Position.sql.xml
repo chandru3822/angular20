@@ -111,7 +111,7 @@
   ]]></position.getOne>
 
   <position.insert><![CDATA[
-    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner, project_owner, sms_owner. use_slot_schedule)
+    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner, project_owner, sms_owner, use_slot_schedule)
     values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner, :smsOwner, :useSlotSchedule)
   ]]></position.insert>
 
