@@ -26,7 +26,7 @@
     select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::integer, :parentCompanyId::integer, :isParent)
   ]]></installerDashboard.getPerformanceMetrics>
 
-<installerDashboard.getDashboardValues><![CDATA[
+  <installerDashboard.getDashboardValues><![CDATA[
     select json_build_object(
            'substantialCompletions', (select (select count(*)
           from brs.project_details pd
@@ -83,7 +83,10 @@
         NULLIF(((select count(*) from brs.project_details pd
             where installation_start_time::date between :startDate::date and :endDate::date
             AND
-            pd.installation_resource = :crewId) ::numeric(10,2)),0),0)) ::numeric(10,2)
+            pd.installation_resource = :crewId) ::numeric(10,2)),0),0)) ::numeric(10,2),
+        'projectIds', (select array_agg(project_id) from brs.project_details pd
+          where substantial_completion_date between :startDate::date and :endDate::date
+          AND pd.installation_resource = :crewId)
         )
   ]]></installerDashboard.getDashboardValues>
 </sql>
