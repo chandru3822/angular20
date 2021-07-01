@@ -28,6 +28,11 @@ public class WorkQueueTypeController {
     return workQueueTypeService.getWorkQueueTypes(sortByName);
   }
 
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<WorkQueueType> getWorkQueueType (@PathVariable Long id) {
+    return workQueueTypeService.getType(id);
+  }
+
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
     workQueueTypeService.deleteType(typeId);

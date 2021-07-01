@@ -39,7 +39,7 @@
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
               <v-card-text class="pt-1">
                 <router-link class="no-text-decoration card-link"
-                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: selectedUserPosition.userPositionId, unassigned: selectedUserPosition.unassigned}}">
+                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userPositionId, unassigned: selectedUserPosition.unassigned}}">
                   <div class="text-left">{{wq.workQueueType}}</div>
                   <div class="card-count">{{wq.workQueueCount}}</div>
                 </router-link>

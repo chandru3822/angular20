@@ -3,6 +3,7 @@
    select wqt.id as work_queue_type_id,
        wqt.work_queue_type,
        wqt.work_queue_category_id,
+       s.id as smartlist_id,
        wqc.color,
        (
            with ps_wq_statuses as (
@@ -67,6 +68,7 @@
        )      as work_queue_count
 from flow.work_queue_type wqt
          inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
+         inner join flow.smartlist s on s.work_queue_type_id = wqt.id
 where case
           when :workQueueCategoryId::int is not null then wqt.work_queue_category_id = :workQueueCategoryId
           else true end

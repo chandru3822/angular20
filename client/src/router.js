@@ -414,13 +414,13 @@ export default new Router({
                 {
                   path: 'scheduleTo',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/postalCodeZones/ScheduleTo.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/ScheduleTo.vue'),
                 }, {
                   path: 'scheduleBy',
-                  component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/postalCodeZones/ScheduleBy.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/ScheduleBy.vue'),
                 }, {
                   path: 'codes',
-                  component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/postalCodeZones/Codes.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/Codes.vue'),
                 }
               ]
             }, {
@@ -473,7 +473,7 @@ export default new Router({
               path: 'workQueue',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (store.getters.userHasFeature('SETTINGS') || store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')) {
                   return import (/* webpackChunkName: "workQueueAdmin" */ './views/flow/settings/WorkQueue.vue')
                 } else {
                   return accessDenied()
@@ -484,6 +484,11 @@ export default new Router({
                   path: 'types',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
+                },  {
+                  path: 'type/:id',
+                  name: 'workQueueType',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueType.vue'),
                 }, {
                   path: 'categories',
                   component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/WorkQueueCategories.vue'),
