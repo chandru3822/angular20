@@ -39,14 +39,14 @@ public class WorkQueueService {
   private final SqlCacheRO sqlCacheRO;
 
 
-  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userPositionId, Boolean unassigned) {
+  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
-    params.put("userPositionId", userPositionId);
+    params.put("userId", userId);
     params.put("unassigned", null == unassigned ? false : unassigned);
     //currently we only show active process steps. but sending in as a list in case that changes
     params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
@@ -82,14 +82,14 @@ public class WorkQueueService {
 //    return page;
 //  }
 
-  public SmartlistResult getWorkQueueDetails(Long workQueueTypeId, Long smartlistId, Long userPositionId, Boolean unassigned, Pageable pageable) {
+  public SmartlistResult getWorkQueueDetails(Long workQueueTypeId, Long smartlistId, Long userId, Boolean unassigned, Pageable pageable) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
-    params.put("userPositionId", userPositionId);
+    params.put("userId", userId);
     params.put("unassigned", null == unassigned ? false : unassigned);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
