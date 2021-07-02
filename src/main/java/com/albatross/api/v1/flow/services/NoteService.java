@@ -6,10 +6,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.Note;
-import com.albatross.api.v1.flow.model.Project;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -207,6 +204,10 @@ public class NoteService {
       TypeReference<List<Note>> childNoteRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "childNotes",
           new JsonCollectionDeserializer(childNoteRef, objectMapper));
+
+      TypeReference<UserPosition> createdByPrimaryPositionRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "createdByPrimaryPosition",
+        new JsonCollectionDeserializer(createdByPrimaryPositionRef, objectMapper));
 
     }
   }
