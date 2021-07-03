@@ -24,7 +24,7 @@
               <v-text-field text
                             label="Last Name"
                             id="qa-last-name-field"
-                            :rules="nameRules"
+                            :rules="nameRequiredRules"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
