@@ -62,7 +62,9 @@
                      else ps.company_id = :companyId end
              and case
                      when :unassigned is true then pps.user_position_id is null
-                     when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId
+                     when :unassigned is not true and :userId::int is not null then pps.user_position_id = any (
+                        select id from flow.user_position where user_id = :userId::int and archived is false
+                       )
                      else true end
              and pps.main is true
        )      as work_queue_count

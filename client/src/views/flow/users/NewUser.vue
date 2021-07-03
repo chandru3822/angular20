@@ -100,6 +100,7 @@
               />
               <v-autocomplete v-model="newPosition.positionId"
                               :items="positions"
+                              :rules="requiredRules"
                               label="Position"
                               item-text="position"
                               item-value="id"
