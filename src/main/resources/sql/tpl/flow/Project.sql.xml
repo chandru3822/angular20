@@ -280,6 +280,7 @@
     select
       pps.id as project_process_step_id,
       pps.project_id,
+      ppse.process_step_event_id,
       ppse.id as projectProcessStepEventId,
       ppse.date_created,
       ps.process_step_name,
