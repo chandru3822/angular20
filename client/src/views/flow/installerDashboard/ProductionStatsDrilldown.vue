@@ -51,22 +51,6 @@
       projectIds: Array
     },
     watch: {
-      //this is all dumb. i cant figure out how to make a dialog reload the "created" function when it is opened for a second time
-      'crewId': async function () {
-        await this.onLoad()
-      },
-      'endDate': async function () {
-        await this.onLoad()
-      },
-      'startDate': async function () {
-        await this.onLoad()
-      },
-      'title': async function () {
-        await this.onLoad()
-      },
-      'projectIds': async function () {
-        await this.onLoad()
-      }
     },
     data() {
       return {

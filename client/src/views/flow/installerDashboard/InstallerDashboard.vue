@@ -100,8 +100,11 @@
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
             <v-card-text class="pt-1">
-              <div class="text-left">{{wq.workQueueType}}</div>
-              <div class="card-count">{{wq.workQueueCount}}</div>
+              <router-link class="no-text-decoration card-link"
+                           :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedInstallationCrew.positionId, unassigned: selectedUserPosition.unassigned}}">
+                <div class="text-left">{{wq.workQueueType}}</div>
+                <div class="card-count">{{wq.workQueueCount}}</div>
+              </router-link>
             </v-card-text>
           </v-card>
         </v-row>
