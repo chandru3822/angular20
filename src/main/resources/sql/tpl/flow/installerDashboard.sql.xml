@@ -4,7 +4,7 @@
     from flow.user u
          inner join flow.user_position up on u.id = up.user_id
          inner join flow.org o on o.id = up.org_id
-    where up.position_id = 69
+    where up.position_id = 69 and up.primary_flag = true and up.archived = false
     and case when (:isParent)
             then company_id = :parentCompanyId
             else company_id = :companyId
@@ -13,12 +13,14 @@
   ]]></installerDashboard.getRegionalManagers>
 
   <installerDashboard.getInstallationCrew><![CDATA[
-    select id as positionId, org_name AS full_name
-    from flow.org
-    where parent_org_id = :orgId and archived = false and active_flag = true
+    select o.id as positionId, o.org_name AS full_name
+    from flow.org o
+        inner join flow.org_type ot on o.org_type_id = ot.id
+    where o.parent_org_id = :orgId and o.archived = false and o.active_flag = true
+    and ot.id = 6
     and case when (:isParent)
-            then company_id = :parentCompanyId
-            else company_id = :companyId
+          then o.company_id = :parentCompanyId
+          else o.company_id = :companyId
     end
   ]]></installerDashboard.getInstallationCrew>
 
@@ -26,7 +28,7 @@
     select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::integer, :parentCompanyId::integer, :isParent)
   ]]></installerDashboard.getPerformanceMetrics>
 
-<installerDashboard.getDashboardValues><![CDATA[
+  <installerDashboard.getDashboardValues><![CDATA[
     select json_build_object(
            'substantialCompletions', (select (select count(*)
           from brs.project_details pd
@@ -83,7 +85,10 @@
         NULLIF(((select count(*) from brs.project_details pd
             where installation_start_time::date between :startDate::date and :endDate::date
             AND
-            pd.installation_resource = :crewId) ::numeric(10,2)),0),0)) ::numeric(10,2)
+            pd.installation_resource = :crewId) ::numeric(10,2)),0),0)) ::numeric(10,2),
+        'projectIds', (select array_agg(project_id) from brs.project_details pd
+          where substantial_completion_date between :startDate::date and :endDate::date
+          AND pd.installation_resource = :crewId)
         )
   ]]></installerDashboard.getDashboardValues>
 </sql>

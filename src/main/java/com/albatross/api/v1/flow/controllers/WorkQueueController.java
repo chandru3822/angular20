@@ -28,17 +28,17 @@ public class WorkQueueController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId,
                                         @RequestParam(required = false) Boolean unassigned,
-                                        @RequestParam(required = false) Long userPositionId) {
-    return workQueueService.getWorkQueues(workQueueCategoryId, userPositionId, unassigned);
+                                        @RequestParam(required = false) Long userId) {
+    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public SmartlistResult getWorkQueueDetails (@PathVariable Long id,
                                               @RequestParam Long smartlistId,
                                               @RequestParam(required = false) Boolean unassigned,
-                                              @RequestParam(required = false) Long userPositionId,
+                                              @RequestParam(required = false) Long userId,
                                               Pageable pageable) {
-    return workQueueService.getWorkQueueDetails(id, smartlistId, userPositionId, unassigned, pageable);
+    return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, pageable);
   }
 
   @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)

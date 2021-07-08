@@ -1,5 +1,15 @@
 <template>
   <v-container class="app-container">
+    <v-dialog v-model="showModal" max-width="600">
+      <ProductionStatsDrilldown
+                      :crew-id="selectedInstallationCrew.positionId"
+                      :start-date="startDate"
+                      :end-date="endDate"
+                      :title="drilldownTitle"
+                      :project-ids="drilldownProjectIds"
+                      @prodStatsDrilldownDialogClosed="showModal = false"
+      ></ProductionStatsDrilldown>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -72,7 +82,7 @@
           <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': 'white'}"></div>
-              <v-card-text class="pt-1">
+              <v-card-text class="pt-1" @click="drilldownTitle = stat.name; drilldownProjectIds = stat.projectIds; showModal = true">
                 <div class="text-left">{{stat.name}}</div>
                 <div class="card-count">{{stat.value}}</div>
               </v-card-text>
@@ -91,7 +101,7 @@
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
             <v-card-text class="pt-1">
               <router-link class="no-text-decoration card-link"
-                           :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: selectedInstallationCrew.positionId, unassigned: selectedUserPosition.unassigned}}">
+                           :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedInstallationCrew.positionId, unassigned: selectedUserPosition.unassigned}}">
                 <div class="text-left">{{wq.workQueueType}}</div>
                 <div class="card-count">{{wq.workQueueCount}}</div>
               </router-link>
@@ -171,7 +181,7 @@
         <tr class="text-left" :class="{'shaded-row': performanceMetrics.indexOf(item) % 2}">
           <td class="text-left">{{ item.rnk }}</td>
           <td class="text-left">{{ item.crewname }}</td>
-          <td class="text-left">{{ item.substantialcompletions }}</td>
+          <td class="text-left">{{ parseFloat(item.substantialcompletions).toFixed(2)}}</td>
           <td class="text-left">{{ item.inspectionapproval }}%</td>
           <td class="text-left">{{ item.score }}</td>
         </tr>
@@ -189,11 +199,13 @@
   import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import constants from '@/helpers/constants'
+  import ProductionStatsDrilldown from "./ProductionStatsDrilldown"
 
   export default {
     name: 'InstallerDashboard',
     components: {
-      DatetimePickerInput
+      DatetimePickerInput,
+      ProductionStatsDrilldown
     },
     data() {
       return {
@@ -220,6 +232,8 @@
         workQueueOwners: [],
         dashValues: [],
         performanceMetrics: [],
+        drilldownTitle: '',
+        drilldownProjectIds: [],
         headers: [
           { text: 'Rank', value: 'rnk', width: 80, show: true },
           { text: 'Crew', value: 'crewname', width: 80, show: true },
@@ -227,6 +241,7 @@
           { text: 'Inspection Approval %', value: 'inspectionapproval', width: 80, show: true },
           { text: 'Score (kw x Pass rate)', value: 'score', width: 80, show: true },
         ],
+        showModal: false
       }
     },
     computed: {
