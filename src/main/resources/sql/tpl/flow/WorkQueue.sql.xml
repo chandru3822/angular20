@@ -306,7 +306,6 @@ offset :offset
     where case when :isParent then ps.company_id = any (select id
                                                  from flow.company_hierarchy_filter_down(:parentCompanyId::int))
           else ps.company_id = :companyId end
-          and cpsst.process_step_status_type_id = :processStepStatusTypeId
     order by first_name, last_name
   ]]></workQueue.getWorkQueueOwners>
 

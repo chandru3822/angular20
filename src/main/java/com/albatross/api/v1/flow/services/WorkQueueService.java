@@ -157,7 +157,6 @@ public class WorkQueueService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
-    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
 
     List<WorkQueueOwner> results = sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
     return results;
