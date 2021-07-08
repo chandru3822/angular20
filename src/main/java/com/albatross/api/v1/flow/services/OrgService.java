@@ -140,7 +140,7 @@ public class OrgService {
       id = sqlCache.updateReturningId("org.insertOrg", params, "id").longValue();
     }
 
-    if (null != org.getCustomFieldGroups()) {
+    if (null != org.getCustomFieldGroups() && !org.getCustomFieldGroups().isEmpty()) {
       customFieldValueService.updateCustomFieldValues(org.getCustomFieldGroups().get(0).getCustomFieldValues(), id, ObjectType.ORGANIZATION.toString());
     }
 
