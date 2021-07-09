@@ -390,3 +390,72 @@ drop trigger if exists concrete_project_process_step_audit_trg ON flow.project_p
 CREATE TRIGGER concrete_project_process_step_audit_trg
     after INSERT or update ON flow.project_process_step
     FOR EACH ROW EXECUTE PROCEDURE flow.concrete_project_process_step_audit();
+
+
+
+CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_audit()
+    RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        insert into flow.postal_code_zone_audit(id, company_id, zone_name, archived, date_created,
+                                                date_modified, created_by_id, modified_by_id,
+                                                distribution_time_frame_days, schedulable_future_days,
+                                                date_zone_created)
+        values(new.id, new.company_id, new.zone_name, new.archived, new.date_created,
+               new.date_modified, new.created_by_id, new.modified_by_id,
+               new.distribution_time_frame_days, new.schedulable_future_days,
+               now());
+    elsif (TG_OP = 'UPDATE') and new.archived is true THEN
+        insert into flow.postal_code_zone_audit(id, company_id, zone_name, archived, date_created,
+                                                date_modified, created_by_id, modified_by_id,
+                                                distribution_time_frame_days, schedulable_future_days,
+                                                date_zone_archived)
+        values(new.id, new.company_id, new.zone_name, new.archived, new.date_created,
+               new.date_modified, new.created_by_id, new.modified_by_id,
+               new.distribution_time_frame_days, new.schedulable_future_days,
+               now());
+    end if;
+
+
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+drop trigger if exists concrete_postal_code_zone_audit_trg ON flow.postal_code_zone;
+CREATE TRIGGER concrete_postal_code_zone_audit_trg
+    after INSERT or update ON flow.postal_code_zone
+    FOR EACH ROW EXECUTE PROCEDURE flow.concrete_postal_code_zone_audit();
+
+
+CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_user_audit()
+    RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        insert into flow.postal_code_zone_user_audit(id, postal_code_zone_id, archived, date_created,
+                                                     date_modified, created_by_id, modified_by_id,
+                                                     postal_code_zone_user_type_id, user_id, manual_allocation,
+                                                     date_user_created)
+        values(new.id, new.postal_code_zone_id, new.archived, new.date_created,
+               new.date_modified, new.created_by_id, new.modified_by_id,
+               new.postal_code_zone_user_type_id, new.user_id, new.manual_allocation,
+               now());
+    elsif (TG_OP = 'UPDATE') and new.archived is true THEN
+        insert into flow.postal_code_zone_user_audit(id, postal_code_zone_id, archived, date_created,
+                                                     date_modified, created_by_id, modified_by_id,
+                                                     postal_code_zone_user_type_id, user_id, manual_allocation,
+                                                     date_user_archived)
+        values(new.id, new.postal_code_zone_id, new.archived, new.date_created,
+               new.date_modified, new.created_by_id, new.modified_by_id,
+               new.postal_code_zone_user_type_id, new.user_id, new.manual_allocation,
+               now());
+    end if;
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+drop trigger if exists concrete_postal_code_zone_user_audit_trg ON flow.postal_code_zone_user;
+CREATE TRIGGER concrete_postal_code_zone_user_audit_trg
+    after INSERT or update ON flow.postal_code_zone_user
+    FOR EACH ROW EXECUTE PROCEDURE flow.concrete_postal_code_zone_user_audit();

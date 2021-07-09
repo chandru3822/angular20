@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.Contact;
@@ -369,10 +370,56 @@ public class GenesysService {
   private String getCallerGroupNumber(Contact contact) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCode", contact.getPostalCode());
-    Optional<String> groupNumber = sqlCache.get("callGroup.getCallerGroupNumber", params, new SingleColumnRowMapper<>(String.class));
-    if (groupNumber.isPresent()) {
+
+    List<CallGroupPhoneNumber> callGroupPhoneNumbers = sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
+
+    Long previousUsedId = null;
+    Long currentlyUsedId = null;
+    String phoneNumber = "";
+
+    // Return default number if no numbers are found for this postal code
+    if (callGroupPhoneNumbers.isEmpty()) {
+      return "+13852921523";
+    }
+
+    if (callGroupPhoneNumbers.size() > 1) {
+      for (int i = 0; i < callGroupPhoneNumbers.size(); i++) {
+        if (callGroupPhoneNumbers.get(i).getLastUsed()) {
+          previousUsedId = callGroupPhoneNumbers.get(i).getId();
+          // If at the end of list of numbers, select the first number as the next number to use
+          if (i == callGroupPhoneNumbers.size() - 1) {
+            currentlyUsedId = callGroupPhoneNumbers.get(0).getId();
+            phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+          }
+          else {
+            currentlyUsedId = callGroupPhoneNumbers.get(i+1).getId();
+            phoneNumber = callGroupPhoneNumbers.get(i+1).getPhoneNumber();
+          }
+          break;
+        }
+      }
+      // If no number has lastUsed = true, select the first number to use as the current number
+      if (previousUsedId == null) {
+        currentlyUsedId = callGroupPhoneNumbers.get(0).getId();
+        phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+      }
+    }
+    else {
+      currentlyUsedId = callGroupPhoneNumbers.get(0).getId();
+      phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+    }
+
+    if (previousUsedId != null) {
+      params.put("previousUsedId", previousUsedId);
+      sqlCache.update("callGroup.updateLastUsedPhoneNumber", params);
+    }
+
+    params.put("currentlyUsedId", currentlyUsedId);
+    sqlCache.update("callGroup.updateCurrentlyUsedPhoneNumber", params);
+
+    if (!phoneNumber.isEmpty()) {
       try {
-        return smsService.cleanPhoneNumber("+" + contact.getCountryId() + groupNumber.get());
+        return smsService.cleanPhoneNumber("+" + contact.getCountryId() + phoneNumber);
       } catch (NumberParseException e) {
         return "+1385-292-1523";
       }

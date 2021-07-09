@@ -109,6 +109,8 @@ BEGIN
                                          inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                                          inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                                          inner join flow.resource_schedule rs on rs.user_id = pczu.user_id and rs.archived is false
+                                         inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+                                         inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.has_access is true
                                     and p_available_date >= rs.start_date and case when rs.end_date is not null then
                                                                                        p_available_date <= rs.end_date
                                                                                else 1=1 end
