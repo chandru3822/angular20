@@ -447,6 +447,10 @@ export default new Router({
                 {
                   path: 'codes',
                   component: () => import (/* webpackChunkName: "callGroups" */ './views/flow/settings/callGroups/Codes.vue'),
+                },
+                {
+                  path: 'numbers',
+                  component: () => import (/* webpackChunkName: "callGroups" */ './views/flow/settings/callGroups/Numbers.vue'),
                 }
               ]
             }, {

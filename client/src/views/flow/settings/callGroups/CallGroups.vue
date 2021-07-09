@@ -19,12 +19,18 @@
                 v-model="newCallGroup.callGroupName"
             ></v-text-field>
             <v-text-field
-              label="Phone Number"
+              label="Max Call Count"
               tabindex=1
-              placeholder=" "
-              v-model="newCallGroup.phoneNumber"
+              placeholder=""
+              v-model="newCallGroup.maxCallCount"
             ></v-text-field>
-            <v-btn :disabled="!newCallGroup.callGroupName || !newCallGroup.phoneNumber" @click="addCallGroup">Save</v-btn>
+            <v-text-field
+              label="Days Per Period"
+              tabindex=1
+              placeholder=""
+              v-model="newCallGroup.daysPerPeriod"
+            ></v-text-field>
+            <v-btn :disabled="!newCallGroup.maxCallCount || !newCallGroup.daysPerPeriod" @click="addCallGroup">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -49,8 +55,18 @@
               class="elevation-1"
             >
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left clickable" @click="goToCallGroup(item.id)">{{item.callGroupName}}</td>
+                <tr>
+                  <td class="text-left clickable" @click="goToCallGroup(item.id)">
+                    <img v-if="item.maxCallCountHit"
+                         name="userImg" src="../../../../assets/blueraven/alert_icon.jpg" class="icon-height"
+                         title="All active phone numbers exceed max call count">
+                    {{item.callGroupName}}
+                  </td>
+                  <td>{{item.postalCodesCount}}</td>
+                  <td>{{item.activePhoneNumbersCount}}</td>
+                  <td>
+                    <v-select style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
+                  </td>
                   <td class="text-right">
                     <v-btn small text @click="goToCallGroup(item.id)">
                       <v-icon>edit</v-icon>
@@ -94,7 +110,6 @@
                       </v-card>
                     </v-dialog>
                   </td>
-
                 </tr>
               </template>
             </v-data-table>
@@ -130,7 +145,14 @@
         CallGroups: [],
         headers: [
           {text: 'Call Group Name', value: 'callGroupName', show: true},
+          {text: 'No. Postal Codes', value: 'activePostalCodes', show: true},
+          {text: 'Active Phone Numbers', value: 'activePhoneNumbers', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
+        ],
+        items: [
+          {text: 'Active', value: true},
+          {text: 'Disabled', value: false}
         ]
       }
     },
@@ -146,7 +168,7 @@
         return this.CallGroups.filter(cg => { return !cg.archived})
       },
       goToCallGroup(groupId) {
-        this.$router.push({path: `/settings/callGroup/${groupId}/codes`})
+        this.$router.push({path: `/settings/callGroup/${groupId}/numbers`})
       },
       async getCallGroups () {
         this.dataLoading = true
@@ -180,14 +202,6 @@
       },
       async addCallGroup () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
-        if (!this.newCallGroup.phoneNumber.match(phoneRegex) || this.newCallGroup.phoneNumber.length > 20) {
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group: Please reformat the Phone field with a valid phone number')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          return;
-        }
-
         try {
           const {data} = await postRequest(`/callGroup/`, this.newCallGroup, 'blueraven')
           this.$router.push({path: `/settings/callGroup/${data.id}/codes`})
@@ -201,6 +215,21 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async updateCallGroup(item) {
+        this.showError = false
+        this.errorMsg = ''
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/callGroup/`, item, 'blueraven')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          let msg = 'Error updating Call Group'
+          this.snackbar = getSnackbar('ERROR', msg)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
     },
     async created () {
       this.getCallGroups()
@@ -213,6 +242,11 @@
     height: calc(100vh - 300px);
     min-height: 300px;
     border-top: solid 1px #E0E0E0;
+  }
+  .icon-height {
+    height: 18px;
+    width: 18px;
+    margin-right: 5px;
   }
 </style>
 
