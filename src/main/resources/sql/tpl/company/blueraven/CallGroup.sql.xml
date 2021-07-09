@@ -3,7 +3,6 @@
     select cg.id,
         cg.company_id,
         cg.call_group_name,
-        cg.phone_number,
         cg.active,
         cg.archived,
         cg.max_call_count,
