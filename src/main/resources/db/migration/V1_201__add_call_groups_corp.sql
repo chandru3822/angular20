@@ -24,7 +24,7 @@ CREATE TABLE if not exists brs.call_group_phone_number
     );
 
 insert into brs.call_group_phone_number(call_group_id, phone_number, created_by_id, date_created)
-    (select id, phone_number, created_by_id, date_created from brs.call_group)
+    (select id, phone_number, created_by_id, date_created from brs.call_group);
 
 alter table brs.call_group drop column if exists phone_number;
 alter table brs.call_group add column if not exists active boolean default true;
