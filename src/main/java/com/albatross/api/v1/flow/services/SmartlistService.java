@@ -585,22 +585,6 @@ public class SmartlistService {
           "                                      and pps2.id != flow.project_process_step.id\n" +
           "                                    order by ps2.process_step_name\n" +
           "                                  ), ', ')) as \"Active Process Steps\",\n" +
-//          "       coalesce((\n" +
-//          "                    SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))\n" +
-//          "                    FROM (\n" +
-//          "                             select ps2.process_step_name as \"processStepName\",\n" +
-//          "                                    ps2.id                as \"processStepId\"\n" +
-//          "                             from flow.project_process_step pps2\n" +
-//          "                                      inner join flow.process_step ps2 on ps2.id = pps2.process_step_id\n" +
-//          "                                      inner join flow.company_process_step_status_type cpsst2\n" +
-//          "                                                 on cpsst2.id = pps2.company_process_step_status_type_id\n" +
-//          "                                      inner join flow.process_step_status_type psst2\n" +
-//          "                                                 on psst2.id = cpsst2.process_step_status_type_id\n" +
-//          "                             where pps2.project_id = flow.project.id\n" +
-//          "                               and cpsst2.process_step_status_type_id = 1\n" +
-//          "                               and pps2.archived is not true\n" +
-//          "                               and pps2.id != flow.project_process_step.id\n" +
-//          "                             order by ps2.process_step_name) activeProcessSteps), '[]') AS \"Active Process Steps\",\n" +
         "       flow.process_step.id                                                                                  as \"processStepId\",\n" +
         "       flow.project_process_step.id                                                                          as \"projectProcessStepId\",\n" +
         "       wqt.work_queue_type                                                                                   as \"workQueueType\",\n" +
@@ -818,25 +802,27 @@ public class SmartlistService {
         }
       }
 
+      boolean showProcessStepName = null != smartlist.getWorkQueueTypeId() && null != f.getProcessStepId();
+      String fieldName = showProcessStepName ? f.getProcessStepName() + " - " + f.getName() : f.getName();
       if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
         if (smartlist.getObjectTypeId() == 4) {
-          query.append(String.format("  (select %s from %s where %s.id = %s) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getProcessStepId(), f.getName()));
+          query.append(String.format("  (select %s from %s where %s.id = %s) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getProcessStepId(), fieldName));
         } else {
-          query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), f.getName()));
+          query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), fieldName));
         }
       } else if (f.getDataTypeId() == 1) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, fieldName));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, fieldName));
       } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
-          query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
+          query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, fieldName));
       } else if (f.getDataTypeId() == 9) {
           final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
 
-          final String sql = String.format("  (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), f.getName());
+          final String sql = String.format("  (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), fieldName);
           query.append(sql);
       } else {
-        query.append(String.format("  %s as \"%s\", ", location, f.getName()));
+        query.append(String.format("  %s as \"%s\", ", location, fieldName));
       }
 
       if (f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
@@ -948,7 +934,11 @@ public class SmartlistService {
         "         left join flow.user_position up on up.id = flow.project_process_step.user_position_id\n" +
         "         left join flow.user u on u.id = up.user_id\n" +
         "         inner join ps_wq_statuses pws on pws.process_step_id = flow.process_step.id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)\n" +
-        "         inner join pj_wq_statuses pjws on pjws.process_step_id = flow.process_step.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = flow.project.company_project_status_type_id)");
+        "         inner join pj_wq_statuses pjws on pjws.process_step_id = flow.process_step.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = flow.project.company_project_status_type_id)\n" +
+        "         left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id \n" +
+        "         left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id \n" +
+        "         left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id \n" +
+        "         left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id \n");
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
@@ -2151,7 +2141,7 @@ public class SmartlistService {
 //    headers.get(0).setName("processStepId");
 
     for (SmartlistFieldAssignment f : headers) {
-      builder.addColumn(f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
+      builder.addColumn(workQueueSmartlist && null != f.getProcessStepName() ? f.getProcessStepName() + " - " + f.getName() : f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
     }
 
     CsvSchema schema = builder.build().withHeader();
