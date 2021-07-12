@@ -944,12 +944,18 @@ public class ProjectProcessStepService {
   }
 
     public void performChildFunctions(Long actionId, Long ppsId, Long processStepId) {
+
         List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
         childFunctions.forEach(childFunction -> {
             try {
-                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
-                String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
-                sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+                if (childFunction.getRunInBackend()) {
+                  // @TODO:
+                  log.info("run in java");
+                } else {
+                  String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
+                  String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
+                  sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+                }
             } catch (Exception e) {
                 log.error(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s", childFunction.getId(), actionId));
                 e.printStackTrace();

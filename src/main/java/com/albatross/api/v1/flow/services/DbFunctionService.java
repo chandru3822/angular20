@@ -79,6 +79,12 @@ public class DbFunctionService {
     params.put("dbFunctionTypeId", dbFunction.getDbFunctionTypeId());
     params.put("displayName", dbFunction.getDisplayName());
 
+    // Allow running java functions with only action type functions
+    if (dbFunction.getDbFunctionTypeId() != 2) {
+      dbFunction.setRunInBackend(false);
+    }
+    params.put("runInBackend", dbFunction.getRunInBackend() != null && dbFunction.getRunInBackend());
+
     Long id = sqlCache.updateReturningId("dbFunction.insertFunction", params, "id").longValue();
     return getDbFunction(id);
   }
