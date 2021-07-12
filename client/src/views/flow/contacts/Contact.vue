@@ -152,7 +152,7 @@
                             label="First Name"
                             id="qa-first-name-field"
                             placeholder=" "
-                            :rules="nameRules"
+                            :rules="nameRequiredRules"
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.firstName"></v-text-field>
@@ -160,7 +160,7 @@
                             label="Last Name"
                             id="qa-last-name-field"
                             placeholder=" "
-                            :rules="nameRules"
+                            :rules="nameRequiredRules"
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.lastName"></v-text-field>
@@ -367,6 +367,7 @@ export default {
       cityRules: constants.CITY_RULES,
       addressRules: constants.ADDRESS_RULES,
       nameRules: constants.NAME_RULES,
+      nameRequiredRules: constants.NAME_REQUIRED_RULES,
       contactPhoneRule: [
         () => ((this.contact.phone != null && this.contact.phone !== '') || (this.contact.mobile != null && this.contact.mobile !== '')) || "Phone or Mobile is required",
         v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',

@@ -3,8 +3,36 @@
     select cg.id,
         cg.company_id,
         cg.call_group_name,
-        cg.phone_number,
-        cg.archived
+        cg.active,
+        cg.archived,
+        cg.max_call_count,
+        cg.days_per_period,
+        (select count(1)
+         from brs.call_group_phone_number cgpn2
+         where cgpn2.call_group_id = cg.id
+           and cgpn2.active = true and cgpn2.archived = false) as activePhoneNumbersCount,
+         (select count(1)
+         from brs.call_group_postal_code cgpc
+         where cgpc.call_group_id = cg.id
+           and cgpc.archived = false) as postalCodesCount,
+        (case when
+           (select count(1)
+            from brs.call_group_phone_number cgpn2
+            where cgpn2.call_group_id = cg.id
+              and cgpn2.active = true and cgpn2.archived = false) = 0 then 0
+            else
+            (
+            (select count(1)
+        from brs.call_group_phone_number cgpn3
+        where cgpn3.call_group_id = cg.id
+          and cg.max_call_count <= cgpn3.call_count
+           and cgpn3.active = true and cgpn3.archived = false)
+            /
+         (select count(1)
+         from brs.call_group_phone_number cgpn2
+         where cgpn2.call_group_id = cg.id
+           and cgpn2.active = true and cgpn2.archived = false)
+                ) end) = 1 as maxCallCountHit
     from brs.call_group cg
     where cg.company_id = :companyId
     and cg.archived is not true
@@ -15,7 +43,8 @@
                 where cgpc.archived is not true
                 and cgpc.postal_code like '%' || :searchQuery::text || '%')
         else 1=1 end
-    order by call_group_name
+    group by cg.id, cg.call_group_name
+    order by cg.call_group_name
   ]]></callGroup.getGroups>
 
   <callGroup.getCodesForGroup><![CDATA[
@@ -29,26 +58,43 @@
     order by cgpc.postal_code
   ]]></callGroup.getCodesForGroup>
 
+  <callGroup.getNumbersForGroup><![CDATA[
+    select cgpn.id,
+           cgpn.phone_number as "phoneNumber",
+           cgpn.date_created as "dateCreated",
+           cgpn.call_count as "callCount",
+           cgpn.call_group_id as "callGroupId",
+           cgpn.active,
+           cgpn.archived,
+           (cg.max_call_count <= cgpn.call_count) as maxCallCountHit
+    from brs.call_group_phone_number cgpn
+        inner join brs.call_group cg on cgpn.call_group_id = cg.id
+    where cgpn.call_group_id = :callGroupId
+  ]]></callGroup.getNumbersForGroup>
+
   <callGroup.getGroup><![CDATA[
     select cg.id,
        cg.company_id,
        cg.call_group_name,
-       cg.phone_number,
-       cg.phone_number,
+       cg.max_call_count,
+       cg.days_per_period,
+       cg.active,
        cg.archived
     from brs.call_group cg
     where cg.id = :id
   ]]></callGroup.getGroup>
 
   <callGroup.insertGroup><![CDATA[
-    insert into brs.call_group(company_id, call_group_name, phone_number, date_created, created_by_id)
-    values (:companyId, :callGroupName, :phoneNumber, now(), :createdById)
+    insert into brs.call_group(company_id, call_group_name, max_call_count, days_per_period, date_created, created_by_id)
+    values (:companyId, :callGroupName, :maxCallCount, :daysPerPeriod, now(), :createdById)
   ]]></callGroup.insertGroup>
 
   <callGroup.updateGroup><![CDATA[
     update brs.call_group
     set call_group_name = :callGroupName,
-        phone_number = :phoneNumber,
+        max_call_count = :maxCallCount,
+        days_per_period = :daysPerPeriod,
+        active = :active,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
@@ -67,6 +113,11 @@
     values (:callGroupId, trim(:postalCode), now(), :createdById)
   ]]></callGroup.addPostalCode>
 
+  <callGroup.addPhoneNumber><![CDATA[
+    insert into brs.call_group_phone_number(call_group_id, phone_number, active, date_created, created_by_id)
+    values (:callGroupId, :phoneNumber, :active, now(), :createdById)
+  ]]></callGroup.addPhoneNumber>
+
   <callGroup.deletePostalCode><![CDATA[
     update brs.call_group_postal_code
     set archived = true,
@@ -74,6 +125,14 @@
         date_modified = now()
     where id = :id
   ]]></callGroup.deletePostalCode>
+
+  <callGroup.updatePhoneNumber><![CDATA[
+    update brs.call_group_phone_number
+    set active = :active,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></callGroup.updatePhoneNumber>
 
   <callGroup.getPostalCode><![CDATA[
     select cgpc.id,
@@ -83,6 +142,17 @@
     from brs.call_group_postal_code cgpc
     where cgpc.id = :id
   ]]></callGroup.getPostalCode>
+
+  <callGroup.getPhoneNumber><![CDATA[
+    select cgpn.id,
+       cgpn.phone_number,
+       cgpn.call_count,
+       cgpn.date_created,
+       cgpn.active,
+       cgpn.archived
+    from brs.call_group_phone_number cgpn
+    where cgpn.id = :id
+  ]]></callGroup.getPhoneNumber>
 
   <callGroup.checkForExisting><![CDATA[
     select cgpc.id,
@@ -95,11 +165,52 @@
       and cg.archived is not true and cgpc.archived is not true
   ]]></callGroup.checkForExisting>
 
-  <callGroup.getCallerGroupNumber><![CDATA[
-    select cg.phone_number
+  <callGroup.getCallerGroupNumbers><![CDATA[
+    select cgpn.id,
+           cgpn.phone_number as "phoneNumber",
+           cgpn.date_created as "dateCreated",
+           cgpn.call_count as "callCount",
+           cgpn.call_group_id as "callGroupId",
+           cgpn.active,
+           cgpn.archived,
+           cgpn.last_used "lastUsed"
     from brs.call_group cg
         inner join brs.call_group_postal_code cgpc on cg.id = cgpc.call_group_id
-    where cgpc.postal_code = :postalCode
-      and cg.archived is not true and cgpc.archived is not true
-  ]]></callGroup.getCallerGroupNumber>
+        inner join brs.call_group_phone_number cgpn on cg.id = cgpn.call_group_id
+    where cgpc.postal_code = :postalCode and cg.active
+        and cg.archived is not true and cgpc.archived is not true and cgpn.archived is not true
+        and cgpn.call_count< cg.max_call_count
+    order by cgpn.id asc
+  ]]></callGroup.getCallerGroupNumbers>
+
+  <callGroup.deletePhoneNumber><![CDATA[
+    update brs.call_group_phone_number
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></callGroup.deletePhoneNumber>
+
+  <callGroup.checkForExistingPhone><![CDATA[
+    select cgpn.id,
+       cgpn.call_group_id,
+       cgpn.phone_number,
+       cgpn.active
+    from brs.call_group_phone_number cgpn
+        inner join brs.call_group cg on cgpn.call_group_id = cg.id
+    where cgpn.phone_number = :phoneNumber
+      and cg.archived is not true
+  ]]></callGroup.checkForExistingPhone>
+
+  <callGroup.updateLastUsedPhoneNumber><![CDATA[
+    update brs.call_group_phone_number set last_used = false
+    where id = :previousUsedId
+  ]]></callGroup.updateLastUsedPhoneNumber>
+
+  <callGroup.updateCurrentlyUsedPhoneNumber><![CDATA[
+    update brs.call_group_phone_number
+    set last_used = true,
+        call_count = call_count+1
+    where id = :currentlyUsedId
+  ]]></callGroup.updateCurrentlyUsedPhoneNumber>
 </sql>

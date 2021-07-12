@@ -91,26 +91,29 @@ public class InstallerDashboardService {
     JSONArray tiles = new JSONArray();
 
     JSONObject substantialCompletionsTile = new JSONObject();
-    substantialCompletionsTile.put("name", "Substantial Completions this Week");
+    substantialCompletionsTile.put("name", "Substantial Completions");
     substantialCompletionsTile.put("value", jsonResults.getDouble("substantialCompletions"));
+    substantialCompletionsTile.put("projectIds", jsonResults.get("projectIds"));
 
     JSONObject sameWeekCloseoutTile = new JSONObject();
     sameWeekCloseoutTile.put("name", "Same-week Closeout %");
-    sameWeekCloseoutTile.put("value", String.format("%.2f", jsonResults.getDouble("sameWeekCloseout") * 100) + "%");
+    sameWeekCloseoutTile.put("value", Math.round(jsonResults.getDouble("sameWeekCloseout") * 100) + "%");
+    sameWeekCloseoutTile.put("projectIds", jsonResults.get("projectIds"));
 
     JSONObject onTimeCloseoutTile = new JSONObject();
     onTimeCloseoutTile.put("name", "On-time Closeout %");
-    onTimeCloseoutTile.put("value", jsonResults.getDouble("onTimeCloseout") * 100 + "%");
+    onTimeCloseoutTile.put("value", Math.round(jsonResults.getDouble("onTimeCloseout") * 100) + "%");
+    onTimeCloseoutTile.put("projectIds", jsonResults.get("projectIds"));
 
     JSONObject inspectionApprovalTile = new JSONObject();
     inspectionApprovalTile.put("name", "Inspection Approval %");
-    inspectionApprovalTile.put("value", jsonResults.getDouble("inspectionApproval") * 100 + "%");
+    inspectionApprovalTile.put("value", Math.round(jsonResults.getDouble("inspectionApproval") * 100) + "%");
+    inspectionApprovalTile.put("projectIds", jsonResults.get("projectIds"));
 
     tiles.put(substantialCompletionsTile);
     tiles.put(sameWeekCloseoutTile);
     tiles.put(onTimeCloseoutTile);
     tiles.put(inspectionApprovalTile);
-
     return tiles.toString();
   }
 

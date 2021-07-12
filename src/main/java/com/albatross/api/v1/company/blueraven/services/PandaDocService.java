@@ -131,7 +131,8 @@ public class PandaDocService {
       for (int i = 0; i < templates.length(); i++) {
         JSONObject tpl = templates.getJSONObject(i);
         String tplName = tpl.getString("name");
-        if (name.equals(tplName)) {
+        String version = tpl.getString("version");
+        if (name.equals(tplName) && version.equals("1")) {
           tplId = tpl.getString("id");
           log.info("PANDADOC: selected template named {}", tplName);
           break;
