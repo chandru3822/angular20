@@ -187,8 +187,8 @@
                   {{item.void_note}}
                 </td>
                 <td class="text-left" style="color: red">
-                  <a v-if="item.payment_state_id === 3" @click="openVoidDialog(item)">Void</a>
-                  <a v-if="item.payment_state_id === 5" @click="openUnvoidDialog(item)">Unvoid</a>
+                  <a v-if="item.payment_state_id === 3 && userCanEdit" @click="openVoidDialog(item)">Void</a>
+                  <a v-if="item.payment_state_id === 5 && userCanEdit" @click="openUnvoidDialog(item)">Unvoid</a>
                 </td>
                   <td>
                       <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"

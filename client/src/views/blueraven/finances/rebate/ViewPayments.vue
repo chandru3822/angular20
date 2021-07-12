@@ -49,7 +49,7 @@
         </template>
 
         <template v-slot:header.data-table-select="{ on, props }">
-          <v-checkbox color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
+          <v-checkbox :disabled="!userCanEdit"  color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
         </template>
 
         <template #body="{ items }" class="table-body">
