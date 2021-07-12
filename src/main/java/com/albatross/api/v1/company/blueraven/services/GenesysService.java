@@ -369,12 +369,25 @@ public class GenesysService {
 
   private String getCallerGroupNumber(Contact contact) {
     HashMap<String, Object> params = new HashMap<>();
+    User user = securityService.getCurrentUser();
     params.put("postalCode", contact.getPostalCode());
 
     List<CallGroupPhoneNumber> callGroupPhoneNumbers = sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
 
-    Long previousUsedId = null;
-    Long currentlyUsedId = null;
+    // Update the Contacts Assigned/Call Count for this Call Group for each phone number
+    for (CallGroupPhoneNumber cgpn: callGroupPhoneNumbers) {
+      HashMap<String, Object> currParams = new HashMap<>();
+      currParams.put("callGroupId", cgpn.getCallGroupId());
+      currParams.put("phoneNumber", cgpn.getPhoneNumber());
+      sqlCache.update("callGroup.updatePhoneCallCount", currParams);
+    }
+
+    // Get the Call groups again after the Call Counts have been updated
+    callGroupPhoneNumbers = sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
+
+    Long previousUsedGroupPhoneId = null;
+    Long currentlyUsedGroupPhoneId = null;
+    Long currentlyUsedGroupId = null;
     String phoneNumber = "";
 
     // Return default number if no numbers are found for this postal code
@@ -385,37 +398,50 @@ public class GenesysService {
     if (callGroupPhoneNumbers.size() > 1) {
       for (int i = 0; i < callGroupPhoneNumbers.size(); i++) {
         if (callGroupPhoneNumbers.get(i).getLastUsed()) {
-          previousUsedId = callGroupPhoneNumbers.get(i).getId();
+          previousUsedGroupPhoneId = callGroupPhoneNumbers.get(i).getId();
           // If at the end of list of numbers, select the first number as the next number to use
           if (i == callGroupPhoneNumbers.size() - 1) {
-            currentlyUsedId = callGroupPhoneNumbers.get(0).getId();
+            currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+            currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
             phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
           }
           else {
-            currentlyUsedId = callGroupPhoneNumbers.get(i+1).getId();
+            currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(i+1).getId();
+            currentlyUsedGroupId = callGroupPhoneNumbers.get(i+1).getCallGroupId();
             phoneNumber = callGroupPhoneNumbers.get(i+1).getPhoneNumber();
           }
           break;
         }
       }
       // If no number has lastUsed = true, select the first number to use as the current number
-      if (previousUsedId == null) {
-        currentlyUsedId = callGroupPhoneNumbers.get(0).getId();
+      if (previousUsedGroupPhoneId == null) {
+        currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+        currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
         phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
       }
     }
     else {
-      currentlyUsedId = callGroupPhoneNumbers.get(0).getId();
+      currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+      currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
       phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
     }
 
-    if (previousUsedId != null) {
-      params.put("previousUsedId", previousUsedId);
+    // Mark the previous Phone Number as no longer being lastUsed
+    if (previousUsedGroupPhoneId != null) {
+      params.put("previousUsedId", previousUsedGroupPhoneId);
       sqlCache.update("callGroup.updateLastUsedPhoneNumber", params);
     }
 
-    params.put("currentlyUsedId", currentlyUsedId);
+    // Mark the current Phone Number as being lastUsed and increment call count
+    params.put("currentlyUsedId", currentlyUsedGroupPhoneId);
     sqlCache.update("callGroup.updateCurrentlyUsedPhoneNumber", params);
+
+
+    // Add a row to the phone log table
+    params.put("callGroupId", currentlyUsedGroupId);
+    params.put("phoneNumber", phoneNumber);
+    params.put("createdById", user.getId());
+    sqlCache.update("callGroup.addPhoneLog", params);
 
     if (!phoneNumber.isEmpty()) {
       try {
