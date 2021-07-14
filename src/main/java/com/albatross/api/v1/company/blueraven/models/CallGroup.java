@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class CallGroup {
 
   private Long id, companyId;
-  private String callGroupName, phoneNumber;
-  private Boolean archived;
+  private String callGroupName;
+  private Integer postalCodesCount, activePhoneNumbersCount, maxCallCount, daysPerPeriod;
+  private Boolean active, archived, maxCallCountHit;
 }

@@ -59,9 +59,9 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
+            <tr>
               <td class="text-left">{{item.postalCode}}</td>
-              <td>
+              <td class="text-right">
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">

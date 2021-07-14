@@ -1,12 +1,11 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.SmartlistResult;
 import com.albatross.api.v1.flow.model.WorkQueue;
-import com.albatross.api.v1.flow.model.WorkQueueDetail;
 import com.albatross.api.v1.flow.model.WorkQueueOwner;
 import com.albatross.api.v1.flow.services.WorkQueueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -29,21 +28,27 @@ public class WorkQueueController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId,
                                         @RequestParam(required = false) Boolean unassigned,
-                                        @RequestParam(required = false) Long userPositionId) {
-    return workQueueService.getWorkQueues(workQueueCategoryId, userPositionId, unassigned);
+                                        @RequestParam(required = false) Long userId) {
+    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Page<WorkQueueDetail> getWorkQueueDetails (@PathVariable Long id,
-                                                    @RequestParam(required = false) Boolean unassigned,
-                                                    @RequestParam(required = false) Long userPositionId,
-                                                    Pageable pageable) {
-    return workQueueService.getWorkQueueDetails(id, userPositionId, unassigned, pageable);
+  public SmartlistResult getWorkQueueDetails (@PathVariable Long id,
+                                              @RequestParam Long smartlistId,
+                                              @RequestParam(required = false) Boolean unassigned,
+                                              @RequestParam(required = false) Long userId,
+                                              Pageable pageable) {
+    return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, pageable);
   }
 
   @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueueOwner> getWorkQueueOwners () {
     return workQueueService.getWorkQueueOwners();
+  }
+
+  @GetMapping(value = "/smartlist/{id}/buildSql", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String buildSql (@PathVariable Long id) {
+    return workQueueService.buildSql(id);
   }
 
 }

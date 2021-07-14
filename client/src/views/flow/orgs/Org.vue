@@ -176,7 +176,9 @@
       this.getCompanyTimezones()
       this.getOrgTypes()
       await this.getOrg()
-      this.getOrgsByType(this.org.parentOrgTypeId)
+      if(this.org.parentOrgTypeId) {
+        this.getOrgsByType(this.org.parentOrgTypeId)
+      }
       this.getCompanyStates()
     },
     beforeRouteLeave (to, from, next) {

@@ -168,10 +168,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10324
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), case when coalesce(promotion_eighteen_months_free::numeric,0)::numeric > 0 and
-                                                                                       pd.proposal_complete_date::date between '2020-03-25'::date and '2020-04-30'::date then 1
-                                                                                  when coalesce(promotion_eighteen_months_free::numeric,0)::numeric > 0 and
-                                                                                       (pd.proposal_complete_date::date < '2020-03-25'::date or  pd.proposal_complete_date::date > '2020-04-30'::date) then 18 else 0 end,
+                               and cfg.process_step_id = p_process_step_id), plh.number_of_promotion_payments,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -181,21 +178,21 @@ BEGIN
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id), coalesce(round((round((coalesce(non_standard_work_1_cost::numeric,0)),2) + round((coalesce(non_standard_work_2_cost::numeric,0)),2) +
                                                                                              round((coalesce(non_standard_work_3_cost::numeric,0)),2)),2),0),
-                            (select cfga.id
-                             from flow.custom_field cf
-                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
-                                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                             where cf.parent_custom_field_id = 10062
-                               and cfga.archived is false and cf.archived is false and cfg.archived is false
-                               and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id),(select lov2.id
-                                                                             from flow.list_of_value lov
-                                                                                      inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                      inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                 and cf.company_id = v_company_id
-                                                                                 and cf.parent_custom_field_id = 10062 and cf.archived is false
-                                                                             where lov2.name::text = case when v_loan_type = 'Mosiac' and bp_plus_promotion = 'Yes' then 'BluePower Plus PrePaid'
-                                                                                                          when bp_plus_promotion = 'Yes' then 'BluePower Plus' else 'BluePower' end),
+--                             (select cfga.id
+--                              from flow.custom_field cf
+--                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+--                                       inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+--                              where cf.parent_custom_field_id = 10062
+--                                and cfga.archived is false and cf.archived is false and cfg.archived is false
+--                                and cf.company_id = v_company_id
+--                                and cfg.process_step_id = p_process_step_id),(select lov2.id
+--                                                                              from flow.list_of_value lov
+--                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
+--                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+--                                                                                  and cf.company_id = v_company_id
+--                                                                                  and cf.parent_custom_field_id = 10062 and cf.archived is false
+--                                                                              where lov2.name::text = case when v_loan_type = 'Mosiac' and bp_plus_promotion = 'Yes' then 'BluePower Plus PrePaid'
+--                                                                                                           when bp_plus_promotion = 'Yes' then 'BluePower Plus' else 'BluePower' end),
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -241,8 +238,8 @@ BEGIN
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-        raise notice 'cfga% value %',_key,_value;
-        --perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
+        --raise notice 'cfga% value %',_key,_value;
+        perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
     END LOOP;
 
 

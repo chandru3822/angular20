@@ -39,7 +39,7 @@
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
               <v-card-text class="pt-1">
                 <router-link class="no-text-decoration card-link"
-                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: selectedUserPosition.userPositionId, unassigned: selectedUserPosition.unassigned}}">
+                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
                   <div class="text-left">{{wq.workQueueType}}</div>
                   <div class="card-count">{{wq.workQueueCount}}</div>
                 </router-link>
@@ -73,8 +73,8 @@
         workQueues: [],
         selectedUserPosition: {},
         workQueueOwners: [],
-        anyOwner: { id: -1, fullName: 'Anyone', userPositionId: null, unassigned: false},
-        noOwner: { id: -99, fullName: 'Unassigned', userPositionId: null, unassigned: true}
+        anyOwner: { id: -1, fullName: 'Anyone', userId: null, unassigned: false},
+        noOwner: { id: -99, fullName: 'Unassigned', userId: null, unassigned: true}
       }
     },
     computed: {},
@@ -120,7 +120,7 @@
           try {
             const {data} = await getRequestWithParams(`/workQueue`, { params: {
                 workQueueCategoryId: this.selectedWorkQueueCategory.id,
-                userPositionId: this.selectedUserPosition.userPositionId,
+                userId: this.selectedUserPosition.userId,
                 unassigned: this.selectedUserPosition.unassigned
               }})
             this.workQueues = data
@@ -137,7 +137,7 @@
       },
       loadDrilldown(wq) {
         if(wq.workQueueCount > 0) {
-          this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: this.selectedUserPosition.userPositionId, unassigned: this.selectedUserPosition.unassigned}})
+          this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: this.selectedUserPosition.userId, unassigned: this.selectedUserPosition.unassigned}})
           // this.$router.push({name: 'contact', params: {id: data.id}})
         }
       }

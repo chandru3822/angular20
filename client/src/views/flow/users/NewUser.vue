@@ -88,7 +88,7 @@
                 :format="'MM/DD/YYYY'"
                 label="Start Date"
                 :max-date="newPosition.endDate"
-                :required="newPosition.positionId !== null"
+                :required="newPosition.positionId !== null && newPosition.positionId !== undefined"
               />
               <DatetimePickerInput
                 v-model="newPosition.endDate"
@@ -100,6 +100,7 @@
               />
               <v-autocomplete v-model="newPosition.positionId"
                               :items="positions"
+                              :rules="requiredRules"
                               label="Position"
                               item-text="position"
                               item-value="id"
