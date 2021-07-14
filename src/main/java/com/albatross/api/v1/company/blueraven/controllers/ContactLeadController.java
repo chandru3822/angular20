@@ -149,4 +149,19 @@ public class ContactLeadController {
   public void updateContactEnvyusMedia(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/snapchat", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSnapchat(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/leadseed", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactLeadSeed(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/leadvision", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactLeadVision(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
