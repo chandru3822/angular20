@@ -62,7 +62,7 @@
                 {{item['Active Process Steps']}}
               </td>
               <td v-for="c in customColumns">
-                {{item[c.name]}}
+                {{c.processStepName == null ? item[c.name] : item[c.processStepName + ' - ' + c.name]}}
               </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
@@ -233,8 +233,13 @@
 
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
-            this.headers.push( { text: c.name, value: c.name, show: true })
+            let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
+            this.headers.push( {
+              text: textValue,
+              value: textValue,
+              show: true })
           })
+          console.log('randaLogger', this.headers)
           //add the notes column to the end
           this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
           this.dataLoading = false

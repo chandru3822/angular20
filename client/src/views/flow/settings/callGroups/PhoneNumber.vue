@@ -4,17 +4,16 @@
     <v-app-bar color="white" tabs flat class="elevation-1 call-group-bar">
       <v-toolbar-title class="pt-2">
         <div v-if="editGroup">
-          <v-text-field text class="d-inline-block mt-4 edit-text"
-                        type="text"
-                        label="Name"
-                        tabindex=1
-                        v-model="group.callGroupName">
+          <v-text-field text class="d-inline-block mt-4"
+                      type="text"
+                      label="Name"
+                      v-model="group.callGroupName">
           </v-text-field>
           <v-btn text color="primaryCustom" @click="saveGroupInfo()">
             <v-icon>save</v-icon>
           </v-btn>
         </div>
-        <div v-else style="margin-top: 30px">
+        <div v-else>
           <b>Call Group Name:</b> {{group.callGroupName}}
         </div>
       </v-toolbar-title>
@@ -28,7 +27,7 @@
               slot="extension"
               class="hello"
               dense
-              background-color="white" v-model="model" slider-color="primaryCustom" style="margin-top: 60px">
+              background-color="white" v-model="model" slider-color="primaryCustom">
         <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path">
           {{tab.label}}
         </v-tab>
@@ -44,7 +43,7 @@
   import constants from '@/helpers/constants'
 
   export default {
-    name: 'PostalCode',
+    name: 'PhoneNumber',
 
     data() {
       return {
@@ -57,9 +56,9 @@
             display: true
           },
           {
-          label: 'Postal Codes',
-          path: `/settings/callGroup/${this.$route.params.id}/codes`,
-          display: true
+            label: 'Postal Codes',
+            path: `/settings/callGroup/${this.$route.params.id}/codes`,
+            display: true
           }
         ],
         editGroup: false,
@@ -85,6 +84,14 @@
       async saveGroupInfo () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+          if (!this.newCallGroup.phoneNumber.match(phoneRegex) || this.newCallGroup.phoneNumber.length > 20) {
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group: Please reformat the Phone field with a valid phone number')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            return;
+          }
+
           const {data} = await postRequest(`/callGroup/`, this.group, 'blueraven')
           this.group = data
           this.editGroup = false
@@ -124,10 +131,7 @@
     font-size: 14px;
   }
   .call-group-bar {
-    min-height: 150px;
-  }
-  .edit-text {
-    margin-left: 25px;
+    min-height: 250px !important;
   }
   .back-link
   {
