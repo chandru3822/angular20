@@ -1,5 +1,5 @@
 -- DROP FUNCTION IF EXISTS flow.get_notes(integer, integer);
-CREATE OR REPLACE FUNCTION flow.get_notes(p_primary_id INTEGER, p_object_type_id INTEGER)
+CREATE OR REPLACE FUNCTION flow.get_notes(p_primary_id INTEGER, p_object_type_id INTEGER, p_company_id INTEGER)
 
 RETURNS TABLE(id int, note text, archived boolean, parent_id int, date_created timestamp, date_modified timestamp,
               created_by_id int, created_by text, modified_by_id int, primary_id int, created_by_primary_position json, child_notes json) AS
@@ -30,7 +30,8 @@ BEGIN
                           where upv.user_id = creator.id
                             and upv.archived is not true
                             and upv.primary_flag is true
-                            and upv.archived is false) pp) AS "createdByPrimaryPosition",
+                            and upv.company_id = p_company_id
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
@@ -79,7 +80,8 @@ BEGIN
                           where upv.user_id = creator.id
                             and upv.archived is not true
                             and upv.primary_flag is true
-                            and upv.archived is false) pp) AS "createdByPrimaryPosition",
+                            and upv.company_id = p_company_id
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
@@ -128,7 +130,8 @@ BEGIN
                         where upv.user_id = creator.id
                           and upv.archived is not true
                           and upv.primary_flag is true
-                          and upv.archived is false) pp) AS "createdByPrimaryPosition",
+                          and upv.company_id = p_company_id
+                          and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                  coalesce((
                             SELECT array_to_json(array_agg(row_to_json(childNotes)))
                             FROM (
@@ -177,7 +180,8 @@ BEGIN
                           where upv.user_id = creator.id
                             and upv.archived is not true
                             and upv.primary_flag is true
-                            and upv.archived is false) pp) AS "createdByPrimaryPosition",
+                            and upv.company_id = p_company_id
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
