@@ -67,6 +67,22 @@ BEGIN
                                             from flow.custom_field cf
                                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
                                                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.parent_custom_field_id = 10306
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.number_of_leds::integer,
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                     inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                     inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.parent_custom_field_id = 10415
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.number_of_ecobees::integer,
+                                            (select cfga.id
+                                            from flow.custom_field cf
+                                                     inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                     inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                                             where cf.parent_custom_field_id = 10062
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id

@@ -30,7 +30,7 @@ BEGIN
                           where upv.user_id = creator.id
                             and upv.archived is not true
                             and upv.primary_flag is true
-                            and upv.archived is false) pp) AS "createdByPrimaryPosition",
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
