@@ -1,6 +1,6 @@
 <sql>
   <note.getByPrimaryAndType><![CDATA[
-    select * from flow.get_notes(:primaryId::integer, :typeId::integer)
+    select * from flow.get_notes(:primaryId::integer, :typeId::integer, :companyId::integer)
   ]]></note.getByPrimaryAndType>
 
   <note.getProjectProcessStepWorkQueueNotes><![CDATA[
