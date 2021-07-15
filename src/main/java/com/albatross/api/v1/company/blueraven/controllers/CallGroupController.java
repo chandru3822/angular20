@@ -46,6 +46,11 @@ public class CallGroupController {
     return callGroupService.saveGroup(callGroup);
   }
 
+  @PostMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveGroupConfig(@RequestBody CallGroup callGroup) {
+    callGroupService.saveGroupConfig(callGroup);
+  }
+
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteGroup(@PathVariable Long id) {
     callGroupService.deleteGroup(id);

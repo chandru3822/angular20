@@ -62,8 +62,6 @@ public class CallGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("callGroupName", cg.getCallGroupName());
-    params.put("maxCallCount", cg.getMaxCallCount());
-    params.put("daysPerPeriod", cg.getDaysPerPeriod());
     params.put("active", cg.getActive());
 
     Long id;
@@ -73,11 +71,22 @@ public class CallGroupService {
       params.put("modifiedById", user.getId());
       sqlCache.update("callGroup.updateGroup", params);
     } else {
+      params.put("maxCallCount", cg.getMaxCallCount());
+      params.put("daysPerPeriod", cg.getDaysPerPeriod());
       params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("callGroup.insertGroup", params, "id").longValue();
     }
 
     return getGroupDetails(id);
+  }
+
+  public void saveGroupConfig(CallGroup cg) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("maxCallCount", cg.getMaxCallCount());
+    params.put("daysPerPeriod", cg.getDaysPerPeriod());
+    params.put("modifiedById", user.getId());
+    sqlCache.update("callGroup.updateGroupConfig", params);
   }
 
   public void deleteGroup(Long id) {

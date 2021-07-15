@@ -44,7 +44,7 @@
                 and cgpc.postal_code like '%' || :searchQuery::text || '%')
         else 1=1 end
     group by cg.id, cg.call_group_name
-    order by cg.call_group_name
+    order by maxCallCountHit desc, cg.call_group_name
   ]]></callGroup.getGroups>
 
   <callGroup.getCodesForGroup><![CDATA[
@@ -70,6 +70,7 @@
     from brs.call_group_phone_number cgpn
         inner join brs.call_group cg on cgpn.call_group_id = cg.id
     where cgpn.call_group_id = :callGroupId
+    order by maxCallCountHit desc
   ]]></callGroup.getNumbersForGroup>
 
   <callGroup.getGroup><![CDATA[
@@ -92,13 +93,19 @@
   <callGroup.updateGroup><![CDATA[
     update brs.call_group
     set call_group_name = :callGroupName,
-        max_call_count = :maxCallCount,
-        days_per_period = :daysPerPeriod,
         active = :active,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
   ]]></callGroup.updateGroup>
+
+  <callGroup.updateGroupConfig><![CDATA[
+    update brs.call_group
+    set max_call_count = :maxCallCount,
+        days_per_period = :daysPerPeriod,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+  ]]></callGroup.updateGroupConfig>
 
   <callGroup.deleteGroup><![CDATA[
     update brs.call_group

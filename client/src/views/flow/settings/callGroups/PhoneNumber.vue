@@ -9,28 +9,12 @@
                       label="Name"
                       v-model="group.callGroupName">
           </v-text-field>
-          <v-text-field text class="d-inline-block mt-4"
-                        label="Contacts per Phone Number"
-                        type="text"
-                        tabindex=1
-                        v-model="newCallGroup.maxCallCount">
-          </v-text-field>
-          <v-text-field text class="d-inline-block mt-4"
-                        type="text"
-                        label="Days Per Period"
-                        tabindex=1
-                        v-model="newCallGroup.daysPerPeriod">
-          </v-text-field>
           <v-btn text color="primaryCustom" @click="saveGroupInfo()">
             <v-icon>save</v-icon>
           </v-btn>
         </div>
         <div v-else>
           <b>Call Group Name:</b> {{group.callGroupName}}
-          <br/>
-          <b>Contacts per Phone Number:</b> {{group.maxCallCount}}
-          <br/>
-          <b>Time Period:</b> {{group.daysPerPeriod}} days
         </div>
       </v-toolbar-title>
       <v-spacer></v-spacer>
