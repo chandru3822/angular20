@@ -338,7 +338,7 @@ public class SmartlistService {
 
     final List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
 
-    if (fields.isEmpty()) {
+    if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
     }
 
