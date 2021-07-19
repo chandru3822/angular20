@@ -28,6 +28,7 @@
             inner join beat_off uphv on uphv.user_id = upv.user_id and uphv.position_id = upv.position_id and uphv.org_id = upv.org_id and uphv.user_position_id = upv.user_position_id
             inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
       where upv.company_id = :companyId
+        and upv.archived is false
         and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
@@ -164,6 +165,7 @@
          where up.user_id = u.id
            and up.primary_flag is true
            and up.archived is not true
+           limit 1
          ) as primary_position,
        concat(u.first_name, ' ', u.last_name) AS full_name,
        uc.company_id,

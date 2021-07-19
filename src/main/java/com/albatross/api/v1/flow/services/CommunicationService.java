@@ -88,7 +88,7 @@ public class CommunicationService {
           contextMap.put("user", user);
           renderTemplate(templateContent, output, contextMap);
 
-          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER);
+          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER, user.getId());
         } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
         }
@@ -96,13 +96,13 @@ public class CommunicationService {
   }
 
   @Async
-  public void queueTextMessagesForProject(String messageGroupId, Contact contact, String toPhone, String templateContent, List<URI> mediaURLs) {
+  public void queueTextMessagesForProject(String messageGroupId, Contact contact, String toPhone, String templateContent, List<URI> mediaURLs, Long sentByUserId) {
       try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
           Map<String, Object> contextMap = new HashMap<>();
           contextMap.put("contact", contact);
           renderTemplate(templateContent, output, contextMap);
 
-          smsService.queueMessage(messageGroupId, contact.getId(), toPhone, output.toString(), mediaURLs, RecipientType.PROJECT);
+          smsService.queueMessage(messageGroupId, contact.getId(), toPhone, output.toString(), mediaURLs, RecipientType.PROJECT, sentByUserId);
       } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
       }

@@ -606,7 +606,7 @@ BEGIN
                 from brs.ahj_utility au
                 where au.id = new.int_value
                 limit 1;
-            elsif v_field_to_update = 'sales_dev_representative_id' then
+            elsif v_field_to_update = 'sales_dev_representative_id' or v_field_to_update = 'inside_sales_consultant_id' then
                 case when new.int_value is null then select 'null' into v_value;
                     else
                         select quote_literal(coalesce(u.first_name, ' ') || ' ' || coalesce(u.last_name, ' '))

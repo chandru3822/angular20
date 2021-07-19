@@ -271,7 +271,8 @@
       select p.id project_id,
       p.project_name project_name,
       pd.substantial_completion_date substantialCompletionDate,
-      (total_promotion_amount)/(num_of_promotion_payments)::numeric as payment_amount,
+      (case when num_of_promotion_payments = 0 then 0
+                else (total_promotion_amount)/(num_of_promotion_payments)::numeric end) as payment_amount,
       c.id as contact_id,
       c.street1,
       c.street2,

@@ -97,7 +97,7 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", 3L);
     params.put("contactId", contactId);
-    params.put("parentCompanyId", 2L);
+    params.put("parentCompanyId", 3L);
     params.put("isParent", false);
     Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);

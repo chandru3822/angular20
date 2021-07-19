@@ -57,6 +57,10 @@
             <label>Can Own Projects:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner">
           </div>
+          <div class="mb-3">
+            <label>Can Own SMS Tickets:</label>
+            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner">
+          </div>
           <div v-if="$store.getters.isParent(parentId)">
             <label>Make Available in Children</label>
             <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
@@ -155,7 +159,7 @@
           } else {
             const {data} = await postRequest(`/position/`, this.position)
             this.positionId = data.id
-            this.$router.push({name: 'position', params: {id: this.positionId}}) 
+            this.$router.push({name: 'position', params: {id: this.positionId}})
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

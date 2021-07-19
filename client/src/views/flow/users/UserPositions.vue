@@ -31,7 +31,7 @@
               <div v-for="(f, index) in filters" :key="index">
                 <v-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
                   v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
-                  :items="f.orgs"
+                  :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
                   :rules="requiredRules"
                   :label="f.levelName"
                   item-value="id"
@@ -124,7 +124,7 @@
                 <v-autocomplete
                           v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
                           v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
-                          :items="f.orgs"
+                          :items="getOrgsMatchingPositionOrgType(f.orgs, item)"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           :rules="requiredRules"
@@ -266,6 +266,11 @@
         if (this.$refs.newPositionForm.validate()) {
           this.savePosition(item)
         }
+      },
+      getOrgsMatchingPositionOrgType(orgs, newPosition) {
+        // get orgs that match the org type selected in the position (admin screen)
+        let selectedPosition = this.positions.find(p => p.id === newPosition.positionId)
+        return orgs.filter(o => o.orgTypeId === selectedPosition.orgTypeId)
       },
       async getPositions() {
         try {

@@ -1,27 +1,21 @@
 <template>
   <v-container class="px-0 py-2" id="postal-code-container">
-    <v-breadcrumbs :items="breadcrumbs" class="pl-3 pt-1 pb-3"></v-breadcrumbs>
-    <v-app-bar color="white" tabs flat class="elevation-1">
+    <v-breadcrumbs :items="breadcrumbs" class="pl-3 pt-1 pb-3 back-link"></v-breadcrumbs>
+    <v-app-bar color="white" tabs flat class="elevation-1 call-group-bar">
       <v-toolbar-title class="pt-2">
         <div v-if="editGroup">
-          <v-text-field text class="d-inline-block mt-4"
+          <v-text-field text class="d-inline-block mt-4 edit-text"
                         type="text"
                         label="Name"
+                        tabindex=1
                         v-model="group.callGroupName">
-          </v-text-field>
-          <v-text-field text class="d-inline-block mt-4"
-                        type="text"
-                        label="Phone Number"
-                        v-model="group.phoneNumber">
           </v-text-field>
           <v-btn text color="primaryCustom" @click="saveGroupInfo()">
             <v-icon>save</v-icon>
           </v-btn>
         </div>
-        <div v-else>
-          {{group.callGroupName}}
-          <br/>
-          {{group.phoneNumber}}
+        <div v-else style="margin-top: 30px">
+          <b>Call Group Name:</b> {{group.callGroupName}}
         </div>
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -34,7 +28,7 @@
               slot="extension"
               class="hello"
               dense
-              background-color="white" v-model="model" slider-color="primaryCustom">
+              background-color="white" v-model="model" slider-color="primaryCustom" style="margin-top: 60px">
         <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path">
           {{tab.label}}
         </v-tab>
@@ -56,11 +50,18 @@
       return {
         snackbar: {},
         model: '',
-        tabs: [ {
+        tabs: [
+          {
+            label: 'Phone Numbers',
+            path: `/settings/callGroup/${this.$route.params.id}/numbers`,
+            display: true
+          },
+          {
           label: 'Postal Codes',
           path: `/settings/callGroup/${this.$route.params.id}/codes`,
           display: true
-        }],
+          }
+        ],
         editGroup: false,
         constants,
         group: {},
@@ -84,14 +85,15 @@
       async saveGroupInfo () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/callGroup/`, this.group, 'blueraven')
+          const {data} = await postRequest(`/callGroup/`, this.group, 'blueraven')
+          this.group = data
           this.editGroup = false
-          this.snackbar = getSnackbar('SUCCESS', 'Call Group Name Saved')
+          this.snackbar = getSnackbar('SUCCESS', 'Call Group saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group Name')
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -120,6 +122,16 @@
 <style lang="scss" scoped>
   .dtf {
     font-size: 14px;
+  }
+  .call-group-bar {
+    min-height: 150px;
+  }
+  .edit-text {
+    margin-left: 25px;
+  }
+  .back-link
+  {
+    margin-bottom: 15px;
   }
 </style>
 

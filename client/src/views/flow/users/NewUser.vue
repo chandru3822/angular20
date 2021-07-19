@@ -88,7 +88,7 @@
                 :format="'MM/DD/YYYY'"
                 label="Start Date"
                 :max-date="newPosition.endDate"
-                :required="newPosition.positionId !== null"
+                :required="newPosition.positionId !== null && newPosition.positionId !== undefined"
               />
               <DatetimePickerInput
                 v-model="newPosition.endDate"
@@ -100,6 +100,7 @@
               />
               <v-autocomplete v-model="newPosition.positionId"
                               :items="positions"
+                              :rules="requiredRules"
                               label="Position"
                               item-text="position"
                               item-value="id"
@@ -109,7 +110,7 @@
                   <v-autocomplete
                     v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
                     v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
-                    :items="f.orgs"
+                    :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
                     :label="f.levelName"
                     :rules="requiredRules"
                     item-value="id"
@@ -315,6 +316,11 @@
         // get hierarchy level to show on screen
         let selectedPosition = this.positions.find(p => p.id === item.positionId)
         return f.level === selectedPosition.level
+      },
+      getOrgsMatchingPositionOrgType(orgs, newPosition) {
+        // get orgs that match the org type selected in the position (admin screen)
+        let selectedPosition = this.positions.find(p => p.id === newPosition.positionId)
+        return orgs.filter(o => o.orgTypeId === selectedPosition.orgTypeId)
       },
       async saveUser() {
         let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'

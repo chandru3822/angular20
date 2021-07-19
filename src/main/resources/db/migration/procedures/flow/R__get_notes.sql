@@ -1,8 +1,8 @@
 -- DROP FUNCTION IF EXISTS flow.get_notes(integer, integer);
-CREATE OR REPLACE FUNCTION flow.get_notes(p_primary_id INTEGER, p_object_type_id INTEGER)
+CREATE OR REPLACE FUNCTION flow.get_notes(p_primary_id INTEGER, p_object_type_id INTEGER, p_company_id INTEGER)
 
 RETURNS TABLE(id int, note text, archived boolean, parent_id int, date_created timestamp, date_modified timestamp,
-              created_by_id int, created_by text, modified_by_id int, primary_id int, child_notes json) AS
+              created_by_id int, created_by text, modified_by_id int, primary_id int, created_by_primary_position json, child_notes json) AS
 
 $BODY$
 DECLARE
@@ -20,6 +20,18 @@ BEGIN
                    concat(creator.first_name, ' ', creator.last_name) as created_by,
                    n.modified_by_id,
                    pn.project_id as primary_id,
+                   (SELECT row_to_json(pp)
+                    FROM (select distinct upv.user_position_id as id,
+                                          upv.primary_flag as "primaryFlag",
+                                          upv.position,
+                                          uphv.hierarchy
+                          from flow.user_positions_vw upv
+                                 inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
+                          where upv.user_id = creator.id
+                            and upv.archived is not true
+                            and upv.primary_flag is true
+                            and upv.company_id = p_company_id
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
@@ -58,6 +70,18 @@ BEGIN
                    concat(creator.first_name, ' ', creator.last_name) as created_by,
                    n.modified_by_id,
                    cn.contact_id as primary_id,
+                   (SELECT row_to_json(pp)
+                    FROM (select distinct upv.user_position_id as id,
+                                          upv.primary_flag as "primaryFlag",
+                                          upv.position,
+                                          uphv.hierarchy
+                          from flow.user_positions_vw upv
+                                 inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
+                          where upv.user_id = creator.id
+                            and upv.archived is not true
+                            and upv.primary_flag is true
+                            and upv.company_id = p_company_id
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
@@ -96,6 +120,18 @@ BEGIN
                  concat(creator.first_name, ' ', creator.last_name) as created_by,
                  n.modified_by_id,
                  pn.project_process_step_id as primary_id,
+                 (SELECT row_to_json(pp)
+                  FROM (select distinct upv.user_position_id as id,
+                                        upv.primary_flag as "primaryFlag",
+                                        upv.position,
+                                        uphv.hierarchy
+                        from flow.user_positions_vw upv
+                               inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
+                        where upv.user_id = creator.id
+                          and upv.archived is not true
+                          and upv.primary_flag is true
+                          and upv.company_id = p_company_id
+                          and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                  coalesce((
                             SELECT array_to_json(array_agg(row_to_json(childNotes)))
                             FROM (
@@ -134,6 +170,18 @@ BEGIN
                    concat(creator.first_name, ' ', creator.last_name) as created_by,
                    n.modified_by_id,
                    un.user_id as primary_id,
+                   (SELECT row_to_json(pp)
+                    FROM (select distinct upv.user_position_id as id,
+                                          upv.primary_flag as "primaryFlag",
+                                          upv.position,
+                                          uphv.hierarchy
+                          from flow.user_positions_vw upv
+                                 inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
+                          where upv.user_id = creator.id
+                            and upv.archived is not true
+                            and upv.primary_flag is true
+                            and upv.company_id = p_company_id
+                            and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (

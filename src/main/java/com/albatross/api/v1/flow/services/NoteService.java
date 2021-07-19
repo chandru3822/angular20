@@ -6,10 +6,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.Note;
-import com.albatross.api.v1.flow.model.Project;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -63,9 +60,12 @@ public class NoteService {
   ObjectMapper om;
 
   public List<Note> getByPrimaryAndType(Long typeId, Long primaryId) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
     params.put("primaryId", primaryId);
+    params.put("companyId", currentUser.getCompanyId());
     List<Note> results = sqlCache.query("note.getByPrimaryAndType", params, new NoteMapper<>(Note.class, om));
     return results;
   }
@@ -126,8 +126,8 @@ public class NoteService {
 
     Note fetchedNote = getNote(noteId);
     fetchedNote.setPrimaryId(note.getPrimaryId());
-    // Match for Full Name (Email)
-    Pattern mentionedNameRegex = Pattern.compile("\\B@(\\w+)\\s(\\w+) \\(([^)]+)\\)");
+    // Match for firstName lastName (Email)
+    Pattern mentionedNameRegex = Pattern.compile("\\B@([a-zA-Z-\\s*()]+)\\s(\\S+) \\(([^)]+)\\)");
     Matcher m = mentionedNameRegex.matcher(fetchedNote.getNote());
     // If mention(s) are found in the Note
     while (m.find()) {
@@ -207,6 +207,10 @@ public class NoteService {
       TypeReference<List<Note>> childNoteRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "childNotes",
           new JsonCollectionDeserializer(childNoteRef, objectMapper));
+
+      TypeReference<UserPosition> createdByPrimaryPositionRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "createdByPrimaryPosition",
+        new JsonCollectionDeserializer(createdByPrimaryPositionRef, objectMapper));
 
     }
   }

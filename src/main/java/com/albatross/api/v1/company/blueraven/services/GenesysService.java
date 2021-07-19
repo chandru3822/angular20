@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.Contact;
@@ -169,6 +170,29 @@ public class GenesysService {
     return false;
   }
 
+  public Boolean updateLeadStatus(String phoneNumber, String leadStatus) {
+    Contact contact = getContactByPhone(phoneNumber);
+    String leadStatusId = checkIfCustomFieldDropdownValueExists(696, leadStatus);
+    if (contact != null && !leadStatusId.equalsIgnoreCase("null")) {
+      User currentUser = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("textValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", Long.parseLong(leadStatusId));
+      params.put("intArrayValue", null);
+      params.put("customFieldGroupAssignmentId", 399L);
+      params.put("sourceId", contact.getId());
+      params.put("userId", currentUser.getId());
+      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+      return true;
+    }
+
+    return false;
+  }
+
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot) throws IOException, ApiException {
     // Only add contacts if we are in Prod
     if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
@@ -248,6 +272,15 @@ public class GenesysService {
     params.put("sourceId", contactId);
     params.put("userId", currentUser.getId());
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+  }
+
+  private String checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("listOfValueId", listOfValueId);
+    params.put("customFieldDropdownValue", customFieldDropdownValue);
+
+    Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
+    return customFieldDropdownValueId.orElse("null");
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {
@@ -368,11 +401,83 @@ public class GenesysService {
 
   private String getCallerGroupNumber(Contact contact) {
     HashMap<String, Object> params = new HashMap<>();
+    User user = securityService.getCurrentUser();
     params.put("postalCode", contact.getPostalCode());
-    Optional<String> groupNumber = sqlCache.get("callGroup.getCallerGroupNumber", params, new SingleColumnRowMapper<>(String.class));
-    if (groupNumber.isPresent()) {
+
+    List<CallGroupPhoneNumber> callGroupPhoneNumbers = sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
+
+    // Update the Contacts Assigned/Call Count for this Call Group for each phone number
+    for (CallGroupPhoneNumber cgpn: callGroupPhoneNumbers) {
+      HashMap<String, Object> currParams = new HashMap<>();
+      currParams.put("callGroupId", cgpn.getCallGroupId());
+      currParams.put("phoneNumber", cgpn.getPhoneNumber());
+      sqlCache.update("callGroup.updatePhoneCallCount", currParams);
+    }
+
+    // Get the Call groups again after the Call Counts have been updated
+    callGroupPhoneNumbers = sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
+
+    Long previousUsedGroupPhoneId = null;
+    Long currentlyUsedGroupPhoneId = null;
+    Long currentlyUsedGroupId = null;
+    String phoneNumber = "";
+
+    // Return default number if no numbers are found for this postal code
+    if (callGroupPhoneNumbers.isEmpty()) {
+      return "+13852921523";
+    }
+
+    if (callGroupPhoneNumbers.size() > 1) {
+      for (int i = 0; i < callGroupPhoneNumbers.size(); i++) {
+        if (callGroupPhoneNumbers.get(i).getLastUsed()) {
+          previousUsedGroupPhoneId = callGroupPhoneNumbers.get(i).getId();
+          // If at the end of list of numbers, select the first number as the next number to use
+          if (i == callGroupPhoneNumbers.size() - 1) {
+            currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+            currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
+            phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+          }
+          else {
+            currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(i+1).getId();
+            currentlyUsedGroupId = callGroupPhoneNumbers.get(i+1).getCallGroupId();
+            phoneNumber = callGroupPhoneNumbers.get(i+1).getPhoneNumber();
+          }
+          break;
+        }
+      }
+      // If no number has lastUsed = true, select the first number to use as the current number
+      if (previousUsedGroupPhoneId == null) {
+        currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+        currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
+        phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+      }
+    }
+    else {
+      currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+      currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
+      phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+    }
+
+    // Mark the previous Phone Number as no longer being lastUsed
+    if (previousUsedGroupPhoneId != null) {
+      params.put("previousUsedId", previousUsedGroupPhoneId);
+      sqlCache.update("callGroup.updateLastUsedPhoneNumber", params);
+    }
+
+    // Mark the current Phone Number as being lastUsed and increment call count
+    params.put("currentlyUsedId", currentlyUsedGroupPhoneId);
+    sqlCache.update("callGroup.updateCurrentlyUsedPhoneNumber", params);
+
+
+    // Add a row to the phone log table
+    params.put("callGroupId", currentlyUsedGroupId);
+    params.put("phoneNumber", phoneNumber);
+    params.put("createdById", user.getId());
+    sqlCache.update("callGroup.addPhoneLog", params);
+
+    if (!phoneNumber.isEmpty()) {
       try {
-        return smsService.cleanPhoneNumber("+" + contact.getCountryId() + groupNumber.get());
+        return smsService.cleanPhoneNumber("+" + contact.getCountryId() + phoneNumber);
       } catch (NumberParseException e) {
         return "+1385-292-1523";
       }
@@ -391,6 +496,9 @@ public class GenesysService {
     }
     else if (leadLevel.equals("3")) {
       return "Level 3";
+    }
+    else if (leadLevel.equals("9")) {
+      return "Level 9";
     }
     else if (leadLevel.equals("10")) {
       return "InsideSales";

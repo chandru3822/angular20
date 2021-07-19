@@ -131,7 +131,7 @@
   import saveAs from 'file-saver'
   import SmartlistTable from '@/components/SmartlistTable'
   import ExportDialog from '@/components/ExportDialog'
-
+  import axios from 'axios'
 
   export default {
     name: 'Projects',
@@ -175,7 +175,8 @@
         showConfirmDialog: false,
         selectedSmartlistId: 0,
         smartlists: [{id: 0, name: 'Default View'}],
-        snackbar: {}
+        snackbar: {},
+        source: null
       }
     },
     watch: {
@@ -198,9 +199,17 @@
       },
       async getProjects() {
         const {page, itemsPerPage} = this.options
+
+        if(this.source){
+          this.source.cancel();
+        }
+        const CancelToken = axios.CancelToken;
+        this.source = CancelToken.source();
+
         try {
           this.isProjectsLoading = true
           const {data} = await getRequestWithParams(`/project/search`, {
+            cancelToken: this.source.token,
             params: {
               query: this.searchQuery,
               page: page - 1,
