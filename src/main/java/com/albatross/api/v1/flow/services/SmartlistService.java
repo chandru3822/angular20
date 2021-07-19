@@ -330,7 +330,7 @@ public class SmartlistService {
     return new SmartlistResult(fields, results);
   }
 
-  public String getCsv(Long smartlistId) {
+  public String getCsv(Long smartlistId, String timezone) {
     Smartlist smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
@@ -367,7 +367,7 @@ public class SmartlistService {
     if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone);
     }
 
 //    log.info("*** {}", query);
@@ -475,6 +475,10 @@ public class SmartlistService {
   }
 
   public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
+    return buildSql(smartlist, fields, null);
+  }
+
+  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
@@ -753,7 +757,15 @@ public class SmartlistService {
       // If field is custom, else it's system
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
         final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
-        location = String.format("\"%s\".%s", referenceTable, column);
+        // if data type id == 2 and timezone is not null, then String.format("(\"%s\".%s at time zone \'%s\')", referenceTable, column, timezone)
+//        ppscfv.timestamp_value
+        if(null != timezone && f.getDataTypeId() == 2) {
+//          (site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+          location = String.format("((\"%s\".%s at time zone \'UTC\') at time zone \'%s\')", referenceTable, column, timezone);
+//          location = String.format("\"%s\".%s", referenceTable, column);
+        } else {
+          location = String.format("\"%s\".%s", referenceTable, column);
+        }
       } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
         location = (f.getObjectTypeId() != 4) ? f.getReferenceColumn() : String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name)", f.getValueReferenceTable(), f.getValueReferenceTable());
       } else if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
