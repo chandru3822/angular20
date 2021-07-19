@@ -147,6 +147,7 @@
         constants,
         search: '',
         ytfDoWeNeedThis: 0,
+        timezone: this.$store.state.user.details.timezone.value,
         showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
@@ -192,7 +193,9 @@
       async exportCsv () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/smartlist/${this.smartlistId}/csv`)
+          const {data} = await getRequestWithParams(`/smartlist/${this.smartlistId}/csv`, { params: {
+              timezone: this.timezone
+            }})
           let blob = new Blob([data], {
             type: 'text/csv;charset=utf-8'
           });
@@ -216,6 +219,7 @@
               smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
+              timezone: this.timezone
               // page: page - 1,
               // size: itemsPerPage
             }})
@@ -239,7 +243,6 @@
               value: textValue,
               show: true })
           })
-          console.log('randaLogger', this.headers)
           //add the notes column to the end
           this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
           this.dataLoading = false
