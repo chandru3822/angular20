@@ -497,6 +497,9 @@ public class GenesysService {
     else if (leadLevel.equals("3")) {
       return "Level 3";
     }
+    else if (leadLevel.equals("9")) {
+      return "Level 9";
+    }
     else if (leadLevel.equals("10")) {
       return "InsideSales";
     }

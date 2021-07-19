@@ -132,8 +132,9 @@ public class SmartlistController {
   }
 
   @GetMapping(value = "/{smartlistId}/csv", produces = "text/csv")
-  public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getCsv(smartlistId), HttpStatus.OK);
+  public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId,
+                                                    @RequestParam(required = false) String timezone) {
+    return new ResponseEntity<>(smartlistService.getCsv(smartlistId, timezone), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
