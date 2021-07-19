@@ -83,6 +83,12 @@ BEGIN
             values(p_current_user_id,
                    concat('Hey ', v_closer_first_name, ', a final design has been sent for project ', v_contact_name),
                    (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1);
+        elseif p_message_type_id = 7 then
+          -- do the message for id 7 = pre-qualified by Sunlight Financial
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+          values(p_current_user_id,
+                 concat('Hi ', v_closer_first_name, ', Your next appointment has been pre-qualified by Sunlight Financial. This means the customer is only eligible for Sunlight Financial products (not GoodLeap). Please ensure that you only show proposals with Sunlight Financial products as the customer cannot obtain a GoodLeap loan through Blue Raven Solar.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1);
         end if;
     end if;
 
