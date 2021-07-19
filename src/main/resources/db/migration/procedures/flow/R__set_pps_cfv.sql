@@ -61,7 +61,7 @@ BEGIN
                 values (v_project_process_step_id, p_cfga, coalesce(v_date_value_to_save::date, p_value_to_save::date), null, null, null, null, null, null, p_user_id);
             elsif v_data_type_id = 2 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, p_value_to_save::timestamp, null, null, null, null, null, p_user_id);
+                values (v_project_process_step_id, p_cfga, null, coalesce(v_date_value_to_save::timestamp, p_value_to_save::timestamp), null, null, null, null, null, p_user_id);
             elsif v_data_type_id = 3 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
                 values (v_project_process_step_id, p_cfga, null, null, p_value_to_save::boolean, null, null, null, null, p_user_id);
@@ -87,7 +87,7 @@ BEGIN
                 where id = v_existing_id;
             elsif v_data_type_id = 2 then
                 update flow.project_process_step_custom_field_value
-                set timestamp_value = p_value_to_save::timestamp,
+                set timestamp_value = coalesce(v_date_value_to_save::timestamp, p_value_to_save::timestamp),
                     modified_by_id = p_user_id,
                     date_modified = now()
                 where id = v_existing_id;
