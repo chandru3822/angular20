@@ -64,10 +64,10 @@ export async function getRequest(path, companyAbbreviation) {
 export async function getRequestWithParams(path, params, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   try {
-    const {data, status} = await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, params)
+    const {data, status} = await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, params) ?? {data: {}, status: null}
     return {data, status}
   } catch (e) {
-    throw e
+      throw e
   }
 }
 
