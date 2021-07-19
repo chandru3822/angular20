@@ -170,6 +170,29 @@ public class GenesysService {
     return false;
   }
 
+  public Boolean updateLeadStatus(String phoneNumber, String leadStatus) {
+    Contact contact = getContactByPhone(phoneNumber);
+    String leadStatusId = checkIfCustomFieldDropdownValueExists(696, leadStatus);
+    if (contact != null && !leadStatusId.equalsIgnoreCase("null")) {
+      User currentUser = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("textValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", Long.parseLong(leadStatusId));
+      params.put("intArrayValue", null);
+      params.put("customFieldGroupAssignmentId", 399L);
+      params.put("sourceId", contact.getId());
+      params.put("userId", currentUser.getId());
+      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+      return true;
+    }
+
+    return false;
+  }
+
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot) throws IOException, ApiException {
     // Only add contacts if we are in Prod
     if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
@@ -249,6 +272,15 @@ public class GenesysService {
     params.put("sourceId", contactId);
     params.put("userId", currentUser.getId());
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+  }
+
+  private String checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("listOfValueId", listOfValueId);
+    params.put("customFieldDropdownValue", customFieldDropdownValue);
+
+    Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
+    return customFieldDropdownValueId.orElse("null");
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {

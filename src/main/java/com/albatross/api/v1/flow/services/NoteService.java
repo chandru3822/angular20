@@ -60,9 +60,12 @@ public class NoteService {
   ObjectMapper om;
 
   public List<Note> getByPrimaryAndType(Long typeId, Long primaryId) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
     params.put("primaryId", primaryId);
+    params.put("companyId", currentUser.getCompanyId());
     List<Note> results = sqlCache.query("note.getByPrimaryAndType", params, new NoteMapper<>(Note.class, om));
     return results;
   }
