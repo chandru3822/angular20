@@ -69,6 +69,7 @@
                         left join flow.company_state cs on cs.id = p.company_state_id
                         left join flow.state s on s.id = cs.state_id
                      where p.contact_id = c.id
+                     and p.archived is false
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
