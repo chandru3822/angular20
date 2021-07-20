@@ -566,7 +566,7 @@
       },
       async loadAvailableEventCustomFields(action) {
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/availableFields`)
+          const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.eventId}/action/${action.id}/availableFields`)
           this.eventCustomFields = data
         } catch (e) {
           console.error('*** ERROR ***', e)
