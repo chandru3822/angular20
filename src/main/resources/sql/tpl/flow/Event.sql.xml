@@ -10,6 +10,7 @@
   <event.get><![CDATA[
     select e.id,
        event_name,
+       resource_custom_field_id,
        company_id,
        archived,
        coalesce((
@@ -35,8 +36,6 @@
                       FROM (
                              SELECT cfg.id,
                                     cfg.group_name as "groupName",
-                                    cfg.event_type_id as "eventTypeId",
-                                    et.event_type as "eventType",
                                     cot.object_type_id as "objectTypeId",
                                     cot.id as "companyObjectTypeId",
                                     cfg.archived,
@@ -141,7 +140,6 @@
                                                       ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
                              FROM flow.custom_field_group cfg
                                     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                    left join flow.event_type et on et.id = cfg.event_type_id
                              WHERE cfg.event_id = e.id AND cfg.archived is not true
                              order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
     from flow.event e
@@ -156,17 +154,25 @@
       where id = :eventId
   ]]></event.delete>
 
+  <event.saveResourceField><![CDATA[
+      update flow.event
+      set modified_by_id = :modifiedById,
+          date_modified = now(),
+          resource_custom_field_id = :resourceCustomFieldId
+      where id = :id
+  ]]></event.saveResourceField>
+
   <event.update><![CDATA[
       update flow.event
       set modified_by_id = :modifiedById,
           date_modified = now(),
           event_name = :name
-      where id = :id;
+      where id = :id
   ]]></event.update>
 
   <event.insert><![CDATA[
-      insert into flow.event (company_id, event_name, created_by_id)
-        values (:companyId, :name, :createdById)
+      insert into flow.event (company_id, event_name, created_by_id, resource_custom_field_id)
+        values (:companyId, :name, :createdById, :resourceCustomFieldId)
   ]]></event.insert>
 
   <event.getStatuses><![CDATA[

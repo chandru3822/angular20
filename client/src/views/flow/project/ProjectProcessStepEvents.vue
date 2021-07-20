@@ -68,6 +68,28 @@
           The following fields are required to perform the selected action.
         </div>
         <v-form ref="eventFieldForm">
+          <DatetimePickerInput
+            v-model="eventDetails.startTime"
+            :timezone="this.timezone"
+            :type="'timestamp'"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            label="Start Time"
+          />
+          <DatetimePickerInput
+            v-model="eventDetails.endTime"
+            :timezone="this.timezone"
+            :type="'timestamp'"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            label="End Time"
+          />
+          <v-autocomplete
+            v-model="eventDetails.resourceId"
+            :items="eventDetails.availableResources"
+            label="Resource"
+            item-text="name"
+            item-value="id"
+          ></v-autocomplete>
+
           <v-col
             v-if="selectedEvent && selectedEvent.id"
             class="pt-0"
@@ -76,7 +98,7 @@
           >
             <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
               <v-toolbar-title>
-  <!--              <v-btn small text v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"-->
+  <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
   <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
   <!--                <v-icon>mdi-calendar</v-icon>-->
   <!--              </v-btn>-->
@@ -99,7 +121,7 @@
           </v-col>
         </v-form>
         <v-btn class="white--text mr-2 mb-2 save-btn"
-               @click="[updateFieldGroups(), eventActionMissingRequirements = false]"
+               @click="[saveEventDetails(), updateFieldGroups(), eventActionMissingRequirements = false]"
                color="primaryButton"
         >Save Event</v-btn>
         <v-btn class="white--text save-btn mb-2 mr-2"
@@ -125,12 +147,14 @@
   import {getCustomFieldReadOnly} from "@/services/customFieldService";
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import Attachments from '@/views/flow/components/Attachments'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 
   export default {
     name: 'ProjectProcessStepEvents',
     components: {
       CustomValueInput,
-      Attachments
+      Attachments,
+      DatetimePickerInput
     },
     props: {
       projectProcessStepEvents: Array,
@@ -267,13 +291,24 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async saveEventDetails() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Default Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async updateFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         // this.processStep.customFieldGroups = this.customFieldGroups
         try {
           // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
           // save dirty custom field values
-          console.log('randaLogger', this.dirtyCfvs)
           this.$refs.eventFieldForm.resetValidation()
           const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
           this.dirtyCfvs = []

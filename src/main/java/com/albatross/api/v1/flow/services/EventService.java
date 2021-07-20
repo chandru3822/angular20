@@ -49,6 +49,16 @@ public class EventService {
     return result.orElse(null);
   }
 
+  public void saveResourceField(Long id, Long resourceCustomFieldId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", currentUser.getId());
+    params.put("resourceCustomFieldId", resourceCustomFieldId);
+    sqlCache.update("event.saveResourceField", params);
+  }
+
   public void deleteEvent(Long id) {
     User currentUser = securityService.getCurrentUser();
 
@@ -65,6 +75,7 @@ public class EventService {
     params.put("id", event.getId());
     params.put("modifiedById", currentUser.getId());
     params.put("name", event.getEventName());
+    params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
     sqlCache.update("event.update", params);
   }
 
@@ -74,6 +85,7 @@ public class EventService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("createdById", currentUser.getId());
     params.put("name", event.getEventName());
+    params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
     Long id = sqlCache.updateReturningId("event.insert", params, "id").longValue();
 
     return getEvent(id);

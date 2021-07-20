@@ -309,7 +309,7 @@
             cot.id as "companyObjectTypeId",
             cfg.group_name as "groupName",
             cfg.group_order as "groupOrder",
-            cfg.event_type_id as "eventTypeId",
+            cfg.event_id as "eventId",
             pps.process_step_id,
             pps.parent_project_process_step_id,
             cfg.unique_behavior_type_id,
@@ -470,7 +470,7 @@
           cot.id as "companyObjectTypeId",
           cfg.group_name as "groupName",
           cfg.group_order as "groupOrder",
-          cfg.event_type_id as "eventTypeId",
+          cfg.event_id as "eventId",
           cfg.unique_behavior_type_id,
           coalesce((
                      SELECT array_to_json(array_agg(row_to_json(fields)))

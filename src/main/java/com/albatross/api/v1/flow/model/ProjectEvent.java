@@ -9,8 +9,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class ProjectEvent {
 
-  //@randa todo //eventTypeId will be going away
-    private Long projectProcessStepEventId, projectProcessStepId, processStepEventId, processStepId, projectId, eventTypeId, eventStatusTypeId, companyEventStatusTypeId;
+    private Long projectProcessStepEventId, projectProcessStepId, processStepEventId, processStepId, projectId, eventStatusTypeId, companyEventStatusTypeId;
     private String processStepName, resourceName, eventName, eventType, phone, mobile, eventStatusType, lastUpdated, dateCreated;
     private Timestamp start, end;
 }

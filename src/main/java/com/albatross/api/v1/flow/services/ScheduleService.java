@@ -98,7 +98,7 @@ public class ScheduleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("companyStateId", esp.getCompanyStateId());
-    params.put("eventTypeIds", esp.getEventTypeIds());
+    params.put("eventIds", esp.getEventIds());
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
@@ -125,7 +125,7 @@ public class ScheduleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("projectId", esp.getProjectId());
-    params.put("eventTypeId", esp.getEventTypeId());
+    params.put("eventId", esp.getEventId());
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
@@ -153,48 +153,14 @@ public class ScheduleService {
     if(null != ev.getStart() && null != ev.getEnd() && null != ev.getResourceId()) {
       User user = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
-      params.put("projectProcessStepId", ev.getProjectProcessStepId());
-      params.put("userId", user.getId());
-      params.put("sourceId", ev.getProjectProcessStepId());
 
-      //default values so we can call the same query all the other ones do
-      params.put("dateValue", null);
-      params.put("timestampValue", null);
-      params.put("booleanValue", false);
-      params.put("textValue", null);
-      params.put("numericValue", null);
-      params.put("intValue", null);
-      params.put("intArrayValue", null);
-
-      // save the start time
-      params.put("timestampValue", ev.getStart());
-      params.put("customFieldGroupAssignmentId", ev.getStartCustomFieldGroupAssignmentId());
-      // this can be null for new values
-      params.put("id", ev.getStartCustomFieldValueId());
-      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
-
-      // reset the params - although i dont think this is actually necessary
-      params.remove("customFieldGroupAssignmentId");
-      params.remove("timestampValue");
-      params.remove("id");
-
-      // save the end time
-      params.put("timestampValue", ev.getEnd());
-      params.put("customFieldGroupAssignmentId", ev.getEndCustomFieldGroupAssignmentId());
-      params.put("id", ev.getEndCustomFieldValueId());
-      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
-
-
-      // reset the params - although i dont think this is actually necessary
-      params.remove("customFieldGroupAssignmentId");
-      params.replace("timestampValue", null);
-      params.remove("id");
-
-      // save the resourceId
-      params.put("intValue", ev.getResourceId());
-      params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldGroupAssignmentId());
-      params.put("id", ev.getResourceCustomFieldValueId());
-      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+      params.put("id", ev.getProjectProcessStepEventId());
+      params.put("startTime", ev.getStart());
+      params.put("endTime", ev.getEnd());
+      params.put("resourceId", ev.getResourceId());
+      params.put("modifiedById", user.getId());
+      //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird
+      sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
     }
 
   }

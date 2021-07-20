@@ -36,6 +36,12 @@ public class EventController {
     return eventService.getEvent(id);
   }
 
+  @PostMapping(value = "/{id}/saveResourceField/{resourceCustomFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveResourceField(@PathVariable Long id,
+                        @PathVariable Long resourceCustomFieldId) {
+    eventService.saveResourceField(id, resourceCustomFieldId);
+  }
+
   @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteEvent(@PathVariable Long id) {
     eventService.deleteEvent(id);

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,10 +14,18 @@ import java.util.List;
 @Setter
 public class ProjectProcessStepEvent {
 
-  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, eventId;
-  private String eventName, eventStatusType;
+  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, eventId, resourceId;
+  private String eventName, eventStatusType, startTime, endTime;
   private List<CustomFieldGroup> customFieldGroups;
+  private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions;
   private Boolean archived;
+
+  @Data
+  public static class Resource {
+    private Long id;
+    private String name;
+  }
 }
+
 

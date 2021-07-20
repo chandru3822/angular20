@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newStep = {}, getSchedulingFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -18,7 +18,20 @@
                 tabindex=1
                 v-model="newEvent.eventName"
             ></v-text-field>
-            <v-btn :disabled="!newEvent.eventName" @click="addEvent">Save</v-btn>
+
+            <v-autocomplete
+              v-if="schedulingFields && schedulingFields[0]"
+              v-model="newEvent.resourceCustomFieldId"
+              :items="schedulingFields[0].availableCustomFields"
+              label="Resource"
+              item-text="fieldName"
+              item-value="id"
+            ></v-autocomplete>
+
+            <v-btn :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
+                   @click="addEvent">
+              Save
+            </v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -121,6 +134,7 @@
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
         events: [],
+        schedulingFields: [],
         headers: [
           {text: 'Event Name', value: 'eventName', show: true},
           {text: '', value: 'icons', show: true},
@@ -147,6 +161,21 @@
       }, 500),
       goToEvent(eventId) {
         this.$router.push({path: `/settings/event/${eventId}/components`})
+      },
+      async getSchedulingFields() {
+        if(this.addNew) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
+            this.schedulingFields = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
       },
       async getEvents () {
         this.$store.commit(AppMutations.SET_LOADING, true)

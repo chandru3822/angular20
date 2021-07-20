@@ -25,7 +25,7 @@
                 {{ item.projectProcessStepEventId }}
               </td>
               <td class="text-left">{{item.eventName}}</td>
-              <td class="text-left">{{ item.dateCreated | formatDate('timestamp') }}</td>
+              <td class="text-left">{{ item.start | formatDate('timestamp') }}</td>
               <td class="text-left">{{ item.eventStatusType }}</td>
             </tr>
           </template>
@@ -48,7 +48,7 @@
         headers: [
           {text: 'ID', value: 'id', show: true, width: 80},
           {text: 'Type', value: 'processStepName', show: true},
-          {text: 'Created', value: 'dateCreated', show: true},
+          {text: 'Start', value: 'start', show: true},
           {text: 'Status', value: 'eventStatusType', show: true},
         ]
       }

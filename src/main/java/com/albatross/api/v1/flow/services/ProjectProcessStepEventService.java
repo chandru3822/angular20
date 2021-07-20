@@ -73,6 +73,20 @@ public class ProjectProcessStepEventService {
     }
     return result;
   }
+  public Optional<ProjectProcessStepEvent> savePpsEventDetails(ProjectProcessStepEvent ppsEvent) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", ppsEvent.getId());
+    params.put("startTime", ppsEvent.getStartTime());
+    params.put("endTime", ppsEvent.getEndTime());
+    params.put("resourceId", ppsEvent.getResourceId());
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+
+    return getPpsEvent(ppsEvent.getId());
+  }
 
   public void performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
     /*
@@ -184,6 +198,10 @@ public class ProjectProcessStepEventService {
       TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "eventActions",
         new JsonCollectionDeserializer(eventActionsRef, objectMapper));
+
+      TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "availableResources",
+        new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
     }
   }
 

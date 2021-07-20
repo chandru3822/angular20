@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class Event {
 
-  private Long id, companyId;
+  private Long id, companyId, resourceCustomFieldId;
   private String eventName;
   private Boolean archived;
   private List<CustomFieldGroup> customFieldGroups;

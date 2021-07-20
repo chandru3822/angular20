@@ -226,7 +226,7 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
-    params.put("eventTypeId", customFieldGroup.getEventTypeId());
+    params.put("eventId", customFieldGroup.getEventId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("eventId", customFieldGroup.getEventId());
     params.put("createdById", user.getId());
@@ -249,7 +249,7 @@ public class CustomFieldGroupService {
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
-    if(null != customFieldGroup.getEventTypeId() && null != customFieldGroup.getSchedulingFields()) {
+    if(null != customFieldGroup.getEventId() && null != customFieldGroup.getSchedulingFields()) {
       List<CustomField> newFieldList = new ArrayList<>();
       for(CustomField cf : customFieldGroup.getSchedulingFields()) {
         cf.setCustomFieldGroupId(cfg.getId());

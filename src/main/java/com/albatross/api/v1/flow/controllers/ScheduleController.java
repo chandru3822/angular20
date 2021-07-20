@@ -41,6 +41,7 @@ public class ScheduleController {
     return scheduleService.getAvailabilityForCompanyByOrgAndUser(params);
   }
 
+  //this endpoint should be /events but changing it would require backwards comp on mobile so i left it
   @PostMapping(value = "/projects", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getScheduleProjects(@RequestBody EventSearchParams params) {
     return scheduleService.getScheduleProjects(params);
@@ -70,9 +71,9 @@ public class ScheduleController {
 
   @Data
   public static class EventSearchParams {
-    private List<Long> userIds, orgIds, eventTypeIds, userPositionIds;
+    private List<Long> userIds, orgIds, eventIds, userPositionIds;
     private String startTime, endTime, search;
-    private Long companyStateId, projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId;
+    private Long companyStateId, projectId, eventId, processStepStatusTypeId, projectProcessStepId;
   }
 
   @Data

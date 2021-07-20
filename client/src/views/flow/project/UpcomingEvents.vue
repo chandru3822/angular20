@@ -16,7 +16,7 @@
 
         <v-col cols="12" v-else class="pt-0">
           <UpcomingEventSnippet
-            :events="events.filter(event => event.eventStatusTypeId === 1)"
+            :events="getUpcomingEvents(events)"
             :projectId="projectId"/>
         </v-col>
       </v-row>
@@ -90,6 +90,7 @@ import {getRequest, putRequest, postRequest, logError, getRequestWithParams, get
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import UpcomingEventSnippet from '@/views/flow/project/UpcomingEventSnippet'
+import moment from 'moment'
 
 export default {
   name: 'UpcomingEvents',
@@ -131,6 +132,11 @@ export default {
     }
   },
   methods: {
+    getUpcomingEvents(events) {
+      return events.filter(event => {
+        return event.eventStatusTypeId === 1 && (moment(event.start).isAfter(moment()) || moment(event.end).isAfter(moment()))
+      })
+    },
     filteredEvents () {
       return this.eventSearch === '' ? this.eventsByName : this.eventsByName.filter(psn => psn.eventName.toLowerCase().includes(this.eventSearch.toLowerCase()) )
     },

@@ -179,7 +179,7 @@
           <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
             <v-toolbar-title>
               <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-              <v-btn small text v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"
+              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"
                      :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">
                 <v-icon>mdi-calendar</v-icon>
               </v-btn>
@@ -506,7 +506,7 @@
               // }
             })
             this.uniqueAlreadyHasValue = boolVal
-          } else if (null != cfg.eventTypeId) {
+          } else if (null != cfg.eventId) {
             this.psHasEventCfg = true
             this.psRequiresResource = false
           }
@@ -615,7 +615,7 @@
         if (this.psHasEventCfg) {
           //get check all schedule event cfgs on the page
           this.customFieldGroups.forEach(cfg => {
-            if (null != cfg.eventTypeId) {
+            if (null != cfg.eventId) {
               let startField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 1)
               let endField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 2)
               let resourceField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 3)

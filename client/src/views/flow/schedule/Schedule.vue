@@ -32,8 +32,8 @@
 
             <v-select v-model="selectedEventTypes"
                       :items="eventTypes"
-                      label="Event Type"
-                      item-text="eventType"
+                      label="Event"
+                      item-text="eventName"
                       item-value="id"
                       return-object
                       clearable
@@ -46,7 +46,7 @@
               >
                 <div v-if="index === 0 && selectedEventTypes.length < 3">
                   <v-chip small v-for="sp in selectedEventTypes">
-                    <span>{{ sp.eventType }}</span>
+                    <span>{{ sp.eventName }}</span>
                   </v-chip>
                 </div>
                 <span
@@ -58,7 +58,7 @@
 
             <v-select v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
-                      label="Status"
+                      label="Process Step Status"
                       clearable
                       item-text="processStepStatusType"
                       item-value="id"
@@ -139,7 +139,8 @@
               </v-toolbar-items>
             </v-toolbar>
             <div class="pa-3">
-              <div class="map-field-label">{{selectedProject.startFieldName || 'Start Time'}}</div>
+              <h4>{{selectedProject.eventName}}</h4>
+              <div class="map-field-label">Event Start Time</div>
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
@@ -149,7 +150,7 @@
                 label="Start Time"
                 @input="validateSaveEvent()"
               />
-              <div class="map-field-label mt-3">{{selectedProject.endFieldName || 'End Time'}}</div>
+              <div class="map-field-label mt-3">Event End Time</div>
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
@@ -254,7 +255,7 @@
               :footer-props="footerProps"
               :options.sync="options"
               v-model="selectedRows"
-              item-key="projectProcessStepId"
+              item-key="projectProcessStepEventId"
               :show-select="true"
               :item-selected="(item, value) => this.zoomToMap(item, value)"
               :toggle-select-all="(value) => this.zoomToMap(value)"
@@ -353,6 +354,7 @@
           {text: 'Project', value: 'projectName', show: true},
           {text: 'Process Step', value: 'processStepName', show: true},
           {text: 'Status', value: 'processStepStatusType', show: true},
+          {text: 'Event', value: 'eventName', show: true},
           {text: 'Work Date', value: 'start', show: true},
           {text: 'Resource', value: 'resourceName', show: true},
         ],
@@ -396,7 +398,7 @@
       this.getStatusTypes()
       this.getEventTypes()
       if(this.$route.query && this.$route.query.projectProcessStepId) {
-        //projectId, eventTypeId, processStepStatusTypeId
+        //projectId, eventId, processStepStatusTypeId
         this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
       }
     },
@@ -562,7 +564,7 @@
           this.listLoading = true
           try {
             let params = {
-              eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
+              eventIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
               //old way
               // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
               // new way:
@@ -614,12 +616,12 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId) {
+      async getSingleProject(projectId, eventId, processStepStatusTypeId, projectProcessStepId) {
         this.listLoading = true
         try {
           let params = {
             projectId,
-            eventTypeId,
+            eventId,
             processStepStatusTypeId,
             projectProcessStepId
           }

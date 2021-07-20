@@ -464,16 +464,6 @@ export default new Router({
                 }
               },
             }, {
-              path: 'eventTypes',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "eventTypes" */ './views/flow/settings/EventTypes.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
-            }, {
               path: 'workQueue',
               meta: {title: 'Albatross - Settings'},
               component: () => {
