@@ -120,28 +120,29 @@ public class ProcessStepEventService {
     sqlCache.update("processStepEvent.deleteActionFromEvent", params);
   }
 
-  public Optional<ProcessStepEventActionRequiredField> addRequiredFieldToAction(Long eventId, Long actionId, Long cfgaId) {
+  public Optional<ProcessStepEventActionField> addFieldToAction(Long eventId, Long actionId, Long cfgaId, Boolean required) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionId", actionId);
     params.put("cfgaId", cfgaId);
+    params.put("required", required);
     params.put("userId", currentUser.getId());
-    Long id = sqlCache.updateReturningId("processStepEvent.addRequiredFieldToAction", params, "id").longValue();
-    return getActionRequiredField(id);
+    Long id = sqlCache.updateReturningId("processStepEvent.addFieldToAction", params, "id").longValue();
+    return getActionField(id);
   }
 
-  public void deleteRequiredField(Long eventId, Long actionId, Long requiredFieldId) {
+  public void deleteFieldFromAction(Long eventId, Long actionId, Long fieldId) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("requiredFieldId", requiredFieldId);
+    params.put("fieldId", fieldId);
     params.put("userId", currentUser.getId());
-    sqlCache.update("processStepEvent.deleteRequiredField", params);
+    sqlCache.update("processStepEvent.deleteFieldFromAction", params);
   }
 
-  public Optional<ProcessStepEventActionRequiredField> getActionRequiredField(Long requiredFieldId) {
+  public Optional<ProcessStepEventActionField> getActionField(Long fieldId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", requiredFieldId);
-    Optional<ProcessStepEventActionRequiredField> result = sqlCache.get("processStepEvent.getActionRequiredField", params, ProcessStepEventActionRequiredField.class);
+    params.put("id", fieldId);
+    Optional<ProcessStepEventActionField> result = sqlCache.get("processStepEvent.getActionField", params, ProcessStepEventActionField.class);
     return result;
   }
 

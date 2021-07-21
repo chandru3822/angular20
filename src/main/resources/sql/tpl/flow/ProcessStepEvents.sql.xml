@@ -29,12 +29,29 @@
                                                          psearf.archived,
                                                          cf.field_name as "fieldName",
                                                          cfg.group_name as "groupName"
-                                                  from flow.process_step_event_action_required_field psearf
+                                                  from flow.process_step_event_action_field psearf
                                                          inner join flow.custom_field_group_assignment cfga on psearf.custom_field_group_assignment_id = cfga.id
                                                          inner join flow.custom_field cf on cfga.custom_field_id = cf.id
                                                          inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                                   where psearf.archived is false
-                                                    and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "requiredFields"
+                                                    and psearf.required is true
+                                                    and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "requiredFields",
+                                                    coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(psearf)))
+                                           FROM (
+                                                  select psearf.id,
+                                                         psearf.process_step_event_action_id as "processStepEventActionId",
+                                                         psearf.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                         psearf.archived,
+                                                         cf.field_name as "fieldName",
+                                                         cfg.group_name as "groupName"
+                                                  from flow.process_step_event_action_field psearf
+                                                         inner join flow.custom_field_group_assignment cfga on psearf.custom_field_group_assignment_id = cfga.id
+                                                         inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+                                                         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                                                  where psearf.archived is false
+                                                    and psearf.required is false
+                                                    and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "optionalFields"
                          FROM flow.process_step_event_action psea
                                 left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
                                 left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
@@ -165,30 +182,30 @@ where pse.process_step_id = :processStepId
     where id = :id
   ]]></processStepEvent.deleteActionFromEvent>
 
-  <processStepEvent.addRequiredFieldToAction><![CDATA[
-    insert into flow.process_step_event_action_required_field(process_step_event_action_id, custom_field_group_assignment_id, created_by_id)
-    values (:actionId, :cfgaId, :userId)
-  ]]></processStepEvent.addRequiredFieldToAction>
+  <processStepEvent.addFieldToAction><![CDATA[
+    insert into flow.process_step_event_action_field(process_step_event_action_id, custom_field_group_assignment_id, required, created_by_id)
+    values (:actionId, :cfgaId, :required, :userId)
+  ]]></processStepEvent.addFieldToAction>
 
-  <processStepEvent.deleteRequiredField><![CDATA[
-    update flow.process_step_event_action_required_field
+  <processStepEvent.deleteFieldFromAction><![CDATA[
+    update flow.process_step_event_action_field
     set archived = true,
         modified_by_id = :userId,
         date_modified = now()
-    where id = :requiredFieldId
-  ]]></processStepEvent.deleteRequiredField>
+    where id = :fieldId
+  ]]></processStepEvent.deleteFieldFromAction>
 
-  <processStepEvent.getActionRequiredField><![CDATA[
+  <processStepEvent.getActionField><![CDATA[
     select psearf.*,
            cf.field_name,
            cfg.group_name
-    from flow.process_step_event_action_required_field psearf
+    from flow.process_step_event_action_field psearf
     inner join flow.custom_field_group_assignment cfga on psearf.custom_field_group_assignment_id = cfga.id
     inner join flow.custom_field cf on cfga.custom_field_id = cf.id
     inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
     where psearf.archived is false
     and psearf.id = :id
-  ]]></processStepEvent.getActionRequiredField>
+  ]]></processStepEvent.getActionField>
 
   <processStepEvent.getAvailableCustomFields><![CDATA[
     select cf.id,
@@ -205,7 +222,7 @@ where pse.process_step_id = :processStepId
       and cfg.archived is not true
       and cfg.event_id = :eventId
     and not exists ( select psearf.id
-                      from flow.process_step_event_action_required_field psearf
+                      from flow.process_step_event_action_field psearf
                       where psearf.custom_field_group_assignment_id = cfga.id
                       and psearf.process_step_event_action_id = :actionId
                       and psearf.archived is false

@@ -9,10 +9,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ProcessStepEventActionRequiredField {
+public class ProcessStepEventActionField {
 
   private Long id, customFieldGroupAssignmentId, processStepEventActionId;
   private String fieldName, groupName;
-  private Boolean archived;
+  private Boolean archived, required;
 }
 

@@ -231,7 +231,7 @@
                      @click="saveEventAction(action)"
               >Save Action</v-btn>
 
-              this UI is confusing<br/>
+              <br><br>this UI is confusing<br><br>
               <v-toolbar flat>
                 <v-toolbar-title class="app-title">Required Fields</v-toolbar-title>
                 <v-spacer></v-spacer>
@@ -252,11 +252,11 @@
                 ></v-autocomplete>
                 <v-btn class="white--text"
                        color="primaryButton"
-                       @click="saveRequiredField(action, requiredFieldCfga)"
+                       @click="saveFieldToAction(action, requiredFieldCfga, true)"
                 >Add Required Field</v-btn>
               </v-card>
               <v-list v-for="(rf, index) in filterBy(action.requiredFields, false, 'archived')"
-                      :key="index"  class="pa-0">
+                      :key="rf.id"  class="pa-0">
                 <v-list-item>
                   <v-list-item-content class="text-left">
                     {{ rf.fieldName }}
@@ -292,7 +292,76 @@
                         <v-btn
                           color="primaryCustom"
                           text
-                          @click="[rf.archived = true, deleteRequiredField(action, rf)]">
+                          @click="[rf.archived = true, deleteFieldFromAction(action, rf)]">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-list-item>
+              </v-list>
+
+              <v-toolbar flat>
+                <v-toolbar-title class="app-title">Optional Fields</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-toolbar-items>
+                  <v-btn text @click="[addOptionalField = !addOptionalField, loadAvailableEventCustomFields(action)]">
+                    <v-icon v-if="!addOptionalField">add</v-icon>
+                    {{ addOptionalField ? 'Cancel' : 'Add Optional Event Field' }}
+                  </v-btn>
+                </v-toolbar-items>
+              </v-toolbar>
+              <v-card flat v-if="addOptionalField">
+                <v-autocomplete
+                  v-model="optionalFieldCfga"
+                  :items="eventCustomFields"
+                  label="Event Fields"
+                  item-text="fieldName"
+                  item-value="customFieldGroupAssignmentId"
+                ></v-autocomplete>
+                <v-btn class="white--text"
+                       color="primaryButton"
+                       @click="saveFieldToAction(action, optionalFieldCfga, false)"
+                >Add Optional Field</v-btn>
+              </v-card>
+              <v-list v-for="(opF, index) in filterBy(action.optionalFields, false, 'archived')"
+                      :key="opF.id"  class="pa-0">
+                <v-list-item>
+                  <v-list-item-content class="text-left">
+                    {{ opF.fieldName }}
+                  </v-list-item-content>
+                  <v-dialog
+                    v-model="opF.deleteConfirm"
+                    width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-action class="clickable" v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-list-item-action>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Are you sure you want to delete this optional field?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="opF.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="[opF.archived = true, deleteFieldFromAction(action, opF)]">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -392,8 +461,10 @@
         addNewEventAction: false,
         newEventAction: {},
         addRequiredField: false,
+        addOptionalField: false,
         eventCustomFields: [],
         requiredFieldCfga: null,
+        optionalFieldCfga: null,
         actionHeaders: [
           {text: 'Action Name', value: 'actionName', show: true},
           {text: 'Change Event Status To', value: 'companyEventStatusType', show: true},
@@ -575,34 +646,39 @@
           this.companyStatusesLoading = false
         }
       },
-      async saveRequiredField(action, requiredFieldCfga) {
+      async saveFieldToAction(action, fieldCfga, required) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/saveRequiredField/${requiredFieldCfga}`)
-          console.log('randaLogger HI', data)
-          this.requiredFieldCfga = null
-          action?.requiredFields?.push(data)
-          this.addRequiredField = false
-          this.snackbar = getSnackbar('SUCCESS', 'Required Field Added To Action')
+          const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/saveField/${fieldCfga}?required=${required}`)
+          if(required) {
+            this.requiredFieldCfga = null
+            action?.requiredFields?.push(data)
+            this.addRequiredField = false
+          } else {
+            this.optionalFieldCfga = null
+            action?.optionalFields?.push(data)
+            this.addOptionalField = false
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Field Added To Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Required Field')
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Field')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteRequiredField(action, rf) {
+      async deleteFieldFromAction(action, f) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/requiredField/${rf.id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Required Field Deleted')
+          await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/field/${f.id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Required Field')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Field')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

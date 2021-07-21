@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
 import com.albatross.api.v1.flow.model.ProcessStepEventAction;
-import com.albatross.api.v1.flow.model.ProcessStepEventActionRequiredField;
+import com.albatross.api.v1.flow.model.ProcessStepEventActionField;
 import com.albatross.api.v1.flow.services.ProcessStepEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,18 +68,19 @@ public class ProcessStepEventController {
     processStepEventService.deleteActionFromEvent(actionId);
   }
 
-  @PostMapping(value = "/{eventId}/action/{actionId}/saveRequiredField/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepEventActionRequiredField> addRequiredField(@PathVariable Long eventId,
-                                                                        @PathVariable Long actionId,
-                                                                        @PathVariable Long cfgaId) {
-    return processStepEventService.addRequiredFieldToAction(eventId, actionId, cfgaId);
+  @PostMapping(value = "/{eventId}/action/{actionId}/saveField/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEventActionField> addFieldToAction(@PathVariable Long eventId,
+                                                                @PathVariable Long actionId,
+                                                                @PathVariable Long cfgaId,
+                                                                @RequestParam Boolean required) {
+    return processStepEventService.addFieldToAction(eventId, actionId, cfgaId, required);
   }
 
-  @DeleteMapping(value = "/{eventId}/action/{actionId}/requiredField/{requiredFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteRequiredField(@PathVariable Long eventId,
-                                                                        @PathVariable Long actionId,
-                                                                        @PathVariable Long requiredFieldId) {
-    processStepEventService.deleteRequiredField(eventId, actionId, requiredFieldId);
+  @DeleteMapping(value = "/{eventId}/action/{actionId}/field/{fieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteFieldFromAction(@PathVariable Long eventId,
+                                    @PathVariable Long actionId,
+                                    @PathVariable Long fieldId) {
+    processStepEventService.deleteFieldFromAction(eventId, actionId, fieldId);
   }
 
   //custom field stuff
