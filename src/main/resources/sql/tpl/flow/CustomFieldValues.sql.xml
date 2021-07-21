@@ -524,6 +524,7 @@
                                 end as "intArrayValue",
                               cfga.custom_field_group_id as "customFieldGroupId",
                               cfga.id as "customFieldGroupAssignmentId",
+                              cfga.detail_view as "detailView",
                               cfga.read_only as "customFieldGroupAssignmentReadOnly",
                               cfga.hidden as "customFieldGroupAssignmentHidden",
                               cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",

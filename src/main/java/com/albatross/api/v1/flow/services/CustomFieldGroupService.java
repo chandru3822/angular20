@@ -105,6 +105,17 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.saveUseParentData", params);
   }
 
+  public void saveDetailView(Long cfgaId, Boolean detailView) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+    params.put("detailView", detailView);
+    params.put("cfgaId", cfgaId);
+
+    sqlCache.update("customFieldGroupAssignment.saveDetailView", params);
+  }
+
   public void saveCfgaAndWhiteList(CustomField customField, Boolean savingReadOnly, Boolean savePositions, Long whiteListTypeId) {
     User currentUser = securityService.getCurrentUser();
 

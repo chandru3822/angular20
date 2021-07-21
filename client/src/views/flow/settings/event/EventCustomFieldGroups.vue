@@ -224,138 +224,11 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
-                              {{cf.fieldName}}
-                              <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
-                              <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
-                              <div class="text-left mt-3" v-if="cf.edit">
-                                <v-row>
-                                  <v-col cols="6">
-                                    <v-card flat color="rowShadeCustom" class="square-card">
-                                      <v-card-title style="height: 40px" class="py-0">
-                                        Read Only
-                                        <v-checkbox type="checkbox" class="ml-3"
-                                                    v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>
-                                      </v-card-title>
-                                      <v-card-text>
-                                        <v-autocomplete
-                                          v-if="cf.customFieldGroupAssignmentReadOnly"
-                                          v-model="cf.whiteListedPositions"
-                                          :items="positions"
-                                          :loading="positionsLoading"
-                                          multiple
-                                          clearable
-                                          label="White Listed Positions"
-                                          item-text="position"
-                                          item-value="positionId"
-                                          return-object
-                                          height="35px"
-                                          class="d-inline-block mr-3"
-                                          @change="cf.positionsChanged = true"
-                                        >
-                                          <v-list-item
-                                            slot="prepend-item"
-                                            ripple
-                                            @click="toggleSelectAllPositions(cf)"
-                                          >
-                                            <v-list-item-action>
-                                              <v-icon>{{ icon(cf) }}</v-icon>
-                                            </v-list-item-action>
-                                            <v-list-item-title>Select All</v-list-item-title>
-                                          </v-list-item>
-                                          <v-divider
-                                            slot="prepend-item"
-                                            class="mt-2"
-                                          ></v-divider>
-                                          <template
-                                            slot="selection"
-                                            slot-scope="{ item, index }"
-                                          >
-                                            <v-chip small
-                                                    v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
-                                              <span>{{ item.position }}</span>
-                                            </v-chip>
-                                            <span
-                                              v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
-                                              class="primary--text caption"
-                                            >{{ cf.whiteListedPositions.length }} selected</span>
-                                          </template>
-                                        </v-autocomplete>
-                                        <br/>
-                                        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
-                                               @click="saveReadOnlyAndWhiteList(cf)">
-                                          <v-icon class="mr-2">save</v-icon>
-                                          Save Read Only
-                                        </v-btn>
-                                      </v-card-text>
-                                    </v-card>
-                                  </v-col>
-                                  <v-col cols="6">
-                                    <v-card flat color="rowShadeCustom" class="square-card">
-                                      <v-card-title style="height: 40px" class="py-0">
-                                        Hidden
-                                        <v-checkbox type="checkbox" class="ml-2"
-                                                    v-model="cf.customFieldGroupAssignmentHidden"></v-checkbox>
-                                      </v-card-title>
-                                      <v-card-text>
-                                        <v-autocomplete
-                                          v-if="cf.customFieldGroupAssignmentHidden"
-                                          v-model="cf.hiddenWhiteListedPositions"
-                                          :items="positions"
-                                          :loading="positionsLoading"
-                                          multiple
-                                          clearable
-                                          label="White Listed Positions"
-                                          item-text="position"
-                                          item-value="positionId"
-                                          return-object
-                                          height="35px"
-                                          class="d-inline-block mr-3"
-                                          @change="cf.hiddenPositionsChanged = true"
-                                        >
-                                          <v-list-item
-                                            slot="prepend-item"
-                                            ripple
-                                            @click="toggleHiddenSelectAllPositions(cf)"
-                                          >
-                                            <v-list-item-action>
-                                              <v-icon>{{ icon(cf) }}</v-icon>
-                                            </v-list-item-action>
-                                            <v-list-item-title>Select All</v-list-item-title>
-                                          </v-list-item>
-                                          <v-divider
-                                            slot="prepend-item"
-                                            class="mt-2"
-                                          ></v-divider>
-                                          <template
-                                            slot="selection"
-                                            slot-scope="{ item, index }"
-                                          >
-                                            <v-chip small
-                                                    v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
-                                              <span>{{ item.position }}</span>
-                                            </v-chip>
-                                            <span
-                                              v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
-                                              class="primary--text caption"
-                                            >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
-                                          </template>
-                                        </v-autocomplete>
-                                        <br/>
-                                        <v-btn color="primaryCustom" dark class="white--text d-inline-block"
-                                               @click="saveHiddenAndWhiteList(cf)">
-                                          <v-icon class="mr-2">save</v-icon>
-                                          Save Hidden
-                                        </v-btn>
-                                      </v-card-text>
-                                    </v-card>
-                                  </v-col>
-                                </v-row>
-                              </div>
-                            </div>
-                            <div v-else>
-                              {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
-                              (Ancillary)
+                            {{cf.fieldName}}
+                            <div>
+                              Detail View:
+                              <input type="checkbox" class="ml-2" v-model="cf.detailView"
+                                     @input="saveDetailView(cf)">
                             </div>
                           </v-list-item-content>
                           <v-menu offset-y
@@ -379,9 +252,6 @@
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
 
                           <v-dialog
                             v-if="userCanEdit"
@@ -587,6 +457,23 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await postRequest(`/event/${this.eventId}/saveResourceField/${this.event.resourceCustomFieldId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Value Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveDetailView(cf) {
+      //because the the dumb dom i have to flip the detailView before I save it
+      console.log('randaLogger will save', !cf.detailView)
+      let detailViewValue = !cf.detailView
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/customFieldGroup/saveDetailView/${cf.customFieldGroupAssignmentId}?detailView=${detailViewValue}`)
         this.snackbar = getSnackbar('SUCCESS', 'Value Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
