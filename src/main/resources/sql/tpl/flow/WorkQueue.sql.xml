@@ -518,6 +518,7 @@ offset :offset
            )
            select count(*)
            from flow.project p
+                    inner join brs.project_details pd on p.id = pd.project_id
                     inner join flow.company_process cp on cp.id = p.company_process_id
                     inner join flow.project_process_step pps on pps.project_id = p.id
                     inner join flow.process_step ps on ps.id = pps.process_step_id
@@ -541,6 +542,7 @@ offset :offset
                      when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId
                      else true end
              and pps.main is true
+             and pd.installation_resource in (:crewIds)
        )      as work_queue_count
 from flow.work_queue_type wqt
          inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
