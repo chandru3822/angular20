@@ -39,7 +39,18 @@ public class WorkQueueController {
                                               @RequestParam(required = false) Boolean unassigned,
                                               @RequestParam(required = false) Long userId,
                                               Pageable pageable) {
-    return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, timezone, pageable);
+    return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, timezone, pageable, null);
+  }
+
+  @GetMapping(value = "/{id}/{installationCrewIds}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public SmartlistResult getWorkQueueDetails (@PathVariable Long id,
+                                              @PathVariable List<Long> installationCrewIds,
+                                              @RequestParam Long smartlistId,
+                                              @RequestParam String timezone,
+                                              @RequestParam(required = false) Boolean unassigned,
+                                              @RequestParam(required = false) Long userId,
+                                              Pageable pageable) {
+    return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, timezone, pageable, installationCrewIds);
   }
 
   @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)

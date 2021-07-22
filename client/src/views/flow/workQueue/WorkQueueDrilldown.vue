@@ -136,7 +136,6 @@
   export default {
     name: 'WorkQueueDrilldown',
     components: {
-
       NotesAndActivity
     },
     data() {
@@ -154,6 +153,7 @@
         userPositionId: this.$route.query.upId,
         smartlistId: this.$route.query.smartlistId,
         unassigned: this.$route.query.unassigned,
+        installationCrewIds: this.$route.query.installationCrewIds,
         results: [],
         customColumns: [],
         totalItems: 0,
@@ -215,7 +215,15 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
+          let path = ''
+          if (typeof this.installationCrewIds !== 'undefined') {
+            path = `/workQueue/${this.workQueueTypeId}/${this.installationCrewIds}`;
+          }
+          else {
+            path = `/workQueue/${this.workQueueTypeId}`;
+          }
+
+          const {data} = await getRequestWithParams(path, { params: {
               smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
