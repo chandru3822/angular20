@@ -878,7 +878,6 @@ public class SmartlistService {
       //this is all required for the work queue stuff
       query.append(
         "from flow.project\n" +
-        "         inner join brs.project_details on brs.project_details.project_id = flow.project.id" +
         "         inner join flow.contact on flow.contact.id = flow.project.contact_id" +
         "         left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id\n" +
         "         left join flow.user on flow.user.id = flow.user_position.user_id" +
@@ -899,6 +898,10 @@ public class SmartlistService {
         "         left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id \n" +
         "         left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id \n" +
         "         left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id \n");
+    }
+
+    if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
+      query.append("         inner join brs.project_details on brs.project_details.project_id = flow.project.id \n");
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
@@ -1276,7 +1279,7 @@ public class SmartlistService {
         whereClause.append(" flow.project_process_step.main is true and ");
       }
 
-      if (installationCrewIds != null && !installationCrewIds.isEmpty()) {
+     if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
         whereClause.append(String.format(" brs.project_details.installation_resource in (%s) and ", installationCrewIds.toString().replace("[", "").replace("]", "")));
       }
 
