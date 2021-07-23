@@ -1385,7 +1385,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system list
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-          referenceLocation = (r.getSmartlistSystemListId() == 1) ? String.format("%s.%s", r.getJoinTable(), r.getJoinColumn()) : String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
+            referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
