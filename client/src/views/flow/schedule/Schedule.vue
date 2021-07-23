@@ -56,6 +56,16 @@
               </template>
             </v-select>
 
+            <v-select v-model="selectedEventStatusType"
+                      :items="eventStatusTypes"
+                      label="Event Step Status"
+                      clearable
+                      item-text="eventStatusType"
+                      item-value="id"
+                      :disabled="selectedEventTypes.length === 0"
+                      return-object
+            />
+
             <v-select v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Process Step Status"
@@ -66,8 +76,9 @@
                       return-object
             />
             <v-btn color="primaryCustom" class="white--text"
-                   :disabled="!selectedEventTypes || selectedEventTypes.length === 0
-                   || !state || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
+                   :disabled="!selectedEventTypes || selectedEventTypes.length === 0 || !state
+                   || !selectedEventStatusType || !selectedEventStatusType.id
+                   || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
                    @click="getProjects(true)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
@@ -298,6 +309,7 @@
 
   import Calendar from './components/Calendar'
   import constants from "@/helpers/constants";
+  import {getEventStatusTypes} from "@/services/eventStatusTypeService";
 
   export default {
     name: 'Schedule',
@@ -332,6 +344,8 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         state: {},
         states: [],
+        eventStatusTypes: [],
+        selectedEventStatusType: {},
         processStepStatusTypes: [],
         selectedProcessStepStatusType: {},
         eventTypes: [],
@@ -394,8 +408,10 @@
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
       this.selectedProcessStepStatusType = JSON.parse(localStorage.getItem('scheduleProcessStepStatusType')) || {}
+      this.selectedEventStatusType = JSON.parse(localStorage.getItem('scheduleEventStatusType')) || {}
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
+      this.getEventStatusTypes()
       this.getEventTypes()
       if(this.$route.query && this.$route.query.projectProcessStepId) {
         //projectId, eventId, processStepStatusTypeId
@@ -508,6 +524,19 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getEventStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getEventStatusTypes()
+          this.eventStatusTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -559,6 +588,7 @@
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
         localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
+        localStorage.setItem('scheduleEventStatusType', JSON.stringify(this.selectedEventStatusType))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
@@ -569,6 +599,7 @@
               // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
               // new way:
               processStepStatusTypeId: this.selectedProcessStepStatusType.id,
+              eventStatusTypeId: this.selectedEventStatusType.id,
               companyStateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime

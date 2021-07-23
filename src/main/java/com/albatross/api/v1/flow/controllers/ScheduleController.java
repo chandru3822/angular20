@@ -73,7 +73,7 @@ public class ScheduleController {
   public static class EventSearchParams {
     private List<Long> userIds, orgIds, eventIds, userPositionIds;
     private String startTime, endTime, search;
-    private Long companyStateId, projectId, eventId, processStepStatusTypeId, projectProcessStepId;
+    private Long companyStateId, projectId, eventId, processStepStatusTypeId, eventStatusTypeId, projectProcessStepId;
   }
 
   @Data

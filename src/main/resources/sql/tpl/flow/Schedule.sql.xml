@@ -140,6 +140,7 @@
           cpsst.process_step_status_type_id
         from flow.project_process_step pps
                inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+               inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
                inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                inner join flow.event e on pse.event_id = e.id
                inner join flow.project p on p.id = pps.project_id
@@ -166,6 +167,7 @@
             and case when ppse.end_time is not null then ppse.end_time <= :endTime::timestamp else 1=1 end
             and pse.event_id  = any(array[ :eventIds ])
             and cpsst.process_step_status_type_id = :processStepStatusTypeId
+            and cest.event_status_type_id = :eventStatusTypeId
     ]]>
 </schedule.getProjects>
 
