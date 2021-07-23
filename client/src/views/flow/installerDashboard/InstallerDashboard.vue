@@ -103,7 +103,7 @@
           <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': 'white'}"></div>
-              <v-card-text class="pt-1" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
+              <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
                 <div class="text-left">{{stat.name}}</div>
                 <div class="card-count">{{stat.value}}</div>
               </v-card-text>
@@ -503,5 +503,7 @@
 .card-link {
   color: #666666;
 }
-
+.stats-tile {
+  cursor: pointer;
+}
 </style>

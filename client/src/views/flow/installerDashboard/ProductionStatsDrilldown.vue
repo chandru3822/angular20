@@ -30,7 +30,7 @@
       </template>
 
       <template #item="{ item, index }">
-        <tr :class="{'shaded-row': item.isnumerator}">
+        <tr :class="{'green-row': item.isnumerator}">
           <td class="text-left">{{item.project_id}}</td>
           <td class="text-left">{{item.crewname}}</td>
           <td class="text-left">{{item.installation_scheduled | formatDate('date')}}</td>
@@ -62,6 +62,12 @@
             this.headers[4].show = true;
             // AHJ Inspection Outcome
             this.headers[5].show = true;
+          }
+          else {
+            // AHJ Inspection Date
+            this.headers[4].show = false;
+            // AHJ Inspection Outcome
+            this.headers[5].show = false;
           }
         }
       }
@@ -98,6 +104,9 @@
     height: calc(100vh - 325px);
     width: 1200px;
     min-height: 350px;
+  }
+  .green-row {
+    background-color: #c3fad2;
   }
 </style>
 
