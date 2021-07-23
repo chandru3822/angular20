@@ -8,10 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by John Berns on 2021-05-05.
@@ -39,21 +37,26 @@ public class InstallerDashboardController {
     return installerDashboardService.getRegionalManagers();
   }
 
-  @GetMapping(value = "/installationCrew/{regionalManagerId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Owner> getInstallationCrew(@PathVariable Long regionalManagerId) {
-    return installerDashboardService.getInstallationCrew(regionalManagerId);
+  @GetMapping(value = "/installationCrew/{regionalManagerIds}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Owner> getInstallationCrew(@PathVariable List<Long> regionalManagerIds) {
+    return installerDashboardService.getInstallationCrew(regionalManagerIds);
   }
 
-  @GetMapping(value = "/dashboardValues")
-  public String getDashboardValues(@RequestParam String startDate,
-                                   @RequestParam String endDate,
-                                   @RequestParam Long installationCrewId) {
-    return installerDashboardService.getDashboardValues(startDate, endDate, installationCrewId);
+  @GetMapping(value = "/dashboardValues/{installationCrewIds}")
+  public String getDashboardValues(@PathVariable List<Long> installationCrewIds,
+                                   @RequestParam String startDate,
+                                   @RequestParam String endDate) {
+    return installerDashboardService.getDashboardValues(startDate, endDate, installationCrewIds);
   }
 
   @GetMapping(value = "/wipValues")
   public List<WorkQueue> getWipValues() {
     return installerDashboardService.getWorkQueues();
+  }
+
+  @GetMapping(value = "/wipValues/{installationCrewIds}")
+  public List<WorkQueue> getWipValues(@PathVariable List<Long> installationCrewIds) {
+    return installerDashboardService.getWorkQueues(installationCrewIds);
   }
 
   @GetMapping(value = "/performanceMetrics")

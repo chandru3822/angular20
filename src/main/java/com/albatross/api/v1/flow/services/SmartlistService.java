@@ -367,7 +367,7 @@ public class SmartlistService {
     if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
     }
 
 //    log.info("*** {}", query);
@@ -475,10 +475,10 @@ public class SmartlistService {
   }
 
   public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
-    return buildSql(smartlist, fields, null);
+    return buildSql(smartlist, fields, null, null);
   }
 
-  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone) {
+  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, List<Long> installationCrewIds) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
@@ -900,6 +900,10 @@ public class SmartlistService {
         "         left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id \n");
     }
 
+    if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
+      query.append("         inner join brs.project_details on brs.project_details.project_id = flow.project.id \n");
+    }
+
     for (SmartlistFieldAssignment f : joinTables) {
       final String joinAlias = (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null) || Objects.equals(f.getAllowMultiple(), true)) ? f.getValueReferenceTable() : f.getReferenceTable();
 
@@ -1273,6 +1277,10 @@ public class SmartlistService {
 
       if (smartlist.isMainProcessSteps() && smartlist.getObjectTypeId() == 4) {
         whereClause.append(" flow.project_process_step.main is true and ");
+      }
+
+     if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
+        whereClause.append(String.format(" brs.project_details.installation_resource in (%s) and ", installationCrewIds.toString().replace("[", "").replace("]", "")));
       }
 
       if(null != smartlist.getWorkQueueTypeId()) {

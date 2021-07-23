@@ -64,27 +64,27 @@ public class InstallerDashboardService {
     return results;
   }
 
-  public List<Owner> getInstallationCrew(Long regionalManagerId) {
+  public List<Owner> getInstallationCrew(List<Long> regionalManagerIds) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
-    params.put("orgId", regionalManagerId);
+    params.put("orgIds", regionalManagerIds);
 
     List<Owner> results = sqlCache.query("installerDashboard.getInstallationCrew", params, Owner.class);
     return results;
   }
 
 
-  public String getDashboardValues(String startDate, String endDate, Long installationCrewId) {
+  public String getDashboardValues(String startDate, String endDate, List<Long> installationCrewIds) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("startDate", startDate);
     params.put("endDate", endDate);
     params.put("companyId", user.getCompanyId());
-    params.put("crewId", installationCrewId);
+    params.put("crewIds", installationCrewIds);
 
     String results = sqlCache.queryForObject("installerDashboard.getDashboardValues", params, String.class);
     JSONObject jsonResults = new JSONObject(results);
@@ -93,22 +93,22 @@ public class InstallerDashboardService {
     JSONObject substantialCompletionsTile = new JSONObject();
     substantialCompletionsTile.put("name", "Substantial Completions");
     substantialCompletionsTile.put("value", jsonResults.getDouble("substantialCompletions"));
-    substantialCompletionsTile.put("projectIds", jsonResults.get("projectIds"));
+    substantialCompletionsTile.put("drilldownData", jsonResults.getJSONArray("substantialCompletionsDrilldown"));
 
     JSONObject sameWeekCloseoutTile = new JSONObject();
     sameWeekCloseoutTile.put("name", "Same-week Closeout %");
     sameWeekCloseoutTile.put("value", Math.round(jsonResults.getDouble("sameWeekCloseout") * 100) + "%");
-    sameWeekCloseoutTile.put("projectIds", jsonResults.get("projectIds"));
+    sameWeekCloseoutTile.put("drilldownData", jsonResults.getJSONArray("sameWeekCloseoutDrilldown"));
 
     JSONObject onTimeCloseoutTile = new JSONObject();
     onTimeCloseoutTile.put("name", "On-time Closeout %");
     onTimeCloseoutTile.put("value", Math.round(jsonResults.getDouble("onTimeCloseout") * 100) + "%");
-    onTimeCloseoutTile.put("projectIds", jsonResults.get("projectIds"));
+    onTimeCloseoutTile.put("drilldownData", jsonResults.getJSONArray("onTimeCloseoutDrilldown"));
 
     JSONObject inspectionApprovalTile = new JSONObject();
     inspectionApprovalTile.put("name", "Inspection Approval %");
     inspectionApprovalTile.put("value", Math.round(jsonResults.getDouble("inspectionApproval") * 100) + "%");
-    inspectionApprovalTile.put("projectIds", jsonResults.get("projectIds"));
+    inspectionApprovalTile.put("drilldownData", jsonResults.getJSONArray("inspectionApprovalDrilldown"));
 
     tiles.put(substantialCompletionsTile);
     tiles.put(sameWeekCloseoutTile);
@@ -145,4 +145,20 @@ public class InstallerDashboardService {
     return results;
   }
 
+  public List<WorkQueue> getWorkQueues(List<Long> installationCrewIds) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("workQueueCategoryId", null);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
+    params.put("companyId", user.getCompanyId());
+    params.put("userPositionId", null);
+    params.put("unassigned", false);
+    //currently we only show active process steps. but sending in as a list in case that changes
+    params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
+    params.put("crewIds", installationCrewIds);
+
+    List<WorkQueue> results = sqlCache.query("workQueue.getInstallerDashboardWorkQueues", params, WorkQueue.class);
+    return results;
+  }
 }
