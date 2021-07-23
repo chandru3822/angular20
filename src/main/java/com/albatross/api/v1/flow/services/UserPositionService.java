@@ -107,10 +107,11 @@ public class UserPositionService {
     } else {
       params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("userPosition.insertUserPosition", params, "id").longValue();
+      params.put("id", id);
     }
 
-    if(primaryFlag && null != userPosition.getId()) {
-      //if setting a position to primary, need to remove all other primary positions (only if changing for existing)
+    if(primaryFlag) {
+      //if setting a position to primary, need to remove all other primary positions
       sqlCache.update("userPosition.resetPrimaryFlags", params);
     }
 
