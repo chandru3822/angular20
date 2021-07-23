@@ -81,6 +81,7 @@ public class ProjectProcessStepEventService {
     params.put("startTime", ppsEvent.getStartTime());
     params.put("endTime", ppsEvent.getEndTime());
     params.put("resourceId", ppsEvent.getResourceId());
+    params.put("companyEventStatusTypeId", ppsEvent.getCompanyEventStatusTypeId());
     params.put("modifiedById", currentUser.getId());
 
     sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);

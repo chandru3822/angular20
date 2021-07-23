@@ -51,10 +51,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <div>
-            <v-text-field text
-                          label="Event Status"
-                          disabled readonly
-                          v-model.number="selectedEvent.eventStatusType"></v-text-field>
+            <v-autocomplete
+              v-model="selectedEvent.companyEventStatusTypeId"
+              :items="companyEventStatuses"
+              label="Event Status"
+              item-text="eventStatusType"
+              item-value="id"
+            ></v-autocomplete>
           </div>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -144,6 +147,7 @@
 
   import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
+  import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
   import {getCustomFieldReadOnly} from "@/services/customFieldService";
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import Attachments from '@/views/flow/components/Attachments'
@@ -165,6 +169,7 @@
         selectedEvent: {},
         attemptedAction: {},
         reqFieldsTemp: [],
+        companyEventStatuses: [],
         eventActionMissingRequirements: false,
         eventDetails: {},
         dirtyCfvs: [],
@@ -183,6 +188,7 @@
       }
     },
     async created() {
+      this.getCompanyEventStatusTypes()
       await this.getProcessStepEvents()
     },
     // watch: {
@@ -222,6 +228,19 @@
         // }
         this.doEventAction(action)
       },
+      async getCompanyEventStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getCompanyEventStatusTypes()
+          this.companyEventStatuses = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       doEventAction: async function (action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -238,6 +257,7 @@
         try {
           const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
           this.selectedEvent = data
+          this.projectProcessStepEvents.push(data)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
@@ -304,21 +324,23 @@
         }
       },
       async updateFieldGroups() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.processStep.customFieldGroups = this.customFieldGroups
-        try {
-          // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
-          // save dirty custom field values
-          this.$refs.eventFieldForm.resetValidation()
-          const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        if(this.dirtyCfvs?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          // this.processStep.customFieldGroups = this.customFieldGroups
+          try {
+            // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+            // save dirty custom field values
+            this.$refs.eventFieldForm.resetValidation()
+            const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
+            this.dirtyCfvs = []
+            this.customFieldGroups = data
+          } catch (e) {
+            logError(e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          } finally {
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
     }

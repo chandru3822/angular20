@@ -1,6 +1,6 @@
 import {getRequest, getRequestWithParams} from '@/helpers/helpers'
 
-export async function getCompanyEventStatusTypes(projectId) {
+export async function getCompanyEventStatusTypes() {
   try {
     const {data} = await getRequest(`/event/companyStatus`)
     return {data, status}

@@ -6,6 +6,7 @@
 
   <projectProcessStepEvent.get><![CDATA[
     select ppse.*,
+           cest.event_status_type,
            e.event_name,
            e.resource_custom_field_id,
            pse.event_id,
@@ -69,6 +70,7 @@
                                AND psea.archived is not true) psea), '[]') AS "eventActions"
     from flow.project_process_step_event ppse
            inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+           inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
            inner join flow.event e on pse.event_id = e.id
     where ppse.id = :id
   ]]></projectProcessStepEvent.get>
@@ -78,6 +80,7 @@
       set resource_id = :resourceId::int,
           start_time = :startTime::timestamp,
           end_time = :endTime::timestamp,
+          company_event_status_type_id = :companyEventStatusTypeId,
           modified_by_id = :modifiedById::int,
           date_modified = now()
     where id = :id
