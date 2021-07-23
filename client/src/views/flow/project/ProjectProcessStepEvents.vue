@@ -256,7 +256,9 @@
       addEvent: async function (pse) {
         try {
           const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
+          //i have no idea why i am using 2 data objects for the same value but dont have time to figure it out atm
           this.selectedEvent = data
+          this.eventDetails = data
           this.projectProcessStepEvents.push(data)
         } catch (e) {
           console.error('*** ERROR ***', e)
