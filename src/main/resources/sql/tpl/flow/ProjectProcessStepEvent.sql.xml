@@ -23,6 +23,9 @@
                       FROM (
                              SELECT psea.id,
                                     psea.action_name as "actionName",
+                                    psea.require_start_time as "requireStartTime",
+                                    psea.require_end_time as "requireEndTime",
+                                    psea.require_resource as "requireResource",
                                     psea.process_step_event_id as "processStepEventId",
                                     psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                                     psea.company_event_status_type_id as "companyEventStatusTypeId",

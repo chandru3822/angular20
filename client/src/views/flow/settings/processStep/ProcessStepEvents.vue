@@ -226,14 +226,31 @@
                   {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
                 </template>
               </v-autocomplete>
+
+              <v-card flat class="pb-5">
+                <table>
+                  <tr>
+                    <td>Require Start Time</td>
+                    <td><input type="checkbox" class="ml-2" v-model="action.requireStartTime"></td>
+                  </tr>
+                  <tr>
+                    <td>Require End Time</td>
+                    <td><input type="checkbox" class="ml-2" v-model="action.requireEndTime"></td>
+                  </tr>
+                  <tr>
+                    <td>Require Resource</td>
+                    <td><input type="checkbox" class="ml-2" v-model="action.requireResource"></td>
+                  </tr>
+                </table>
+              </v-card>
+
               <v-btn class="white--text"
                      color="primaryButton"
                      @click="saveEventAction(action)"
               >Save Action</v-btn>
 
-              <br><br>this UI is confusing<br><br>
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">Required Fields</v-toolbar-title>
+                <v-toolbar-title class="app-title">Required Custom Fields</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
                   <v-btn text @click="[addRequiredField = !addRequiredField, loadAvailableEventCustomFields(action)]">
@@ -302,7 +319,7 @@
               </v-list>
 
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">Optional Fields</v-toolbar-title>
+                <v-toolbar-title class="app-title">Optional Custom Fields</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
                   <v-btn text @click="[addOptionalField = !addOptionalField, loadAvailableEventCustomFields(action)]">
@@ -689,5 +706,7 @@
 </script>
 
 <style scoped lang="scss">
-
+.required-field-label {
+  width: 100px;
+}
 </style>

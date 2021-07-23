@@ -15,7 +15,7 @@ public class ProcessStepEventAction {
 
   private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId;
   private String actionName, processStepStatusType, eventStatusType;
-  private Boolean archived;
+  private Boolean archived, requireStartTime, requireEndTime, requireResource;
   private List<ProcessStepEventActionField> requiredFields;
   private List<ProcessStepEventActionField> optionalFields;
 }

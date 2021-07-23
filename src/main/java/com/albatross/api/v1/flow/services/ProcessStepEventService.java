@@ -97,6 +97,9 @@ public class ProcessStepEventService {
     params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
     params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
     params.put("actionName", processStepEventAction.getActionName());
+    params.put("requireStartTime", null != processStepEventAction.getRequireStartTime() ? processStepEventAction.getRequireStartTime() : false);
+    params.put("requireEndTime", null != processStepEventAction.getRequireEndTime() ? processStepEventAction.getRequireEndTime() : false);
+    params.put("requireResource", null != processStepEventAction.getRequireResource() ? processStepEventAction.getRequireResource() : false);
     params.put("userId", currentUser.getId());
     params.put("processStepEventId", eventId);
 
