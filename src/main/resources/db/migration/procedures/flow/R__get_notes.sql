@@ -43,7 +43,19 @@ BEGIN
                                                 n2.created_by_id as "createdById",
                                                 concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
                                                 n2.modified_by_id as "modifiedById",
-                                                pn2.project_id as primaryId
+                                                pn2.project_id as "primaryId",
+                                                (SELECT row_to_json(pp)
+                                                 FROM (select distinct upv.user_position_id as id,
+                                                                       upv.primary_flag as "primaryFlag",
+                                                                       upv.position,
+                                                                       uphv.hierarchy
+                                                       from flow.user_positions_vw upv
+                                                              inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
+                                                       where upv.user_id = creator2.id
+                                                         and upv.archived is not true
+                                                         and upv.primary_flag is true
+                                                         and upv.company_id = p_company_id
+                                                         and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition"
                                          from flow.note n2
                                                   inner join flow.project_note pn2 on pn2.note_id = n2.id
                                                   inner join flow.user creator2 on creator2.id = n2.created_by_id
