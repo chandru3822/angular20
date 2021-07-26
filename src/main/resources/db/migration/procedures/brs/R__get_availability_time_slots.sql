@@ -130,7 +130,7 @@ BEGIN
                                            else
                                                    p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
         where  foo2.available is true and
-                foo2.scheduled_start_time > now()  + interval '30 minutes'
+                foo2.scheduled_start_time at time zone 'UTC' at time zone  v_timezone > now()  + interval '30 minutes'
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;
     set TimeZone = 'UTC';
