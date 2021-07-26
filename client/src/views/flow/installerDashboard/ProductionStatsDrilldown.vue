@@ -33,7 +33,7 @@
         <tr :class="{'green-row': item.isnumerator}">
           <td class="text-left">{{item.project_id}}</td>
           <td class="text-left">{{item.crewname}}</td>
-          <td class="text-left">{{item.installation_scheduled | formatDate('date')}}</td>
+          <td class="text-left">{{item.installation_start_time | formatDate('date')}}</td>
           <td class="text-left">{{item.substantial_completion_date | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_scheduled_date | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_outcome_name}}</td>
@@ -93,6 +93,18 @@
       },
     },
     async created() {
+      if (this.title === 'Inspection Approval %') {
+        // AHJ Inspection Date
+        this.headers[4].show = true;
+        // AHJ Inspection Outcome
+        this.headers[5].show = true;
+      }
+      else {
+        // AHJ Inspection Date
+        this.headers[4].show = false;
+        // AHJ Inspection Outcome
+        this.headers[5].show = false;
+      }
     },
     methods: {
     }
