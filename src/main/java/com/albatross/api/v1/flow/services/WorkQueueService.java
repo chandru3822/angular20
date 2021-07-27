@@ -82,7 +82,8 @@ public class WorkQueueService {
 //    return page;
 //  }
 
-  public SmartlistResult getWorkQueueDetails(Long workQueueTypeId, Long smartlistId, Long userId, Boolean unassigned, Pageable pageable) {
+  public SmartlistResult getWorkQueueDetails(Long workQueueTypeId, Long smartlistId, Long userId, Boolean unassigned, String timezone, Pageable pageable,
+                                             List<Long> installationCrewIds) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
@@ -111,7 +112,7 @@ public class WorkQueueService {
     log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
-    final String query = smartlistService.buildSql(smartlist, fields);
+    final String query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds);
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     List<Map<String, Object>> randasResults = new ArrayList<>();

@@ -330,7 +330,7 @@ public class SmartlistService {
     return new SmartlistResult(fields, results);
   }
 
-  public String getCsv(Long smartlistId) {
+  public String getCsv(Long smartlistId, String timezone) {
     Smartlist smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
@@ -338,7 +338,7 @@ public class SmartlistService {
 
     final List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
 
-    if (fields.isEmpty()) {
+    if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
     }
 
@@ -367,7 +367,7 @@ public class SmartlistService {
     if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
     }
 
 //    log.info("*** {}", query);
@@ -475,6 +475,10 @@ public class SmartlistService {
   }
 
   public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
+    return buildSql(smartlist, fields, null, null);
+  }
+
+  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, List<Long> installationCrewIds) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
@@ -753,7 +757,15 @@ public class SmartlistService {
       // If field is custom, else it's system
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
         final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
-        location = String.format("\"%s\".%s", referenceTable, column);
+        // if data type id == 2 and timezone is not null, then String.format("(\"%s\".%s at time zone \'%s\')", referenceTable, column, timezone)
+//        ppscfv.timestamp_value
+        if(null != timezone && f.getDataTypeId() == 2) {
+//          (site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+          location = String.format("((\"%s\".%s at time zone \'UTC\') at time zone \'%s\')", referenceTable, column, timezone);
+//          location = String.format("\"%s\".%s", referenceTable, column);
+        } else {
+          location = String.format("\"%s\".%s", referenceTable, column);
+        }
       } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
         location = (f.getObjectTypeId() != 4) ? f.getReferenceColumn() : String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name)", f.getValueReferenceTable(), f.getValueReferenceTable());
       } else if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
@@ -886,6 +898,10 @@ public class SmartlistService {
         "         left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id \n" +
         "         left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id \n" +
         "         left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id \n");
+    }
+
+    if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
+      query.append("         inner join brs.project_details on brs.project_details.project_id = flow.project.id \n");
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
@@ -1263,6 +1279,10 @@ public class SmartlistService {
         whereClause.append(" flow.project_process_step.main is true and ");
       }
 
+     if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
+        whereClause.append(String.format(" brs.project_details.installation_resource in (%s) and ", installationCrewIds.toString().replace("[", "").replace("]", "")));
+      }
+
       if(null != smartlist.getWorkQueueTypeId()) {
         whereClause.append(" pswqt.work_queue_type_id = " + smartlist.getWorkQueueTypeId() + "\n" +
           "  and pswqt.archived is not true\n" +
@@ -1365,7 +1385,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system list
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-          referenceLocation = (r.getSmartlistSystemListId() == 1) ? String.format("%s.%s", r.getJoinTable(), r.getJoinColumn()) : String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
+            referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 

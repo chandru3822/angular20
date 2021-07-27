@@ -68,6 +68,25 @@ public class GenesysController {
     }
   }
 
+  @PutMapping(value = "/inboundCall/{phoneNumber}/leadStatus/{leadStatus}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity updateLeadStatus(@PathVariable String phoneNumber, @PathVariable String leadStatus) {
+    try {
+      JSONObject contactJson = new JSONObject();
+      boolean success = genesysService.updateLeadStatus(phoneNumber, leadStatus);
+      if (success) {
+        contactJson.put("success", true);
+        return ResponseEntity.ok(contactJson.toString());
+      }
+      else {
+        return ResponseEntity.badRequest().body("Error updating contact Lead Status: Contact or Lead Status not found");
+      }
+    } catch (Exception e) {
+      String msg = "GENE: Error updating contacts";
+      log.error(msg, e);
+      return ResponseEntity.badRequest().body("Error updating contacts");
+    }
+  }
+
   @PostMapping(value = "/contact/{id}")
   public ResponseEntity addContact(@RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
     try {

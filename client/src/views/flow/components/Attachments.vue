@@ -41,11 +41,12 @@
           <div @drop.prevent="addDragDocument" @dragover.prevent>
             <v-file-input
               dense
+              multiple
               ref="fileInput"
               hide-details
               :show-size="error.error"
               outlined
-              label="Upload File"
+              label="Upload Files"
               @change="uploadDocument"
             />
           <span class="error-text" v-if="error.message">{{error.message}}</span>
@@ -285,36 +286,39 @@ export default {
       }
     },
     addDragDocument: async function (e, attachmentTypeId) {
-      let file = e.dataTransfer.files[0]
-      await this.uploadDocument(file, attachmentTypeId)
+      let files = e.dataTransfer.files
+      await this.uploadDocument(files, attachmentTypeId)
     },
-    uploadDocument: async function (file, attachmentTypeId) {
+    uploadDocument: async function (files, attachmentTypeId) {
       try {
-        if(file && file.size > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          //reset error message when trying to upload new file
-          this.error = {}
-          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-          await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
-            file,
-            attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
-            projectId: this.projectId,
-            projectProcessStepId: this.projectProcessStepId,
-            callback: async (newAttachment, error) => {
-              if(error) {
-                this.error = error
-                this.snackbar = getSnackbar('ERROR', error.message)
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              } else {
-                let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
-                newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        //reset error message when trying to upload new file
+        this.error = {}
+        // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+        for (var i = 0; i < files.length; ++i) {
+          let file = files[i];
+          if (file && file.size > 0) {
+            await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
+              file,
+              attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
+              projectId: this.projectId,
+              projectProcessStepId: this.projectProcessStepId,
+              callback: async (newAttachment, error) => {
+                if (error) {
+                  this.error = error
+                  this.snackbar = getSnackbar('ERROR', error.message)
+                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                } else {
+                  let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
+                  newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
 
-                this.attachments = [...this.attachments, newAttachment]
+                  this.attachments = [...this.attachments, newAttachment]
+                }
+                this.$refs?.fileInput?.reset()
+                this.$store.commit(AppMutations.SET_LOADING, false)
               }
-              this.$refs?.fileInput?.reset()
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          })
+            })
+          }
         }
       } catch(e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
