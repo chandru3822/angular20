@@ -7,6 +7,7 @@
   </v-col>
 
   <v-col class="d-flex justify-start align-self-start py-0">
+    {{field.required}}
     <DatetimePickerInput
       v-if="field.dataTypeId === 1"
       v-model="field.dateValue"

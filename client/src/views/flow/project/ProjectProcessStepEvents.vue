@@ -184,21 +184,21 @@
           { text: 'Event', value: 'eventName', show: true },
           { text: 'Status', value: 'eventStatusType', show: true },
         ],
-        doTest: false
+        doTest: false,
+        keyCounter: 0
       }
     },
     async created() {
       this.getCompanyEventStatusTypes()
       await this.getProcessStepEvents()
     },
-    // watch: {
-    //   doTest: function () {
-    //     this.$nextTick(() => {
-    //       console.log('WHY TF', this.$refs.eventFieldForm.validate())
-    //       this.eventActionMissingRequirements = this.$refs.eventFieldForm.validate()
-    //     })
-    //   }
-    // },
+    watch: {
+      eventActionMissingRequirements: function () {
+        this.$nextTick(() => {
+          this.$refs.eventFieldForm.validate()
+        })
+      }
+    },
     computed: {},
     methods: {
       // getFieldRequired(field) {
@@ -210,23 +210,41 @@
       //   return false
       // },
       validateActionRequirements: async function (action) {
-        // this.reqFieldsTemp = action.requiredFields
-        // if(action?.requiredFields?.length > 0) {
-        //   let test = false
-        //   this.selectedEvent?.customFieldGroups?.forEach(cfg => {
-        //     cfg?.customFieldValues?.forEach(cf => {
-        //       let match = action?.requiredFields?.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
-        //       if(match) {
-        //         cf.required = true
-        //         test = true
-        //       }
-        //     })
-        //   })
-        // } else {
-        //   this.eventActionMissingRequirements = false
-        //   console.log('WE WOULD DO THE ACITON')
-        // }
-        this.doEventAction(action)
+        if(action?.requiredFields?.length > 0) {
+          this.reqFieldsTemp = action.requiredFields
+          this.selectedEvent?.customFieldGroups?.forEach(cfg => {
+            cfg?.customFieldValues?.forEach(cf => {
+              let match = action?.requiredFields?.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+              let fieldValueMissing = false
+              if(match) {
+                console.log('randaLogger', cf)
+                if( // check each data type to see if it has a value
+                  (cf.dataTypeId === 1 && null == cf.dateValue) ||
+                  (cf.dataTypeId === 2 && null == cf.timestampValue) ||
+                  (cf.dataTypeId === 3 && null == cf.booleanValue) ||
+                  (cf.dataTypeId === 4 && null == cf.numericValue) ||
+                  (cf.dataTypeId === 5 && null == cf.textValue) ||
+                  (cf.dataTypeId === 6 && null == cf.intValue) ||
+                  (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
+                  (cf.dataTypeId === 8 && null == cf.intValue) ||
+                  (cf.dataTypeId === 9 && null == cf.intValue)
+                ) {
+                  cf.required = true
+                  fieldValueMissing = true
+                  this.eventActionMissingRequirements = true
+                }
+              }
+              //if there wasn't a match, or there was a match but no missing data, then run the event
+              if(!fieldValueMissing) {
+                this.eventActionMissingRequirements = false
+                this.doEventAction(action)
+              }
+            })
+          })
+        } else {
+          this.eventActionMissingRequirements = false
+          await this.doEventAction(action)
+        }
       },
       async getCompanyEventStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
