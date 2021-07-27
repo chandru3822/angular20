@@ -66,7 +66,8 @@ select
   s.date_modified,
   s.created_by_id,
   s.modified_by_id,
-  s.archived
+  s.archived,
+  s.primary_user_position
 from flow.smartlist_field_assignment sfa
 inner join flow.smartlist s on s.id = sfa.smartlist_id
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
@@ -79,8 +80,8 @@ order by s.name
 ]]></smartlist.getSharedByObjectType>
 
 <smartlist.add><![CDATA[
-insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details)
-values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps, :projectDetails)
+insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details, primary_user_position)
+values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps, :projectDetails, :primaryUserPosition)
 returning id;
 ]]></smartlist.add>
 
@@ -94,7 +95,8 @@ set
   modified_by_id = :userId,
   date_modified = now(),
   project_details = :projectDetails,
-  main_process_steps = :mainProcessSteps
+  main_process_steps = :mainProcessSteps,
+  primary_user_position = :primaryUserPosition
 where
   id = :id;
 ]]></smartlist.update>

@@ -121,30 +121,57 @@
                     :rules="requiredRules"
                   />
                 </v-col>
-
-
               </v-row>
 
               <v-row>
                 <v-col cols="12" md="6">
-                  <v-autocomplete
-                    v-model="smartlist.companyObjectTypeId"
-                    :items="companyObjectTypes"
-                    item-text="objectType"
-                    item-value="companyObjectTypeId"
-                    label="Rows"
-                    placeholder="Select one..."
-                    :rules="requiredRules"
-                  />
-                </v-col>
+                  <v-dialog
+                    v-model="showObjectTypeDialog"
+                    width="500"
+                  >
+                    <template #activator="{on}">
+                      <v-autocomplete
+                        v-model="smartlist.companyObjectTypeId"
+                        :items="companyObjectTypes"
+                        item-text="objectType"
+                        item-value="companyObjectTypeId"
+                        label="Rows"
+                        placeholder="Select one..."
+                        :rules="requiredRules"
+                        @change="checkObjectTypeChange"
+                      />
+                    </template>
 
-<!--                @TODO: humes, holding off until after MVP -->
-<!--                <v-col cols="6" md="3">-->
-<!--                  <v-checkbox-->
-<!--                    v-model="smartlist.mainProcessSteps"-->
-<!--                    label="Primary Process Steps Only"-->
-<!--                  />-->
-<!--                </v-col>-->
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Toggling to this row type will reset your smartlist, are you sure you want to continue?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="[showObjectTypeDialog = false, smartlist.companyObjectTypeId = companyObjectTypes.find(t => t.objectTypeId === originalObjectTypeId).companyObjectTypeId]">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="[showObjectTypeDialog = false, toggleSmartlistObjectType()]">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-col>
 
                 <v-col cols="4" md="2">
                   <v-checkbox
@@ -155,7 +182,14 @@
 
                 <v-col cols="4" md="2">
 
+                  <v-checkbox
+                    v-if="isUserOrgObjectType"
+                    v-model="smartlist.primaryUserPosition"
+                    label="Primary Position"
+                  />
+
                   <v-dialog
+                    v-if="!isUserOrgObjectType"
                     v-model="showToggleDialog"
                     width="500"
                   >
@@ -190,7 +224,7 @@
                         <v-btn
                           color="primaryCustom"
                           text
-                          @click="[showToggleDialog = false, toggleSmartlistType()]">
+                          @click="[showToggleDialog = false, toggleProjectDetails()]">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -254,7 +288,7 @@
             <v-autocomplete
               v-model="newField.objectTypeId"
               label="Object Type"
-              :items="companyObjectTypes"
+              :items="filteredCompanyObjectTypes"
               item-value="objectTypeId"
               item-text="objectType"
               @input="getAvailableFields"
@@ -353,7 +387,7 @@
 
     <SmartlistRequirement
       :requirements="requirements"
-      :company-object-types="companyObjectTypes"
+      :company-object-types="filteredCompanyObjectTypes"
       :reset-form="resetRequirementForm"
       :disabled="!smartlist.id"
       :can-edit="canEdit"
@@ -473,12 +507,16 @@ export default {
       logicUpdated: false,
       resetRequirementForm: false,
       viewObjectTypes: [
-        {objectTypeId: 1, objectType: 'Project'},
-        {objectTypeId: 2, objectType: 'Contact'}
+        {objectTypeId: 2, objectType: 'Contact'},
+        // {objectTypeId: 5, objectType: 'Organization'},
+        {objectTypeId: 1, objectType: 'Project'}
+        // {objectTypeId: 3, objectType: 'User'}
       ],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       showDeleteDialog: false,
       showToggleDialog: false,
+      showObjectTypeDialog: false,
+      originalObjectTypeId: null,
       projectDetailsColumns: []
     }
   },
@@ -500,6 +538,13 @@ export default {
     isProcessStepObjectType () {
       return this.smartlist.companyObjectTypeId !== null && this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id === 4
     },
+    isUserOrgObjectType () {
+      if (this.smartlist.companyObjectTypeId !== null) {
+        const objectTypeId = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id
+        return objectTypeId && [3, 5].includes(objectTypeId)
+      }
+      return false
+    },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     },
@@ -510,6 +555,19 @@ export default {
     filteredProjectDetailsRequirements () {
       const columnNames = this.requirements.map(r => r.projectDetailsColumn)
       return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
+    },
+    filteredCompanyObjectTypes () {
+      if (this.smartlist.id) {
+        let objectTypeIds = []
+        if ([1, 2, 4].includes(this.smartlist.objectTypeId)) {
+          objectTypeIds = [1, 2, 4]
+        } else {
+          objectTypeIds = [3, 5]
+        }
+        return this.companyObjectTypes.filter(t => objectTypeIds.includes(t.objectTypeId))
+      } else {
+        return this.companyObjectTypes
+      }
     }
   },
   methods: {
@@ -517,6 +575,7 @@ export default {
       try {
         const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}`)
         this.smartlist = data
+        this.originalObjectTypeId = data.objectTypeId
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist')
@@ -629,6 +688,7 @@ export default {
 
         const {data} = await postRequest(`/smartlist`, this.smartlist)
         this.smartlist = data
+        this.originalObjectTypeId = data.objectTypeId
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
@@ -688,6 +748,9 @@ export default {
         }
 
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
+
+        const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
+        this.originalObjectTypeId = companyObjectType.objectTypeId
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
@@ -798,7 +861,7 @@ export default {
         const {data} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
-        });
+        })
         saveAs(blob, `${this.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
@@ -816,16 +879,51 @@ export default {
         }
       }
     },
-    async toggleSmartlistType () {
+    async toggleProjectDetails () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await putRequest(`/smartlist/${this.smartlist.id}/toggleType`)
+        await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
         this.assignedFields = []
         this.requirements = []
       } catch (e) {
         logError(e)
         this.smartlist.projectDetails = !this.smartlist.projectDetails
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    checkObjectTypeChange () {
+      if (this.smartlist.id) {
+        const newObjectTypeId = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)?.objectTypeId
+        if ([1, 2, 4].includes(this.originalObjectTypeId) && [3, 5].includes(newObjectTypeId)) {
+          this.showObjectTypeDialog = true
+          return
+        }
+
+        if ([3, 5].includes(this.originalObjectTypeId) && [1, 2, 4].includes(newObjectTypeId)) {
+          this.showObjectTypeDialog = true
+        }
+      }
+    },
+    async toggleSmartlistObjectType () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
+        this.smartlist.objectTypeId = companyObjectType.objectTypeId
+
+        const {data} = await putRequest((`/smartlist/${this.smartlist.id}/toggleObjectType`), this.smartlist)
+
+        this.smartlist = data
+        this.originalObjectTypeId = data.objectTypeId
+        this.assignedFields = []
+        this.requirements = []
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating smartlist row type')
+        this.smartlist.objectTypeId = this.originalObjectTypeId
+        this.smartlist.companyObjectTypeId = this.companyObjectTypes.find(t => t.objectTypeId === this.originalObjectTypeId).companyObjectTypeId
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
