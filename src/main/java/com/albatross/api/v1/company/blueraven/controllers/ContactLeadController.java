@@ -164,4 +164,14 @@ public class ContactLeadController {
   public void updateContactLeadVision(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/optindatacorp", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactOptInDataCorp(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/solarDirectAppt", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarDirectAppt(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
