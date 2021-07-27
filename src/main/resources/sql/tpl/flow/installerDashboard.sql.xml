@@ -115,29 +115,29 @@
                                       pd.installation_resource in (:crewIds)) otc), '[]'),
 
         'inspectionApproval', (select coalesce((select count(*) from brs.project_details pd
-            where
-            (installation_start_time::date between :startDate::date and :endDate::date
-            AND
+        where
             (
-              (substantial_completion_date is not null AND installation_start_time::date = substantial_completion_date::date)
-              OR
-              (substantial_completion_date is null AND installation_start_time::date = (now() at time zone 'US/Mountain')::date))
+              pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
+              AND
+              pd.ahj_inspection_outcome_name = 'Pass'
             )
         AND
         pd.installation_resource in (:crewIds)) ::numeric(10,2)
                     /
         NULLIF(((select count(*) from brs.project_details pd
-            where installation_start_time::date between :startDate::date and :endDate::date
+            where pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
+            AND
+            pd.ahj_inspection_outcome is not null
             AND
             pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'inspectionApprovalDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(ia)))
                             FROM (select project_id, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
-                                         pd.installation_start_time, pd.substantial_completion_date, pd.ahj_inspection_scheduled_date, pd.ahj_inspection_outcome_name,
+                                         pd.installation_start_time, pd.substantial_completion_date, pd.ahj_inspection_start_time, pd.ahj_inspection_outcome_name,
                                          (pd.ahj_inspection_outcome_name = 'Pass') as isNumerator
                                   from brs.project_details pd
                                   where
-                                      installation_start_time::date between :startDate::date and :endDate::date
+                                      pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
                                       AND
                                       pd.installation_resource in (:crewIds)) ia), '[]')
         )

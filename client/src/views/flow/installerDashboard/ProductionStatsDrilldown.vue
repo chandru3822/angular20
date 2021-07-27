@@ -35,7 +35,7 @@
           <td class="text-left">{{item.crewname}}</td>
           <td class="text-left">{{item.installation_start_time | formatDate('date')}}</td>
           <td class="text-left">{{item.substantial_completion_date | formatDate('date')}}</td>
-          <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_scheduled_date | formatDate('date')}}</td>
+          <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_start_time | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_outcome_name}}</td>
         </tr>
       </template>
