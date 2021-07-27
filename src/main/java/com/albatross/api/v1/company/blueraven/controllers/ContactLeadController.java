@@ -170,7 +170,7 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
-  @PostMapping(value = "/solarDirectAppt", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/solardirectappt", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateContactSolarDirectAppt(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
