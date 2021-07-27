@@ -89,7 +89,7 @@ public class ProjectProcessStepEventService {
     return getPpsEvent(ppsEvent.getId());
   }
 
-  public void performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
+  public Optional<ProjectProcessStepEvent> performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
     /*
      **High level pseudo logic:**
 
@@ -126,6 +126,8 @@ public class ProjectProcessStepEventService {
       //this is a total hack just to see it update.  needs to follow all the same rules as the other types of actions re: cancellations, reactivations, etc
       sqlCache.update("projectProcessStepEvent.randaHacking", params);
     }
+
+    return getPpsEvent(eventId);
 
   }
 

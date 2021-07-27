@@ -55,14 +55,14 @@ public class ProjectProcessStepEventController {
 
   //action
   @PostMapping(value = "/{eventId}/action/perform", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void performStepEventAction (@PathVariable Long ppsId,
+  public Optional<ProjectProcessStepEvent> performStepEventAction (@PathVariable Long ppsId,
                                       @PathVariable Long eventId,
                                       @RequestBody ActionRequest actionRequest) {
     //save the custom field values
     projectProcessStepEventService.savePpsEventDetails(actionRequest.ppsEvent);
 
     //do the action
-    projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionRequest.processStepEventAction);
+    return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionRequest.processStepEventAction);
   }
 
   @Data

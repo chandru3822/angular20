@@ -115,7 +115,7 @@
               <CustomValueInput
                 v-for="(field, idx) in cfg.customFieldValues"
                 :key="idx"
-                :required="field.required"
+                :required="field.required && !eventSaveOverrideRequired"
                 :callback="populateDirtyCfvs"
                 :readonly="getReadOnly(field)"
                 :field="field"
@@ -134,7 +134,6 @@
                 :key="i">
           {{action.actionName}}
         </v-btn>
-        {{reqFieldsTemp}}
         <v-row>
           <Attachments :project-process-step-event-id="selectedEvent.id" :event-id="selectedEvent.eventId" :project-process-step-id="projectProcessStepId" />
         </v-row>
@@ -176,7 +175,6 @@ import {
         snackbar: {},
         selectedEvent: {},
         attemptedAction: {},
-        reqFieldsTemp: [],
         companyEventStatuses: [],
         eventActionMissingRequirements: false,
         eventDetails: {},
@@ -193,7 +191,7 @@ import {
           { text: 'Status', value: 'eventStatusType', show: true },
         ],
         doTest: false,
-        keyCounter: 0
+        eventSaveOverrideRequired: false
       }
     },
     async created() {
@@ -211,8 +209,8 @@ import {
     methods: {
       validateActionRequirements: async function (action) {
         this.eventActionMissingRequirements = false
+        this.eventSaveOverrideRequired = false
         if(action?.requiredFields?.length > 0) {
-          this.reqFieldsTemp = action.requiredFields
           let fieldValueMissing = false
           this.selectedEvent?.customFieldGroups?.forEach(cfg => {
             cfg?.customFieldValues?.forEach(cf => {
@@ -241,6 +239,9 @@ import {
           //if there wasn't a match, or there was a match but no missing data, then run the event
           if(!fieldValueMissing) {
             this.eventActionMissingRequirements = false
+            //update the cfv's
+            await this.updateFieldGroups()
+            //then do the event action which will save the event details as well
             await this.doEventAction(action)
           }
         } else {
@@ -269,6 +270,8 @@ import {
             processStepEventAction: action
           }
           const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/perform`, params)
+          this.eventDetails = data
+          this.selectedEvent = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -338,6 +341,7 @@ import {
         }
       },
       async saveEventDetails() {
+        this.eventSaveOverrideRequired = true
         this.eventActionMissingRequirements = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
