@@ -860,6 +860,13 @@ public class SmartlistService {
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
     if(null == smartlist.getWorkQueueTypeId()) {
+
+      // @TODO: if active flag is false, maybe this should be a user status requirement though
+      // assume mountain time for date comparisons
+      LocalDateTime dateTimeNow = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
+      ZonedDateTime zonedNow = dateTimeNow.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("America/Denver"));
+      String now = zonedNow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
       switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
         query.append(" from flow.project ");
@@ -887,45 +894,54 @@ public class SmartlistService {
           whereClause.append(" flow.project.archived is not true and ");
           whereClause.append(String.format(" flow.contact.company_id = any(%s) and ", companySubquery));
           break;
-        case 3:
-          query.append(" from flow.user ");
-        query.append(" left join flow.user_position on flow.user_position.user_id = flow.user.id ");
-        query.append(" left join flow.position on flow.position.id = flow.user_position.position_id ");
-          query.append(" left join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
-        query.append(" left join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id ");
-        query.append(" left join flow.org on flow.org.id = flow.user_position.org_id ");
-        query.append(" left join flow.org_type on flow.org_type.id = flow.org.org_type_id ");
-        query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
+      case 3:
+        query.append(" from flow.user ");
+        query.append(" inner join flow.user_position on flow.user_position.user_id = flow.user.id and flow.user_position.archived is not true ");
+        query.append(" inner join flow.position on flow.position.id = flow.user_position.position_id and flow.position.archived is not true ");
+        query.append(" inner join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
+        query.append(" inner join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id and flow.user_status_type.archived is not true ");
+        query.append(" inner join flow.org on flow.org.id = flow.user_position.org_id and flow.org.archived is not true ");
+        query.append(" inner join flow.org_type on flow.org_type.id = flow.org.org_type_id and flow.org_type.archived is not true ");
+        query.append(" inner join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
 
+        whereClause.append(" flow.user.archived is not true and ");
         whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+
+        if (smartlist.isPrimaryUserPosition()) {
+          whereClause.append(" flow.user_position.primary_flag is true and ");
+        }
+
+//        whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
+
+        break;
+      case 5:
+        query.append(" from flow.org ");
+        query.append(" inner join flow.org_type on flow.org_type.id = flow.org.org_type_id and flow.org_type.archived is not true ");
+        query.append(" inner join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
+
+        whereClause.append(" flow.org.archived is not true and ");
+        whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
+
+        final boolean anyUserField = fields.stream().anyMatch(f -> f.getObjectTypeId() == 3);
+        final boolean anyUserRequirement = requirements.stream().anyMatch(r -> r.getObjectTypeId() == 3);
+
+        if (anyUserField || anyUserRequirement) {
+          query.append(" inner join flow.user_position on flow.user_position.org_id = flow.org.id and flow.user_position.archived is not true ");
+          query.append(" inner join flow.user on flow.user.id = flow.user_position.user_id and flow.user.archived is not true ");
+          query.append(" inner join flow.position on flow.position.id = flow.user_position.position_id and flow.position.archived is not true ");
+          query.append(" inner join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
+          query.append(" inner join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id and flow.user_status_type.archived is not true ");
+
+          whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
 
           if (smartlist.isPrimaryUserPosition()) {
             whereClause.append(" flow.user_position.primary_flag is true and ");
           }
 
-          // @TODO: if active flag is false, maybe this should be a user status requirement though
-        // assume mountain time for date comparisons
-        LocalDateTime dateTimeNow = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
-        ZonedDateTime zonedNow = dateTimeNow.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("America/Denver"));
-        String now = zonedNow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
+//          whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
+        }
 
         break;
-      case 5:
-        query.append(" from flow.org ");
-        query.append(" left join flow.user_position on flow.user_position.org_id = flow.org.id ");
-        query.append(" left join flow.user on flow.user.id = flow.user_position.user_id ");
-        query.append(" left join flow.position on flow.position.id = flow.user_position.position_id ");
-        query.append(" left join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
-          query.append(" left join flow.org_type on flow.org_type.id = flow.org.org_type_id ");
-          query.append(" left join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
-
-          whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
-
-        if (smartlist.isPrimaryUserPosition()) {
-          whereClause.append(" flow.user_position.primary_flag is true and ");
-        }
-          break;
       }
     } else {
       //this is all required for the work queue stuff
