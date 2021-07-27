@@ -124,7 +124,7 @@
           </v-col>
         </v-form>
         <v-btn class="white--text mr-2 mb-2 save-btn"
-               @click="[saveEventDetails(), updateFieldGroups(), eventActionMissingRequirements = false]"
+               @click="[saveEventDetails(), updateFieldGroups()]"
                color="primaryButton"
         >Save Event</v-btn>
         <v-btn class="white--text save-btn mb-2 mr-2"
@@ -145,7 +145,15 @@
 
 <script>
 
-  import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
+import {
+  getRequest,
+  logError,
+  getSnackbar,
+  getRequestWithParams,
+  putRequest,
+  postRequest,
+  postRequestWithRequestParams
+} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
   import {getCustomFieldReadOnly} from "@/services/customFieldService";
@@ -201,23 +209,15 @@
     },
     computed: {},
     methods: {
-      // getFieldRequired(field) {
-      //   console.log('attempt',this.attemptedAction)
-      //   if(this.attemptedAction?.id && this.attemptedAction?.reqFields?.length > 0) {
-      //     console.log('randaLogger', field)
-      //     return true
-      //   }
-      //   return false
-      // },
       validateActionRequirements: async function (action) {
+        this.eventActionMissingRequirements = false
         if(action?.requiredFields?.length > 0) {
           this.reqFieldsTemp = action.requiredFields
+          let fieldValueMissing = false
           this.selectedEvent?.customFieldGroups?.forEach(cfg => {
             cfg?.customFieldValues?.forEach(cf => {
               let match = action?.requiredFields?.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
-              let fieldValueMissing = false
               if(match) {
-                console.log('randaLogger', cf)
                 if( // check each data type to see if it has a value
                   (cf.dataTypeId === 1 && null == cf.dateValue) ||
                   (cf.dataTypeId === 2 && null == cf.timestampValue) ||
@@ -233,14 +233,16 @@
                   fieldValueMissing = true
                   this.eventActionMissingRequirements = true
                 }
-              }
-              //if there wasn't a match, or there was a match but no missing data, then run the event
-              if(!fieldValueMissing) {
-                this.eventActionMissingRequirements = false
-                this.doEventAction(action)
+              } else {
+                cf.required = false
               }
             })
           })
+          //if there wasn't a match, or there was a match but no missing data, then run the event
+          if(!fieldValueMissing) {
+            this.eventActionMissingRequirements = false
+            await this.doEventAction(action)
+          }
         } else {
           this.eventActionMissingRequirements = false
           await this.doEventAction(action)
@@ -262,7 +264,11 @@
       doEventAction: async function (action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/perform`, action)
+          let params = {
+            ppsEvent: this.eventDetails,
+            processStepEventAction: action
+          }
+          const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/perform`, params)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -332,6 +338,7 @@
         }
       },
       async saveEventDetails() {
+        this.eventActionMissingRequirements = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)

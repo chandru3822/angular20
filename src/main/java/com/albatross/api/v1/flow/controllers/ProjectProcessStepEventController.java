@@ -1,10 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.ProcessStepEvent;
-import com.albatross.api.v1.flow.model.ProcessStepEventAction;
-import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,8 +57,18 @@ public class ProjectProcessStepEventController {
   @PostMapping(value = "/{eventId}/action/perform", produces = MediaType.APPLICATION_JSON_VALUE)
   public void performStepEventAction (@PathVariable Long ppsId,
                                       @PathVariable Long eventId,
-                                      @RequestBody ProcessStepEventAction processStepEventAction) {
-    projectProcessStepEventService.performStepEventAction(ppsId, eventId, processStepEventAction);
+                                      @RequestBody ActionRequest actionRequest) {
+    //save the custom field values
+    projectProcessStepEventService.savePpsEventDetails(actionRequest.ppsEvent);
+
+    //do the action
+    projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionRequest.processStepEventAction);
+  }
+
+  @Data
+  public static class ActionRequest {
+    private ProjectProcessStepEvent ppsEvent;
+    private ProcessStepEventAction processStepEventAction;
   }
 
 }
