@@ -164,7 +164,7 @@
               </v-list-item-content>
 
               <v-list-item-action class="clickable">
-                <v-icon v-if="userCanDelete" @click="deleteField(index)">delete</v-icon>
+                <v-icon v-if="userCanDelete || userIsAdmin" @click="deleteField(index)">delete</v-icon>
                 <v-icon v-else></v-icon>
               </v-list-item-action>
             </v-list-item>

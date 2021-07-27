@@ -1,12 +1,11 @@
 <template>
   <v-container class="app-container">
-    <v-dialog v-model="showModal" max-width="600">
+    <v-dialog v-model="showModal" max-width="1200">
       <ProductionStatsDrilldown
-                      :crew-id="selectedInstallationCrew.positionId"
                       :start-date="startDate"
                       :end-date="endDate"
                       :title="drilldownTitle"
-                      :project-ids="drilldownProjectIds"
+                      :drilldown-data="drilldownData"
                       @prodStatsDrilldownDialogClosed="showModal = false"
       ></ProductionStatsDrilldown>
     </v-dialog>
@@ -18,21 +17,43 @@
         <v-divider class="mt-3"/>
         <v-row class="px-4">
           <v-col cols="3" md="2">
-            <v-select v-model="selectedRegionalManager"
-                      :items="regionalManagers"
-                      label="Regional Installation Manager"
-                      item-text="fullName"
-                      @change="getInstallationCrew()"
-                      return-object
-            ></v-select>
+            <v-autocomplete v-model="selectedRegionalManagers"
+                            :items="regionalManagers"
+                            label="Regional Installation Manager"
+                            multiple
+                            clearable
+                            return-object
+                            item-text="fullName"
+                            @change="getInstallationCrew()"
+            >
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+              <span v-if="index === 0" class="primary--text caption">
+                {{ selectedRegionalManagers.length }} selected
+              </span>
+              </template>
+            </v-autocomplete>
           </v-col>
           <v-col cols="3" md="2">
-            <v-select v-model="selectedInstallationCrew"
-                      :items="installationCrew"
-                      label="Installation Crews"
-                      item-text="fullName"
-                      return-object
-            ></v-select>
+            <v-autocomplete v-model="selectedInstallationCrews"
+                            :items="installationCrew"
+                            label="Installation Crews"
+                            multiple
+                            clearable
+                            return-object
+                            item-text="fullName"
+            >
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+              <span v-if="index === 0" class="primary--text caption">
+                {{ selectedInstallationCrews.length }} selected
+              </span>
+              </template>
+            </v-autocomplete>
           </v-col>
           <v-col cols="3" md="2">
             <v-select class="date-range-dropdown" py-2
@@ -69,7 +90,7 @@
           </v-col>
           <v-col cols="3" md="2">
             <v-btn color="primaryCustom" class="white--text"
-                   :disabled="selectedInstallationCrew.fullName == null"
+                   :disabled="selectedInstallationCrews.length < 1"
                    @click="getDashboardValues()">Go</v-btn>
           </v-col>
         </v-row>
@@ -82,7 +103,7 @@
           <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': 'white'}"></div>
-              <v-card-text class="pt-1" @click="drilldownTitle = stat.name; drilldownProjectIds = stat.projectIds; showModal = true">
+              <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
                 <div class="text-left">{{stat.name}}</div>
                 <div class="card-count">{{stat.value}}</div>
               </v-card-text>
@@ -100,8 +121,9 @@
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
             <v-card-text class="pt-1">
-              <router-link class="no-text-decoration card-link"
-                           :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedInstallationCrew.positionId, unassigned: selectedUserPosition.unassigned}}">
+              <router-link class="no-text-decoration card-link" target="_blank"
+                           :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
+                                                                                                        installationCrewIds}}">
                 <div class="text-left">{{wq.workQueueType}}</div>
                 <div class="card-count">{{wq.workQueueCount}}</div>
               </router-link>
@@ -217,8 +239,8 @@
         installationCrew: [],
         expanded: [],
         selectedUserPosition: {},
-        selectedRegionalManager: {},
-        selectedInstallationCrew: {},
+        selectedRegionalManagers: [],
+        selectedInstallationCrews: [],
         selectedDateRange: 'Current Week',
         metricsSelectedDateRange: 'Current Period',
         startDate: moment().format('YYYY-MM-DD'),
@@ -233,7 +255,7 @@
         dashValues: [],
         performanceMetrics: [],
         drilldownTitle: '',
-        drilldownProjectIds: [],
+        drilldownData: [],
         headers: [
           { text: 'Rank', value: 'rnk', width: 80, show: true },
           { text: 'Crew', value: 'crewname', width: 80, show: true },
@@ -259,6 +281,9 @@
       },
       endOfWeek () {
         return moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+      },
+      installationCrewIds() {
+        return this.selectedInstallationCrews?.length > 0 ? this.selectedInstallationCrews.map(u => u.positionId) : [];
       }
     },
     async created() {
@@ -279,7 +304,8 @@
       },
       async getInstallationCrew() {
         try {
-          const {data} = await getRequest(`/installerDashboard/installationCrew/${this.selectedRegionalManager.positionId}`)
+          let regionalManagersIds = this.selectedRegionalManagers?.length > 0 ? this.selectedRegionalManagers.map(u => u.positionId) : [];
+          const {data} = await getRequest(`/installerDashboard/installationCrew/`+ regionalManagersIds)
           this.installationCrew = data
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -290,14 +316,12 @@
       async getDashboardValues() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-
           const params = {
             startDate: this.startDate,
-            endDate: this.endDate,
-            installationCrewId: this.selectedInstallationCrew.positionId,
+            endDate: this.endDate
           }
 
-          const {data} = await getRequestWithParams('/installerDashboard/dashboardValues', {params})
+          const {data} = await getRequestWithParams('/installerDashboard/dashboardValues/' + this.installationCrewIds, {params})
           this.dashValues = data
 
           this.getWipValues();
@@ -313,7 +337,7 @@
       async getWipValues() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest('/installerDashboard/wipValues')
+          const {data} = await getRequest('/installerDashboard/wipValues/' + this.installationCrewIds)
           this.workQueues = data
 
           this.isLoading = false
@@ -479,5 +503,7 @@
 .card-link {
   color: #666666;
 }
-
+.stats-tile {
+  cursor: pointer;
+}
 </style>
