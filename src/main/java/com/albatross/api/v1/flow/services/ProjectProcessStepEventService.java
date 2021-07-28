@@ -163,6 +163,11 @@ public class ProjectProcessStepEventService {
       }
     }
 
+    //if we made it to here then insert a record of having run the event
+    params.put("processStepEventActionId", processStepEventAction.getId());
+    params.put("createdById", currentUser.getId());
+    sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
+
     return ResponseEntity.ok(getPpsEvent(eventId));
 
   }
