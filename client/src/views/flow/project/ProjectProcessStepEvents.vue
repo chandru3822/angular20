@@ -39,6 +39,9 @@
                 @click="[selectedEvent = item, selectedEventIndex = index, getEventCfgs(item), getEventDetails(item)]">
               <td class="text-left">{{ item.eventName }}</td>
               <td class="text-left">{{ item.eventStatusType }}</td>
+              <td class="text-left">{{ item.startTime | formatDate('timestamp') }}</td>
+              <td class="text-left">{{ item.endTime | formatDate('timestamp') }}</td>
+              <td class="text-left">{{ item.resource }}</td>
             </tr>
           </template>
 
@@ -72,16 +75,17 @@
           The following fields are required to perform the selected action.
         </div>
 
-        <v-card class="pa-4 square-card"
+        <v-card class="pa-4 square-card mb-2"
                 v-if="eventDetails.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
           A state and postal code are required on the project to continue with scheduling. Please return to the
           project screen and update.
         </v-card>
 
-        <v-form ref="eventFieldForm">
+        <v-form ref="eventFieldForm" v-else>
           <DatetimePickerInput
             v-model="eventDetails.startTime"
             :timezone="this.timezone"
+            :readonly="uniqueAlreadyHasValue"
             :required="actionRequiresStart && !eventDetails.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -90,6 +94,7 @@
           <DatetimePickerInput
             v-model="eventDetails.endTime"
             :timezone="this.timezone"
+            :readonly="uniqueAlreadyHasValue"
             :required="actionRequiresEnd && !eventDetails.endTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -98,6 +103,7 @@
           <v-autocomplete
             v-model="eventDetails.resourceId"
             :items="eventDetails.availableResources"
+            :disabled="uniqueAlreadyHasValue"
             :rules="getResourceRequirement()"
             label="Resource"
             item-text="name"
@@ -195,7 +201,7 @@
         </v-form>
 
         <v-btn class="white--text mr-2 mb-2 save-btn"
-               @click="[saveEventDetails(), updateFieldGroups()]"
+               @click="checkFieldsForUnique()"
                color="primaryButton"
         >Save Event
         </v-btn>
@@ -272,6 +278,9 @@ export default {
       headers: [
         {text: 'Event', value: 'eventName', show: true},
         {text: 'Status', value: 'eventStatusType', show: true},
+        {text: 'Start Time', value: 'startTime', show: true},
+        {text: 'End Time', value: 'endTime', show: true},
+        {text: 'Resource', value: 'resource', show: true},
       ],
       eventSaveOverrideRequired: false,
       actionRequiresStart: false,
@@ -393,6 +402,16 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    getRoundRobinNumDays: async function () {
+      //need to load the round robin Number of days into future for this project
+      const {data} = await getRequestWithParams(`/postalCode/zone/byPostalCode`, {
+        params: {
+          projectId: this.projectId,
+          postalCode: this.project.postalCode
+        }
+      })
+      this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
+    },
     addEvent: async function (pse) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -401,14 +420,8 @@ export default {
         this.selectedEvent = data
         this.eventDetails = data
         if (data.uniqueBehaviorTypeId === 1) {
-          //need to load the round robin Number of days into future for this project
-          const {data} = await getRequestWithParams(`/postalCode/zone/byPostalCode`, {
-            params: {
-              projectId: this.projectId,
-              postalCode: this.project.postalCode
-            }
-          })
-          this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
+          this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
+          this.getRoundRobinNumDays()
         }
         this.projectProcessStepEvents.push(data)
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -459,6 +472,10 @@ export default {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppsEvent.id}`)
         this.eventDetails = data
+        if (data.uniqueBehaviorTypeId === 1) {
+          this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
+          this.getRoundRobinNumDays()
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -474,6 +491,10 @@ export default {
       try {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
         this.eventDetails = data
+        if (data.uniqueBehaviorTypeId === 1) {
+          this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
+          this.getRoundRobinNumDays()
+        }
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Default Fields')
@@ -595,6 +616,36 @@ export default {
         }
       }
     },
+    async checkFieldsForUnique() {
+      let validSave = true
+      let resource = null
+      if (this.eventDetails.uniqueBehaviorTypeId === 1) {
+        let startTime = this.eventDetails.startTime
+        let endTime = this.eventDetails.endTime
+        resource = this.eventDetails.resourceId
+        if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
+          this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+          validSave = false
+        } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+          this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+          validSave = false
+        } else if (startTime && endTime && !resource) {
+          //resource required if times are saving
+          this.snackbar = getSnackbar('ERROR', 'Resource is required')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+          validSave = false
+        }
+      }
+      if (validSave) {
+        this.saveEventDetails()
+        this.updateFieldGroups()
+      }
+    }
   }
 }
 </script>
