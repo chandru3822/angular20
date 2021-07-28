@@ -11,6 +11,7 @@
            e.event_name,
            e.resource_custom_field_id,
            pse.event_id,
+           pse.unique_behavior_type_id,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(availableResources)))
                       FROM (

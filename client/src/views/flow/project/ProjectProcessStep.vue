@@ -97,7 +97,6 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <!--    {{usingUniqueView}}-->
       </v-col>
 
       <v-col cols="12" class="py-0 process-step-header">
@@ -156,7 +155,6 @@
           <v-spacer></v-spacer>
           <div>
             <v-btn
-              v-if="anyGroupNonUnique()"
               color="primaryCustom"
               class="white--text"
               :disabled="fieldsSaving"
@@ -171,6 +169,7 @@
           <ProjectProcessStepEvents
             :project-process-step-events="processStep.projectProcessStepEvents"
             :events-loading="processStepLoading"
+            :project="project"
           ></ProjectProcessStepEvents>
         </v-col>
         <!--    process field groups-->
@@ -192,12 +191,8 @@
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card class="pa-4 square-card"
-                  v-if="cfg.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
-            A state and postal code are required on the project to continue with scheduling. Please return to the
-            project screen and update.
-          </v-card>
-          <v-card class="pa-3 square-card" v-else>
+
+          <v-card class="pa-3 square-card">
             <CustomValueInput
               v-for="(field, idx) in cfg.customFieldValues"
               :key="idx"
@@ -205,63 +200,7 @@
               :readonly="getReadOnly(field)"
               :field="field"
             />
-            <v-btn color="primaryCustom" v-if="cfg.uniqueBehaviorTypeId === 1" class="white--text"
-                   :disabled="uniqueAlreadyHasValue"
-                   id="qa-round-robin-button"
-                   @click="showRoundRobin = !showRoundRobin">Round Robin
-            </v-btn>
-            <div v-if="cfg.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
-              <v-toolbar flat color="transparent">
-                <v-toolbar-title>Lead Allocation</v-toolbar-title>
-              </v-toolbar>
-              <v-card-text class="py-0">
-                <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
-                  You do not have access to schedule projects in this Postal Code
-                </v-card-text>
-                <div class="pb-3" v-else>
-                  <CustomValueInput
-                    :readonly="!userCanEdit"
-                    :min-date="minDate"
-                    :callback="checkAvailabilityDate"
-                    :field="availabilityDateField"
-                  />
-                  <div class="text-right" v-if="availabilityDateField.dateValue">
-                    <v-btn color="primaryCustom" dark class="white--text"
-                           :loading="searchLoading"
-                           id="qa-round-robin-search"
-                           @click="getAvailableTimeSlots">
-                      Search
-                    </v-btn>
-                  </div>
-                  <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
-                            v-model="selectedTimeSlot"
-                            class="qa-round-robin-time-select"
-                            :items="timeSlots"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Select an Available Time Slot"
-                            return-object
-                  >
-                    <template slot="selection" slot-scope="data">
-                      {{ data.item.scheduledStartTime | formatDate('timestamp')}}
-                    </template>
-                    <template slot="item" slot-scope="data">
-                      {{ data.item.scheduledStartTime | formatDate('timestamp')}}
-                    </template>
-                  </v-select>
-                  <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
-                    Selected Date
-                  </div>
-                  <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                    <v-btn color="primaryCustom" class="white--text"
-                           @click="saveCloserAppointment" id="qa-round-robin-save">
-                      Save Appointment
-                    </v-btn>
-                  </div>
-                </div>
-              </v-card-text>
 
-            </div>
           </v-card>
         </v-col>
 
@@ -351,7 +290,6 @@
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment-timezone'
-  import {DateTime} from 'luxon'
   import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
   const NEW_STATUS_TO_USE = {id: null}
@@ -371,20 +309,11 @@
       return {
         snackbar: {},
         unsavedFieldsModal: false,
-        minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
-        roundRobinNumberOfDays: 7,
-        availabilityDateField: {fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
-        timeSlots: [],
-        selectedTimeSlot: {},
-        closerApptOverride: false,
         fieldsSaving: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
-        userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
         schedulerCanEdit: false,
         schedulerLoading: true,
-        closerApptSaved: false,
-        searchedTimeSlots: false,
         timezone: this.$store.state.user.details.timezone.value,
         projectId: this.$route.params.projectId,
         projectProcessStepId: this.$route.params.processStepId,
@@ -401,12 +330,6 @@
         availableOwners: [],
         availableProcessStepStatuses: [],
         searchLoading: false,
-        usingUniqueView: false,
-        uniqueCfgId: null,
-        showRoundRobin: false,
-        uniqueAlreadyHasValue: false,
-        psHasEventCfg: false,
-        psRequiresResource: false,
         showMainDialog: false,
         NEW_STATUS_TO_USE,
         showUnperformableActions: false,
@@ -453,10 +376,6 @@
       getStatusClass(rootTypeId) {
         return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
       },
-      anyGroupNonUnique() {
-        let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
-        return null != nonUniqueGroups
-      },
       async getAvailableStatuses() {
         try {
           const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
@@ -483,59 +402,12 @@
           this.isProcessStepLoading = false
         }
       },
-      async setCfgValues() {
-        this.customFieldGroups.forEach(cfg => {
-          if (cfg.uniqueBehaviorTypeId === 1) {
-            this.uniqueCfgId = cfg.id
-            this.psHasEventCfg = true
-            this.psRequiresResource = true
-            this.usingUniqueView = true
-            let boolVal = false
-            cfg.customFieldValues?.forEach(cfv => {
-              if (([1, 2].includes(cfv.scheduleFieldTypeId) && cfv.timestampValue && cfv.id) ||
-                (cfv.scheduleFieldTypeId === 3 && cfv.intValue && cfv.id)) {
-                boolVal = true
-              }
-              //for the schedule closer appt, if the current user is in the list of available resources, auto assign them
-              // this isn't working because it doesn't make the field "dirty" so it doesn't save.  need to fix later
-              // if(cfv.scheduleFieldTypeId === 3 && null == cfv.intValue) {
-              //   //get the user's primary user_position_id
-              //   let primaryUserPosition = this.$store.state.user.details.userPositions.find(up => up.primaryFlag)
-              //   if(primaryUserPosition?.id) {
-              //     //if found, check if it exists in the list of values
-              //     let match = cfv.listOfValues.find(lv => lv.id === primaryUserPosition.id)
-              //     if(match?.id) {
-              //       cfv.intValue = match.id
-              //     }
-              //
-              //   }
-              // }
-            })
-            this.uniqueAlreadyHasValue = boolVal
-          } else if (null != cfg.eventId) {
-            this.psHasEventCfg = true
-            this.psRequiresResource = false
-          }
-        })
-        if(this.usingUniqueView) {
-          //need to load the round robin Number of days into future for this project
-          const {data} = await getRequestWithParams(`/postalCode/zone/byPostalCode`, {
-            params: {
-              projectId: this.projectId,
-              postalCode: this.project.postalCode
-            }
-          })
-          this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
-        }
-
-      },
       async getCustomFieldGroups() {
         //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
         //this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
           this.customFieldGroups = data
-          this.setCfgValues()
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           logError(e)
@@ -563,7 +435,6 @@
           this.project = data
           window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.project.projectName}`
-          await this.userCanScheduleLeadAllocation()
         } catch (e) {
           logError(e)
         }
@@ -582,79 +453,58 @@
           // this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async userCanScheduleLeadAllocation() {
-        //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-        if (this.userIsScheduler) {
-          this.schedulerLoading = true
-          try {
-            const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
-              params: {
-                postalCode: this.project.postalCode
-              }
-            })
-            this.schedulerCanEdit = data
-          } catch (e) {
-            logError(e)
-            this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } finally {
-            this.schedulerLoading = false
-          }
-        }
-      },
-      async updateProjectFieldGroups() {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
-          this.customFieldGroups = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+      // async updateProjectFieldGroups() {
+      //   try {
+      //     this.$store.commit(AppMutations.SET_LOADING, true)
+      //     const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
+      //     this.customFieldGroups = data
+      //   } catch (e) {
+      //     logError(e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
+      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //   } finally {
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
       async checkFields() {
-        let validSave = true
-        let resource = null
-        if (this.psHasEventCfg) {
-          //get check all schedule event cfgs on the page
-          this.customFieldGroups.forEach(cfg => {
-            if (null != cfg.eventId) {
-              let startField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 1)
-              let endField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 2)
-              let resourceField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 3)
+        // let validSave = true
+        // if (this.psHasEventCfg) {
+        //   //get check all schedule event cfgs on the page
+        //   this.customFieldGroups.forEach(cfg => {
+        //     if (null != cfg.eventId) {
+        //       let startField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 1)
+        //       let endField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 2)
+        //       let resourceField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 3)
+        //
+        //       let startTime = startField?.timestampValue
+        //       let endTime = endField?.timestampValue
+        //       resource = resourceField?.intValue
+        //       if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
+        //         this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
+        //         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        //         this.fieldsSaving = false
+        //         validSave = false
+        //       } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+        //         this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
+        //         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        //         this.fieldsSaving = false
+        //         validSave = false
+        //       } else if (this.psRequiresResource && startTime && endTime && !resource) {
+        //         //resource required if times are saving
+        //         this.snackbar = getSnackbar('ERROR', 'Resource is required')
+        //         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        //         this.fieldsSaving = false
+        //         validSave = false
+        //       }
+        //     }
+        //   })
+        // }
 
-              let startTime = startField?.timestampValue
-              let endTime = endField?.timestampValue
-              resource = resourceField?.intValue
-              if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
-                this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.fieldsSaving = false
-                validSave = false
-              } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-                this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.fieldsSaving = false
-                validSave = false
-              } else if (this.psRequiresResource && startTime && endTime && !resource) {
-                //resource required if times are saving
-                this.snackbar = getSnackbar('ERROR', 'Resource is required')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.fieldsSaving = false
-                validSave = false
-              }
-            }
-          })
-        }
-
-        if (validSave) {
-          await this.updateFieldGroups(this.usingUniqueView && this.uniqueCfgId, resource)
-        }
+        // if (validSave) {
+          await this.updateFieldGroups()
+        // }
       },
-      async updateFieldGroups(cameFromUnique, resourceId) {
+      async updateFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         // this.processStep.customFieldGroups = this.customFieldGroups
         try {
@@ -663,21 +513,6 @@
           const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
           this.dirtyCfvs = []
           this.customFieldGroups = data
-          //if override - schedule closer appt - log to the audit table
-          if (cameFromUnique) {
-            this.setCfgValues()
-            if (resourceId) {
-              // console.log('AUDIT saving', resourceId)
-              let params = {
-                projectId: this.projectId,
-                projectProcessStepId: this.projectProcessStepId,
-                userPositionId: resourceId
-              }
-              await postRequest(`/availability/auditOverride`, params)
-            }
-          }
-          //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
-          this.closerApptSaved = true
           await this.getProcessStep()
         } catch (e) {
           logError(e)
@@ -689,17 +524,13 @@
         }
       },
       populateDirtyCfvs(field) {
+        //i think we could mostly remove this code now that round robin moved to events
         //some fields are for unique behavior and they dont need to be saved. this check should filter them out
         if (field.customFieldId) {
           let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
           if (!match) {
             this.dirtyCfvs.push(field)
           }
-        } else {
-          //this should only get hit when the "Select a Date" field value gets changed
-          this.selectedTimeSlot = {}
-          this.timeSlots = []
-          this.searchedTimeSlots = false
         }
       },
       async removeOwner() {
@@ -759,74 +590,8 @@
         this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
-      async getAvailableTimeSlots() {
-        try {
-          this.searchLoading = true
-          this.selectedTimeSlot = {}
-          this.searchedTimeSlots = false
 
-          let params = {
-            projectId: this.projectId,
-            startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            availableDate: this.availabilityDateField.dateValue
-          }
-          const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
-          this.searchedTimeSlots = true
-          this.timeSlots = data
-          this.searchLoading = false
-        } catch (e) {
-          logError(e)
-          this.searchLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async saveCloserAppointment() {
-        try {
-          let body = {
-            projectId: this.projectId,
-            projectProcessStepId: this.projectProcessStepId,
-            // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-            users: this.selectedTimeSlot.users
-          }
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/availability/setCloserAppointment`, body)
-          if (data) {
-            this.customFieldGroups = data
-            this.setCfgValues()
-            this.closerApptSaved = true
-            this.showRoundRobin = false
-            this.availabilityDateField.dateValue = null
-            this.timeSlots = []
-            this.selectedTimeSlot = {}
-          }
-          await this.getProcessStep()
-        } catch (e) {
-          logError(e)
-          let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      checkAvailabilityDate() {
-        if (this.availabilityDateField.dateValue !== null) {
-          // Limit user to selecting availability dates < 8 days out
-          const selectedDate = DateTime.fromISO(this.availabilityDateField.dateValue)
-          const cappedDate = DateTime.local().set({hour: 0, minute: 0, second: 0, millisecond: 0}).plus({days: this.roundRobinNumberOfDays})
-          if (selectedDate > cappedDate) {
-            this.availabilityDateField.dateValue = null
-            this.snackbar = getSnackbar('ERROR', `You can only schedule appointments ${this.roundRobinNumberOfDays} days in advance`)
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.populateDirtyCfvs(this.availabilityDateField)
-          }
-        }
-      }
+
     }
   }
 </script>
