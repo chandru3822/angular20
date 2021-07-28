@@ -424,7 +424,10 @@ public class ProjectProcessStepService {
                           }
                       }
                   } catch (Exception e) {
-                      log.error(String.format("PPS: Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
+                    final String errMessage = String.format("PPS: Unable to automatically trigger action ID: %s, PPS ID: %s",  action.getId(), ppsId);
+                      log.error(errMessage);
+                      e.printStackTrace();
+                      throw new RuntimeException(errMessage + " *** " + e.getMessage());
                   }
               }
           });
@@ -515,9 +518,10 @@ public class ProjectProcessStepService {
       try {
         r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
       } catch (Exception e) {
-        log.error(String.format("PPS: Exception while parsing date requirement value for process step requirement ID: %s", r.getId()));
+        final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s", r.getId());
+        log.error(errMessage);
         e.printStackTrace();
-        throw e;
+        throw new RuntimeException(errMessage + " *** " + e.getMessage());
       }
     }
 
@@ -535,16 +539,12 @@ public class ProjectProcessStepService {
 
     ExpressionParser parser = new SpelExpressionParser();
     if (logicString.length() > 0) {
-      // @TODO: humes, This is for debugging purposes
-//      final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
-//      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
-//      log.info("hi" + parser.parseExpression(logicString.toString()).getValue(Boolean.class));
       action.setCanPerform(parser.parseExpression(logicString.toString()).getValue(Boolean.class));
-      return action;
     } else {
       action.setCanPerform(requirements.stream().allMatch(ProcessStepRequirement::getFulfilled));
-      return action;
     }
+
+    return action;
   }
 
   // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
@@ -682,40 +682,31 @@ public class ProjectProcessStepService {
         ZonedDateTime zonedDateFunctionResult = (dateFunctionResult != null) ? dateFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
         ZonedDateTime zonedDateNow = nowForDate.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
 
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 1:
-            try {
+        try {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 1:
               Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
               passed = compareDates(dateFunctionResult, zonedDateNow.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
-            } catch (NumberFormatException e) {
-              //@TODO: something
-            }
-            break;
-          case 2:
-            try {
+              break;
+            case 2:
               Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
               passed = compareDates(dateFunctionResult, zonedDateNow.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
-            } catch (NumberFormatException e) {
-              //@TODO: something?
-            }
-            break;
-          case 3:
-            passed = compareDates(dateFunctionResult, zonedDateNow, r.getOperatorTypeId());
-            break;
-          case 4:
-            try {
+              break;
+            case 3:
+              passed = compareDates(dateFunctionResult, zonedDateNow, r.getOperatorTypeId());
+              break;
+            case 4:
               passed = compareNullDate(dateFunctionResult, r.getOperatorTypeId());
-            } catch (IllegalArgumentException e) {
-              //@TODO: something?
-            }
-            break;
-          case 5:
-            try {
+              break;
+            case 5:
               passed = compareNonNullDate(dateFunctionResult, r.getOperatorTypeId());
-            } catch (IllegalArgumentException e) {
-              //@TODO: something?
-            }
-            break;
+              break;
+          }
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Error comparing date requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
         }
         break;
       case 2:
@@ -728,166 +719,174 @@ public class ProjectProcessStepService {
         ZonedDateTime zoneTimestampFunctionResult = (timestampFunctionResult != null) ? timestampFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
         ZonedDateTime zonedTimestampNow = nowForTimestamp.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone()));
 
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 6:
-            try {
+        try {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 6:
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
               passed = compareDates(timestampFunctionResult, zonedTimestampNow.minusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
-            } catch (NumberFormatException e) {
-              //@TODO: something
-            }
-            break;
-          case 7:
-            try {
+              break;
+            case 7:
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
               passed = compareDates(timestampFunctionResult, zonedTimestampNow.plusDays(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
-            } catch (NumberFormatException e) {
-              //@TODO: something
-            }
-            break;
-          case 8:
-            passed = compareDates(timestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
-            break;
-          case 9:
-            try {
+              break;
+            case 8:
+              passed = compareDates(timestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
+              break;
+            case 9:
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
               passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow.minusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
-            } catch (NumberFormatException e) {
-              //@TODO: something
-            }
-            break;
-          case 10:
-            try {
+              break;
+            case 10:
               Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
               passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow.plusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
-            } catch (NumberFormatException e) {
-              //@TODO: something
-            }
-            break;
-          case 11:
-            passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
-            break;
-          case 12:
-            try {
+              break;
+            case 11:
+              passed = compareDateTimes(zoneTimestampFunctionResult, zonedTimestampNow, r.getOperatorTypeId());
+              break;
+            case 12:
               passed = compareNullDateTime(zoneTimestampFunctionResult, r.getOperatorTypeId());
-            } catch (IllegalArgumentException e) {
-              //@TODO: something?
-            }
-            break;
-          case 13:
-            try {
+              break;
+            case 13:
               passed = compareNonNullDateTime(zoneTimestampFunctionResult, r.getOperatorTypeId());
-            } catch (IllegalArgumentException e) {
-              //@TODO: something?
-            }
+              break;
+          }
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Error comparing timestamp requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
         }
         break;
       case 3:
         // @TODO: Duped from the button logic, potentially combine
         Boolean booleanFunctionResult = (functionResult == null) ? null : Boolean.valueOf(functionResult.toString());
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 14:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = booleanFunctionResult != null && booleanFunctionResult;
-                break;
-              case 2:
-                passed = booleanFunctionResult == null || !booleanFunctionResult;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
-          case 15:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = booleanFunctionResult != null && !booleanFunctionResult;
-                break;
-              case 2:
-                passed = booleanFunctionResult == null || booleanFunctionResult;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
-          default:
-            throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
+
+        try {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 14:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = booleanFunctionResult != null && booleanFunctionResult;
+                  break;
+                case 2:
+                  passed = booleanFunctionResult == null || !booleanFunctionResult;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+            case 15:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = booleanFunctionResult != null && !booleanFunctionResult;
+                  break;
+                case 2:
+                  passed = booleanFunctionResult == null || booleanFunctionResult;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
+          }
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Error comparing bool requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
         }
         break;
       case 4:
         // @TODO: Duped from the button logic, potentially combine
         Double numericFunctionResult = (functionResult == null) ? null : new BigDecimal(functionResult.toString()).setScale(2, RoundingMode.DOWN).doubleValue();
-        switch(r.getDataTypeRequirementId().intValue()) {
-          case 16:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = numericFunctionResult == null;
-                break;
-              case 2:
-                passed = numericFunctionResult != null;
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
-          case 17:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = numericFunctionResult != null;
-                break;
-              case 2:
-                passed = numericFunctionResult == null;
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
+
+        try {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 16:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = numericFunctionResult == null;
+                  break;
+                case 2:
+                  passed = numericFunctionResult != null;
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+            case 17:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = numericFunctionResult != null;
+                  break;
+                case 2:
+                  passed = numericFunctionResult == null;
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+          }
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Error comparing numeric requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
         }
         break;
       case 5:
         // @TODO: Duped from the button logic, potentially combine
         String stringFunctionResult = (functionResult != null) ? functionResult.toString() : null;
         // An empty string and null are treated as the same value during text comparison
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 18:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
-                break;
-              case 2:
-                passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
-            }
-            break;
-          case 19:
-            switch (r.getOperatorTypeId().intValue()) {
-              case 1:
-                passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
-                break;
-              case 2:
-                passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
-                break;
-              case 3:
-              case 4:
-                break;
-              default:
-                throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
-            }
+
+        try {
+          switch (r.getDataTypeRequirementId().intValue()) {
+            case 18:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
+                  break;
+                case 2:
+                  passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+              }
+              break;
+            case 19:
+              switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                  passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
+                  break;
+                case 2:
+                  passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
+                  break;
+                case 3:
+                case 4:
+                  break;
+                default:
+                  throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+              }
+          }
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Error comparing text requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
         }
         break;
       case 6:
@@ -898,40 +897,50 @@ public class ProjectProcessStepService {
             Long reqValue = Long.parseLong(r.getRequirementValue());
             passed = compareInt(intFunctionResult, reqValue, r.getOperatorTypeId());
           } catch (Exception e) {
-            throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+            final String errMessage = String.format("PPS: Error parsing int requirement to function result. Requirement ID: %s", r.getId());
+            log.error(errMessage);
+            e.printStackTrace();
+            throw new RuntimeException(errMessage + " *** " + e.getMessage());
           }
         } else {
-          switch (r.getDataTypeRequirementId().intValue()) {
-            case 20:
-              switch (r.getOperatorTypeId().intValue()) {
-                case 1:
-                  passed = intFunctionResult == null;
-                  break;
-                case 2:
-                  passed = intFunctionResult != null;
-                  break;
-                case 3:
-                case 4:
-                  break;
-                default:
-                  throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-              }
-              break;
-            case 21:
-              switch (r.getOperatorTypeId().intValue()) {
-                case 1:
-                  passed = intFunctionResult != null;
-                  break;
-                case 2:
-                  passed = intFunctionResult == null;
-                  break;
-                case 3:
-                case 4:
-                  break;
-                default:
-                  throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-              }
-              break;
+          try {
+            switch (r.getDataTypeRequirementId().intValue()) {
+              case 20:
+                switch (r.getOperatorTypeId().intValue()) {
+                  case 1:
+                    passed = intFunctionResult == null;
+                    break;
+                  case 2:
+                    passed = intFunctionResult != null;
+                    break;
+                  case 3:
+                  case 4:
+                    break;
+                  default:
+                    throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+                }
+                break;
+              case 21:
+                switch (r.getOperatorTypeId().intValue()) {
+                  case 1:
+                    passed = intFunctionResult != null;
+                    break;
+                  case 2:
+                    passed = intFunctionResult == null;
+                    break;
+                  case 3:
+                  case 4:
+                    break;
+                  default:
+                    throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+                }
+                break;
+            }
+          } catch (Exception e) {
+            final String errMessage = String.format("PPS: Error comparing int/system list requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
+            log.error(errMessage);
+            e.printStackTrace();
+            throw new RuntimeException(errMessage + " *** " + e.getMessage());
           }
         }
         break;
@@ -951,8 +960,10 @@ public class ProjectProcessStepService {
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
             } catch (Exception e) {
-                log.error(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s", childFunction.getId(), actionId));
-                e.printStackTrace();
+              final String errMessage = String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s", childFunction.getId(), actionId, ppsId);
+              log.error(errMessage);
+              e.printStackTrace();
+              throw new RuntimeException(errMessage);
             }
         });
 
