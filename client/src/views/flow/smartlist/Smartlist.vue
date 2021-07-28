@@ -508,9 +508,9 @@ export default {
       resetRequirementForm: false,
       viewObjectTypes: [
         {objectTypeId: 2, objectType: 'Contact'},
-        {objectTypeId: 5, objectType: 'Organization'},
-        {objectTypeId: 1, objectType: 'Project'},
-        {objectTypeId: 3, objectType: 'User'}
+        // {objectTypeId: 5, objectType: 'Organization'},
+        {objectTypeId: 1, objectType: 'Project'}
+        // {objectTypeId: 3, objectType: 'User'}
       ],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       showDeleteDialog: false,

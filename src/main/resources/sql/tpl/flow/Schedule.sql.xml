@@ -64,6 +64,7 @@
     from flow.project p
              inner join flow.contact c on p.contact_id = c.id
     where p.id = :projectId
+      and p.archived is false
   ]]></schedule.getEventsByProject>
 
   <schedule.getEvents><![CDATA[
@@ -157,6 +158,7 @@
     where  st.timestamp_value is not null
       and et.timestamp_value is not null
       and r.int_value is not null
+      and p.archived is false
       and case when :startTime::timestamp is not null and :endTime::timestamp is not null
            then st.timestamp_value between :startTime::timestamp and :endTime::timestamp OR
                 et.timestamp_value between :startTime::timestamp and :endTime::timestamp else 1=1 end
@@ -240,6 +242,7 @@
                      then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                  else ps.company_id = :companyId end
         and ps.archived is not true
+        and p.archived is false
         and case when :isParent then
            p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
         else p.company_state_id = :companyStateId end
