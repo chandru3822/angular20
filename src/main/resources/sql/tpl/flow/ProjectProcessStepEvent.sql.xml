@@ -7,6 +7,7 @@
   <projectProcessStepEvent.get><![CDATA[
     select ppse.*,
            cest.event_status_type,
+           cpsst2.process_step_status_type_id as root_project_process_step_status_type_id,
            e.event_name,
            e.resource_custom_field_id,
            pse.event_id,
@@ -32,6 +33,7 @@
                                     psea.created_by_id as "createdById",
                                     psea.modified_by_id as "modifiedById",
                                     cpsst.process_step_status_type as "processStepStatusType",
+                                    cpsst.process_step_status_type_id as "rootProcessStepStatusTypeId",
                                     cest.event_status_type as "eventStatusType",
                                     psea.archived,
                                     coalesce((
@@ -72,9 +74,11 @@
                              WHERE psea.process_step_event_id = pse.id
                                AND psea.archived is not true) psea), '[]') AS "eventActions"
     from flow.project_process_step_event ppse
-           inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
-           inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-           inner join flow.event e on pse.event_id = e.id
+    inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+    inner join flow.company_process_step_status_type cpsst2 on pps.company_process_step_status_type_id = cpsst2.id
+     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+     inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+     inner join flow.event e on pse.event_id = e.id
     where ppse.id = :id
   ]]></projectProcessStepEvent.get>
 
@@ -139,12 +143,40 @@
     where id = :projectProcessStepEventId
   ]]></projectProcessStepEvent.updateCompanyEventStatus>
 
-  <projectProcessStepEvent.randaHacking><![CDATA[
+  <projectProcessStepEvent.updatePpsStatus><![CDATA[
     update flow.project_process_step
       set company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+          main = :primaryFlag,
           date_modified = now(),
           modified_by_id = :userId
     where id = :ppsId
-  ]]></projectProcessStepEvent.randaHacking>
+  ]]></projectProcessStepEvent.updatePpsStatus>
+
+  <projectProcessStepEvent.updatePrimaryIfOnlyOne><![CDATA[
+    update flow.project_process_step pps
+    set main = true
+    from flow.company_process_step_status_type cpsst
+    where pps.company_process_step_status_type_id = cpsst.id
+      AND cpsst.process_step_status_type_id != 3
+      and pps.project_id = :projectId
+      and pps.process_step_id = :processStepId
+      and pps.main is FALSE
+      and pps.archived is not true
+      and (select count(1)
+           from flow.project_process_step pps2
+           where project_id = :projectId
+             and pps2.process_step_id = :processStepId
+             and pps2.main is true
+             and pps2.archived is not true) = 0
+      and (select count(1)
+           from flow.project_process_step pps3
+                  INNER JOIN flow.company_process_step_status_type cpsst3
+                             on pps3.company_process_step_status_type_id = cpsst3.id
+           where pps3.project_id = :projectId
+             and pps3.process_step_id = :processStepId
+             AND cpsst3.process_step_status_type_id != 3
+             and pps3.main is FALSE
+             and pps3.archived is not true) = 1
+  ]]></projectProcessStepEvent.updatePrimaryIfOnlyOne>
 
 </sql>

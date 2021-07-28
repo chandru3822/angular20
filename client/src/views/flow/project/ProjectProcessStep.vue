@@ -168,7 +168,10 @@
       </v-col>
       <v-col cols="12" lg="6" class="text-left pt-0">
         <v-col class="pt-0">
-          <ProjectProcessStepEvents :project-process-step-events="processStep.projectProcessStepEvents"></ProjectProcessStepEvents>
+          <ProjectProcessStepEvents
+            :project-process-step-events="processStep.projectProcessStepEvents"
+            :events-loading="processStepLoading"
+          ></ProjectProcessStepEvents>
         </v-col>
         <!--    process field groups-->
         <v-col
@@ -406,7 +409,8 @@
         psRequiresResource: false,
         showMainDialog: false,
         NEW_STATUS_TO_USE,
-        showUnperformableActions: false
+        showUnperformableActions: false,
+        processStepLoading: true
       }
     },
     async created() {
@@ -465,9 +469,11 @@
         }
       },
       getProcessStep: async function () {
+        this.processStepLoading = true
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+          this.processStepLoading = false
           this.getAvailableStatuses()
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`

@@ -13,9 +13,9 @@ import java.util.List;
 @Setter
 public class ProcessStepEventAction {
 
-  private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId;
+  private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId, rootProcessStepStatusTypeId; //rootProcessStepStatusTypeId needed to determine if action can be run
   private String actionName, processStepStatusType, eventStatusType;
-  private Boolean archived, requireStartTime, requireEndTime, requireResource;
+  private Boolean archived, requireStartTime, requireEndTime, requireResource, canPerformPpsStatusChange;
   private List<ProcessStepEventActionField> requiredFields;
   private List<ProcessStepEventActionField> optionalFields;
 }

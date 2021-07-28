@@ -19,10 +19,12 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -70,6 +72,25 @@ public class ProjectProcessStepEventService {
     Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.get", params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
     if(result.isPresent()) {
       result.get().setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
+
+      if(null != result.get().getEventActions() && !result.get().getEventActions().isEmpty()) {
+        //if there are event actions, then check if the pps status change can be performed here
+        for(ProcessStepEventAction action : result.get().getEventActions()) {
+          //if the action doesn't change the pps status then allow it
+          //or if the root pps status is currently active, then allow
+          if(null == action.getCompanyProcessStepStatusTypeId() || result.get().getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+            action.setCanPerformPpsStatusChange(true);
+          }
+          //@randa - i dont think we can allow event actions on non-active pps, cuz of auto-triggers
+          //else if(result.get().getRootProjectProcessStepStatusTypeId().equals(action.getRootProcessStepStatusTypeId())) {
+            //if the action would change the pps status to a status of the same root type, then allow it
+//            action.setCanPerformPpsStatusChange(true);
+//          }
+        else {
+            action.setCanPerformPpsStatusChange(false);
+          }
+        }
+      }
     }
     return result;
   }
@@ -89,7 +110,7 @@ public class ProjectProcessStepEventService {
     return getPpsEvent(ppsEvent.getId());
   }
 
-  public Optional<ProjectProcessStepEvent> performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
+  public ResponseEntity<Object> performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
     /*
      **High level pseudo logic:**
 
@@ -108,8 +129,6 @@ public class ProjectProcessStepEventService {
     params.put("ppsId", ppsId);
     params.put("projectProcessStepEventId", eventId);
 
-    log.info("WE WILL PERFORM ACTION: {}", processStepEventAction.getActionName());
-
     Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(eventId);
     if(ppse.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
@@ -123,11 +142,28 @@ public class ProjectProcessStepEventService {
     ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
     //check if pps is already in the desired status, then update the pps status to the desired status if not already in it
     if(null != processStepEventAction.getCompanyProcessStepStatusTypeId() && !pps.getCompanyProcessStepStatusTypeId().equals(processStepEventAction.getCompanyProcessStepStatusTypeId())) {
-      //this is a total hack just to see it update.  needs to follow all the same rules as the other types of actions re: cancellations, reactivations, etc
-      sqlCache.update("projectProcessStepEvent.randaHacking", params);
+      //do some validation here:
+      //if pps is not active, then dont allow this.
+      if(!pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot run this action. Process Step Status must be Active.", new Exception());
+      }
+      //update the pps status (if the new status is cancel, unset the primary flag)
+      params.put("primaryFlag", !processStepEventAction.getRootProcessStepStatusTypeId().equals(ProcessStepStatusType.CANCELLED.id));
+      sqlCache.update("projectProcessStepEvent.updatePpsStatus", params);
+
+      //if the new status was cancel, check for a single existence of this PPS type in Complete status and set as primary if only one found
+      params.put("projectId", pps.getProjectId());
+      params.put("processStepId", pps.getProcessStepId());
+      sqlCache.update("projectProcessStepEvent.updatePrimaryIfOnlyOne", params);
+
+      //if the new status was a root ACTIVE status then run pps auto triggers
+      //only run if the referring project process step is active
+      if(pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+        projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
+      }
     }
 
-    return getPpsEvent(eventId);
+    return ResponseEntity.ok(getPpsEvent(eventId));
 
   }
 

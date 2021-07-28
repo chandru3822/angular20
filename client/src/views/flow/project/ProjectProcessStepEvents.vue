@@ -23,6 +23,7 @@
           :mobile-breakpoint="0"
           hide-default-footer
           hide-default-header
+          :loading="eventsLoading"
           class="elevation-0"
         >
           <template #no-data>
@@ -33,9 +34,9 @@
             No events
           </template>
 
-          <template #item="{ item }">
+          <template #item="{ item, index }">
             <tr  class="clickable text-left" :class="{'shaded-row': projectProcessStepEvents.indexOf(item) % 2}"
-              @click="[selectedEvent = item, getEventCfgs(item), getEventDetails(item)]">
+              @click="[selectedEvent = item, selectedEventIndex = index, getEventCfgs(item), getEventDetails(item)]">
               <td class="text-left">{{ item.eventName }}</td>
               <td class="text-left">{{ item.eventStatusType }}</td>
             </tr>
@@ -52,7 +53,7 @@
           <v-spacer></v-spacer>
           <div>
             <v-autocomplete
-              v-model="selectedEvent.companyEventStatusTypeId"
+              v-model="eventDetails.companyEventStatusTypeId"
               :items="companyEventStatuses"
               label="Event Status"
               item-text="eventStatusType"
@@ -62,7 +63,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
 
-            <v-btn text class="pl-1 pr-2 mb-2" @click="[selectedEvent = {}, eventDetails = {}]">
+            <v-btn text class="pl-1 pr-2 mb-2" @click="closeEventWindow()">
               <v-icon>close</v-icon>
             </v-btn>
           </v-toolbar-items>
@@ -74,6 +75,7 @@
           <DatetimePickerInput
             v-model="eventDetails.startTime"
             :timezone="this.timezone"
+            :required="actionRequiresStart && !eventDetails.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -81,6 +83,7 @@
           <DatetimePickerInput
             v-model="eventDetails.endTime"
             :timezone="this.timezone"
+            :required="actionRequiresEnd && !eventDetails.endTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
@@ -88,6 +91,7 @@
           <v-autocomplete
             v-model="eventDetails.resourceId"
             :items="eventDetails.availableResources"
+            :rules="getResourceRequirement()"
             label="Resource"
             item-text="name"
             item-value="id"
@@ -129,6 +133,7 @@
         >Save Event</v-btn>
         <v-btn class="white--text save-btn mb-2 mr-2"
                color="primaryButton"
+               :disabled="!action.canPerformPpsStatusChange"
                @click="[attemptedAction = action, validateActionRequirements(action)]"
                 v-for="(action, i) in eventDetails.eventActions"
                 :key="i">
@@ -159,6 +164,7 @@ import {
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import Attachments from '@/views/flow/components/Attachments'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'ProjectProcessStepEvents',
@@ -169,16 +175,20 @@ import {
     },
     props: {
       projectProcessStepEvents: Array,
+      eventsLoading: Boolean
     },
     data() {
       return {
         snackbar: {},
         selectedEvent: {},
+        selectedEventIndex: null,
         attemptedAction: {},
         companyEventStatuses: [],
         eventActionMissingRequirements: false,
         eventDetails: {},
         dirtyCfvs: [],
+        contactId: this.$route.query.contactId,
+        requiredRules: constants.BASIC_REQUIRED_RULE,
         timezone: this.$store.state.user.details.timezone.value,
         projectId: this.$route.params.projectId,
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
@@ -190,8 +200,10 @@ import {
           { text: 'Event', value: 'eventName', show: true },
           { text: 'Status', value: 'eventStatusType', show: true },
         ],
-        doTest: false,
-        eventSaveOverrideRequired: false
+        eventSaveOverrideRequired: false,
+        actionRequiresStart: false,
+        actionRequiresEnd: false,
+        actionRequiresResource: false,
       }
     },
     async created() {
@@ -207,9 +219,27 @@ import {
     },
     computed: {},
     methods: {
+      closeEventWindow() {
+        console.log('sei',this.selectedEventIndex)
+        console.log('Ed',this.eventDetails.eventStatusType)
+        console.log('blah',this.projectProcessStepEvents)
+        this.projectProcessStepEvents[this.selectedEventIndex].eventStatusType = this.eventDetails.eventStatusType
+        this.selectedEvent = {}
+        this.eventDetails = {}
+        this.selectedEventIndex = null
+      },
+      getResourceRequirement() {
+        if(this.actionRequiresResource && !this.eventDetails.resourceId && !this.eventSaveOverrideRequired) {
+          return this.requiredRules
+        }
+      },
       validateActionRequirements: async function (action) {
         this.eventActionMissingRequirements = false
         this.eventSaveOverrideRequired = false
+        this.actionRequiresStart = action?.requireStartTime
+        this.actionRequiresEnd = action?.requireEndTime
+        this.actionRequiresResource = action?.requireResource
+
         if(action?.requiredFields?.length > 0) {
           let fieldValueMissing = false
           this.selectedEvent?.customFieldGroups?.forEach(cfg => {
@@ -270,9 +300,11 @@ import {
             processStepEventAction: action
           }
           const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/perform`, params)
-          this.eventDetails = data
-          this.selectedEvent = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          //we dont need to update the data now that the page is reloading
+          // this.eventDetails = data
+          // this.selectedEvent = data
+          //reload the page so we get the updated pps status stuff
+          this.$router.go(this.$router.currentRoute)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
@@ -281,12 +313,14 @@ import {
         }
       },
       addEvent: async function (pse) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
           //i have no idea why i am using 2 data objects for the same value but dont have time to figure it out atm
           this.selectedEvent = data
           this.eventDetails = data
           this.projectProcessStepEvents.push(data)
+        this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
@@ -330,9 +364,11 @@ import {
         }
       },
       getEventDetails: async function (ppsEvent) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppsEvent.id}`)
           this.eventDetails = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
@@ -345,7 +381,8 @@ import {
         this.eventActionMissingRequirements = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
+          const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
+          this.eventDetails = data
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Default Fields')
