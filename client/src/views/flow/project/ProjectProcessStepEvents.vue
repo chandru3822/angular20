@@ -220,9 +220,6 @@ import {
     computed: {},
     methods: {
       closeEventWindow() {
-        console.log('sei',this.selectedEventIndex)
-        console.log('Ed',this.eventDetails.eventStatusType)
-        console.log('blah',this.projectProcessStepEvents)
         this.projectProcessStepEvents[this.selectedEventIndex].eventStatusType = this.eventDetails.eventStatusType
         this.selectedEvent = {}
         this.eventDetails = {}
