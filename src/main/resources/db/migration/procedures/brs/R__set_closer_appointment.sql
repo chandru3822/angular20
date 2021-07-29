@@ -16,15 +16,16 @@ CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
 AS
 $BODY$
 declare
-    v_user_id                                    integer;
-    v_project_process_step_id                    integer;
-    v_project_process_step_custom_field_value_id integer;
-    v_user_already_assigned                      bigint;
-    v_user_full_name                             text;
-    v_user_email                                 text;
-    v_user_position_id                           integer;
-    v_process_step_id                            integer;
-    v_postal_code_zone_id                        integer;
+    v_user_id                                     integer;
+    v_project_process_step_id                     integer;
+    v_project_process_step_custom_field_value_id  integer;
+    v_user_already_assigned                       bigint;
+    v_user_full_name                              text;
+    v_user_email                                  text;
+    v_user_position_id                            integer;
+    v_process_step_id                             integer;
+    v_postal_code_zone_id                         integer;
+    v_user_already_assigned_to_another_project_id integer;
 BEGIN
 
     select process_step_id
@@ -43,7 +44,8 @@ BEGIN
     select pcz.id
     into v_postal_code_zone_id
     from flow.project p
-             inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
+             inner join flow.postal_code pc on pc.postal_code = substr(
+            trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
              inner join flow.postal_code_zone pcz
                         on pcz.id = pc.postal_code_zone_id and pcz.archived is false
              inner join flow.postal_code_zone_user pczu
@@ -69,14 +71,27 @@ BEGIN
                                                      total_lead_allocation, actual_lead_allocation, score,
                                                      lead_gen_num, lead_gen_den, self_gen, total_avail,
                                                      appointment_count_with_interval, appointment_count, created_date,
-                                                     available_users, created_by_id,manual_allocation)
+                                                     available_users, created_by_id, manual_allocation)
             (
-                select p_project_id,t.user_id,p_project_process_step_id,
-                       t.distance_from_actual_to_target,p_appointment_start_time,
-                       t.total_lead_allocation,t.actual_lead_allocation,t.score,
-                       t.lead_gen_num,t.lead_gen_den,t.self_gen,t.avail,t.appointment_count_with_interval,
-                       t.appointment_count,now(),p_users,p_current_user_id,t.manual_allocation
-                from brs.get_total_lead_allocation(v_postal_code_zone_id,true) as t
+                select p_project_id,
+                       t.user_id,
+                       p_project_process_step_id,
+                       t.distance_from_actual_to_target,
+                       p_appointment_start_time,
+                       t.total_lead_allocation,
+                       t.actual_lead_allocation,
+                       t.score,
+                       t.lead_gen_num,
+                       t.lead_gen_den,
+                       t.self_gen,
+                       t.avail,
+                       t.appointment_count_with_interval,
+                       t.appointment_count,
+                       now(),
+                       p_users,
+                       p_current_user_id,
+                       t.manual_allocation
+                from brs.get_total_lead_allocation(v_postal_code_zone_id, true) as t
             );
 
         select scau.user_id
@@ -100,7 +115,9 @@ BEGIN
         into v_user_position_id
         from flow.user_position up
                  inner join flow.position p on up.position_id = p.id
-                 inner join flow.custom_field cf on up.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959 and p.company_id = cf.company_id
+                 inner join flow.custom_field cf
+                            on up.position_id = any (cf.system_list_option_ids) and cf.parent_custom_field_id = 9959 and
+                               p.company_id = cf.company_id
         where up.user_id = v_user_id
           and up.primary_flag is true
           and up.archived is false
@@ -113,7 +130,27 @@ BEGIN
           and ppscfv2.custom_field_group_assignment_id = 7
           and int_value is not null;
 
-        if v_user_already_assigned < 1 then
+        select count(1)
+        into v_user_already_assigned_to_another_project_id
+        from flow.project p
+                 inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
+                 inner join flow.project_process_step_custom_field_value ppscfv
+                            on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 5
+                 inner join flow.project_process_step_custom_field_value ppscfv2
+                            on ppscfv2.project_process_step_id = pps.id and ppscfv2.custom_field_group_assignment_id = 6
+                 inner join flow.project_process_step_custom_field_value ppscfv1
+                            on ppscfv1.project_process_step_id = pps.id and ppscfv1.custom_field_group_assignment_id = 7
+                 inner join flow.company_process_step_status_type cpsst
+                            on cpsst.id = pps.company_process_step_status_type_id
+                 inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+            and psst.id in (1, 2)
+                 inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
+                 inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
+            and pst4.id in (1, 4)
+        where (ppscfv2.timestamp_value,  ppscfv1.timestamp_value) overlaps ( p_appointment_start_time,(p_appointment_start_time + (90 || 'minutes')::interval)::timestamp)
+          and ppscfv1.int_value = v_user_position_id;
+
+        if v_user_already_assigned < 1 and v_user_already_assigned_to_another_project_id < 1 then
 
 
             select ppscfv.project_process_step_id, ppscfv.id
@@ -197,7 +234,7 @@ BEGIN
                                  (90 || 'minutes')::interval)::timestamp,
                                 v_user_full_name,
                                 v_user_email;
-        elsif v_user_already_assigned > 1 and array_length(p_users, 1) > 1 then
+        elsif v_user_already_assigned_to_another_project_id > 0 and v_user_already_assigned = 0 and array_length(p_users, 1) > 1 then
             p_users = array_remove(p_users, v_user_id);
             -- raise notice 'i am here';
             return query select *
