@@ -32,8 +32,9 @@
       <template #item="{ item, index }">
         <tr :class="{'green-row': item.isnumerator}">
           <td class="text-left">{{item.project_id}}</td>
+          <td class="text-left">{{item.project_name}}</td>
           <td class="text-left">{{item.crewname}}</td>
-          <td class="text-left">{{item.installation_start_time | formatDate('date')}}</td>
+          <td class="text-left">{{item.installation_end_time | formatDate('date')}}</td>
           <td class="text-left">{{item.substantial_completion_date | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_start_time | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_outcome_name}}</td>
@@ -59,15 +60,15 @@
         handler () {
           if (this.title === 'Inspection Approval %') {
             // AHJ Inspection Date
-            this.headers[4].show = true;
-            // AHJ Inspection Outcome
             this.headers[5].show = true;
+            // AHJ Inspection Outcome
+            this.headers[6].show = true;
           }
           else {
             // AHJ Inspection Date
-            this.headers[4].show = false;
-            // AHJ Inspection Outcome
             this.headers[5].show = false;
+            // AHJ Inspection Outcome
+            this.headers[6].show = false;
           }
         }
       }
@@ -78,12 +79,13 @@
         snackbar: {},
         results: [],
         headers: [
-          {text: 'Project ID', value: 'project_idd', show: true},
+          {text: 'Project ID', value: 'project_id', show: true},
+          {text: 'Project Name', value: 'project_name', show: true},
           {text: 'Installation Crew', value: 'crewname', show: true},
-          {text: 'Installation Date', value: 'installation_scheduled', show: true},
+          {text: 'Installation Date', value: 'installation_end_time', show: true},
           {text: 'Substantial Completion Date', value: 'substantial_completion_date', show: true},
-          {text: 'AHJ Inspection Date', value: 'ahj_inspection_scheduled_date', show: false},
-          {text: 'AHJ Inspection Outcome', value: 'ahj_inspection_outcome_name', show: false}
+          {text: 'AHJ Inspection Date', value: 'ahj_inspection_start_time', show: true},
+          {text: 'AHJ Inspection Outcome', value: 'ahj_inspection_outcome_name', show: true}
         ]
       }
     },
@@ -95,15 +97,15 @@
     async created() {
       if (this.title === 'Inspection Approval %') {
         // AHJ Inspection Date
-        this.headers[4].show = true;
-        // AHJ Inspection Outcome
         this.headers[5].show = true;
+        // AHJ Inspection Outcome
+        this.headers[6].show = true;
       }
       else {
         // AHJ Inspection Date
-        this.headers[4].show = false;
-        // AHJ Inspection Outcome
         this.headers[5].show = false;
+        // AHJ Inspection Outcome
+        this.headers[6].show = false;
       }
     },
     methods: {
@@ -114,7 +116,7 @@
 <style lang="scss">
   #stats-drilldown .v-data-table__wrapper {
     height: calc(100vh - 325px);
-    width: 1200px;
+    width: 1300px;
     min-height: 350px;
   }
   .green-row {
@@ -125,7 +127,7 @@
 <style lang="scss" scoped>
   #stats-drilldown {
     height: calc(100vh - 150px);
-    width: 1200px;
+    width: 1300px;
     min-height: 300px;
   }
 </style>
