@@ -320,6 +320,7 @@ export default {
             })
           }
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch(e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
