@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <v-col>
     <v-toolbar color="transparent" class="elevation-0">
       <v-toolbar-title>Notes</v-toolbar-title>
     </v-toolbar>
-    <v-card class="square-card">
+    <v-card class="square-card mx-4">
       <v-toolbar flat dense color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
       </v-toolbar>
@@ -344,7 +344,7 @@
 
     </v-card>
 
-  </div>
+  </v-col>
 </template>
 
 <script>

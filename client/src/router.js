@@ -509,26 +509,27 @@ export default new Router({
                 }
               },
             }, {
-              path: 'customFieldGroup/:id',
+              path: 'objectType/:id',
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "customFieldGroup" */ './views/flow/settings/CustomFieldGroup.vue')
+                  return import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/ObjectType.vue')
                 } else {
                   return accessDenied()
                 }
               },
-            }, {
-              path: 'attachments',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
-                } else {
-                  return accessDenied()
+              children: [
+                {
+                  path: 'customFieldGroups',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/CustomFieldGroup.vue'),
+                }, {
+                  path: 'attachments',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/ObjectTypeAttachments.vue'),
                 }
-              },
+              ]
             }, {
               path: 'links',
               meta: {title: 'Albatross - Settings'},

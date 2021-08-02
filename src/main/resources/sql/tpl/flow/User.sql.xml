@@ -625,4 +625,32 @@
   insert into flow.user_notification_token (user_id, token, created_by_id)
   values (:userId, :token, :createdById)
 ]]></user.addNotificationToken>
+
+  <user.getUserAttachments><![CDATA[
+    select
+      a.id,
+      a.size,
+      a.uuid,
+      a.date_created,
+      a.date_modified,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key,
+      a.archived,
+      substring(filename, '\.([^\.]+)$') as file_extension,
+      ua.user_id,
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+    from flow.user_attachment ua
+           inner join flow.attachment a on a.id = ua.attachment_id
+           inner join flow."user" u ON a.created_by_id = u.id
+    where ua.user_id = :userId
+      and a.archived is not true
+    order by ua.date_created desc
+  ]]></user.getUserAttachments>
+
+  <user.addAttachment><![CDATA[
+    insert into flow.user_attachment(attachment_id, user_id, created_by_id)
+    values (:attachmentId, :userId, :createdById)
+  ]]></user.addAttachment>
 </sql>

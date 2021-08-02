@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import CustomFieldGroup from '../CustomFieldGroup'
+import CustomFieldGroup from '../objectType/CustomFieldGroup'
 
 export default {
   name: 'ProjectCustomFieldGroup',

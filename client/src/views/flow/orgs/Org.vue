@@ -122,6 +122,9 @@
           </v-card>
         </div>
       </v-col>
+      <v-col cols="12" md="6" class="text-left pa-0 mt-3">
+        <Attachments :object-type-id="5" :org-id="orgId" />
+      </v-col>
     </v-row>
 
   </v-container>
@@ -135,12 +138,14 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
+  import Attachments from '@/views/flow/components/Attachments'
 
   export default {
     name: 'Org',
     components: {
 
-      CustomValueInput
+      CustomValueInput,
+      Attachments
     },
     data () {
       return {
@@ -166,7 +171,7 @@
         states: [],
         fieldsSaving: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
-        orgId: this.$route.params.id,
+        orgId: parseInt(this.$route.params.id),
         companyId: this.$store.state.user.details.companyId,
         parentId: this.$store.state.user.details.parentCompanyId,
       }
