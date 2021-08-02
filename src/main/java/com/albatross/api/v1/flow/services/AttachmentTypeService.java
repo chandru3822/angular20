@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
-import com.albatross.api.v1.flow.model.AttachmentType;
-import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
-import com.albatross.api.v1.flow.model.ProjectAttachmentType;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +54,7 @@ public class AttachmentTypeService {
     params.put("modifiedById", currentUser.getId());
     params.put("displayOrder", attachmentType.getDisplayOrder());
 
-    sqlCache.update("attachmentType.updateTypeOrderInProcessStep", params);
+    sqlCache.update("attachmentType.updateTypeOrderInObjectType", params);
   }
 
   public void updateOrderInProject(List<ProjectAttachmentType> attachmentTypes) {
@@ -87,6 +84,77 @@ public class AttachmentTypeService {
 
     sqlCache.update("attachmentType.updateReadyOnly", params);
   }
+
+  public Optional<ObjectTypeAttachmentType> getObjectType(Long id) {
+    Optional<ObjectTypeAttachmentType> result = sqlCache.get("attachmentType.getObjectType",
+      ImmutableMap.of("id", id), ObjectTypeAttachmentType.class);
+
+    return result;
+  }
+
+  public void deleteObjectType(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    sqlCache.update("attachmentType.deleteObjectType",
+      ImmutableMap.of("id", id,
+        "modifiedById", currentUser.getId()));
+  }
+
+  public void updateOrderInObjectType(List<ObjectTypeAttachmentType> attachmentTypes) {
+    for(ObjectTypeAttachmentType at : attachmentTypes){
+      updateTypeOrderInObjectType(at);
+    }
+  }
+
+  public void updateTypeOrderInObjectType(ObjectTypeAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", attachmentType.getDisplayOrder());
+
+    sqlCache.update("attachmentType.updateTypeOrderInObjectType", params);
+  }
+
+  public List<ObjectTypeAttachmentType> getObjectTypesByCompany(Long objectTypeId, Long companyId) {
+
+    Optional<ObjectTypeAttachmentType> result = sqlCache.get("objectType.getCompanyObjectTypeSimple",
+      ImmutableMap.of("objectTypeId", objectTypeId, "companyId", companyId), ObjectTypeAttachmentType.class);
+
+    return result.isEmpty() ? null : getObjectTypes(result.get().getCompanyObjectTypeId());
+  }
+
+  public List<ObjectTypeAttachmentType> getObjectTypes(Long companyObjectTypeId) {
+    User currentUser = securityService.getCurrentUser();
+
+    List<ObjectTypeAttachmentType> result = sqlCache.query("attachmentType.getObjectTypes",
+      ImmutableMap.of("companyObjectTypeId", companyObjectTypeId), ObjectTypeAttachmentType.class);
+
+    return result;
+  }
+
+  public List<AttachmentType> getAvailableTypesForObjectType(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getAvailableTypesForObjectType", params, AttachmentType.class);
+    return attachmentTypes;
+  }
+
+  public Optional<ObjectTypeAttachmentType> insertObjectType(ObjectTypeAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    Long id = sqlCache.updateReturningId("attachmentType.insertObjectType",
+      ImmutableMap.of("createdById", currentUser.getId(),
+        "attachmentTypeId", attachmentType.getAttachmentTypeId(),
+        "companyObjectTypeId", attachmentType.getCompanyObjectTypeId()), "id").longValue();
+
+    return getObjectType(id);
+  }
+
 
   public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
     User user = securityService.getCurrentUser();

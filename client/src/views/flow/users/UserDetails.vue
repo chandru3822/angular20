@@ -177,13 +177,17 @@
             </v-card>
           </div>
         </v-col>
-        <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
+        <v-col cols="12" md="6" class="text-left pa-0">
           <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
                             :notes="notes" :primaryId="parseInt(userId)"
                             type="User"
           ></NotesAndActivity>
+
+          <Attachments :object-type-id="3" :user-id="userId" />
         </v-col>
+
       </v-row>
+
     </div>
 
   </v-container>
@@ -197,13 +201,15 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import cloneDeep from 'lodash.clonedeep'
+  import Attachments from '@/views/flow/components/Attachments'
 
   export default {
     name: 'User',
     components: {
 
       CustomValueInput,
-      NotesAndActivity
+      NotesAndActivity,
+      Attachments
     },
     data () {
       return {
@@ -226,7 +232,7 @@
         customFieldGroups: [],
         notes: [],
         owners: [],
-        userId: this.$route.params.id,
+        userId: parseInt(this.$route.params.id),
         companyId: this.$store.state.user.details.companyId,
         changeOwner: false,
         userStatusTypes: [],
