@@ -3,16 +3,12 @@ services:
   db:
     restart: always
     image: postgres:12.5-alpine
-    expose:
-      - "5433"
     ports:
-      - "${PGPORT}:5432"
-
+      - "${PGPORT:-5433}:5432"
     environment:
-      POSTGRES_DB: "${PGDATABASE}"
-      POSTGRES_USER: "${PGUSER}"
-      POSTGRES_PASSWORD: "${PGPASSWORD}"
-
+      POSTGRES_DB: "${PGDATABASE:-blueraven}"
+      POSTGRES_USER: "${PGUSER:-dbadmin}"
+      POSTGRES_PASSWORD: "${PGPASSWORD:-password}"
 
   sign-proxy:
     image: codekoala/aws-sign-proxy:v0.1.4
@@ -25,3 +21,5 @@ services:
         AWS_SIGN_PROXY_BLOCKHEADERS: "connection"
     ports:
         - "8081:8080"
+
+#TODO: add  mailtrap and localstack
