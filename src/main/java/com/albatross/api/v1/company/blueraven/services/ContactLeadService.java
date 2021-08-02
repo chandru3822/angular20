@@ -425,7 +425,14 @@ public class ContactLeadService {
     CustomFieldValue leadLevel = new CustomFieldValue();
     leadLevel.setCustomFieldGroupAssignmentId(20977L);
     leadLevel.setFieldName("Lead Level");
-    leadLevel.setIntValue(3L);
+
+    if (!lead.getLead_source().isBlank() && lead.getLead_source().equals("Organic")) {
+      leadLevel.setIntValue(0L);
+    }
+    else {
+      leadLevel.setIntValue(3L);
+    }
+
     saveCustomFieldValue(leadLevel, contactId, leadOwnerUserId);
     cfvList.add(leadLevel);
 
