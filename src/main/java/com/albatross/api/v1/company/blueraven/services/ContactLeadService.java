@@ -7,7 +7,10 @@ import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.services.*;
+import com.albatross.api.v1.flow.services.HubspotWebhookService;
+import com.albatross.api.v1.flow.services.SMSService;
+import com.albatross.api.v1.flow.services.SystemListService;
+import com.albatross.api.v1.flow.services.UserPositionService;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -422,7 +425,14 @@ public class ContactLeadService {
     CustomFieldValue leadLevel = new CustomFieldValue();
     leadLevel.setCustomFieldGroupAssignmentId(20977L);
     leadLevel.setFieldName("Lead Level");
-    leadLevel.setIntValue(3L);
+
+    if (!lead.getLead_source().isBlank() && lead.getLead_source().equals("Organic")) {
+      leadLevel.setIntValue(0L);
+    }
+    else {
+      leadLevel.setIntValue(3L);
+    }
+
     saveCustomFieldValue(leadLevel, contactId, leadOwnerUserId);
     cfvList.add(leadLevel);
 

@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;

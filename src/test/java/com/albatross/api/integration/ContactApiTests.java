@@ -4,7 +4,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -65,7 +65,7 @@ public class ContactApiTests {
       .andExpect(jsonPath("$.id").isNotEmpty())
       .andReturn();
 
-    Assert.assertEquals("application/json",
+    assertEquals("application/json",
       mvcResult.getResponse().getContentType());
   }
 
@@ -74,16 +74,16 @@ public class ContactApiTests {
     String email = "randanunn@gmail2.com";
     String json =
       "{\"city\": \"Salt Lake City\"," +
-      "\"companyCountryId\": 1," +
-      "\"companyId\": 3," +
-      "\"customFieldGroups\": []," +
-      "\"email\": \""+ email + "\"," +
-      "\"firstName\": \"Randa\"," +
-      "\"lastName\": \"Nunn\"," +
-      "\"mobile\": \"5412314081\"," +
-      "\"phone\": \"5412314081\"," +
-      "\"postalCode\": \"84115\"," +
-      "\"street1\": \"493 E. Haven Ave\"}";
+        "\"companyCountryId\": 1," +
+        "\"companyId\": 3," +
+        "\"customFieldGroups\": []," +
+        "\"email\": \"" + email + "\"," +
+        "\"firstName\": \"Randa\"," +
+        "\"lastName\": \"Nunn\"," +
+        "\"mobile\": \"5412314081\"," +
+        "\"phone\": \"5412314081\"," +
+        "\"postalCode\": \"84115\"," +
+        "\"street1\": \"493 E. Haven Ave\"}";
 
     System.out.println(json);
 
@@ -96,7 +96,7 @@ public class ContactApiTests {
       .andExpect(jsonPath("$.id").isNotEmpty())
       .andReturn();
 
-    Assert.assertEquals("application/json",
+    assertEquals("application/json",
       mvcResult.getResponse().getContentType());
   }
 }
