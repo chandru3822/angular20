@@ -174,4 +174,9 @@ public class ContactLeadController {
   public void updateContactSolarDirectAppt(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/strategicsolarsolutions", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactStrategicSolarSolutions(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

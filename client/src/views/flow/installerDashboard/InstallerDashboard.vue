@@ -1,6 +1,6 @@
 <template>
   <v-container class="app-container">
-    <v-dialog v-model="showModal" max-width="1200">
+    <v-dialog v-model="showModal" max-width="1300">
       <ProductionStatsDrilldown
                       :start-date="startDate"
                       :end-date="endDate"
@@ -25,7 +25,22 @@
                             return-object
                             item-text="fullName"
                             @change="getInstallationCrew()"
+                            @click:clear="selectedInstallationCrews = []"
             >
+              <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllManagers()"
+              >
+                <v-list-item-action>
+                  <v-icon>{{ iconManagers }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
               <template
                 slot="selection"
                 slot-scope="{ item, index }"
@@ -45,6 +60,20 @@
                             return-object
                             item-text="fullName"
             >
+              <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllCrews()"
+              >
+                <v-list-item-action>
+                  <v-icon>{{ iconCrews }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
               <template
                 slot="selection"
                 slot-scope="{ item, index }"
@@ -222,6 +251,7 @@
   import moment from "moment";
   import constants from '@/helpers/constants'
   import ProductionStatsDrilldown from "./ProductionStatsDrilldown"
+  import cloneDeep from "lodash.clonedeep";
 
   export default {
     name: 'InstallerDashboard',
@@ -267,6 +297,36 @@
       }
     },
     computed: {
+      selectAllManagers () {
+        return this.regionalManagers.length === this.selectedRegionalManagers.length
+      },
+      selectSomeManagers () {
+        return this.selectedRegionalManagers.length > 0 && !this.selectAllManagers
+      },
+      iconManagers () {
+        if (this.regionalManagers.length === this.selectedRegionalManagers.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeManagers) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllCrews () {
+        return this.installationCrew.length === this.selectedInstallationCrews.length
+      },
+      selectSomeCrews () {
+        return this.selectedInstallationCrews.length > 0 && !this.selectAllCrews
+      },
+      iconCrews () {
+        if (this.installationCrew.length === this.selectedInstallationCrews.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeCrews) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
       momentStartOfPeriod () {
         return moment().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 + 1)
       },
@@ -277,10 +337,10 @@
         return moment(this.momentStartOfPeriod).clone().add(3, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
       },
       startOfWeek () {
-        return moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
+        return moment().startOf('W').format('YYYY-MM-DD')
       },
       endOfWeek () {
-        return moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+        return moment().endOf('W').format('YYYY-MM-DD')
       },
       installationCrewIds() {
         return this.selectedInstallationCrews?.length > 0 ? this.selectedInstallationCrews.map(u => u.positionId) : [];
@@ -292,6 +352,25 @@
       this.getRegionalManagers()
     },
     methods: {
+      toggleSelectAllManagers () {
+        this.$nextTick(() => {
+          if (this.selectAllManagers) {
+            this.selectedRegionalManagers = []
+          } else {
+            this.selectedRegionalManagers = cloneDeep(this.regionalManagers)
+            this.getInstallationCrew();
+          }
+        })
+      },
+      toggleSelectAllCrews () {
+        this.$nextTick(() => {
+          if (this.selectAllCrews) {
+            this.selectedInstallationCrews = []
+          } else {
+            this.selectedInstallationCrews = cloneDeep(this.installationCrew)
+          }
+        })
+      },
       async getRegionalManagers() {
         try {
           const {data} = await getRequest(`/installerDashboard/regionalManagers`)
@@ -305,6 +384,10 @@
       async getInstallationCrew() {
         try {
           let regionalManagersIds = this.selectedRegionalManagers?.length > 0 ? this.selectedRegionalManagers.map(u => u.positionId) : [];
+          if (regionalManagersIds.length < 1) {
+            return;
+          }
+
           const {data} = await getRequest(`/installerDashboard/installationCrew/`+ regionalManagersIds)
           this.installationCrew = data
         } catch (e) {
@@ -388,8 +471,8 @@
             this.endDate = this.endOfPeriod
             break
           case 'Last Week':
-            this.startDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
-            this.endDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.startDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
+            this.endDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Last Period':
             this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1)
@@ -437,8 +520,8 @@
             this.metricsEndDate = this.endOfPeriod
             break
           case 'Last Week':
-            this.metricsStartDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
-            this.metricsEndDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.metricsStartDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
+            this.metricsEndDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Last Period':
             this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1)
