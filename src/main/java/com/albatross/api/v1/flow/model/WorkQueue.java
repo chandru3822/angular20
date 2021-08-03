@@ -11,5 +11,5 @@ public class WorkQueue {
     private Long workQueueTypeId, workQueueCategoryId, companyId, workQueueCount, smartlistId, shortWindow, longWindow, expectedCycle;
     private String workQueueType, color, shortWindowDurationType, longWindowDurationType, expectedCycleDurationType;
     private Double shortWindowPercentage, longWindowPercentage, shortWip, longWip, expectedTarget;
-    private Boolean archived;
+    private Boolean archived, inverseExpectation;
 }

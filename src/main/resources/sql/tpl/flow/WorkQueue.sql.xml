@@ -6,6 +6,7 @@
                wqt.short_window,
                wqt.long_window,
                wqt.expected_cycle,
+               wqt.inverse_expectation,
                s.id as smartlist_id,
                wqc.color,
                metrics.*,

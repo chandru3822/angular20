@@ -35,7 +35,7 @@
           <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
-                  width="200" :height="wqHasMetrics(wq) ? 195 : 120" >
+                  width="200" :height="wqHasMetrics(wq) ? 200 : 120" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
               <v-card-text class="pt-1">
                 <router-link class="no-text-decoration card-link"
@@ -43,27 +43,33 @@
                   <div class="text-left">{{wq.workQueueType}}</div>
                   <div class="card-count">{{wq.workQueueCount}}</div>
 
-                  <div class="card-metrics-container" v-if="wqHasMetrics(wq)">
-                    <div class="card-metric card-metric-left">
+                  <div class="card-metrics-container"
+                       :style="{'background-color': wq.color + '60' }"
+                       v-if="wqHasMetrics(wq)">
+                    <div class="card-metrics-expected-cycle">
+                      completed within {{wq.expectedCycle}} {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }} window
+                    </div>
+                    <div class="card-metric card-metric-left"
+                      :style="{'border-right': `solid 1px ${wq.color};` }">
                       {{wq.shortWindow}} {{getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType)}}
+                      <span class="ml-2">{{wq.shortWip >= 0 ? '+' : '-'}}{{wq.shortWip}}</span>
                       <div class="card-metric-percent"
-                           :class="getMetricPercentColor(wq.shortWindowPercent, wq.expectedTarget)">
-                        {{wq.shortWindowPercentage}}
-                      </div>
-                      <div>
-                        {{wq.expectedCycle}} {{wq.expectedCycleDurationType}}
-                        <span class="ml-2">+{{wq.shortWip}}</span>
+                           :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        {{wq.shortWindowPercentage * 100}}%
+                        <span class="card-metric-difference">
+                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}
+                        </span>
                       </div>
                     </div>
                     <div class="card-metric">
                       {{wq.longWindow}} {{wq.longWindowDurationType}}
+                      <span class="ml-2">{{wq.longWip >= 0 ? '+' : '-'}}{{wq.longWip}}</span>
                       <div class="card-metric-percent"
-                           :class="getMetricPercentColor(wq.longWindowPercent, wq.expectedTarget)">
-                        {{wq.longWindowPercentage}}
-                      </div>
-                      <div>
-                        {{wq.expectedCycle}} {{wq.expectedCycleDurationType}}
-                        <span class="ml-2">+{{wq.longWip}}</span>
+                           :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        {{wq.longWindowPercentage * 100}}%
+                        <span class="card-metric-difference">
+                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -173,8 +179,23 @@
       getDurationTypePluralization(duration, durationType) {
         return duration === 1 ? durationType.slice(0, -1) : durationType
       },
-      getMetricPercentColor(value, expectation) {
-        return value < expectation ? 'expectation-met' : 'expectation-missed'
+      getMetricPercentColor(value, expectation, inverse) {
+        if(inverse) {
+          return value <= expectation ? 'expectation-met' : 'expectation-missed'
+        } else {
+          return value >= expectation ? 'expectation-met' : 'expectation-missed'
+        }
+      },
+      getMetricDifference(valuePercent, expectationPercent, inverse) {
+        if(inverse) {
+          let difference = (expectationPercent - valuePercent) * 100
+          let symbol = difference >= 0 ? '+' : ''
+          return symbol + this.$filters.currency(difference, '', 0) + '%'
+        } else {
+          let difference = (valuePercent - expectationPercent) * 100
+          let symbol = difference >= 0 ? '+' : ''
+          return symbol + this.$filters.currency(difference, '', 0) + '%'
+        }
       }
     },
 
@@ -208,23 +229,23 @@
 .card-metrics-container {
   height: 80px;
   border-top: solid 1px #D8D9DA;
-  width: 100%;
+  width: calc(100% - 5px);
   position: absolute;
   bottom: 0;
   right: 0;
-  left: 0;
+  left: 5px;
   font-size: 12px;
 }
 
-.card-metric {
-  padding-top: 4px;
-  width: 50%;
-  height: 100%;
-  display: inline-block;
+.card-metrics-expected-cycle {
+  height: 20px;
+  font-size: 10px;
 }
 
-.card-metric-left {
-  border-right: solid 1px #D8D9DA;
+.card-metric {
+  width: 50%;
+  height: calc(100% - 25px);
+  display: inline-block;
 }
 
 .card-metric-percent {
@@ -232,6 +253,11 @@
   font-weight: 600;
   margin-top: 3px;
   margin-bottom: 3px;
+}
+
+.card-metric-difference {
+  font-size: 11px;
+  font-weight: normal;
 }
 
 .expectation-met {
