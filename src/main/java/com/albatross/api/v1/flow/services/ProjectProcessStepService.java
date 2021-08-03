@@ -424,10 +424,10 @@ public class ProjectProcessStepService {
                           }
                       }
                   } catch (Exception e) {
-                    final String errMessage = String.format("PPS: Unable to automatically trigger action ID: %s, PPS ID: %s",  action.getId(), ppsId);
+                    final String errMessage = String.format("PPS: Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
                       log.error(errMessage);
                       e.printStackTrace();
-                      throw new RuntimeException(errMessage + " *** " + e.getMessage());
+                      throw new RuntimeException(errMessage);
                   }
               }
           });
@@ -519,8 +519,6 @@ public class ProjectProcessStepService {
         r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
       } catch (Exception e) {
         final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s", r.getId());
-        log.error(errMessage);
-        e.printStackTrace();
         throw new RuntimeException(errMessage + " *** " + e.getMessage());
       }
     }
@@ -553,46 +551,53 @@ public class ProjectProcessStepService {
     boolean requirementMet = false;
 
     if (r.getProcessStepRequirementTypeId() == 2) {
-      String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId));
-      String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
-      //@TODO: Account for function return data types 7 and 9 returning lists
-      Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
-      //@TODO: compare returnValue to the requirement value
-      requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
+      try {
+        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId));
+        String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
+        Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+        requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
+      } catch (Exception e) {
+        throw new RuntimeException(String.format("Unable to calculate function requirement, PPS requirement ID: %s, PPS ID: %s *** %s", r.getId(), ppsId, e.getMessage()));
+      }
     } else if(r.getProcessStepRequirementTypeId() == 7) {
       // 7 = check process step status type from reference step
       requirementMet = calculateStatusRequirement(r, ppsId, false);
     } else {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
 
+        try {
           switch (r.getDataTypeId().intValue()) {
-              case 1:
-                  requirementMet = calculateDateRequirement(r);
-                  break;
-              case 2:
-                  requirementMet = calculateTimestampRequirement(r);
-                  break;
-              case 3:
-                  requirementMet = calculateBooleanRequirement(r);
-                  break;
-              case 4:
-                  requirementMet = calculateNumericRequirement(r);
-                  break;
-              case 5:
-                  requirementMet = calculateTextRequirement(r);
-                  break;
-              case 6:
-              case 9:
-                  requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
-                  break;
-              case 7:
-                  requirementMet = calculateMultiselectRequirement(r);
-                  break;
-              case 8:
-                  requirementMet = calculateCustomRequirement(r);
-              default:
-                  //@TODO: blow up with error?
+            case 1:
+              requirementMet = calculateDateRequirement(r);
+              break;
+            case 2:
+              requirementMet = calculateTimestampRequirement(r);
+              break;
+            case 3:
+              requirementMet = calculateBooleanRequirement(r);
+              break;
+            case 4:
+              requirementMet = calculateNumericRequirement(r);
+              break;
+            case 5:
+              requirementMet = calculateTextRequirement(r);
+              break;
+            case 6:
+            case 9:
+              requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+              break;
+            case 7:
+              requirementMet = calculateMultiselectRequirement(r);
+              break;
+            case 8:
+              requirementMet = calculateCustomRequirement(r);
+              break;
+            default:
+              throw new RuntimeException("Unable to determine requirement data type");
           }
+        } catch (Exception e) {
+          throw new RuntimeException(String.format("Unable to check requirement, req ID: %s, PPS ID: %s *** %s", r.getId(), ppsId, e.getMessage()));
+        }
       }
     return requirementMet;
   }
@@ -669,7 +674,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean calculateFunctionRequirement(Object functionResult, ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateFunctionRequirement(Object functionResult, ProjectProcessStepRequirement r) throws RuntimeException {
     boolean passed = false;
     switch (r.getDataTypeId().intValue()) {
       case 1:
@@ -703,10 +708,7 @@ public class ProjectProcessStepService {
               break;
           }
         } catch (Exception e) {
-          final String errMessage = String.format("PPS: Error comparing date requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
-          log.error(errMessage);
-          e.printStackTrace();
-          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+          throw new RuntimeException(String.format("PPS: Error comparing date requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s *** %s", r.getId(), r.getDataTypeRequirementId(), e.getMessage()));
         }
         break;
       case 2:
@@ -751,10 +753,7 @@ public class ProjectProcessStepService {
               break;
           }
         } catch (Exception e) {
-          final String errMessage = String.format("PPS: Error comparing timestamp requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
-          log.error(errMessage);
-          e.printStackTrace();
-          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+          throw new RuntimeException(String.format("PPS: Error comparing timestamp requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s *** %s", r.getId(), r.getDataTypeRequirementId(), e.getMessage()));
         }
         break;
       case 3:
@@ -795,10 +794,7 @@ public class ProjectProcessStepService {
               throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
           }
         } catch (Exception e) {
-          final String errMessage = String.format("PPS: Error comparing bool requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
-          log.error(errMessage);
-          e.printStackTrace();
-          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+          throw new RuntimeException(String.format("PPS: Error comparing bool requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s *** %s", r.getId(), r.getDataTypeRequirementId(), e.getMessage()));
         }
         break;
       case 4:
@@ -839,10 +835,7 @@ public class ProjectProcessStepService {
               break;
           }
         } catch (Exception e) {
-          final String errMessage = String.format("PPS: Error comparing numeric requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
-          log.error(errMessage);
-          e.printStackTrace();
-          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+          throw new RuntimeException(String.format("PPS: Error comparing numeric requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s *** %s", r.getId(), r.getDataTypeRequirementId(), e.getMessage()));
         }
         break;
       case 5:
@@ -883,10 +876,7 @@ public class ProjectProcessStepService {
               }
           }
         } catch (Exception e) {
-          final String errMessage = String.format("PPS: Error comparing text requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
-          log.error(errMessage);
-          e.printStackTrace();
-          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+          throw new RuntimeException(String.format("PPS: Error comparing text requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s *** %s", r.getId(), r.getDataTypeRequirementId(), e.getMessage()));
         }
         break;
       case 6:
@@ -897,10 +887,7 @@ public class ProjectProcessStepService {
             Long reqValue = Long.parseLong(r.getRequirementValue());
             passed = compareInt(intFunctionResult, reqValue, r.getOperatorTypeId());
           } catch (Exception e) {
-            final String errMessage = String.format("PPS: Error parsing int requirement to function result. Requirement ID: %s", r.getId());
-            log.error(errMessage);
-            e.printStackTrace();
-            throw new RuntimeException(errMessage + " *** " + e.getMessage());
+            throw new RuntimeException(String.format("PPS: Error parsing int requirement to function result. Requirement ID: %s *** %s", r.getId(), e.getMessage()));
           }
         } else {
           try {
@@ -937,10 +924,7 @@ public class ProjectProcessStepService {
                 break;
             }
           } catch (Exception e) {
-            final String errMessage = String.format("PPS: Error comparing int/system list requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s", r.getId(), r.getDataTypeRequirementId());
-            log.error(errMessage);
-            e.printStackTrace();
-            throw new RuntimeException(errMessage + " *** " + e.getMessage());
+            throw new RuntimeException(String.format("PPS: Error comparing int/system list requirement to function result. Requirement ID: %s, Data Type Requirement ID: %s *** %s", r.getId(), r.getDataTypeRequirementId(), e.getMessage()));
           }
         }
         break;
@@ -960,10 +944,7 @@ public class ProjectProcessStepService {
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
             } catch (Exception e) {
-              final String errMessage = String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s", childFunction.getId(), actionId, ppsId);
-              log.error(errMessage);
-              e.printStackTrace();
-              throw new RuntimeException(errMessage);
+              throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getMessage()));
             }
         });
 
@@ -978,80 +959,76 @@ public class ProjectProcessStepService {
     Map<Long, String> params = new TreeMap<>();
 
     functionParams.forEach(param -> {
-      switch (param.getParameterTypeId().intValue()) {
-        case 1:
-          Long systemValue = null;
-          switch (param.getSystemValueId().intValue()) {
-            case 1:
-              systemValue = securityService.getCurrentUser().getId();
-              break;
-            case 2:
-              systemValue = projectId;
-              break;
-            case 3:
-              systemValue = ppsId;
-              break;
-            case 4:
-              systemValue = processStepId;
-              break;
-            default:
-              //@TODO: die a horrible death
-          }
-          params.put(param.getDisplayOrder(), systemValue != null ? systemValue.toString() : null);
-          break;
-        case 2:
-          params.put(param.getDisplayOrder(), getTypedDynamicValue(param).toString());
-          break;
-        case 3:
-          try {
+      try {
+        switch (param.getParameterTypeId().intValue()) {
+          case 1:
+            Long systemValue = null;
+            switch (param.getSystemValueId().intValue()) {
+              case 1:
+                systemValue = securityService.getCurrentUser().getId();
+                break;
+              case 2:
+                systemValue = projectId;
+                break;
+              case 3:
+                systemValue = ppsId;
+                break;
+              case 4:
+                systemValue = processStepId;
+                break;
+              default:
+                throw new RuntimeException(String.format("Unable to determine param type, CF param ID: %s", param.getId()));
+            }
+            params.put(param.getDisplayOrder(), systemValue != null ? systemValue.toString() : null);
+            break;
+          case 2:
+            params.put(param.getDisplayOrder(), getTypedDynamicValue(param).toString());
+            break;
+          case 3:
             Object paramValue = getParamValueByDataType(param);
             params.put(param.getDisplayOrder(), (paramValue != null) ? paramValue.toString() : null);
-          } catch (Exception e) {
-            ///@TODO: throw ex
-          }
-          break;
-        default:
-          //@TODO: throw exception
+            break;
+          default:
+            throw new RuntimeException(String.format("Unable to determine param type, CF param ID: %s", param.getId()));
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(String.format("Unable to prepare params, CF param ID: %s, CF ID: %s *** %s", param.getId(), param.getCompanyFunctionId(), e.getMessage()));
       }
     });
 
     return params.values().toArray(String[]::new);
   }
 
-  public Object getTypedDynamicValue(CompanyFunctionParam param) {
+  public Object getTypedDynamicValue(CompanyFunctionParam param) throws RuntimeException {
 
     String startingValue = param.getDynamicValue();
     Object typedValue = null;
 
-    try {
-      switch (param.getDataTypeId().intValue()) {
-        case 1:
-        case 2:
-          typedValue = Timestamp.valueOf(startingValue);
-          break;
-        case 3:
-          typedValue = Boolean.parseBoolean(startingValue);
-          break;
-        case 4:
-          typedValue = Double.parseDouble(startingValue);
-          break;
-        case 5:
-          typedValue = "'" + startingValue + "'";
-          break;
-        case 6:
-          typedValue = Long.parseLong(startingValue);
-          break;
-        default:
-
-      }
-    } catch (Exception e) {
-      //@TODO: die here
-    }
+  switch (param.getDataTypeId().intValue()) {
+    case 1:
+    case 2:
+      typedValue = Timestamp.valueOf(startingValue);
+      break;
+    case 3:
+      typedValue = Boolean.parseBoolean(startingValue);
+      break;
+    case 4:
+      typedValue = Double.parseDouble(startingValue);
+      break;
+    case 5:
+      typedValue = "'" + startingValue + "'";
+      break;
+    case 6:
+      typedValue = Long.parseLong(startingValue);
+      break;
+    default:
+      throw new RuntimeException(String.format("Unable to determine param dynamic value, CF param ID: %s", param.getId()));
+  }
 
     return typedValue;
   }
 
-  public Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
+  public Object getParamValueByDataType(CompanyFunctionParam param) throws RuntimeException {
 
     Object paramValue = null;
 
@@ -1078,7 +1055,7 @@ public class ProjectProcessStepService {
         paramValue = param.getIntArrayValue();
         break;
       default:
-        //@TODO: throw nasty exception
+        throw new RuntimeException(String.format("Unable to determine param value, CF param ID: %s", param.getId()));
     }
 
     return paramValue;
@@ -1643,44 +1620,32 @@ public class ProjectProcessStepService {
         ZonedDateTime zonedReqValue = LocalDate.parse(r.getRequirementValue()).atStartOfDay().atZone(ZoneId.of(r.getTimeZone()));
         passed = compareDates(fieldValue, zonedReqValue, r.getOperatorTypeId());
       } catch (DateTimeParseException e) {
-        throw new Exception(String.format("Unable to parse Date type requirement value of: %s", r.getRequirementValue()));
+        throw new RuntimeException(String.format("Unable to parse date requirement value of: %s", r.getRequirementValue()));
       }
     } else {
       // @TODO: Still need to decide how to handle stupid cases like the user inputting the field value is greater than null
-      switch (r.getDataTypeRequirementId().intValue()) {
-        case 1:
-          try {
+      try {
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 1:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
             passed = compareDates(fieldValue, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
-          } catch (NumberFormatException e) {
-            //@TODO: something
-          }
-          break;
-        case 2:
-          try {
+            break;
+          case 2:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
             passed = compareDates(fieldValue, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
-          } catch (NumberFormatException e) {
-            //@TODO: something?
-          }
-          break;
-        case 3:
-          passed = compareDates(fieldValue, zonedNow, r.getOperatorTypeId());
-          break;
-        case 4:
-          try {
+            break;
+          case 3:
+            passed = compareDates(fieldValue, zonedNow, r.getOperatorTypeId());
+            break;
+          case 4:
             passed = compareNullDate(fieldValue, r.getOperatorTypeId());
-          } catch (IllegalArgumentException e) {
-            //@TODO: something?
-          }
-          break;
-        case 5:
-          try {
+            break;
+          case 5:
             passed = compareNonNullDate(fieldValue, r.getOperatorTypeId());
-          } catch (IllegalArgumentException e) {
-            //@TODO: something?
-          }
-          break;
+            break;
+        }
+      } catch (Exception e) {
+
       }
     }
 
@@ -1708,7 +1673,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean compareNullDate(LocalDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNullDate(LocalDateTime date, Long operatorTypeId) throws RuntimeException {
 
     boolean passed = false;
 
@@ -1724,13 +1689,13 @@ public class ProjectProcessStepService {
         passed = false;
         break;
       default:
-        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+        throw new RuntimeException(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
     }
 
     return passed;
   }
 
-  public boolean compareDates(LocalDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDates(LocalDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws RuntimeException {
 
     if (date != null) {
       date = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
@@ -1756,7 +1721,7 @@ public class ProjectProcessStepService {
         passed = date != null && date.isBefore(compareDate.toLocalDateTime());
         break;
       default:
-        throw new Exception(String.format("Unable to parse data type of Date with operator of ID: %s", operatorTypeId));
+        throw new RuntimeException(String.format("Unable to parse data type of Date with operator of ID: %s", operatorTypeId));
     }
 
     return passed;
