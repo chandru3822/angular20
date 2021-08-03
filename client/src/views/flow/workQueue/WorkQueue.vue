@@ -35,13 +35,38 @@
           <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
-                  width="200" height="100" >
+                  width="200" :height="wqHasMetrics(wq) ? 195 : 120" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
               <v-card-text class="pt-1">
                 <router-link class="no-text-decoration card-link"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
                   <div class="text-left">{{wq.workQueueType}}</div>
                   <div class="card-count">{{wq.workQueueCount}}</div>
+
+                  <div class="card-metrics-container" v-if="wqHasMetrics(wq)">
+                    <div class="card-metric card-metric-left">
+                      {{wq.shortWindow}} {{getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType)}}
+                      <div class="card-metric-percent"
+                           :class="getMetricPercentColor(wq.shortWindowPercent, wq.expectedTarget)">
+                        {{wq.shortWindowPercentage}}
+                      </div>
+                      <div>
+                        {{wq.expectedCycle}} {{wq.expectedCycleDurationType}}
+                        <span class="ml-2">+{{wq.shortWip}}</span>
+                      </div>
+                    </div>
+                    <div class="card-metric">
+                      {{wq.longWindow}} {{wq.longWindowDurationType}}
+                      <div class="card-metric-percent"
+                           :class="getMetricPercentColor(wq.longWindowPercent, wq.expectedTarget)">
+                        {{wq.longWindowPercentage}}
+                      </div>
+                      <div>
+                        {{wq.expectedCycle}} {{wq.expectedCycleDurationType}}
+                        <span class="ml-2">+{{wq.longWip}}</span>
+                      </div>
+                    </div>
+                  </div>
                 </router-link>
               </v-card-text>
           </v-card>
@@ -87,6 +112,10 @@
       }
     },
     methods: {
+      wqHasMetrics(wq) {
+        return wq.shortWindow && wq.longWindow && wq.expectedCycle
+          && wq.shortWindowDurationType  && wq.longWindowDurationType && wq.expectedCycleDurationType
+      },
       async getWorkQueueCategories() {
         try {
           const {data} = await getWorkQueueCategories()
@@ -140,6 +169,12 @@
           this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: this.selectedUserPosition.userId, unassigned: this.selectedUserPosition.unassigned}})
           // this.$router.push({name: 'contact', params: {id: data.id}})
         }
+      },
+      getDurationTypePluralization(duration, durationType) {
+        return duration === 1 ? durationType.slice(0, -1) : durationType
+      },
+      getMetricPercentColor(value, expectation) {
+        return value < expectation ? 'expectation-met' : 'expectation-missed'
       }
     },
 
@@ -162,11 +197,48 @@
   font-size: 30px;
   font-weight: 600;
   position: absolute;
-  bottom: 0;
+  top: 55px;
   right: 0;
   left: 0;
 }
 .card-link {
   color: #666666;
+}
+
+.card-metrics-container {
+  height: 80px;
+  border-top: solid 1px #D8D9DA;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  font-size: 12px;
+}
+
+.card-metric {
+  padding-top: 4px;
+  width: 50%;
+  height: 100%;
+  display: inline-block;
+}
+
+.card-metric-left {
+  border-right: solid 1px #D8D9DA;
+}
+
+.card-metric-percent {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.expectation-met {
+  color: green;
+}
+
+.expectation-missed {
+  color: red;
 }
 </style>
