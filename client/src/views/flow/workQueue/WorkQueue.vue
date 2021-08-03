@@ -20,8 +20,8 @@
           </v-btn>
         </v-row>
         <v-divider class="mt-3"/>
-        <v-row class="px-4">
-          <div style="width: 250px">
+        <v-row>
+          <v-col cols="12" md="4" class="px-5">
             <v-select v-model="selectedUserPosition"
                       :items="workQueueOwners"
                       label="Assigned to"
@@ -29,47 +29,76 @@
                       return-object
                       @input="getWorkQueues(false)"
             ></v-select>
-          </div>
+          </v-col>
+          <v-col cols="12" md="8" class="radio-group-container pr-5">
+            <v-radio-group id="wqt-view-type-selector" v-model="selectedViewType" column>
+              <v-radio class="d-inline-block mx-4" label="% Completed On Time" :value="0"></v-radio>
+              <v-radio class="d-inline-block mx-4" label="Total Completed Tasks" :value="1"></v-radio>
+              <v-radio class="d-inline-block mx-4" label="Change in WIP" :value="2"></v-radio>
+            </v-radio-group>
+          </v-col>
         </v-row>
         <v-row>
           <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
-                  width="200" :height="wqHasMetrics(wq) ? 200 : 120" >
+                  width="200" :height="wqHasMetrics(wq) ? 150 : 70" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
-              <v-card-text class="pt-1">
+              <v-card-text class="pt-1 px-0">
                 <router-link class="no-text-decoration card-link"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
-                  <div class="text-left">{{wq.workQueueType}}</div>
-                  <div class="card-count">{{wq.workQueueCount}}</div>
+                  <div class="card-title-container text-left">
+                    <div class="card-title ellipse two-lines">{{wq.workQueueType}}</div>
+                    <div class="card-count">{{wq.workQueueCount}}</div>
+                  </div>
 
                   <div class="card-metrics-container"
                        :style="{'background-color': wq.color + '60' }"
                        v-if="wqHasMetrics(wq)">
                     <div class="card-metrics-expected-cycle">
-                      completed within {{wq.expectedCycle}} {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }} window
+                      Completed within expected time of {{wq.expectedCycle}} {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}
                     </div>
                     <div class="card-metric card-metric-left"
-                      :style="{'border-right': `solid 1px ${wq.color};` }">
+                      :style="{'border-right': getDivider(wq) }">
                       {{wq.shortWindow}} {{getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType)}}
-                      <span class="ml-2">{{wq.shortWip >= 0 ? '+' : '-'}}{{wq.shortWip}}</span>
                       <div class="card-metric-percent"
+                           v-if="selectedViewType === 0"
                            :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
                         {{wq.shortWindowPercentage * 100}}%
                         <span class="card-metric-difference">
                           {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}
                         </span>
                       </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 1"
+                           :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        ??
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 2"
+                           :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        {{wq.shortWip >= 0 ? '+' : '-'}}{{wq.shortWip}}
+                      </div>
                     </div>
                     <div class="card-metric">
                       {{wq.longWindow}} {{wq.longWindowDurationType}}
-                      <span class="ml-2">{{wq.longWip >= 0 ? '+' : '-'}}{{wq.longWip}}</span>
                       <div class="card-metric-percent"
+                           v-if="selectedViewType === 0"
                            :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
                         {{wq.longWindowPercentage * 100}}%
                         <span class="card-metric-difference">
                           {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}
                         </span>
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 1"
+                           :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        ??
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 2"
+                           :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        {{wq.longWip >= 0 ? '+' : '-'}}{{wq.longWip}}
                       </div>
                     </div>
                   </div>
@@ -102,6 +131,7 @@
         selectedWorkQueueCategory: {},
         workQueueCategories: [],
         workQueues: [],
+        selectedViewType: 0,
         selectedUserPosition: {},
         workQueueOwners: [],
         anyOwner: { id: -1, fullName: 'Anyone', userId: null, unassigned: false},
@@ -196,11 +226,20 @@
           let symbol = difference >= 0 ? '+' : ''
           return symbol + this.$filters.currency(difference, '', 0) + '%'
         }
+      },
+      getDivider(wq) {
+        return `solid 1px ${wq.color}`
       }
     },
 
   }
 </script>
+
+<style lang="scss">
+#wqt-view-type-selector {
+  display: block !important;
+}
+</style>
 
 <style scoped lang="scss">
 .card-main {
@@ -214,16 +253,44 @@
   /*border-radius: 4px 0 0 4px !important;*/
 }
 .card-count {
+  width: 40%;
+  display: inline-block;
   line-height: 2;
+  text-align: center;
   font-size: 30px;
   font-weight: 600;
-  position: absolute;
-  top: 55px;
-  right: 0;
-  left: 0;
 }
 .card-link {
   color: #666666;
+}
+
+.card-title-container {
+  width: calc(100% - 5px);
+  height: 65px;
+  padding-right: 4px;
+  padding-left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.card-title {
+  width: 60%;
+  overflow: hidden;
+  max-height: 100%;
+  display: inline-block;
+}
+
+.ellipse {
+  white-space: nowrap;
+  display:inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.two-lines {
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
 
 .card-metrics-container {
@@ -239,7 +306,7 @@
 
 .card-metrics-expected-cycle {
   height: 20px;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .card-metric {
@@ -258,6 +325,11 @@
 .card-metric-difference {
   font-size: 11px;
   font-weight: normal;
+}
+
+.radio-group-container {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .expectation-met {
