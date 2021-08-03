@@ -93,6 +93,12 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.getId());
+
+    // enforce rule that only project, process step, and contact row types can have a table view display
+    if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+      params.put("viewObjectTypeId", null);
+    }
+
     sqlCache.update("smartlist.update", params);
   }
 
@@ -392,7 +398,7 @@ public class SmartlistService {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
     }
 
-    log.info("*** {}", query);
+//    log.info("*** {}", query);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     if (results.isEmpty()) {

@@ -26,6 +26,7 @@ declare
     v_process_step_id                             integer;
     v_postal_code_zone_id                         integer;
     v_user_already_assigned_to_another_project_id integer;
+    v_set_closer_appointment_audit_id             integer;
 BEGIN
 
     select process_step_id
@@ -94,8 +95,8 @@ BEGIN
                 from brs.get_total_lead_allocation(v_postal_code_zone_id, true) as t
             );
 
-        select scau.user_id
-        into v_user_id
+        select scau.user_id,scau.id
+        into v_user_id,v_set_closer_appointment_audit_id
         from brs.set_closer_appointment_audit scau
         where project_process_step_id = p_project_process_step_id
           and scau.user_id = any (p_users)
@@ -227,6 +228,9 @@ BEGIN
             -- raise notice 'v_default_appointment_length %',v_default_appointment_length;
             -- raise notice 'end %',(p_appointment_start_time +
             --                     (v_default_appointment_length || 'minutes')::interval)::timestamp;
+            update brs.set_closer_appointment_audit
+              set closer_selected = true
+            where id = v_set_closer_appointment_audit_id;
             return query select true::boolean,
                                 v_user_id::integer,
                                 p_appointment_start_time::timestamp,
