@@ -57,7 +57,7 @@
                     <v-autocomplete
                       v-model="workQueueType.shortWindowDurationTypeId"
                       :items="durationTypes"
-                      label="Duration Type"
+                      label="Short Window Duration Type"
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
@@ -75,7 +75,7 @@
                     <v-autocomplete
                       v-model="workQueueType.longWindowDurationTypeId"
                       :items="durationTypes"
-                      label="Duration Type"
+                      label="Long Window Duration Type"
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
@@ -93,7 +93,7 @@
                     <v-autocomplete
                       v-model="workQueueType.expectedCycleDurationTypeId"
                       :items="durationTypes"
-                      label="Duration Type"
+                      label="Expected Cycle Duration Type"
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
