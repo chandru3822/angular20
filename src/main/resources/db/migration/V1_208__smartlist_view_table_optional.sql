@@ -1,0 +1,1 @@
+alter table if exists flow.smartlist alter column view_object_type_id drop not null;
