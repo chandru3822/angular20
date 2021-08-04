@@ -29,6 +29,7 @@
             :fixed-header="true"
             :loading="dataLoading"
             :options.sync="options"
+            hide-default-header
             :footer-props="footerProps"
             class="elevation-1 mt-1"
             @click:row="clickRow"
@@ -39,6 +40,24 @@
 
           <template #no-results>
             No available results
+          </template>
+
+          <template #header="{ props: { headers } }">
+            <thead class="v-data-table-header">
+            <tr>
+              <th v-for="header in headers" :key="header.text" class="py-2"
+                  :style="{width: header.width ? header.width : 'auto'}">
+                {{ header.text }}
+                <v-text-field outlined
+                              v-if="header.value !== 'notes'"
+                              hide-details
+                              class="filter-input"
+                              v-model="filters[header.value]"
+                              @input="doSomething(header)">
+                </v-text-field>
+              </th>
+            </tr>
+            </thead>
           </template>
 
           <template #item="{ item, index }">
@@ -122,6 +141,7 @@
   import { saveAs } from 'file-saver'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import {DateTime} from 'luxon'
+  import cloneDeep from 'lodash.clonedeep'
   import constants from '@/helpers/constants'
   import {
     getRequest,
@@ -143,6 +163,7 @@
         snackbar: {},
         showNotesModal: false,
         selectedPps: {},
+        filters: {},
         constants,
         search: '',
         ytfDoWeNeedThis: 0,
@@ -155,6 +176,7 @@
         unassigned: this.$route.query.unassigned,
         installationCrewIds: this.$route.query.installationCrewIds,
         results: [],
+        masterResults: [],
         customColumns: [],
         totalItems: 0,
         footerProps: {
@@ -212,6 +234,7 @@
         return this.headers.filter(header => header.show === true)
       },
       async getWorkDetails() {
+        this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options
         try {
@@ -243,6 +266,8 @@
             r.owningPositions = JSON.parse(r['Owning Positions'])
           })
 
+          this.masterResults = cloneDeep(this.results)
+
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
             let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
@@ -257,6 +282,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
+          this.dataLoading = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -291,6 +317,14 @@
       },
       clickRow(row) {
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
+      },
+      doSomething(header) {
+        console.log('DID SOMETHING', header.value)
+        console.log('DID SOMETHING 2', this.filters[header.value])
+        this.results = this.masterResults.filter(r => {
+          console.log('randaLogger',r[header.value])
+          return r[header.value]?.toString().includes(this.filters[header.value])
+        })
       }
     },
 
@@ -326,6 +360,7 @@
 
 .notes-column {
   max-width: 300px;
+  min-width: 250px;
 }
 
 #work-queue-drilldown-container {
