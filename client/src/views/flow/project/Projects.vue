@@ -14,6 +14,7 @@
             item-text="name"
             item-value="id"
             class="smartlist-selector pt-3"
+            attach
           />
         </v-toolbar>
 
@@ -124,7 +125,7 @@
 
 <script>
 
-  import {logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {logError, getRequestWithParams} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'

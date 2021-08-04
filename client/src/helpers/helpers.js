@@ -9,6 +9,13 @@ export function getSnackbar(type, text) {
   return snackbar
 }
 
+export function getMinMaxRule (min, max) {
+  return [
+    v => (!v || (v && (v <= max))) || `Value must be less than ${max}`,
+    v => (!v || (v && (v >= min))) || `Value must be greater than ${min}`,
+  ]
+}
+
 export function getFileIcon(file) {
   switch (file.fileExtension) {
     case 'pdf':

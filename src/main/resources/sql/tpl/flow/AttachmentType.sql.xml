@@ -9,6 +9,76 @@
     and at.is_system is not true
   ]]></attachmentType.getTypesForCompany>
 
+  <attachmentType.getObjectType><![CDATA[
+    SELECT cotat.id,
+       cotat.attachment_type_id as "attachmentTypeId",
+       cotat.created_by_id as "createdById",
+       cotat.company_object_type_id as "companyObjectTypeId",
+       cotat.modified_by_id as "modifiedById",
+       cotat.display_order as "displayOrder",
+       at.attachment_type as "attachmentType",
+       cotat.archived
+    FROM flow.company_object_type_attachment_type cotat
+           inner join flow.attachment_type at on at.id = cotat.attachment_type_id
+    where cotat.id = :id
+  ]]></attachmentType.getObjectType>
+
+  <attachmentType.updateTypeOrderInObjectType><![CDATA[
+    update flow.company_object_type_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></attachmentType.updateTypeOrderInObjectType>
+
+  <attachmentType.insertObjectType><![CDATA[
+    insert into flow.company_object_type_attachment_type (attachment_type_id, company_object_type_id, created_by_id, date_created, display_order)
+    values (:attachmentTypeId, :companyObjectTypeId, :createdById, now(), (select coalesce(max(display_order) + 1, 0) from flow.company_object_type_attachment_type where company_object_type_id = :companyObjectTypeId and archived is not true))
+  ]]></attachmentType.insertObjectType>
+
+  <attachmentType.getObjectTypes><![CDATA[
+    SELECT cotat.id,
+           cotat.attachment_type_id as "attachmentTypeId",
+           cotat.created_by_id as "createdById",
+           cotat.company_object_type_id as "companyObjectTypeId",
+           cotat.modified_by_id as "modifiedById",
+           at.attachment_type as "attachmentType",
+           cotat.display_order as "displayOrder",
+           cotat.archived
+    FROM flow.company_object_type_attachment_type cotat
+           inner join flow.attachment_type at on at.id = cotat.attachment_type_id
+    where cotat.company_object_type_id = :companyObjectTypeId
+      and cotat.archived is not true
+    order by cotat.display_order
+  ]]></attachmentType.getObjectTypes>
+
+  <attachmentType.deleteObjectType>
+    <![CDATA[
+        update flow.company_object_type_attachment_type
+        set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+        where id = :id
+    ]]>
+  </attachmentType.deleteObjectType>
+
+  <attachmentType.getAvailableTypesForObjectType><![CDATA[
+    select at.*
+    from flow.attachment_type at
+    where at.archived is not true
+      and at.company_id = :companyId
+      and at.is_system is not true
+      and not exists (
+        select company_object_type_id
+        from flow.company_object_type_attachment_type cotat
+        where cotat.attachment_type_id = at.id
+          and cotat.company_object_type_id = :id
+          and archived is not true
+          and at.is_system is not true
+      )
+    order by at.attachment_type
+  ]]></attachmentType.getAvailableTypesForObjectType>
+
   <attachmentType.getAvailableTypesForProcessStep><![CDATA[
     select at.*
       from flow.attachment_type at

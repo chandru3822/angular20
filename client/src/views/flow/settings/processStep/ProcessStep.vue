@@ -52,7 +52,7 @@
   import Vue2Filters from 'vue2-filters'
 
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {

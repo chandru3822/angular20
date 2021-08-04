@@ -37,6 +37,7 @@
                           return-object
                           autocomplete="off"
                           @change="updateOwner"
+                          attach
           >
           </v-autocomplete>
         </div>
@@ -279,7 +280,7 @@
 
 <script>
 
-  import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
+  import {getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'

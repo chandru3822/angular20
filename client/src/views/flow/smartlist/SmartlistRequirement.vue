@@ -35,6 +35,7 @@
           item-value="project_details_column"
           item-text="name"
           return-object
+          attach
           @input="[
             resetNewField(),
             getOperators(newRequirement.selectedField.dataTypeId),
@@ -51,6 +52,7 @@
           item-value="objectTypeId"
           item-text="objectType"
           @input="[resetNewObjectType(), getAvailableFields()]"
+          attach
         />
 
         <v-autocomplete
@@ -61,6 +63,7 @@
           item-value="processStepId"
           item-text="processStepName"
           @input="[resetNewProcessStep(), calculateAvailableFields()]"
+          attach
         />
 
         <v-autocomplete
@@ -70,6 +73,7 @@
           :items="availableFields"
           item-text="name"
           return-object
+          attach
           @input="[
             resetNewField(),
             getOperators(newRequirement.selectedField.dataTypeId),
@@ -88,6 +92,7 @@
         v-model="newRequirement.operatorTypeId"
         label="Operator"
         :items="operators"
+        attach
         item-text="operatorType"
         item-value="id"
         @input="resetNewOperatorType"
@@ -110,6 +115,7 @@
         label="Available Values (list of value id)"
         item-text="name"
         item-value="id"
+        attach
       />
 
 <!--      if field is a multi-select list -->
@@ -121,6 +127,7 @@
         multiple
         item-text="name"
         item-value="id"
+        attach
       />
 
 <!--      if field doesn't have any custom values, display the data type requirements -->
@@ -131,6 +138,7 @@
         :items="dataTypeRequirements"
         item-text="dataTypeValue"
         item-value="id"
+        attach
         @input="resetNewDataTypeRequirement"
       />
 
@@ -233,6 +241,7 @@
               label="Field"
               item-text="name"
               disabled
+              attach
             />
           </template>
 
@@ -243,6 +252,7 @@
               label="Object Type"
               item-text="objectType"
               disabled
+              attach
             />
 
             <v-autocomplete
@@ -252,6 +262,7 @@
               label="Process Step"
               item-text="processStepName"
               disabled
+              attach
             />
 
             <v-autocomplete
@@ -260,6 +271,7 @@
               label="Field"
               item-text="name"
               disabled
+              attach
             />
           </template>
 
@@ -269,6 +281,7 @@
             :items="operators"
             item-text="operatorType"
             item-value="id"
+            attach
           />
 
           <!--      @TODO humes: on change, reset any value that follows -->
@@ -289,6 +302,7 @@
               label="Available Values"
               item-text="name"
               item-value="id"
+              attach
           />
 
           <!--      if field is a multi-select list -->
@@ -300,6 +314,7 @@
               multiple
               item-text="name"
               item-value="id"
+              attach
           />
 
           <!--      if field doesn't have any custom values, display the data type requirements -->
@@ -311,6 +326,7 @@
               item-text="dataTypeValue"
               item-value="id"
               @input="resetNewDataTypeRequirement"
+              attach
           />
 
           <!--      if nothing else sticks, then it's a regular text input -->

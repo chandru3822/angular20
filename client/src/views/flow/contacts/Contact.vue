@@ -62,7 +62,7 @@
             </template>
             <v-card class="pa-5">
               Select a process to be used
-              <v-select v-model="selectedProcess"
+              <v-select attach v-model="selectedProcess"
                         :items="availableProcesses"
                         label="Process"
                         id="qa-process-selector"
@@ -116,6 +116,7 @@
                     return-object
                     autocomplete="off"
                     @change="updateOwner"
+                          attach
           >
           </v-autocomplete>
         </div>
@@ -180,7 +181,7 @@
                             @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.companyStateId"
+              <v-select attach v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         id="qa-state-field"
@@ -190,7 +191,7 @@
                         item-text="state"
                         item-value="id"
               ></v-select>
-              <v-select v-model="contact.companyCountryId"
+              <v-select attach v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
                         id="qa-country-field"
@@ -301,11 +302,13 @@
           </v-card>
         </div>
       </v-col>
-      <v-col cols="12" md="6" class="text-left">
+      <v-col cols="12" md="6" class="text-left pa-0">
         <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(contactId)"
                           type="Contact"
         ></NotesAndActivity>
+
+        <Attachments :object-type-id="2" :contact-id="contactId" />
       </v-col>
     </v-row>
 
@@ -338,13 +341,15 @@ import {getCompanyStates} from '@/services/stateService'
 import {getCountries} from '@/services/countryService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
+import Attachments from '@/views/flow/components/Attachments'
 
 export default {
   name: 'Contact',
   components: {
     CustomValueInput,
     NotesAndActivity,
-    DatetimePickerInput
+    DatetimePickerInput,
+    Attachments
   },
   watch: {
     contact: {
@@ -388,7 +393,7 @@ export default {
       dirtyCfvs: [],
       dirtySystemFields: false,
       owners: [],
-      contactId: this.$route.params.id,
+      contactId: parseInt(this.$route.params.id),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADMIN'),
       companyId: this.$store.state.user.details.companyId,

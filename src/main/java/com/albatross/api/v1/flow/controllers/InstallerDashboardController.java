@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.WorkQueue;
+import com.albatross.api.v1.flow.model.WorkQueueOwner;
 import com.albatross.api.v1.flow.services.InstallerDashboardService;
 import com.albatross.api.v1.flow.services.WorkQueueService;
 import lombok.extern.slf4j.Slf4j;

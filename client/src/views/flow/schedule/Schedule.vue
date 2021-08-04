@@ -22,7 +22,7 @@
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
           <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)" class="pt-0">
-            <v-select v-model="state"
+            <v-select attach v-model="state"
                       :items="states"
                       label="State"
                       return-object
@@ -30,7 +30,7 @@
                       item-value="id"
             ></v-select>
 
-            <v-select v-model="selectedEventTypes"
+            <v-select attach v-model="selectedEventTypes"
                       :items="eventTypes"
                       label="Event"
                       item-text="eventName"
@@ -66,7 +66,7 @@
                       return-object
             />
 
-            <v-select v-model="selectedProcessStepStatusType"
+            <v-select attach v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Process Step Status"
                       clearable
@@ -94,13 +94,14 @@
                             item-value="projectId"
                             item-key="projectId"
                             return-object
+                            attach
                             >
               <template slot="item" slot-scope="data">
                 <!-- HTML that describe how select should render items when the select is open -->
                 {{ data.item.projectName }} - {{ data.item.projectId }}
               </template>
             </v-autocomplete>
-            <v-select v-model="searchEventType"
+            <v-select attach v-model="searchEventType"
                       :items="eventTypes"
                       label="Event Type"
                       item-text="eventType"
@@ -108,7 +109,7 @@
                       return-object
             >
             </v-select>
-            <v-select v-model="searchProcessStepStatusType"
+            <v-select attach v-model="searchProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Status"
                       item-text="processStepStatusType"
@@ -183,6 +184,7 @@
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
+                              attach
               />
               <v-btn color="primaryCustom"
                      class="white--text"
@@ -208,7 +210,7 @@
                   <v-card-text class="pt-4">
                     Are you sure you want to unschedule this event?
 
-                    <v-select :items="cancelledCompanyStatuses"
+                    <v-select attach :items="cancelledCompanyStatuses"
                               v-model="selectedProject.cancelledCompanyStatusType"
                               item-value="id"
                               return-object
@@ -298,23 +300,20 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import { postRequest, getSnackbar } from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
-  import {getEventTypes} from '@/services/scheduleService'
-  import cloneDeep from 'lodash.clonedeep'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getCompanyStatusTypes, getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-
   import Calendar from './components/Calendar'
+  import {getEventTypes} from '@/services/scheduleService'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+
   import constants from "@/helpers/constants";
   import {getEventStatusTypes} from "@/services/eventStatusTypeService";
 
   export default {
     name: 'Schedule',
     components: {
-
       Map,
       Calendar,
       DatetimePickerInput
@@ -326,12 +325,7 @@
         listLoading: false,
         saveInvalid: true,
         timezone: this.$store.state.user.details.timezone.value,
-        // showFilters: false,
         defaultZoom: 2.0,
-        map: {
-          accessToken: '***REMOVED***',
-          style: 'mapbox://styles/mapbox/streets-v10'
-        },
         // they do these coordinates backwards to comply with geoJSON whatever that is.
         //center of the USA
         defaultCenter: [-98.5795, 39.8283],
@@ -427,7 +421,7 @@
             this.selectedProject.cancelledCompanyStatusType = data[0]
           }
         } catch (e) {
-          logError(e)
+          console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } finally {
@@ -701,8 +695,6 @@
   .map-row {
     min-height: 300px;
   }
-
-
 
   .schedule-row {
     /*height: 40vh;*/

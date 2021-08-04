@@ -48,7 +48,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from "@/helpers/constants";
 
   export default {
@@ -134,11 +134,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

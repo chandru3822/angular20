@@ -72,13 +72,13 @@
                       :rules="postalCodeRules"
                       label="Postal Code"
                     ></v-text-field>
-                    <v-select v-model="project.companyStateId"
+                    <v-select attach v-model="project.companyStateId"
                               :items="states"
                               label="State"
                               item-text="state"
                               item-value="id"
                     ></v-select>
-                    <v-select v-model="project.companyCountryId"
+                    <v-select attach v-model="project.companyCountryId"
                               :items="countries"
                               label="Country"
                               item-text="country"
@@ -133,6 +133,7 @@
                                 return-object
                                 autocomplete="off"
                                 @change="updateOwner"
+                                attach
                 >
                 </v-autocomplete>
               </div>

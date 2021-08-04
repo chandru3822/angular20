@@ -1,4 +1,4 @@
-import {getRequest, getRequestWithParams} from '@/helpers/helpers'
+import {getRequest} from '@/helpers/helpers'
 
 export async function getUserStatusTypes() {
   try {

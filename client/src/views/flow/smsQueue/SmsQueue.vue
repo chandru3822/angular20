@@ -6,7 +6,7 @@
 
         <v-spacer/>
 
-        <v-select class="status-dropdown"
+        <v-select attach class="status-dropdown"
                   v-model="selectedStatus"
                   :items="messageStatuses"
                   label="Status"
@@ -65,6 +65,7 @@
                             return-object
                             autocomplete="off"
                             @change="updateMessage(item)"
+                            attach
             >
             </v-autocomplete>
           </td>
@@ -170,7 +171,7 @@
       async updateOwner(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/sms/updateOwner`, item)
+          await putRequest(`/sms/updateOwner`, item)
           this.snackbar = getSnackbar('SUCCESS', 'Message updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -184,7 +185,7 @@
       async updateMessage(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/sms/updateSms`, item)
+          await postRequest(`/sms/updateSms`, item)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           item.owner = 'Unassigned'

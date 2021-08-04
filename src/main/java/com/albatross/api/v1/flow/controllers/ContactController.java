@@ -1,10 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.CompanyProcess;
-import com.albatross.api.v1.flow.model.Project;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -87,4 +86,17 @@ public class ContactController {
         // need to return the project so the frontend can navigate to /project/{id}
         return contactService.convertToContact(contactId, process);
     }
+
+  @GetMapping(value = "/{contactId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Attachment>> getContactAttachments(@PathVariable Long contactId,
+                                                                @PathVariable(required = false) Boolean isMobile) {
+    return new ResponseEntity<>(contactService.getContactAttachments(contactId, isMobile), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{contactId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Attachment> uploadContactAttachment(@PathVariable Long contactId,
+                                                            @RequestParam Long attachmentTypeId,
+                                                             @RequestParam("file") MultipartFile file) throws IOException {
+    return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId), HttpStatus.OK);
+  }
 }

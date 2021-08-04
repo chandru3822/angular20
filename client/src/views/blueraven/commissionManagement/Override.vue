@@ -225,7 +225,7 @@
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="override.description"></v-text-field>
-              <v-select v-model="override.positionId"
+              <v-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
                         :disabled="override.id != null || !userCanEdit"
@@ -291,7 +291,8 @@
                             label="Search for a user..."
                             item-text="name"
                             item-value="userId"
-                            autocomplete="off">
+                            autocomplete="off"
+                            attach>
             </v-autocomplete>
             <v-text-field text
                           type="number"
@@ -440,6 +441,7 @@
                                 item-value="userId"
                                 autocomplete="off"
                                 @input="getUserHistory(newAssignedUser.userId)"
+                                attach
                 >
                   <template slot='item' slot-scope='{ item }'>
                     {{ item.name }} - {{ item.position }}
@@ -625,7 +627,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
   export default {
     name: 'Override',
@@ -1111,9 +1113,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .v-data-table {

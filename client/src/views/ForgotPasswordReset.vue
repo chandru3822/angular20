@@ -62,7 +62,7 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   import {AppMutations} from '@/stores/AppStore'
 
@@ -145,7 +145,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

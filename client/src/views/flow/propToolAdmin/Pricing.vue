@@ -13,7 +13,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
-          <v-select v-model="newPricing.companyStateId"
+          <v-select attach v-model="newPricing.companyStateId"
                     :items="states"
                     no-data-text="No States Available"
                     label="State"
@@ -21,14 +21,14 @@
                     item-value="companyStateId"
                     @input="[getUtilityStates(newPricing.companyStateId), newPricing.utilityStateId = null]"
           ></v-select>
-          <v-select v-model="newPricing.utilityStateId"
+          <v-select attach v-model="newPricing.utilityStateId"
                     :items="utilityStates"
                     no-data-text="No Utilities Available"
                     label="Utility"
                     item-text="utilityCompany"
                     item-value="id"
           ></v-select>
-          <v-select v-model="newPricing.productId"
+          <v-select attach v-model="newPricing.productId"
                     :items="products"
                     no-data-text="No Products Available"
                     label="Product"
@@ -68,7 +68,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
-              <v-select v-model="item.companyStateId"
+              <v-select attach v-model="item.companyStateId"
                         :items="states"
                         no-data-text="No States Available"
                         label="State"
@@ -76,14 +76,14 @@
                         item-value="companyStateId"
                         @input="[getUtilityStates(item.companyStateId), item.utilityStateId = null]"
               ></v-select>
-              <v-select v-model="item.utilityStateId"
+              <v-select attach v-model="item.utilityStateId"
                         :items="utilityStates"
                         no-data-text="No Utilities Available"
                         label="Utility"
                         item-text="utilityCompany"
                         item-value="id"
               ></v-select>
-              <v-select v-model="item.productId"
+              <v-select attach v-model="item.productId"
                         :items="products"
                         no-data-text="No Products Available"
                         label="Product"
@@ -173,8 +173,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getCompanyStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import orderBy from "lodash.orderby";
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Pricings',

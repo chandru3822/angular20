@@ -68,7 +68,7 @@
               <td class="text-left">{{item.dateCreated  | formatDate('date', 'M/D/YYYY')}}</td>
               <td class="text-left">{{item.callCount}}</td>
               <td class="text-left">
-                <v-select style="width: 120px" v-model="item.active" :items="items" @change="updatePhoneNumber(item)"></v-select>
+                <v-select attach style="width: 120px" v-model="item.active" :items="items" @change="updatePhoneNumber(item)"></v-select>
               </td>
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
@@ -115,7 +115,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Numbers',
@@ -244,9 +244,5 @@
     width: 25px;
     margin-right: 15px;
   }
-</style>
-
-<style lang="scss" scoped>
-
 </style>
 
