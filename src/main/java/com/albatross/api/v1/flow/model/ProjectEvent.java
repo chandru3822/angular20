@@ -9,7 +9,8 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class ProjectEvent {
 
-    private Long projectProcessStepEventId, projectProcessStepId, processStepEventId, processStepId, projectId, eventStatusTypeId, companyEventStatusTypeId;
+    private Long projectProcessStepEventId, projectProcessStepId, processStepEventId, processStepId,
+      projectId, eventStatusTypeId, companyEventStatusTypeId, processStepStatusTypeId;
     private String processStepName, resourceName, eventName, eventType, phone, mobile, eventStatusType, lastUpdated, dateCreated;
     private Timestamp start, end;
 }
