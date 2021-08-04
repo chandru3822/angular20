@@ -138,7 +138,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
-  import { getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'CallGroups',
@@ -294,8 +294,4 @@
   .edit-text {
     margin-left: 25px;
   }
-</style>
-
-<style scoped lang="scss">
-
 </style>

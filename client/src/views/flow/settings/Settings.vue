@@ -89,7 +89,6 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-const { VUE_APP_ENV } = process.env
 
 export default {
   name: 'Settings',

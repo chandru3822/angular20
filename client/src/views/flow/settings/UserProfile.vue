@@ -137,7 +137,7 @@ import { Actions } from '@/store'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {

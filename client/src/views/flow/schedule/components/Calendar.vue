@@ -241,7 +241,7 @@
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {

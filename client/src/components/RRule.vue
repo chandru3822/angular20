@@ -89,11 +89,9 @@
 </template>
 
 <script>
-  import { RRule, RRuleSet, rrulestr } from 'rrule'
+  import { RRule } from 'rrule'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment-timezone'
-
-  const { VUE_APP_ENV } = process.env
 
   export default {
     name: 'RRule',

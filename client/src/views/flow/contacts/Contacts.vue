@@ -128,10 +128,6 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import {
-  getRequest,
-  deleteRequest,
-  putRequest,
-  postRequest,
   getRequestWithParams,
   getSnackbar,
   logError,
@@ -144,7 +140,6 @@ import SmartlistTable from '@/components/SmartlistTable'
 export default {
   name: 'Contacts',
   components: {
-
     SmartlistTable
   },
   data () {

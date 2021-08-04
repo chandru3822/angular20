@@ -34,7 +34,7 @@
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { saveAs } from 'file-saver'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import { postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import moment from "moment";
 

@@ -676,9 +676,6 @@
   }
 </script>
 
-<style lang="scss">
-</style>
-
 <style lang="scss" scoped>
   @media (min-width: 768px) {
 

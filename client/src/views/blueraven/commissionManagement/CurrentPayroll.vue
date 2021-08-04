@@ -374,7 +374,7 @@
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import Vue2Filters from "vue2-filters";
   import constants from "@/helpers/constants";
   import sumBy from "lodash.sumby";
@@ -836,9 +836,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
   .v-data-table {

@@ -84,7 +84,7 @@
 
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Position',

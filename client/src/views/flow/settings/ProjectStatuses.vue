@@ -201,7 +201,7 @@
 
   import orderBy from 'lodash.orderby'
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {

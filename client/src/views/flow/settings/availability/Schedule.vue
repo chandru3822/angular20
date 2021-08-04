@@ -353,12 +353,10 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
-  import orderBy from "lodash.orderby";
+  import {getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
 
   export default {
     name: 'Schedule',
@@ -653,11 +651,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

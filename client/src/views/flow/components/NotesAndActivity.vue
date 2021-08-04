@@ -348,7 +348,7 @@
 </template>
 
 <script>
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 
 import Vue2Filters from "vue2-filters";
@@ -501,7 +501,4 @@ export default {
   color: var(--v-primary-base);
   font-weight: bold;
 }
-</style>
-<style lang="scss">
-
 </style>

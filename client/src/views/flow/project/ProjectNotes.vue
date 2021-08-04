@@ -17,7 +17,7 @@
 
 <script>
 
-import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {getRequestWithParams} from '@/helpers/helpers'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 
 
@@ -65,9 +65,4 @@ export default {
   padding-right: 0;
   padding-top: 0;
 }
-
-</style>
-
-<style lang="scss">
-
 </style>

@@ -286,22 +286,19 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import { postRequest, getSnackbar } from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
-  import {getEventTypes} from '@/services/scheduleService'
-  import cloneDeep from 'lodash.clonedeep'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getCompanyStatusTypes, getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-
   import Calendar from './components/Calendar'
+  import {getEventTypes} from '@/services/scheduleService'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+
   import constants from "@/helpers/constants";
 
   export default {
     name: 'Schedule',
     components: {
-
       Map,
       Calendar,
       DatetimePickerInput
@@ -313,12 +310,7 @@
         listLoading: false,
         saveInvalid: true,
         timezone: this.$store.state.user.details.timezone.value,
-        // showFilters: false,
         defaultZoom: 2.0,
-        map: {
-          accessToken: '***REMOVED***',
-          style: 'mapbox://styles/mapbox/streets-v10'
-        },
         // they do these coordinates backwards to comply with geoJSON whatever that is.
         //center of the USA
         defaultCenter: [-98.5795, 39.8283],
@@ -409,7 +401,7 @@
             this.selectedProject.cancelledCompanyStatusType = data[0]
           }
         } catch (e) {
-          logError(e)
+          console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } finally {
@@ -668,8 +660,6 @@
   .map-row {
     min-height: 300px;
   }
-
-
 
   .schedule-row {
     /*height: 40vh;*/

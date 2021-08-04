@@ -70,8 +70,6 @@
   import constants from '@/helpers/constants'
   import DatetimePickerInput from "@/components/DatetimePickerInput"
   import Snackbar from '@/components/Snackbar.vue'
-  import {AppMutations} from '@/stores/AppStore'
-  import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'companyDashboardDrilldown',

@@ -173,8 +173,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getCompanyStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import orderBy from "lodash.orderby";
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Pricings',

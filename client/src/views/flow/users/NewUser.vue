@@ -118,7 +118,7 @@
                     autocomplete="off"
                     type="search"
                   >
-                    <template slot="selection" slot-scope="{ item, index }">
+                    <template slot="selection" slot-scope="{ item }">
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
                     <template slot='item' slot-scope='{ item }'>
@@ -142,7 +142,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {getCountries} from '@/services/countryService'
   import {getCompanyStates} from '@/services/stateService'
@@ -152,8 +152,6 @@
   import DatetimePickerInput from "@/components/DatetimePickerInput";
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
-
-  const {VUE_APP_ENV} = process.env
 
   export default {
     name: 'NewUser',

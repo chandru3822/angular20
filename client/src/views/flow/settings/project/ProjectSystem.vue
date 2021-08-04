@@ -123,7 +123,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ProjectSystem',
@@ -223,7 +223,7 @@
       async saveOwnerReadOnlyAndWhiteList () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
+          await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
           this.ownerReadOnlyPositionsChanged = false
           if(!this.projectObjectType.ownerReadOnly) {
             this.ownerReadOnlyWhiteListedPositions = []
@@ -252,7 +252,3 @@
     },
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

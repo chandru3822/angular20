@@ -110,7 +110,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'

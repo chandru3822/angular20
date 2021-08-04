@@ -94,9 +94,6 @@
   import constants from "@/helpers/constants";
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
-    getRequest,
-    deleteRequest,
-    putRequest,
     postRequest,
     getSnackbar,
     getRequestWithParams
@@ -195,9 +192,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .v-data-table {
