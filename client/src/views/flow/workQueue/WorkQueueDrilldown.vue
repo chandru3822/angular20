@@ -15,23 +15,15 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="search"
-          label="Search"
-          single-line
-          hide-details
-        ></v-text-field>
         <v-data-table
             :headers="filterHeaders()"
             :items="results"
-            :search="search"
             :fixed-header="true"
             :loading="dataLoading"
             :options.sync="options"
-            hide-default-header
             :footer-props="footerProps"
             class="elevation-1 mt-1"
+            id="wq-drilldown-table"
             @click:row="clickRow"
         >
           <template #no-data>
@@ -43,21 +35,19 @@
           </template>
 
           <template #header="{ props: { headers } }">
-            <thead class="v-data-table-header">
-            <tr>
-              <th v-for="header in headers" :key="header.text" class="py-2"
-                  :style="{width: header.width ? header.width : 'auto'}">
-                {{ header.text }}
+            <tr class="v-data-table-header">
+              <th v-for="header in headers" :key="header.text" class="pa-2"
+                  :style="{width: header.width ? header.width : 'auto',
+                  'border-bottom': 'solid 1px #D8D9DA'}">
                 <v-text-field outlined
                               v-if="header.value !== 'notes'"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
-                              @input="doSomething(header)">
+                              @input="filterResults(header)">
                 </v-text-field>
               </th>
             </tr>
-            </thead>
           </template>
 
           <template #item="{ item, index }">
@@ -318,12 +308,9 @@
       clickRow(row) {
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
       },
-      doSomething(header) {
-        console.log('DID SOMETHING', header.value)
-        console.log('DID SOMETHING 2', this.filters[header.value])
+      filterResults(header) {
         this.results = this.masterResults.filter(r => {
-          console.log('randaLogger',r[header.value])
-          return r[header.value]?.toString().includes(this.filters[header.value])
+          return r[header.value]?.toString().toLowerCase().includes(this.filters[header.value]?.toLowerCase())
         })
       }
     },
@@ -336,9 +323,19 @@
     height: calc(100vh - 200px);
     min-height: 300px;
   }
+
+  #wq-drilldown-table  .v-data-table-header {
+    vertical-align: bottom;
+  }
+
+  #wq-drilldown-table .v-data-table-header th {
+    white-space: nowrap;
+  }
 </style>
 
 <style scoped lang="scss">
+
+
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
