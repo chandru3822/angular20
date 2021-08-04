@@ -4,7 +4,7 @@
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
         <v-col class="py-0" cols="12" md="4">
-          <v-select v-model="selectedStates"
+          <v-select attach v-model="selectedStates"
                     :items="states"
                     label="States"
                     multiple
@@ -57,6 +57,7 @@
                     item-value="id"
                     @input="orgTypeValuesChanged = true"
                     @blur="filterOrgsAndUsers"
+                          attach
           >
             <template
                 slot="selection"
@@ -101,6 +102,7 @@
                     item-value="id"
                     @input="poitionValuesChanged = true"
                     @blur="filterOrgsAndUsers"
+                          attach
           >
             <template
                 slot="selection"
@@ -152,6 +154,7 @@
                     item-value="id"
                     @input="[orgValuesChanged = true, limiter()]"
                     @blur="getEvents(true)"
+                          attach
           >
             <template
               slot="selection"
@@ -179,6 +182,7 @@
                           item-value="id"
                           @input="[userValuesChanged = true, limiter()]"
                           @blur="getEvents(false)"
+                          attach
           >
             <template
               slot="selection"

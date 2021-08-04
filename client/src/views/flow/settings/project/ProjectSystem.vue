@@ -21,6 +21,7 @@
           height="35px"
           class="d-inline-block mr-3"
           @change="statusReadOnlyPositionsChanged = true"
+          attach
         >
           <v-list-item
             slot="prepend-item"
@@ -79,6 +80,7 @@
           height="35px"
           class="d-inline-block mr-3"
           @change="ownerReadOnlyPositionsChanged = true"
+          attach
         >
           <v-list-item
             slot="prepend-item"

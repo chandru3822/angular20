@@ -54,7 +54,7 @@
                           :disabled="!userCanEdit"
                           @change="dirtySystemFields = true"
                           v-model="org.orgName"></v-text-field>
-            <v-select v-model="org.orgTypeId"
+            <v-select attach v-model="org.orgTypeId"
                       :items="orgTypes"
                       label="Organization Type"
                       :readonly="!userCanEdit"
@@ -64,7 +64,7 @@
                       item-value="id"
                       @input="getOrgsByType(org.orgTypeId)"
             ></v-select>
-            <v-select v-model="org.parentOrgId"
+            <v-select attach v-model="org.parentOrgId"
                       :items="parents"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
@@ -73,7 +73,7 @@
                       item-text="orgName"
                       item-value="id"
             ></v-select>
-            <v-select v-model="org.companyStateId"
+            <v-select attach v-model="org.companyStateId"
                       :items="states"
                       @change="dirtySystemFields = true"
                       :readonly="!userCanEdit"
@@ -90,6 +90,7 @@
                       :disabled="!userCanEdit"
                       item-text="timezone"
                       item-value="id"
+                            attach
             ></v-autocomplete>
             <div class="mb-3">
               <label>Active:</label>

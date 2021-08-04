@@ -13,7 +13,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
-          <v-select v-model="newIncentive.incentiveCategoryId"
+          <v-select attach v-model="newIncentive.incentiveCategoryId"
                     :items="incentiveCategories"
                     no-data-text="No Categories Available"
                     label="Incentive Category"
@@ -21,14 +21,14 @@
                     item-value="id"
                     @input="getIncentiveEntities(newIncentive.incentiveCategoryId)"
           ></v-select>
-          <v-select v-model="newIncentive.incentiveEntityId"
+          <v-select attach v-model="newIncentive.incentiveEntityId"
                     :items="incentiveEntities"
                     no-data-text="No Entities Available"
                     label="Entity"
                     item-text="name"
                     item-value="id"
           ></v-select>
-          <v-select v-model="newIncentive.incentiveTypeId"
+          <v-select attach v-model="newIncentive.incentiveTypeId"
                     :items="incentiveTypes"
                     no-data-text="No Types Available"
                     label="Incentive Type"
@@ -72,7 +72,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
-              <v-select v-model="item.incentiveCategoryId"
+              <v-select attach v-model="item.incentiveCategoryId"
                         :items="incentiveCategories"
                         no-data-text="No Categories Available"
                         label="Incentive Category"
@@ -81,14 +81,14 @@
                         readonly
                         disabled
               ></v-select>
-              <v-select v-model="item.incentiveEntityId"
+              <v-select attach v-model="item.incentiveEntityId"
                         :items="incentiveEntities"
                         no-data-text="No Entities Available"
                         label="Entity"
                         item-text="name"
                         item-value="id"
               ></v-select>
-              <v-select v-model="item.incentiveTypeId"
+              <v-select attach v-model="item.incentiveTypeId"
                         :items="incentiveTypes"
                         no-data-text="No Types Available"
                         label="Incentive Type"

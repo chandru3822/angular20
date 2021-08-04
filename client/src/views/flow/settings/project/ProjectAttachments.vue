@@ -12,7 +12,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-select v-if="addNewType"
+        <v-select attach v-if="addNewType"
                   v-model="newType.attachmentTypeId"
                   :items="availableAttachmentTypes"
                   label="Select Attachment Type"

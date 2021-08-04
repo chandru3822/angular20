@@ -7,7 +7,7 @@
             <v-toolbar class="elevation-1">
               <v-toolbar-title>Company Dashboard</v-toolbar-title>
               <div id="toolbar-right-side">
-                <v-select class="date-range-dropdown"
+                <v-select attach class="date-range-dropdown"
                           v-model="selectedDateRange"
                           :items="dateRanges"
                           label="Date Range"

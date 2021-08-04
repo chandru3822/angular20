@@ -24,7 +24,8 @@
                             v-model="newType.processStepStatusTypeId"
                             item-value="id"
                             label="Select a Category"
-                            item-text="processStepStatusType"></v-autocomplete>
+                            item-text="processStepStatusType"
+                            attach></v-autocomplete>
             <v-btn :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
           </v-card>
           <v-card class="square-card">
@@ -63,7 +64,8 @@
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
                     label="Select a Category"
-                    item-text="processStepStatusType"></v-autocomplete>
+                    item-text="processStepStatusType"
+                    attach></v-autocomplete>
 
                   <v-btn color="primaryCustom" dark class="white--text mr-4"
                          :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"

@@ -86,7 +86,7 @@
                           </v-btn>
                       </v-col>
                       <v-col>
-                          <v-select label="Proposal Number"
+                          <v-select attach label="Proposal Number"
                                         v-model="requestItem.proposalNbr"
                                         :items="requestItem.proposalNbrs"
                                         item-text="proposalNbr"

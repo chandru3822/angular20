@@ -22,6 +22,7 @@
                 item-text="state"
                 item-value="id"
                 return-object
+                attach
             ></v-autocomplete>
           </div>
           <v-btn :disabled="!selectedState"

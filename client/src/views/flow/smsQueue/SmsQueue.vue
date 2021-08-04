@@ -6,7 +6,7 @@
 
         <v-spacer/>
 
-        <v-select class="status-dropdown"
+        <v-select attach class="status-dropdown"
                   v-model="selectedStatus"
                   :items="messageStatuses"
                   label="Status"
@@ -65,6 +65,7 @@
                             return-object
                             autocomplete="off"
                             @change="updateMessage(item)"
+                            attach
             >
             </v-autocomplete>
           </td>

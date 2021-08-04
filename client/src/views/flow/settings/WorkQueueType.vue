@@ -42,6 +42,7 @@
                   label="Work Queue Category"
                   item-text="workQueueCategory"
                   item-value="id"
+                  attach
                 ></v-autocomplete>
               </div>
 
@@ -61,6 +62,7 @@
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
+                      attach
                     ></v-autocomplete>
                   </td>
                 </tr>
@@ -79,6 +81,7 @@
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
+                      attach
                     ></v-autocomplete>
                   </td>
                 </tr>
@@ -97,6 +100,7 @@
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
+                      attach
                     ></v-autocomplete>
                   </td>
                 </tr>
@@ -159,6 +163,7 @@
                 item-value="objectTypeId"
                 item-text="objectType"
                 @input="getAvailableFields"
+                attach
               />
 
               <v-autocomplete
@@ -169,6 +174,7 @@
                 item-value="processStepId"
                 item-text="processStepName"
                 @input="calculateAvailableFields"
+                attach
               />
 
               <v-autocomplete
@@ -178,6 +184,7 @@
                 :items="availableFields"
                 item-text="name"
                 return-object
+                attach
               />
             </template>
 

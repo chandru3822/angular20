@@ -108,6 +108,7 @@
                               autocomplete="off"
                               type="search"
                               @click:clear="customers = []"
+                              attach
               ></v-autocomplete>
 
               <div class="text-left">

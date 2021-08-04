@@ -225,7 +225,7 @@
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="override.description"></v-text-field>
-              <v-select v-model="override.positionId"
+              <v-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
                         :disabled="override.id != null || !userCanEdit"
@@ -291,7 +291,8 @@
                             label="Search for a user..."
                             item-text="name"
                             item-value="userId"
-                            autocomplete="off">
+                            autocomplete="off"
+                            attach>
             </v-autocomplete>
             <v-text-field text
                           type="number"
@@ -440,6 +441,7 @@
                                 item-value="userId"
                                 autocomplete="off"
                                 @input="getUserHistory(newAssignedUser.userId)"
+                                attach
                 >
                   <template slot='item' slot-scope='{ item }'>
                     {{ item.name }} - {{ item.position }}

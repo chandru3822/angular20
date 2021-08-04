@@ -125,6 +125,7 @@
                         placeholder="Select one..."
                         :rules="requiredRules"
                         @change="checkObjectTypeChange"
+                        attach
                       />
                     </template>
 
@@ -172,6 +173,7 @@
                     item-value="objectTypeId"
                     label="Table View Display"
                     placeholder="Select one..."
+                    attach
                   />
                 </v-col>
               </v-row>
@@ -285,6 +287,7 @@
               :items="filteredProjectDetailsColumns"
               item-value="projectDetailsColumn"
               item-text="name"
+              attach
             />
           </template>
 
@@ -296,6 +299,7 @@
               item-value="objectTypeId"
               item-text="objectType"
               @input="getAvailableFields"
+              attach
             />
 
             <v-autocomplete
@@ -306,6 +310,7 @@
               item-value="processStepId"
               item-text="processStepName"
               @input="calculateAvailableFields"
+              attach
             />
 
             <v-autocomplete
@@ -315,6 +320,7 @@
               :items="availableFields"
               item-text="name"
               return-object
+              attach
             />
           </template>
 

@@ -16,14 +16,14 @@
           <v-text-field v-model="newInverter.inverterName"
                         label="Name">
           </v-text-field>
-          <v-select v-model="newInverter.brand"
+          <v-select attach v-model="newInverter.brand"
                     :items="brands"
                     no-data-text="No Brands Available"
                     label="Brand"
                     item-text="brand"
                     item-value="brand"
           ></v-select>
-          <v-select v-model="newInverter.inverterType"
+          <v-select attach v-model="newInverter.inverterType"
                     :items="inverterTypes"
                     no-data-text="No Types Available"
                     label="Type"
@@ -34,7 +34,7 @@
           <v-btn class="mb-1" @click="newInverter.inverterStates.push({})">Add State</v-btn>
           <v-card class="px-4" flat v-for="(us, index) in newInverter.inverterStates" :key="index">
             <v-row>
-              <v-select v-model="us.companyStateId"
+              <v-select attach v-model="us.companyStateId"
                         class="mr-4"
                         :items="inverterStates"
                         no-data-text="No States Available"
@@ -79,14 +79,14 @@
                             label="Name">
               </v-text-field>
 
-              <v-select v-model="item.brand"
+              <v-select attach v-model="item.brand"
                         :items="brands"
                         no-data-text="No Brands Available"
                         label="Brand"
                         item-text="brand"
                         item-value="brand"
               ></v-select>
-              <v-select v-model="item.inverterType"
+              <v-select attach v-model="item.inverterType"
                         :items="inverterTypes"
                         no-data-text="No Types Available"
                         label="Type"
@@ -97,7 +97,7 @@
               <v-btn class="mb-1" @click="item.inverterStates.push({})">Add State</v-btn>
               <v-card class="px-4" flat v-for="(us, index) in item.inverterStates" :key="index">
                 <v-row v-show="us.archived != true">
-                  <v-select v-model="us.companyStateId"
+                  <v-select attach v-model="us.companyStateId"
                             class="mr-4"
                             :items="inverterStates"
                             no-data-text="No States Available"

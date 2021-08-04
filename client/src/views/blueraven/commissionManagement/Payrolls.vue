@@ -37,6 +37,7 @@
                             item-value="userId"
                             type="search"
                             @click:clear="reps = []"
+                            attach
             ></v-autocomplete>
 <!--            <v-text-field text-->
 <!--                          label="Sales Rep"-->
