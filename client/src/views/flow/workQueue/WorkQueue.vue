@@ -54,9 +54,10 @@
                 </div>
 
                 <div class="card-metrics-container"
+                     :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
                      :style="{'background-color': wq.color + '60' }"
                      v-if="wqHasMetrics(wq)">
-                  <div class="card-metrics-expected-cycle">
+                  <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
                     Completed within expected time of {{ wq.expectedCycle }}
                     {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}
                   </div>
@@ -72,14 +73,12 @@
                         </span>
                     </div>
                     <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 1"
-                         :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                      ??
+                         v-else-if="selectedViewType === 1">
+                      {{ wq.shortWindowExited }}
                     </div>
                     <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 2"
-                         :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                      {{ wq.shortWip >= 0 ? '+' : '-' }}{{ wq.shortWip }}
+                         v-else-if="selectedViewType === 2">
+                      {{ wq.shortWip >= 0 ? '+' : '' }}{{ wq.shortWip }}
                     </div>
                   </div>
                   <div class="card-metric">
@@ -93,14 +92,12 @@
                         </span>
                     </div>
                     <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 1"
-                         :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                      ??
+                         v-else-if="selectedViewType === 1">
+                      {{ wq.longWindowExited }}
                     </div>
                     <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 2"
-                         :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                      {{ wq.longWip >= 0 ? '+' : '-' }}{{ wq.longWip }}
+                         v-else-if="selectedViewType === 2">
+                      {{ wq.longWip >= 0 ? '+' : '' }}{{ wq.longWip }}
                     </div>
                   </div>
                 </div>
@@ -317,6 +314,11 @@ export default {
   right: 0;
   left: 5px;
   font-size: 12px;
+}
+
+.card-metrics-container-secondary-view {
+  display: flex;
+  align-items: center;
 }
 
 .card-metrics-expected-cycle {
