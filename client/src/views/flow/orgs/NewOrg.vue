@@ -63,14 +63,12 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import SpinnerInline from '@/components/SpinnerInline'
-
-  const { VUE_APP_ENV } = process.env
 
   export default {
     name: 'NewLead',

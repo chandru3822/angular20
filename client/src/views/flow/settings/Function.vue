@@ -115,7 +115,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 
   export default {
@@ -233,8 +233,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-
-</style>

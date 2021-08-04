@@ -128,7 +128,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'TournamentsAdmin',
@@ -257,9 +257,4 @@
     max-height: calc(100vh - 250px);
     min-height: 300px;
   }
-</style>
-
-<style scoped lang="scss">
-
-
 </style>

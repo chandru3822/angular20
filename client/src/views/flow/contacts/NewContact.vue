@@ -97,7 +97,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
-import {getRequest, getRequestWithParams, isNumberOrHyphen, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import { getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getCompanyStates} from '@/services/stateService'
@@ -268,7 +268,3 @@ export default {
 
 }
 </script>
-
-<style lang="scss" scoped>
-</style>
-

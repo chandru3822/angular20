@@ -277,7 +277,7 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {

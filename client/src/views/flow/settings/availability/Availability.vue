@@ -68,7 +68,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Availability',
@@ -199,12 +199,4 @@
   }
 </script>
 
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-.schedule-wrap {
-
-}
-</style>
 

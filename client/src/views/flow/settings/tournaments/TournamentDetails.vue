@@ -126,10 +126,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
     getRequest,
-    getRequestWithParams,
-    deleteRequest,
     putRequest,
-    postRequest,
     getSnackbar
   } from '@/helpers/helpers'
 
@@ -274,9 +271,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style scoped lang="scss">
 

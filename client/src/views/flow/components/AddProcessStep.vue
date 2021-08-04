@@ -49,10 +49,9 @@
 </template>
 
 <script>
-import {getRequest, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
+import { getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-
 
 export default {
   name: 'AddProcessStep',

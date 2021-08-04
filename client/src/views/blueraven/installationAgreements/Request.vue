@@ -124,7 +124,6 @@
 
   import {
       getRequest,
-      deleteRequest,
       putRequest,
       postRequest,
       getSnackbar,

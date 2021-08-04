@@ -72,7 +72,6 @@
 <script>
 
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {

@@ -194,7 +194,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import {getAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'

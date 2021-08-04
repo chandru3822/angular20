@@ -1,4 +1,4 @@
-import {getRequest, getRequestWithParams} from '@/helpers/helpers'
+import { getRequestWithParams} from '@/helpers/helpers'
 
 export async function getCountries(companyId) {
   try {

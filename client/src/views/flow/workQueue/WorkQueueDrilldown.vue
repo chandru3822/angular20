@@ -124,10 +124,7 @@
   import {DateTime} from 'luxon'
   import constants from '@/helpers/constants'
   import {
-    getRequest,
     getRequestWithParams,
-    deleteRequest,
-    putRequest,
     postRequest,
     getSnackbar,
     logError

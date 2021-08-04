@@ -17,7 +17,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import BracketComponent from "./component/BracketComponent";
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -95,9 +95,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .bracket-container {

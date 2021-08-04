@@ -123,9 +123,6 @@
   }
 </script>
 
-<style lang="scss">
-</style>
-
 <style lang="scss" scoped>
   .dtf {
     font-size: 14px;

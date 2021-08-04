@@ -288,7 +288,6 @@
   import constants from '@/helpers/constants'
   import {
     getRequest,
-    getRequestWithParams,
     deleteRequest,
     putRequest,
     postRequest,

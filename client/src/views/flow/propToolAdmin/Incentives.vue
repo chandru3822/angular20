@@ -177,11 +177,8 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import { v4 as uuidv4 } from 'uuid'
-
-  import orderBy from "lodash.orderby";
 
   export default {
     name: 'Incentives',

@@ -102,9 +102,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
-  import orderBy from 'lodash.orderby'
-  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Positions',

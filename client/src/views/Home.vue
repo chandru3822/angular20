@@ -112,9 +112,6 @@ export default {
 }
 </script>
 
-<style lang="scss">
-</style>
-
 <style scoped lang="scss">
 .home-page {
   height: 100%;

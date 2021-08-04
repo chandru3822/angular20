@@ -1,17 +1,13 @@
-import Vue from 'vue'
+import Vue from "vue"
 import Router from 'vue-router'
 import Login from './views/Login.vue'
-import ForgotPassword from './views/ForgotPassword.vue'
-import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
-import ResetPassword from './views/ResetPassword.vue'
 import store from './store'
-import router from './router'
-import { UserMutations } from './stores/UserStore'
-import { getRequest } from '@/helpers/helpers'
+import {UserMutations} from './stores/UserStore'
+import {getRequest} from '@/helpers/helpers'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -24,20 +20,18 @@ export default new Router({
     {
       path: '/forgotPassword',
       name: 'forgotPassword',
-      component: ForgotPassword,
-      props: true
+      component: () => import(/* webpackChunkName: "forgotPassword" */'./views/ForgotPassword.vue')
     },
     {
       path: '/passwordReset/:uuid?',
-      // path: 'passwordReset',
       name: 'forgotPasswordReset',
-      component: ForgotPasswordReset,
+      component: () => import(/* webpackChunkName: "passwordReset" */ './views/ForgotPasswordReset.vue'),
       props: true
     },
     {
       path: '/resetPassword',
       name: 'resetPassword',
-      component: ResetPassword,
+      component: () => import(/* webpackChunkName: "resetPassword" */ './views/ResetPassword.vue'),
       props: true
     },
     {
@@ -71,11 +65,10 @@ export default new Router({
             } else {
               next()
             }
-            // next()
           }
         }
       },
-    children: [
+      children: [
         {
           path: 'home',
           name: 'home',
@@ -111,7 +104,7 @@ export default new Router({
           name: 'appDownloads',
           meta: {title: 'Albatross - App Download'},
           props: true,
-          component: () => import(/* webpackChunkName: "schedule" */ './views/flow/appDownloads/AppDownloads.vue')
+          component: () => import(/* webpackChunkName: "appDownloads" */ './views/flow/appDownloads/AppDownloads.vue')
         }, {
           path: '/errorLog',
           name: 'errorLog',
@@ -301,44 +294,44 @@ export default new Router({
             }
           },
         },
-      //TOURNAMENT STUFF
-      {
-        path: '/tournament/:id',
-        name: 'tournament',
-        props: true,
-        component: () => {
-          if (store.getters.userHasFeature('TOURNAMENTS')) {
-            return import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Tournament.vue')
-          } else {
-            return accessDenied()
-          }
+        //TOURNAMENT STUFF
+        {
+          path: '/tournament/:id',
+          name: 'tournament',
+          props: true,
+          component: () => {
+            if (store.getters.userHasFeature('TOURNAMENTS')) {
+              return import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Tournament.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'qualifying',
+              name: 'tournamentQualifying',
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Qualifying.vue')
+            },
+            {
+              path: 'bracket',
+              name: 'tournamentBracket',
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Bracket.vue')
+            },
+            {
+              path: 'lastChance',
+              name: 'tournamentLastChance',
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/LastChance.vue')
+            },
+            {
+              path: 'winners',
+              name: 'tournamentWinners',
+              component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
+            }
+          ]
         },
-        children: [
-          {
-            path: 'qualifying',
-            name: 'tournamentQualifying',
-            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Qualifying.vue')
-          },
-          {
-            path: 'bracket',
-            name: 'tournamentBracket',
-            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Bracket.vue')
-          },
-          {
-            path: 'lastChance',
-            name: 'tournamentLastChance',
-            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/LastChance.vue')
-          },
-          {
-            path: 'winners',
-            name: 'tournamentWinners',
-            component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
-          }
-        ]
-      },
-      //END TOURNAMENT STUFF
+        //END TOURNAMENT STUFF
 
-      {
+        {
           path: '/settings',
           name: 'settings',
           meta: {title: 'Albatross - Settings'},
@@ -488,7 +481,7 @@ export default new Router({
                   path: 'types',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
-                },  {
+                }, {
                   path: 'type/:id',
                   name: 'workQueueType',
                   meta: {title: 'Albatross - Settings'},
@@ -1257,6 +1250,8 @@ export default new Router({
     }
   ]
 })
+
+export default router
 
 async function getUser() {
   const {data} = await getRequest(`/user/current`)

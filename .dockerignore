@@ -2,3 +2,5 @@ client/
 fileTemplates/
 .github/
 .aws/
+bin/
+target/

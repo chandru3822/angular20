@@ -201,7 +201,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import {getCompanyStates} from '@/services/stateService'
 
   export default {
@@ -433,11 +433,4 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
 

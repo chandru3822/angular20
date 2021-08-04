@@ -501,7 +501,6 @@
   import {getEventTypes} from '@/services/scheduleService'
   import {
     getRequest,
-    deleteRequest,
     putRequest,
     postRequest,
     getRequestWithParams,

@@ -217,7 +217,8 @@
 
 <script>
 
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar.vue'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
@@ -226,6 +227,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
 
   export default {
     name: 'Payments',
+    components: {Snackbar},
     data() {
         return {
             snackbar: {},
