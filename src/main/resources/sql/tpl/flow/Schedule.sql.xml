@@ -17,6 +17,7 @@
                              SELECT ps.process_step_name as "processStepName",
                                     pps.id as "projectProcessStepId",
                                     ps.id as "processStepId",
+                                    pse.id as "processStepEventId",
                                     pse.event_id as "eventId",
                                     e.event_name as "eventName",
                                     ppse.id as "projectProcessStepEventId",
