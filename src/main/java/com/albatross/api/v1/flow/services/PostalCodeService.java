@@ -98,6 +98,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("zoneName", zone.getZoneName());
+    params.put("companyTimezoneId", zone.getCompanyTimezoneId());
     params.put("distributionTimeFrameDays", zone.getDistributionTimeFrameDays());
     params.put("schedulableFutureDays", zone.getSchedulableFutureDays());
 
@@ -146,12 +147,26 @@ public class PostalCodeService {
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
     params.put("userId", zoneUser.getUserId());
     params.put("createdById", user.getId());
+    params.put("companyTimezoneId", zoneUser.getCompanyTimezoneId());
     params.put("postalCodeZoneUserTypeId", PostalCodeZoneUserType.SCHEDULE_TO.id);
 
     sqlCache.update("postalCode.insertZoneUser", params);
 
     //adding an allocation user requires sending back the full allocation list instead of just the one user
     return getScheduleToUsers(zoneId);
+  }
+
+  public PostalCodeZoneUser updateAllocationUser(Long pczuId, PostalCodeAllocationUser zoneUser) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("pczuId", pczuId);
+    params.put("modifiedById", user.getId());
+    params.put("companyTimezoneId", zoneUser.getCompanyTimezoneId());
+
+    sqlCache.update("postalCode.updateZoneUser", params);
+
+    return getZoneUser(pczuId);
   }
 
   public void deleteUser(Long id) {
