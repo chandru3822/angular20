@@ -221,7 +221,7 @@
                             :disabled="!userCanEdit"
                             label="Description"
                             v-model="commission.description"></v-text-field>
-              <v-select v-model="commission.positionId"
+              <v-select attach v-model="commission.positionId"
                         :items="positions"
                         no-data-text="No Users Available"
                         label="Position"
@@ -277,7 +277,7 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addMilestone" class="square-card text-left pa-5">
-          <v-select v-model="selectedMilestone.id"
+          <v-select attach v-model="selectedMilestone.id"
                     :items="milestones"
                     :label="`Select a ${levelText}...`"
                     item-text="milestoneType"
@@ -455,7 +455,7 @@
             You must add milestones to this plan first.
           </div>
           <div v-else>
-            <v-select v-model="selectedSource.id"
+            <v-select attach v-model="selectedSource.id"
                       :items="sources"
                       label="Select a Source..."
                       item-text="sourceName"
@@ -465,13 +465,13 @@
             <v-text-field text
                           label="Fee Amount"
                           v-model="selectedSource.feeAmount"></v-text-field>
-            <v-select v-model="selectedSource.feeTypeId"
+            <v-select attach v-model="selectedSource.feeTypeId"
                       :items="feeTypes"
                       label="Fee Type"
                       item-text="label"
                       item-value="id"
             ></v-select>
-            <v-select v-model="selectedSource.milestoneId"
+            <v-select attach v-model="selectedSource.milestoneId"
                       :items="commission.milestones"
                       label="Deduct at Milestone"
                       item-text="milestoneType"
@@ -509,13 +509,13 @@
               <v-text-field text
                             label="Fee Amount"
                             v-model="item.feeAmount"></v-text-field>
-              <v-select v-model="item.feeTypeId"
+              <v-select attach v-model="item.feeTypeId"
                         :items="feeTypes"
                         label="Fee Type"
                         item-text="label"
                         item-value="id"
               ></v-select>
-              <v-select v-model="item.milestoneId"
+              <v-select attach v-model="item.milestoneId"
                         :items="commission.milestones"
                         label="Deduct at Milestone"
                         item-text="milestoneType"
@@ -614,6 +614,7 @@
                               item-value="userId"
                               autocomplete="off"
                               @input="getUserHistory(newUser.userId)"
+                              attach
               >
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.name }} - {{ item.position }}

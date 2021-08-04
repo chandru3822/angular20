@@ -53,7 +53,7 @@
         <v-row v-if="addNewRequirement">
           <v-col cols="12">
             <!--  TODO: need to protect against bad data when they go back and change the requirement type but have already selected other values lower in the form      -->
-            <v-select v-model="newRequirement.processStepRequirementTypeId"
+            <v-select attach v-model="newRequirement.processStepRequirementTypeId"
                       :items="availableRequirementTypes"
                       label="Select Requirement Type"
                       item-value="id"
@@ -71,6 +71,7 @@
               label="Parent Object"
               return-object
               item-text="processStepName"
+              attach
               @input="[loadValues(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                         validateRequirementForm(),
                         selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
@@ -83,6 +84,7 @@
               :items="customFields"
               label="Custom Field"
               return-object
+              attach
               item-text="fieldName"
               @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
@@ -180,6 +182,7 @@
               :items="processStepStatuses"
               label="Available Values"
               multiple
+              attach
               @change="validateRequirementForm()"
               item-text="processStepStatusType"
               return-object
@@ -293,7 +296,7 @@
                       </div>
                     </v-card>
                   </div>
-                  <v-select v-model="item.operatorTypeId"
+                  <v-select attach v-model="item.operatorTypeId"
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
@@ -336,6 +339,7 @@
                     :items="item.availableListOfValues"
                     label="Available Values"
                     multiple
+                    attach
                     @change="validateRequirementForm()"
                     item-text="name"
                     return-object
@@ -520,20 +524,20 @@
                           placeholder="Enter a name"
                           label="Action Name">
             </v-text-field>
-            <v-select v-model="newAction.actionTypeId"
+            <v-select attach v-model="newAction.actionTypeId"
                       :items="actionTypes"
                       label="Action Type"
                       item-text="actionType"
                       item-value="id"
             ></v-select>
-            <v-select v-model="newAction.companyProcessStepStatusTypeId"
+            <v-select attach v-model="newAction.companyProcessStepStatusTypeId"
                       :items="statusTypes"
                       :clearable="true"
                       label="Action changes status of parent process step to"
                       item-text="processStepStatusType"
                       item-value="id"
             ></v-select>
-            <v-select v-model="newAction.companyProjectStatusTypeId"
+            <v-select attach v-model="newAction.companyProjectStatusTypeId"
                       :items="companyProjectStatusTypes"
                       :clearable="true"
                       label="Action changes project status to"
@@ -618,7 +622,7 @@
                                   :disabled="!userCanEdit"
                                   label="Action Name">
                     </v-text-field>
-                    <v-select v-model="item.actionTypeId"
+                    <v-select attach v-model="item.actionTypeId"
                               :items="actionTypes"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
@@ -626,7 +630,7 @@
                               item-text="actionType"
                               item-value="id"
                     ></v-select>
-                    <v-select v-model="item.companyProcessStepStatusTypeId"
+                    <v-select attach v-model="item.companyProcessStepStatusTypeId"
                               :items="statusTypes"
                               :clearable="userCanEdit"
                               :readonly="!userCanEdit"
@@ -635,7 +639,7 @@
                               item-text="processStepStatusType"
                               item-value="id"
                     ></v-select>
-                    <v-select v-model="item.companyProjectStatusTypeId"
+                    <v-select attach v-model="item.companyProjectStatusTypeId"
                               :items="companyProjectStatusTypes"
                               :clearable="true"
                               label="Action changes project status to"
@@ -713,7 +717,7 @@
                       <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                               v-if="addChildLink">
                         <h3>Add Child Link</h3>
-                        <v-select v-model="selectedLink"
+                        <v-select attach v-model="selectedLink"
                                   :items="availableLinks"
                                   label="Available Links"
                                   item-text="link"
@@ -806,12 +810,14 @@
                                       @input="[getCancelledStatuses(newChildProcessStep), getStatusesAssignedToStep(newChildProcessStep)]"
                                       item-text="processStepName"
                                       item-value="id"
+                                      attach
                       ></v-autocomplete>
                       <v-autocomplete v-model="newChildProcessStep.initialCompanyProcessStepStatusTypeId"
                                       :items="activeStatusesAssignedToStep"
                                       label="Set initial status to:"
                                       item-text="processStepStatusType"
                                       item-value="id"
+                                      attach
                       >
                         <template slot="item" slot-scope="data">
                           {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
@@ -822,6 +828,7 @@
                                       label="Set status of existing Active steps of the same type to:"
                                       item-text="processStepStatusType"
                                       item-value="id"
+                                      attach
                       >
                         <template slot="item" slot-scope="data">
                           {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
@@ -863,12 +870,14 @@
                                               label="Set initial status as:"
                                               item-text="processStepStatusType"
                                               item-value="id"
+                                              attach
                               ></v-autocomplete>
                               <v-autocomplete v-model="cp.existingCompanyProcessStepStatusTypeId"
                                               :items="cancelledCompanyStatuses"
                                               label="Set status of existing Active steps of the same type to:"
                                               item-text="processStepStatusType"
                                               item-value="id"
+                                              attach
                               ></v-autocomplete>
                               <v-btn color="primaryCustom" class="white--text"
                                      :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
@@ -955,6 +964,7 @@
                                       label="Function"
                                       item-text="companyFunctionName"
                                       return-object
+                                      attach
                                       @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
                       ></v-autocomplete>
                       <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">

@@ -10,6 +10,7 @@
             item-text="workQueueCategory"
             item-value="id"
             @input="filterCategories()"
+            attach
           ></v-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -31,6 +32,7 @@
               label="Work Queue Category"
               item-text="workQueueCategory"
               item-value="id"
+              attach
             ></v-autocomplete>
             <v-btn :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
           </div>

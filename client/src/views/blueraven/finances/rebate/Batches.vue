@@ -2,7 +2,7 @@
   <v-container class="pa-0" id="commissions-container">
     <v-divider></v-divider>
     <v-toolbar class="mt-3" flat color="white">
-      <v-select v-model="batchId"
+      <v-select attach v-model="batchId"
                 class="batches-select"
                 label="Select a Batch"
                 :items="batches"

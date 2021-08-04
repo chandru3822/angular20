@@ -23,7 +23,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div class="flex-display" v-for="item in getCustomFieldsForGroup(12)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
@@ -59,7 +59,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(13)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         :readonly="!userCanEdit"
@@ -87,7 +87,7 @@
             </v-card-subtitle>
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
-                <v-select v-model="item.intValue"
+                <v-select attach v-model="item.intValue"
                           @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
                           :readonly="!userCanEdit"
@@ -130,7 +130,7 @@
             </v-card-subtitle>
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
-                <v-select v-model="item.intValue"
+                <v-select attach v-model="item.intValue"
                           @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
                           :readonly="!userCanEdit"
@@ -174,7 +174,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2"
                    v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
-                <v-select v-model="item.intValue"
+                <v-select attach v-model="item.intValue"
                           @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
                           :readonly="!userCanEdit"

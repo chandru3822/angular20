@@ -25,6 +25,7 @@
               @change="getTournamentFormulas()"
               item-text="ownerType"
               item-value="id"
+              attach
             ></v-autocomplete>
             <v-autocomplete
               v-model="newTournament.tournamentFormulaId"
@@ -32,6 +33,7 @@
               label="Scoring Formula"
               item-text="formulaTitle"
               item-value="id"
+              attach
             ></v-autocomplete>
             <DatetimePickerInput
               v-model="newTournament.startDate"

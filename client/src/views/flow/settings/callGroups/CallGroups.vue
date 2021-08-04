@@ -79,7 +79,7 @@
                   <td>{{item.postalCodesCount}}</td>
                   <td>{{item.activePhoneNumbersCount}}</td>
                   <td>
-                    <v-select style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
+                    <v-select attach style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
                   </td>
                   <td class="text-right">
                     <v-btn small text @click="goToCallGroup(item.id)">

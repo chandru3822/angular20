@@ -19,7 +19,7 @@
               <v-text-field v-model="prop.customerName" label="Customer Name"></v-text-field>
               <v-text-field v-model="prop.address" label="Address"></v-text-field>
               <v-text-field v-model="prop.city" label="City"></v-text-field>
-              <v-select v-model="prop.companyStateId"
+              <v-select attach v-model="prop.companyStateId"
                         class="mr-4"
                         :items="states"
                         no-data-text="No States Available"
@@ -30,7 +30,7 @@
               <v-text-field v-model="prop.zipCode" label="Zip Code"></v-text-field>
               <v-text-field v-model="prop.phone" label="Phone"></v-text-field>
               <v-text-field v-model="prop.email" label="Email"></v-text-field>
-              <v-select v-model="prop.utilityCompanyId"
+              <v-select attach v-model="prop.utilityCompanyId"
                         class="mr-4"
                         :items="utilityCompanies"
                         no-data-text="No Utility Companies Available"
@@ -52,7 +52,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div>
-              <v-select v-model="prop.productId"
+              <v-select attach v-model="prop.productId"
                         class="mr-4"
                         :items="products"
                         no-data-text="No Products Available"
@@ -63,7 +63,7 @@
               <v-text-field type="number" v-model="prop.loanTerm" label="Loan Terms in Years"></v-text-field>
               <v-text-field type="number" v-model="prop.interestRate" label="Interest Rate"></v-text-field>
               <v-text-field type="number" v-model="prop.downPayment" label="Optional Down Payment"></v-text-field>
-              <v-select v-model="prop.promotion"
+              <v-select attach v-model="prop.promotion"
                         :items="promotions"
                         label="Promotion"
               ></v-select>
@@ -81,7 +81,7 @@
             <div>
               <v-text-field type="number" v-model="prop.numberOfEcobees" label="Number of Ecobees"></v-text-field>
               <v-text-field type="number" v-model="prop.numberOfLeds" label="Number of LEDs"></v-text-field>
-              <v-select v-model="prop.monitor"
+              <v-select attach v-model="prop.monitor"
                         :items="monitors"
                         label="Monitor"
                         item-text="text"
@@ -109,13 +109,13 @@
 
               <v-text-field type="number" v-model="prop.yearOutput" label="Year 1 kwh Output"></v-text-field>
               <v-text-field type="number" v-model="prop.numberOfPanels" label="Number of Panels"></v-text-field>
-              <v-select v-model="prop.panelId"
+              <v-select attach v-model="prop.panelId"
                         :items="panels"
                         label="Panel"
                         item-text="panelName"
                         item-value="id"
               ></v-select>
-              <v-select v-model="prop.inverterId"
+              <v-select attach v-model="prop.inverterId"
                         :items="inverters"
                         label="Inverter"
                         item-text="inverterName"
@@ -134,7 +134,7 @@
             <div id="addersDiv">
               <v-card flat v-for="(us, index) in prop.adders" :key="index">
                 <div class="flex-display">
-                  <v-select v-model="us.id"
+                  <v-select attach v-model="us.id"
                             :items="adders"
                             no-data-text="No Adders Available"
                             label="Adder"

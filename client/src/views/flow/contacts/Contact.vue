@@ -62,7 +62,7 @@
             </template>
             <v-card class="pa-5">
               Select a process to be used
-              <v-select v-model="selectedProcess"
+              <v-select attach v-model="selectedProcess"
                         :items="availableProcesses"
                         label="Process"
                         id="qa-process-selector"
@@ -116,6 +116,7 @@
                     return-object
                     autocomplete="off"
                     @change="updateOwner"
+                          attach
           >
           </v-autocomplete>
         </div>
@@ -180,7 +181,7 @@
                             @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.companyStateId"
+              <v-select attach v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         id="qa-state-field"
@@ -190,7 +191,7 @@
                         item-text="state"
                         item-value="id"
               ></v-select>
-              <v-select v-model="contact.companyCountryId"
+              <v-select attach v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
                         id="qa-country-field"

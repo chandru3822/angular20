@@ -25,12 +25,14 @@
                         item-value="id"
                         return-object
                         @input="getOrgsByType()"
+                              attach
               ></v-autocomplete>
               <v-autocomplete v-model="org.parentOrgId"
                         :items="parents"
                         label="Parent Organization"
                         item-text="orgName"
                         item-value="id"
+                              attach
               ></v-autocomplete>
               <div class="mb-3">
                 <label>Show in Scheduling Tool:</label>

@@ -15,6 +15,7 @@
                     item-text="zoneName"
                     @blur="getPostalCodeZoneUsers(selectedPostalCodeZones)"
                     item-value="id"
+                          attach
           >
             <template
                 slot="selection"
@@ -48,6 +49,7 @@
                           @input="[postalCodeZoneUserValuesChanged = true, limiter()]"
                           item-text="fullName"
                           item-value="id"
+                          attach
           >
             <template
               slot="selection"

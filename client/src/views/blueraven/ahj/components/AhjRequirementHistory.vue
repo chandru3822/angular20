@@ -52,7 +52,7 @@
                     {{ selectedRequirement.modifiedBy }} - {{ selectedRequirement.formattedDateModified }}
                   </td>
                   <td class="py-2 pr-3">
-                    <v-select v-if="selectedRequirement.statusId === 3"
+                    <v-select attach v-if="selectedRequirement.statusId === 3"
                               v-model="selectedRequirementStatusId"
                               :items="challengeStatuses"
                               label="Challenge Status"

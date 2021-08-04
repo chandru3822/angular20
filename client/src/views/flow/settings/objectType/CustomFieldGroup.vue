@@ -56,6 +56,7 @@
           height="35px"
           class="d-inline-block mr-3"
           @change="ownerReadOnlyPositionsChanged = true"
+          attach
         >
           <v-list-item
             slot="prepend-item"
@@ -149,7 +150,7 @@
                   <span v-else>{{item.groupName}}</span>
                 </td>
                 <td class="text-left">
-                  <v-select v-if="item.edit && isProject"
+                  <v-select attach v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
                             label="Tab"
@@ -244,6 +245,7 @@
                                   return-object
                                   autocomplete="off"
                                   @input="assignCustomField(item)"
+                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
@@ -257,6 +259,7 @@
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
+                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.processStepName }}
@@ -270,6 +273,7 @@
                                   return-object
                                   autocomplete="off"
                                   @input="assignAncillaryCustomField(item)"
+                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
@@ -315,6 +319,7 @@
                                         height="35px"
                                         class="d-inline-block mr-3"
                                         @change="cf.positionsChanged = true"
+                                        attach
                                       >
                                         <v-list-item
                                           slot="prepend-item"
@@ -375,6 +380,7 @@
                                         height="35px"
                                         class="d-inline-block mr-3"
                                         @change="cf.hiddenPositionsChanged = true"
+                                        attach
                                       >
                                         <v-list-item
                                           slot="prepend-item"

@@ -24,6 +24,7 @@
               label="Select a user"
               item-text="fullName"
               return-object
+              attach
             ></v-autocomplete>
 
             <div v-if="overrideUser.id">

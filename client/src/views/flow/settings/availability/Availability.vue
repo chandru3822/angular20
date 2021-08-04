@@ -15,7 +15,8 @@
                     item-text="orgName"
                     item-value="id"
                     autocomplete="off"
-                    @input="[userId = null, getApptLength()]">
+                    @input="[userId = null, getApptLength()]"
+                          attach>
           </v-autocomplete>
           <v-autocomplete v-model="userId"
                     :items="users"
@@ -25,7 +26,8 @@
                     item-text="fullName"
                     item-value="id"
                     autocomplete="off"
-                    @input="[orgId = null, getApptLength()]">
+                    @input="[orgId = null, getApptLength()]"
+                          attach>
           </v-autocomplete>
           <div class="mb-4" v-if="userId || orgId">
             <label>Default Appointment Length (minutes)</label>

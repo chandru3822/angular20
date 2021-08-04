@@ -85,6 +85,7 @@
                           placeholder="Select..."
                           height="35px"
                           outlined
+                                attach
                           class="user-filter-select"
                           @change="handleOrgFilterChange(false, header.level)"
                 >
@@ -123,6 +124,7 @@
                           outlined
                           placeholder="Select..."
                           height="35px"
+                                attach
                           class="user-filter-select"
                           @input="getUsers(false)"
                 >
@@ -162,6 +164,7 @@
                           placeholder="Select..."
                           height="35px"
                           outlined
+                                attach
                           class="user-filter-select"
                           @input="getUsers(false)"
                 >
@@ -228,7 +231,7 @@
           </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-5">
-            <v-select label="From"
+            <v-select attach label="From"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"

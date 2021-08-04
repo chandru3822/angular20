@@ -193,6 +193,7 @@
               label="Users"
               item-text="fullName"
               item-value="id"
+              attach
             ></v-autocomplete>
 
             <v-btn text :disabled="!userId"

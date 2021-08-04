@@ -26,6 +26,7 @@
                             item-text="fullName"
                             @change="getInstallationCrew()"
                             @click:clear="selectedInstallationCrews = []"
+                            attach
             >
               <v-list-item
                 slot="prepend-item"
@@ -59,6 +60,7 @@
                             clearable
                             return-object
                             item-text="fullName"
+                            attach
             >
               <v-list-item
                 slot="prepend-item"
@@ -85,7 +87,7 @@
             </v-autocomplete>
           </v-col>
           <v-col cols="3" md="2">
-            <v-select class="date-range-dropdown" py-2
+            <v-select attach class="date-range-dropdown" py-2
                       v-model="selectedDateRange"
                       :items="dateRanges"
                       label="Date Range"
@@ -166,7 +168,7 @@
         <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Key Performance Metrics</v-toolbar-title>
       </v-toolbar>
       <v-col cols="3" md="2">
-        <v-select class="date-range-dropdown" py-2
+        <v-select attach class="date-range-dropdown" py-2
                   v-model="metricsSelectedDateRange"
                   :items="dateRanges"
                   label="Date Range"

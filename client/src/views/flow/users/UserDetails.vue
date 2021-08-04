@@ -13,7 +13,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <v-select v-model="user.userStatusTypeId"
+              <v-select attach v-model="user.userStatusTypeId"
                         :items="userStatusTypes"
                         label="User Status"
                         :readonly="!userCanEdit"

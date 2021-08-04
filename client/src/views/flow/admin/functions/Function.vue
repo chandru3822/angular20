@@ -119,7 +119,7 @@
         <v-divider class="mt-5"></v-divider>
         <v-card flat class="px-3">
           <h3 class="pt-3">Save to Companies</h3>
-          <v-select v-model="selectedCompanies"
+          <v-select attach v-model="selectedCompanies"
                     :items="companies"
                     label="Select Companies"
                     item-text="companyName"

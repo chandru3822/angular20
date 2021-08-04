@@ -162,6 +162,7 @@
                         item-value="id"
                         autocomplete="off"
                         return-object
+                        attach
                     ></v-autocomplete>
                     <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
                       <v-text-field
@@ -184,6 +185,7 @@
                               item-text="systemList"
                               item-value="companySystemListId"
                               @change="getSystemListOptions(item.companySystemListId)"
+                                    attach
                     ></v-autocomplete>
 
                     <v-autocomplete v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
@@ -195,6 +197,7 @@
                               label="System List Options"
                               item-text="name"
                               item-value="id"
+                                    attach
                     ></v-autocomplete>
 
                     <v-col class="options-container"

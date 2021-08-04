@@ -13,6 +13,7 @@
               item-text="name"
               item-value="id"
               class="smartlist-selector pt-3"
+              attach
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
                    to="/newContact" color="primaryCustom">

@@ -16,6 +16,7 @@
                         persistent-hint
                         hint="* This will be used the next time you log in and can be changed at any time under Settings - User Profile"
                         type="search"
+                        attach
         ></v-autocomplete>
         <v-btn @click="saveUserHomePage"
                v-if="!userIsAlbatross"

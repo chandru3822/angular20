@@ -14,6 +14,7 @@
             item-text="name"
             item-value="id"
             class="smartlist-selector pt-3"
+            attach
           />
         </v-toolbar>
 
