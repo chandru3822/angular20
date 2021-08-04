@@ -1,18 +1,12 @@
 import Vue from 'vue'
 import Vuetify from './plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
-import Mentionable  from 'vue-mention'
 import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
-import 'mapbox-gl/dist/mapbox-gl.css'
-import '@fullcalendar/core/main.css'
-import '@fullcalendar/timeline/main.css'
-import '@fullcalendar/resource-timeline/main.css'
 import { UserMutations } from './stores/UserStore'
-import JsonExcel from 'vue-json-excel'
 import moment from 'moment-timezone'
 
 // @todo: make PWA awesomeness
@@ -22,8 +16,6 @@ const { VUE_APP_BASE_API, VUE_APP_ENV } = process.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
-
-Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
@@ -109,6 +101,4 @@ new Vue({
   render: h => h(App)
 }).$mount('#app')
 
-Vue.use(Vuetify)
 Vue.use(Chat)
-Vue.use(Mentionable)

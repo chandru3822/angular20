@@ -64,15 +64,15 @@
             <template #item="{ item, index }">
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
-                <td style="width: 50px">
+                <td style="width: 50px" @click="goToDetails(item)">
                   <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text icon small class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
-                <td class="text-left">
+                <td class="text-left" @click="goToDetails(item)">
                   {{item.workQueueType}}
                 </td>
-                <td class="text-left">
+                <td class="text-left" @click="goToDetails(item)">
                   {{item.workQueueCategory}}
                 </td>
                 <td class="text-right">

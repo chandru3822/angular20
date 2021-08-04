@@ -235,6 +235,10 @@
 </template>
 
 <script>
+  import '@fullcalendar/core/main.css'
+  import '@fullcalendar/timeline/main.css'
+  import '@fullcalendar/resource-timeline/main.css'
+
   import FullCalendar from '@fullcalendar/vue'
   import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
   import interaction from '@fullcalendar/interaction'

@@ -5,6 +5,7 @@ module.exports = {
     .plugins.delete('prefetch').end()
     .plugin('moment-locales-webpack-plugin').use(MomentLocalesPlugin).end()
     .plugin('webpack-bundle-analyzer').tap(args => [...args, {
+      analyzerMode: process.env.NODE_ENV === 'production' ? 'disabled' : 'static',
       openAnalyzer: false
     }]).end()
     .devtool('source-map')
@@ -16,6 +17,7 @@ module.exports = {
 
   pluginOptions: {
     webpackBundleAnalyzer: {
+      analyzerMode: process.env.NODE_ENV === 'production' ? 'disabled' : 'static',
       openAnalyzer: false
     }
   },
