@@ -124,6 +124,10 @@
 </template>
 
 <script>
+  import '@fullcalendar/core/main.css'
+  import '@fullcalendar/timeline/main.css'
+  import '@fullcalendar/resource-timeline/main.css'
+
   import FullCalendar from '@fullcalendar/vue'
   import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
   import interaction from '@fullcalendar/interaction'
@@ -539,7 +543,6 @@
         checkbox.onchange = (event) => {
           if(event.target.checked) {
             let resource = renderInfo.resource
-            let self = this
             let resourceEvents = this.eventSources[0].events.filter(e => {
               return e.resourceId === resource.id || e.resourceId?.toString() === resource.id
             })

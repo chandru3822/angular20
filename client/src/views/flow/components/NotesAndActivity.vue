@@ -350,11 +350,12 @@
 <script>
 import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-
-import Vue2Filters from "vue2-filters";
+import Vue2Filters from "vue2-filters"
+import { Mentionable } from 'vue-mention'
 
 export default {
   name: 'NotesAndActivity',
+  components: {Mentionable},
   mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,
