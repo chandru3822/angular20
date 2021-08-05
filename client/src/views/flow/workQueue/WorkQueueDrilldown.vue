@@ -198,7 +198,6 @@
     computed: {},
     async created() {
       this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
-      console.log('initial filters',this.cachedFilters)
       await this.getWorkDetails()
     },
     methods: {
@@ -322,15 +321,18 @@
           let matchCount = 0
           let numFiltersUsed = 0
           Object.keys(this.filters).forEach(key => {
-            let value = this.filters[key]
+            //trim the value to see if they just searched for a bunch of space characters
+            let value = this.filters[key].trim().length === 0 ? '' : this.filters[key]
+
             //populate the cached filters with the user's search
             //if there is no cached search for this wqt then add a blank object for it
             if(null == this.cachedFilters[this.workQueueTypeId]) {
               this.cachedFilters[this.workQueueTypeId] = {}
             }
+
             //then add the value
             this.cachedFilters[this.workQueueTypeId][key] = value
-            console.log('filter after adding something',this.cachedFilters)
+
             if(null != value && value !== '') {
               numFiltersUsed++
               if(r[key]?.toString().toLowerCase().includes(value?.toLowerCase())){
