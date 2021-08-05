@@ -151,6 +151,7 @@
         showNotesModal: false,
         selectedPps: {},
         filters: {},
+        cachedFilters: {},
         constants,
         search: '',
         ytfDoWeNeedThis: 0,
@@ -196,6 +197,8 @@
     },
     computed: {},
     async created() {
+      this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
+      console.log('initial filters',this.cachedFilters)
       await this.getWorkDetails()
     },
     methods: {
@@ -265,6 +268,15 @@
           })
           //add the notes column to the end
           this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
+
+          //check for a cached search and filter results accordingly
+          if(this.cachedFilters[this.workQueueTypeId]) {
+            Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
+              this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
+            })
+            this.filterResults()
+          }
+
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -311,6 +323,14 @@
           let numFiltersUsed = 0
           Object.keys(this.filters).forEach(key => {
             let value = this.filters[key]
+            //populate the cached filters with the user's search
+            //if there is no cached search for this wqt then add a blank object for it
+            if(null == this.cachedFilters[this.workQueueTypeId]) {
+              this.cachedFilters[this.workQueueTypeId] = {}
+            }
+            //then add the value
+            this.cachedFilters[this.workQueueTypeId][key] = value
+            console.log('filter after adding something',this.cachedFilters)
             if(null != value && value !== '') {
               numFiltersUsed++
               if(r[key]?.toString().toLowerCase().includes(value?.toLowerCase())){
@@ -318,6 +338,7 @@
               }
             }
           })
+          localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
           return matchCount === numFiltersUsed
         })
       }
