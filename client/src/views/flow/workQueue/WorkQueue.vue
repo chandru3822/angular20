@@ -307,7 +307,6 @@ export default {
 
 .card-metrics-container {
   height: 80px;
-  border-top: solid 1px #D8D9DA;
   width: calc(100% - 5px);
   position: absolute;
   bottom: 0;
