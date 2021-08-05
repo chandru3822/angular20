@@ -232,7 +232,7 @@
 
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
   import constants from "@/helpers/constants"
@@ -469,8 +469,3 @@
   min-height: 300px;
 }
 </style>
-
-<style lang="scss" scoped>
-
-</style>
-

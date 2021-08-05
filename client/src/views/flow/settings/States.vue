@@ -22,6 +22,7 @@
                 item-text="state"
                 item-value="id"
                 return-object
+                attach
             ></v-autocomplete>
           </div>
           <v-btn :disabled="!selectedState"
@@ -134,8 +135,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getAvailableStates, getStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getAvailableStates} from '@/services/stateService'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
 
@@ -246,11 +247,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

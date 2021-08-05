@@ -2,9 +2,15 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +27,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +44,9 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
+  @Value("${aws.storageBucket}")
+  private String storageBucket;
+
   @Autowired
   AttachmentService attachmentService;
 
@@ -46,6 +58,9 @@ public class UserService {
 
   @Autowired
   ObjectMapper om;
+
+  @Autowired
+  AmazonS3 s3;
 
   @Value("${security.doCompanyDefaultValidation:false}")
   private Boolean doCompanyDefaultValidation;
@@ -452,6 +467,58 @@ public class UserService {
     } catch (DuplicateKeyException e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Token already exists on given user", e);
     }
+  }
+
+  public List<Attachment> getUserAttachments(Long userId, Boolean isMobile) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    List<Attachment> attachments = sqlCache.query("user.getUserAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long userId, Long attachmentTypeId) throws IOException {
+    User user = securityService.getCurrentUser();
+
+    if (file.isEmpty()) {
+      throw new RuntimeException("File cannot be empty");
+    }
+
+    //get keyPattern from attachmentType
+    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
+    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentLength(file.getSize());
+    metadata.setContentType(file.getContentType());
+    metadata.setCacheControl("public, max-age=31536000");
+
+    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+
+    PutObjectResult result = s3.putObject(objectRequest
+      .withCannedAcl(CannedAccessControlList.PublicRead));
+
+    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
+    params.put("contentType", file.getContentType());
+    params.put("key", key);
+    params.put("size", file.getSize());
+    params.put("createdById", user.getId());
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", user.getCompanyId());
+
+    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+
+    params.clear();
+    params.put("userId", userId);
+    params.put("attachmentId", attachmentId);
+    params.put("createdById", user.getId());
+
+    sqlCache.update("user.addAttachment", params);
+
+    return attachmentService.findById(attachmentId);
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

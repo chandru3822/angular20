@@ -24,6 +24,7 @@
               label="Select a user"
               item-text="fullName"
               return-object
+              attach
             ></v-autocomplete>
 
             <div v-if="overrideUser.id">
@@ -145,7 +146,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, putRequestWithRequestParams, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, putRequestWithRequestParams, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ScoreDrilldown from "./ScoreDrilldown"
 
@@ -318,9 +319,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 

@@ -21,22 +21,7 @@
 </template>
 
 <script>
-
-
 export default {
   name: 'ServerError',
-  components: {
-  },
-  data () {
-    return {
-    }
-  },
-  created () {},
-  computed: {},
-  methods: {}
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>

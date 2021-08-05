@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +46,11 @@ public class WorkQueueTypeService {
     return results;
   }
 
+  public List<DurationType> getDurationTypes() {
+    List<DurationType> results = sqlCache.query("workQueueType.getDurationTypes", Collections.emptyMap(), DurationType.class);
+    return results;
+  }
+
   public Optional<WorkQueueType> getType(Long id) {
     return sqlCache.get("workQueueType.getType",
         ImmutableMap.of("id", id),
@@ -69,6 +75,14 @@ public class WorkQueueTypeService {
     params.put("workQueueCategoryId", type.getWorkQueueCategoryId() );
     params.put("displayOrder", type.getDisplayOrder() );
     params.put("workQueueType", type.getWorkQueueType() );
+    params.put("shortWindow", type.getShortWindow() );
+    params.put("shortWindowDurationTypeId", type.getShortWindowDurationTypeId() );
+    params.put("longWindow", type.getLongWindow() );
+    params.put("longWindowDurationTypeId", type.getLongWindowDurationTypeId() );
+    params.put("expectedCycle", type.getExpectedCycle() );
+    params.put("expectedCycleDurationTypeId", type.getExpectedCycleDurationTypeId() );
+    params.put("inverseExpectation", null != type.getInverseExpectation() ? type.getInverseExpectation() : false );
+    params.put("expectedTarget", type.getExpectedTarget() );
 
     sqlCache.update("workQueueType.updateType", params);
 

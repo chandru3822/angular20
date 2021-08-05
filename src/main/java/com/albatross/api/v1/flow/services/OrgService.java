@@ -1,9 +1,15 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -14,14 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -39,6 +45,13 @@ public class OrgService {
   private final SecurityService securityService;
 
   private final CustomFieldValueService customFieldValueService;
+
+  private final AmazonS3 s3;
+
+  private final AttachmentService attachmentService;
+
+  @Value("${aws.storageBucket}")
+  private String storageBucket;
 
   public List<Org> getOrgsForCompany() {
     User user = securityService.getCurrentUser();
@@ -258,5 +271,56 @@ public class OrgService {
     return result.orElse(null);
   }
 
+  public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("orgId", orgId);
+    List<Attachment> attachments = sqlCache.query("org.getOrgAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId) throws IOException {
+    User user = securityService.getCurrentUser();
+
+    if (file.isEmpty()) {
+      throw new RuntimeException("File cannot be empty");
+    }
+
+    //get keyPattern from attachmentType
+    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
+    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentLength(file.getSize());
+    metadata.setContentType(file.getContentType());
+    metadata.setCacheControl("public, max-age=31536000");
+
+    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+
+    PutObjectResult result = s3.putObject(objectRequest
+      .withCannedAcl(CannedAccessControlList.PublicRead));
+
+    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
+    params.put("contentType", file.getContentType());
+    params.put("key", key);
+    params.put("size", file.getSize());
+    params.put("createdById", user.getId());
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", user.getCompanyId());
+
+    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+
+    params.clear();
+    params.put("orgId", orgId);
+    params.put("attachmentId", attachmentId);
+    params.put("createdById", user.getId());
+
+    sqlCache.update("org.addAttachment", params);
+
+    return attachmentService.findById(attachmentId);
+  }
 
 }

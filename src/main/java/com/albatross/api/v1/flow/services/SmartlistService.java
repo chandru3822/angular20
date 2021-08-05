@@ -93,6 +93,12 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.getId());
+
+    // enforce rule that only project, process step, and contact row types can have a table view display
+    if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+      params.put("viewObjectTypeId", null);
+    }
+
     sqlCache.update("smartlist.update", params);
   }
 
@@ -392,7 +398,7 @@ public class SmartlistService {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
     }
 
-    log.info("*** {}", query);
+//    log.info("*** {}", query);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     if (results.isEmpty()) {
@@ -854,8 +860,22 @@ public class SmartlistService {
         }
     }
 
-    // Remove comma from last select field
-    query.deleteCharAt(query.length() - 2);
+    //add the most recent note at the very end, if this is a wq smartlist we dont need to delete the comma at the end
+    if(null != smartlist.getWorkQueueTypeId()) {
+      query.append(" (select n.note\n" +
+        "        from flow.note n\n" +
+        "               inner join flow.project_process_step_process_step_work_queue_type_note pn\n" +
+        "                          on pn.note_id = n.id\n" +
+        "        where n.archived is not true\n" +
+        "          and n.parent_id is null\n" +
+        "          and pn.project_process_step_id = flow.project_process_step.id\n" +
+        "          and pn.process_step_work_queue_type_id = pswqt.id\n" +
+        "        order by n.date_created desc\n" +
+        "         limit 1)                                              as \"Most Recent Note\" \n");
+    } else {
+      // Remove comma from last select field
+      query.deleteCharAt(query.length() - 2);
+    }
 
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
@@ -2124,6 +2144,7 @@ public class SmartlistService {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     if(workQueueSmartlist) {
+      //add extra headers to the beginning if wq smartlist
       String[] wqHeaders = {
         "Active Process Steps",
         "Owner",
@@ -2132,14 +2153,18 @@ public class SmartlistService {
         "Process Step Status Type",
         "Process Step Name",
         "Project Name",
-//        "owningPositions",
-//        "notes",
       };
       for(String header : wqHeaders) {
         SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
         sfa.setName(header);
         headers.add(0, sfa);
       }
+
+      //add most recent note header to the end after all the custom fields
+      SmartlistFieldAssignment sfa2 = new SmartlistFieldAssignment();
+      sfa2.setName("Most Recent Note");
+      headers.add(sfa2);
+
     }
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli

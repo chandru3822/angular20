@@ -15,7 +15,7 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Org Filter</h3>
           <div class="mb-3">
-            <v-select v-model="newOrgFilter.orgLevelId"
+            <v-select attach v-model="newOrgFilter.orgLevelId"
                       :items="levels"
                       label="Level"
                       item-value="id"
@@ -62,7 +62,7 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgFilters.indexOf(item) % 2}">
               <h3>Edit Org Filter</h3>
               <div class="mb-3">
-                <v-select v-model="item.orgLevelId"
+                <v-select attach v-model="item.orgLevelId"
                           :items="levels"
                           label="Level"
                           item-value="id"
@@ -152,7 +152,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getOrgFilters, getOrgLevels} from '@/services/orgService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -252,11 +252,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

@@ -53,6 +53,7 @@
                             item-text="state"
                             dense
                             hide-details
+                                  attach
                   ></v-autocomplete>
                 </div>
               </th>
@@ -109,6 +110,7 @@
                         item-value="id"
                         required
                         filled
+                              attach
               ></v-autocomplete>
               <v-autocomplete label="State"
                               :items="states"
@@ -118,6 +120,7 @@
                               autocomplete="off"
                               required
                               filled
+                              attach
               ></v-autocomplete>
 
             </v-card-text>

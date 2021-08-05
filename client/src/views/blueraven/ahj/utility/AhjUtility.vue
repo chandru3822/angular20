@@ -56,6 +56,7 @@
                             item-text="state"
                             dense
                             hide-details
+                                  attach
                   ></v-autocomplete>
                 </div>
               </th>
@@ -105,6 +106,7 @@
                 v-model="editedItem.metroAreaId"
                 required
                 filled
+                attach
               ></v-autocomplete>
               <v-autocomplete label="State"
                               :items="states"
@@ -115,6 +117,7 @@
                               autocomplete="off"
                               required
                               filled
+                              attach
               ></v-autocomplete>
               <v-checkbox
                 v-if="!addMode"

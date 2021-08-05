@@ -23,7 +23,8 @@
                     item-text="fullName"
                     item-value="userId"
                     return-object
-                          autocomplete="off">
+                          autocomplete="off"
+                          attach>
           </v-autocomplete>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
                  :disabled="!selectedScheduler.id">
@@ -107,7 +108,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ScheduleBy',
@@ -209,9 +210,3 @@
     min-height: 300px;
   }
 </style>
-
-<style lang="scss" scoped>
-
-
-</style>
-

@@ -51,7 +51,7 @@
           </v-text-field>
         </v-col>
         <v-col cols="12" md="6">
-          <v-select v-model="user.notificationTypeId"
+          <v-select attach v-model="user.notificationTypeId"
                     :items="userNotificationTypes"
                     label="Notification"
                     item-text="userNotificationType"
@@ -81,6 +81,7 @@
                           item-value="id"
                           autocomplete="off"
                           type="search"
+                          attach
           ></v-autocomplete>
         </v-col>
       </v-row>
@@ -137,7 +138,7 @@ import { Actions } from '@/store'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {

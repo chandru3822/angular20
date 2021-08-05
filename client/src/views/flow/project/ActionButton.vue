@@ -53,7 +53,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 .action-button > .v-btn__content {
   color: white !important;
 }

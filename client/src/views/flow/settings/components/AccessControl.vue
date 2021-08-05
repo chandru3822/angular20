@@ -56,7 +56,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'AccessControl',
@@ -234,11 +234,4 @@
   }
 </script>
 
-<style lang="scss">
-
-</style>
-
-<style lang="scss" scoped>
-
-</style>
 
