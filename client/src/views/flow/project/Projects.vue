@@ -2,7 +2,7 @@
   <v-container id="projects-container">
     <v-row>
       <v-col cols="12">
-        <v-toolbar class="elevation-1" width="100%">
+        <v-toolbar class="elevation-1 toolbar-z-index-override" width="100%">
           <v-toolbar-title>Projects</v-toolbar-title>
 
           <v-spacer/>
