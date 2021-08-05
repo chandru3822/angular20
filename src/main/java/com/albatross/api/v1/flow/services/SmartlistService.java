@@ -926,12 +926,13 @@ public class SmartlistService {
 
         whereClause.append(" flow.user.archived is not true and ");
         whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.position.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
 
         if (smartlist.isPrimaryUserPosition()) {
           whereClause.append(" flow.user_position.primary_flag is true and ");
         }
-
-//        whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
 
         break;
       case 5:
@@ -953,12 +954,13 @@ public class SmartlistService {
           query.append(" inner join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id and flow.user_status_type.archived is not true ");
 
           whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+          whereClause.append(String.format(" flow.position.company_id = any(%s) and ", companySubquery));
+          whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
 
           if (smartlist.isPrimaryUserPosition()) {
             whereClause.append(" flow.user_position.primary_flag is true and ");
           }
 
-//          whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
         }
 
         break;
