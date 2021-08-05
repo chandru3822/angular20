@@ -18,6 +18,5 @@ public class SmsQueueRow {
   private boolean priority, messageRead;
   private Owner owner;
   private Long ownerUserPositionId;
-
   private Date lastMessageSent, lastMessageReceived;
 }
