@@ -46,7 +46,7 @@ BEGIN
     where p.id = p_project_id
     limit 1;
 
-    select greatest(pitch_mp1::integer,pitch_mp2::integer,pitch_mp3::integer,pitch_mp4::integer,pitch_mp5::integer,pitch_mp6::integer),
+    select greatest(pitch_mp1::numeric,pitch_mp2::numeric,pitch_mp3::numeric,pitch_mp4::numeric,pitch_mp5::numeric,pitch_mp6::numeric)::integer,
            case
                WHEN number_of_modules_mp6::integer > 0 THEN 6
                WHEN number_of_modules_mp5::integer > 0 THEN 5
