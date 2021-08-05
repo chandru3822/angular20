@@ -16,7 +16,7 @@
           <v-text-field v-model="newProduct.productName"
                         label="Product Name">
           </v-text-field>
-          <v-select v-model="newProduct.financierId"
+          <v-select attach v-model="newProduct.financierId"
                     :items="financiers"
                     no-data-text="No Financiers Available"
                     label="Financier"
@@ -62,7 +62,7 @@
               <v-text-field v-model="item.productName"
                             label="Product">
               </v-text-field>
-              <v-select v-model="item.financierId"
+              <v-select attach v-model="item.financierId"
                         :items="financiers"
                         no-data-text="No Financiers Available"
                         label="Financier"
@@ -154,7 +154,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {

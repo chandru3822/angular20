@@ -1,7 +1,7 @@
 <template>
   <v-card flat color="transparent">
     <h4 class="mb-3">{{rruleText}}</h4>
-    <v-select v-model="rrule.frequency"
+    <v-select attach v-model="rrule.frequency"
               :items="rruleConfig.frequencies"
               label="Repeats"
               item-text="label"
@@ -19,7 +19,7 @@
                   :disabled="readonly"
                   @input="updateRecurrenceString"
                   v-model="rrule.interval"></v-text-field>
-    <v-select v-model="rrule.months"
+    <v-select attach v-model="rrule.months"
               :items="rruleConfig.months"
               label="By Month"
               item-text="label"
@@ -31,7 +31,7 @@
               @input="updateRecurrenceString"
               autocomplete="off">
     </v-select>
-    <v-select v-model="rrule.daysOfWeek"
+    <v-select attach v-model="rrule.daysOfWeek"
               :items="rruleConfig.daysOfWeek"
               label="By Day of Week"
               item-text="label"
@@ -89,11 +89,9 @@
 </template>
 
 <script>
-  import { RRule, RRuleSet, rrulestr } from 'rrule'
+  import { RRule } from 'rrule'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment-timezone'
-
-  const { VUE_APP_ENV } = process.env
 
   export default {
     name: 'RRule',

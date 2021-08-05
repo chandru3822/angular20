@@ -2,7 +2,7 @@
   <v-container id="contacts-container">
     <v-row>
       <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
+        <v-toolbar color="white" class="elevation-1 toolbar-z-index-override">
           <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -13,6 +13,7 @@
               item-text="name"
               item-value="id"
               class="smartlist-selector pt-3"
+              attach
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
                    to="/newContact" color="primaryCustom">
@@ -128,10 +129,6 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import {
-  getRequest,
-  deleteRequest,
-  putRequest,
-  postRequest,
   getRequestWithParams,
   getSnackbar,
   logError,
@@ -144,7 +141,6 @@ import SmartlistTable from '@/components/SmartlistTable'
 export default {
   name: 'Contacts',
   components: {
-
     SmartlistTable
   },
   data () {

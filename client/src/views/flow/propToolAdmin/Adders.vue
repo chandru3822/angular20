@@ -16,7 +16,7 @@
           <v-text-field v-model="newAdder.adderName"
                         label="Adder Name">
           </v-text-field>
-          <v-select v-model="newAdder.adderTypeId"
+          <v-select attach v-model="newAdder.adderTypeId"
                     :items="adderTypes"
                     label="Adder Type"
                     no-data-text="No Adder Types Available"
@@ -27,7 +27,7 @@
           <v-btn class="mb-1" @click="newAdder.adderStates.push({})">Add State</v-btn>
           <v-card class="px-4" flat v-for="(us, index) in newAdder.adderStates" :key="index">
             <v-row>
-              <v-select v-model="us.companyStateId"
+              <v-select attach v-model="us.companyStateId"
                         class="mr-4"
                         :items="adderStates"
                         no-data-text="No States Available"
@@ -71,7 +71,7 @@
               <v-text-field v-model="item.adderName"
                             label="Adder Name">
               </v-text-field>
-              <v-select v-model="item.adderTypeId"
+              <v-select attach v-model="item.adderTypeId"
                         :items="adderTypes"
                         label="Adder Type"
                         no-data-text="No Adder Types Available"
@@ -82,7 +82,7 @@
               <v-btn class="mb-1" @click="item.adderStates.push({})">Add State</v-btn>
               <v-card class="px-4" flat v-for="(us, index) in item.adderStates" :key="index">
                 <v-row v-show="us.archived != true">
-                  <v-select v-model="us.companyStateId"
+                  <v-select attach v-model="us.companyStateId"
                             class="mr-4"
                             :items="adderStates"
                             no-data-text="No States Available"
@@ -207,7 +207,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getCompanyStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {

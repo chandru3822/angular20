@@ -13,7 +13,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <v-select v-model="user.userStatusTypeId"
+              <v-select attach v-model="user.userStatusTypeId"
                         :items="userStatusTypes"
                         label="User Status"
                         :readonly="!userCanEdit"
@@ -198,7 +198,7 @@
 
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import cloneDeep from 'lodash.clonedeep'
   import Attachments from '@/views/flow/components/Attachments'
@@ -206,7 +206,6 @@
   export default {
     name: 'User',
     components: {
-
       CustomValueInput,
       NotesAndActivity,
       Attachments

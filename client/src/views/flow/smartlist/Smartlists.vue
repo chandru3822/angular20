@@ -49,13 +49,12 @@
 
 <script>
 
-import {getRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, logError} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 
 export default {
   name: 'Smartlists',
-
   data () {
     return {
       constants,
@@ -87,7 +86,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 @import "@/styles/main.scss";
 
 ::v-deep {

@@ -19,7 +19,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {deleteRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
@@ -95,8 +95,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-
-</style>
-

@@ -47,9 +47,6 @@
   }
 </script>
 
-<style lang="scss">
-</style>
-
 <style lang="scss" scoped>
   .v-data-table {
     border-radius: 0;

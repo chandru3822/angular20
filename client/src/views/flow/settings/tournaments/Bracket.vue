@@ -308,7 +308,6 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
     getRequest,
-    getRequestWithParams,
     deleteRequest,
     putRequest,
     postRequest,
@@ -549,11 +548,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style scoped lang="scss">
-
-
-</style>

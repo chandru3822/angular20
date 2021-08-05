@@ -19,6 +19,7 @@
                           item-text="attachmentType"
                           item-value="id"
                           @input="assignNewType"
+                          attach
           ></v-autocomplete>
         </v-card>
         <v-card flat v-if="attachmentTypes && attachmentTypes.length > 0">

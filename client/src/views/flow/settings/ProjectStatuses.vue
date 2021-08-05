@@ -21,7 +21,8 @@
                     v-model="newType.projectStatusTypeId"
                     item-value="id"
                     label="Select a Category"
-                    item-text="projectStatusType"></v-autocomplete>
+                    item-text="projectStatusType"
+                          attach></v-autocomplete>
           <v-btn :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
         </v-card>
         <v-data-table
@@ -51,7 +52,8 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Select a Category"
-                        item-text="projectStatusType"></v-autocomplete>
+                        item-text="projectStatusType"
+                        attach></v-autocomplete>
               <div  v-if="!item.isDefault" class="mb-3">
                 <v-dialog
                   v-model="item.setInitialConfirm"
@@ -201,7 +203,7 @@
 
   import orderBy from 'lodash.orderby'
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {

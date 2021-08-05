@@ -4,8 +4,7 @@ import { UserStore } from '@/stores/UserStore'
 import { BrsStore } from '@/stores/BrsStore'
 import { AppStore } from '@/stores/AppStore'
 import constants from '@/helpers/constants'
-import {postRequest, deleteRequest, getRequest, getRequestWithParams} from "./helpers/helpers";
-import {AppMutations} from "./stores/AppStore";
+import {postRequest, deleteRequest, getRequestWithParams} from "./helpers/helpers";
 
 Vue.use(Vuex)
 

@@ -75,7 +75,8 @@
                             multiple
                             dense
                             return-object
-                            @input="regionLoad(false)">
+                            @input="regionLoad(false)"
+                            attach>
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ districtModel.length }} Checked
@@ -116,7 +117,8 @@
                             multiple
                             dense
                             return-object
-                            @input="officeLoad(false)">
+                            @input="officeLoad(false)"
+                            attach>
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ regionModel.length }} Checked
@@ -157,7 +159,8 @@
                             multiple
                             dense
                             return-object
-                            @input="repLoad(false)">
+                            @input="repLoad(false)"
+                            attach>
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ officeModel.length }} Checked
@@ -200,7 +203,8 @@
                             hide-details
                             return-object
                             ref="repSelect"
-                            @input="repValuesChanged = true">
+                            @input="repValuesChanged = true"
+                            attach>
 
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
@@ -687,7 +691,7 @@
                      :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
                   <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 2" class="milestone-star"z
+                  <v-icon v-if="q1_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
                   <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
@@ -708,7 +712,7 @@
                      :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">
                   <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 2" class="milestone-star"z
+                  <v-icon v-if="q2_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>
                   <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>
@@ -729,7 +733,7 @@
                      :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">
                   <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 2" class="milestone-star"z
+                  <v-icon v-if="q3_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>
                   <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>
@@ -750,7 +754,7 @@
                      :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">
                   <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 2" class="milestone-star"z
+                  <v-icon v-if="q4_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>
                   <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>
