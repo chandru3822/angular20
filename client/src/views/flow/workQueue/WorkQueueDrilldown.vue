@@ -44,7 +44,7 @@
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
-                              @input="filterResults(header)">
+                              @input="filterResults()">
                 </v-text-field>
               </th>
             </tr>
@@ -305,9 +305,20 @@
       clickRow(row) {
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
       },
-      filterResults(header) {
+      filterResults() {
         this.results = this.masterResults.filter(r => {
-          return r[header.value]?.toString().toLowerCase().includes(this.filters[header.value]?.toLowerCase())
+          let matchCount = 0
+          let numFiltersUsed = 0
+          Object.keys(this.filters).forEach(key => {
+            let value = this.filters[key]
+            if(null != value && value !== '') {
+              numFiltersUsed++
+              if(r[key]?.toString().toLowerCase().includes(value?.toLowerCase())){
+                matchCount++
+              }
+            }
+          })
+          return matchCount === numFiltersUsed
         })
       }
     },
