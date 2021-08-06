@@ -31,7 +31,7 @@
               <v-text-field
                 v-model="search"
                 prepend-inner-icon="search"
-                label="Search"
+                label="Search users and zones"
                 single-line
                 hide-details
                 @input="debounceSearch"
@@ -47,6 +47,19 @@
               hide-default-footer
               class="elevation-1 round-robin-table"
             >
+
+              <template #header.zoneName="{ header }">
+                <th class="pa-2 text-left">
+                  {{ header.text }}
+                  <v-text-field outlined
+                                hide-details
+                                class="filter-input"
+                                v-model="nameSearch"
+                                @input="filterResults()">
+                  </v-text-field>
+                </th>
+              </template>
+
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.zoneName}}</td>
@@ -111,6 +124,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
+  import cloneDeep from 'lodash.clonedeep'
   import {  getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
@@ -123,6 +137,7 @@
         addNew: false,
         search: null,
         newZone: {},
+        nameSearch: '',
         dataLoading: true,
         selectedZoneId: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
@@ -131,6 +146,7 @@
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
         postalCodeZones: [],
+        masterPostalCodeZones: [],
         headers: [
           {text: 'Round Robin Name', value: 'zoneName', show: true},
           {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
@@ -159,6 +175,7 @@
         try {
           const {data} = await getRequestWithParams(`/postalCode/zones`, { params: { searchQuery: this.search}})
           this.postalCodeZones = data
+          this.masterPostalCodeZones = cloneDeep(data)
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -198,6 +215,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      filterResults() {
+        this.postalCodeZones = this.masterPostalCodeZones.filter(pcz => {
+          return pcz?.zoneName?.toLowerCase().includes(this.nameSearch.toLowerCase())
+        })
+      }
     },
     async created () {
       this.getPostalCodeZones()
