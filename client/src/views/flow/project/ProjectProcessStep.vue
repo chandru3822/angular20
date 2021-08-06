@@ -224,8 +224,14 @@
                   <div class="text-right" v-if="availabilityDateField.dateValue">
                     <v-btn color="primaryCustom" dark class="white--text"
                            :loading="searchLoading"
+                           id="qa-round-robin-search-remote"
+                           @click="getAvailableTimeSlots(true)">
+                      Search Remote
+                    </v-btn>
+                    <v-btn color="primaryCustom" dark class="white--text ml-3"
+                           :loading="searchLoading"
                            id="qa-round-robin-search"
-                           @click="getAvailableTimeSlots">
+                           @click="getAvailableTimeSlots(false)">
                       Search
                     </v-btn>
                   </div>
@@ -750,7 +756,7 @@
         this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
-      async getAvailableTimeSlots() {
+      async getAvailableTimeSlots(remote) {
         try {
           this.searchLoading = true
           this.selectedTimeSlot = {}
@@ -760,7 +766,8 @@
             projectId: this.projectId,
             startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
             endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            availableDate: this.availabilityDateField.dateValue
+            availableDate: this.availabilityDateField.dateValue,
+            remote: remote
           }
           const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
           this.searchedTimeSlots = true
