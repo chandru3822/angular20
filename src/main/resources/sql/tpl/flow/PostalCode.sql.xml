@@ -201,6 +201,7 @@
                  else upv.position_schedulable is true end
         and upv.user_archived is not true
         and upv.archived is not true
+        and upv.has_access = true
         and upv.company_id = :companyId
         and upv.start_date <= now()
         and upv.primary_flag is true
