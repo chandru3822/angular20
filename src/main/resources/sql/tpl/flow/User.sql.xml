@@ -374,6 +374,7 @@
                else u.id = :userId::integer end
       and uc.is_default = true
     limit 1
+    
   ]]></user.findByUsernameIgnoreCase>
 
   <user.updateLoginAttempts><![CDATA[
