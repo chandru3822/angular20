@@ -12,6 +12,15 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <v-toolbar color="white" class="elevation-1 mt-3">
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="exportCsv">
+              <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
+              <span v-else>Export</span>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
         <v-data-table
             :headers="headers"
             :items="orgs"
@@ -76,9 +85,9 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import {  getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-
+  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Orgs',
@@ -195,6 +204,30 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      exportCsv() {
+        let csv = ''
+
+        this.headers.forEach(h => csv += `${h.text},`)
+        csv = `${csv.slice(0, -1)}\n`
+
+        this.orgs.forEach(o => {
+
+          let addRow = true
+          this.headers.forEach(h => {
+            if (!h.filter(o[h.value])) {
+              addRow = false
+            }
+          })
+
+          if (addRow) {
+            this.headers.forEach(h => csv += `${o[h.value]},`)
+            csv = `${csv.slice(0, -1)}\n`
+          }
+        })
+
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+        saveAs(blob, 'Orgs.csv')
       }
     },
     async created () {

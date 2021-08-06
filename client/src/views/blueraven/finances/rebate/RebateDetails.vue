@@ -52,7 +52,7 @@
                         label="City:"
                         v-model="rebateDetails.mailing_city">
           </v-text-field>
-          <v-select v-model="rebateDetails.mailing_state_id"
+          <v-select attach v-model="rebateDetails.mailing_state_id"
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit"
                     :items="states"
@@ -675,9 +675,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
   @media (min-width: 768px) {

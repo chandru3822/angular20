@@ -16,13 +16,13 @@
           <h3>Add Org Type</h3>
           <v-text-field text v-model="newOrgType.orgType"
                         label="Org Type Name" />
-          <v-select v-model="newOrgType.orgLevelId"
+          <v-select attach v-model="newOrgType.orgLevelId"
                     :items="levels"
                     label="Level"
                     item-text="level"
                     item-value="id"
           ></v-select>
-          <v-select v-if="newOrgType.orgLevelId"
+          <v-select attach v-if="newOrgType.orgLevelId"
                     v-model="newOrgType.orgParentTypeId"
                     :items="filteredOrgTypes(newOrgType.orgLevelId)"
                     label="Parent"
@@ -65,13 +65,13 @@
               <h3>Edit Org Type</h3>
               <v-text-field text v-model="item.orgType"
                             label="Org Type Name" />
-              <v-select v-model="item.orgLevelId"
+              <v-select attach v-model="item.orgLevelId"
                         :items="levels"
                         label="Level"
                         item-text="level"
                         item-value="id"
               ></v-select>
-              <v-select v-if="item.orgLevelId && item.orgLevelId"
+              <v-select attach v-if="item.orgLevelId && item.orgLevelId"
                         v-model="item.orgParentTypeId"
                         :items="filteredOrgTypes(item.orgLevelId)"
                         label="Parent"
@@ -110,7 +110,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'

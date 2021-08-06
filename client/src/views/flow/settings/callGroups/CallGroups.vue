@@ -79,7 +79,7 @@
                   <td>{{item.postalCodesCount}}</td>
                   <td>{{item.activePhoneNumbersCount}}</td>
                   <td>
-                    <v-select style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
+                    <v-select attach style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
                   </td>
                   <td class="text-right">
                     <v-btn small text @click="goToCallGroup(item.id)">
@@ -138,7 +138,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
-  import { getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'CallGroups',
@@ -294,8 +294,4 @@
   .edit-text {
     margin-left: 25px;
   }
-</style>
-
-<style scoped lang="scss">
-
 </style>

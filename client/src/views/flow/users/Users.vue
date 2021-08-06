@@ -38,6 +38,11 @@
               <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
             </v-btn>
+
+            <v-btn text @click="exportCsv">
+              <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
+              <span v-else>Export</span>
+            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -80,6 +85,7 @@
                           placeholder="Select..."
                           height="35px"
                           outlined
+                                attach
                           class="user-filter-select"
                           @change="handleOrgFilterChange(false, header.level)"
                 >
@@ -118,6 +124,7 @@
                           outlined
                           placeholder="Select..."
                           height="35px"
+                                attach
                           class="user-filter-select"
                           @input="getUsers(false)"
                 >
@@ -157,6 +164,7 @@
                           placeholder="Select..."
                           height="35px"
                           outlined
+                                attach
                           class="user-filter-select"
                           @input="getUsers(false)"
                 >
@@ -223,7 +231,7 @@
           </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-5">
-            <v-select label="From"
+            <v-select attach label="From"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
@@ -315,16 +323,19 @@
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import {getOrgFilters} from '@/services/orgService'
   import max from 'lodash.max'
   import 'quill/dist/quill.snow.css'
+  import {quillEditor} from 'vue-quill-editor'
+  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Users',
+    components: {QuillEditor: quillEditor},
     watch: {
       options: {
         handler() {
@@ -461,7 +472,7 @@
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
         if (this.filters.statuses && this.filters.statuses.length > 0) {
           this.dataLoading = true
-          const { sortBy, sortDesc, page, itemsPerPage } = this.options
+          const { page, itemsPerPage } = this.options
           try {
             const params = {
               search: this.filters.search,
@@ -635,9 +646,9 @@
           }
         })
       },
-      getOrgNameForFilter(hierarchy, filterOrgLevelId) {
+      getOrgNameForFilter(hierarchy, filterOrgLevelId, isExport = false) {
         const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
-        return result?.orgName ?? 'N/A'
+        return result?.orgName ?? (isExport ? '' : 'N/A')
       },
       getOrgIdsForMax(resetSelected) {
         let maxKey = max(Object.keys(this.filters.orgs))
@@ -770,6 +781,51 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+      async exportCsv() {
+        try {
+          const params = {
+            search: this.filters.search,
+            firstName: this.filters.firstName,
+            lastName: this.filters.lastName,
+            email: this.filters.email,
+            phone: this.filters.phone,
+            statuses: this.filters.statuses,
+            positions: this.filters.positions,
+            orgs: this.getOrgIdsForMax(),
+            //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
+            primaryFlag: this.primaryPositionsOnly
+          }
+
+          const {data} = await postRequest(`/user/search?page=0&size=9999`, params)
+
+          let csv = ''
+
+          this.headers.forEach(h => {
+            if (h.text !== '') {
+              csv += `${h.text},`
+            }
+          })
+
+          csv = `${csv.slice(0, -1)}\n`
+
+          data.content.forEach(u => {
+            csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},${u.phoneExtention || ''},${u.userStatusType},${u.position || ''},`
+
+            this.orgFilters.forEach(f => {
+              csv += `${this.getOrgNameForFilter(u.hierarchy, f.orgLevelId, true)},`
+            })
+
+            csv += '\n'
+          })
+
+          const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+          saveAs(blob, 'Users.csv')
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error exporting user data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }

@@ -20,6 +20,7 @@
         :label="`Status To Change To (${newStatusOptional === true ? 'Optional' : 'Required'})`"
         return-object
         class="mt-2"
+        attach
       />
       <div class="error-text"
         v-if="projectProcessStep.main && projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 3">
@@ -35,6 +36,7 @@
           label="Status To Use For Existing (Required)"
           item-text="processStepStatusType"
           item-value="id"
+          attach
         />
       </div>
     </v-card-text>

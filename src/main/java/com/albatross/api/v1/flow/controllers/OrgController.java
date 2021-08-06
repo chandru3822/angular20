@@ -1,16 +1,16 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Org;
-import com.albatross.api.v1.flow.model.OrgFilter;
-import com.albatross.api.v1.flow.model.UserOrgAccess;
-import com.albatross.api.v1.flow.model.UserSearch;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.OrgService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -90,6 +90,19 @@ public class OrgController {
   @DeleteMapping(value = "/user/calendar/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteOrgCalendarFromUser(@PathVariable Long id) {
     orgService.deleteOrgCalendarFromUser(id);
+  }
+
+  @GetMapping(value = "/{orgId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Attachment>> getOrgAttachments(@PathVariable Long orgId,
+                                                             @PathVariable(required = false) Boolean isMobile) {
+    return new ResponseEntity<>(orgService.getOrgAttachments(orgId, isMobile), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{orgId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Attachment> uploadOrgAttachment(@PathVariable Long orgId,
+                                                         @RequestParam Long attachmentTypeId,
+                                                         @RequestParam("file") MultipartFile file) throws IOException {
+    return new ResponseEntity<>(orgService.addAttachment(file, orgId, attachmentTypeId), HttpStatus.OK);
   }
 
 }

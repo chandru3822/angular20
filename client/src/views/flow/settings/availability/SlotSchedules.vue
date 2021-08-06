@@ -146,7 +146,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
@@ -263,13 +263,4 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-.schedule-wrap {
-
-}
-</style>
 

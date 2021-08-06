@@ -29,7 +29,7 @@
           <v-btn class="mb-1" @click="newPanel.panelStates.push({})">Add State</v-btn>
           <v-card class="px-4" flat v-for="(us, index) in newPanel.panelStates" :key="index">
             <v-row>
-              <v-select v-model="us.companyStateId"
+              <v-select attach v-model="us.companyStateId"
                         class="mr-4"
                         :items="panelStates"
                         no-data-text="No States Available"
@@ -86,7 +86,7 @@
               <v-btn class="mb-1" @click="item.panelStates.push({})">Add State</v-btn>
               <v-card class="px-4" flat v-for="(us, index) in item.panelStates" :key="index">
                 <v-row v-show="us.archived != true">
-                  <v-select v-model="us.companyStateId"
+                  <v-select attach v-model="us.companyStateId"
                             class="mr-4"
                             :items="panelStates"
                             no-data-text="No States Available"
@@ -213,7 +213,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getCompanyStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {

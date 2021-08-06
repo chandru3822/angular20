@@ -1,46 +1,23 @@
 import Vue from 'vue'
 import Vuetify from './plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
-import VueQuillEditor from 'vue-quill-editor'
-import Mentionable  from 'vue-mention'
 import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
-// import VueFlatPickr from 'vue-flatpickr-component'
-// import 'flatpickr/dist/flatpickr.css'
-import 'mapbox-gl/dist/mapbox-gl.css'
-import '@fullcalendar/core/main.css'
-import '@fullcalendar/timeline/main.css'
-import '@fullcalendar/resource-timeline/main.css'
 import { UserMutations } from './stores/UserStore'
-import JsonExcel from 'vue-json-excel'
-// import moment from 'moment'
 import moment from 'moment-timezone'
-import devtools from '@vue/devtools'
-import VueMapbox from 'vue-mapbox'
-import Mapbox from 'mapbox-gl'
-
 
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 
-const { VUE_APP_BASE_API, VUE_APP_ENV, NODE_ENV } = process.env
-
-// if (NODE_ENV === 'development') {
-//   devtools.connect('http://localhost', 8098)
-// }
-
+const { VUE_APP_BASE_API, VUE_APP_ENV } = process.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
 
-Vue.component('downloadExcel', JsonExcel)
-
 Vue.use(Vue2Filters)
-// Vue.use(VueFlatPickr)
-Vue.use(VueMapbox, { mapboxgl: Mapbox });
 Vue.prototype.$filters = Vue.options.filters
 
 //this filter is only used for the zoneless time picker stuff
@@ -117,8 +94,6 @@ axios.interceptors.response.use((response) => {
   }
 })
 
-Vue.use(Vuetify)
-
 new Vue({
   router,
   store,
@@ -127,5 +102,3 @@ new Vue({
 }).$mount('#app')
 
 Vue.use(Chat)
-Vue.use(VueQuillEditor)
-Vue.use(Mentionable)

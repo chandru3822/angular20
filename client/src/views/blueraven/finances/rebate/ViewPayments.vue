@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-toolbar color="white" class="elevation-1 mt-3">
-      <v-select v-model="status"
+      <v-select attach v-model="status"
                 class="status-select pt-3 pl-1"
                 :items="statuses"
                 no-data-text="No Status Available"
@@ -217,7 +217,8 @@
 
 <script>
 
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar.vue'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
@@ -226,6 +227,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
 
   export default {
     name: 'Payments',
+    components: {Snackbar},
     data() {
         return {
             snackbar: {},

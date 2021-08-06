@@ -214,7 +214,7 @@
               <v-text-field text
                             label="Description"
                             v-model="residualPlan.description"></v-text-field>
-              <v-select v-model="residualPlan.positionId"
+              <v-select attach v-model="residualPlan.positionId"
                         :items="positions"
                         :disabled="true"
                         no-data-text="No Users Available"
@@ -433,6 +433,7 @@
                               item-value="userId"
                               autocomplete="off"
                               @input="getUserHistory(newUser.userId)"
+                              attach
               >
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.name }} - {{ item.position }}
@@ -1036,9 +1037,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .v-data-table {

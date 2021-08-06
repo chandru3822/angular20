@@ -106,7 +106,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Codes',
@@ -201,10 +201,5 @@
     max-height: calc(100vh - 410px);
     min-height: 300px;
   }
-</style>
-
-<style lang="scss" scoped>
-
-
 </style>
 

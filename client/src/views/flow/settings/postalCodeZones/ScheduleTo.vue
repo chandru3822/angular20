@@ -23,7 +23,8 @@
                     item-text="fullName"
                     item-value="userId"
                     return-object
-                    autocomplete="off">
+                    autocomplete="off"
+                          attach>
           </v-autocomplete>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
@@ -180,7 +181,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import sumBy from "lodash.sumby"
 
   export default {

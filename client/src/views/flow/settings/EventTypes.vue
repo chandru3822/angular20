@@ -85,7 +85,7 @@
   import orderBy from 'lodash.orderby'
   import {getEventTypes} from '@/services/scheduleService'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -185,7 +185,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

@@ -76,7 +76,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, logError, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import sumBy from 'lodash.sumby'
   import {getRequestWithParams} from "@/helpers/helpers";

@@ -199,4 +199,33 @@
     where c.id = :contactId
   ]]></contact.getCompanyId>
 
+
+  <contact.getContactAttachments><![CDATA[
+    select
+      a.id,
+      a.size,
+      a.uuid,
+      a.date_created,
+      a.date_modified,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key,
+      a.archived,
+      substring(filename, '\.([^\.]+)$') as file_extension,
+      ca.contact_id,
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+    from flow.contact_attachment ca
+           inner join flow.attachment a on a.id = ca.attachment_id
+           inner join flow."user" u ON a.created_by_id = u.id
+    where ca.contact_id = :contactId
+      and a.archived is not true
+    order by ca.date_created desc
+  ]]></contact.getContactAttachments>
+
+  <contact.addAttachment><![CDATA[
+    insert into flow.contact_attachment(attachment_id, contact_id, created_by_id)
+    values (:attachmentId, :contactId, :createdById)
+  ]]></contact.addAttachment>
+
 </sql>

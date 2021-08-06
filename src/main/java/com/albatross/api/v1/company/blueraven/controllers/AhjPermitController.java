@@ -4,7 +4,6 @@ import com.albatross.api.v1.company.blueraven.enums.AhjType;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.company.blueraven.services.AhjPermitService;
 import com.albatross.api.v1.company.blueraven.services.AhjService;
-
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
