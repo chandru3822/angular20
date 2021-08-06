@@ -22,7 +22,7 @@
         <v-divider class="mt-3"/>
         <v-row class="px-4">
           <div style="width: 250px">
-            <v-select v-model="selectedUserPosition"
+            <v-select attach v-model="selectedUserPosition"
                       :items="workQueueOwners"
                       label="Assigned to"
                       item-text="fullName"
@@ -58,7 +58,7 @@
 
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueue',

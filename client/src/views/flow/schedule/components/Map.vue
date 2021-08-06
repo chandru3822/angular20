@@ -37,10 +37,10 @@
 </template>
 
 <script>
+  import 'mapbox-gl/dist/mapbox-gl.css'
   import Mapbox from 'mapbox-gl'
   import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'vue-mapbox'
   import constants from '@/helpers/constants'
-
 
   export default {
     name: 'ScheduleMap',
@@ -82,7 +82,7 @@
     methods: {
       async changeMapLocation(event) {
         // Here we catching 'load' map event
-          const newParams = await this.asyncActions.flyTo({
+          await this.asyncActions.flyTo({
             center: [this.longitude, this.latitude],
             zoom: this.zoom,
             speed: 2
@@ -94,7 +94,7 @@
         this.asyncActions = event.component.actions
         let center = this.latitude && this.longitude ? [this.longitude, this.latitude] : this.defaultCenter
         let zoom = this.zoom ?? this.defaultZoom
-        const newParams = await this.asyncActions.flyTo({
+        await this.asyncActions.flyTo({
           center,
           zoom: zoom,
           speed: 2
@@ -104,11 +104,3 @@
 
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

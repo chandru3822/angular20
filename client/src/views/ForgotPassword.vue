@@ -37,13 +37,11 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-
+  import {postRequest, getSnackbar} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
     name: 'ForgotPassword',
-
     data () {
       return {
         snackbar: {},
@@ -74,11 +72,6 @@
             }
         }
       },
-
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

@@ -27,7 +27,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         :readonly="!userCanEdit"
@@ -228,7 +228,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(2)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
@@ -292,7 +292,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(24)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         :readonly="!userCanEdit"
@@ -352,7 +352,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(3)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         :readonly="!userCanEdit"
@@ -436,7 +436,7 @@
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(4)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
@@ -491,7 +491,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(5)" :key="item.id">
-              <v-select v-model="item.intValue"
+              <v-select attach v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"

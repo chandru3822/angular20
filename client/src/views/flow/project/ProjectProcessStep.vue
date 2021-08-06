@@ -37,6 +37,7 @@
                           return-object
                           autocomplete="off"
                           @change="updateOwner"
+                          attach
           >
           </v-autocomplete>
         </div>
@@ -228,7 +229,7 @@
                       Search
                     </v-btn>
                   </div>
-                  <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
+                  <v-select attach v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
                             v-model="selectedTimeSlot"
                             class="qa-round-robin-time-select"
                             :items="timeSlots"
@@ -335,7 +336,7 @@
 
 <script>
 
-  import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
+  import {getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'

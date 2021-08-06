@@ -35,6 +35,7 @@
                           label="Select a Process Step"
                           item-text="processStepName"
                           item-value="id"
+                          attach
           ></v-autocomplete>
           <v-autocomplete v-model="newProcessStep.owningPositions"
                           :items="owningPositions"
@@ -44,6 +45,7 @@
                           item-value="positionId"
                           multiple
                           return-object
+                          attach
           ></v-autocomplete>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
@@ -94,6 +96,7 @@
                                   label="Initial Process Step Status Type"
                                   item-text="processStepStatusType"
                                   item-value="id"
+                                  attach
                   ></v-autocomplete>
                 </div>
                 <v-autocomplete v-model="item.owningPositions"
@@ -105,6 +108,7 @@
                                 item-value="positionId"
                                 multiple
                                 return-object
+                                attach
                 ></v-autocomplete>
                 <div class="mt-3 text-center">
                   <v-btn :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"

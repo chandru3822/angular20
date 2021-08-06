@@ -76,7 +76,7 @@ BEGIN
     );
 
     return query
-        select array_agg(foo2.user_id)::integer array as users, foo2.scheduled_start_time
+        select array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
         from (
                  select user_id,
                         foo1.scheduled_start_time,
@@ -111,9 +111,6 @@ BEGIN
                                          inner join flow.resource_schedule rs on rs.user_id = pczu.user_id and rs.archived is false
                                          inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                          inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.has_access is true
-                                    and p_available_date >= rs.start_date and case when rs.end_date is not null then
-                                                                                       p_available_date <= rs.end_date
-                                                                               else 1=1 end
                                          inner join flow.resource_schedule_availability rsa
                                                     on rsa.resource_schedule_id = rs.id
                                                         and rsa.archived is false

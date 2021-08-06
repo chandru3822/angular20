@@ -1,8 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.v1.company.blueraven.models.MetroArea;
-
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.MetroArea;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

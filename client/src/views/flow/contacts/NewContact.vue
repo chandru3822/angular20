@@ -36,7 +36,7 @@
                             id="qa-city-field"
                             :rules="cityRules"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.companyStateId"
+              <v-select attach v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         id="qa-state-field"
@@ -68,7 +68,7 @@
                             @keypress="isNumberOrHyphen"
                             :rules="postalCodeRules"
                             v-model="contact.postalCode"></v-text-field>
-              <v-select v-model="contact.companyCountryId"
+              <v-select attach v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
                         id="qa-country-field"
@@ -97,7 +97,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
-import {getRequest, getRequestWithParams, isNumberOrHyphen, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import { getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getCompanyStates} from '@/services/stateService'
@@ -268,7 +268,3 @@ export default {
 
 }
 </script>
-
-<style lang="scss" scoped>
-</style>
-

@@ -193,6 +193,7 @@
               label="Users"
               item-text="fullName"
               item-value="id"
+              attach
             ></v-autocomplete>
 
             <v-btn text :disabled="!userId"
@@ -288,7 +289,6 @@
   import constants from '@/helpers/constants'
   import {
     getRequest,
-    getRequestWithParams,
     deleteRequest,
     putRequest,
     postRequest,

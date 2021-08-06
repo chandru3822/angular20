@@ -86,9 +86,6 @@
   }
 </script>
 
-<style lang="scss">
-</style>
-
 <style scoped lang="scss">
   .tabs-bar {
     top: -12px;

@@ -34,10 +34,11 @@
                               autocomplete="off"
                               label="State"
                               item-text="state"
-                              item-value="id"/>
+                              item-value="id"
+                              attach/>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-select v-model="user.userStatusTypeId"
+              <v-select attach v-model="user.userStatusTypeId"
                         :items="userStatusTypes"
                         label="User Status"
                         :rules="requiredRules"
@@ -55,7 +56,7 @@
               <v-text-field text
                             label="Zip Code"
                             v-model="user.postalCode"></v-text-field>
-              <v-select v-model="user.companyCountryId"
+              <v-select attach v-model="user.companyCountryId"
                         :items="countries"
                         label="Country"
                         item-text="country"
@@ -104,6 +105,7 @@
                               label="Position"
                               item-text="position"
                               item-value="id"
+                              attach
                               @input="populateHierarchy(newPosition, true)"/>
               <div v-if="newPositionHierarchyPopulated">
                 <div v-for="(f, index) in filters" :key="index">
@@ -117,8 +119,9 @@
                     item-text="orgName"
                     autocomplete="off"
                     type="search"
+                    attach
                   >
-                    <template slot="selection" slot-scope="{ item, index }">
+                    <template slot="selection" slot-scope="{ item }">
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
                     <template slot='item' slot-scope='{ item }'>
@@ -142,7 +145,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {getCountries} from '@/services/countryService'
   import {getCompanyStates} from '@/services/stateService'
@@ -152,8 +155,6 @@
   import DatetimePickerInput from "@/components/DatetimePickerInput";
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
-
-  const {VUE_APP_ENV} = process.env
 
   export default {
     name: 'NewUser',

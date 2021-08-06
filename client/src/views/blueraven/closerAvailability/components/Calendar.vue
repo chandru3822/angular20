@@ -15,6 +15,7 @@
                     item-text="zoneName"
                     @blur="getPostalCodeZoneUsers(selectedPostalCodeZones)"
                     item-value="id"
+                          attach
           >
             <template
                 slot="selection"
@@ -48,6 +49,7 @@
                           @input="[postalCodeZoneUserValuesChanged = true, limiter()]"
                           item-text="fullName"
                           item-value="id"
+                          attach
           >
             <template
               slot="selection"
@@ -122,17 +124,19 @@
 </template>
 
 <script>
+  import '@fullcalendar/core/main.css'
+  import '@fullcalendar/timeline/main.css'
+  import '@fullcalendar/resource-timeline/main.css'
+
   import FullCalendar from '@fullcalendar/vue'
   import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
   import interaction from '@fullcalendar/interaction'
   import momentPlugin from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
-  import {getSchedulingOrgTypes} from '@/services/orgService'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
-
-  import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -539,7 +543,6 @@
         checkbox.onchange = (event) => {
           if(event.target.checked) {
             let resource = renderInfo.resource
-            let self = this
             let resourceEvents = this.eventSources[0].events.filter(e => {
               return e.resourceId === resource.id || e.resourceId?.toString() === resource.id
             })

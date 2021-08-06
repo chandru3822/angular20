@@ -4,7 +4,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
-
 import com.albatross.api.v1.company.blueraven.services.LoanPalService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.flow.model.Contact;
@@ -20,7 +19,9 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j

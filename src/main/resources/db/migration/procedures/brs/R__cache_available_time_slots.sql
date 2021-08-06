@@ -11,7 +11,7 @@ BEGIN
     select foo.user,count(1) as avail
     from (
              with active_users as (
-                 select u.id,u.first_name,u.last_name,up.position_id,
+                 select u.id,u.first_name,u.last_name,up.position_id,t.timezone,
                         date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone as start_time,
                         (date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone) + interval '1 day' - interval '1 second' as end_time
                  from flow.user u
@@ -39,7 +39,7 @@ BEGIN
                      ap.id,
                      d::timestamp,
                      (d + interval '23 hours 59 minutes 59 seconds')::timestamp,
-                     d::date) as t on true) as foo
+                     d::date,ap.timezone) as t on true) as foo
     group by foo.user);
 END
 $BODY$

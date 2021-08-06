@@ -72,7 +72,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
   import constants from "@/helpers/constants";
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Payroll',
@@ -305,11 +305,4 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
 

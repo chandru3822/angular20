@@ -29,8 +29,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-
+  import { getRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'ProcessSteps',

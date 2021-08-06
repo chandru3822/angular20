@@ -104,9 +104,8 @@
 
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import {UserMutations} from "@/stores/UserStore";
 
   export default {
     name: 'User',

@@ -39,6 +39,7 @@
                           item-text="name"
                           item-value="id"
                           autocomplete="off"
+                          attach
           />
           <DatetimePickerInput
               v-model="newCommissionPlan.startDate"
@@ -161,6 +162,7 @@
                           item-text="name"
                           item-value="id"
                           autocomplete="off"
+                          attach
           />
           <DatetimePickerInput
             v-model="newOverridePlan.startDate"
@@ -292,6 +294,7 @@
                           item-value="id"
                           return-object
                           autocomplete="off"
+                          attach
           />
           <v-card flat v-if="cloneOverridePlan && cloneOverridePlan.id">
             <v-card-title>Receiving Users</v-card-title>
@@ -373,14 +376,11 @@
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Commission',
-    components: {
-
-      DatetimePickerInput
-    },
+    components: {DatetimePickerInput},
     created() {
       this.getCloserDetails()
     },
@@ -630,9 +630,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .v-data-table {

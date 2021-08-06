@@ -42,6 +42,7 @@
                           return-object
                           autocomplete="off"
                           @input="saveUserOrgCalendars"
+                          attach
           />
           <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
         </v-card>
@@ -266,11 +267,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

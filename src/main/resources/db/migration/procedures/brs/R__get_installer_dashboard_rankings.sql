@@ -54,7 +54,6 @@ RETURN QUERY SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                                     then company_id = p_parent_company_id
                                 else company_id = p_company_id
                           end
-                      limit 9
                   ) b
          ) c
     ) as sub_rows;

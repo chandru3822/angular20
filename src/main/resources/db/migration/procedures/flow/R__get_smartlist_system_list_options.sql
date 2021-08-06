@@ -50,6 +50,42 @@ begin
         where cpst.company_id = p_company_id and
               cpst.archived is not true
         order by name;
+    when p_smartlist_system_list_id = 6 then
+      -- org levels
+      return query
+        select ol.id,
+               ol.level_name as name
+        from flow.org_level ol
+        where ol.company_id = p_company_id
+      order by level;
+    when p_smartlist_system_list_id = 7 then
+      -- org types
+      return query
+        select ot.id,
+               ot.org_type as name
+        from flow.org_type ot
+        inner join flow.org_level ol on ol.id = ot.org_level_id
+        where ot.company_id = 3 and
+              ot.archived is not true
+        order by ol.level, ot.org_type;
+    when p_smartlist_system_list_id = 8 then
+      --user statuses
+      return query
+        select ust.id,
+               ust.user_status_type as name
+        from flow.user_status_type ust
+        where ust.company_id = p_company_id and
+              ust.archived is not true
+        order by ust.user_status_type;
+    when p_smartlist_system_list_id = 9 then
+      -- positions
+      return query
+        select p.id,
+               p.position as name
+        from flow.position p
+        where p.company_id = p_company_id and
+              p.archived is not true
+        order by p.position;
     end case;
 end;
 $$

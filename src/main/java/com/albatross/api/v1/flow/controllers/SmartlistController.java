@@ -147,7 +147,7 @@ public class SmartlistController {
       List<CompanyObjectType> types = objectTypeService.getCompanyObjectTypes();
       // Object types 3 (users) and 5 (orgs) are only available in smartlists through process steps, not as direct lists or fields
       List<CompanyObjectType> filteredTypes = types.stream()
-          .filter(t -> t.getObjectTypeId() != 3 && t.getObjectTypeId() != 5 && t.getObjectTypeId() != 6)
+          .filter(t -> t.getObjectTypeId() != 6)
           .collect(Collectors.toList());
       return new ResponseEntity<>(filteredTypes, HttpStatus.OK);
   }
@@ -176,15 +176,25 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.getSharedByType(objectTypeId), HttpStatus.OK);
   }
 
-  @PutMapping(value = "/{smartlistId}/toggleType")
+  @PutMapping(value = "/{smartlistId}/toggleProjectDetails")
   public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
     User user = securityService.getCurrentUser();
     if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("EDIT", "ADMIN"))) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    smartlistService.toggleType(smartlistId);
+    smartlistService.toggleProjectDetails(smartlistId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PutMapping(value = "/{smartlistId}/toggleObjectType", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Smartlist> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("EDIT", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    return new ResponseEntity<>(smartlistService.updateObjectType(smartlist), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{smartlistId}/copy")

@@ -1,13 +1,13 @@
 package com.albatross.api.v1.flow.model;
 
+import lombok.Data;
+
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
-import lombok.Data;
-
 @Data
 public class ProjectField {
-  
+
   private Long customFieldId, projectCustomValueId, fieldOrder;
 
   private String fieldName, companyDataType, textValue;
