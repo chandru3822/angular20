@@ -3,6 +3,8 @@
     select pcz.id,
         pcz.company_id,
         pcz.zone_name,
+        pcz.remote,
+        pcz.company_timezone_id,
         pcz.distribution_time_frame_days,
         pcz.schedulable_future_days,
         pcz.archived
@@ -10,7 +12,7 @@
     where pcz.company_id = :companyId
     and pcz.archived is not true
     and case when :searchQuery::text is not null then
-                 lower(translate(pcz.zone_name, '*,.& ', '')) like '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%'
+                 lower(translate(pcz.zone_name, '*,.&', '')) like '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%'
             OR pcz.id in (select pc.postal_code_zone_id
                 from flow.postal_code pc
                 where pc.archived is not true
@@ -30,6 +32,8 @@
     select pcz.id,
        company_id,
        zone_name,
+       pcz.remote,
+       pcz.company_timezone_id,
        distribution_time_frame_days,
        schedulable_future_days
     from flow.postal_code_zone pcz
@@ -82,25 +86,31 @@
   ]]></postalCode.saveManualUserAllocation>
 
   <postalCode.getZone><![CDATA[
-    select pcz.id,
-       pcz.company_id,
-       pcz.distribution_time_frame_days,
-       pcz.schedulable_future_days,
-       pcz.zone_name,
-       pcz.archived
+   select pcz.id,
+           pcz.company_id,
+           pcz.distribution_time_frame_days,
+           pcz.schedulable_future_days,
+           pcz.remote,
+           pcz.company_timezone_id,
+           t.timezone,
+           pcz.zone_name,
+           pcz.archived
     from flow.postal_code_zone pcz
+      left join flow.company_timezone ct on pcz.company_timezone_id = ct.id
+      left join flow.timezone t on ct.timezone_id = t.id
     where pcz.id = :id
   ]]></postalCode.getZone>
 
 
   <postalCode.insertZone><![CDATA[
-    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id, distribution_time_frame_days, schedulable_future_days)
-    values (:companyId, :zoneName, now(), :createdById, :distributionTimeFrameDays, :schedulableFutureDays)
+    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id, distribution_time_frame_days, schedulable_future_days, company_timezone_id)
+    values (:companyId, :zoneName, now(), :createdById, :distributionTimeFrameDays, :schedulableFutureDays, :companyTimezoneId)
   ]]></postalCode.insertZone>
 
   <postalCode.updateZone><![CDATA[
     update flow.postal_code_zone
     set zone_name = :zoneName,
+        company_timezone_id = :companyTimezoneId,
         distribution_time_frame_days = :distributionTimeFrameDays,
         schedulable_future_days = :schedulableFutureDays,
         modified_by_id = :modifiedById,
@@ -117,9 +127,17 @@
   ]]></postalCode.deleteZone>
 
   <postalCode.insertZoneUser><![CDATA[
-    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_id, postal_code_zone_user_type_id)
-    values (:postalCodeZoneId, now(), :createdById, :userId, :postalCodeZoneUserTypeId)
+    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_id, postal_code_zone_user_type_id, company_timezone_id)
+    values (:postalCodeZoneId, now(), :createdById, :userId, :postalCodeZoneUserTypeId, :companyTimezoneId)
   ]]></postalCode.insertZoneUser>
+
+  <postalCode.updateZoneUser><![CDATA[
+    update flow.postal_code_zone_user
+    set company_timezone_id = :companyTimezoneId,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :pczuId
+  ]]></postalCode.updateZoneUser>
 
   <postalCode.deleteZoneUser><![CDATA[
     update flow.postal_code_zone_user
@@ -131,15 +149,19 @@
 
   <postalCode.getZoneUser><![CDATA[
     select pczu.id,
-       pczu.postal_code_zone_id,
-       u.first_name,
-       u.last_name,
-       concat(u.first_name, ' ', u.last_name) AS full_name,
-       pczu.user_id,
-       pczu.postal_code_zone_user_type_id,
-       pczu.archived
+           pczu.postal_code_zone_id,
+           u.first_name,
+           u.last_name,
+           concat(u.first_name, ' ', u.last_name) AS full_name,
+           pczu.user_id,
+           pczu.company_timezone_id,
+           t.timezone,
+           pczu.postal_code_zone_user_type_id,
+           pczu.archived
     from flow.postal_code_zone_user pczu
-             inner join flow.user u on u.id = pczu.user_id
+      inner join flow.user u on u.id = pczu.user_id
+      left join flow.company_timezone ct on pczu.company_timezone_id = ct.id
+      left join flow.timezone t on ct.timezone_id = t.id
     where pczu.id = :id
   ]]></postalCode.getZoneUser>
 
