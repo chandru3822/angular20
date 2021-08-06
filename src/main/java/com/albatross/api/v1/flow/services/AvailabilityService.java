@@ -528,13 +528,14 @@ public class AvailabilityService {
     sqlCache.update("availability.deleteAppointmentsByRecurrence", params);
   }
 
-  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate) {
+  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("startTime", startTime);
     params.put("endTime", endTime);
     params.put("availableDate", availableDate);
+    params.put("remote", null != remote ? remote : false);
 
     List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
     return results;

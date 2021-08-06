@@ -71,6 +71,12 @@ public class PostalCodeController {
     return postalCodeService.insertAllocationUser(id, user);
   }
 
+  @PutMapping(value = "/zone/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public PostalCodeZoneUser updateAllocationUser(@PathVariable Long id,
+                                                 @RequestBody PostalCodeAllocationUser user) {
+    return postalCodeService.updateAllocationUser(id, user);
+  }
+
   @PostMapping(value = "/zone/saveScheduleByUser", produces = MediaType.APPLICATION_JSON_VALUE)
   public PostalCodeZoneUser insertScheduleByUser(@RequestBody PostalCodeZoneUser user) {
     return postalCodeService.insertUser(user, PostalCodeZoneUserType.SCHEDULE_BY.id);
