@@ -224,6 +224,7 @@
                   <div class="text-right" v-if="availabilityDateField.dateValue">
                     <v-btn color="primaryCustom" dark class="white--text"
                            :loading="searchLoading"
+                           v-if="showRemoteSearch"
                            id="qa-round-robin-search-remote"
                            @click="getAvailableTimeSlots(true)">
                       Search Remote
@@ -355,6 +356,7 @@
   import {DateTime} from 'luxon'
   import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
+  const { VUE_APP_ENV } = process.env
   const NEW_STATUS_TO_USE = {id: null}
 
   export default {
@@ -382,6 +384,7 @@
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
         schedulerCanEdit: false,
+        showRemoteSearch: VUE_APP_ENV !== 'prod',
         schedulerLoading: true,
         closerApptSaved: false,
         searchedTimeSlots: false,
