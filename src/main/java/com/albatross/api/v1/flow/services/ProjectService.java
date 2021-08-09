@@ -29,10 +29,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -226,27 +228,31 @@ public class ProjectService {
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
     User user = securityService.getCurrentUser();
 
-    // Get active company project status type so new projects can have an active status
-    CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
-    Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
+    if(null != contactId && null != processId) {
+      // Get active company project status type so new projects can have an active status
+      CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
+      Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("contactId", contactId );
-    params.put("createdById", user.getId() );
-    params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
-    params.put("processId", processId );
-    params.put("street1", contact.getStreet1() );
-    params.put("city", contact.getCity() );
-    params.put("companyStateId", contact.getCompanyStateId());
-    params.put("companyCountryId", contact.getCompanyCountryId() );
-    params.put("postalCode", contact.getPostalCode() );
-    params.put("companyProjectStatusTypeId", companyStatusTypeId );
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("contactId", contactId);
+      params.put("createdById", user.getId());
+      params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
+      params.put("processId", processId);
+      params.put("street1", contact.getStreet1());
+      params.put("city", contact.getCity());
+      params.put("companyStateId", contact.getCompanyStateId());
+      params.put("companyCountryId", contact.getCompanyCountryId());
+      params.put("postalCode", contact.getPostalCode());
+      params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
-    Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
-    Optional<Project> project = getProject(id);
-    //load coordinates when new project added
-    project.ifPresent(value -> getProjectCoordinates(value, id));
-    return project;
+      Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
+      Optional<Project> project = getProject(id);
+      //load coordinates when new project added
+      project.ifPresent(value -> getProjectCoordinates(value, id));
+      return project;
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact ID and Process ID are required to add a project.", new Exception());
+    }
   }
 
   public void getProjectCoordinates(Project project, Long id) {
