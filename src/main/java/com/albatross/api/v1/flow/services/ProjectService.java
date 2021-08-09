@@ -82,7 +82,7 @@ public class ProjectService {
       params.put("upperBoundLongitude", search.getUpperBoundLongitude());
       params.put("lowerBoundLatitude", search.getLowerBoundLatitude());
       params.put("lowerBoundLongitude", search.getLowerBoundLongitude());
-      params.put("companyStatusTypeIds", search.getCompanyProjectStatusTypeIds());
+      params.put("companyProjectStatusTypeIds", search.getCompanyProjectStatusTypeIds());
       List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
       return results;
     } else {
