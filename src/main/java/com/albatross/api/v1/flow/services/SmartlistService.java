@@ -1391,8 +1391,8 @@ public class SmartlistService {
                   whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
                 } else {
                   // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-                  if (r.getObjectTypeId() == 4 && r.getReferenceTable().equals("flow.user")) {
-                    final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue, requirementValue);
+                  if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                    final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                     whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
                   } else {
                     whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
@@ -1543,7 +1543,7 @@ public class SmartlistService {
             projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
           }
 
-          if (r.getReferenceTable().equals("flow.process_step")) {
+          if (Objects.equals(r.getReferenceTable(), "flow.process_step")) {
             r.setValueReferenceTable(UUID.randomUUID().toString());
             projectsValueJoins.append(String.format(" left join flow.process_step \"%s\" on \"%s\".id = \"%s\".process_step_id", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getPpsTable()));
             joinTable = r.getValueReferenceTable();
@@ -1633,8 +1633,8 @@ public class SmartlistService {
               projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
               // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-              if (r.getObjectTypeId() == 4 && r.getReferenceTable().equals("flow.user")) {
-                final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue, requirementValue);
+              if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                 projectsWhereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
               } else {
                 projectsWhereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
@@ -2007,8 +2007,8 @@ public class SmartlistService {
                 whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
               } else {
                 // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-                if (r.getObjectTypeId() == 4 && r.getReferenceTable().equals("flow.user")) {
-                  final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue, requirementValue);
+                if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                  final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                   whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
                 } else {
                   whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
