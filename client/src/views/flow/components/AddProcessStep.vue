@@ -23,7 +23,7 @@
                     placeholder="Select one..."
                     @input="[getCancelledStatuses(), getActiveStatusesAssignedToStep() ]"
                     return-object
-                    attach/>
+                     />
     <v-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
                     v-if="null != selectedStep"
                     :items="activeStatusesAssignedToStep"
