@@ -75,6 +75,21 @@ public class ProjectService {
     return projectId;
   }
 
+  public List<Project> getProjectsInGeoArea(DensitySearch search) {
+    if(null != search.getUpperBoundLatitude() || null != search.getUpperBoundLongitude() || null != search.getLowerBoundLatitude() || null != search.getLowerBoundLongitude()) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("upperBoundLatitude", search.getUpperBoundLatitude());
+      params.put("upperBoundLongitude", search.getUpperBoundLongitude());
+      params.put("lowerBoundLatitude", search.getLowerBoundLatitude());
+      params.put("lowerBoundLongitude", search.getLowerBoundLongitude());
+      params.put("companyStatusTypeIds", search.getCompanyProjectStatusTypeIds());
+      List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
+      return results;
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
+    }
+  }
+
   public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String overrideType, String sortColumn, String sortDirection, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
