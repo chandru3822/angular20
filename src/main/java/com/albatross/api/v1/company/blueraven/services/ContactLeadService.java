@@ -54,7 +54,7 @@ public class ContactLeadService {
     params.put("lastName", CleanString.replaceApostrophe(cl.getLastName()));
     params.put("street1", cl.getAddress());
     params.put("city", cl.getCity());
-    params.put("postalCode", cl.getZip());
+    params.put("postalCode", cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)));
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
     params.put("createdById", currentUser.getId());
