@@ -25,6 +25,7 @@
            p.company_project_status_type_id,
            cpst.project_status_type,
            cpst.project_status_type_id,
+           cpst.color as company_project_status_type_color,
            p.latitude,
            p.longitude,
            p.street1,
@@ -381,6 +382,7 @@
         cpst.project_status_type,
         cpst.display_order,
         cpst.is_default,
+        cpst.color,
         pst.id as "projectStatusTypeId",
         cpst.archived,
         pst.project_status_type as "rootProjectStatusType"
@@ -419,6 +421,7 @@
     set project_status_type = :projectStatusType,
         modified_by_id = :currentUserId,
         display_order = :displayOrder,
+        color = :color,
         date_modified = now()
     where id = :id
 ]]></project.updateCompanyStatus>

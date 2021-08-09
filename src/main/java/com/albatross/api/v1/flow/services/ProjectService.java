@@ -76,7 +76,7 @@ public class ProjectService {
   }
 
   public List<Project> getProjectsInGeoArea(DensitySearch search) {
-    if(null == search.getUpperBoundLatitude() || null == search.getUpperBoundLongitude() || null == search.getLowerBoundLatitude() || null == search.getLowerBoundLongitude()) {
+    if(null != search.getUpperBoundLatitude() && null != search.getUpperBoundLongitude() && null != search.getLowerBoundLatitude() && null != search.getLowerBoundLongitude()) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("upperBoundLatitude", search.getUpperBoundLatitude());
       params.put("upperBoundLongitude", search.getUpperBoundLongitude());
@@ -418,6 +418,7 @@ public class ProjectService {
     params.put("currentUserId", currentUser.getId());
     params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
     params.put("projectStatusType", status.getProjectStatusType());
+    params.put("color", status.getColor());
     params.put("companyId", currentUser.getCompanyId());
     Long id;
 
