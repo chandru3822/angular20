@@ -329,8 +329,8 @@ public class ContactLeadService {
     }
 
     try {
-      if (ricochetEnabled && cl.getLeadLevel() != null && !cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
-            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L)) {
+      if (ricochetEnabled && cl.getLeadLevel() == null || (!cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
+            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L))) {
         postToRicochet(ricochetLead, params);
       }
       else {
