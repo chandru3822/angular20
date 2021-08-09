@@ -133,6 +133,7 @@ public class PostalCodeService {
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
     params.put("userId", zoneUser.getUserId());
     params.put("createdById", user.getId());
+    params.put("companyTimezoneId", null);
     params.put("postalCodeZoneUserTypeId", postalCodeZoneUserTypeId);
 
     Long id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
