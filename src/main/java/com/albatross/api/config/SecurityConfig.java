@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true);
-    configuration.setAllowedOriginPatterns(List.of("http://localhost:[*]", "https://*.myblueraven.com"));
+    configuration.setAllowedOriginPatterns(List.of("http://localhost:[*]", "https://*.myblueraven.com", "https://blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowedMethods(List.of("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

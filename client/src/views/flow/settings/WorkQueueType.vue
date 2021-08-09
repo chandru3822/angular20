@@ -320,7 +320,6 @@ export default {
   },
   computed: {},
   async created() {
-    console.log('randaLogger', this.expectedTargetRule)
     this.getWorkQueueCategories()
     this.getCompanyObjectTypes()
     this.getDurationTypes()
