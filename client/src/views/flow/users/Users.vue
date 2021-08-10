@@ -85,7 +85,6 @@
                           placeholder="Select..."
                           height="35px"
                           outlined
-                                attach
                           class="user-filter-select"
                           @change="handleOrgFilterChange(false, header.level)"
                 >
@@ -124,7 +123,6 @@
                           outlined
                           placeholder="Select..."
                           height="35px"
-                                attach
                           class="user-filter-select"
                           @input="getUsers(false)"
                 >
@@ -164,7 +162,6 @@
                           placeholder="Select..."
                           height="35px"
                           outlined
-                                attach
                           class="user-filter-select"
                           @input="getUsers(false)"
                 >
