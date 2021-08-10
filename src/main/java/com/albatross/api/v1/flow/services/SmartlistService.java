@@ -926,12 +926,13 @@ public class SmartlistService {
 
         whereClause.append(" flow.user.archived is not true and ");
         whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.position.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+        whereClause.append(String.format(" flow.org.company_id = any(%s) and ", companySubquery));
 
         if (smartlist.isPrimaryUserPosition()) {
           whereClause.append(" flow.user_position.primary_flag is true and ");
         }
-
-//        whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
 
         break;
       case 5:
@@ -953,12 +954,13 @@ public class SmartlistService {
           query.append(" inner join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id and flow.user_status_type.archived is not true ");
 
           whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
+          whereClause.append(String.format(" flow.position.company_id = any(%s) and ", companySubquery));
+          whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
 
           if (smartlist.isPrimaryUserPosition()) {
             whereClause.append(" flow.user_position.primary_flag is true and ");
           }
 
-//          whereClause.append(String.format(" flow.user_position.start_date <= '%s' and (flow.user_position.end_date is null or flow.user_position.end_date > '%s') and ", now, now));
         }
 
         break;
@@ -1388,7 +1390,13 @@ public class SmartlistService {
                 if (r.getSmartlistSystemListId() != null) {
                   whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
                 } else {
-                  whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                  // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
+                  if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                    final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
+                    whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
+                  } else {
+                    whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                  }
                 }
               }
             }
@@ -1529,18 +1537,22 @@ public class SmartlistService {
 
           r.setPpsTable(UUID.randomUUID().toString());
           String joinTable = r.getPpsTable();
+          String joinColumn = r.getReferenceColumn();
           projectsValueJoins.append(String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s and \"%s\".archived is not true", r.getPpsTable(), r.getPpsTable(), r.getPpsTable(), r.getProcessStepId(), r.getPpsTable()));
           if (smartlist.isMainProcessSteps()) {
             projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
           }
 
-          if (r.getReferenceTable().equals("flow.process_step")) {
+          if (Objects.equals(r.getReferenceTable(), "flow.process_step")) {
             r.setValueReferenceTable(UUID.randomUUID().toString());
             projectsValueJoins.append(String.format(" left join flow.process_step \"%s\" on \"%s\".id = \"%s\".process_step_id", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getPpsTable()));
             joinTable = r.getValueReferenceTable();
+          } else if (r.getReferenceTable().equals("flow.user")) {
+            // Since this is a process step smartlist field, if it's looking at the user table, it's the process step owner field
+            joinColumn = "user_position_id";
           }
 
-          referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
+          referenceLocation = String.format("\"%s\".%s", joinTable, joinColumn);
         }
       } else {
         //custom field
@@ -1620,7 +1632,13 @@ public class SmartlistService {
             if (r.getSmartlistSystemListId() != null) {
               projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              projectsWhereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+              // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
+              if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
+                projectsWhereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
+              } else {
+                projectsWhereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+              }
             }
           }
         }
@@ -1899,7 +1917,10 @@ public class SmartlistService {
               joinTable = UUID.randomUUID().toString();
             }
 
-            if (r.getReferenceTable().contains(".")) {
+            if (r.getReferenceTable() != null && r.getReferenceTable().equals("flow.user")) {
+              // Since this is a process step smartlist field, if it's looking at the user table, it's the process step owner field
+              referenceLocation = "flow.project_process_step.user_position_id";
+            } else if (r.getReferenceTable().contains(".")) {
               referenceLocation = String.format("%s.%s", r.getReferenceTable(), r.getReferenceColumn());
             } else {
               referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
@@ -1977,15 +1998,21 @@ public class SmartlistService {
           if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-            if (List.of(1L, 2L, 3L, 6L, 7L, 8L).contains(r.getDataTypeRequirementId())) {
+            if (r.getDataTypeRequirementId() != null && List.of(1L, 2L, 3L, 6L, 7L, 8L).contains(r.getDataTypeRequirementId())) {
               whereClause.append(String.format(" date_trunc('day', %s) %s date_trunc('day', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
-            } else if (List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
+            } else if (r.getDataTypeRequirementId() != null && List.of(9L, 10L, 11L).contains(r.getDataTypeRequirementId())) {
               whereClause.append(String.format(" date_trunc('hour', %s) %s date_trunc('hour', '%s'::timestamp) and ", referenceLocation, operator, requirementValue));
             } else {
               if (r.getSmartlistSystemListId() != null) {
                 whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
               } else {
-                whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
+                if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                  final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
+                  whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
+                } else {
+                  whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                }
               }
             }
           }

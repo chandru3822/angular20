@@ -25,9 +25,7 @@
                             return-object
                             item-text="fullName"
                             @change="getInstallationCrew()"
-                            @click:clear="selectedInstallationCrews = []"
-                            attach
-            >
+                            @click:clear="selectedInstallationCrews = []">
               <v-list-item
                 slot="prepend-item"
                 ripple
@@ -59,9 +57,7 @@
                             multiple
                             clearable
                             return-object
-                            item-text="fullName"
-                            attach
-            >
+                            item-text="fullName">
               <v-list-item
                 slot="prepend-item"
                 ripple

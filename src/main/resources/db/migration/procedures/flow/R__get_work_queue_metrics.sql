@@ -1,3 +1,5 @@
+DROP FUNCTION if exists flow.get_work_queue_metrics(integer);
+
 CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics(p_work_queue_type_id integer)
   RETURNS table
           (

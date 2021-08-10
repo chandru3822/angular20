@@ -57,6 +57,7 @@
                   :key="item.title"
                   @click="setTitle"
                   :to="item.path"
+                  class="dense-setting-row"
                   :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
                                           : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
@@ -69,6 +70,7 @@
                          :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` :
                                       o.flowTypeId === 4 ? `/settings/events` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
                          @click="setTitle"
+                         class="dense-setting-row"
                          :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
@@ -282,5 +284,10 @@ a {
 
 .main-section {
   background-color: #fff;
+}
+
+.dense-setting-row {
+  height: 30px !important;
+  min-height: 30px !important;
 }
 </style>

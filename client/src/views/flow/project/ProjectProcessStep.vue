@@ -293,6 +293,7 @@
   import moment from 'moment-timezone'
   import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
+  const { VUE_APP_ENV } = process.env
   const NEW_STATUS_TO_USE = {id: null}
 
   export default {
@@ -314,6 +315,7 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         schedulerCanEdit: false,
+        showRemoteSearch: false,
         schedulerLoading: true,
         timezone: this.$store.state.user.details.timezone.value,
         projectId: this.$route.params.projectId,

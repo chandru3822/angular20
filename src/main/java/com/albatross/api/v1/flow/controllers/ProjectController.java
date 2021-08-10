@@ -38,6 +38,11 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.searchProjects(query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, pageable), HttpStatus.OK);
   }
 
+  @PostMapping(value= "/search/density", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Project> getProjectsInGeoArea(@RequestBody DensitySearch search) {
+    return projectService.getProjectsInGeoArea(search);
+  }
+
   @GetMapping(value= "/countsByStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectStatusCount>> projectCountsByStatus(@RequestParam(required = false) String overrideType) {
     return new ResponseEntity<List<ProjectStatusCount>>(projectService.projectCountsByStatus(overrideType), HttpStatus.OK);

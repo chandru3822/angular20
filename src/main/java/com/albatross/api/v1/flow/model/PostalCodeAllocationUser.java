@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostalCodeAllocationUser {
 
-  private Long postalCodeZoneUserId, zoneId, userId;
-  private String fullName;
+  private Long postalCodeZoneUserId, zoneId, userId, companyTimezoneId;
+  private String fullName, timezone;
   private Double prescribedAllocation, targetLeadAllocation, manualAllocationWhole, manualAllocation;
+  private Boolean edit = false;
 }

@@ -338,6 +338,17 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
             {
+              path: 'attachments',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
+            {
               path: 'tournaments',
               meta: {title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournaments.vue'),
