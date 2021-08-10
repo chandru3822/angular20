@@ -44,6 +44,11 @@ body {
   z-index: 4;
 }
 
+/* required to make "attached" selects and autocompletes be wider */
+.dropdown-min-width-fix {
+  min-width: 200px;
+}
+
 .app-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
   //-webkit-box-shadow: 0 6px 6px -6px #000 !important;
