@@ -108,7 +108,7 @@
               :style="{'border-top': line.id === 12 ? '2px solid #000' : ''}">
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
             <td class="funnel-td" :class="{'funnel-source': line.id === 12 || line.id === 13}">
-              <v-select attach v-if="line.id === 12"
+              <v-select v-if="line.id === 12"
                         class="appts-created-pipeline-dropdown"
                         v-model="brsProvidedSourceModel"
                         :items="brsProvidedSourceData"
@@ -139,7 +139,7 @@
                 </template>
               </v-select>
 
-              <v-select attach v-if="line.id === 13"
+              <v-select v-if="line.id === 13"
                         class="appts-created-pipeline-dropdown"
                         v-model="selfGenSourceModel"
                         :items="selfGenSourceData"
@@ -209,8 +209,7 @@
                           dense
                           hide-details
                           @input="areaValuesChanged = true"
-                          return-object
-                          attach>
+                          return-object>
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ areaModel.length }} Checked
@@ -253,8 +252,7 @@
                           @input="regionValuesChanged = true"
                           hide-details
                           return-object
-                          ref="regionSelect"
-                          attach>
+                          ref="regionSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ regionModel.length }} Checked
@@ -297,8 +295,7 @@
                           dense
                           hide-details
                           @input="districtValuesChanged = true"
-                          return-object
-                          attach>
+                          return-object>
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ districtModel.length }} Checked
@@ -341,8 +338,7 @@
                           @input="officeValuesChanged = true"
                           hide-details
                           return-object
-                          ref="officeSelect"
-                          attach>
+                          ref="officeSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ officeModel.length }} Checked
@@ -384,8 +380,7 @@
                           @input="repValuesChanged = true"
                           hide-details
                           return-object
-                          ref="repSelect"
-                          attach>
+                          ref="repSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ repModel.length }} Checked
@@ -787,7 +782,7 @@
             <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
             <span>Round Robin Lead Allocation Rank</span>
           </div>
-          <v-select attach class="table-header-dropdown"
+          <v-select class="table-header-dropdown"
                     label="Round Robin"
                     v-model="selectedRoundRobin"
                     :items="roundRobins"
@@ -848,7 +843,7 @@
             <v-icon class="ranking-table-icon mr-2">mdi-chevron-double-down</v-icon>
             <span>Office FDC Rank</span>
           </div>
-          <v-select attach class="table-header-dropdown"
+          <v-select class="table-header-dropdown"
                     label="Closer Office"
                     v-model="selectedCloserOffice"
                     :items="closerOffices"
