@@ -1,0 +1,2 @@
+insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, created_by_id, company_data_type_id)
+values  (4, 'Process Step Completed', 'flow.project_process_step', 'process_step_complete_date', 2350555, 3);

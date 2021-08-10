@@ -124,6 +124,11 @@ public class PostalCodeController {
     return postalCodeService.userCanSchedule(postalCode);
   }
 
+  @GetMapping(value = "/zone/userCanScheduleRemote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Boolean userCanScheduleRemote() {
+    return postalCodeService.userCanScheduleRemote();
+  }
+
   @Data
   public static class ZoneUserRequest {
     private List<Integer> zoneIds;

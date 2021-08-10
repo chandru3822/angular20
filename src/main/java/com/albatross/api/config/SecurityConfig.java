@@ -73,6 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .antMatchers("/webhook/twilio/**").permitAll()
       .antMatchers("/webhook/hubspot/**").permitAll()
       .antMatchers("/webhook/ricochet/**").permitAll()
+      .antMatchers("/webhook/verse/**").permitAll()
       // export the endpoint for automating s3 uploads of mobile builds from fast lane
       .antMatchers("/api/v1/flow/app/addAttachmentRecord").permitAll()
       .anyRequest().authenticated()

@@ -24,6 +24,7 @@
                                                  from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else c.company_id = :companyId end
             and c.archived is not true
+    order by id desc limit 1
   ]]></genesys.getContactIdByPhone>
 
   <genesys.getContactAppointments><![CDATA[

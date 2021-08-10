@@ -4,7 +4,7 @@
     from flow.user u
          inner join flow.user_position up on u.id = up.user_id
          inner join flow.org o on o.id = up.org_id
-    where up.position_id = 69 and up.primary_flag = true and up.archived = false
+    where up.position_id = 69 and up.primary_flag = true and up.archived = false and o.active_flag is true
     and case when (:isParent)
             then company_id = :parentCompanyId
             else company_id = :companyId
@@ -72,11 +72,6 @@
                                                 AND
                                             substantial_completion_date::date between date_trunc('week', installation_end_time::date at time zone 'US/Mountain')::date
                                                                                 and date_trunc('week', installation_end_time::date at time zone 'US/Mountain')::date + 7)
-                                           OR
-                                            (substantial_completion_date is null
-                                                AND
-                                            (now() at time zone 'US/Mountain')::date between date_trunc('week', installation_end_time::date at time zone 'US/Mountain')::date
-                                                                                        and date_trunc('week', installation_end_time::date at time zone 'US/Mountain')::date + 7)
                                            ) then true else false end) as isNumerator
                                   from brs.project_details pd
                                     inner join flow.project p on pd.project_id = p.id

@@ -75,8 +75,7 @@
                             multiple
                             dense
                             return-object
-                            @input="regionLoad(false)"
-                            attach>
+                            @input="regionLoad(false)">
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ districtModel.length }} Checked
@@ -117,8 +116,7 @@
                             multiple
                             dense
                             return-object
-                            @input="officeLoad(false)"
-                            attach>
+                            @input="officeLoad(false)">
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ regionModel.length }} Checked
@@ -159,8 +157,7 @@
                             multiple
                             dense
                             return-object
-                            @input="repLoad(false)"
-                            attach>
+                            @input="repLoad(false)">
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ officeModel.length }} Checked
@@ -203,8 +200,7 @@
                             hide-details
                             return-object
                             ref="repSelect"
-                            @input="repValuesChanged = true"
-                            attach>
+                            @input="repValuesChanged = true">
 
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
