@@ -26,6 +26,7 @@
                             label="Positions"
                             item-text="position"
                             item-value="id"
+                            attach
                             @input="populateHierarchy(newPosition, true)"/>
             <div v-if="newPositionHierarchyPopulated">
               <div v-for="(f, index) in filters" :key="index">
@@ -36,12 +37,13 @@
                   :label="f.levelName"
                   item-value="id"
                   item-text="orgName"
+                                attach
                 >
-                  <template slot="selection" slot-scope="{ item, index }">
-                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                  <template slot="selection" slot-scope="{ item }">
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                   </template>
                   <template slot='item' slot-scope='{ item }'>
-                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                   </template>
                 </v-autocomplete>
               </div>
@@ -116,7 +118,8 @@
                               label="Positions"
                               @input="populateHierarchy(item, false)"
                               item-text="position"
-                              item-value="id"/>
+                              item-value="id"
+                              attach/>
               <label>Primary:</label>
               <input type="checkbox" class="ml-3 mb-4" v-model="item.primaryFlag"
                      :readonly="item.primary || !userCanEdit" :disabled="item.primary || !userCanEdit">
@@ -131,12 +134,13 @@
                           :label="f.levelName"
                           item-text="orgName"
                           item-value="id"
+                          attach
                 >
-                  <template slot="selection" slot-scope="{ item, index }">
-                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                  <template slot="selection" slot-scope="{ item }">
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                   </template>
                   <template slot='item' slot-scope='{ item }'>
-                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                   </template>
                 </v-autocomplete>
               </div>
@@ -222,9 +226,8 @@
 
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
-  import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from "@/helpers/constants";
 
   export default {
@@ -441,11 +444,3 @@
 
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

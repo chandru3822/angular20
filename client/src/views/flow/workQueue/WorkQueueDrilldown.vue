@@ -15,22 +15,15 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="search"
-          label="Search"
-          single-line
-          hide-details
-        ></v-text-field>
         <v-data-table
             :headers="filterHeaders()"
             :items="results"
-            :search="search"
             :fixed-header="true"
             :loading="dataLoading"
             :options.sync="options"
             :footer-props="footerProps"
             class="elevation-1 mt-1"
+            id="wq-drilldown-table"
             @click:row="clickRow"
         >
           <template #no-data>
@@ -39,6 +32,22 @@
 
           <template #no-results>
             No available results
+          </template>
+
+          <template #header="{ props: { headers } }">
+            <tr class="v-data-table-header">
+              <th v-for="header in headers" :key="header.text" class="pa-2"
+                  :style="{width: header.width ? header.width : 'auto',
+                  'border-bottom': 'solid 1px #D8D9DA'}">
+                <v-text-field outlined
+                              v-if="header.value !== 'notes'"
+                              hide-details
+                              class="filter-input"
+                              v-model="filters[header.value]"
+                              @input="filterResults()">
+                </v-text-field>
+              </th>
+            </tr>
           </template>
 
           <template #item="{ item, index }">
@@ -122,12 +131,10 @@
   import { saveAs } from 'file-saver'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import {DateTime} from 'luxon'
+  import cloneDeep from 'lodash.clonedeep'
   import constants from '@/helpers/constants'
   import {
-    getRequest,
     getRequestWithParams,
-    deleteRequest,
-    putRequest,
     postRequest,
     getSnackbar,
     logError
@@ -143,6 +150,8 @@
         snackbar: {},
         showNotesModal: false,
         selectedPps: {},
+        filters: {},
+        cachedFilters: {},
         constants,
         search: '',
         ytfDoWeNeedThis: 0,
@@ -155,6 +164,7 @@
         unassigned: this.$route.query.unassigned,
         installationCrewIds: this.$route.query.installationCrewIds,
         results: [],
+        masterResults: [],
         customColumns: [],
         totalItems: 0,
         footerProps: {
@@ -187,6 +197,7 @@
     },
     computed: {},
     async created() {
+      this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
       await this.getWorkDetails()
     },
     methods: {
@@ -212,6 +223,7 @@
         return this.headers.filter(header => header.show === true)
       },
       async getWorkDetails() {
+        this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options
         try {
@@ -243,6 +255,8 @@
             r.owningPositions = JSON.parse(r['Owning Positions'])
           })
 
+          this.masterResults = cloneDeep(this.results)
+
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
             let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
@@ -253,10 +267,20 @@
           })
           //add the notes column to the end
           this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
+
+          //check for a cached search and filter results accordingly
+          if(this.cachedFilters[this.workQueueTypeId]) {
+            Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
+              this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
+            })
+            this.filterResults()
+          }
+
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
+          this.dataLoading = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -291,6 +315,34 @@
       },
       clickRow(row) {
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
+      },
+      filterResults() {
+        this.results = this.masterResults.filter(r => {
+          let matchCount = 0
+          let numFiltersUsed = 0
+          Object.keys(this.filters).forEach(key => {
+            //trim the value to see if they just searched for a bunch of space characters
+            let value = this.filters[key].trim().length === 0 ? '' : this.filters[key]
+
+            //populate the cached filters with the user's search
+            //if there is no cached search for this wqt then add a blank object for it
+            if(null == this.cachedFilters[this.workQueueTypeId]) {
+              this.cachedFilters[this.workQueueTypeId] = {}
+            }
+
+            //then add the value
+            this.cachedFilters[this.workQueueTypeId][key] = value
+
+            if(null != value && value !== '') {
+              numFiltersUsed++
+              if(r[key]?.toString().toLowerCase().includes(value?.toLowerCase())){
+                matchCount++
+              }
+            }
+          })
+          localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
+          return matchCount === numFiltersUsed
+        })
       }
     },
 
@@ -302,9 +354,19 @@
     height: calc(100vh - 200px);
     min-height: 300px;
   }
+
+  #wq-drilldown-table  .v-data-table-header {
+    vertical-align: bottom;
+  }
+
+  #wq-drilldown-table .v-data-table-header th {
+    white-space: nowrap;
+  }
 </style>
 
 <style scoped lang="scss">
+
+
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
@@ -326,6 +388,7 @@
 
 .notes-column {
   max-width: 300px;
+  min-width: 250px;
 }
 
 #work-queue-drilldown-container {

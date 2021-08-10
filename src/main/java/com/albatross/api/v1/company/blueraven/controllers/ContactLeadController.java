@@ -182,4 +182,9 @@ public class ContactLeadController {
   public void updateContactStrategicSolarSolutions(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/encompassleads", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactEncompassLeads(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

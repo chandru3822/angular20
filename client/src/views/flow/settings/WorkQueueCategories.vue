@@ -51,7 +51,7 @@
               No available fields
             </template>
 
-            <template #item="{ item, index }">
+            <template #item="{ item }">
               <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
                 <td style="width: 50px">
                   <v-btn text icon small class="handle" v-if="userCanEdit">
@@ -137,7 +137,7 @@
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
@@ -265,7 +265,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.selectedWorkQueueCategoryId = null
-          const {data} = await putRequest(`/workQueueCategory`, wqc)
+          await putRequest(`/workQueueCategory`, wqc)
           wqc.showColor = false
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -281,7 +281,7 @@
         if(rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await putRequest(`/workQueueCategory/order`, rows)
+            await putRequest(`/workQueueCategory/order`, rows)
             // this.$set(this, 'workQueueCategories', data)
             this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Order Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -303,7 +303,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

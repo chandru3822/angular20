@@ -37,6 +37,7 @@
                             item-value="userId"
                             type="search"
                             @click:clear="reps = []"
+                            attach
             ></v-autocomplete>
 <!--            <v-text-field text-->
 <!--                          label="Sales Rep"-->
@@ -94,9 +95,6 @@
   import constants from "@/helpers/constants";
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
-    getRequest,
-    deleteRequest,
-    putRequest,
     postRequest,
     getSnackbar,
     getRequestWithParams
@@ -195,9 +193,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .v-data-table {

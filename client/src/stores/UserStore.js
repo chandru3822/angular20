@@ -43,7 +43,7 @@ export const UserStore = {
     })),
   },
   actions: {
-    [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
+    [UserActions.CHANGE_TIMEZONE]: async ({ commit, state }, timezone) => {
       state.details.timezone = timezone
       //todo: date/time inputs don't update when the zone is changed. should we refresh?
       commit(UserMutations.SET_DETAILS, state.details)
@@ -68,7 +68,7 @@ export const UserStore = {
         )
       }
     },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters, state }, params) => {
+    [UserActions.CHANGE_CONTEXT]: async ({ commit, state }, params) => {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 

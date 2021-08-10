@@ -19,6 +19,7 @@
               label="Owner Type"
               item-text="ownerType"
               item-value="id"
+              attach
             ></v-autocomplete>
             <v-autocomplete
               readonly
@@ -28,6 +29,7 @@
               label="Scoring Formula"
               item-text="formulaTitle"
               item-value="id"
+              attach
             ></v-autocomplete>
             <DatetimePickerInput
               v-model="tournament.startDate"
@@ -126,10 +128,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
     getRequest,
-    getRequestWithParams,
-    deleteRequest,
     putRequest,
-    postRequest,
     getSnackbar
   } from '@/helpers/helpers'
 
@@ -274,9 +273,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style scoped lang="scss">
 

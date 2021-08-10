@@ -3,6 +3,8 @@ CREATE OR REPLACE FUNCTION brs.get_allocation_by_zone(p_postal_code_zone_id inte
             (
                 user_id                  integer,
                 postal_code_zone_user_id integer,
+                company_timezone_id             integer,
+                timezone                        varchar,
                 zone_id                  integer,
                 full_name                character varying,
                 prescribed_allocation    numeric,
@@ -23,12 +25,16 @@ BEGIN
              target as (
                  select adjusted_allocation.postal_code_zone_user_id,
                         adjusted_allocation.user_id,
+                        adjusted_allocation.company_timezone_id,
+                        adjusted_allocation.timezone,
                         adjusted_allocation.total_lead_allocation,
                         adjusted_allocation.manual_allocation
                  from brs.get_total_lead_allocation(p_postal_code_zone_id,
                                                     true) adjusted_allocation)
         select t.user_id,
                t.postal_code_zone_user_id,
+               t.company_timezone_id,
+               t.timezone,
                p_postal_code_zone_id,
                concat(u.first_name, ' ', u.last_name)::character varying as full_name,
                p.prescribed_allocation,

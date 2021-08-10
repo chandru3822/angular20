@@ -150,11 +150,9 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, putRequestWithRequestParams, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import { deleteRequest, putRequest, putRequestWithRequestParams, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
-
-const { VUE_APP_ENV } = process.env
 
 export default {
   name: 'AppDownloads',

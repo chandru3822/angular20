@@ -58,8 +58,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Role',

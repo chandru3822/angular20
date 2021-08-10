@@ -3,9 +3,7 @@
 </template>
 
 <script>
-
 import SmartLists from './Smartlists'
-
 export default {
   name: 'SmartlistHome',
   components: {
@@ -13,7 +11,3 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>

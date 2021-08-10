@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.ObjectTypeAttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.model.ProjectAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
@@ -45,6 +47,46 @@ public class AttachmentTypeController {
   @PutMapping(value = "/updateReadOnly", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateReadOnly(@RequestBody ProjectAttachmentType projectAttachmentType) {
     attachmentTypeService.updateReadOnly(projectAttachmentType);
+  }
+
+  @GetMapping(value = "/typesForObjectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAvailableTypesForObjectType (@PathVariable Long id) {
+    return attachmentTypeService.getAvailableTypesForObjectType(id);
+  }
+
+  @GetMapping(value = "/objectTypes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getObjectTypes(@PathVariable Long id) {
+    return attachmentTypeService.getObjectTypes(id);
+  }
+
+  @GetMapping(value = "/objectTypes/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getObjectTypesForUserByCompany(@RequestParam Long companyId) {
+    return attachmentTypeService.getObjectTypesByCompany(ObjectType.USER.id, companyId);
+  }
+
+  @GetMapping(value = "/objectTypes/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getObjectTypesForContactByCompany(@RequestParam Long companyId) {
+    return attachmentTypeService.getObjectTypesByCompany(ObjectType.CONTACT.id, companyId);
+  }
+
+  @GetMapping(value = "/objectTypes/org", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getObjectTypesForOrgByCompany(@RequestParam Long companyId) {
+    return attachmentTypeService.getObjectTypesByCompany(ObjectType.ORGANIZATION.id, companyId);
+  }
+
+  @PutMapping(value = "/updateOrderInObjectType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateOrderObjectType(@RequestBody List<ObjectTypeAttachmentType> attachmentTypes) {
+    attachmentTypeService.updateOrderInObjectType(attachmentTypes);
+  }
+
+  @DeleteMapping(value = "/objectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteObjectType(@PathVariable Long id) {
+    attachmentTypeService.deleteObjectType(id);
+  }
+
+  @PostMapping(value = "/objectType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> insertObjectType(@RequestBody ObjectTypeAttachmentType attachmentType) {
+    return attachmentTypeService.insertObjectType(attachmentType);
   }
 
   @GetMapping(value = "/typesForStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -38,8 +38,6 @@
 <script>
   import {BrsMutations} from '@/stores/BrsStore'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-
   export default {
     name: 'Commissions',
 
@@ -103,9 +101,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .position-selector {

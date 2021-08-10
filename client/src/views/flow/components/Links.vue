@@ -16,8 +16,7 @@
 </template>
 
 <script>
-import {AppMutations} from '@/stores/AppStore'
-import {getRequest, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
+import {getRequest} from '@/helpers/helpers'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
@@ -48,6 +47,3 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss">
-</style>

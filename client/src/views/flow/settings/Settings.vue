@@ -57,6 +57,7 @@
                   :key="item.title"
                   @click="setTitle"
                   :to="item.path"
+                  class="dense-setting-row"
                   :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
                                           : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
@@ -66,9 +67,10 @@
               </v-list-item>
             </template>
             <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 })" :key="o.id"
-                         :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` : `/settings/customFieldGroup/${o.id}`}"
+                         :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
                          @click="setTitle"
-                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
+                         class="dense-setting-row"
+                         :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
               </v-list-item-content>
@@ -89,7 +91,6 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-const { VUE_APP_ENV } = process.env
 
 export default {
   name: 'Settings',
@@ -282,5 +283,10 @@ a {
 
 .main-section {
   background-color: #fff;
+}
+
+.dense-setting-row {
+  height: 30px !important;
+  min-height: 30px !important;
 }
 </style>

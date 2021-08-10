@@ -34,7 +34,7 @@
           <v-btn @click="displayType = null">Back</v-btn>
         </v-col>
         <v-col cols="3" class="text-left py-0">
-          <v-checkbox label="Show non-primary Documents"
+          <v-checkbox v-if="null != projectId || null != projectProcessStepId" label="Show non-primary Documents"
                       v-model="showNonPrimaryDocs"></v-checkbox>
         </v-col>
         <v-col cols="5" class="py-3" v-if="!displayType.readOnly" >
@@ -190,18 +190,23 @@ export default {
       attachmentPath: null,
       error: {},
       renderTicker: 0,
+      companyId: this.$store.state.user.details.companyId,
       headers: [
         { text: null, value: 'fileIcon', show: true },
         { text: null, value: 'filename', show: true },
         { text: null, value: 'icons', show: true },
       ],
-      showNonPrimaryDocs: false
+      showNonPrimaryDocs: false,
     }
   },
   props: {
     projectId: Number,
     processStepId: Number,
-    projectProcessStepId: Number
+    projectProcessStepId: Number,
+    objectTypeId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
   },
   created () {
     if (this.projectId) {
@@ -210,6 +215,18 @@ export default {
     } else if (this.projectProcessStepId) {
       this.typePath = `/processStepTypes/${this.processStepId}`
       this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+    } else if (this.objectTypeId === 3) {
+      //user
+      this.typePath = `/objectTypes/user`
+      this.attachmentPath = `/user/${this.userId}/attachments`
+    } else if (this.objectTypeId === 2) {
+      //contact
+      this.typePath = `/objectTypes/contact`
+      this.attachmentPath = `/contact/${this.contactId}/attachments`
+    } else if (this.objectTypeId === 5) {
+      //org
+      this.typePath = `/objectTypes/org`
+      this.attachmentPath = `/org/${this.orgId}/attachments`
     }
 
     this.fetchAttachmentTypes()
@@ -224,7 +241,7 @@ export default {
           return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
         }
         else {
-          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.main)
+          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && ((this.projectProcessStepId == null && this.projectId == null) || a.main))
         }
       }
     },
@@ -257,7 +274,8 @@ export default {
     },
     fetchAttachmentTypes: async function () {
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
-          projectId: this.projectId
+          projectId: this.projectId,
+          companyId: this.companyId
         }})
       this.attachmentTypes = data
     },
@@ -287,45 +305,53 @@ export default {
     },
     addDragDocument: async function (e, attachmentTypeId) {
       let files = e.dataTransfer.files
+      console.log('files here', files)
       await this.uploadDocument(files, attachmentTypeId)
     },
     uploadDocument: async function (files, attachmentTypeId) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        //reset error message when trying to upload new file
-        this.error = {}
-        // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-        for (var i = 0; i < files.length; ++i) {
-          let file = files[i];
-          if (file && file.size > 0) {
-            await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
-              file,
-              attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
-              projectId: this.projectId,
-              projectProcessStepId: this.projectProcessStepId,
-              callback: async (newAttachment, error) => {
-                if (error) {
-                  this.error = error
-                  this.snackbar = getSnackbar('ERROR', error.message)
-                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                } else {
-                  let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
-                  newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
+      if (files?.length > 0) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          //reset error message when trying to upload new file
+          this.error = {}
+          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+          for (let i = 0; i < files.length; ++i) {
+            let file = files[i];
+            if (file && file.size > 0) {
+              await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
+                null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD : Actions.OBJECT_TYPE_FILE_UPLOAD, {
+                file,
+                attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
+                projectId: this.projectId,
+                projectProcessStepId: this.projectProcessStepId,
+                userId: this.userId,
+                contactId: this.contactId,
+                orgId: this.orgId,
+                objectTypeId: this.objectTypeId,
+                callback: async (newAttachment, error) => {
+                  if (error) {
+                    this.error = error
+                    this.snackbar = getSnackbar('ERROR', error.message)
+                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                  } else {
+                    let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
+                    newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
 
-                  this.attachments = [...this.attachments, newAttachment]
+                    this.attachments = [...this.attachments, newAttachment]
+                  }
+                  this.$refs?.fileInput?.reset()
+                  this.$store.commit(AppMutations.SET_LOADING, false)
                 }
-                this.$refs?.fileInput?.reset()
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              }
-            })
+              })
+            }
           }
+          // this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch(e) {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     }
   }

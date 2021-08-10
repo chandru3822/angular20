@@ -1,4 +1,4 @@
-const {VUE_APP_ENV, VUE_APP_BASE_API, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = process.env
+const { VUE_APP_BASE_API, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = process.env
 
 let constants = {}
 

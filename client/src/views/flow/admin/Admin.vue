@@ -70,10 +70,7 @@
 </template>
 
 <script>
-import {AppMutations} from '@/stores/AppStore'
-
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -130,7 +127,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 a {
   text-decoration: none;
 }
