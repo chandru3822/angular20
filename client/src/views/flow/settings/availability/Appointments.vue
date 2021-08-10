@@ -296,7 +296,7 @@
         dateFormat: 'MMMM DD, YYYY',
         timestampType: 'timestamp',
         timestampFormat: 'MMMM DD, YYYY h:mm a',
-        timezone: 'this.$store.state.user.details.timezone.value',
+        timezone: this.$store.state.user.details.timezone.value,
         headers: [
           { text: 'Appointments', value: 'appointment', show: true},
           { text: 'Title', value: 'title', show: true},
