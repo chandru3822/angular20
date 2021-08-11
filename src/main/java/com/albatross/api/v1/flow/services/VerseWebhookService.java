@@ -1,23 +1,32 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.HttpResponse;
+import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.VersusLeadEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class VerseWebhookService {
+  @Value(value = "${verse.api.key}")
+  private String apiKey;
+
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
@@ -72,6 +81,30 @@ public class VerseWebhookService {
     }
   }
 
+  public void postContact(HashMap<String, Object> contactMap) {
+    JSONObject params = new JSONObject();
+    params.put("firstName", contactMap.get("first_name"));
+    params.put("lastName", contactMap.get("last_name"));
+    params.put("email", contactMap.get("email"));
+    params.put("phoneNumber", contactMap.get("phone"));
+    params.put("type", "Solar");
+    params.put("street", contactMap.get("street1"));
+    params.put("city", contactMap.get("city"));
+    params.put("state", contactMap.get("state"));
+    params.put("postalCode", contactMap.get("postal_code"));
+    params.put("zapierLeadId", contactMap.get("id"));
+
+    Map<String, String> headers = new HashMap<>();
+    headers.put("X-API-KEY", apiKey);
+    headers.put("Content-Type", "application/json");
+    headers.put("Accept", "application/json");
+    try {
+      HttpResponse resp = HttpUtils.call("POST", "https://api.verse.io/v1/zapier", headers, new ByteArrayInputStream(params.toString().getBytes()));
+    } catch (Exception e) {
+      String msg = "VERSE: Failed to post Contact to Verse.";
+      log.error(msg, e);
+    }
+  }
 
   private String checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue) {
       HashMap<String, Object> params = new HashMap<>();

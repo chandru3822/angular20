@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.SMSService;
+import com.albatross.api.v1.flow.services.VerseWebhookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.mypurecloud.sdk.v2.*;
@@ -55,6 +56,9 @@ public class GenesysService {
 
   @Autowired
   private SMSService smsService;
+
+  @Autowired
+  private VerseWebhookService verseWebhookService;
 
   @Autowired
   private SqlCache sqlCache;
@@ -246,6 +250,13 @@ public class GenesysService {
     getCfvValues(contactMap, values);
     wdc.setData(contactMap);
 
+    String leadLevel = (String) contactMap.get("lead_level");
+    if (leadLevel.equals("20")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap);
+      return;
+    }
+
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
     String contactListId = getContactListId(contactMap, apiInstance);
@@ -330,6 +341,13 @@ public class GenesysService {
     // Add Lead Level custom field so that value gets pulled
     values.add(customFieldGroups.get(1).getCustomFieldValues().stream().filter(cfg -> cfg.getCustomFieldId().equals(10982L)).findFirst().orElse(null));
     getCfvValues(contactMap, customFieldGroups.get(0).getCustomFieldValues());
+
+    String leadLevel = (String) contactMap.get("lead_level");
+    if (leadLevel.equals("20")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap);
+      return;
+    }
 
     dc.setData(contactMap);
 
