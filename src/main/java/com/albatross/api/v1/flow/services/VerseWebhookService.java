@@ -28,6 +28,7 @@ public class VerseWebhookService {
     try {
       String event = versusLeadEvent.getEvent();
       String leadStatus = "";
+      // Determine lead status based on Event and Title from Verse
       if (event.equals("lead_created")) {
         leadStatus = "New";
       }
