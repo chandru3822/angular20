@@ -52,7 +52,7 @@
         </v-card-title>
         <v-divider></v-divider>
         <v-data-table
-          :headers="filterHeaders()"
+          :headers="filterHeaders"
           :items="filterUsers()"
           :fixed-header="true"
           :items-per-page="-1"
@@ -239,14 +239,7 @@ export default {
       totalTargetLeadAllocation: null,
       totalPrescribedAllocation: null,
       zone: {},
-      userHeaders: [
-        {text: 'Name', value: 'fullName', show: true},
-        {text: 'Timezone', value: 'timezone', show: this.zone?.remote, width: 250},
-        {text: 'Prescribed Allocation', value: 'prescribedAllocation', show: true},
-        {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
-        {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
+      userHeaders: [],
       companyTimezones: [],
     }
   },
@@ -254,14 +247,24 @@ export default {
     //had to add this to determine if zone is remote or not
     this.getScheduleToUsers()
     await this.getZoneDetails()
+    this.userHeaders = [
+      {text: 'Name', value: 'fullName', show: true},
+      {text: 'Timezone', value: 'timezone', show: this.zone.remote, width: 250},
+      {text: 'Prescribed Allocation', value: 'prescribedAllocation', show: true},
+      {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
+      {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
+      {text: '', value: 'icons', show: true},
+    ]
     if (this.zone?.remote) {
       this.getCompanyTimezones()
     }
   },
-  methods: {
+  computed: {
     filterHeaders () {
       return this.userHeaders.filter(header => header.show === true)
     },
+  },
+  methods: {
     getAllocationValue(value) {
       //4 = leading '0.' + 2 more digits it being a % number (0.0132)
       let valueLength = value.toString().length - 4
