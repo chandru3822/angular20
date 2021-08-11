@@ -34,7 +34,7 @@ public class VerseWebhookService {
       else if (event.equals("lead_activity")) {
         String title = versusLeadEvent.getTitle();
         if (title.equals("Qualified Lead")) {
-          leadStatus = "Qualified";
+          leadStatus = "Scheduled";
         }
         else if (title.equals("Unqualified Lead")) {
           leadStatus = "Unqualified";
