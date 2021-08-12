@@ -123,7 +123,7 @@ BEGIN
                                          left join flow.excluded_resource_slot_time erst on erst.resource_slot_time_id = rst.id and
                                                                                             erst.resource_schedule_availability_id = rsa.id
                                                                                             and erst.archived is false
-                                where p.id = p_project_id and erst.id is null
+                                where p.id = p_project_id and erst.id is null and pcz.remote is false
                                   and case when rs.end_date is not null then
                                                p_available_date::date between rs.start_date and rs.end_date
                                            else
