@@ -551,6 +551,7 @@ public class AvailabilityService {
       params.put("projectProcessStepId", request.getProjectProcessStepId());
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
+      params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
 
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
