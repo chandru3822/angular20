@@ -130,10 +130,8 @@ BEGIN
                         on pczu.user_id = ra.user_id and pczu.postal_code_zone_user_type_id = 1 and
                            pczu.archived is false
              inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id and pcz.archived is false
-             inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id and pc.archived is false
-             inner join flow.project p on p.postal_code = pc.postal_code
              inner join user_ids ui2 on ui2.user_id = ra.user_id
-      where p.id = p_project_id
+      where pcz.remote is true
         and ra.archived is false
         and ((start_time between p_start_time and p_end_time
         or ra.end_time between p_start_time and p_end_time)
@@ -192,7 +190,7 @@ BEGIN
                                              on rs.user_id = pczu.user_id and rs.archived is false
                                   inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                   inner join flow.user_status_type ust
-                                             on cus.user_status_type_id = ust.id and ust.has_access is true
+                                             on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
                                   inner join flow.resource_schedule_availability rsa
                                              on rsa.resource_schedule_id = rs.id
                                                and rsa.archived is false
@@ -201,7 +199,7 @@ BEGIN
                                              on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
                                   inner join flow.resource_slot_time rst
                                              on rss.id = rst.resource_slot_schedule_id and rst.archived is false
-                                  inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
+                                  inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3 and uc.archived is false
                                   left join flow.excluded_resource_slot_time erst
                                             on erst.resource_slot_time_id = rst.id and
                                                erst.resource_schedule_availability_id = rsa.id
@@ -229,20 +227,16 @@ BEGIN
                      from excluded_appointments
                      where excluded_appointments.user_id = foo1.user_id
                        and case
-                             when id > 0 then
-                               (((foo1.scheduled_start_time between excluded_appointments.start_time and excluded_appointments.end_time)
-                                 or
-                                 (foo1.scheduled_end_time between excluded_appointments.start_time and excluded_appointments.end_time))
-                                 or
-                                (excluded_appointments.start_time between foo1.scheduled_start_time and foo1.scheduled_end_time
-                                  or
-                                 excluded_appointments.end_time between foo1.scheduled_start_time and foo1.scheduled_end_time))
-                             else ((excluded_appointments.start_time < foo1.scheduled_end_time
-                               and excluded_appointments.end_time > foo1.scheduled_start_time))
-                               and
-                                  ((foo1.scheduled_start_time between excluded_appointments.start_time and excluded_appointments.end_time)
-                                    or
-                                   (foo1.scheduled_end_time between excluded_appointments.start_time and excluded_appointments.end_time)) end) as available,
+                         when id > 0 then
+                           ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps (excluded_appointments.start_time , excluded_appointments.end_time)
+                             or
+                            (excluded_appointments.start_time , excluded_appointments.end_time) overlaps (foo1.scheduled_start_time, foo1.scheduled_end_time) )
+                         else ((excluded_appointments.start_time < foo1.scheduled_end_time
+                           and excluded_appointments.end_time > foo1.scheduled_start_time))
+                           and
+                              ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps (excluded_appointments.start_time , excluded_appointments.end_time)
+                                or
+                               (excluded_appointments.start_time , excluded_appointments.end_time) overlaps (foo1.scheduled_start_time, foo1.scheduled_end_time) ) end) as available,
                     pczu_timezone
              from (
                     select user_id,
@@ -254,7 +248,7 @@ BEGIN
                                   ((($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp at time zone
                                     coalesce(t1.timezone, t.timezone))::timestamp with time zone at time zone
                                    'UTC')                           as available_times,
-                                  90                                as default_appointment_length,
+                                  30                                as default_appointment_length,
                                   coalesce(t1.timezone, t.timezone) as pczu_timezone
                            from flow.postal_code_zone pcz
                                   inner join flow.company_timezone ct on ct.id = pcz.company_timezone_id
@@ -268,7 +262,7 @@ BEGIN
                                              on rs.user_id = pczu.user_id and rs.archived is false
                                   inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                   inner join flow.user_status_type ust
-                                             on cus.user_status_type_id = ust.id and ust.has_access is true
+                                             on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
                                   inner join flow.resource_schedule_availability rsa
                                              on rsa.resource_schedule_id = rs.id
                                                and rsa.archived is false
@@ -277,7 +271,7 @@ BEGIN
                                              on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
                                   inner join flow.resource_slot_time rst
                                              on rss.id = rst.resource_slot_schedule_id and rst.archived is false
-                                  inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
+                                  inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3 and uc.archived is false
                                   left join flow.excluded_resource_slot_time erst
                                             on erst.resource_slot_time_id = rst.id and
                                                erst.resource_schedule_availability_id = rsa.id
