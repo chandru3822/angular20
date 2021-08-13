@@ -15,4 +15,5 @@ public class CloserAppointmentRequest {
   private Long projectId, projectProcessStepId;
   private Date appointmentTime, startTime, endTime;
   private List<Integer> users;
+  private Boolean remote;
 }

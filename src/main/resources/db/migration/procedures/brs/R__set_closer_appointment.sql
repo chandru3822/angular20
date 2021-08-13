@@ -3,7 +3,8 @@ CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
                                                        p_current_user_id integer,
                                                        p_project_process_step_id integer,
                                                        p_appointment_start_time timestamp,
-                                                       p_users integer array)
+                                                       p_users integer array,
+                                                       p_remote boolean default false)
     RETURNS table
             (
                 success                boolean,
@@ -92,7 +93,7 @@ BEGIN
                        p_users,
                        p_current_user_id,
                        t.manual_allocation
-                from brs.get_total_lead_allocation(v_postal_code_zone_id, true) as t
+                from brs.get_total_lead_allocation(v_postal_code_zone_id, true,p_remote) as t
             );
 
         select scau.user_id,scau.id
@@ -152,8 +153,6 @@ BEGIN
           and ppscfv1.int_value = v_user_position_id;
 
         if v_user_already_assigned < 1 and v_user_already_assigned_to_another_project_id < 1 then
-
-
             select ppscfv.project_process_step_id, ppscfv.id
             into v_project_process_step_id,v_project_process_step_custom_field_value_id
             from flow.project_process_step_custom_field_value ppscfv
@@ -210,7 +209,7 @@ BEGIN
 
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
-                set timestamp_value = p_appointment_start_time + (90 || 'minutes')::interval,
+                set timestamp_value = p_appointment_start_time + (case when p_remote is false then 90 else 30 end || 'minutes')::interval,
                     modified_by_id  = p_current_user_id,
                     date_modified   = now()
                 where id = v_project_process_step_custom_field_value_id;
@@ -220,7 +219,7 @@ BEGIN
                                                                           timestamp_value,
                                                                           date_created, created_by_id, archived)
                 VALUES (p_project_process_step_id, 6, p_appointment_start_time +
-                                                      (90 || 'minutes')::interval, now(),
+                                                      (case when p_remote is false then 90 else 30 end || 'minutes')::interval, now(),
                         p_current_user_id, false);
             end if;
             -- raise notice 'user id %',v_user_id;
@@ -235,7 +234,7 @@ BEGIN
                                 v_user_id::integer,
                                 p_appointment_start_time::timestamp,
                                 (p_appointment_start_time +
-                                 (90 || 'minutes')::interval)::timestamp,
+                                 (case when p_remote is false then 90 else 30 end || 'minutes')::interval)::timestamp,
                                 v_user_full_name,
                                 v_user_email;
         elsif v_user_already_assigned_to_another_project_id > 0 and v_user_already_assigned = 0 and array_length(p_users, 1) > 1 then

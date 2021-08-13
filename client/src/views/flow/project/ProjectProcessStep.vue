@@ -388,6 +388,7 @@
         userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
         schedulerCanEdit: false,
         showRemoteSearch: false,
+        mostRecentSearchWasRemote: false,
         schedulerLoading: true,
         closerApptSaved: false,
         searchedTimeSlots: false,
@@ -782,6 +783,7 @@
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
       async getAvailableTimeSlots(remote) {
+        this.mostRecentSearchWasRemote = remote
         try {
           this.remoteSearchLoading = remote
           this.inPersonSearchLoading = !remote
@@ -816,7 +818,8 @@
             // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
             // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
             appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-            users: this.selectedTimeSlot.users
+            users: this.selectedTimeSlot.users,
+            remote: this.mostRecentSearchWasRemote
           }
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await postRequest(`/availability/setCloserAppointment`, body)
