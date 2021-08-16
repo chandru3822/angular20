@@ -4,7 +4,7 @@
     from flow.user u
          inner join flow.user_position up on u.id = up.user_id
          inner join flow.org o on o.id = up.org_id
-    where up.position_id = 69 and up.primary_flag = true and up.archived = false and o.active_flag is true
+    where up.position_id in (69, 508) and up.primary_flag = true and up.archived = false and o.active_flag is true
     and case when (:isParent)
             then company_id = :parentCompanyId
             else company_id = :companyId
