@@ -143,13 +143,13 @@ public class NoteService {
         String link = "";
         // Used to store the Contact name or Project name which contains the Note
         String noteRefName = "";
-        if (typeId.equals(ObjectType.CONTACT.id)) {
+        if (null != typeId && typeId.equals(ObjectType.CONTACT.id)) {
           locationOfNote = "contact";
           link = homeUrl + "/contact/" + note.getPrimaryId();
           Contact c = contactService.getContact(note.getPrimaryId());
           noteRefName = c.getFirstName() + " " + c.getLastName() + " - " + c.getId();
         }
-        else if (typeId.equals(ObjectType.PROJECT.id)) {
+        else if (null != typeId && typeId.equals(ObjectType.PROJECT.id)) {
           locationOfNote = "project";
           link = homeUrl + "/project/"+note.getPrimaryId()+"/details";
           Optional<Project> p = projectService.getProject(note.getPrimaryId());
