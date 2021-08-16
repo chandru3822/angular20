@@ -469,8 +469,8 @@
             this.endDate = this.endOfPeriod
             break
           case 'Last Week':
-            this.startDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
-            this.endDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.startDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
+            this.endDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Last Period':
             this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1)
@@ -518,8 +518,8 @@
             this.metricsEndDate = this.endOfPeriod
             break
           case 'Last Week':
-            this.metricsStartDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
-            this.metricsEndDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.metricsStartDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
+            this.metricsEndDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Last Period':
             this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1)
