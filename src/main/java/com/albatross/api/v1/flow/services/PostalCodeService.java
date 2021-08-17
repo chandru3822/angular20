@@ -133,6 +133,7 @@ public class PostalCodeService {
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
     params.put("userId", zoneUser.getUserId());
     params.put("createdById", user.getId());
+    params.put("companyTimezoneId", null);
     params.put("postalCodeZoneUserTypeId", postalCodeZoneUserTypeId);
 
     Long id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
@@ -288,6 +289,17 @@ public class PostalCodeService {
     params.put("userId", user.getId());
 
     List<User> results = sqlCache.query("postalCode.userCanSchedule", params, User.class);
+    return results.size() > 0;
+  }
+
+  public Boolean userCanScheduleRemote() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+
+    List<User> results = sqlCache.query("postalCode.userCanScheduleRemote", params, User.class);
     return results.size() > 0;
   }
 

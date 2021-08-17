@@ -2,7 +2,7 @@
   <v-container id="work-queue-types-container">
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-toolbar flat class="app-toolbar">
+        <v-toolbar flat class="app-toolbar toolbar-z-index-override">
           <v-autocomplete
             v-model="selectedWorkQueueCategoryId"
             :items="filteredCategories"

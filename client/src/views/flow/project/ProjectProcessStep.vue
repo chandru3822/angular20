@@ -211,7 +211,7 @@
                 <v-toolbar-title>Lead Allocation</v-toolbar-title>
               </v-toolbar>
               <v-card-text class="py-0">
-                <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
+                <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !showRemoteSearch">
                   You do not have access to schedule projects in this Postal Code
                 </v-card-text>
                 <div class="pb-3" v-else>
@@ -222,17 +222,21 @@
                     :field="availabilityDateField"
                   />
                   <div class="text-right" v-if="availabilityDateField.dateValue">
-                    <v-btn color="primaryCustom" dark class="white--text"
-                           :loading="searchLoading"
+                    <v-btn color="primaryCustom" class="white--text"
+                           :loading="remoteSearchLoading"
+                           :disabled="inPersonSearchLoading"
+                           v-if="showRemoteSearch || userIsAdmin"
                            id="qa-round-robin-search-remote"
                            @click="getAvailableTimeSlots(true)">
-                      Search Remote
+                      Search Remote Appt. Slots
                     </v-btn>
-                    <v-btn color="primaryCustom" dark class="white--text ml-3"
-                           :loading="searchLoading"
+                    <v-btn color="primaryCustom" class="white--text ml-3"
+                           :loading="inPersonSearchLoading"
+                           v-if="schedulerCanEdit || userIsAdmin"
+                           :disabled="remoteSearchLoading"
                            id="qa-round-robin-search"
                            @click="getAvailableTimeSlots(false)">
-                      Search
+                      Search In-person Appt. Slots
                     </v-btn>
                   </div>
                   <v-select attach v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
@@ -355,6 +359,7 @@
   import {DateTime} from 'luxon'
   import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
+  const { VUE_APP_ENV } = process.env
   const NEW_STATUS_TO_USE = {id: null}
 
   export default {
@@ -382,6 +387,8 @@
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
         schedulerCanEdit: false,
+        showRemoteSearch: false,
+        mostRecentSearchWasRemote: false,
         schedulerLoading: true,
         closerApptSaved: false,
         searchedTimeSlots: false,
@@ -400,7 +407,8 @@
         displayChangeOwner: false,
         availableOwners: [],
         availableProcessStepStatuses: [],
-        searchLoading: false,
+        inPersonSearchLoading: false,
+        remoteSearchLoading: false,
         usingUniqueView: false,
         uniqueCfgId: null,
         showRoundRobin: false,
@@ -560,7 +568,9 @@
           this.project = data
           window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.project.projectName}`
-          await this.userCanScheduleLeadAllocation()
+          //turning off the await...i dont think we need to wait for this to load
+          this.userCanScheduleLeadAllocation()
+          this.userCanScheduleRemoteLeadAllocation()
         } catch (e) {
           logError(e)
         }
@@ -590,6 +600,22 @@
               }
             })
             this.schedulerCanEdit = data
+          } catch (e) {
+            logError(e)
+            this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          } finally {
+            this.schedulerLoading = false
+          }
+        }
+      },
+      async userCanScheduleRemoteLeadAllocation() {
+        //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+        if (this.userIsScheduler) {
+          this.schedulerLoading = true
+          try {
+            const {data} = await getRequest(`/postalCode/zone/userCanScheduleRemote`)
+            this.showRemoteSearch = data
           } catch (e) {
             logError(e)
             this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
@@ -757,8 +783,10 @@
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
       async getAvailableTimeSlots(remote) {
+        this.mostRecentSearchWasRemote = remote
         try {
-          this.searchLoading = true
+          this.remoteSearchLoading = remote
+          this.inPersonSearchLoading = !remote
           this.selectedTimeSlot = {}
           this.searchedTimeSlots = false
 
@@ -772,10 +800,12 @@
           const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
           this.searchedTimeSlots = true
           this.timeSlots = data
-          this.searchLoading = false
+          this.remoteSearchLoading = false
+          this.inPersonSearchLoading = false
         } catch (e) {
           logError(e)
-          this.searchLoading = false
+          this.remoteSearchLoading = false
+          this.inPersonSearchLoading = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
@@ -788,7 +818,8 @@
             // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
             // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
             appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-            users: this.selectedTimeSlot.users
+            users: this.selectedTimeSlot.users,
+            remote: this.mostRecentSearchWasRemote
           }
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await postRequest(`/availability/setCloserAppointment`, body)

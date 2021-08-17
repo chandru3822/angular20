@@ -187,4 +187,9 @@ public class ContactLeadController {
   public void updateContactEncompassLeads(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/lightload", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactLightload(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

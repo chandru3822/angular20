@@ -14,14 +14,21 @@ CREATE OR REPLACE FUNCTION brs.get_allocation_by_zone(p_postal_code_zone_id inte
             )
 AS
 $BODY$
+declare
+  v_remote boolean default false;
 BEGIN
+    select remote
+    into v_remote
+    from flow.postal_code_zone
+      where id = p_postal_code_zone_id;
     return query
         with prescribed as (
             select prescribed_lead_allocation.postal_code_zone_user_id,
                    prescribed_lead_allocation.user_id,
                    prescribed_lead_allocation.total_lead_allocation as prescribed_allocation
             from brs.get_total_lead_allocation(p_postal_code_zone_id,
-                                               false) prescribed_lead_allocation),
+                                               false,
+                                               v_remote) prescribed_lead_allocation),
              target as (
                  select adjusted_allocation.postal_code_zone_user_id,
                         adjusted_allocation.user_id,
@@ -30,7 +37,8 @@ BEGIN
                         adjusted_allocation.total_lead_allocation,
                         adjusted_allocation.manual_allocation
                  from brs.get_total_lead_allocation(p_postal_code_zone_id,
-                                                    true) adjusted_allocation)
+                                                    true,
+                                                    v_remote) adjusted_allocation)
         select t.user_id,
                t.postal_code_zone_user_id,
                t.company_timezone_id,
