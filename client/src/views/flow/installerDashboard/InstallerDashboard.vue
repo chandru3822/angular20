@@ -288,7 +288,7 @@
           { text: 'Rank', value: 'rnk', width: 80, show: true },
           { text: 'Crew', value: 'crewname', width: 80, show: true },
           { text: 'Substantial Completions kW', value: 'substantialcompletions', width: 80, show: true },
-          { text: 'Inspection Approval %', value: 'inspectionapproval', width: 80, show: true },
+          { text: 'Inspection Pass Rate', value: 'inspectionapproval', width: 80, show: true },
           { text: 'Score (kw x Pass rate)', value: 'score', width: 80, show: true },
         ],
         showModal: false
