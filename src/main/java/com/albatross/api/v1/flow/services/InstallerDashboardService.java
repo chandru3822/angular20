@@ -109,7 +109,7 @@ public class InstallerDashboardService {
     onTimeCloseoutTile.put("drilldownData", jsonResults.getJSONArray("onTimeCloseoutDrilldown"));
 
     JSONObject inspectionApprovalTile = new JSONObject();
-    inspectionApprovalTile.put("name", "Inspection Approval %");
+    inspectionApprovalTile.put("name", "Inspection Pass Rate");
     inspectionApprovalTile.put("value", Math.round(jsonResults.getDouble("inspectionApproval") * 100) + "%");
     inspectionApprovalTile.put("drilldownData", jsonResults.getJSONArray("inspectionApprovalDrilldown"));
 
