@@ -229,9 +229,7 @@
                   :disabled="!userCanEdit"
                   label="Process Step Status Types"
                   item-text="fakeText"
-                  return-object
-                  attach
-                >
+                  return-object>
                   <template #selection="{ item, index }">
                     <span :class="{'bold': item.processStepStatusTypeId == null}">
                       <span v-if="index !== 0" class="grey--text">
@@ -336,9 +334,7 @@
                         :disabled="!userCanEdit"
                         label="Process Step Status Types"
                         item-text="fakeText"
-                        return-object
-                        attach
-                      >
+                        return-object>
                         <template #selection="{ item, index }">
                           <span :class="{'bold': item.processStepStatusTypeId == null}">
                             <span v-if="index !== 0 && !item.archived" class="grey--text">

@@ -55,9 +55,7 @@
           return-object
           height="35px"
           class="d-inline-block mr-3"
-          @change="ownerReadOnlyPositionsChanged = true"
-          attach
-        >
+          @change="ownerReadOnlyPositionsChanged = true">
           <v-list-item
             slot="prepend-item"
             ripple
@@ -318,9 +316,7 @@
                                         return-object
                                         height="35px"
                                         class="d-inline-block mr-3"
-                                        @change="cf.positionsChanged = true"
-                                        attach
-                                      >
+                                        @change="cf.positionsChanged = true">
                                         <v-list-item
                                           slot="prepend-item"
                                           ripple
