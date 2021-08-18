@@ -1,76 +1,82 @@
 <template>
-  <v-container class="app-container">
+  <v-container class="wq-container">
     <v-row>
-      <v-col cols="12">
-        <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Work Queue</v-toolbar-title>
-        </v-toolbar>
-        <v-divider class="mt-3"/>
-        <v-row class="justify-center">
-          <v-btn class="wq-button mx-2 mt-3 white--text" color="primaryCustom"
-                 :outlined="showAll && !selectedWorkQueueCategory.id"
-                 @click="[showAll = !showAll, selectedWorkQueueCategory = {}, getWorkQueues()]">
-            All
-          </v-btn>
-          <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2 mt-3"
-                 :outlined="selectedWorkQueueCategory.id === c.id"
-                 :style="{color: selectedWorkQueueCategory.id === c.id ? `${c.color} !important` : 'white !important'}"
-                 :color="c.color" :key="index" @click="getWorkQueues(true, c)">
-            {{ c.workQueueCategory }}
-          </v-btn>
-        </v-row>
-        <v-divider class="mt-3"/>
-        <v-row>
-          <v-col cols="12" md="4" class="px-5">
-            <v-select v-model="selectedUserPosition"
-                      :items="workQueueOwners"
-                      label="Assigned to"
-                      item-text="fullName"
-                      return-object
-                      @input="getWorkQueues(false)"
-            ></v-select>
-          </v-col>
-          <v-col cols="12" md="8" class="radio-group-container pr-5">
-            <v-radio-group id="wqt-view-type-selector" v-model="selectedViewType" column>
-              <v-radio class="d-inline-block mx-4" label="% Completed On Time" :value="0"></v-radio>
-              <v-radio class="d-inline-block mx-4" label="Total Completed Tasks" :value="1"></v-radio>
-              <v-radio class="d-inline-block mx-4" label="Change in WIP" :value="2"></v-radio>
-            </v-radio-group>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main elevation-0"
+      <v-col cols="12" class="px-0 pt-3">
+        <v-autocomplete v-model="selectedWorkQueueCategory"
+                        :items="workQueueCategories"
+                        label="Work Queue Category"
+                        item-text="workQueueCategory"
+                        item-value="id"
+                        return-object
+                        solo
+                        hide-details
+                        dense
+                        dark
+                        background-color="primaryCustom"
+                        class="white--text work-queue-selector d-inline-block pr-3"
+                        @input="getWorkQueues()"
+        ></v-autocomplete>
+        <v-select v-model="selectedUserPosition"
+                  :items="workQueueOwners"
+                  label="Assigned to"
+                  class="work-queue-selector d-inline-block pl-3"
+                  item-text="fullName"
+                  hide-details
+                  return-object
+                  @input="getWorkQueues(false)"
+        ></v-select>
+        <div class="radio-group-container mt-0 mb-5">
+          <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
+            <v-radio class="d-inline-block mx-4"
+                     label="% Completed On Time"
+                     :value="0"
+                     :class="{'inactive-radio': selectedViewType !== 0}"
+            ></v-radio>
+            <v-radio class="d-inline-block mx-4"
+                     label="Total Completed Tasks"
+                     :value="1"
+                     :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
+                     :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
+            <v-radio class="d-inline-block mx-4"
+                     label="Change in WIP"
+                     :value="2"
+                     :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
+          </v-radio-group>
+        </div>
+        <v-row class="ma-0">
+          <v-card tile v-for="wq in workQueues" class="flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
-                  :style="{'border-color': wq.color}"
                   :key="wq.id"
-                  width="200" :height="wqHasMetrics(wq) ? 170 : 90">
-            <div class="card-accent" :style="{'background-color': wq.color}"></div>
-            <v-card-text class="pt-1 px-0">
+                  width="288" :height="wqHasMetrics(wq) ? 223 : 121">
+            <v-card-text class="pa-0">
               <router-link class="no-text-decoration card-link"
                            :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
-                <div class="card-title-container text-left">
+                <div v-if="null != wq.expectedTarget"
+                    class="expected-target-banner"
+                    :style="{'background-color': wq.color}">
+                  {{wq.expectedTarget * 100 | currency('', 0)}}%
+                </div>
+                <div class="card-title-container text-left" :style="{'background-color': wq.color + '15' }">
                   <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
                   <div class="card-count">{{ wq.workQueueCount }}</div>
                 </div>
 
                 <div class="card-metrics-container"
                      :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
-                     :style="{'background-color': wq.color + '60' }"
                      v-if="wqHasMetrics(wq)">
                   <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
-                    Completed within expected time of {{ wq.expectedCycle }}
-                    {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}
+                    Completed within expected time of <strong>{{ wq.expectedCycle }}
+                    {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                   </div>
                   <div class="card-metric card-metric-left"
-                       :style="{'border-right': getBorder(wq) }">
-                    {{ wq.shortWindow }} {{ getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType) }}
+                      :class="{'card-metric-extra-padding': selectedViewType === 0}">
                     <div class="card-metric-percent"
                          v-if="selectedViewType === 0"
                          :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
                       {{ wq.shortWindowPercentage * 100 | currency('', 0)}}%
-                      <span class="card-metric-difference">
-                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}
-                        </span>
+<!--                      <span class="card-metric-difference">-->
+<!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
+<!--                        </span>-->
                     </div>
                     <div class="card-metric-percent"
                          v-else-if="selectedViewType === 1">
@@ -80,16 +86,17 @@
                          v-else-if="selectedViewType === 2">
                       {{ wq.shortWip >= 0 ? '+' : '' }}{{ wq.shortWip }}
                     </div>
+                    {{ wq.shortWindow }} {{ getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType) }}
                   </div>
+                  <div class="card-metric-divider"></div>
                   <div class="card-metric">
-                    {{ wq.longWindow }} {{ wq.longWindowDurationType }}
                     <div class="card-metric-percent"
                          v-if="selectedViewType === 0"
                          :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
                       {{ wq.longWindowPercentage * 100 | currency('', 0)}}%
-                      <span class="card-metric-difference">
-                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}
-                        </span>
+<!--                      <span class="card-metric-difference">-->
+<!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
+<!--                        </span>-->
                     </div>
                     <div class="card-metric-percent"
                          v-else-if="selectedViewType === 1">
@@ -99,6 +106,7 @@
                          v-else-if="selectedViewType === 2">
                       {{ wq.longWip >= 0 ? '+' : '' }}{{ wq.longWip }}
                     </div>
+                    {{ wq.longWindow }} {{ wq.longWindowDurationType }}
                   </div>
                 </div>
               </router-link>
@@ -174,10 +182,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getWorkQueues(reset, c) {
-      if (reset) {
-        this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
-      }
+    async getWorkQueues() {
       localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
       if (this.selectedWorkQueueCategory?.id || this.showAll) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -199,16 +204,6 @@ export default {
         }
       } else {
         this.workQueues = []
-      }
-    },
-    loadDrilldown(wq) {
-      if (wq.workQueueCount > 0) {
-        this.$router.push({
-          name: 'workQueueDrilldown',
-          params: {id: wq.workQueueTypeId},
-          query: {upId: this.selectedUserPosition.userId, unassigned: this.selectedUserPosition.unassigned}
-        })
-        // this.$router.push({name: 'contact', params: {id: data.id}})
       }
     },
     getDurationTypePluralization(duration, durationType) {
@@ -244,48 +239,105 @@ export default {
 #wqt-view-type-selector {
   display: block !important;
 }
+
+.inactive-radio .v-icon {
+  color: #808588 !important;
+}
+
+.inactive-radio > label {
+  color: #808588 !important;
+}
+
 </style>
 
 <style scoped lang="scss">
+.wq-container {
+  margin-left: 32px !important;
+  margin-right: 32px !important;
+}
+
+.work-queue-selector {
+  width: 50%;
+}
+
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
   text-align: center;
-  border: solid 2px;
+  border-top-right-radius: 9px !important;
+  border-bottom-right-radius: 9px !important;
+  border-bottom-left-radius: 9px !important;
+  margin-right: 48px;
+  margin-bottom: 32px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
-.card-accent {
+.card-main:hover {
+  box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.expected-target-banner {
+  font-weight: bold;
+  position: absolute;
+  color: white;
+  top: 0;
+  left: 0;
+  z-index: 2 !important;
+  width: 35px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))
+}
+
+.expected-target-banner:after {
+  content: " ";
+  position: absolute;
+  display: block;
+  width: 100%;
   height: 100%;
-  width: 5px;
-  /*border-radius: 4px 0 0 4px !important;*/
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: inherit;
+  transform-origin: bottom left;
+  -ms-transform: skew(-15deg, 0deg);
+  -webkit-transform: skew(-15deg, 0deg);
+  transform: skew(-15deg, 0deg);
 }
 
 .card-count {
   width: 40%;
   display: inline-block;
   line-height: 2;
-  text-align: center;
-  font-size: 30px;
+  color: #363636;
+  text-align: right;
+  font-size: 32px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .card-link {
-  color: #666666;
+  display: flex;
+  position: relative;
+  color: #808588;
 }
 
 .card-title-container {
-  width: calc(100% - 5px);
-  height: 85px;
-  padding-right: 4px;
-  padding-left: 10px;
-  padding-bottom: 5px;
+  width: 100%;
+  height: 121px;
+  padding-right: 24px;
+  padding-left: 24px;
+  border-top-right-radius: 9px !important;
   display: flex;
   align-items: center;
 }
 
 .card-title {
   width: 60%;
+  color: #363636;
+  font-size: 16px;
   overflow: hidden;
   max-height: 100%;
   display: inline-block;
@@ -306,9 +358,10 @@ export default {
 }
 
 .card-metrics-container {
-  height: 80px;
+  height: 102px;
   width: calc(100% - 5px);
   position: absolute;
+  top: 121px;
   bottom: 0;
   right: 0;
   left: 5px;
@@ -322,19 +375,24 @@ export default {
 
 .card-metrics-expected-cycle {
   height: 20px;
-  font-size: 9px;
+  font-size: 12px;
+  padding-top: 14px;
 }
 
 .card-metric {
-  width: 50%;
+  width: calc(50% - 1px);
   height: calc(100% - 25px);
   display: inline-block;
 }
 
+.card-metric-extra-padding {
+  padding-top: 16px;
+}
+
 .card-metric-percent {
-  font-size: 20px;
-  font-weight: 600;
-  margin-top: 3px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 14px;
   margin-bottom: 3px;
 }
 
@@ -343,16 +401,22 @@ export default {
   font-weight: normal;
 }
 
+.card-metric-divider {
+  display: inline-block;
+  background: #808588;
+  width: .5px;
+  height: 40px;
+}
+
 .radio-group-container {
   display: flex;
-  justify-content: flex-end;
 }
 
 .expectation-met {
-  color: green;
+  color: #168325;
 }
 
 .expectation-missed {
-  color: red;
+  color: #DA3434;
 }
 </style>
