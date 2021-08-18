@@ -16,15 +16,15 @@
                         class="white--text work-queue-selector d-inline-block pr-3"
                         @input="getWorkQueues()"
         ></v-autocomplete>
-        <v-select v-model="selectedUserPosition"
-                  :items="workQueueOwners"
-                  label="Assigned to"
-                  class="work-queue-selector d-inline-block pl-3"
-                  item-text="fullName"
-                  hide-details
-                  return-object
-                  @input="getWorkQueues(false)"
-        ></v-select>
+<!--        <v-select v-model="selectedUserPosition"-->
+<!--                  :items="workQueueOwners"-->
+<!--                  label="Assigned to"-->
+<!--                  class="work-queue-selector d-inline-block pl-3"-->
+<!--                  item-text="fullName"-->
+<!--                  hide-details-->
+<!--                  return-object-->
+<!--                  @input="getWorkQueues(false)"-->
+<!--        ></v-select>-->
         <div class="radio-group-container mt-0 mb-5">
           <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
             <v-radio class="d-inline-block mx-4"
@@ -148,7 +148,7 @@ export default {
   computed: {},
   async created() {
     this.getWorkQueueCategories()
-    this.getWorkQueueOwners()
+    // this.getWorkQueueOwners()
     this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
     if (this.selectedWorkQueueCategory.id) {
       this.getWorkQueues()
