@@ -243,7 +243,6 @@
                                   return-object
                                   autocomplete="off"
                                   @input="assignCustomField(item)"
-                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
