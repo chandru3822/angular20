@@ -53,7 +53,7 @@
                            :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
                 <div v-if="null != wq.expectedTarget"
                     class="expected-target-banner"
-                    :style="{'background-color': wq.color}">
+                    :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
                   {{wq.expectedTarget * 100 | currency('', 0)}}%
                 </div>
                 <div class="card-title-container text-left" :style="{'background-color': wq.color + '15' }">
@@ -125,7 +125,7 @@ import {AppMutations} from '@/stores/AppStore'
 
 import orderBy from 'lodash.orderby'
 import {getWorkQueueCategories} from '@/services/workQueueService'
-import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, isLightColor, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'WorkQueue',
@@ -155,6 +155,9 @@ export default {
     }
   },
   methods: {
+    getTargetColor(color) {
+      return isLightColor(color) ? '#363636' : '#ffffff'
+    },
     wqHasMetrics(wq) {
       return wq.shortWindow && wq.longWindow && wq.expectedCycle
         && wq.shortWindowDurationType && wq.longWindowDurationType && wq.expectedCycleDurationType
