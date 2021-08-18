@@ -109,6 +109,7 @@ public class SecurityService implements UserDetailsService {
           user.setId(details.getId());
         } else {
           user = userService.findUserById(details.getId());
+          user.setMasqueradingUserId(((UserAccountDetails) p).getMasqueradingUserId());
           List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
           user.setFeatureAccess(results);
         }

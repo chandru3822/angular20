@@ -70,8 +70,11 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
             throw new LockedException("Account is locked: " + uad.get().getUsername());
         }
 
-        PreAuthenticatedAuthenticationToken result = new PreAuthenticatedAuthenticationToken(uad.get(), null,
-                uad.get().getAuthorities());
+        UserAccountDetails uadTemp = uad.get();
+        uadTemp.setMasqueradingUserId(token.getMasqueradingUserId());
+
+        PreAuthenticatedAuthenticationToken result = new PreAuthenticatedAuthenticationToken(uadTemp, null,
+                uadTemp.getAuthorities());
         return result;
     }
 
@@ -99,5 +102,9 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         } else {
           return userCache.get(id);
         }
+    }
+
+    public void forceReload(Long userId) {
+      userCache.invalidate(userId);
     }
 }

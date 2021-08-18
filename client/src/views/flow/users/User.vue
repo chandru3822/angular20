@@ -72,6 +72,12 @@
             </form>
           {{user.firstName}} {{user.lastName}}
           <span v-if="null != user.primaryPosition" class="ml-1"> - {{ user.primaryPosition}}</span>
+
+          <v-btn class="ml-3" small fab outlined
+                 v-if="userCanMasquerade && !userIsMasquerading"
+                 @click="masquerade()">
+            <v-icon>mdi-alien</v-icon>
+          </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs background-color="transparent">
@@ -99,13 +105,14 @@
 </template>
 
 <script>
-  import { Actions } from '@/store'
+  import store, { Actions } from '@/store'
   import {AppMutations} from '@/stores/AppStore'
-
+  import axios from 'axios'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import {UserActions, UserMutations} from "@/stores/UserStore";
 
   export default {
     name: 'User',
@@ -131,6 +138,8 @@
         user: {},
         userId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
+        userCanMasquerade: this.$store.getters.userHasFeatureAccessLevel('MASQUERADE', 'ADMIN'),
+        userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
         userImage: {},
         unsavedFieldsModal: false,
         hasDirtyFields: false,
@@ -177,6 +186,25 @@
       },
       onImgError () {
         this.imageFailed = true
+      },
+      async masquerade () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/${this.userId}`)
+          if(data && data.token) {
+            this.$store.commit(UserMutations.SET_JWT, data.token)
+            //update the user
+            const {data: currentUser} = await getRequest(`/user/current`)
+            await this.$store.commit(UserMutations.SET_DETAILS, currentUser);
+            //then reload the screen
+            window.location.reload()
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Aliasing as User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getUser () {
         this.$store.commit(AppMutations.SET_LOADING, true)

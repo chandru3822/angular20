@@ -1,11 +1,16 @@
 package com.albatross.api.security;
 
+import com.albatross.api.security.jwt.JwtAuthenticationProvider;
 import com.albatross.api.security.jwt.JwtClaims;
+import com.albatross.api.security.jwt.JwtClaimsSerializer;
 import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,11 +20,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 
 @Slf4j
@@ -32,6 +39,9 @@ public class AuthController {
 
   @Autowired
   private SecurityService securityService;
+
+  @Autowired
+  private JwtAuthenticationProvider jwtAuthProvider;
 
     @Value("${security.jwt.expireDuration}")
     private Long jwtExpireDuration;
@@ -96,6 +106,48 @@ public class AuthController {
     JwtClaims body = createJwtBody(user);
     String jwt = jwtUtils.encodeDetails(body);
     return ResponseEntity.ok(new JwtAuthResponse(jwt, user));
+  }
+
+  @RequestMapping("/masquerade/{userId}")
+  @ResponseBody
+  public MasqueradeResponseBody masquerade(@PathVariable("userId") Long userId,
+                                           @RequestHeader("Authorization") String authHeader) {
+    User user = securityService.getCurrentUser();
+    Boolean userCanMasquerade = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MASQUERADE", List.of("ADMIN"));
+    if(userCanMasquerade) {
+      JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
+      jwt.setMasqueradingUserId(user.getId());
+      jwt.setUserId(userId);
+      jwtAuthProvider.forceReload(userId);
+      return new MasqueradeResponseBody().setResult("success")
+        .setToken(jwt);
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You do not have access to Masquerade.", new Exception());
+    }
+  }
+
+  @RequestMapping("/masquerade/clear")
+  @ResponseBody
+  public MasqueradeResponseBody clearMasquerade(@RequestHeader("Authorization") String authHeader) {
+    JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
+    //invalidate the logged in user jwt
+    jwt.setUserId(jwt.getMasqueradingUserId());
+    jwt.setMasqueradingUserId(null);
+    jwtAuthProvider.forceReload(securityService.getCurrentUser().getId());
+    //set the user id on the new jwt to the masquerading user id
+    //clear the masq user id
+    return new MasqueradeResponseBody().setResult("success")
+      .setToken(jwt);
+  }
+
+  @JsonInclude(NON_NULL)
+  @Data
+  @Accessors(chain = true)
+  private static class MasqueradeResponseBody {
+    private String result;
+
+    @JsonSerialize(using = JwtClaimsSerializer.class)
+    private JwtClaims token;
   }
 
   private JwtClaims createJwtBody(User user) {

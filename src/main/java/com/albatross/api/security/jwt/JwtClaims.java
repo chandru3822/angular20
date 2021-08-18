@@ -58,12 +58,12 @@ public class JwtClaims {
   private Instant issuedAt;
 
   /**
-   * The id of the user being masqueraded right now. Optional; this field will be
+   * The id of the user who is masquerading. Optional; this field will be
    * omitted from the JWT if it is null.
    */
-  @JsonProperty("masqueradeId")
+  @JsonProperty("masqueradingUserId")
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long masqueradeId;
+  private Long masqueradingUserId;
 
   @JsonProperty("exp")
   @JsonSerialize(using = JacksonUnixTimestamp.Serializer.class)

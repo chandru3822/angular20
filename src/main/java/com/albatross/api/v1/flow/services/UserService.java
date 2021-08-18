@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.UserController;
@@ -61,6 +62,9 @@ public class UserService {
 
   @Autowired
   AmazonS3 s3;
+
+  @Autowired
+  private JwtUtils jwtUtils;
 
   @Value("${security.doCompanyDefaultValidation:false}")
   private Boolean doCompanyDefaultValidation;
@@ -414,6 +418,7 @@ public class UserService {
 
       List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
       response.setFeatureAccess(results);
+      response.setMasqueradingUserId(user.getMasqueradingUserId());
       return ResponseEntity.ok(response);
     } else {
       return ResponseEntity.badRequest().body("No user found");
