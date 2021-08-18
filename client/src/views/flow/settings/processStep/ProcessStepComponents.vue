@@ -191,9 +191,7 @@
                   :disabled="!userCanEdit"
                   label="Project Status Types"
                   item-text="fakeText"
-                  return-object
-                  attach
-                >
+                  return-object>
                   <template #selection="{ item, index }">
                     <span :class="{'bold': item.projectStatusTypeId == null}">
                       <span v-if="index !== 0" class="grey--text">
@@ -294,9 +292,7 @@
                         :disabled="!userCanEdit"
                         label="Project Status Types"
                         item-text="fakeText"
-                        return-object
-                        attach
-                      >
+                        return-object>
                         <template #selection="{ item, index }">
                           <span :class="{'bold': item.projectStatusTypeId == null}">
                             <span v-if="index !== 0 && !item.archived" class="grey--text">
