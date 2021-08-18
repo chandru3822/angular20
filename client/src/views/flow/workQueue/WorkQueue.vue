@@ -10,7 +10,6 @@
                         return-object
                         solo
                         hide-details
-                        dense
                         dark
                         background-color="primaryCustom"
                         class="white--text work-queue-selector d-inline-block pr-3"
@@ -291,7 +290,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))
+  //filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))
 }
 
 .expected-target-banner:after {
