@@ -348,7 +348,7 @@ public class AttachmentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("filename", attachment.getFilename());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     sqlCache.update("attachment.update", params);
 

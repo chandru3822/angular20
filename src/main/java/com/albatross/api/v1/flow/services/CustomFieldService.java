@@ -107,7 +107,7 @@ public class CustomFieldService {
     if(customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
       if(insertParentRecordIfNeeded) {
         // use created by unless field already existed then use modified id as the created for the list value row (WUT? WHY? this should always be the logged in user)
-        lovCreatedById = user.getId();
+        lovCreatedById = user.trueUserId();
 
         //insert the parent row if this is a new field
         HashMap<String, Object> lovParent = new HashMap<>();
@@ -117,7 +117,7 @@ public class CustomFieldService {
         parentId = sqlCache.updateReturningId("customField.insertListOfValue", lovParent, "id").longValue();
       } else {
         parentId = customField.getListOfValueId();
-        lovCreatedById = user.getId();
+        lovCreatedById = user.trueUserId();
       }
 
       //insert the rest of the list values
@@ -174,7 +174,7 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("archived", cfot.getArchived());
     params.put("customFieldId", customFieldId);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("companyObjectTypeId", cfot.getCompanyObjectTypeId());
 
     // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here

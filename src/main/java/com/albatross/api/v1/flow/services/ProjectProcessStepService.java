@@ -131,7 +131,7 @@ public class ProjectProcessStepService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     sqlCache.update("projectProcessStep.removeOwner", params);
   }
@@ -153,7 +153,7 @@ public class ProjectProcessStepService {
     params.put("projectProcessStepId", pps.getProjectProcessStepId());
     params.put("processStepStatusTypeId", processStepStatusTypeId);
     params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("projectId", pps.getProjectId());
     params.put("processStepId", pps.getProcessStepId());
     params.put("main", pps.getMain());
@@ -254,7 +254,7 @@ public class ProjectProcessStepService {
     params.put("projectId", projectId);
     params.put("processStepId", processStepId);
     params.put("userPositionId", userPositionId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("companyId", companyId);
     params.put("parentProjectProcessStepId", parentProjectProcessStepId);
     params.put("initialCompanyProcessStepStatusTypeId", initialCompanyProcessStepStatusTypeId);

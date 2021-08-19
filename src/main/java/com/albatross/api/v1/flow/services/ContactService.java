@@ -166,7 +166,7 @@ public class ContactService {
       sqlCache.update("contact.updateContact", params);
 
       if (!existingContact.getProjects().isEmpty() && !existingContact.getProjects().get(0).getProjectName().equals(contact.getFirstName() + " " + contact.getLastName())) {
-        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.getId()));
+        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.trueUserId()));
       }
     } else {
       UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());

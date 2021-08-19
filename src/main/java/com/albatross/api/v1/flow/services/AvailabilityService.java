@@ -211,7 +211,7 @@ public class AvailabilityService {
       //adding this param cuz sql array null checks are too hard for me
       excludedParams.put("excludedIsEmpty", null == rsa.getExcludedResourceSlotTimeIds() || rsa.getExcludedResourceSlotTimeIds().isEmpty());
       excludedParams.put("resourceScheduleAvailabilityId", rsaId);
-      excludedParams.put("userId", user.getId());
+      excludedParams.put("userId", user.trueUserId());
 
       //delete any existing excluded slots that are no longer in the excluded array
       sqlCache.update("availability.archiveUnusedExcludedSlots", excludedParams);
@@ -547,7 +547,7 @@ public class AvailabilityService {
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", request.getProjectId());
-      params.put("userId", user.getId());
+      params.put("userId", user.trueUserId());
       params.put("projectProcessStepId", request.getProjectProcessStepId());
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
@@ -622,7 +622,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("scheduleName", slotSchedule.getScheduleName());
     params.put("companyId", user.getCompanyId());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     Long id;
     if (null != slotSchedule.getId()) {
@@ -649,7 +649,7 @@ public class AvailabilityService {
     params.put("startTime", slotTime.getStartTime());
     params.put("resourceSlotScheduleId", resourceSlotScheduleId);
     params.put("endTime", slotTime.getEndTime());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     boolean archived = null == slotTime.getArchived() ? false : slotTime.getArchived();
 
@@ -682,7 +682,7 @@ public class AvailabilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     sqlCache.update("availability.deleteSlotSchedule", params);
   }
 

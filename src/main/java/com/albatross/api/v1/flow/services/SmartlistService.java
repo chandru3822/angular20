@@ -92,7 +92,7 @@ public class SmartlistService {
 
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     // enforce rule that only project, process step, and contact row types can have a table view display
     if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
@@ -213,14 +213,14 @@ public class SmartlistService {
   @Transactional
   public List<SmartlistLogic> updateLogic(Long smartlistId, List<SmartlistLogic> logic) {
     User user = securityService.getCurrentUser();
-    sqlCache.update("smartlist.archiveLogic", Map.of("smartlistId", smartlistId, "userId", user.getId()));
+    sqlCache.update("smartlist.archiveLogic", Map.of("smartlistId", smartlistId, "userId", user.trueUserId()));
 
     if (!logic.isEmpty()) {
       HashMap<String, Object> params = null;
       int counter = 0;
       for (SmartlistLogic l : logic) {
         params = om.convertValue(l, HashMap.class);
-        params.put("userId", user.getId());
+        params.put("userId", user.trueUserId());
         params.put("sqlOrder", counter++);
         sqlCache.update("smartlist.updateLogic", params);
       }
@@ -246,7 +246,7 @@ public class SmartlistService {
   public SmartlistRequirement addRequirement(Long smartlistId, SmartlistRequirement requirement) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
     return getRequirementById(requirementId);
@@ -254,23 +254,23 @@ public class SmartlistService {
 
   public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
-    params.put("userId", securityService.getCurrentUser().getId());
+    params.put("userId", securityService.getCurrentUser().trueUserId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     sqlCache.update("smartlist.updateRequirement", params);
     return getRequirementById(requirement.getId());
   }
 
   public void deleteRequirement(Long requirementId) {
-    sqlCache.update("smartlist.deleteRequirement", Map.of("requirementId", requirementId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.update("smartlist.deleteRequirement", Map.of("requirementId", requirementId, "userId", securityService.getCurrentUser().trueUserId()));
   }
 
   public void deleteFieldAssignment(Long fieldId) {
-    sqlCache.update("smartlist.deleteField", Map.of("id", fieldId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.update("smartlist.deleteField", Map.of("id", fieldId, "userId", securityService.getCurrentUser().trueUserId()));
   }
 
   public void updateDisplayOrder(List<SmartlistFieldAssignment> fields) {
     fields.forEach(field -> {
-      sqlCache.update("smartlist.updateDisplayOrder", Map.of("id", field.getId(), "displayOrder", field.getDisplayOrder(), "userId", securityService.getCurrentUser().getId()));
+      sqlCache.update("smartlist.updateDisplayOrder", Map.of("id", field.getId(), "displayOrder", field.getDisplayOrder(), "userId", securityService.getCurrentUser().trueUserId()));
     });
   }
 
@@ -331,8 +331,8 @@ public class SmartlistService {
     params.put("createdById", user.trueUserId());
     Long newSmartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
 
-    sqlCache.update("smartlist.copyAssignedFields", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));
-    sqlCache.update("smartlist.copyRequirements", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));
+    sqlCache.update("smartlist.copyAssignedFields", Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
+    sqlCache.update("smartlist.copyRequirements", Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
 
     return getSmartlist(newSmartlistId);
   }

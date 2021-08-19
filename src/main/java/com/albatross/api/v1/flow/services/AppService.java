@@ -158,7 +158,7 @@ public class AppService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", attachment.getId());
     params.put("show", attachment.getShow());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     sqlCache.update("app.showOrHideAttachment", params);
   }

@@ -190,7 +190,7 @@ public class GenesysService {
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
       params.put("sourceId", contact.getId());
-      params.put("userId", currentUser.getId());
+      params.put("userId", currentUser.trueUserId());
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
       return true;
     }
@@ -282,7 +282,7 @@ public class GenesysService {
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
   }
 

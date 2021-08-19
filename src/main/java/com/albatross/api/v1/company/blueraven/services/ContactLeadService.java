@@ -313,7 +313,7 @@ public class ContactLeadService {
     }
 
     for (CustomFieldValue cfv: cfvList) {
-      saveCustomFieldValue(cfv, contactId, currentUser.getId());
+      saveCustomFieldValue(cfv, contactId, currentUser.trueUserId());
     }
 
     try {

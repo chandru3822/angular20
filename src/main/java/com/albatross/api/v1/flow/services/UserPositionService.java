@@ -79,7 +79,7 @@ public class UserPositionService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("userPositionId", userPositionId);
 
     sqlCache.update("userPosition.delete", params);

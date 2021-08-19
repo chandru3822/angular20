@@ -98,7 +98,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("useParentData", customField.getUseParentData());
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
 
@@ -109,7 +109,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
     params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());

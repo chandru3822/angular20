@@ -63,7 +63,7 @@ public class AhjRequirementService {
         parameters.addValue("position", ahjRequirement.getPosition());
         parameters.addValue("complete", ahjRequirement.getComplete());
         parameters.addValue("statusId", ahjRequirement.getStatusId());
-        parameters.addValue("userId", user.getId());
+        parameters.addValue("userId", user.trueUserId());
         parameters.addValue("archived", ahjRequirement.getArchived());
 
         jdbc.queryForObject(sqlQuery, parameters, String.class);

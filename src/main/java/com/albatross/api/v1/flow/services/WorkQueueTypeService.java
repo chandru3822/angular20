@@ -158,7 +158,7 @@ public class WorkQueueTypeService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     for(WorkQueueTypeProjectStatus ps : processStepWorkQueueType.getProjectStatuses()) {
       if(null != ps.getId() && ps.getArchived()) {
@@ -179,7 +179,7 @@ public class WorkQueueTypeService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     for(WorkQueueTypeProcessStepStatus ps : processStepWorkQueueType.getProcessStepStatuses()) {
       if(null != ps.getId() && ps.getArchived()) {

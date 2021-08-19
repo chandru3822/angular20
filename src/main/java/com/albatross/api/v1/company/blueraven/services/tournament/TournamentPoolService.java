@@ -52,7 +52,7 @@ public class TournamentPoolService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("poolId", poolId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("customName", pool.getCustomName());
     params.put("startDate", pool.getStartDate());
     params.put("endDate", pool.getEndDate());
@@ -90,7 +90,7 @@ public class TournamentPoolService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentPoolPositionId", tournamentPoolPositionId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     sqlCache.update("tournamentPool.deletePosition", params);
   }
 
@@ -116,7 +116,7 @@ public class TournamentPoolService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentPoolUserId", tournamentPoolUserId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     sqlCache.update("tournamentPool.deleteUser", params);
   }
 
@@ -126,7 +126,7 @@ public class TournamentPoolService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolId", poolId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("seededMatches", seededMatches);
 
     sqlCache.query("tournamentPool.assignUsersToMatches", params, String.class);
@@ -138,7 +138,7 @@ public class TournamentPoolService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolId", poolId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("userIds", userIds);
 
     sqlCache.update("tournamentPool.advanceUsersToWinnerPool", params);

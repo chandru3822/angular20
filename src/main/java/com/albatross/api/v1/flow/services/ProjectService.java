@@ -415,7 +415,7 @@ public class ProjectService {
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
     params.put("projectStatusType", status.getProjectStatusType());
     params.put("color", status.getColor());
@@ -445,7 +445,7 @@ public class ProjectService {
   public void deleteCompanyProjectStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
     sqlCache.update("project.deleteCompanyStatus", params);

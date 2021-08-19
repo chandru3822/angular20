@@ -339,7 +339,7 @@ public class UserService {
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
     params.put("userStatusTypeId", req.getCompanyUserStatusTypeId());
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     sqlCache.update("user.upsertUserCompany", params);
 
     //check if there is already a user status for this user and company, if not, add new
@@ -354,7 +354,7 @@ public class UserService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     params.put("userId", userId);
     params.put("userStatusTypeId", userStatusTypeId);
 
