@@ -59,6 +59,7 @@
                     autocomplete="off">
           </v-select>
           <v-text-field v-model="user.newPassword"
+                        v-if="!userIsMasquerading"
                         placeholder="Enter a new password"
                         required
                         type="password"
@@ -66,6 +67,7 @@
                         label="Change Password">
           </v-text-field>
           <v-text-field v-model="user.newPasswordConfirm"
+                        v-if="!userIsMasquerading"
                         placeholder="Verify password"
                         required
                         type="password"
@@ -155,6 +157,7 @@ export default {
       user: {},
       homePages: [],
       userIsAlbatross: false,
+      userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
       usernameRules: constants.USERNAME_RULES,
