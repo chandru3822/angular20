@@ -265,11 +265,11 @@
               value: textValue,
               sort: (a, b) => {
                 //if it is a date, format the string as a date and sort by that value
-                if(a.match(/^\d{4}-\d{2}-\d{2}/) || b.match(/^\d{4}-\d{2}-\d{2}/)) {
+                if((null != a && a.match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.match(/^\d{4}-\d{2}-\d{2}/))) {
                   return new Date(a) - new Date(b)
                 } else {
                   //otherwise sort normally
-                  return a.localeCompare(b)
+                  return null != a ? a.localeCompare(b) : a - b
                 }
               },
               show: true })
