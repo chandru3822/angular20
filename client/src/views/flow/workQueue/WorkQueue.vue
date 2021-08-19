@@ -33,7 +33,7 @@
                      :class="{'inactive-radio': selectedViewType !== 0}"
             ></v-radio>
             <v-radio class="d-inline-block mx-4 wq-radio-label"
-                     label="Total Completed Tasks"
+                     label="Projects Completed"
                      :value="1"
                      :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
                      :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
@@ -68,7 +68,7 @@
                     Completed within expected time of <strong>{{ wq.expectedCycle }}
                     {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                   </div>
-                  <div class="card-number-container" :class="{'card-metric-extra-padding': selectedViewType === 0}">
+                  <div class="one-hunned" :class="{'card-metric-extra-padding': selectedViewType === 0}">
                     <div class="card-metric card-metric-left">
                       <div class="card-metric-percent"
                            v-if="selectedViewType === 0"
