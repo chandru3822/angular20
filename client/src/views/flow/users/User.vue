@@ -77,7 +77,7 @@
                  v-if="userCanMasquerade && !userIsMasquerading"
                  color="primaryCustom"
                  @click="masquerade()">
-            <v-icon>mdi-account-convert</v-icon>
+            <v-icon>mdi-account-switch</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
