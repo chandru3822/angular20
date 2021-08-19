@@ -18,7 +18,7 @@ public class AhjInspection {
                    businessLicense, contractorLicense, timeWindowCallTime, timeWindow, timeWindowPhone,
                    requiredInspectionTypes, schedulingNote, technicianInstructionNote,
                    schedulingWithCustomerNote, obtainingResultsNote, reinspectionNote, documentationNote,
-                   mpuInspectionNote, stateName;
+                   mpuInspectionNote, stateName, ahjName;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;
