@@ -13,7 +13,7 @@ import VueGtag from "vue-gtag";
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 
-const { VUE_APP_BASE_API, VUE_APP_ENV } = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_GA_ID } = process.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
@@ -96,7 +96,7 @@ axios.interceptors.response.use((response) => {
 })
 
 Vue.use(VueGtag, {
-  config: { id: "G-5EGGT8DLX3" }
+  config: { id: VUE_APP_GA_ID }
 }, router);
 
 new Vue({
