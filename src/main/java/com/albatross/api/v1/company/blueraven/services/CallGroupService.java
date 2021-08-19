@@ -68,12 +68,12 @@ public class CallGroupService {
     if(null != cg.getId()) {
       id = cg.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("callGroup.updateGroup", params);
     } else {
       params.put("maxCallCount", cg.getMaxCallCount());
       params.put("daysPerPeriod", cg.getDaysPerPeriod());
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       id = sqlCache.updateReturningId("callGroup.insertGroup", params, "id").longValue();
     }
 
@@ -85,7 +85,7 @@ public class CallGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("maxCallCount", cg.getMaxCallCount());
     params.put("daysPerPeriod", cg.getDaysPerPeriod());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("callGroup.updateGroupConfig", params);
   }
 
@@ -94,7 +94,7 @@ public class CallGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("callGroup.deleteGroup", params);
   }
@@ -105,7 +105,7 @@ public class CallGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("callGroupId", cgpc.getCallGroupId());
     params.put("postalCode", cgpc.getPostalCode());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Optional<CallGroupPostalCode> result = sqlCache.get("callGroup.checkForExisting", params, CallGroupPostalCode.class);
     if(result.isPresent()) {
@@ -123,7 +123,7 @@ public class CallGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("callGroup.deletePostalCode", params);
   }
@@ -135,7 +135,7 @@ public class CallGroupService {
     params.put("callGroupId", cgpn.getCallGroupId());
     params.put("phoneNumber", cgpn.getPhoneNumber());
     params.put("active", true);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Optional<CallGroupPhoneNumber> result = sqlCache.get("callGroup.checkForExistingPhone", params, CallGroupPhoneNumber.class);
     if(result.isPresent()) {
@@ -154,7 +154,7 @@ public class CallGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("active", cgpn.getActive());
     params.put("id", cgpn.getId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("callGroup.updatePhoneNumber", params);
   }
@@ -164,7 +164,7 @@ public class CallGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("callGroup.deletePhoneNumber", params);
   }

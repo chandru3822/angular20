@@ -112,7 +112,7 @@ public class ProcessStepStatusService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", typeId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("processStepStatus.deleteType", params);
   }
 
@@ -125,7 +125,7 @@ public class ProcessStepStatusService {
     params.put("processStepStatusType", type.getProcessStepStatusType());
     params.put("processStepStatusTypeId", type.getProcessStepStatusTypeId());
     params.put("statusType", type.getProcessStepStatusType());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("processStepStatus.updateType", params);
   }
@@ -138,7 +138,7 @@ public class ProcessStepStatusService {
     params.put("id", type.getId());
     params.put("processStepStatusType", type.getProcessStepStatusType());
     params.put("processStepStatusTypeId", type.getProcessStepStatusTypeId());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     Long id = sqlCache.updateReturningId("processStepStatus.insertType", params, "id").longValue();
 
@@ -175,7 +175,7 @@ public class ProcessStepStatusService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     Long id = sqlCache.updateReturningId("processStepStatus.assignStatusToProcessStep", params, "id").longValue();
     return getProcessStepCompanyProcessStepStatusType(id);
@@ -196,7 +196,7 @@ public class ProcessStepStatusService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("processStepId", processStepId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     //yes, i realize that instead of 5 calls i could just make a function. dont mess with me right now. i am working this out in chunks in my mind.
 

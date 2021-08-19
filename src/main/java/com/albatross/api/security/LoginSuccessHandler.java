@@ -28,7 +28,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setHeader("Content-Type", "application/json");
 
         UserAccountDetails details = securityService.getCurrentUserDetails();
-        Long effective = details.getEffectiveId();
+//        Long effective = details.getTrueUserId();
 
         String json = objectMapper.writeValueAsString(
             new Params("user", details)

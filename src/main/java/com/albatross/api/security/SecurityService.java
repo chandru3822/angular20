@@ -109,6 +109,11 @@ public class SecurityService implements UserDetailsService {
           user.setId(details.getId());
         } else {
           user = userService.findUserById(details.getId());
+          user.setMasqueradingUserId(((UserAccountDetails) p).getMasqueradingUserId());
+          //if the user is masquerading - hard code their company id to the current one so we dont override the user's default
+          if(null != ((UserAccountDetails) p).getMasqueradingUserId() && null != ((UserAccountDetails) p).getCompanyId()) {
+            user.setCompanyId(((UserAccountDetails) p).getCompanyId());
+          }
           List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
           user.setFeatureAccess(results);
         }
@@ -162,12 +167,43 @@ public class SecurityService implements UserDetailsService {
     return results;
   }
 
+  @SuppressWarnings("unchecked")
+  public List<FeatureAccessControl> getMasqueradedUserFeatureAccess(Long userId, Long companyId, Long trueUserId) {
+    //this function gets ALL access for a user (combining user/position access control as needed)
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("companyId", companyId);
+    params.put("trueUserId", trueUserId);
+    List<FeatureAccessControl> results = sqlCache.query("feature.getMasqueradedUserFeatureAccess", params, FeatureAccessControl.class);
+    return results;
+  }
+
   public void updateUserPassword (Long userId, String newPassword) {
     HashMap<String, Object> params = new HashMap<>();
     String newPwd = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
     params.put("password", newPwd);
     params.put("id", userId);
     sqlCache.update("user.saveUserPassword", params);
+  }
+
+  public Boolean userIsSuperAdmin(Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    Optional<Boolean> result = sqlCache.queryForObjectOptional("user.isSuperAdmin", params, Boolean.class);
+
+    return result.orElse(false);
+  }
+
+  //use to validate masquerading user stuff
+  public Boolean userHasAccessInCompany(Long userId, Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("companyId", companyId);
+
+    Optional<Boolean> result = sqlCache.queryForObjectOptional("user.hasAccessInCompany", params, Boolean.class);
+
+    return result.orElse(false);
   }
 
   /*

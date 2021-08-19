@@ -131,7 +131,7 @@ public class ContactService {
   public void deleteContact(Long contactId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("contactId", contactId);
     sqlCache.update("contact.delete", params);
   }
@@ -160,13 +160,13 @@ public class ContactService {
       Contact existingContact = getContact(id);
 
       params.put("contactTypeId", contact.getContactTypeId());
-      params.put("modifiedById", currentUser.getId());
+      params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
       //add update when we add that to the UI
       sqlCache.update("contact.updateContact", params);
 
       if (!existingContact.getProjects().isEmpty() && !existingContact.getProjects().get(0).getProjectName().equals(contact.getFirstName() + " " + contact.getLastName())) {
-        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.getId()));
+        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.trueUserId()));
       }
     } else {
       UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
@@ -176,7 +176,7 @@ public class ContactService {
         log.info("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
       }
       params.put("contactTypeId", ContactType.LEAD.id);
-      params.put("createdById", currentUser.getId());
+      params.put("createdById", currentUser.trueUserId());
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
@@ -189,7 +189,7 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ownerUserPositionId", owner != null ? owner.getUserPositionId() : null);
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("contact.updateOwner", params);
   }
@@ -203,7 +203,7 @@ public class ContactService {
     params.put("city", contact.getMailingCity());
     params.put("stateId", contact.getCompanyStateId());
     params.put("postalCode", contact.getMailingPostalCode());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", contact.getId());
     //add update when we add that to the UI
     sqlCache.update("contact.updateMailingAddress", params);
@@ -222,7 +222,7 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     params.put("contactTypeId", ContactType.CUSTOMER.id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("contact.convertToContact", params);
 
     //get contact to get their full name for the project and also so a parent can find this contact
@@ -285,7 +285,7 @@ public class ContactService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());
 
@@ -294,7 +294,7 @@ public class ContactService {
     params.clear();
     params.put("contactId", contactId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     sqlCache.update("contact.addAttachment", params);
 

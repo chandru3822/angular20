@@ -48,14 +48,14 @@ public class WorkQueueCategoryService {
     User user = securityService.getCurrentUser();
     sqlCache.update("workQueueCategory.deleteCategory",
         ImmutableMap.of("id", categoryId,
-            "modifiedById", user.getId()));
+            "modifiedById", user.trueUserId()));
   }
 
   public Optional<WorkQueueCategory> updateCategory(WorkQueueCategory category) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("color", category.getColor());
     params.put("id", category.getId());
     params.put("workQueueCategory", category.getWorkQueueCategory());
@@ -77,7 +77,7 @@ public class WorkQueueCategoryService {
     User user = securityService.getCurrentUser();
     Long id = sqlCache.updateReturningId("workQueueCategory.insertCategory",
         ImmutableMap.of("workQueueCategory", category.getWorkQueueCategory(),
-            "createdById", user.getId(),
+            "createdById", user.trueUserId(),
             "color", category.getColor(),
             "companyId", user.getCompanyId()),
         "id").longValue();

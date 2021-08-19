@@ -37,7 +37,7 @@ public class ErrorLogService {
   public void deleteErrorLog(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("id", id);
     sqlCache.update("errorLog.delete", params);
   }

@@ -13,11 +13,24 @@
           CLICK HERE
         </v-btn>
       </v-col>
+      <v-col
+        v-if="userIsMasquerading"
+        cols="12"
+        style="font-size: 18px; text-align: center; background-color: red; color: white;"
+      >
+        BE CAREFUL!! YOU ARE MASQUERADING!!
+        <v-btn :disabled="clearingMasquerade" :loading="clearingMasquerade"
+          @click="clearMasquerade()"
+        >
+          CLEAR
+        </v-btn>
+      </v-col>
       <v-col cols="12" class="pt-0 pb-0">
 
         <v-app-bar dense id="header" :color="headerColor" tabs dark style="z-index: 1001;">
           <v-menu data-app left
                   offset-y
+                  :disabled="userIsMasquerading"
                   v-if="companies.length > 1"
                   :max-height="`calc(100vh - 20px)`"
                   v-model="menuOpen"
@@ -96,7 +109,7 @@ import constants from '@/helpers/constants'
 
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
-
+import axios from 'axios'
 
 const { VUE_APP_ENV } = process.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -115,7 +128,9 @@ export default {
       constants,
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
+      clearingMasquerade: false,
       companyName: this.$store.state.user?.details?.companyName,
+      userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
       selectedCompany: {},
       menuOpen: false,
       tabMenuOpen: false,
@@ -191,7 +206,7 @@ export default {
         const {data} = await getRequest(url)
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
-        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId)
+        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId) || {}
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -216,6 +231,26 @@ export default {
       },
       goToPath(path) {
         this.$router.push({path: `${path}`})
+      },
+      async clearMasquerade () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.clearingMasquerade = true
+          const {data} = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/clear`)
+          if(data && data.token) {
+            this.$store.commit(UserMutations.SET_JWT, data.token)
+            //update the user
+            const {data: currentUser} = await getRequest(`/user/current`)
+            await this.$store.commit(UserMutations.SET_DETAILS, currentUser);
+            //then reload the screen
+            window.location.reload()
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Clearing Masquerade')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
   }
 }

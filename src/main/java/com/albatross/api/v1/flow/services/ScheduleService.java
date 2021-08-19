@@ -157,7 +157,7 @@ public class ScheduleService {
       User user = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectProcessStepId", ev.getProjectProcessStepId());
-      params.put("userId", user.getId());
+      params.put("userId", user.trueUserId());
       params.put("sourceId", ev.getProjectProcessStepId());
 
       //default values so we can call the same query all the other ones do

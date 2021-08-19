@@ -145,11 +145,11 @@ public class OrgService {
     Long id;
     if(null != org.getId()) {
       id = org.getId();
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("id", id);
       sqlCache.update("org.updateOrg", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       id = sqlCache.updateReturningId("org.insertOrg", params, "id").longValue();
     }
 
@@ -247,7 +247,7 @@ public class OrgService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userOrgAccess.getUserId());
     params.put("orgId", userOrgAccess.getOrgId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateReturningId("org.saveOrgCalendarToUser", params, "id").longValue();
     return getOneOrgCalendarAccess(id);
@@ -258,7 +258,7 @@ public class OrgService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("org.deleteOrgCalendarFromUser", params);
   }
@@ -307,7 +307,7 @@ public class OrgService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());
 
@@ -316,7 +316,7 @@ public class OrgService {
     params.clear();
     params.put("orgId", orgId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     sqlCache.update("org.addAttachment", params);
 
