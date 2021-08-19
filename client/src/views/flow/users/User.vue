@@ -74,7 +74,7 @@
           <span v-if="null != user.primaryPosition" class="ml-1"> - {{ user.primaryPosition}}</span>
 
           <v-btn class="ml-3 elevation-2" dark small fab
-                 v-if="userCanMasquerade && !userIsMasquerading"
+                 v-if="userCanMasquerade && !userIsMasquerading && userId !== loggedInUserId"
                  color="primaryCustom"
                  @click="masquerade()">
             <v-icon>mdi-account-switch</v-icon>
@@ -137,8 +137,9 @@
         acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
         snackbar: {},
         user: {},
-        userId: this.$route.params.id,
+        userId: parseInt(this.$route.params.id),
         companyId: this.$store.state.user.details.companyId,
+        loggedInUserId: this.$store.state.user.details.id,
         userCanMasquerade: this.$store.getters.userHasFeatureAccessLevel('MASQUERADE', 'ADMIN'),
         userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
         userImage: {},

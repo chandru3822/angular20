@@ -170,7 +170,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/feature/user/${this.userId}`)
-          this.userCompanyFeatures = data
+          this.userCompanyFeatures = data.filter(d => !d.hidden)
           this.userAccessLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
