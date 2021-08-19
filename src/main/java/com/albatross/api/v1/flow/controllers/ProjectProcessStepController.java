@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,7 @@ public class ProjectProcessStepController {
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      projectProcessStepService.performAction(action, pps);
+      projectProcessStepService.performAction(action, pps, new ArrayList<>());
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
@@ -128,7 +129,7 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null);
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), status.getCancelledCompanyProcessStepStatusTypeId(), null, new ArrayList<>());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
