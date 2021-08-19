@@ -75,6 +75,8 @@ public class CustomFieldService {
   *     With or without value options (which would always be new/inserts)
    */
   public CustomField saveField(CustomField customField) throws SQLException {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
@@ -90,7 +92,7 @@ public class CustomFieldService {
       // edit existing custom field
       id = customField.getId();
       params.put("id", id);
-      params.put("modifiedById", customField.getModifiedById());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("customField.saveField", params);
     } else {
       // have to insert the list of values first if needed to get the listOfValueId
@@ -104,18 +106,18 @@ public class CustomFieldService {
 
     if(customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
       if(insertParentRecordIfNeeded) {
-        // use created by unless field already existed then use modified id as the created for the list value row
-        lovCreatedById = customField.getCreatedById();
+        // use created by unless field already existed then use modified id as the created for the list value row (WUT? WHY? this should always be the logged in user)
+        lovCreatedById = user.getId();
 
         //insert the parent row if this is a new field
         HashMap<String, Object> lovParent = new HashMap<>();
         lovParent.put("name", customField.getFieldName());
         lovParent.put("parentId", null);
-        lovParent.put("createdById", customField.getCreatedById());
+        lovParent.put("createdById", user.trueUserId());
         parentId = sqlCache.updateReturningId("customField.insertListOfValue", lovParent, "id").longValue();
       } else {
         parentId = customField.getListOfValueId();
-        lovCreatedById = customField.getModifiedById();
+        lovCreatedById = user.getId();
       }
 
       //insert the rest of the list values
@@ -124,7 +126,7 @@ public class CustomFieldService {
         lovParams.put("name", lov.getName());
         lovParams.put("parentId", parentId);
         lovParams.put("createdById", lovCreatedById);
-        lovParams.put("modifiedById", customField.getModifiedById());
+        lovParams.put("modifiedById", user.trueUserId());
         lovParams.put("displayOrder", lov.getDisplayOrder());
 
         if(null != lov.getId() && !lov.getArchived()) {
@@ -149,7 +151,7 @@ public class CustomFieldService {
       params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
       params.put("companyId", customField.getCompanyId());
       params.put("systemListId", customField.getCompanySystemListId());
-      params.put("createdById", customField.getCreatedById());
+      params.put("createdById", user.trueUserId());
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
       // insert new custom field with listOfValueId if needed
@@ -189,7 +191,7 @@ public class CustomFieldService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldId", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     //check if field is in use by a custom field group
     List <CustomField> fields = sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);

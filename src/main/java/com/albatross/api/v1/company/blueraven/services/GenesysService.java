@@ -491,7 +491,7 @@ public class GenesysService {
     // Add a row to the phone log table
     params.put("callGroupId", currentlyUsedGroupId);
     params.put("phoneNumber", phoneNumber);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     sqlCache.update("callGroup.addPhoneLog", params);
 
     if (!phoneNumber.isEmpty()) {

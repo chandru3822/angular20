@@ -111,7 +111,7 @@ public class AppService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("app.deleteById", params);
   }
@@ -217,7 +217,7 @@ public class AppService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("appTypeId", appTypeId);
     params.put("attachmentTypeId", attachmentTypeId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("app.deleteBySourceAndType", params);
   }

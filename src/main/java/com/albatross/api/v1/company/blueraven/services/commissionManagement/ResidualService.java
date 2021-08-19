@@ -159,7 +159,7 @@ public class ResidualService {
         params.put("name", rpa.getName());
         params.put("level", rpa.getLevel());
         params.put("total", rpa.getTotal());
-        params.put("createdById", currentUser.getId());
+        params.put("createdById", currentUser.trueUserId());
         params.put("nbrFdcLower", rpa.getNbrFdcLower());
         params.put("nbrFdcUpper", rpa.getNbrFdcUpper());
 

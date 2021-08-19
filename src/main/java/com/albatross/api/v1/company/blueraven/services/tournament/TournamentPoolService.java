@@ -81,7 +81,7 @@ public class TournamentPoolService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("poolId", poolId);
     params.put("positionId", positionId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long id = sqlCache.updateReturningId("tournamentPool.addPosition", params, "id").longValue();
     return getPoolPosition(id);
   }
@@ -107,7 +107,7 @@ public class TournamentPoolService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("poolId", poolId);
     params.put("userId", userId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long id = sqlCache.updateReturningId("tournamentPool.addUser", params, "id").longValue();
     return getPoolUser(id);
   }

@@ -102,10 +102,10 @@ public class UserPositionService {
     if(null != userPosition.getId()) {
       id = userPosition.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("userPosition.updateUserPosition", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       id = sqlCache.updateReturningId("userPosition.insertUserPosition", params, "id").longValue();
       params.put("id", id);
     }

@@ -136,7 +136,7 @@ public class RebateService {
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", rebatePayment.getProjectId());
-    parameters.addValue("createdById", currentUser.getId());
+    parameters.addValue("createdById", currentUser.trueUserId());
     parameters.addValue("totalAmount", rebatePayment.getTotalPromotionAmount());
     parameters.addValue("promotionPayments", rebatePayment.getNumberOfPromotionPayments());
 

@@ -39,9 +39,9 @@ public class AhjRequirementService {
       params.put("ahjId", ahjId);
       params.put("requirementTypeId", ahjRequirement.getRequirementTypeId());
       params.put("statusId", 1);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("position", ahjRequirement.getPosition());
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("description", ahjRequirement.getDescription());
 
       Integer id = sqlCache.get("ahj.requirement.add", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -80,7 +80,7 @@ public class AhjRequirementService {
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("originalRequirementId", originalRequirementId);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
 
       sqlCache.update("ahj.requirement.archive", params);
     }

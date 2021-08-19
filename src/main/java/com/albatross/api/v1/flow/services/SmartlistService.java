@@ -71,7 +71,7 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("ownerId", user.getId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long smartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
     return getSmartlist(smartlistId);
   }
@@ -236,7 +236,7 @@ public class SmartlistService {
     params.put("smartlistFieldId", assignment.getSmartlistFieldId());
     params.put("customFieldGroupAssignmentId", assignment.getCustomFieldGroupAssignmentId());
     params.put("displayOrder", assignment.getDisplayOrder());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("processStepId", assignment.getProcessStepId());
     params.put("projectDetailsColumn", assignment.getProjectDetailsColumn());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
@@ -328,7 +328,7 @@ public class SmartlistService {
 
     HashMap<String, Object> params = om.convertValue(newSmartlist, HashMap.class);
     params.put("ownerId", user.getId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long newSmartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
 
     sqlCache.update("smartlist.copyAssignedFields", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));

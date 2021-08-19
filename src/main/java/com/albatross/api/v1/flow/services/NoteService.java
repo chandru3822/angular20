@@ -190,7 +190,7 @@ public class NoteService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("noteId", noteId);
 
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("note.deleteNote", params);
   }
 

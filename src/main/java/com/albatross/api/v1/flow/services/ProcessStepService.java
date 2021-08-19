@@ -59,7 +59,7 @@ public class ProcessStepService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     List<FieldInUse> fields = customFieldGroupService.getFieldsInUse(id, null, null);
     if(!fields.isEmpty()) {
@@ -74,7 +74,7 @@ public class ProcessStepService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", processStep.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("name", processStep.getProcessStepName());
     params.put("nonAdminAdd", processStep.getNonAdminAdd());
     sqlCache.update("processStep.update", params);
@@ -84,7 +84,7 @@ public class ProcessStepService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("name", processStep.getProcessStepName());
     params.put("nonAdminAdd", processStep.getNonAdminAdd() != null && processStep.getNonAdminAdd());
     Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();

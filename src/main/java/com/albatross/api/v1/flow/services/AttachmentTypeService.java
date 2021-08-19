@@ -51,7 +51,7 @@ public class AttachmentTypeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("displayOrder", attachmentType.getDisplayOrder());
 
     sqlCache.update("attachmentType.updateTypeOrderInObjectType", params);
@@ -68,7 +68,7 @@ public class AttachmentTypeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("displayOrder", attachmentType.getDisplayOrder());
 
     sqlCache.update("attachmentType.updateTypeOrderInProject", params);
@@ -79,7 +79,7 @@ public class AttachmentTypeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("readOnly", attachmentType.getReadOnly());
 
     sqlCache.update("attachmentType.updateReadyOnly", params);
@@ -97,7 +97,7 @@ public class AttachmentTypeService {
 
     sqlCache.update("attachmentType.deleteObjectType",
       ImmutableMap.of("id", id,
-        "modifiedById", currentUser.getId()));
+        "modifiedById", currentUser.trueUserId()));
   }
 
   public void updateOrderInObjectType(List<ObjectTypeAttachmentType> attachmentTypes) {
@@ -111,7 +111,7 @@ public class AttachmentTypeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("displayOrder", attachmentType.getDisplayOrder());
 
     sqlCache.update("attachmentType.updateTypeOrderInObjectType", params);
@@ -148,7 +148,7 @@ public class AttachmentTypeService {
     User currentUser = securityService.getCurrentUser();
 
     Long id = sqlCache.updateReturningId("attachmentType.insertObjectType",
-      ImmutableMap.of("createdById", currentUser.getId(),
+      ImmutableMap.of("createdById", currentUser.trueUserId(),
         "attachmentTypeId", attachmentType.getAttachmentTypeId(),
         "companyObjectTypeId", attachmentType.getCompanyObjectTypeId()), "id").longValue();
 
@@ -187,7 +187,7 @@ public class AttachmentTypeService {
 
     sqlCache.update("attachmentType.deleteProcessStepType",
         ImmutableMap.of("id", id,
-            "modifiedById", currentUser.getId()));
+            "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<ProcessStepAttachmentType> getProcessStepType(Long id) {
@@ -207,7 +207,7 @@ public class AttachmentTypeService {
     User currentUser = securityService.getCurrentUser();
 
     Long id = sqlCache.updateReturningId("attachmentType.insertProcessStepType",
-        ImmutableMap.of("createdById", currentUser.getId(),
+        ImmutableMap.of("createdById", currentUser.trueUserId(),
             "attachmentTypeId", attachmentType.getAttachmentTypeId(),
             "processStepId", attachmentType.getProcessStepId()), "id").longValue();
 
@@ -219,7 +219,7 @@ public class AttachmentTypeService {
 
     sqlCache.update("attachmentType.deleteProjectType",
         ImmutableMap.of("id", id,
-            "modifiedById", currentUser.getId()));
+            "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<ProjectAttachmentType> getProjectType(Long id) {
@@ -256,7 +256,7 @@ public class AttachmentTypeService {
     User currentUser = securityService.getCurrentUser();
 
     Long id = sqlCache.updateReturningId("attachmentType.insertProjectType",
-        ImmutableMap.of("createdById", currentUser.getId(),
+        ImmutableMap.of("createdById", currentUser.trueUserId(),
             "attachmentTypeId", attachmentType.getAttachmentTypeId(),
             "companyId", currentUser.getCompanyId()), "id").longValue();
 
@@ -268,7 +268,7 @@ public class AttachmentTypeService {
 
     sqlCache.update("attachmentType.deleteType",
         ImmutableMap.of("id", typeId,
-                        "modifiedById", currentUser.getId()));
+                        "modifiedById", currentUser.trueUserId()));
   }
 
   public void updateType(AttachmentType type) {
@@ -278,7 +278,7 @@ public class AttachmentTypeService {
         ImmutableMap.of("companyId", type.getCompanyId(),
             "id", type.getId(),
             "attachmentType", type.getAttachmentType(),
-            "modifiedById", currentUser.getId()));
+            "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<AttachmentType> insertType(AttachmentType type) {
@@ -290,7 +290,7 @@ public class AttachmentTypeService {
         ImmutableMap.of("attachmentType", type.getAttachmentType(),
             "companyId", type.getCompanyId(),
             "keyPatternId", KeyPattern.UPLOADS.id,
-            "createdById", currentUser.getId()),
+            "createdById", currentUser.trueUserId()),
         "id").longValue();
 
     return getType(type.getCompanyId(), id);

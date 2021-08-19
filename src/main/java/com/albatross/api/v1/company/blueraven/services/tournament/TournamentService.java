@@ -149,7 +149,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("numberOfUsers", bracket.getNumberOfUsers());
     params.put("tournamentId", bracket.getTournamentId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
     return getBracket(id);
@@ -162,7 +162,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("numberOfUsers", bracket.getNumberOfUsers());
     params.put("tournamentId", bracket.getTournamentId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
 

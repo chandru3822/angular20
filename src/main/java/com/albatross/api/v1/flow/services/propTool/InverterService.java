@@ -62,11 +62,11 @@ public class InverterService {
 
     if(null != inverter.getId()) {
       id = inverter.getId();
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("id", id);
       sqlCache.update("propToolInverter.update", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolInverter.insert", params, "id").longValue();
     }
@@ -83,7 +83,7 @@ public class InverterService {
       } else {
         if (!inverterState.isArchived()) {
           if (!params.containsKey("createdById")) {
-            params.put("createdById", user.getId());
+            params.put("createdById", user.trueUserId());
           }
 
           sqlCache.update("propToolInverter.insertStates", params);
@@ -98,7 +98,7 @@ public class InverterService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("propToolInverter.delete", params);
   }

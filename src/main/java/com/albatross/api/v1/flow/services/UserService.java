@@ -151,7 +151,7 @@ public class UserService {
 
     if(null != user.getId()) {
       id = user.getId();
-      params.put("modifiedById", currentUser.getId());
+      params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
       //save user status
@@ -182,7 +182,7 @@ public class UserService {
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("id", currentUser.getCompanyId());
       Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
-      params.put("createdById", currentUser.getId());
+      params.put("createdById", currentUser.trueUserId());
       String newPwd = null;
       if(c.isPresent() && null != c.get().getDefaultPassword()) {
         newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
@@ -303,7 +303,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", userStatusType.getId());
     params.put("hasAccess", userStatusType.getHasAccess());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("user.saveUserStatusType", params);
   }
 
@@ -321,7 +321,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("user.deleteUserCompany", params);
 
     //per judson request also remove the user_status for that company and user
@@ -468,7 +468,7 @@ public class UserService {
 
   public void addNotificationToken(Long userId, String token) {
     try {
-      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().getId()));
+      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().trueUserId()));
     } catch (DuplicateKeyException e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Token already exists on given user", e);
     }
@@ -510,7 +510,7 @@ public class UserService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());
 
@@ -519,7 +519,7 @@ public class UserService {
     params.clear();
     params.put("userId", userId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     sqlCache.update("user.addAttachment", params);
 

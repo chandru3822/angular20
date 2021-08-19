@@ -95,7 +95,7 @@ public class IncentiveService {
     if(null != incentive.getId()) {
       id = incentive.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
 
       if (incentive.getIncentiveCategoryId().equals(com.albatross.api.v1.flow.enums.IncentiveCategory.COUNTRY.id)) {
         sqlKey = "propToolIncentive.updateCountryIncentive";
@@ -106,7 +106,7 @@ public class IncentiveService {
       }
       sqlCache.update(sqlKey, params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       if (incentive.getIncentiveCategoryId().equals(com.albatross.api.v1.flow.enums.IncentiveCategory.COUNTRY.id)) {
         sqlKey = "propToolIncentive.insertCountryIncentive";
       } else if (incentive.getIncentiveCategoryId().equals(com.albatross.api.v1.flow.enums.IncentiveCategory.STATE.id)) {
@@ -139,7 +139,7 @@ public class IncentiveService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     String sqlKey = null;
     if (categoryTypeId.equals(com.albatross.api.v1.flow.enums.IncentiveCategory.COUNTRY.id)) {

@@ -111,7 +111,7 @@ public class ProjectProcessStepService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", companyId);
 
@@ -120,7 +120,7 @@ public class ProjectProcessStepService {
     params.clear();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     sqlCache.update("projectProcessStep.addAttachment", params);
 
@@ -476,7 +476,7 @@ public class ProjectProcessStepService {
     });
 
     sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(),
-      "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId(), "allowMultipleUses", action.getMultipleUses()));
+      "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.trueUserId(), "allowMultipleUses", action.getMultipleUses()));
 
     return createdPpsIds;
   }

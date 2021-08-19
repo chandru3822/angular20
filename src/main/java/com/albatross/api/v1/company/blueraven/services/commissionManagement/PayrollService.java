@@ -269,7 +269,7 @@ public class PayrollService {
         params.put("userId", adjustmentRequest.getUserId());
         params.put("amount", adjustmentRequest.getAmount());
         params.put("note", adjustmentRequest.getNote());
-        params.put("createdById", securityService.getCurrentUser().getId());
+        params.put("createdById", securityService.getCurrentUser().trueUserId());
         params.put("adjustmentTypeId", adjustmentRequest.getAdjustmentType().getId());
 
         sqlCache.update("payroll.addCommissionAdjustment", params);

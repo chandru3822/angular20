@@ -57,7 +57,7 @@ public class ContactLeadService {
     params.put("postalCode", cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)));
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
     params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
     params.put("contactTypeId", ContactType.LEAD.id);
