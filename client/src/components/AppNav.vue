@@ -30,6 +30,7 @@
         <v-app-bar dense id="header" :color="headerColor" tabs dark style="z-index: 1001;">
           <v-menu data-app left
                   offset-y
+                  :disabled="userIsMasquerading"
                   v-if="companies.length > 1"
                   :max-height="`calc(100vh - 20px)`"
                   v-model="menuOpen"

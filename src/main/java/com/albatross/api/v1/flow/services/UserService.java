@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.security.jwt.JwtClaims;
 import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -410,16 +411,29 @@ public class UserService {
     }
   }
 
-  public ResponseEntity getLoggedInUser() {
+  public ResponseEntity getLoggedInUser(String authHeader) {
     User user = securityService.getCurrentUser();
-    //todo @randa
-    //fix the featureAccess
-    //fix the companyId and lock it in at their current company
-    //front-end - disable the company dropdown when masquerading
+    JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
     if(null != user) {
       User response = findByUsernameIgnoreCase(null, user.getId());
+      List<FeatureAccessControl> results;
+      if(null != user.getMasqueradingUserId() && null != jwt.getCompanyId()) {
+        response.setCompanyId(jwt.getCompanyId());
 
-      List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        //check if the masquerading user is a 7oaks employee
+        Boolean masqueradingUserIs7oaks = securityService.userIsSuperAdmin(user.getMasqueradingUserId());
+        if(!masqueradingUserIs7oaks) {
+          //if the masquerading user is not 7oaks/super admin - then need to remove any access that the masquerading user does not ALSO have access to
+          results = securityService.getMasqueradedUserFeatureAccess(user.getId(), jwt.getCompanyId(), user.getMasqueradingUserId());
+        } else {
+          //if the masquerading user is a 7oaks employee/super admin - then just use their normal access
+          results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        }
+      } else {
+        //regular access getter
+        results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+      }
+
       response.setFeatureAccess(results);
       response.setMasqueradingUserId(user.getMasqueradingUserId());
       return ResponseEntity.ok(response);

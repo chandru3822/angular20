@@ -72,6 +72,9 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
         UserAccountDetails uadTemp = uad.get();
         uadTemp.setMasqueradingUserId(token.getMasqueradingUserId());
+        if(null != token.getMasqueradingUserId()) {
+          uadTemp.setCompanyId(token.getCompanyId());
+        }
 
         PreAuthenticatedAuthenticationToken result = new PreAuthenticatedAuthenticationToken(uadTemp, null,
                 uadTemp.getAuthorities());

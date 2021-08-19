@@ -37,7 +37,6 @@ public class FeatureService {
   private final SecurityService securityService;
 
   public List<Feature> getAllFeatures() {
-    User user = securityService.getCurrentUser();
     List<Feature> results = sqlCache.query("feature.getAll", Collections.EMPTY_MAP, Feature.class);
     return results;
   }

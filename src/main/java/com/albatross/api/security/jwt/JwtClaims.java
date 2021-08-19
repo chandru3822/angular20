@@ -65,6 +65,16 @@ public class JwtClaims {
   @JsonSerialize(using = ToStringSerializer.class)
   private Long masqueradingUserId;
 
+  /**
+   * The company_id of the user who is masquerading. This does not get set to the company of the user they masqueraded as
+   * used to overwrite the user's default in case we try to masquerade to company_id 3 and their default is 19
+   * omitted from the JWT if it is null.
+   */
+  @JsonProperty("companyId")
+  @JsonSerialize(using = ToStringSerializer.class)
+  private Long companyId;
+
+
   @JsonProperty("exp")
   @JsonSerialize(using = JacksonUnixTimestamp.Serializer.class)
   @JsonDeserialize(using = JacksonUnixTimestamp.Deserializer.class)

@@ -116,14 +116,19 @@ public class AuthController {
   public MasqueradeResponseBody masquerade(@PathVariable("userId") Long userId,
                                            @RequestHeader("Authorization") String authHeader) {
     User user = securityService.getCurrentUser();
-    //todo @randa
-    //and check that the user they are trying to masquerade as is not a 7oaks employees
-    //and check that the user they are trying to masquerade as has access in their current company
-    Boolean userCanMasquerade = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MASQUERADE", List.of("ADMIN"));
-    Instant issuedAt = Instant.now();
-    if(userCanMasquerade) {
+
+    //make sure the current user has access to masquerade
+    Boolean userHasMasqueradeAccess = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MASQUERADE", List.of("ADMIN"));
+    //make sure that the user they are trying to masquerade as is not a 7oaks employees
+    Boolean newUserIs7oaks = securityService.userIsSuperAdmin(userId);
+    //make sure that the user they are trying to masquerade as has access in their current company
+    Boolean newUserIsInCurrentCompany = securityService.userHasAccessInCompany(userId, user.getCompanyId());
+
+    if(userHasMasqueradeAccess && !newUserIs7oaks && newUserIsInCurrentCompany) {
+      Instant issuedAt = Instant.now();
       JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
       jwt.setMasqueradingUserId(user.getId());
+      jwt.setCompanyId(user.getCompanyId());
       //masquerading sessions will time out after 30 mins
       jwt.setExpiresAt(issuedAt.plus(Duration.ofMinutes(jwtMasqueradeExpireDuration)));
       jwt.setUserId(userId);
@@ -145,6 +150,7 @@ public class AuthController {
     jwt.setUserId(jwt.getMasqueradingUserId());
     //clear the masq user id
     jwt.setMasqueradingUserId(null);
+    jwt.setCompanyId(null);
     //reset the expiration to 7 days
     jwt.setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
     jwtAuthProvider.forceReload(securityService.getCurrentUser().getId());
