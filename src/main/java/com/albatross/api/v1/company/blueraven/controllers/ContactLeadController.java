@@ -192,4 +192,9 @@ public class ContactLeadController {
   public void updateContactLightload(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/mvfglobal", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactMvfglobal(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

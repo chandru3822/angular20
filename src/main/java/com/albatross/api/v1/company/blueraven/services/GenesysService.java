@@ -253,7 +253,12 @@ public class GenesysService {
     String leadLevel = (String) contactMap.get("lead_level");
     if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
-      verseWebhookService.postContact(contactMap);
+      verseWebhookService.postContact(contactMap, false);
+      return;
+    }
+    else if (leadLevel.equals("21")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap, true);
       return;
     }
 
@@ -345,7 +350,12 @@ public class GenesysService {
     String leadLevel = (String) contactMap.get("lead_level");
     if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
-      verseWebhookService.postContact(contactMap);
+      verseWebhookService.postContact(contactMap, false);
+      return;
+    }
+    else if (leadLevel.equals("21")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap, true);
       return;
     }
 
