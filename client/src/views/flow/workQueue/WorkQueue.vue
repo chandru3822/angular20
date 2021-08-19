@@ -64,11 +64,7 @@
                 <div class="card-metrics-container"
                      :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
                      v-if="wqHasMetrics(wq)">
-                  <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
-                    Completed within expected time of <strong>{{ wq.expectedCycle }}
-                    {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
-                  </div>
-                  <div class="one-hunned" :class="{'card-metric-extra-padding': selectedViewType === 0}">
+                  <div class="one-hunned">
                     <div class="card-metric card-metric-left">
                       <div class="card-metric-percent"
                            v-if="selectedViewType === 0"
@@ -108,6 +104,10 @@
                       </div>
                       {{ wq.longWindow }} {{ wq.longWindowDurationType }}
                     </div>
+                  </div>
+                  <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
+                    Completed within expected time of <strong>{{ wq.expectedCycle }}
+                    {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                   </div>
                 </div>
               </router-link>
@@ -292,7 +292,7 @@ export default {
   position: absolute;
   padding: 4px 8px;
   font-size: 12px;
-  top: 0;
+  top: 121px;
   left: 0;
   z-index: 2 !important;
   width: 35px;
@@ -378,6 +378,9 @@ export default {
   right: 0;
   left: 5px;
   font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card-metrics-container-secondary-view {
@@ -388,7 +391,7 @@ export default {
 .card-metrics-expected-cycle {
   height: 20px;
   font-size: 12px;
-  padding-top: 14px;
+  padding-top: 4px;
 }
 
 .card-metric {
@@ -404,7 +407,6 @@ export default {
 .card-metric-percent {
   font-size: 18px;
   font-weight: bold;
-  margin-top: 14px;
   margin-bottom: 3px;
 }
 
