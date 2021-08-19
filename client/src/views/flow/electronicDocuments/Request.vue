@@ -66,7 +66,7 @@
                           ></v-text-field>
                       </v-col>
                       <v-col>
-                          <v-select attach label="Template type"
+                          <v-select label="Template type"
                                     v-model="selectedTempType"
                                     :items="templateTypes"
                                     @change="fetchTemplates"
@@ -82,7 +82,6 @@
                                     no-data-text="No documents found"
                                     item-text="name"
                                     item-value="id"
-                                          attach
                           ></v-autocomplete>
                       </v-col>
                   </v-row>

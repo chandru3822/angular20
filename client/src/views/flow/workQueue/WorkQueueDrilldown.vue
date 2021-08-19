@@ -44,7 +44,7 @@
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
-                              @input="filterResults(header)">
+                              @input="filterResults()">
                 </v-text-field>
               </th>
             </tr>
@@ -151,6 +151,7 @@
         showNotesModal: false,
         selectedPps: {},
         filters: {},
+        cachedFilters: {},
         constants,
         search: '',
         ytfDoWeNeedThis: 0,
@@ -196,6 +197,7 @@
     },
     computed: {},
     async created() {
+      this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
       await this.getWorkDetails()
     },
     methods: {
@@ -261,10 +263,28 @@
             this.headers.push( {
               text: textValue,
               value: textValue,
+              sort: (a, b) => {
+                //if it is a date, format the string as a date and sort by that value
+                if((null != a && a.match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.match(/^\d{4}-\d{2}-\d{2}/))) {
+                  return new Date(a) - new Date(b)
+                } else {
+                  //otherwise sort normally
+                  return null != a ? a.localeCompare(b) : a - b
+                }
+              },
               show: true })
           })
           //add the notes column to the end
           this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
+
+          //check for a cached search and filter results accordingly
+          if(this.cachedFilters[this.workQueueTypeId]) {
+            Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
+              this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
+            })
+            this.filterResults()
+          }
+
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -305,9 +325,32 @@
       clickRow(row) {
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
       },
-      filterResults(header) {
+      filterResults() {
         this.results = this.masterResults.filter(r => {
-          return r[header.value]?.toString().toLowerCase().includes(this.filters[header.value]?.toLowerCase())
+          let matchCount = 0
+          let numFiltersUsed = 0
+          Object.keys(this.filters).forEach(key => {
+            //trim the value to see if they just searched for a bunch of space characters
+            let value = this.filters[key].trim().length === 0 ? '' : this.filters[key]
+
+            //populate the cached filters with the user's search
+            //if there is no cached search for this wqt then add a blank object for it
+            if(null == this.cachedFilters[this.workQueueTypeId]) {
+              this.cachedFilters[this.workQueueTypeId] = {}
+            }
+
+            //then add the value
+            this.cachedFilters[this.workQueueTypeId][key] = value
+
+            if(null != value && value !== '') {
+              numFiltersUsed++
+              if(r[key]?.toString().toLowerCase().includes(value?.toLowerCase())){
+                matchCount++
+              }
+            }
+          })
+          localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
+          return matchCount === numFiltersUsed
         })
       }
     },

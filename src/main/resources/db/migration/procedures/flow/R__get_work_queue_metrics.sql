@@ -1,3 +1,5 @@
+DROP FUNCTION if exists flow.get_work_queue_metrics(integer);
+
 CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics(p_work_queue_type_id integer)
   RETURNS table
           (
@@ -88,7 +90,7 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id;
+    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
 
   select count(1)
   into v_short_window_entered
@@ -97,7 +99,7 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id;
+    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
 
   select count(1)
   into v_long_window_exited
@@ -106,7 +108,7 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id;
+    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
 
   select count(1)
   into v_long_window_entered
@@ -115,22 +117,22 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id;
+    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
 
   select count(1) as short_window_numerator
   into v_short_window_numerator
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
+                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
+         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
-                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-         inner join flow.process_step ps on ps.id = pswqt.process_step_id
-         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id
+                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+         inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
+         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
+         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
     and wqc.is_cancelled is false
     and case
@@ -152,16 +154,16 @@ BEGIN
   into v_short_window_denominator
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
+                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
+         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
-                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-         inner join flow.process_step ps on ps.id = pswqt.process_step_id
-         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id
+                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+         inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
+         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
+         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
     and wqc.is_cancelled is false
     and case
@@ -178,16 +180,16 @@ BEGIN
   into v_long_window_numerator
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
+                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
+         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
-                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-         inner join flow.process_step ps on ps.id = pswqt.process_step_id
-         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id
+                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+         inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
+         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
+         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
     and wqc.is_cancelled is false
     and case
@@ -209,23 +211,23 @@ BEGIN
   into v_long_window_denominator
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
+                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
+         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
-                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-         inner join flow.process_step ps on ps.id = pswqt.process_step_id
-         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id
+                    on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+         inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
+         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
+         inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
     and wqc.is_cancelled is false
     and case
           when wqc.date_exited_queue is not null then
               (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
               ((now() at time zone 'US/Mountain')::timestamp -
-               (short_window || ' ' || v_long_window_duration_type)::interval)::timestamp
+               (long_window || ' ' || v_long_window_duration_type)::interval)::timestamp
           else
             wqc.date_exited_queue is null
     end;

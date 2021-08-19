@@ -4,7 +4,7 @@
       <v-col cols="12" class="pt-0">
         <v-row id="company-dash-toolbar-container">
           <v-col cols="12" id="company-dash-toolbar">
-            <v-toolbar class="elevation-1">
+            <v-toolbar class="elevation-1 toolbar-z-index-override">
               <v-toolbar-title>Company Dashboard</v-toolbar-title>
               <div id="toolbar-right-side">
                 <v-select attach class="date-range-dropdown"
@@ -374,6 +374,10 @@
 </script>
 
 <style lang="scss" scoped>
+  .date-range-dropdown {
+    min-width: 200px;
+  }
+
   #company-dash-container {
     overflow: auto;
   }

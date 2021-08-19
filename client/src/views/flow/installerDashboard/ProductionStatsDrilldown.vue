@@ -36,8 +36,8 @@
           <td class="text-left">{{item.crewname}}</td>
           <td class="text-left">{{item.installation_end_time | formatDate('date')}}</td>
           <td class="text-left">{{item.substantial_completion_date | formatDate('date')}}</td>
-          <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_start_time | formatDate('date')}}</td>
-          <td v-show="title === 'Inspection Approval %'" class="text-left">{{item.ahj_inspection_outcome_name}}</td>
+          <td v-show="title === 'Inspection Pass Rate'" class="text-left">{{item.ahj_inspection_start_time | formatDate('date')}}</td>
+          <td v-show="title === 'Inspection Pass Rate'" class="text-left">{{item.ahj_inspection_outcome_name}}</td>
         </tr>
       </template>
     </v-data-table>
@@ -58,7 +58,7 @@
     watch: {
       title: {
         handler () {
-          if (this.title === 'Inspection Approval %') {
+          if (this.title === 'Inspection Pass Rate') {
             // AHJ Inspection Date
             this.headers[5].show = true;
             // AHJ Inspection Outcome
@@ -95,7 +95,7 @@
       },
     },
     async created() {
-      if (this.title === 'Inspection Approval %') {
+      if (this.title === 'Inspection Pass Rate') {
         // AHJ Inspection Date
         this.headers[5].show = true;
         // AHJ Inspection Outcome

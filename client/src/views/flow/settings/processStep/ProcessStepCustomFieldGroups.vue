@@ -219,7 +219,6 @@
                                     return-object
                                     autocomplete="off"
                                     @input="assignCustomField(item)"
-                                    attach
                     >
                       <template slot='item' slot-scope='{ item }'>
                         {{ item.fieldName }}
@@ -300,9 +299,7 @@
                                           return-object
                                           height="35px"
                                           class="d-inline-block mr-3"
-                                          @change="cf.positionsChanged = true"
-                                          attach
-                                        >
+                                          @change="cf.positionsChanged = true">
                                           <v-list-item
                                             slot="prepend-item"
                                             ripple

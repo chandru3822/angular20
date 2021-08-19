@@ -528,13 +528,14 @@ public class AvailabilityService {
     sqlCache.update("availability.deleteAppointmentsByRecurrence", params);
   }
 
-  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate) {
+  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("startTime", startTime);
     params.put("endTime", endTime);
     params.put("availableDate", availableDate);
+    params.put("remote", null != remote ? remote : false);
 
     List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
     return results;
@@ -550,6 +551,7 @@ public class AvailabilityService {
       params.put("projectProcessStepId", request.getProjectProcessStepId());
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
+      params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
 
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);

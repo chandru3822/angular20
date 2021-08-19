@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true);
-    configuration.setAllowedOriginPatterns(List.of("http://localhost:[*]", "https://*.myblueraven.com"));
+    configuration.setAllowedOriginPatterns(List.of("http://localhost:[*]", "https://*.myblueraven.com", "https://blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowedMethods(List.of("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -73,6 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .antMatchers("/webhook/twilio/**").permitAll()
       .antMatchers("/webhook/hubspot/**").permitAll()
       .antMatchers("/webhook/ricochet/**").permitAll()
+      .antMatchers("/webhook/verse/**").permitAll()
       // export the endpoint for automating s3 uploads of mobile builds from fast lane
       .antMatchers("/api/v1/flow/app/addAttachmentRecord").permitAll()
       .anyRequest().authenticated()

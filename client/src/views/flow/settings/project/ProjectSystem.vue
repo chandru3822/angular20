@@ -20,9 +20,7 @@
           return-object
           height="35px"
           class="d-inline-block mr-3"
-          @change="statusReadOnlyPositionsChanged = true"
-          attach
-        >
+          @change="statusReadOnlyPositionsChanged = true">
           <v-list-item
             slot="prepend-item"
             ripple
@@ -79,9 +77,7 @@
           return-object
           height="35px"
           class="d-inline-block mr-3"
-          @change="ownerReadOnlyPositionsChanged = true"
-          attach
-        >
+          @change="ownerReadOnlyPositionsChanged = true">
           <v-list-item
             slot="prepend-item"
             ripple

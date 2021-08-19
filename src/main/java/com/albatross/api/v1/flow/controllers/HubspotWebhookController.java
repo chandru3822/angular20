@@ -62,7 +62,7 @@ public class HubspotWebhookController {
 
         RicochetLead.Customer customer = new RicochetLead.Customer();
         customer.setFirstName(contact.getProperties().getFirstname().getValue());
-        customer.setLastName(contact.getProperties().getLastname().getValue());
+        customer.setLastName(contact.getProperties().getLastname() != null ? contact.getProperties().getLastname().getValue() : "");
         customer.setPhone1(contact.getProperties().getPhone().getValue());
         customer.setEmail(contact.getProperties().getEmail().getValue());
 
