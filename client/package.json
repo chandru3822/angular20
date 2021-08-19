@@ -41,6 +41,7 @@
     "uuid": "^8.3.0",
     "vue": "^2.6.12",
     "vue-beautiful-chat": "^2.5.0",
+    "vue-gtag": "^1.16.1",
     "vue-json-excel": "0.2.98",
     "vue-mapbox": "^0.4.1",
     "vue-quill-editor": "^3.0.6",

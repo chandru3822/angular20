@@ -8,6 +8,7 @@ import store from './store'
 import axios from 'axios'
 import { UserMutations } from './stores/UserStore'
 import moment from 'moment-timezone'
+import VueGtag from "vue-gtag";
 
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
@@ -93,6 +94,10 @@ axios.interceptors.response.use((response) => {
     }
   }
 })
+
+Vue.use(VueGtag, {
+  config: { id: "G-5EGGT8DLX3" }
+}, router);
 
 new Vue({
   router,
