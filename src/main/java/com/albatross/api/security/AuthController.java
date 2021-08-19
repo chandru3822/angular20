@@ -43,8 +43,11 @@ public class AuthController {
   @Autowired
   private JwtAuthenticationProvider jwtAuthProvider;
 
-    @Value("${security.jwt.expireDuration}")
-    private Long jwtExpireDuration;
+  @Value("${security.jwt.expireDuration}")
+  private Long jwtExpireDuration;
+
+  @Value("${security.jwt.masqueradeExpireDuration}")
+  private Long jwtMasqueradeExpireDuration;
 
   @Value("${security.doCompanyDefaultValidation:false}")
   private Boolean doCompanyDefaultValidation;
@@ -114,9 +117,12 @@ public class AuthController {
                                            @RequestHeader("Authorization") String authHeader) {
     User user = securityService.getCurrentUser();
     Boolean userCanMasquerade = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MASQUERADE", List.of("ADMIN"));
+    Instant issuedAt = Instant.now();
     if(userCanMasquerade) {
       JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
       jwt.setMasqueradingUserId(user.getId());
+      //masquerading sessions will time out after 30 mins
+      jwt.setExpiresAt(issuedAt.plus(Duration.ofMinutes(jwtMasqueradeExpireDuration)));
       jwt.setUserId(userId);
       jwtAuthProvider.forceReload(userId);
       return new MasqueradeResponseBody().setResult("success")
@@ -130,12 +136,15 @@ public class AuthController {
   @ResponseBody
   public MasqueradeResponseBody clearMasquerade(@RequestHeader("Authorization") String authHeader) {
     JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
+    Instant issuedAt = Instant.now();
     //invalidate the logged in user jwt
-    jwt.setUserId(jwt.getMasqueradingUserId());
-    jwt.setMasqueradingUserId(null);
-    jwtAuthProvider.forceReload(securityService.getCurrentUser().getId());
     //set the user id on the new jwt to the masquerading user id
+    jwt.setUserId(jwt.getMasqueradingUserId());
     //clear the masq user id
+    jwt.setMasqueradingUserId(null);
+    //reset the expiration to 7 days
+    jwt.setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
+    jwtAuthProvider.forceReload(securityService.getCurrentUser().getId());
     return new MasqueradeResponseBody().setResult("success")
       .setToken(jwt);
   }

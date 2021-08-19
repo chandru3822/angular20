@@ -13,13 +13,12 @@
           CLICK HERE
         </v-btn>
       </v-col>
-      masq: {{$store.state.user.details.masqueradingUserId}}
       <v-col
         v-if="userIsMasquerading"
         cols="12"
         style="font-size: 18px; text-align: center; background-color: red; color: white;"
       >
-        YOU ARE MASQUERADING, BE YE WISE
+        BE CAREFUL!! YOU ARE MASQUERADING!!
         <v-btn :disabled="clearingMasquerade" :loading="clearingMasquerade"
           @click="clearMasquerade()"
         >
