@@ -83,6 +83,7 @@
                                cf.feature_name as "featureName",
                                cf.company_id as "companyId",
                                cf.feature_id as "featureId",
+                               cf.hidden,
                                cf.archived,
                                coalesce((
                                     SELECT array_to_json(array_agg(row_to_json(accessControl)))

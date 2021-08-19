@@ -70,7 +70,7 @@
           <AccessControl v-if="positionLoaded"
                          :key="accessControlKey"
                          :user-can-edit="userCanEditAccessControl"
-                         :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
+                         :companyFeatures="getCompanyFeatures()" :callback="this.companyFeatureCallback"></AccessControl>
         </v-card>
 
       </v-col>
@@ -128,6 +128,9 @@
       this.getOrgTypes()
     },
     methods: {
+      getCompanyFeatures() {
+        return this.position?.companyFeatures?.filter(cf => !cf.hidden) || []
+      },
       async getOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

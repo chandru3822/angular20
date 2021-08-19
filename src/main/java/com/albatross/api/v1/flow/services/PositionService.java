@@ -89,7 +89,7 @@ public class PositionService {
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("smsOwner", null != p.getSmsOwner() ? p.getSmsOwner() : false);
     params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
 
     for(CompanyFeature cf : p.getCompanyFeatures()) {
@@ -121,7 +121,7 @@ public class PositionService {
     params.put("smsOwner", null != p.getSmsOwner() ? p.getSmsOwner() : false);
     params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("id", p.getId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("position.update", params);
 
     //i think these dirty checks are redundant now that i filtered the frontend but i am leaving them in cuz it works and i dont want to update it and have to test it again
@@ -152,7 +152,7 @@ public class PositionService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("position.delete", params);
   }
 

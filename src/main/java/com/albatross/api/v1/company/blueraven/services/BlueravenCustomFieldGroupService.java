@@ -73,10 +73,10 @@ public class BlueravenCustomFieldGroupService {
 
             if(null != cfv.getId()){
               params.put("id", cfv.getId());
-              params.put("modifiedById", currentUser.getId());
+              params.put("modifiedById", currentUser.trueUserId());
               sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldValue", params);
             } else {
-              params.put("createdById", currentUser.getId());
+              params.put("createdById", currentUser.trueUserId());
               sqlCache.update("blueravenCustomFieldGroup.insertCustomFieldValue", params);
             }
           }
@@ -100,8 +100,8 @@ public class BlueravenCustomFieldGroupService {
             params.put("intValue", cfv.getIntValue());
             params.put("intArrayValue", cfv.getIntArrayValue());
             params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-            params.put("modifiedById", currentUser.getId());
-            params.put("createdById", currentUser.getId());
+            params.put("modifiedById", currentUser.trueUserId());
+            params.put("createdById", currentUser.trueUserId());
 
             ArrayList<Long> cfvIds = new ArrayList<>();
 

@@ -190,7 +190,7 @@ public class GenesysService {
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
       params.put("sourceId", contact.getId());
-      params.put("userId", currentUser.getId());
+      params.put("userId", currentUser.trueUserId());
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
       return true;
     }
@@ -287,7 +287,7 @@ public class GenesysService {
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
   }
 
@@ -501,7 +501,7 @@ public class GenesysService {
     // Add a row to the phone log table
     params.put("callGroupId", currentlyUsedGroupId);
     params.put("phoneNumber", phoneNumber);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     sqlCache.update("callGroup.addPhoneLog", params);
 
     if (!phoneNumber.isEmpty()) {

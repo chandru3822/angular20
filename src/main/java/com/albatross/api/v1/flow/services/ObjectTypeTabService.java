@@ -66,7 +66,7 @@ public class ObjectTypeTabService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("tabName", tab.getTabName());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("objectTypeId", objectTypeId);
 
@@ -88,7 +88,7 @@ public class ObjectTypeTabService {
     HashMap<String, Object> params = new HashMap<>();
     for(ObjectTypeTab tab : tabs) {
       params.put("displayOrder", tab.getDisplayOrder());
-      params.put("userId", currentUser.getId());
+      params.put("userId", currentUser.trueUserId());
       params.put("id", tab.getId());
       //save each display_order
       sqlCache.update("objectTypeTab.updateTabDisplayOrder", params);
@@ -99,7 +99,7 @@ public class ObjectTypeTabService {
     User currentUser = securityService.getCurrentUser();
 
       HashMap<String, Object> params = new HashMap<>();
-      params.put("userId", currentUser.getId());
+      params.put("userId", currentUser.trueUserId());
       params.put("id", tabId);
       sqlCache.update("objectTypeTab.deleteTab", params);
   }

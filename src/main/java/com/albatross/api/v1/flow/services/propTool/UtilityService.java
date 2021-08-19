@@ -55,8 +55,8 @@ public class UtilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("utilityCompany", utility.getUtilityCompany());
-    params.put("modifiedById", user.getId());
-    params.put("createdById", user.getId());
+    params.put("modifiedById", user.trueUserId());
+    params.put("createdById", user.trueUserId());
     params.put("active", utility.getActive());
     params.put("companyId", user.getCompanyId());
     Long id;
@@ -81,7 +81,7 @@ public class UtilityService {
       } else {
         if (!utilityState.isArchived()) {
           if (!params.containsKey("createdById")) {
-            params.put("createdById", user.getId());
+            params.put("createdById", user.trueUserId());
           }
           params.put("companyStateId", utilityState.getCompanyStateId());
           sqlCache.update("propToolUtility.insertUtilityState", params);
@@ -96,7 +96,7 @@ public class UtilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("propToolUtility.delete", params);
   }
