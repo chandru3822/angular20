@@ -729,6 +729,7 @@
         try {
           const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
           this.ahjUtility = cloneDeep(data)
+          window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
           this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name?.toLowerCase())
           this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name?.toLowerCase())
           this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name?.toLowerCase())

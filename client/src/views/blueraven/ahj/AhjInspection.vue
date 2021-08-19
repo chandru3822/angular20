@@ -672,7 +672,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/inspection`, 'blueraven')
-
+          window.document.title = `AHJ - ${data.ahjName}`
           if (data.servicingFots && data.servicingFots.length > 0) {
             data.servicingFots.forEach(servicingFot => {
               if (servicingFot.hierarchy && servicingFot.hierarchy.length > 0) {

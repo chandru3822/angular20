@@ -16,7 +16,8 @@ public class AhjPermit {
     private String engineeringLetterRequired, printLocation, stampedPlan, businessLicense, contractorLicense,
                    otherLicense, submissionNote, revisionNote, asBuiltNote, deliveryNote, approvalTimeline,
                    documentsAvailable, depositAmount, asBuiltFeeAmount, followUpFeeAmount, deliveryFeeAmount,
-                   revisionFeeAmount, stateName, brsTechnicianPermitSubmissionInstructions, cancellationAndRefundInstructions, brsTechnicianPermitPickupAndDeliveryInstructions, approvalInstructions;
+                   revisionFeeAmount, stateName, brsTechnicianPermitSubmissionInstructions, cancellationAndRefundInstructions,
+                   brsTechnicianPermitPickupAndDeliveryInstructions, approvalInstructions, ahjName;
     private Date businessLicenseExpirationDate, contractorLicenseExpirationDate, otherLicenseExpirationDate;
 
     // this is only used for saving custom field groups

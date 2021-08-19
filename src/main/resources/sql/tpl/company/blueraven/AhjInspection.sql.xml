@@ -4,6 +4,7 @@
       SELECT
           i.*,
           ahj.metro_area_id,
+          ahj.name as ahj_name,
           cs.id as company_state_id,
           cs.state_id,
           s.state AS "stateName",
