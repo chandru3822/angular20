@@ -79,7 +79,7 @@ public class VerseWebhookService {
     }
   }
 
-  public void postContact(HashMap<String, Object> contactMap) {
+  public void postContact(HashMap<String, Object> contactMap, boolean agedLead) {
     JSONObject params = new JSONObject();
     params.put("firstName", contactMap.get("first_name"));
     params.put("lastName", contactMap.get("last_name"));
@@ -91,7 +91,13 @@ public class VerseWebhookService {
     params.put("state", contactMap.get("state"));
     params.put("postalCode", contactMap.get("postal_code"));
     params.put("zapierLeadId", contactMap.get("id"));
-    params.put("channelWebsite", contactMap.get("lead_source_detail"));
+
+    if (agedLead) {
+      params.put("channelWebsite", "Past Leads");
+    }
+    else {
+      params.put("channelWebsite", contactMap.get("lead_source_detail"));
+    }
 
     Map<String, String> headers = new HashMap<>();
     headers.put("X-API-KEY", apiKey);
