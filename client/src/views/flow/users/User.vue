@@ -73,10 +73,11 @@
           {{user.firstName}} {{user.lastName}}
           <span v-if="null != user.primaryPosition" class="ml-1"> - {{ user.primaryPosition}}</span>
 
-          <v-btn class="ml-3" small fab outlined
+          <v-btn class="ml-3 elevation-2" dark small fab
                  v-if="userCanMasquerade && !userIsMasquerading"
+                 color="primaryCustom"
                  @click="masquerade()">
-            <v-icon>mdi-alien</v-icon>
+            <v-icon>mdi-account-convert</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
