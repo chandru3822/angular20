@@ -12,7 +12,7 @@
                         hide-details
                         dark
                         background-color="primaryCustom"
-                        class="white--text work-queue-selector d-inline-block pr-3"
+                        class="white--text work-queue-selector d-inline-block clickable"
                         @input="getWorkQueues()"
         ></v-autocomplete>
 <!--        <v-select v-model="selectedUserPosition"-->
@@ -250,6 +250,9 @@ export default {
   color: #808588 !important;
 }
 
+.work-queue-selector .v-input__slot, .work-queue-selector input {
+  cursor: pointer !important
+}
 </style>
 
 <style scoped lang="scss">
@@ -261,6 +264,8 @@ export default {
 .work-queue-selector {
   width: 50%;
 }
+
+
 
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
@@ -279,9 +284,10 @@ export default {
 }
 
 .expected-target-banner {
-  font-weight: bold;
+  font-weight: 900;
   position: absolute;
-  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
   top: 0;
   left: 0;
   z-index: 2 !important;
