@@ -116,6 +116,9 @@ public class AuthController {
   public MasqueradeResponseBody masquerade(@PathVariable("userId") Long userId,
                                            @RequestHeader("Authorization") String authHeader) {
     User user = securityService.getCurrentUser();
+    //todo @randa
+    //and check that the user they are trying to masquerade as is not a 7oaks employees
+    //and check that the user they are trying to masquerade as has access in their current company
     Boolean userCanMasquerade = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MASQUERADE", List.of("ADMIN"));
     Instant issuedAt = Instant.now();
     if(userCanMasquerade) {
@@ -128,7 +131,7 @@ public class AuthController {
       return new MasqueradeResponseBody().setResult("success")
         .setToken(jwt);
     } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You do not have access to Masquerade.", new Exception());
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You do not have access to masquerade as this user.", new Exception());
     }
   }
 

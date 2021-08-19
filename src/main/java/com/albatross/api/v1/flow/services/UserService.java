@@ -412,7 +412,10 @@ public class UserService {
 
   public ResponseEntity getLoggedInUser() {
     User user = securityService.getCurrentUser();
-
+    //todo @randa
+    //fix the featureAccess
+    //fix the companyId and lock it in at their current company
+    //front-end - disable the company dropdown when masquerading
     if(null != user) {
       User response = findByUsernameIgnoreCase(null, user.getId());
 
