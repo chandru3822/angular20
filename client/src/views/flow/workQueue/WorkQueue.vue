@@ -26,17 +26,18 @@
 <!--        ></v-select>-->
         <div class="radio-group-container mt-0 mb-5">
           <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
-            <v-radio class="d-inline-block mx-4"
+            <v-radio class="d-inline-block mx-4 wq-radio-label"
                      label="% Completed On Time"
+                     small
                      :value="0"
                      :class="{'inactive-radio': selectedViewType !== 0}"
             ></v-radio>
-            <v-radio class="d-inline-block mx-4"
+            <v-radio class="d-inline-block mx-4 wq-radio-label"
                      label="Total Completed Tasks"
                      :value="1"
                      :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
                      :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
-            <v-radio class="d-inline-block mx-4"
+            <v-radio class="d-inline-block mx-4 wq-radio-label"
                      label="Change in WIP"
                      :value="2"
                      :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
@@ -67,45 +68,46 @@
                     Completed within expected time of <strong>{{ wq.expectedCycle }}
                     {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                   </div>
-                  <div class="card-metric card-metric-left"
-                      :class="{'card-metric-extra-padding': selectedViewType === 0}">
-                    <div class="card-metric-percent"
-                         v-if="selectedViewType === 0"
-                         :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                      {{ wq.shortWindowPercentage * 100 | currency('', 0)}}%
-<!--                      <span class="card-metric-difference">-->
-<!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
-<!--                        </span>-->
+                  <div class="card-number-container" :class="{'card-metric-extra-padding': selectedViewType === 0}">
+                    <div class="card-metric card-metric-left">
+                      <div class="card-metric-percent"
+                           v-if="selectedViewType === 0"
+                           :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        {{ wq.shortWindowPercentage * 100 | currency('', 0)}}%
+  <!--                      <span class="card-metric-difference">-->
+  <!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
+  <!--                        </span>-->
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 1">
+                        {{ wq.shortWindowExited }}
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 2">
+                        {{ wq.shortWip >= 0 ? '+' : '' }}{{ wq.shortWip }}
+                      </div>
+                      {{ wq.shortWindow }} {{ getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType) }}
                     </div>
-                    <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 1">
-                      {{ wq.shortWindowExited }}
+                    <div class="card-metric-divider"></div>
+                    <div class="card-metric">
+                      <div class="card-metric-percent"
+                           v-if="selectedViewType === 0"
+                           :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
+                        {{ wq.longWindowPercentage * 100 | currency('', 0)}}%
+  <!--                      <span class="card-metric-difference">-->
+  <!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
+  <!--                        </span>-->
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 1">
+                        {{ wq.longWindowExited }}
+                      </div>
+                      <div class="card-metric-percent"
+                           v-else-if="selectedViewType === 2">
+                        {{ wq.longWip >= 0 ? '+' : '' }}{{ wq.longWip }}
+                      </div>
+                      {{ wq.longWindow }} {{ wq.longWindowDurationType }}
                     </div>
-                    <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 2">
-                      {{ wq.shortWip >= 0 ? '+' : '' }}{{ wq.shortWip }}
-                    </div>
-                    {{ wq.shortWindow }} {{ getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType) }}
-                  </div>
-                  <div class="card-metric-divider"></div>
-                  <div class="card-metric">
-                    <div class="card-metric-percent"
-                         v-if="selectedViewType === 0"
-                         :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                      {{ wq.longWindowPercentage * 100 | currency('', 0)}}%
-<!--                      <span class="card-metric-difference">-->
-<!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
-<!--                        </span>-->
-                    </div>
-                    <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 1">
-                      {{ wq.longWindowExited }}
-                    </div>
-                    <div class="card-metric-percent"
-                         v-else-if="selectedViewType === 2">
-                      {{ wq.longWip >= 0 ? '+' : '' }}{{ wq.longWip }}
-                    </div>
-                    {{ wq.longWindow }} {{ wq.longWindowDurationType }}
                   </div>
                 </div>
               </router-link>
@@ -253,6 +255,10 @@ export default {
 .work-queue-selector .v-input__slot, .work-queue-selector input {
   cursor: pointer !important
 }
+
+.wq-radio-label .v-icon, .wq-radio-label label{
+  font-size: 14px;
+}
 </style>
 
 <style scoped lang="scss">
@@ -264,8 +270,6 @@ export default {
 .work-queue-selector {
   width: 50%;
 }
-
-
 
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
@@ -389,12 +393,12 @@ export default {
 
 .card-metric {
   width: calc(50% - 1px);
-  height: calc(100% - 25px);
+  height: calc(100% - 35px);
   display: inline-block;
 }
 
 .card-metric-extra-padding {
-  padding-top: 16px;
+  padding-top: 10px;
 }
 
 .card-metric-percent {
