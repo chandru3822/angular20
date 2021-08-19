@@ -123,8 +123,10 @@ public class AuthController {
     Boolean newUserIs7oaks = securityService.userIsSuperAdmin(userId);
     //make sure that the user they are trying to masquerade as has access in their current company
     Boolean newUserIsInCurrentCompany = securityService.userHasAccessInCompany(userId, user.getCompanyId());
+    //mke sure that the user is not trying to alias as themselves
+    Boolean userIsSelf = user.getId().equals(userId);
 
-    if(userHasMasqueradeAccess && !newUserIs7oaks && newUserIsInCurrentCompany) {
+    if(userHasMasqueradeAccess && !newUserIs7oaks && newUserIsInCurrentCompany && !userIsSelf) {
       Instant issuedAt = Instant.now();
       JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
       jwt.setMasqueradingUserId(user.getId());
