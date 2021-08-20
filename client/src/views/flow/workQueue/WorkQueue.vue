@@ -51,16 +51,16 @@
             <v-card-text class="pa-0">
               <router-link class="no-text-decoration card-link"
                            :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
-                <div v-if="null != wq.expectedTarget"
-                    class="expected-target-banner"
-                    :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
-                  {{wq.expectedTarget * 100 | currency('', 0)}}%
-                </div>
                 <div class="card-title-container text-left"
                      :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
                      :style="{'background-color': wq.color + '15' }">
                   <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
                   <div class="card-count">{{ wq.workQueueCount }}</div>
+                </div>
+                <div v-if="null != wq.expectedTarget && selectedViewType === 0"
+                    class="expected-target-banner"
+                    :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
+                  {{wq.expectedTarget * 100 | currency('', 0)}}%
                 </div>
 
                 <div class="card-metrics-container"
