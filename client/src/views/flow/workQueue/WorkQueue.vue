@@ -43,7 +43,7 @@
                      :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
           </v-radio-group>
         </div>
-        <v-row class="ma-0">
+        <v-row class="cards my-0">
           <v-card tile v-for="wq in workQueues" class="flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
@@ -273,12 +273,19 @@ export default {
   width: 50%;
 }
 
+.cards {
+  //doing this to avoid wrapping when there is space for another card
+  margin-left: -24px !important;
+  margin-right: -24px !important;
+}
+
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
   text-align: center;
   border-radius: 9px !important;
-  margin-right: 48px;
+  margin-right: 24px;
+  margin-left: 24px;
   margin-bottom: 32px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
 }
