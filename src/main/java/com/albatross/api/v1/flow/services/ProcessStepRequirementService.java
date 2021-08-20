@@ -69,7 +69,7 @@ public class ProcessStepRequirementService {
   public List<ProcessStepAction> deleteRequirement(Long requirementId) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("requirementId", requirementId);
     List<ProcessStepAction> actionsUsingRequirement = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
 
@@ -109,7 +109,7 @@ public class ProcessStepRequirementService {
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", requirement.getId());
 
     handleDynamicValueParams(requirement.getRequirementParamDynamicValues(), requirement.getId());
@@ -134,7 +134,7 @@ public class ProcessStepRequirementService {
     params.put("customFieldGroupAssignmentId", requirement.getCustomFieldGroupAssignmentId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("processStepId", requirement.getProcessStepId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
@@ -158,10 +158,10 @@ public class ProcessStepRequirementService {
 
         if(null != p.getId()){
           dynamicParams.put("id", p.getId());
-          dynamicParams.put("modifiedById", currentUser.getId());
+          dynamicParams.put("modifiedById", currentUser.trueUserId());
           sqlCache.update("processStepRequirement.updateRequirementParamDynamicValue", dynamicParams);
         }else {
-          dynamicParams.put("createdById", currentUser.getId());
+          dynamicParams.put("createdById", currentUser.trueUserId());
           sqlCache.update("processStepRequirement.insertRequirementParamDynamicValue", dynamicParams);
         }
       }

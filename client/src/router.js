@@ -351,12 +351,24 @@ const router = new Router({
             {
               path: 'tournaments',
               meta: {title: 'Albatross - Settings'},
-              component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournaments.vue'),
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')) {
+                  return import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournaments.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
             },
             {
               path: 'tournaments/:id',
               meta: {title: 'Albatross - Settings'},
-              component: () => import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournament.vue'),
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')) {
+                  return import (/* webpackChunkName: "tournaments" */ './views/flow/settings/tournaments/Tournament.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
               children: [
                 {
                   path: 'details',

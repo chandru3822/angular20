@@ -144,7 +144,7 @@ export default {
         path: '/settings/tournaments',
         title: 'Tournaments',
         pathMatch: '/settings/tournaments',
-        show: this.$store.getters.userHasFeature('TOURNAMENTS')
+        show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
       },
       {
         header: 'User Management',
@@ -264,6 +264,8 @@ export default {
   },
   created () {
     this.getCustomFieldObjectTypes()
+    console.log('randaLogger A', this.hasSettingsAccess)
+    console.log('randaLogger B', this.$store.getters.userHasFeature('AVAILABILITY'))
   }
 }
 </script>

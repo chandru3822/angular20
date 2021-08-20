@@ -81,7 +81,7 @@ public class CustomFieldValueService {
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
-        params.put("userId", currentUser.getId());
+        params.put("userId", currentUser.trueUserId());
 
         //only used on upsert
         params.put("id", cfv.getId());
@@ -159,7 +159,7 @@ public class CustomFieldValueService {
     params.put("intValue", cfv.getIntValue());
     params.put("timestampValue", cfv.getTimestampValue());
     params.put("dateValue", cfv.getDateValue());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 

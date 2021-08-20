@@ -97,7 +97,7 @@ public class NoteService {
     params.put("note", note.getNote());
     // parentId is used for a hierarchy of notes - currently we don't use it
     params.put("parentId", note.getParentId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     // @randa: Would an upsert be better here? -- i dont think so because there is not a unique constraint i could throw on it.  the same user can add multiple notes to the same project/contact/user/etc
     Long noteId;
@@ -143,13 +143,13 @@ public class NoteService {
         String link = "";
         // Used to store the Contact name or Project name which contains the Note
         String noteRefName = "";
-        if (typeId.equals(ObjectType.CONTACT.id)) {
+        if (null != typeId && typeId.equals(ObjectType.CONTACT.id)) {
           locationOfNote = "contact";
           link = homeUrl + "/contact/" + note.getPrimaryId();
           Contact c = contactService.getContact(note.getPrimaryId());
           noteRefName = c.getFirstName() + " " + c.getLastName() + " - " + c.getId();
         }
-        else if (typeId.equals(ObjectType.PROJECT.id)) {
+        else if (null != typeId && typeId.equals(ObjectType.PROJECT.id)) {
           locationOfNote = "project";
           link = homeUrl + "/project/"+note.getPrimaryId()+"/details";
           Optional<Project> p = projectService.getProject(note.getPrimaryId());
@@ -190,7 +190,7 @@ public class NoteService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("noteId", noteId);
 
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("note.deleteNote", params);
   }
 

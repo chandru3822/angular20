@@ -68,7 +68,7 @@ public class CompanyService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", company.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("companyName", company.getCompanyName());
     params.put("defaultPassword", company.getDefaultPassword());
     sqlCache.update("company.updateCompany", params);

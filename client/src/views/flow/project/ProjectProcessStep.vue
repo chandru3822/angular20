@@ -316,6 +316,7 @@
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         schedulerCanEdit: false,
         showRemoteSearch: false,
+        mostRecentSearchWasRemote: false,
         schedulerLoading: true,
         timezone: this.$store.state.user.details.timezone.value,
         projectId: this.$route.params.projectId,

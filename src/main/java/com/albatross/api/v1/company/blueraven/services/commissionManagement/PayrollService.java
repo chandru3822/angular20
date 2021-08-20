@@ -111,7 +111,7 @@ public class PayrollService {
 
     private Boolean copyPayrollToLedger(Long payrollId) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("currentUserId", securityService.getCurrentUser().getId());
+        params.put("currentUserId", securityService.getCurrentUser().trueUserId());
         params.put("payrollId", payrollId);
 
         Optional<Boolean> created = sqlCache.getBySql("select brs.copy_snapshot_to_ledger(:payrollId::int, :currentUserId::int)", params, new SingleColumnRowMapper<>(Boolean.class));
@@ -132,7 +132,7 @@ public class PayrollService {
         params.put("payrollId", payrollId);
         params.put("actionTypeId", actionType.getId());
         params.put("note", note);
-        params.put("currentUserId", securityService.getCurrentUser().getId());
+        params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
         sqlCache.update("payroll.addActionHistory", params);
     }
@@ -155,7 +155,7 @@ public class PayrollService {
 
     private Boolean createPayrollSnapshot(Long payrollId) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("currentUserId", securityService.getCurrentUser().getId());
+        params.put("currentUserId", securityService.getCurrentUser().trueUserId());
         params.put("payrollId", payrollId);
 
         Optional<Boolean> created = sqlCache.getBySql("select brs.create_payroll_snapshot(:payrollId::int, :currentUserId::int)", params, new SingleColumnRowMapper<>(Boolean.class));
@@ -248,7 +248,7 @@ public class PayrollService {
 
     @Transactional
     public boolean updatePayroll(Long payrollId, PayrollUpdateRequest updateRequest) throws SQLException {
-        Long currentUserId = securityService.getCurrentUser().getId();
+        Long currentUserId = securityService.getCurrentUser().trueUserId();
         Map<String, Object> params = new HashMap<>();
         params.put("currentUserId", currentUserId);
         params.put("payrollId", payrollId);
@@ -269,7 +269,7 @@ public class PayrollService {
         params.put("userId", adjustmentRequest.getUserId());
         params.put("amount", adjustmentRequest.getAmount());
         params.put("note", adjustmentRequest.getNote());
-        params.put("createdById", securityService.getCurrentUser().getId());
+        params.put("createdById", securityService.getCurrentUser().trueUserId());
         params.put("adjustmentTypeId", adjustmentRequest.getAdjustmentType().getId());
 
         sqlCache.update("payroll.addCommissionAdjustment", params);
@@ -285,7 +285,7 @@ public class PayrollService {
     }
 
     public boolean createPayroll(Long positionId) {
-        Long currentUserId = securityService.getCurrentUser().getId();
+        Long currentUserId = securityService.getCurrentUser().trueUserId();
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("currentUserId", currentUserId);

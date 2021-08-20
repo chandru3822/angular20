@@ -110,8 +110,8 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
     params.put("orgId", ra.getOrgId());
     params.put("userId", ra.getUserId());
-    params.put("modifiedById", user.getId());
-    params.put("createdById", user.getId());
+    params.put("modifiedById", user.trueUserId());
+    params.put("createdById", user.trueUserId());
 
     Long id = null;
 
@@ -155,7 +155,7 @@ public class AvailabilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("availability.deleteSchedule", params);
   }
@@ -185,19 +185,19 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long rsaId = null;
     //if existing and archived, or existing and they send in null start and end time
     if (hasId && (archived || (null == rsa.getResourceSlotScheduleId() && (null == rsa.getStartTime() && null == rsa.getEndTime())))) {
       rsaId = rsa.getId();
       params.put("id", rsa.getId());
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("availability.archiveHours", params);
     } else if (hasId) {
       rsaId = rsa.getId();
       params.put("id", rsa.getId());
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("availability.updateHours", params);
     } else if ((null != rsa.getResourceSlotScheduleId()) || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
       rsaId = sqlCache.updateReturningId("availability.insertHours", params, "id").longValue();
@@ -211,7 +211,7 @@ public class AvailabilityService {
       //adding this param cuz sql array null checks are too hard for me
       excludedParams.put("excludedIsEmpty", null == rsa.getExcludedResourceSlotTimeIds() || rsa.getExcludedResourceSlotTimeIds().isEmpty());
       excludedParams.put("resourceScheduleAvailabilityId", rsaId);
-      excludedParams.put("userId", user.getId());
+      excludedParams.put("userId", user.trueUserId());
 
       //delete any existing excluded slots that are no longer in the excluded array
       sqlCache.update("availability.archiveUnusedExcludedSlots", excludedParams);
@@ -273,7 +273,7 @@ public class AvailabilityService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("projectId", audit.getProjectId());
     params.put("projectProcessStepId", audit.getProjectProcessStepId());
     params.put("userPositionId", audit.getUserPositionId());
@@ -324,11 +324,11 @@ public class AvailabilityService {
     if (null != ra.getId()) {
       id = ra.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("availability.updateAppointment", params);
     } else {
       if (null == ra.getRepeat() || !ra.getRepeat()) {
-        params.put("createdById", user.getId());
+        params.put("createdById", user.trueUserId());
         params.put("recurringEventId", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
       } else {
@@ -485,7 +485,7 @@ public class AvailabilityService {
           params.put("location", ra.getLocation());
           params.put("allDay", ra.getAllDay() != null && ra.getAllDay());
           params.put("companyId", user.getCompanyId());
-          params.put("createdById", user.getId());
+          params.put("createdById", user.trueUserId());
           params.put("orgId", ra.getOrgId());
           params.put("userId", ra.getUserId());
           params.put("recurrence", ra.getRecurrence());
@@ -513,7 +513,7 @@ public class AvailabilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("availability.deleteAppointment", params);
   }
@@ -523,7 +523,7 @@ public class AvailabilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("recurringEventId", recurringEventId);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("availability.deleteAppointmentsByRecurrence", params);
   }
@@ -547,10 +547,11 @@ public class AvailabilityService {
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", request.getProjectId());
-      params.put("userId", user.getId());
+      params.put("userId", user.trueUserId());
       params.put("projectProcessStepId", request.getProjectProcessStepId());
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
+      params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
 
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
@@ -621,7 +622,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("scheduleName", slotSchedule.getScheduleName());
     params.put("companyId", user.getCompanyId());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     Long id;
     if (null != slotSchedule.getId()) {
@@ -648,7 +649,7 @@ public class AvailabilityService {
     params.put("startTime", slotTime.getStartTime());
     params.put("resourceSlotScheduleId", resourceSlotScheduleId);
     params.put("endTime", slotTime.getEndTime());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     boolean archived = null == slotTime.getArchived() ? false : slotTime.getArchived();
 
@@ -681,7 +682,7 @@ public class AvailabilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     sqlCache.update("availability.deleteSlotSchedule", params);
   }
 

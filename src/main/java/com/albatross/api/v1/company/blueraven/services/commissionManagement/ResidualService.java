@@ -38,10 +38,10 @@ public class ResidualService {
         String key = "residual.insert";
 
         if (residual.getId() == null) {
-            params.put("createdBy", currentUser.getId());
+            params.put("createdBy", currentUser.trueUserId());
         } else {
             key = "residual.update";
-            params.put("updatedBy", currentUser.getId());
+            params.put("updatedBy", currentUser.trueUserId());
             params.put("id", residual.getId());
         }
 
@@ -83,10 +83,10 @@ public class ResidualService {
         String key = "residual.createPlan";
 
         if (residualPlan.getId() == null) {
-            params.put("createdBy", currentUser.getId());
+            params.put("createdBy", currentUser.trueUserId());
         } else {
             key = "residual.updatePlan";
-            params.put("updatedBy", currentUser.getId());
+            params.put("updatedBy", currentUser.trueUserId());
             params.put("id", residualPlan.getId());
         }
 
@@ -159,7 +159,7 @@ public class ResidualService {
         params.put("name", rpa.getName());
         params.put("level", rpa.getLevel());
         params.put("total", rpa.getTotal());
-        params.put("createdById", currentUser.getId());
+        params.put("createdById", currentUser.trueUserId());
         params.put("nbrFdcLower", rpa.getNbrFdcLower());
         params.put("nbrFdcUpper", rpa.getNbrFdcUpper());
 
@@ -198,7 +198,7 @@ public class ResidualService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);
         params.put("startDate", residualPlan.getStartDate());
-        params.put("createdBy", securityService.getCurrentUser().getId());
+        params.put("createdBy", securityService.getCurrentUser().trueUserId());
 
         try (Connection connection = dataSource.getConnection()) {
 

@@ -46,7 +46,7 @@ public class AhjPermitService {
       return permit;
     } else {
       User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.getId());
+      params.put("currentUser", currentUser.trueUserId());
 
       // add a blank permit and return that
       Integer id = sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -72,7 +72,7 @@ public class AhjPermitService {
     params.put("contractorLicense", permit.getContractorLicense());
     params.put("businessLicenseExpirationDate", permit.getBusinessLicenseExpirationDate());
     params.put("contractorLicenseExpirationDate", permit.getContractorLicenseExpirationDate());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("otherLicense", permit.getOtherLicense());
     params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
     params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
@@ -146,7 +146,7 @@ public class AhjPermitService {
     params.put("username", link.getUsername());
     params.put("password", link.getPassword());
     params.put("notes", link.getNotes());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("linkTypeId", link.getLinkTypeId());
 
     if (linkId == null) {
@@ -166,7 +166,7 @@ public class AhjPermitService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", linkId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.permit.link.delete", params);
   }

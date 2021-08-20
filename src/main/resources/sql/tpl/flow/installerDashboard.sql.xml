@@ -4,10 +4,13 @@
     from flow.user u
          inner join flow.user_position up on u.id = up.user_id
          inner join flow.org o on o.id = up.org_id
-    where up.position_id = 69 and up.primary_flag = true and up.archived = false
+         inner join flow.company_user_status cus on cus.user_id = u.id
+         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
+    where up.position_id in (69, 508) and up.primary_flag = true and up.archived = false and o.active_flag is true
+    and ust.user_status_type = 'Active'
     and case when (:isParent)
-            then company_id = :parentCompanyId
-            else company_id = :companyId
+            then o.company_id = :parentCompanyId
+            else o.company_id = :companyId
         end
     order by full_name
   ]]></installerDashboard.getRegionalManagers>
@@ -50,12 +53,8 @@
             where
         (installation_end_time::date between :startDate::date and :endDate::date
             AND
-            ((substantial_completion_date is not null
+            (substantial_completion_date is not null
                  AND substantial_completion_date::date between installation_end_time::date - 7 and installation_end_time::date + 7)
-            OR
-             (substantial_completion_date is null
-                AND (now() at time zone 'US/Mountain')::date between installation_end_time::date - 7 and installation_end_time::date + 7)
-        )
         AND
         pd.installation_resource in (:crewIds))) ::numeric(10,2)
                     /
