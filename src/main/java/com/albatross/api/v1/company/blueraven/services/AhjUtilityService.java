@@ -57,7 +57,7 @@ public class AhjUtilityService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("utilityName", utility.getName());
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
@@ -72,7 +72,7 @@ public class AhjUtilityService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("utilityName", utility.getName());
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
@@ -123,7 +123,7 @@ public class AhjUtilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjUtilityId", utilityId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("name", contact.getName());
     params.put("title", contact.getTitle());
     params.put("email", contact.getEmail());
@@ -148,7 +148,7 @@ public class AhjUtilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.utility.contact.delete", params);
   }
@@ -169,7 +169,7 @@ public class AhjUtilityService {
     params.put("description", item.getDescription());
     params.put("displayOrder", item.getDisplayOrder());
     params.put("checklistTypeId", item.getChecklistTypeId());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("failedInspectionResourceId", item.getFailedInspectionResourceId());
     params.put("failedInspectionDate", item.getFailedInspectionDate());
     params.put("failedInspectionProject", item.getFailedInspectionProject());
@@ -189,7 +189,7 @@ public class AhjUtilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", itemId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.utility.checklist.delete", params);
   }
@@ -205,7 +205,7 @@ public class AhjUtilityService {
     params.put("username", link.getUsername());
     params.put("password", link.getPassword());
     params.put("notes", link.getNotes());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("linkTypeId", link.getLinkTypeId());
 
     if (linkId == null) {
@@ -225,7 +225,7 @@ public class AhjUtilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", linkId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.utility.link.delete", params);
   }
@@ -247,8 +247,8 @@ public class AhjUtilityService {
     params.put("requirementTypeId", 4);
     params.put("statusId", 1);
     params.put("position", ahjRequirement.getPosition());
-    params.put("createdById", user.getId());
-    params.put("modifiedById", user.getId());
+    params.put("createdById", user.trueUserId());
+    params.put("modifiedById", user.trueUserId());
     params.put("description", ahjRequirement.getDescription());
 
     Integer id = sqlCache.get("ahj.utility.requirement.add", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -269,7 +269,7 @@ public class AhjUtilityService {
     parameters.addValue("position", ahjRequirement.getPosition());
     parameters.addValue("complete", ahjRequirement.getComplete());
     parameters.addValue("statusId", ahjRequirement.getStatusId());
-    parameters.addValue("userId", user.getId());
+    parameters.addValue("userId", user.trueUserId());
     parameters.addValue("archived", ahjRequirement.getArchived());
 
     jdbc.queryForList(sqlQuery, parameters, String.class);
@@ -286,7 +286,7 @@ public class AhjUtilityService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("originalRequirementId", originalRequirementId);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("ahj.utility.requirement.archive", params);
   }

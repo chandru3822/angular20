@@ -59,7 +59,7 @@ public class ObjectTypeService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("companyObjectTypeId", companyObjectType.getId());
     params.put("statusReadOnly", companyObjectType.getStatusReadOnly());

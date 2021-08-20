@@ -68,11 +68,11 @@ public class AdderService {
 
     if(null != adder.getId()) {
       id = adder.getId();
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("id", id);
       sqlCache.update("propToolAdder.update", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolAdder.insert", params, "id").longValue();
     }
@@ -90,7 +90,7 @@ public class AdderService {
         // If newly added and archived, don't insert, just skip
         if (!adderState.isArchived()) {
           if (!params.containsKey("createdById")) {
-            params.put("createdById", user.getId());
+            params.put("createdById", user.trueUserId());
           }
 
           sqlCache.update("propToolAdder.insertAdderState", params);
@@ -105,7 +105,7 @@ public class AdderService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("propToolAdder.delete", params);
   }

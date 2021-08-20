@@ -190,7 +190,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("projectId", projectId);
 
     sqlCache.update("project.delete", params);
@@ -219,7 +219,7 @@ public class ProjectService {
     params.put("companyStateId", project.getCompanyStateId());
     params.put("postalCode", project.getPostalCode());
     params.put("companyCountryId", project.getCompanyCountryId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("project.update", params);
 
@@ -234,7 +234,7 @@ public class ProjectService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", projectId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("ownerUserPositionId", owner.getUserPositionId());
 
     sqlCache.update("project.updateOwner", params);
@@ -250,7 +250,7 @@ public class ProjectService {
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("contactId", contactId);
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
       params.put("processId", processId);
       params.put("street1", contact.getStreet1());
@@ -330,7 +330,7 @@ public class ProjectService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("companyId", companyId);
     params.put("attachmentTypeId", attachmentTypeId);
 
@@ -339,7 +339,7 @@ public class ProjectService {
     params.clear();
     params.put("projectId", projectId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     sqlCache.update("project.addAttachment", params);
 
@@ -407,7 +407,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", companyProjectStatusTypeId);
     params.put("companyId", currentUser.getCompanyId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("project.saveInitialProjectStatusType", params);
   }
@@ -415,7 +415,7 @@ public class ProjectService {
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
     params.put("projectStatusType", status.getProjectStatusType());
     params.put("color", status.getColor());
@@ -445,7 +445,7 @@ public class ProjectService {
   public void deleteCompanyProjectStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
     sqlCache.update("project.deleteCompanyStatus", params);

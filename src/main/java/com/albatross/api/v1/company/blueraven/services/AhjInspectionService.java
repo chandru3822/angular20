@@ -43,7 +43,7 @@ public class AhjInspectionService {
       return inspection;
     } else {
       User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.getId());
+      params.put("currentUser", currentUser.trueUserId());
 
       // add a blank inspection and return that
       Integer id = sqlCache.get("ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -74,7 +74,7 @@ public class AhjInspectionService {
     params.put("obtainingResultsPortalPassword", inspection.getObtainingResultsPortalPassword());
     params.put("businessLicense", inspection.getBusinessLicense());
     params.put("contractorLicense", inspection.getContractorLicense());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("ladderRequired", inspection.getLadderRequired());
     params.put("timeWindow", inspection.getTimeWindow());
     params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
@@ -147,7 +147,7 @@ public class AhjInspectionService {
     params.put("username", link.getUsername());
     params.put("password", link.getPassword());
     params.put("notes", link.getNotes());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("linkTypeId", link.getLinkTypeId());
 
     if (linkId == null) {
@@ -168,7 +168,7 @@ public class AhjInspectionService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", linkId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.inspection.link.delete", params);
   }

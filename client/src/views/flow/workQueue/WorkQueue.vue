@@ -33,7 +33,7 @@
                      :class="{'inactive-radio': selectedViewType !== 0}"
             ></v-radio>
             <v-radio class="d-inline-block mx-4 wq-radio-label"
-                     label="Total Completed Tasks"
+                     label="Projects Completed"
                      :value="1"
                      :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
                      :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
@@ -43,7 +43,7 @@
                      :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
           </v-radio-group>
         </div>
-        <v-row class="ma-0">
+        <v-row class="cards my-0">
           <v-card tile v-for="wq in workQueues" class="flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
@@ -51,24 +51,22 @@
             <v-card-text class="pa-0">
               <router-link class="no-text-decoration card-link"
                            :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
-                <div v-if="null != wq.expectedTarget"
+                <div class="card-title-container text-left"
+                     :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
+                     :style="{'background-color': wq.color + '15' }">
+                  <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
+                  <div class="card-count">{{ wq.workQueueCount }}</div>
+                </div>
+                <div v-if="null != wq.expectedTarget && selectedViewType === 0"
                     class="expected-target-banner"
                     :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
                   {{wq.expectedTarget * 100 | currency('', 0)}}%
-                </div>
-                <div class="card-title-container text-left" :style="{'background-color': wq.color + '15' }">
-                  <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
-                  <div class="card-count">{{ wq.workQueueCount }}</div>
                 </div>
 
                 <div class="card-metrics-container"
                      :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
                      v-if="wqHasMetrics(wq)">
-                  <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
-                    Completed within expected time of <strong>{{ wq.expectedCycle }}
-                    {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
-                  </div>
-                  <div class="card-number-container" :class="{'card-metric-extra-padding': selectedViewType === 0}">
+                  <div class="one-hunned">
                     <div class="card-metric card-metric-left">
                       <div class="card-metric-percent"
                            v-if="selectedViewType === 0"
@@ -108,6 +106,10 @@
                       </div>
                       {{ wq.longWindow }} {{ wq.longWindowDurationType }}
                     </div>
+                  </div>
+                  <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
+                    Completed within expected time of <strong>{{ wq.expectedCycle }}
+                    {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                   </div>
                 </div>
               </router-link>
@@ -271,14 +273,19 @@ export default {
   width: 50%;
 }
 
+.cards {
+  //doing this to avoid wrapping when there is space for another card
+  margin-left: -24px !important;
+  margin-right: -24px !important;
+}
+
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
   text-align: center;
-  border-top-right-radius: 9px !important;
-  border-bottom-right-radius: 9px !important;
-  border-bottom-left-radius: 9px !important;
-  margin-right: 48px;
+  border-radius: 9px !important;
+  margin-right: 24px;
+  margin-left: 24px;
   margin-bottom: 32px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
 }
@@ -292,7 +299,7 @@ export default {
   position: absolute;
   padding: 4px 8px;
   font-size: 12px;
-  top: 0;
+  top: 121px;
   left: 0;
   z-index: 2 !important;
   width: 35px;
@@ -342,8 +349,14 @@ export default {
   padding-right: 24px;
   padding-left: 24px;
   border-top-right-radius: 9px !important;
+  border-top-left-radius: 9px !important;
   display: flex;
   align-items: center;
+}
+
+.card-title-container-no-metrics {
+  border-bottom-right-radius: 9px !important;
+  border-bottom-left-radius: 9px !important;
 }
 
 .card-title {
@@ -378,6 +391,9 @@ export default {
   right: 0;
   left: 5px;
   font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card-metrics-container-secondary-view {
@@ -388,7 +404,7 @@ export default {
 .card-metrics-expected-cycle {
   height: 20px;
   font-size: 12px;
-  padding-top: 14px;
+  padding-top: 4px;
 }
 
 .card-metric {
@@ -404,7 +420,6 @@ export default {
 .card-metric-percent {
   font-size: 18px;
   font-weight: bold;
-  margin-top: 14px;
   margin-bottom: 3px;
 }
 

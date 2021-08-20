@@ -46,7 +46,7 @@ public class AhjDesignService {
       return design;
     } else {
       User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.getId());
+      params.put("currentUser", currentUser.trueUserId());
 
       // add a blank design and return that
       Integer id = sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -65,7 +65,7 @@ public class AhjDesignService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("codes", design.getCodes());
     params.put("note", design.getNote());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     params.put("referenceStandards", design.getReferenceStandards());
     params.put("groundSnowLoad", design.getGroundSnowLoad());

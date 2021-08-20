@@ -63,11 +63,11 @@ public class PanelService {
 
     if(null != panel.getId()) {
       id = panel.getId();
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("id", id);
       sqlCache.update("propToolPanel.update", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolPanel.insert", params, "id").longValue();
     }
@@ -84,7 +84,7 @@ public class PanelService {
       } else {
         if (!panelState.isArchived()) {
           if (!params.containsKey("createdById")) {
-            params.put("createdById", user.getId());
+            params.put("createdById", user.trueUserId());
           }
 
           sqlCache.update("propToolPanel.insertStates", params);
@@ -100,7 +100,7 @@ public class PanelService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("propToolPanel.delete", params);
   }

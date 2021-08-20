@@ -50,7 +50,7 @@ public class LinkService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", link.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("displayOrder", link.getDisplayOrder());
 
     sqlCache.update("link.updateOrderInProcessStep", params);
@@ -86,7 +86,7 @@ public class LinkService {
 
     sqlCache.update("link.deleteProcessStepLink",
         ImmutableMap.of("id", id,
-            "modifiedById", currentUser.getId()));
+            "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<ProcessStepLink> getProcessStepLink(Long id) {
@@ -100,7 +100,7 @@ public class LinkService {
     User currentUser = securityService.getCurrentUser();
 
     Long id = sqlCache.updateReturningId("link.insertProcessStepLink",
-        ImmutableMap.of("createdById", currentUser.getId(),
+        ImmutableMap.of("createdById", currentUser.trueUserId(),
             "linkId", link.getLinkId(),
             "processStepId", link.getProcessStepId()), "id").longValue();
 

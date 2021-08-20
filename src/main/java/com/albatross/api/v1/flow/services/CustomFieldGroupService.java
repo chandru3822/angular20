@@ -44,7 +44,7 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("customFieldGroupId", customField.getCustomFieldGroupId());
     params.put("customFieldId", customField.getId());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("scheduleFieldTypeId", customField.getScheduleFieldTypeId());
     params.put("ancillaryCustomFieldGroupAssignmentId", customField.getAncillaryCustomFieldGroupAssignmentId());
     params.put("fieldOrder", customField.getFieldOrder());
@@ -60,7 +60,7 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customField.getCustomFieldGroupAssignmentId());
     params.put("newGroupId", newGroupId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("customFieldGroupAssignment.moveFieldToOtherGroup", params);
 
@@ -79,7 +79,7 @@ public class CustomFieldGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("customFieldGroupAssignment.deleteAllFieldsInGroup", params);
   }
@@ -89,7 +89,7 @@ public class CustomFieldGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
   }
@@ -98,7 +98,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("useParentData", customField.getUseParentData());
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
 
@@ -109,7 +109,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
     params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());
@@ -153,7 +153,7 @@ public class CustomFieldGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customField.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("fieldOrder", customField.getFieldOrder());
 
     sqlCache.update("customFieldGroupAssignment.updateFieldInGroup", params);
@@ -224,7 +224,7 @@ public class CustomFieldGroupService {
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
     params.put("id", id);
@@ -269,7 +269,7 @@ public class CustomFieldGroupService {
   public List<FieldInUse> deleteWithRequirementChecks(CustomFieldGroupController.DeleteWithRequirementParams requirementParams) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     List<FieldInUse> fields = getFieldsInUse(null, requirementParams.getCustomFieldGroupId(), requirementParams.getCustomFieldGroupAssignmentId());
     if(!fields.isEmpty()) {
@@ -297,7 +297,7 @@ public class CustomFieldGroupService {
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeTabId", customFieldGroup.getCompanyObjectTypeTabId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroup", params);
 
@@ -332,7 +332,7 @@ public class CustomFieldGroupService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldObjectType.getId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
     params.put("requireOnInsert", customFieldObjectType.getRequireOnInsert());
 
