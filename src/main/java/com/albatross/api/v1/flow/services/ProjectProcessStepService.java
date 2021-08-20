@@ -1004,25 +1004,29 @@ public class ProjectProcessStepService {
     String startingValue = param.getDynamicValue();
     Object typedValue = null;
 
-  switch (param.getDataTypeId().intValue()) {
-    case 1:
-    case 2:
-      typedValue = Timestamp.valueOf(startingValue);
-      break;
-    case 3:
-      typedValue = Boolean.parseBoolean(startingValue);
-      break;
-    case 4:
-      typedValue = Double.parseDouble(startingValue);
-      break;
-    case 5:
-      typedValue = "'" + startingValue + "'";
-      break;
-    case 6:
-      typedValue = Long.parseLong(startingValue);
-      break;
-    default:
-      throw new RuntimeException(String.format("Unable to determine param dynamic value, CF param ID: %s", param.getId()));
+  try {
+    switch (param.getDataTypeId().intValue()) {
+      case 1:
+      case 2:
+        typedValue = Timestamp.valueOf(startingValue);
+        break;
+      case 3:
+        typedValue = Boolean.parseBoolean(startingValue);
+        break;
+      case 4:
+        typedValue = Double.parseDouble(startingValue);
+        break;
+      case 5:
+        typedValue = "'" + startingValue + "'";
+        break;
+      case 6:
+        typedValue = Long.parseLong(startingValue);
+        break;
+      default:
+        throw new RuntimeException(String.format("Unable to determine typed param dynamic value, CF param ID: %s", param.getId()));
+    }
+  } catch (Exception e) {
+    throw new RuntimeException(String.format("Unable to get typed dynamic value, CF param ID: %s, CF ID: %s *** %s", param.getId(), param.getCompanyFunctionId(), e.getMessage()));
   }
 
     return typedValue;
@@ -1032,83 +1036,92 @@ public class ProjectProcessStepService {
 
     Object paramValue = null;
 
-    switch (param.getDataTypeId().intValue()) {
-      case 1:
-        paramValue = param.getDateValue();
-        break;
-      case 2:
-        paramValue = param.getTimestampValue();
-        break;
-      case 3:
-        paramValue = param.getBooleanValue();
-        break;
-      case 4:
-        paramValue = param.getNumericValue();
-        break;
-      case 5:
-        paramValue = param.getTextValue();
-        break;
-      case 6:
-        paramValue = param.getIntValue();
-        break;
-      case 7:
-        paramValue = param.getIntArrayValue();
-        break;
-      default:
-        throw new RuntimeException(String.format("Unable to determine param value, CF param ID: %s", param.getId()));
+    try {
+      switch (param.getDataTypeId().intValue()) {
+        case 1:
+          paramValue = param.getDateValue();
+          break;
+        case 2:
+          paramValue = param.getTimestampValue();
+          break;
+        case 3:
+          paramValue = param.getBooleanValue();
+          break;
+        case 4:
+          paramValue = param.getNumericValue();
+          break;
+        case 5:
+          paramValue = param.getTextValue();
+          break;
+        case 6:
+          paramValue = param.getIntValue();
+          break;
+        case 7:
+          paramValue = param.getIntArrayValue();
+          break;
+        default:
+          throw new RuntimeException(String.format("Unable to determine param value by data type, CF param ID: %s", param.getId()));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to get param value by data type, CF param ID: %s, CF ID: %s *** %s", param.getId(), param.getCompanyFunctionId(), e.getMessage()));
     }
 
     return paramValue;
   }
 
-  public boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws RuntimeException {
 
     List<Integer> fieldValue = r.getIntArrayValue();
 
     boolean passed = false;
 
-    if (r.getDataTypeRequirementId() == null) {
-      try {
+    try {
+      if (r.getDataTypeRequirementId() == null) {
         List<Integer> reqValue = r.getListOfValueIds();
         passed = compareMultiselect(fieldValue, reqValue, r.getOperatorTypeId());
-      } catch (Exception e) {
-        throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", r.getOperatorTypeId()));
-      }
-    } else {
-      switch (r.getDataTypeRequirementId().intValue()) {
-        case 22:
-          passed = fieldValue.isEmpty();
-          break;
-        case 23:
-          passed = !fieldValue.isEmpty();
-          break;
-        default:
-          throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", r.getOperatorTypeId()));
-      }
+      } else {
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 22:
+            passed = fieldValue.isEmpty();
+            break;
+          case 23:
+            passed = !fieldValue.isEmpty();
+            break;
+          default:
+            throw new RuntimeException(String.format("Unable to parse multiselect data type, operator ID: %s", r.getOperatorTypeId()));
+        }
 
-      if (r.getOperatorTypeId() == 2) {
+        if (r.getOperatorTypeId() == 2) {
           passed = !passed;
+        }
       }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate multiselect requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
+
     return passed;
   }
 
   public boolean compareMultiselect(List<Integer> numbers, List<Integer> compareNumbers, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = Objects.equals(numbers, compareNumbers);
-        break;
-      case 2:
-        passed = !Objects.equals(numbers, compareNumbers);
-        break;
-      case 5:
-        List<Integer> intersection = numbers.stream().filter(compareNumbers::contains).collect(Collectors.toList());
-        passed = !intersection.isEmpty();
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = Objects.equals(numbers, compareNumbers);
+          break;
+        case 2:
+          passed = !Objects.equals(numbers, compareNumbers);
+          break;
+        case 5:
+          List<Integer> intersection = numbers.stream().filter(compareNumbers::contains).collect(Collectors.toList());
+          passed = !intersection.isEmpty();
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse multiselect data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare multiselect values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
     return passed;
   }
@@ -1119,48 +1132,48 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    if (r.getDataTypeRequirementId() == null) {
-      try {
+    try {
+      if (r.getDataTypeRequirementId() == null) {
         Long reqValue = r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
-      } catch (Exception e) {
-        throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
-      }
-    } else {
-      switch (r.getDataTypeRequirementId().intValue()) {
-        case 20:
-        case 26:
+      } else {
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 20:
+          case 26:
             switch (r.getOperatorTypeId().intValue()) {
-                case 1:
-                    passed = fieldValue == null;
-                    break;
-                case 2:
-                    passed = fieldValue != null;
-                    break;
-                case 3:
-                case 4:
-                    break;
-                default:
-                    throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+              case 1:
+                passed = fieldValue == null;
+                break;
+              case 2:
+                passed = fieldValue != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse int data type, operator ID: %s", r.getOperatorTypeId()));
             }
             break;
-        case 21:
-        case 27:
+          case 21:
+          case 27:
             switch (r.getOperatorTypeId().intValue()) {
-                case 1:
-                    passed = fieldValue != null;
-                    break;
-                case 2:
-                    passed = fieldValue == null;
-                    break;
-                case 3:
-                case 4:
-                    break;
+              case 1:
+                passed = fieldValue != null;
+                break;
+              case 2:
+                passed = fieldValue == null;
+                break;
+              case 3:
+              case 4:
+                break;
             }
-          break;
-        default:
-          throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse dropdown data type, operator ID: %s", r.getOperatorTypeId()));
+        }
       }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate dropdown requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
 
     return passed;
@@ -1170,145 +1183,154 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = Objects.equals(number, compareNumber);
-        break;
-      case 2:
-        passed = !Objects.equals(number, compareNumber);
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = Objects.equals(number, compareNumber);
+          break;
+        case 2:
+          passed = !Objects.equals(number, compareNumber);
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse dropdown data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare dropdown values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
   }
 
-  public boolean calculateIntRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateIntRequirement(ProjectProcessStepRequirement r) throws RuntimeException {
 
     Long fieldValue = r.getIntValue();
     boolean passed = false;
 
-    if (r.getDataTypeRequirementId() == null) {
-      try {
+    try {
+      if (r.getDataTypeRequirementId() == null) {
         Long reqValue = Long.parseLong(r.getRequirementValue());
         passed = compareInt(fieldValue, reqValue, r.getOperatorTypeId());
-      } catch (Exception e) {
-        throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+      } else {
+        switch(r.getDataTypeRequirementId().intValue()) {
+          case 20:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue == null;
+                break;
+              case 2:
+                passed = fieldValue != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse int data type, operator ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 21:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue != null;
+                break;
+              case 2:
+                passed = fieldValue == null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse int data type, operator ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        }
       }
-    } else {
-      switch(r.getDataTypeRequirementId().intValue()) {
-        case 20:
-          switch (r.getOperatorTypeId().intValue()) {
-            case 1:
-              passed = fieldValue == null;
-              break;
-            case 2:
-              passed = fieldValue != null;
-              break;
-            case 3:
-            case 4:
-              break;
-            default:
-              throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-          }
-          break;
-        case 21:
-          switch (r.getOperatorTypeId().intValue()) {
-            case 1:
-              passed = fieldValue != null;
-              break;
-            case 2:
-              passed = fieldValue == null;
-              break;
-            case 3:
-            case 4:
-              break;
-            default:
-              throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
-          }
-          break;
-      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate int requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
 
     return passed;
   }
 
-  public boolean compareInt(Long number, Long compareNumber, Long operatorTypeId) throws Exception {
+  public boolean compareInt(Long number, Long compareNumber, Long operatorTypeId) throws RuntimeException {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = Objects.equals(number, compareNumber);
-        break;
-      case 2:
-        passed = !Objects.equals(number, compareNumber);
-        break;
-      case 3:
-        passed = (number != null && compareNumber != null) && number > compareNumber;
-        break;
-      case 4:
-        passed = (number != null && compareNumber != null) && number < compareNumber;
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = Objects.equals(number, compareNumber);
+          break;
+        case 2:
+          passed = !Objects.equals(number, compareNumber);
+          break;
+        case 3:
+          passed = (number != null && compareNumber != null) && number > compareNumber;
+          break;
+        case 4:
+          passed = (number != null && compareNumber != null) && number < compareNumber;
+          break;
+        default:
+          throw new RuntimeException(String.format("Unable to parse int data type, operator of ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare int values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
   }
 
-  public boolean calculateTextRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateTextRequirement(ProjectProcessStepRequirement r) throws RuntimeException {
 
     String fieldValue = r.getTextValue();
 
     boolean passed = false;
 
-    if (r.getDataTypeRequirementId() == null) {
-      try {
+    try {
+      if (r.getDataTypeRequirementId() == null) {
         String reqValue = r.getRequirementValue();
         passed = compareText(fieldValue, reqValue, r.getOperatorTypeId());
-      } catch (Exception e) {
-        throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+      } else {
+        // An empty string and null are treated as the same value during text comparison
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 18:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue == null || fieldValue.isEmpty();
+                break;
+              case 2:
+                passed = fieldValue != null && !fieldValue.isEmpty();
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse text data type, operator ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 19:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue != null && !fieldValue.isEmpty();
+                break;
+              case 2:
+                passed = fieldValue == null || fieldValue.isEmpty();
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse text data type, operator ID: %s", r.getOperatorTypeId()));
+            }
+        }
       }
-    } else {
-      // An empty string and null are treated as the same value during text comparison
-      switch (r.getDataTypeRequirementId().intValue()) {
-        case 18:
-          switch (r.getOperatorTypeId().intValue()) {
-            case 1:
-              passed = fieldValue == null || fieldValue.isEmpty();
-              break;
-            case 2:
-              passed = fieldValue != null && !fieldValue.isEmpty();
-              break;
-            case 3:
-            case 4:
-              break;
-            default:
-              throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
-          }
-          break;
-        case 19:
-          switch (r.getOperatorTypeId().intValue()) {
-            case 1:
-              passed = fieldValue != null && !fieldValue.isEmpty();
-              break;
-            case 2:
-              passed = fieldValue == null || fieldValue.isEmpty();
-              break;
-            case 3:
-            case 4:
-              break;
-            default:
-              throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
-          }
-      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate text requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
+
     return passed;
   }
 
-  public boolean compareText(String text, String compareText, Long operatorTypeId) throws Exception {
+  public boolean compareText(String text, String compareText, Long operatorTypeId) throws RuntimeException {
 
     boolean passed = false;
 
@@ -1316,18 +1338,22 @@ public class ProjectProcessStepService {
     text = (text != null) ? text.trim().toLowerCase() : "";
     compareText = (compareText != null) ? compareText.trim().toLowerCase() : "";
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = text.equals(compareText);
-        break;
-      case 2:
-        passed = !text.equals(compareText);
-        break;
-      case 3:
-      case 4:
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = text.equals(compareText);
+          break;
+        case 2:
+          passed = !text.equals(compareText);
+          break;
+        case 3:
+        case 4:
+          break;
+        default:
+          throw new RuntimeException(String.format("Unable to parse text data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare text values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1339,46 +1365,46 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    if (r.getDataTypeRequirementId() == null) {
-      try {
+    try {
+      if (r.getDataTypeRequirementId() == null) {
         Double reqValue = new BigDecimal(r.getRequirementValue()).setScale(2, RoundingMode.DOWN).doubleValue();
         passed = compareNumeric(fieldValue, reqValue, r.getOperatorTypeId());
-      } catch(Exception e) {
-        throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+      } else {
+        switch(r.getDataTypeRequirementId().intValue()) {
+          case 16:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue == null;
+                break;
+              case 2:
+                passed = fieldValue != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse numeric data type, operator ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 17:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue != null;
+                break;
+              case 2:
+                passed = fieldValue == null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse numeric data type, operator ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        }
       }
-    } else {
-      switch(r.getDataTypeRequirementId().intValue()) {
-        case 16:
-          switch (r.getOperatorTypeId().intValue()) {
-            case 1:
-              passed = fieldValue == null;
-              break;
-            case 2:
-              passed = fieldValue != null;
-              break;
-            case 3:
-            case 4:
-              break;
-            default:
-              throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
-          }
-          break;
-        case 17:
-          switch (r.getOperatorTypeId().intValue()) {
-            case 1:
-              passed = fieldValue != null;
-              break;
-            case 2:
-              passed = fieldValue == null;
-              break;
-            case 3:
-            case 4:
-              break;
-            default:
-              throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
-          }
-          break;
-      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate numeric requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
 
     return passed;
@@ -1388,21 +1414,25 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = Objects.equals(number, compareNumber);
-        break;
-      case 2:
-        passed = !Objects.equals(number, compareNumber);
-        break;
-      case 3:
-        passed = (number != null && compareNumber != null) && number > compareNumber;
-        break;
-      case 4:
-        passed = (number != null && compareNumber != null) && number < compareNumber;
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = Objects.equals(number, compareNumber);
+          break;
+        case 2:
+          passed = !Objects.equals(number, compareNumber);
+          break;
+        case 3:
+          passed = (number != null && compareNumber != null) && number > compareNumber;
+          break;
+        case 4:
+          passed = (number != null && compareNumber != null) && number < compareNumber;
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse numeric data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare numeric values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1414,37 +1444,41 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (r.getDataTypeRequirementId().intValue()) {
-      case 14:
-        switch (r.getOperatorTypeId().intValue()) {
-          case 1:
-            passed = fieldValue != null && fieldValue;
-            break;
-          case 2:
-            passed = fieldValue == null || !fieldValue;
-          case 3:
-          case 4:
-            break;
-          default:
-            throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
-        }
-        break;
-      case 15:
-        switch (r.getOperatorTypeId().intValue()) {
-          case 1:
-            passed = fieldValue != null && !fieldValue;
-            break;
-          case 2:
-            passed = fieldValue == null || fieldValue;
-          case 3:
-          case 4:
-            break;
-          default:
-            throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
-        }
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
+    try {
+      switch (r.getDataTypeRequirementId().intValue()) {
+        case 14:
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue != null && fieldValue;
+              break;
+            case 2:
+              passed = fieldValue == null || !fieldValue;
+            case 3:
+            case 4:
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse bool data type, operator ID: %s", r.getOperatorTypeId()));
+          }
+          break;
+        case 15:
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue != null && !fieldValue;
+              break;
+            case 2:
+              passed = fieldValue == null || fieldValue;
+            case 3:
+            case 4:
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse bool data type, operator ID: %s", r.getOperatorTypeId()));
+          }
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse bool data type, operator ID: %s", r.getOperatorTypeId()));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate bool requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
 
     return passed;
@@ -1466,67 +1500,46 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    if (null == r.getDataTypeRequirementId()) {
-      try {
+    try {
+      if (null == r.getDataTypeRequirementId()) {
         ZonedDateTime zonedReqValue = LocalDateTime.parse(r.getRequirementValue()).atZone(ZoneId.of(r.getTimeZone()));
         passed = compareDateTimes(zonedFieldValue, zonedReqValue, r.getOperatorTypeId());
-      } catch (DateTimeParseException e) {
-        throw new Exception(String.format("Unable to parse Timestamp type requirement value of: %s", r.getRequirementValue()));
-      }
-    } else {
-      switch (r.getDataTypeRequirementId().intValue()) {
-        case 6:
-          try {
+      } else {
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 6:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
             passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
-          } catch (NumberFormatException e) {
-            //@TODO: something
-          }
-          break;
-        case 7:
-          try {
+            break;
+          case 7:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
             passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
-          } catch (NumberFormatException e) {
-            //@TODO: something
-          }
-          break;
-        case 8:
-          passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow, r.getOperatorTypeId());
-          break;
-        case 9:
-          try {
+            break;
+          case 8:
+            passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow, r.getOperatorTypeId());
+            break;
+          case 9:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
             passed = compareDateTimes(zonedFieldValue, zonedNow.minusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
-          } catch (NumberFormatException e) {
-            //@TODO: something
-          }
-          break;
-        case 10:
-          try {
+            break;
+          case 10:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
             passed = compareDateTimes(zonedFieldValue, zonedNow.plusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
-          } catch (NumberFormatException e) {
-            //@TODO: something
-          }
-          break;
-        case 11:
-          passed = compareDateTimes(zonedFieldValue, zonedNow, r.getOperatorTypeId());
-          break;
-        case 12:
-          try {
+            break;
+          case 11:
+            passed = compareDateTimes(zonedFieldValue, zonedNow, r.getOperatorTypeId());
+            break;
+          case 12:
             passed = compareNullDateTime(zonedFieldValue, r.getOperatorTypeId());
-          } catch (IllegalArgumentException e) {
-            //@TODO: something?
-          }
-          break;
-        case 13:
-          try {
+            break;
+          case 13:
             passed = compareNonNullDateTime(zonedFieldValue, r.getOperatorTypeId());
-          } catch (IllegalArgumentException e) {
-            //@TODO: something?
-          }
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse timestamp data type, operator ID: %s", r.getOperatorTypeId()));
+        }
       }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate timestamp requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
 
     return passed;
@@ -1536,18 +1549,22 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = date == null;
-        break;
-      case 2:
-        passed = date != null;
-        break;
-      case 3:
-      case 4:
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = date == null;
+          break;
+        case 2:
+          passed = date != null;
+          break;
+        case 3:
+        case 4:
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse null timestamp data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare null timestamp values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1557,42 +1574,50 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = date != null;
-        break;
-      case 2:
-        passed = date == null;
-        break;
-      case 3:
-      case 4:
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = date != null;
+          break;
+        case 2:
+          passed = date == null;
+          break;
+        case 3:
+        case 4:
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse non null timestamp data type, operator of ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare non null timestamp values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
   }
 
-  public boolean compareDateTimes(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDateTimes(ZonedDateTime date, ZonedDateTime compareDate, Long operatorTypeId) throws RuntimeException {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = Objects.equals(date, compareDate);
-        break;
-      case 2:
-        passed = !Objects.equals(date, compareDate);
-        break;
-      case 3:
-        passed = date != null && date.isAfter(compareDate);
-        break;
-      case 4:
-        passed = date != null && date.isBefore(compareDate);
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = Objects.equals(date, compareDate);
+          break;
+        case 2:
+          passed = !Objects.equals(date, compareDate);
+          break;
+        case 3:
+          passed = date != null && date.isAfter(compareDate);
+          break;
+        case 4:
+          passed = date != null && date.isBefore(compareDate);
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse timestamp data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare timestamp values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1613,18 +1638,13 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    if (null == r.getDataTypeRequirementId()) {
-      // do direct literal operator compare
-      // try to make a date out of the requirement value
-      try {
+    try {
+      if (null == r.getDataTypeRequirementId()) {
+        // do direct literal operator compare
+        // try to make a date out of the requirement value
         ZonedDateTime zonedReqValue = LocalDate.parse(r.getRequirementValue()).atStartOfDay().atZone(ZoneId.of(r.getTimeZone()));
         passed = compareDates(fieldValue, zonedReqValue, r.getOperatorTypeId());
-      } catch (DateTimeParseException e) {
-        throw new RuntimeException(String.format("Unable to parse date requirement value of: %s", r.getRequirementValue()));
-      }
-    } else {
-      // @TODO: Still need to decide how to handle stupid cases like the user inputting the field value is greater than null
-      try {
+      } else {
         switch (r.getDataTypeRequirementId().intValue()) {
           case 1:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
@@ -1643,10 +1663,12 @@ public class ProjectProcessStepService {
           case 5:
             passed = compareNonNullDate(fieldValue, r.getOperatorTypeId());
             break;
+          default:
+            throw new Exception(String.format("Unable to parse date data type, operator ID: %s", r.getOperatorTypeId()));
         }
-      } catch (Exception e) {
-
       }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to calculate date requirement, PS requirement ID: %s *** %s", r.getId(), e.getMessage()));
     }
 
     return passed;
@@ -1656,18 +1678,22 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = date != null;
-        break;
-      case 2:
-        passed = date == null;
-        break;
-      case 3:
-      case 4:
-        break;
-      default:
-        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = date != null;
+          break;
+        case 2:
+          passed = date == null;
+          break;
+        case 3:
+        case 4:
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse non null date data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare non null date values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1677,19 +1703,23 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = date == null;
-        break;
-      case 2:
-        passed = date != null;
-        break;
-      case 3:
-      case 4:
-        passed = false;
-        break;
-      default:
-        throw new RuntimeException(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = date == null;
+          break;
+        case 2:
+          passed = date != null;
+          break;
+        case 3:
+        case 4:
+          passed = false;
+          break;
+        default:
+          throw new RuntimeException(String.format("Unable to parse null date data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare null date values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1707,21 +1737,25 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
-    switch (operatorTypeId.intValue()) {
-      case 1:
-        passed = Objects.equals(date, compareDate.toLocalDateTime());
-        break;
-      case 2:
-        passed = !Objects.equals(date, compareDate.toLocalDateTime());
-        break;
-      case 3:
-        passed = date != null && date.isAfter(compareDate.toLocalDateTime());
-        break;
-      case 4:
-        passed = date != null && date.isBefore(compareDate.toLocalDateTime());
-        break;
-      default:
-        throw new RuntimeException(String.format("Unable to parse data type of Date with operator of ID: %s", operatorTypeId));
+    try {
+      switch (operatorTypeId.intValue()) {
+        case 1:
+          passed = Objects.equals(date, compareDate.toLocalDateTime());
+          break;
+        case 2:
+          passed = !Objects.equals(date, compareDate.toLocalDateTime());
+          break;
+        case 3:
+          passed = date != null && date.isAfter(compareDate.toLocalDateTime());
+          break;
+        case 4:
+          passed = date != null && date.isBefore(compareDate.toLocalDateTime());
+          break;
+        default:
+          throw new RuntimeException(String.format("Unable to parse date data type, operator ID: %s", operatorTypeId));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to compare date values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
     }
 
     return passed;
