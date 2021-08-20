@@ -39,11 +39,13 @@ BEGIN
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
                                               proof_of_homeowners_insurance_obtained_date)
-                                         >= now()  - interval '90 days'
+                                         -->= now()  - interval '90 days'
+                                       between now() - interval '90 days' and now()
                              else
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     >= now()  - interval '90 days'
+                                     -->= now()  - interval '90 days'
+                                       between now() - interval '90 days' and now()
                                                                   end
                      and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() AT TIME ZONE 'US/Mountain') :: date))
                      and pd.company_id = 3
@@ -121,7 +123,7 @@ BEGIN
                  select rru.user_id, count(pd2.id) as appointment_count
                  from round_robin_users rru
                      left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 where ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval) and ((now() AT TIME ZONE 'US/Mountain') :: date + interval '100 days')
+                 where ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() AT TIME ZONE 'US/Mountain') :: date - (21 ||'day')::interval) and ((now() AT TIME ZONE 'US/Mountain') :: date + interval '100 days')
                      and pd2.company_id = 3
                  group by rru.user_id),
              appointment_count_with_interval as (

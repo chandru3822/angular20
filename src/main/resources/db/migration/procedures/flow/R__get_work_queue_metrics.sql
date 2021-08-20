@@ -142,7 +142,7 @@ BEGIN
                  (short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
                 date_part(v_cycle_duration_type,
                           ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp -
-                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <
+                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <=
                 v_expected_cycle
           else
               date_part(v_cycle_duration_type, ((now() at time zone 'US/Mountain')::timestamp -
@@ -199,7 +199,7 @@ BEGIN
                  (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
                 date_part(v_cycle_duration_type,
                           ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp -
-                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <
+                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <=
                 v_expected_cycle
           else
               date_part(v_cycle_duration_type, ((now() at time zone 'US/Mountain')::timestamp -
