@@ -182,6 +182,8 @@
             and pse.event_id  = any(array[ :eventIds ])
             and cpsst.process_step_status_type_id = :processStepStatusTypeId
             and cest.event_status_type_id = :eventStatusTypeId
+            and ppse.resource_id is not null
+            and ppse.resource_id = any(array[ :combined ]::int[])
     ]]>
   </schedule.getProjects>
 
