@@ -134,8 +134,8 @@ public class UserController {
   }
 
   @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity getLoggedInUser() {
-    return userService.getLoggedInUser();
+  public ResponseEntity getLoggedInUser(@RequestHeader("Authorization") String authHeader) {
+    return userService.getLoggedInUser(authHeader);
   }
 
   @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)

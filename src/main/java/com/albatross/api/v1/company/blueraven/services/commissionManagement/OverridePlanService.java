@@ -100,10 +100,10 @@ public class OverridePlanService {
         String key = "overridePlan.create";
 
         if (overridePlan.getId() == null) {
-            params.put("createdBy", currentUser.getId());
+            params.put("createdBy", currentUser.trueUserId());
         } else {
             key = "overridePlan.update";
-            params.put("updatedBy", currentUser.getId());
+            params.put("updatedBy", currentUser.trueUserId());
             params.put("id", overridePlan.getId());
         }
 
@@ -146,7 +146,7 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);
         params.put("startDate", overridePlan.getStartDate());
-        params.put("createdBy", securityService.getCurrentUser().getId());
+        params.put("createdBy", securityService.getCurrentUser().trueUserId());
         params.put("userId", userId);
         params.put("positionId", overridePlan.getPositionId());
 
@@ -205,7 +205,7 @@ public class OverridePlanService {
         params.put("userId", receivingUser.getUserId());
         params.put("m1Allocation", receivingUser.getM1Allocation());
         params.put("m2Allocation", receivingUser.getM2Allocation());
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
 
         sqlCache.updateReturningId("overridePlan.addReceivingUser", params, "id").longValue();
 
@@ -219,7 +219,7 @@ public class OverridePlanService {
         params.put("userId", receivingUser.getUserId());
         params.put("m1", receivingUser.getM1Allocation());
         params.put("m2", receivingUser.getM2Allocation());
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
         params.put("note", receivingUser.getNote());
 
         sqlCache.update("overridePlan.updateReceivingUser", params);
@@ -235,7 +235,7 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("userId", userId);
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
 
         sqlCache.update("overridePlan.deleteReceivingUser", params);
     }
@@ -275,7 +275,7 @@ public class OverridePlanService {
         params.put("userId", assignedUser.getUserId());
         params.put("startDate", assignedUser.getStartDate());
         params.put("endDate", assignedUser.getEndDate());
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
 
 //        this will set the end date of any active plans
         if (assignedUser.getId() != null) {
@@ -315,7 +315,7 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("userId", userId);
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
 
         sqlCache.update("overridePlan.deleteAssignedUser", params);
     }
@@ -323,7 +323,7 @@ public class OverridePlanService {
     public void approvePlan(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        params.put("approvedBy", securityService.getCurrentUser().getId());
+        params.put("approvedBy", securityService.getCurrentUser().trueUserId());
         params.put("statusId", OverridePlanStatus.ACTIVE.getId());
 
         sqlCache.update("overridePlan.approve", params);
@@ -332,7 +332,7 @@ public class OverridePlanService {
     public void inactivatePlan(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
         params.put("statusId", OverridePlanStatus.INACTIVE.getId());
 
         sqlCache.update("overridePlan.inactivate", params);
