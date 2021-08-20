@@ -112,6 +112,8 @@
       and ps.archived is not true
       and cpsst.process_step_status_type_id != 3 --include active and complete, not cancelled  process steps
       and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
+      and ppse.resource_id is not null
+      and ppse.resource_id = any(array[ :combined ]::int[])
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
@@ -182,8 +184,6 @@
             and pse.event_id  = any(array[ :eventIds ])
             and cpsst.process_step_status_type_id = :processStepStatusTypeId
             and cest.event_status_type_id = :eventStatusTypeId
-            and ppse.resource_id is not null
-            and ppse.resource_id = any(array[ :combined ]::int[])
     ]]>
   </schedule.getProjects>
 
