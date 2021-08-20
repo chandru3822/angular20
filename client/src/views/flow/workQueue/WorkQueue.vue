@@ -56,7 +56,9 @@
                     :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
                   {{wq.expectedTarget * 100 | currency('', 0)}}%
                 </div>
-                <div class="card-title-container text-left" :style="{'background-color': wq.color + '15' }">
+                <div class="card-title-container text-left"
+                     :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
+                     :style="{'background-color': wq.color + '15' }">
                   <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
                   <div class="card-count">{{ wq.workQueueCount }}</div>
                 </div>
@@ -275,9 +277,7 @@ export default {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
   text-align: center;
-  border-top-right-radius: 9px !important;
-  border-bottom-right-radius: 9px !important;
-  border-bottom-left-radius: 9px !important;
+  border-radius: 9px !important;
   margin-right: 48px;
   margin-bottom: 32px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
@@ -342,8 +342,14 @@ export default {
   padding-right: 24px;
   padding-left: 24px;
   border-top-right-radius: 9px !important;
+  border-top-left-radius: 9px !important;
   display: flex;
   align-items: center;
+}
+
+.card-title-container-no-metrics {
+  border-bottom-right-radius: 9px !important;
+  border-bottom-left-radius: 9px !important;
 }
 
 .card-title {
