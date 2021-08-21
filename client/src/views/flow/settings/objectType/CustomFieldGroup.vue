@@ -256,7 +256,6 @@
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
-                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.processStepName }}
@@ -270,7 +269,6 @@
                                   return-object
                                   autocomplete="off"
                                   @input="assignAncillaryCustomField(item)"
-                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
@@ -375,7 +373,6 @@
                                         height="35px"
                                         class="d-inline-block mr-3"
                                         @change="cf.hiddenPositionsChanged = true"
-                                        attach
                                       >
                                         <v-list-item
                                           slot="prepend-item"
