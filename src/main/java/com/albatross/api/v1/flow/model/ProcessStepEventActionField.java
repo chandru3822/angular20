@@ -11,8 +11,9 @@ import lombok.Setter;
 @Setter
 public class ProcessStepEventActionField {
 
-  private Long id, customFieldGroupAssignmentId, processStepEventActionId;
+  private Long id, customFieldGroupAssignmentId, processStepEventActionId, customFieldId;
   private String fieldName, groupName;
-  private Boolean archived, required;
+  private Boolean archived, required, optional;
+
 }
 

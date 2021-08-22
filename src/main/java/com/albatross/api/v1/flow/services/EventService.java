@@ -54,7 +54,7 @@ public class EventService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("resourceCustomFieldId", resourceCustomFieldId);
     sqlCache.update("event.saveResourceField", params);
   }
@@ -64,7 +64,7 @@ public class EventService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("eventId", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("event.delete", params);
   }
@@ -73,7 +73,7 @@ public class EventService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", event.getId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("name", event.getEventName());
     params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
     sqlCache.update("event.update", params);
@@ -83,7 +83,7 @@ public class EventService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("name", event.getEventName());
     params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
     Long id = sqlCache.updateReturningId("event.insert", params, "id").longValue();
@@ -126,7 +126,7 @@ public class EventService {
   public Optional<EventStatusType> saveCompanyEventStatus(EventStatusType status) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("rootEventStatusTypeId", status.getEventStatusTypeId());
     params.put("eventStatusType", status.getEventStatusType());
     params.put("companyId", currentUser.getCompanyId());
@@ -147,7 +147,7 @@ public class EventService {
   public void deleteCompanyEventStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
     sqlCache.update("event.deleteCompanyStatus", params);
@@ -159,7 +159,7 @@ public class EventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("eventId", eventId);
     params.put("companyEventStatusTypeId", companyEventStatusTypeId);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     Long id = sqlCache.updateReturningId("event.assignStatusToEvent", params, "id").longValue();
     return getEventCompanyProcessStepStatusType(id);

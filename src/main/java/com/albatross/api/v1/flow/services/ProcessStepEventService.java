@@ -57,7 +57,7 @@ public class ProcessStepEventService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("eventId", processStepEvent.getEventId());
     params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
     Long id = sqlCache.updateReturningId("processStepEvent.addEventToStep", params, "id").longValue();
@@ -70,7 +70,7 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("eventId", eventId);
     sqlCache.update("processStepEvent.updateStepEvent", params);
   }
@@ -79,18 +79,18 @@ public class ProcessStepEventService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     sqlCache.update("processStepEvent.deleteEventFromStep", params);
   }
 
   public Optional<ProcessStepEventAction> getStepEventAction(Long processStepEventActionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", processStepEventActionId);
-    Optional<ProcessStepEventAction> result = sqlCache.get("processStepEvent.getStepEventAction", params, ProcessStepEventAction.class);
+    Optional<ProcessStepEventAction> result = sqlCache.get("processStepEvent.getStepEventAction", params, new ProcessStepEventActionMapper<>(ProcessStepEventAction.class, om));
     return result;
   }
 
-  public Optional<ProcessStepEventAction> addStepEventAction(Long processStepId, Long eventId, ProcessStepEventAction processStepEventAction) {
+  public Optional<ProcessStepEventAction> saveStepEventAction(Long processStepId, Long eventId, ProcessStepEventAction processStepEventAction) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -100,7 +100,8 @@ public class ProcessStepEventService {
     params.put("requireStartTime", null != processStepEventAction.getRequireStartTime() ? processStepEventAction.getRequireStartTime() : false);
     params.put("requireEndTime", null != processStepEventAction.getRequireEndTime() ? processStepEventAction.getRequireEndTime() : false);
     params.put("requireResource", null != processStepEventAction.getRequireResource() ? processStepEventAction.getRequireResource() : false);
-    params.put("userId", currentUser.getId());
+    params.put("alwaysEnabled", null != processStepEventAction.getAlwaysEnabled() ? processStepEventAction.getAlwaysEnabled() : false);
+    params.put("userId", currentUser.trueUserId());
     params.put("processStepEventId", eventId);
 
     Long id;
@@ -109,9 +110,38 @@ public class ProcessStepEventService {
       id = processStepEventAction.getId();
       params.put("id", id);
       sqlCache.update("processStepEvent.updateStepEventAction", params);
+
+      if(null != processStepEventAction.getLogicListChanged() && processStepEventAction.getLogicListChanged()) {
+        // archive all old logic before saving new logic
+        sqlCache.update("processStepEvent.archiveOldLogic", params);
+
+        if (!processStepEventAction.getProcessStepEventLogicList().isEmpty()) {
+          // handle saving logic items.
+          // insert the new ones
+          int count = 0;
+          for (ProcessStepEventLogic logic : processStepEventAction.getProcessStepEventLogicList()) {
+            if (null != logic.getProcessStepEventRequirementId() && (null == logic.getProcessStepRequirementImmutable() || !logic.getProcessStepRequirementImmutable())) {
+              // update psr.immutable, if it is not already true. (don't have to do this for updates because it should already be true by now)
+              HashMap<String, Object> psrParams = new HashMap<>();
+              psrParams.put("id", logic.getProcessStepEventRequirementId());
+              sqlCache.update("processStepEventRequirement.setImmutable", psrParams);
+            }
+
+            HashMap<String, Object> logicParams = new HashMap<>();
+            logicParams.put("id", processStepEventAction.getId());
+            logicParams.put("processStepEventRequirementId", logic.getProcessStepEventRequirementId());
+            logicParams.put("operationTypeId", logic.getOperationTypeId());
+            logicParams.put("sqlOrder", count);
+            logicParams.put("createdById", currentUser.trueUserId());
+            sqlCache.update("processStepEvent.insertLogic", logicParams);
+            count++;
+          }
+        }
+      }
     } else {
       id = sqlCache.updateReturningId("processStepEvent.addStepEventAction", params, "id").longValue();
     }
+
     return getStepEventAction(id);
   }
 
@@ -119,43 +149,37 @@ public class ProcessStepEventService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     sqlCache.update("processStepEvent.deleteActionFromEvent", params);
   }
 
-  public Optional<ProcessStepEventActionField> addFieldToAction(Long eventId, Long actionId, Long cfgaId, Boolean required) {
+  public Long updateRequiredFieldStatus(Long actionId, ProcessStepEventActionField processStepEventActionField) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionId", actionId);
-    params.put("cfgaId", cfgaId);
-    params.put("required", required);
-    params.put("userId", currentUser.getId());
-    Long id = sqlCache.updateReturningId("processStepEvent.addFieldToAction", params, "id").longValue();
-    return getActionField(id);
-  }
+    params.put("userId", currentUser.trueUserId());
+    params.put("pseafId", processStepEventActionField.getId());
+    params.put("cfgaId", processStepEventActionField.getCustomFieldGroupAssignmentId());
+    params.put("required", processStepEventActionField.getRequired());
 
-  public void deleteFieldFromAction(Long eventId, Long actionId, Long fieldId) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldId", fieldId);
-    params.put("userId", currentUser.getId());
-    sqlCache.update("processStepEvent.deleteFieldFromAction", params);
-  }
+    //required = row in pseaf AND required = true
+    //optional = row in pseaf AND required = false
+    //neither  = no row in pseaf
 
-  public Optional<ProcessStepEventActionField> getActionField(Long fieldId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", fieldId);
-    Optional<ProcessStepEventActionField> result = sqlCache.get("processStepEvent.getActionField", params, ProcessStepEventActionField.class);
-    return result;
-  }
+    Long id = null;
+    //if there is already a record then update it IF required or optional is true
+    if(null != processStepEventActionField.getId() && (processStepEventActionField.getOptional() || processStepEventActionField.getRequired())) {
+      id = processStepEventActionField.getId();
+      sqlCache.update("processStepEvent.updateRequiredFieldStatus", params);
+    } else if (null != processStepEventActionField.getId() && !processStepEventActionField.getRequired() && !processStepEventActionField.getOptional()) {
+      //if there is already a record and not optional or required, then archive it
+      sqlCache.update("processStepEvent.archiveRequiredFieldStatus", params);
+    } else {
+      //otherwise add a new row
+      id = sqlCache.updateReturningId("processStepEvent.addRequiredFieldStatus", params, "id").longValue();
+    }
 
-  public List<CustomField> getAvailableFieldsForEvent(Long eventId, Long actionId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("eventId", eventId);
-    params.put("actionId", actionId);
-
-    List<CustomField> results = sqlCache.query("processStepEvent.getAvailableCustomFields", params, CustomField.class);
-    return results;
+    return id;
   }
 
   public static class ProcessStepEventMapper<T> extends BeanPropertyRowMapper<T> {
@@ -175,6 +199,22 @@ public class ProcessStepEventService {
       TypeReference<List<ProcessStepEventAction>> processStepEventActionRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepEventActions",
         new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
+    }
+  }
+
+  public static class ProcessStepEventActionMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepEventActionMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "processStepEventLogicList",
+        new JsonCollectionDeserializer(processStepEventLogicTypeRef, objectMapper));
     }
   }
 }

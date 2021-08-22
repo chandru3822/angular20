@@ -264,8 +264,6 @@ export default {
   },
   created () {
     this.getCustomFieldObjectTypes()
-    console.log('randaLogger A', this.hasSettingsAccess)
-    console.log('randaLogger B', this.$store.getters.userHasFeature('AVAILABILITY'))
   }
 }
 </script>

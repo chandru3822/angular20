@@ -1,6 +1,6 @@
 <template>
   <v-container class="pt-0">
-    <ProcessStepRequirements></ProcessStepRequirements>
+    <ProcessStepRequirements :callback="populateRequirements"></ProcessStepRequirements>
     <v-divider></v-divider>
     <v-row>
       <v-col cols="12">
@@ -930,6 +930,10 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    //populate requirements so that actions can use them any time they change from the requirements component
+    populateRequirements(reqs) {
+      this.requirements = reqs
+    },
     //ACTIONS
     filterItems(items) {
       return items.filter(i => !i.archived)

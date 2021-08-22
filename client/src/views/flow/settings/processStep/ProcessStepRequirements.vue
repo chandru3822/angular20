@@ -524,10 +524,20 @@
   import Sortable from "sortablejs";
 
   export default {
-    name: 'ProcessStepActions',
+    name: 'ProcessStepRequirements',
     mixins: [Vue2Filters.mixin],
-
+    props: {
+      eventRequirements: Boolean,
+      callback: Function
+    },
     mounted() {},
+    watch: {
+      requirements: function () {
+        //any time the requirements change, send back to parent component
+        console.log('requirements changed', this.requirements)
+        this.callback(this.requirements)
+      }
+    },
     data() {
       return {
         snackbar: {},
@@ -561,6 +571,7 @@
         selectedRequirementIndex: null,
         availableRequirementTypes: [],
         processStepId: this.$route.params.id,
+        processStepEventId: this.$route.params.eventId,
         companyId: this.$store.state.user.details.companyId,
         parentObjects: [],
         parent: {},
@@ -572,10 +583,13 @@
 
         requirements: [],
         availableFunctions: [],
+        apiUrl: ''
       }
     },
     computed: {},
     async created() {
+      //api = process step requirements OR process step event requirements
+      this.apiUrl = this.eventRequirements ? `/processStep/${this.processStepId}/event/${this.processStepEventId}/requirement` : `/processStep/${this.processStepId}/requirement`
       this.getRequirements()
     },
     methods: {
@@ -583,7 +597,7 @@
       async getRequirements() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/requirement`)
+          const {data} = await getRequest(this.apiUrl)
           this.requirements = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -872,7 +886,10 @@
             this.newRequirement.requirementValue = null
           }
 
-          const {data} = await postRequest(`/processStep/${this.processStepId}/requirement`, this.newRequirement)
+          if(this.eventRequirements) {
+            this.newRequirement.processStepEventId = this.processStepEventId
+          }
+          const {data} = await postRequest(this.apiUrl, this.newRequirement)
           this.requirements.push(data)
           this.selectedCustomField = {}
           this.selectedListOfValues = []
@@ -917,7 +934,11 @@
             requirement.requirementValue = null
           }
 
-          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
+          if(this.eventRequirements) {
+            this.newRequirement.processStepEventId = this.processStepEventId
+          }
+
+          const {data} = await putRequest(this.apiUrl, requirement)
           this.expanded = []
           // this forces the list to update the operator displayed ... using requirement = data did not work
           requirement.operatorType = data.operatorType
@@ -934,7 +955,8 @@
       async deleteRequirement(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`)
+          let url = this.apiUrl + `/${item.id}`
+          const {data} = await putRequest(url)
           if (data?.length > 0) {
             this.deleteError = true
             item.deleteConfirm = false

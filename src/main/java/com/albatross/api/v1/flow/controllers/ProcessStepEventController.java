@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.ProcessStepEvent;
 import com.albatross.api.v1.flow.model.ProcessStepEventAction;
 import com.albatross.api.v1.flow.model.ProcessStepEventActionField;
@@ -32,6 +31,11 @@ public class ProcessStepEventController {
     return processStepEventService.getStepEvents(stepId);
   }
 
+  @GetMapping(value = "/{psEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEvent> getEventDetails (@PathVariable Long psEventId) {
+    return processStepEventService.getProcessStepEvent(psEventId);
+  }
+
   @GetMapping(value = "/available", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepEvent> getAvailableEventsForStep (@PathVariable Long stepId) {
     return processStepEventService.getAvailableEventsForStep(stepId);
@@ -60,7 +64,7 @@ public class ProcessStepEventController {
   public Optional<ProcessStepEventAction> addStepEventAction (@PathVariable Long stepId,
                                  @PathVariable Long eventId,
                                  @RequestBody ProcessStepEventAction processStepEventAction) {
-    return processStepEventService.addStepEventAction(stepId, eventId, processStepEventAction);
+    return processStepEventService.saveStepEventAction(stepId, eventId, processStepEventAction);
   }
 
   @DeleteMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -68,26 +72,11 @@ public class ProcessStepEventController {
     processStepEventService.deleteActionFromEvent(actionId);
   }
 
-  @PostMapping(value = "/{eventId}/action/{actionId}/saveField/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepEventActionField> addFieldToAction(@PathVariable Long eventId,
-                                                                @PathVariable Long actionId,
-                                                                @PathVariable Long cfgaId,
-                                                                @RequestParam Boolean required) {
-    return processStepEventService.addFieldToAction(eventId, actionId, cfgaId, required);
-  }
-
-  @DeleteMapping(value = "/{eventId}/action/{actionId}/field/{fieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteFieldFromAction(@PathVariable Long eventId,
-                                    @PathVariable Long actionId,
-                                    @PathVariable Long fieldId) {
-    processStepEventService.deleteFieldFromAction(eventId, actionId, fieldId);
-  }
-
-  //custom field stuff
-  @GetMapping(value = "/{eventId}/action/{actionId}/availableFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getAvailableFieldsForEvent(@PathVariable Long eventId,
-                                                      @PathVariable Long actionId) {
-    return processStepEventService.getAvailableFieldsForEvent(eventId, actionId);
+  //fields
+  @PutMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Long updateRequiredFieldStatus (@PathVariable Long actionId,
+                                         @RequestBody ProcessStepEventActionField processStepEventActionField) {
+    return processStepEventService.updateRequiredFieldStatus(actionId, processStepEventActionField);
   }
 
 }

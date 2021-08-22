@@ -608,7 +608,18 @@ const router = new Router({
                   path: 'events',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "processStepEvents" */ './views/flow/settings/processStep/ProcessStepEvents.vue'),
-                }
+                  children: [
+                    {
+                      path: ':eventId',
+                      meta: {title: 'Albatross - Settings'},
+                      component: () => import (/* webpackChunkName: "processStepEvents" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
+                    }
+                  ]
+                }, {
+                  path: 'event/:eventId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "processStepEvents" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
+                },
               ]
             }, {
               path: 'eventStatuses',

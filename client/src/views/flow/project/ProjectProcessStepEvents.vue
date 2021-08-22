@@ -207,7 +207,7 @@
         </v-btn>
         <v-btn class="white--text save-btn mb-2 mr-2"
                color="primaryButton"
-               :disabled="!action.canPerformPpsStatusChange"
+               :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]"
                v-for="(action, i) in eventDetails.eventActions"
                :key="i">
@@ -330,11 +330,12 @@ export default {
       this.actionRequiresEnd = action?.requireEndTime
       this.actionRequiresResource = action?.requireResource
 
-      if (action?.requiredFields?.length > 0) {
+      let requiredFields = action?.customFields?.filter(cf => cf.required) || []
+      if (requiredFields.length > 0) {
         let fieldValueMissing = false
         this.selectedEvent?.customFieldGroups?.forEach(cfg => {
           cfg?.customFieldValues?.forEach(cf => {
-            let match = action?.requiredFields?.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+            let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
             if (match) {
               if ( // check each data type to see if it has a value
                 (cf.dataTypeId === 1 && null == cf.dateValue) ||

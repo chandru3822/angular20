@@ -469,7 +469,6 @@ export default {
     },
     async saveDetailView(cf) {
       //because the the dumb dom i have to flip the detailView before I save it
-      console.log('randaLogger will save', !cf.detailView)
       let detailViewValue = !cf.detailView
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

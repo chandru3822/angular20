@@ -15,8 +15,8 @@ public class ProcessStepEventAction {
 
   private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId, rootProcessStepStatusTypeId; //rootProcessStepStatusTypeId needed to determine if action can be run
   private String actionName, processStepStatusType, eventStatusType;
-  private Boolean archived, requireStartTime, requireEndTime, requireResource, canPerformPpsStatusChange;
-  private List<ProcessStepEventActionField> requiredFields;
-  private List<ProcessStepEventActionField> optionalFields;
+  private Boolean archived, requireStartTime, requireEndTime, requireResource, canPerform, logicListChanged, alwaysEnabled;
+  private List<ProcessStepEventActionField> customFields;
+  private List<ProcessStepEventLogic> processStepEventLogicList;
 }
 

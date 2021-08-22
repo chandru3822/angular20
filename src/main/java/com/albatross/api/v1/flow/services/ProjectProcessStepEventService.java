@@ -78,22 +78,32 @@ public class ProjectProcessStepEventService {
         for(ProcessStepEventAction action : result.get().getEventActions()) {
           //if the action doesn't change the pps status then allow it
           //or if the root pps status is currently active, then allow
-          if(null == action.getCompanyProcessStepStatusTypeId() || result.get().getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
-            action.setCanPerformPpsStatusChange(true);
-          }
-          //@randa - i dont think we can allow event actions on non-active pps, cuz of auto-triggers
-          //else if(result.get().getRootProjectProcessStepStatusTypeId().equals(action.getRootProcessStepStatusTypeId())) {
-            //if the action would change the pps status to a status of the same root type, then allow it
-//            action.setCanPerformPpsStatusChange(true);
-//          }
-        else {
-            action.setCanPerformPpsStatusChange(false);
-          }
+
+          //todo: now do the action requirements checks for fns and pps values and such
+          action.setCanPerform(canPerformEventAction(result.get(), action));
         }
       }
     }
     return result;
   }
+
+  public Boolean canPerformEventAction(ProjectProcessStepEvent event, ProcessStepEventAction action) {
+    //todo: replicate the ProjectProcessStepService.java ln 488 - only trigger actions once
+
+    //Only perform event actions on active project process steps
+    if(!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+      return false;
+    }
+
+    //todo: replicate behavior from ProjectProcessStepService.java ln 516
+    //if there is logic, then block for now.  will need to check that logic later
+    if(!action.getProcessStepEventLogicList().isEmpty()) {
+      return false;
+    }
+
+    return true;
+  }
+
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(ProjectProcessStepEvent ppsEvent) {
     User currentUser = securityService.getCurrentUser();
 
