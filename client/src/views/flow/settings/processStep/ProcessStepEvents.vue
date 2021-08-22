@@ -46,10 +46,12 @@
               :headers="headers"
               :items="filterEvents()"
               :items-per-page="-1"
+              :sort-desc="[false]"
+              :sort-by="['displayOrder']"
               :mobile-breakpoint="0"
-              single-expand
               hide-default-footer
-              class="elevation-1 fix-column-width-bug square-card"
+              disable-sort
+              class="event-table elevation-1 fix-column-width-bug square-card"
             >
               <template #no-data>
                 No events for this process step
@@ -61,6 +63,11 @@
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
+                  <td style="width: 50px">
+                    <v-btn text v-if="userCanEdit" icon small class="handle">
+                      <v-icon>drag_handle</v-icon>
+                    </v-btn>
+                  </td>
                   <td class="text-left">{{item.eventName}}</td>
                   <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
@@ -123,6 +130,9 @@
 <script>
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
+  import Sortable from "sortablejs"
+  import cloneDeep from 'lodash.clonedeep'
+  import orderBy from 'lodash.orderby'
   import {
     getRequest,
     deleteRequest,
@@ -135,6 +145,33 @@
   export default {
     name: 'ProcessStepEvents',
     mixins: [Vue2Filters.mixin],
+    mounted() {
+      let table = document.querySelector('.event-table tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({newIndex, oldIndex}) {
+          const rowSelected = _self.events.splice(oldIndex, 1)[0]
+          _self.events.splice(newIndex, 0, rowSelected)
+          let rowsClone = cloneDeep(_self.events)
+
+          let rowsToSave = []
+          rowsClone.forEach((r, idx) => {
+            //check if the row needs to be saved before updating display order
+            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+            //update display order
+            r.displayOrder = idx
+            //save only rows that changed
+            if (save) {
+              _self.events[idx].newDisplayOrder = idx
+              rowsToSave.push(r)
+            }
+          })
+          _self.saveRowChanges(rowsToSave)
+        }
+      })
+    },
     data() {
       return {
         snackbar: {},
@@ -146,6 +183,7 @@
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         headers: [
+          {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
           {text: 'Event', value: 'eventName', show: true},
           {text: 'Initial Status', value: 'initialEventStatusType', show: true},
           {text: null, value: 'icons', show: true}
@@ -190,9 +228,10 @@
         }
       },
       filterEvents() {
-        return this.events.filter(e => {
-          return !e.archived
-        })
+        // return this.events.filter(e => {
+        //   return !e.archived
+        // })
+        return orderBy(this.events.filter(e => { return !e.archived}), [e => e.displayOrder])
       },
       async addEventToProcessStep() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -226,6 +265,22 @@
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveRowChanges(rows) {
+        if (rows?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await putRequest(`/processStep/${this.processStepId}/event/order`, rows)
+            this.snackbar = getSnackbar('SUCCESS', 'Event Order Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Event Order')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
     }

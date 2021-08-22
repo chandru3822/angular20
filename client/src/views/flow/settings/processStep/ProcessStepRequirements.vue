@@ -534,7 +534,6 @@
     watch: {
       requirements: function () {
         //any time the requirements change, send back to parent component
-        console.log('requirements changed', this.requirements)
         this.callback(this.requirements)
       }
     },

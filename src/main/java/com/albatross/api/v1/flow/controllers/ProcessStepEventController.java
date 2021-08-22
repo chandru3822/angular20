@@ -54,6 +54,11 @@ public class ProcessStepEventController {
     processStepEventService.updateStepEvent(stepId, eventId, processStepEvent);
   }
 
+  @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateEventOrder(@RequestBody List<ProcessStepEvent> events) {
+    processStepEventService.updateEventOrder(events);
+  }
+
   @DeleteMapping(value = "/{processStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteEventFromStep (@PathVariable Long processStepEventId) {
     processStepEventService.deleteEventFromStep(processStepEventId);
@@ -65,6 +70,11 @@ public class ProcessStepEventController {
                                  @PathVariable Long eventId,
                                  @RequestBody ProcessStepEventAction processStepEventAction) {
     return processStepEventService.saveStepEventAction(stepId, eventId, processStepEventAction);
+  }
+
+  @PutMapping(value = "/{eventId}/action/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateEventActionOrder(@RequestBody List<ProcessStepEventAction> actions) {
+    processStepEventService.updateEventActionOrder(actions);
   }
 
   @DeleteMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)

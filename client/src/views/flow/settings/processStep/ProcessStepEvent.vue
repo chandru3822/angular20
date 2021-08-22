@@ -72,14 +72,16 @@
         <v-data-table
           v-if="!addNewEventAction"
           :headers="actionHeaders"
-          disable-sort
           :items="filterEventActions()"
           :items-per-page="-1"
+          :sort-desc="[false]"
+          :sort-by="['displayOrder']"
           :mobile-breakpoint="0"
           single-expand
+          disable-sort
           :expanded.sync="expanded"
           hide-default-footer
-          class="elevation-1 fix-column-width-bug square-card"
+          class="event-actions-table elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
             No actions for this event
@@ -238,6 +240,11 @@
 
           <template #item="{ item: action, index }">
             <tr :class="{'shaded-row': index % 2}">
+              <td style="width: 50px">
+                <v-btn text v-if="userCanEdit" icon small class="handle">
+                  <v-icon>drag_handle</v-icon>
+                </v-btn>
+              </td>
               <td class="text-left">{{action.actionName}}</td>
               <td class="text-left">{{action.eventStatusType || 'N/A'}}</td>
               <td class="text-left">{{action.processStepStatusType || 'N/A'}}</td>
@@ -310,6 +317,7 @@
   import {getAvailableForEvent} from "@/services/eventStatusTypeService";
   import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessStepRequirements";
   import orderBy from 'lodash.orderby'
+  import Sortable from "sortablejs"
   import cloneDeep from 'lodash.clonedeep'
 
   export default {
@@ -317,6 +325,34 @@
     mixins: [Vue2Filters.mixin],
     components: {
       ProcessStepRequirements
+    },
+    mounted() {
+      let table = document.querySelector('.event-actions-table tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({newIndex, oldIndex}) {
+          const rowSelected = _self.selectedEvent?.processStepEventActions.splice(oldIndex, 1)[0]
+          _self.selectedEvent?.processStepEventActions.splice(newIndex, 0, rowSelected)
+          let rowsClone = cloneDeep(_self.selectedEvent?.processStepEventActions)
+
+          let rowsToSave = []
+          rowsClone.forEach((r, idx) => {
+            //check if the row needs to be saved before updating display order
+            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+            //update display order
+            r.displayOrder = idx
+            //save only rows that changed
+            if (save) {
+              let rows = _self.selectedEvent?.processStepEventActions
+              rows[idx].newDisplayOrder = idx
+              rowsToSave.push(r)
+            }
+          })
+          _self.saveRowChanges(rowsToSave)
+        }
+      })
     },
     data() {
       return {
@@ -338,6 +374,7 @@
         requiredFieldCfga: null,
         optionalFieldCfga: null,
         actionHeaders: [
+          {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
           {text: 'Action Name', value: 'actionName', show: true},
           {text: 'Change Event Status To', value: 'companyEventStatusType', show: true},
           {text: 'Change Process Step Status To', value: 'companyProcessStepStatusType', show: true},
@@ -422,9 +459,10 @@
         }
       },
       filterEventActions() {
-        return this.selectedEvent?.processStepEventActions.filter(e => {
-          return !e.archived
-        })
+        // return this.selectedEvent?.processStepEventActions.filter(e => {
+        //   return !e.archived
+        // })
+        return orderBy(this.selectedEvent?.processStepEventActions.filter(psea => { return !psea.archived}), [psea => psea.displayOrder])
       },
       async saveEventDetails(psEvent) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -589,12 +627,7 @@
         }
       },
       async alterRequiredFlag(requiredChanged, item, actionId) {
-        //friggin dom. value hasn't changed before it gets here - this cannot be the right way to handle this
         //flip the flags as they change
-
-        console.log('randaLogger required', item.required)
-        console.log('randaLogger optional', item.optional)
-
         if(requiredChanged && item.required) {
           item.optional = false
           this.optionalKey++
@@ -605,7 +638,6 @@
 
         try {
           const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}`, item)
-          console.log('randaLogger',data)
           //resetting the id in case it got archived/added a new one, etc. this will keep multiple updates to the same field working without refreshing the screen
           item.id = data
           this.snackbar = getSnackbar('SUCCESS', 'Saved')
@@ -616,7 +648,23 @@
           this.snackbar = getSnackbar('ERROR', 'Error Saving')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async saveRowChanges(rows) {
+        if (rows?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/order`, rows)
+            this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
     }
 
   }

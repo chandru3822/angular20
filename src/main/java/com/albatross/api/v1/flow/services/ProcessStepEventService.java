@@ -75,6 +75,19 @@ public class ProcessStepEventService {
     sqlCache.update("processStepEvent.updateStepEvent", params);
   }
 
+  public void updateEventOrder(List<ProcessStepEvent> events) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    for(ProcessStepEvent event : events) {
+      params.put("displayOrder", event.getDisplayOrder());
+      params.put("modifiedById", currentUser.trueUserId());
+      params.put("id", event.getId());
+      //save each display_order
+      sqlCache.update("processStepEvent.updateDisplayOrder", params);
+    }
+  }
+
   public void deleteEventFromStep(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -143,6 +156,19 @@ public class ProcessStepEventService {
     }
 
     return getStepEventAction(id);
+  }
+
+  public void updateEventActionOrder(List<ProcessStepEventAction> actions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    for(ProcessStepEventAction action : actions) {
+      params.put("displayOrder", action.getDisplayOrder());
+      params.put("modifiedById", currentUser.trueUserId());
+      params.put("id", action.getId());
+      //save each display_order
+      sqlCache.update("processStepEvent.updateActionDisplayOrder", params);
+    }
   }
 
   public void deleteActionFromEvent(Long id) {
