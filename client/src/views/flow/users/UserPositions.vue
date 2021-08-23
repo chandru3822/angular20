@@ -26,7 +26,6 @@
                             label="Positions"
                             item-text="position"
                             item-value="id"
-                            attach
                             @input="populateHierarchy(newPosition, true)"/>
             <div v-if="newPositionHierarchyPopulated">
               <div v-for="(f, index) in filters" :key="index">
@@ -37,7 +36,6 @@
                   :label="f.levelName"
                   item-value="id"
                   item-text="orgName"
-                                attach
                 >
                   <template slot="selection" slot-scope="{ item }">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
@@ -118,8 +116,7 @@
                               label="Positions"
                               @input="populateHierarchy(item, false)"
                               item-text="position"
-                              item-value="id"
-                              attach/>
+                              item-value="id"/>
               <label>Primary:</label>
               <input type="checkbox" class="ml-3 mb-4" v-model="item.primaryFlag"
                      :readonly="item.primary || !userCanEdit" :disabled="item.primary || !userCanEdit">
@@ -134,7 +131,6 @@
                           :label="f.levelName"
                           item-text="orgName"
                           item-value="id"
-                          attach
                 >
                   <template slot="selection" slot-scope="{ item }">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
