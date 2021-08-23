@@ -185,7 +185,7 @@ public class ProjectProcessStepEventService {
     Optional<ProjectProcessStepEvent> event = sqlCache.get("projectProcessStepEvent.getBasic", eventParams, ProjectProcessStepEvent.class);
 
     if (event.isPresent()) {
-      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(event.getProjectProcessStepId(), requirementIds, true);
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(event.get().getProjectProcessStepId(), requirementIds, true);
 
       boolean canPerformAction = canPerformEventAction(event.get(), processStepEventAction, requirements);
 
