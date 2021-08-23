@@ -4,6 +4,23 @@
     values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById)
   ]]></projectProcessStepEvent.insertEvent>
 
+  <projectProcessStepEvent.getBasic><![CDATA[
+      select ppse.*,
+             cest.event_status_type,
+             cpsst2.process_step_status_type_id as root_project_process_step_status_type_id,
+             e.event_name,
+             e.resource_custom_field_id,
+             pse.event_id,
+             pse.unique_behavior_type_id
+      from flow.project_process_step_event ppse
+             inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+             inner join flow.company_process_step_status_type cpsst2 on pps.company_process_step_status_type_id = cpsst2.id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.event e on pse.event_id = e.id
+      where ppse.id = :id
+  ]]></projectProcessStepEvent.getBasic>
+
   <projectProcessStepEvent.get><![CDATA[
     select ppse.*,
            cest.event_status_type,

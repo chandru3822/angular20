@@ -71,17 +71,16 @@ public class ProjectProcessStepEventService {
     params.put("id", id);
 
     Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.get", params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
-    if(result.isPresent()) {
+    if (result.isPresent()) {
       ProjectProcessStepEvent event = result.get();
       event.setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
 
-      if(null != event.getEventActions() && !event.getEventActions().isEmpty()) {
+      if (null != event.getEventActions() && !event.getEventActions().isEmpty()) {
         //if there are event actions, then check if the pps status change can be performed here
-        for(ProcessStepEventAction action : event.getEventActions()) {
+        for (ProcessStepEventAction action : event.getEventActions()) {
           //if the action doesn't change the pps status then allow it
           //or if the root pps status is currently active, then allow
 
-          //todo: now do the action requirements checks for fns and pps values and such
           //get the requirements here - sames as humes, pass to canPermform
           List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
             .filter(step -> step.getProcessStepEventRequirementId() != null)
@@ -104,14 +103,14 @@ public class ProjectProcessStepEventService {
     }
 
     //Only perform event actions on active project process steps
-    if(!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+    if (!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
       return false;
     }
 
     //if there is logic, then check it all bitch
-    if(!action.getProcessStepEventLogicList().isEmpty()) {
+    if (!action.getProcessStepEventLogicList().isEmpty()) {
 
-      for (ProjectProcessStepRequirement r: requirements) {
+      for (ProjectProcessStepRequirement r : requirements) {
         try {
           r.setFulfilled(projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId()));
         } catch (Exception e) {
@@ -124,7 +123,7 @@ public class ProjectProcessStepEventService {
       StringBuilder logicString = new StringBuilder();
 
       // This should now just be creating logic by making a string of all the requirements in order and replacing requirementIds with their respective true/false value
-      for (ProcessStepEventLogic logicStep: action.getProcessStepEventLogicList()) {
+      for (ProcessStepEventLogic logicStep : action.getProcessStepEventLogicList()) {
         if (logicStep.getOperationCode() != null) {
           logicString.append(" ").append(logicStep.getOperationCode()).append(" ");
         } else if (logicStep.getProcessStepEventRequirementId() != null) {
@@ -176,62 +175,79 @@ public class ProjectProcessStepEventService {
      * do i need to perform auto triggers again if the PS status changed?  ...probably
      */
     //todo: recheck if they are allowed to run the action?
+    List<Long> requirementIds = Objects.requireNonNull(processStepEventAction).getProcessStepEventLogicList().stream()
+      .filter(step -> step.getProcessStepEventRequirementId() != null)
+      .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+      .collect(Collectors.toList());
 
-    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> eventParams = new HashMap<>();
+    eventParams.put("id", eventId);
+    Optional<ProjectProcessStepEvent> event = sqlCache.get("projectProcessStepEvent.getBasic", eventParams, ProjectProcessStepEvent.class);
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
-    params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
-    params.put("actionName", processStepEventAction.getActionName());
-    params.put("userId", currentUser.getId());
-    params.put("ppsId", ppsId);
-    params.put("projectProcessStepEventId", eventId);
+    if (event.isPresent()) {
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(event.getProjectProcessStepId(), requirementIds, true);
 
-    Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(eventId);
-    if(ppse.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
+      boolean canPerformAction = canPerformEventAction(event.get(), processStepEventAction, requirements);
+
+      //double check if action can be run, if so, run it, otherwise throw an error
+      if (canPerformAction) {
+        User currentUser = securityService.getCurrentUser();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
+        params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
+        params.put("actionName", processStepEventAction.getActionName());
+        params.put("userId", currentUser.getId());
+        params.put("ppsId", ppsId);
+        params.put("projectProcessStepEventId", eventId);
+
+        Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(eventId);
+        if (ppse.isEmpty()) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
+        } else {
+          //check if event is already in the desired status, then update the ppse status to the desired status if not already in it
+          if (null != processStepEventAction.getCompanyEventStatusTypeId() && !ppse.get().getCompanyEventStatusTypeId().equals(processStepEventAction.getCompanyEventStatusTypeId())) {
+            sqlCache.update("projectProcessStepEvent.updateCompanyEventStatus", params);
+          }
+        }
+
+        ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+        //check if pps is already in the desired status, then update the pps status to the desired status if not already in it
+        if (null != processStepEventAction.getCompanyProcessStepStatusTypeId() && !pps.getCompanyProcessStepStatusTypeId().equals(processStepEventAction.getCompanyProcessStepStatusTypeId())) {
+          //do some validation here:
+          //if pps is not active, then dont allow this.
+          if (!pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot run this action. Process Step Status must be Active.", new Exception());
+          }
+          //update the pps status (if the new status is cancel, unset the primary flag)
+          params.put("primaryFlag", !processStepEventAction.getRootProcessStepStatusTypeId().equals(ProcessStepStatusType.CANCELLED.id));
+          sqlCache.update("projectProcessStepEvent.updatePpsStatus", params);
+
+          //if the new status was cancel, check for a single existence of this PPS type in Complete status and set as primary if only one found
+          params.put("projectId", pps.getProjectId());
+          params.put("processStepId", pps.getProcessStepId());
+          sqlCache.update("projectProcessStepEvent.updatePrimaryIfOnlyOne", params);
+
+          //if the new status was a root ACTIVE status then run pps auto triggers
+          //only run if the referring project process step is active
+          if (pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+            projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
+          }
+        }
+
+        //if we made it to here then insert a record of having run the event
+        params.put("processStepEventActionId", processStepEventAction.getId());
+        params.put("createdById", currentUser.getId());
+        params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
+        sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
+
+        return ResponseEntity.ok(getPpsEvent(eventId));
+      } else {
+        throw new ResponseStatusException(HttpStatus.PRECONDITION_FAILED, "The requirements for this event action were not met.", new Exception());
+      }
     } else {
-      //check if event is already in the desired status, then update the ppse status to the desired status if not already in it
-      if(null != processStepEventAction.getCompanyEventStatusTypeId() && !ppse.get().getCompanyEventStatusTypeId().equals(processStepEventAction.getCompanyEventStatusTypeId())) {
-        sqlCache.update("projectProcessStepEvent.updateCompanyEventStatus", params);
-      }
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This event could not be found.", new Exception());
     }
-
-    ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
-    //check if pps is already in the desired status, then update the pps status to the desired status if not already in it
-    if(null != processStepEventAction.getCompanyProcessStepStatusTypeId() && !pps.getCompanyProcessStepStatusTypeId().equals(processStepEventAction.getCompanyProcessStepStatusTypeId())) {
-      //do some validation here:
-      //if pps is not active, then dont allow this.
-      if(!pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot run this action. Process Step Status must be Active.", new Exception());
-      }
-      //update the pps status (if the new status is cancel, unset the primary flag)
-      params.put("primaryFlag", !processStepEventAction.getRootProcessStepStatusTypeId().equals(ProcessStepStatusType.CANCELLED.id));
-      sqlCache.update("projectProcessStepEvent.updatePpsStatus", params);
-
-      //if the new status was cancel, check for a single existence of this PPS type in Complete status and set as primary if only one found
-      params.put("projectId", pps.getProjectId());
-      params.put("processStepId", pps.getProcessStepId());
-      sqlCache.update("projectProcessStepEvent.updatePrimaryIfOnlyOne", params);
-
-      //if the new status was a root ACTIVE status then run pps auto triggers
-      //only run if the referring project process step is active
-      if(pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
-        projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
-      }
-    }
-
-    //if we made it to here then insert a record of having run the event
-    params.put("processStepEventActionId", processStepEventAction.getId());
-    params.put("createdById", currentUser.getId());
-    params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
-    sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
-
-
-    //todo: pps auto triggers here
-
-    return ResponseEntity.ok(getPpsEvent(eventId));
-
   }
 
   public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {
@@ -256,7 +272,7 @@ public class ProjectProcessStepEventService {
 
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    String key = String.format(user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
@@ -301,11 +317,13 @@ public class ProjectProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {};
+      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "eventActions",
         new JsonCollectionDeserializer(eventActionsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "availableResources",
         new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
     }
