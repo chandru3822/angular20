@@ -174,7 +174,6 @@ public class ProjectProcessStepEventService {
      * set the process step to the desired status IF not already in that status
      * do i need to perform auto triggers again if the PS status changed?  ...probably
      */
-    //todo: recheck if they are allowed to run the action?
     List<Long> requirementIds = Objects.requireNonNull(processStepEventAction).getProcessStepEventLogicList().stream()
       .filter(step -> step.getProcessStepEventRequirementId() != null)
       .map(ProcessStepEventLogic::getProcessStepEventRequirementId)

@@ -131,6 +131,10 @@
                     <td>Require Resource</td>
                     <td><input type="checkbox" class="ml-2" v-model="action.requireResource"></td>
                   </tr>
+                  <tr>
+                    <td class="pt-3">Allow Multiple Uses</td>
+                    <td class="pt-3"><input type="checkbox" class="ml-2" v-model="action.multipleUses"></td>
+                  </tr>
                 </table>
               </v-card>
 
@@ -590,10 +594,6 @@
           action.processStepEventLogicList = action.processStepEventLogicList.filter(l => {
             return !l.archived
           })
-          if (!action.triggerAutomatically) {
-            //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
-            action.timeBasedTrigger = false
-          }
 
           // build the list of psr's that need to be set to immutable  do that if the save is successful
           const psrListToUpdate = action.processStepEventLogicList.filter(l => {

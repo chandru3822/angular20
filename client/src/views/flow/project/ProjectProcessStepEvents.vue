@@ -10,7 +10,7 @@
     </v-toolbar>
     <v-card class="pa-4 square-card">
       <div v-if="!selectedEvent.id">
-        <div v-for="pse in processStepEvents" class="mb-2">
+        <div v-for="pse in processStepEvents" class="mb-2" v-if="!eventsLoading">
           <v-btn color="primaryCustom" class="white--text pl-2" @click="addEvent(pse)">
             <v-icon color="white" class="mr-2">add</v-icon>
             {{ pse.eventName }}
@@ -22,7 +22,7 @@
           :items-per-page="-1"
           :mobile-breakpoint="0"
           hide-default-footer
-          hide-default-header
+          disable-sort
           :loading="eventsLoading"
           class="elevation-0"
         >
@@ -313,7 +313,6 @@ export default {
   computed: {},
   methods: {
     closeEventWindow() {
-      this.projectProcessStepEvents[this.selectedEventIndex].eventStatusType = this.eventDetails.eventStatusType
       this.selectedEvent = {}
       this.eventDetails = {}
       this.selectedEventIndex = null
@@ -492,6 +491,10 @@ export default {
       try {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
         this.eventDetails = data
+
+        //populate the event from the previous list so that it will be right if they click the X
+        this.projectProcessStepEvents[this.selectedEventIndex] = this.eventDetails
+
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
           this.getRoundRobinNumDays()

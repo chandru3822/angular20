@@ -128,6 +128,7 @@ where pse.process_step_id = :processStepId
                                 psea.archived,
                                 psea.display_order as "displayOrder",
                                 psea.always_enabled as "alwaysEnabled",
+                                psea.multiple_uses as "multipleUses",
                                 coalesce((
                                  SELECT array_to_json(array_agg(row_to_json(logic)))
                                  FROM (
@@ -229,6 +230,7 @@ where pse.process_step_id = :processStepId
           require_end_time = :requireEndTime,
           require_resource = :requireResource,
           always_enabled = :alwaysEnabled,
+          multiple_uses = :multipleUses,
           company_process_step_status_type_id = :companyProcessStepStatusTypeId,
           modified_by_id = :userId,
           date_modified = now()
