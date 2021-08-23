@@ -95,12 +95,16 @@ public class SecurityService implements UserDetailsService {
       } else if (p instanceof UserAccountDetails) {
         UserAccountDetails details = (UserAccountDetails) p;
 
-        // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party API access feature
         if (details.getId().equals(SystemSettings.CRON_USER.getId())) {
+          // @TODO: Once we start onboarding a second company, we will need a cron user per company
           user = new User();
-          user.setCompanyId(details.getCompanyId());
           user.setId(details.getId());
+          user.setCompanyId(3L);
+          user.setHighestCompanyId(3L);
+          user.setParentCompanyId(3L);
+          user.setHighestParentCompanyId(3L);
         } else if (details.getId().equals(SystemSettings.BR_SYSTEM_USER.getId())) {
+          // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party API access feature
           user = new User();
           user.setCompanyId(3L);
           user.setHighestCompanyId(3L);
