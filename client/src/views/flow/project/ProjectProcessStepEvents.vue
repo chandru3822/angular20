@@ -36,7 +36,7 @@
 
           <template #item="{ item, index }">
             <tr class="clickable text-left" :class="{'shaded-row': projectProcessStepEvents.indexOf(item) % 2}"
-                @click="[selectedEvent = item, selectedEventIndex = index, getEventCfgs(item), getEventDetails(item)]">
+                @click="[selectedEvent = item, getEventCfgs(item), getEventDetails(item)]">
               <td class="text-left">{{ item.eventName }}</td>
               <td class="text-left">{{ item.eventStatusType }}</td>
               <td class="text-left">{{ item.startTime | formatDate('timestamp') }}</td>
@@ -259,7 +259,6 @@ export default {
     return {
       snackbar: {},
       selectedEvent: {},
-      selectedEventIndex: null,
       attemptedAction: {},
       companyEventStatuses: [],
       eventActionMissingRequirements: false,
@@ -315,7 +314,6 @@ export default {
     closeEventWindow() {
       this.selectedEvent = {}
       this.eventDetails = {}
-      this.selectedEventIndex = null
     },
     getResourceRequirement() {
       if (this.actionRequiresResource && !this.eventDetails.resourceId && !this.eventSaveOverrideRequired) {
@@ -492,8 +490,13 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
         this.eventDetails = data
 
-        //populate the event from the previous list so that it will be right if they click the X
-        this.projectProcessStepEvents[this.selectedEventIndex] = this.eventDetails
+        if(this.selectedEvent?.id != null) {
+          //populate the event into the previous list so that it will be right if they click the X
+          //get selected event index
+          let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.eventDetails.id)
+          console.log('randaLogger INDEX FACE: ', index)
+          this.projectProcessStepEvents[index] = this.eventDetails
+        }
 
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
