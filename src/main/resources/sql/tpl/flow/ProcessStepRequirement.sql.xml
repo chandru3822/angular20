@@ -272,6 +272,10 @@
     select * from flow.get_project_process_step_requirements_with_values(:projectProcessStepId::integer, :requirementIds::integer[])
   ]]></processStepRequirement.getRequirementsWithValuesByProjectProcessStepId>
 
+  <processStepRequirement.getEventActionRequirementsWithValuesByProjectProcessStepId><![CDATA[
+    select * from flow.get_project_process_step_event_requirements_with_values(:projectProcessStepId::integer, :requirementIds::integer[])
+  ]]></processStepRequirement.getEventActionRequirementsWithValuesByProjectProcessStepId>
+
   <processStepRequirement.deleteRequirement><![CDATA[
       update flow.process_step_requirement
         set modified_by_id = :modifiedById,

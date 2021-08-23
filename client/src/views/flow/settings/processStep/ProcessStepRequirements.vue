@@ -229,6 +229,7 @@
               :items="filterRequirements()"
               :items-per-page="-1"
               :mobile-breakpoint="0"
+              disable-sort
               single-expand
               :expanded.sync="expanded"
               hide-default-footer

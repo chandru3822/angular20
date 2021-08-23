@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -28,10 +30,8 @@ import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 //@TODO: Had to make private functions public in this class to be able to unit test due to this issue. https://github.com/powermock/powermock/issues/929
@@ -46,6 +46,7 @@ public class ProjectProcessStepEventService {
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
+  private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
   private final AttachmentService attachmentService;
   private final AmazonS3 s3;
   private final ObjectMapper om;
@@ -53,7 +54,7 @@ public class ProjectProcessStepEventService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
-  public Optional<ProjectProcessStepEvent> insertPpsEvent(Long projectProcessStepId, ProcessStepEvent processStepEvent) {
+  public Optional<ProjectProcessStepEvent> insertPpsEvent(Long projectProcessStepId, ProcessStepEvent processStepEvent) throws Exception {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
@@ -65,46 +66,91 @@ public class ProjectProcessStepEventService {
     return getPpsEvent(id);
   }
 
-  public Optional<ProjectProcessStepEvent> getPpsEvent(Long id) {
+  public Optional<ProjectProcessStepEvent> getPpsEvent(Long id) throws Exception {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
     Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.get", params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
     if(result.isPresent()) {
-      result.get().setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
+      ProjectProcessStepEvent event = result.get();
+      event.setCustomFieldGroups(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
 
-      if(null != result.get().getEventActions() && !result.get().getEventActions().isEmpty()) {
+      if(null != event.getEventActions() && !event.getEventActions().isEmpty()) {
         //if there are event actions, then check if the pps status change can be performed here
-        for(ProcessStepEventAction action : result.get().getEventActions()) {
+        for(ProcessStepEventAction action : event.getEventActions()) {
           //if the action doesn't change the pps status then allow it
           //or if the root pps status is currently active, then allow
 
           //todo: now do the action requirements checks for fns and pps values and such
-          action.setCanPerform(canPerformEventAction(result.get(), action));
+          //get the requirements here - sames as humes, pass to canPermform
+          List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
+            .filter(step -> step.getProcessStepEventRequirementId() != null)
+            .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+            .collect(Collectors.toList());
+
+          List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(event.getProjectProcessStepId(), requirementIds, true);
+
+          action.setCanPerform(canPerformEventAction(event, action, requirements));
         }
       }
     }
     return result;
   }
 
-  public Boolean canPerformEventAction(ProjectProcessStepEvent event, ProcessStepEventAction action) {
-    //todo: replicate the ProjectProcessStepService.java ln 488 - only trigger actions once
+  public Boolean canPerformEventAction(ProjectProcessStepEvent event, ProcessStepEventAction action, List<ProjectProcessStepRequirement> requirements) throws Exception {
+    // Allow actions to be triggered only once per PPS
+    if (action.getAlreadyTriggered() && !action.getMultipleUses()) {
+      return false;
+    }
 
     //Only perform event actions on active project process steps
     if(!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
       return false;
     }
 
-    //todo: replicate behavior from ProjectProcessStepService.java ln 516
-    //if there is logic, then block for now.  will need to check that logic later
+    //if there is logic, then check it all bitch
     if(!action.getProcessStepEventLogicList().isEmpty()) {
-      return false;
+
+      for (ProjectProcessStepRequirement r: requirements) {
+        try {
+          r.setFulfilled(projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId()));
+        } catch (Exception e) {
+          log.error(String.format("PPSE: Exception while parsing date requirement value for process step event requirement ID: %s", r.getId()));
+          e.printStackTrace();
+          throw e;
+        }
+      }
+
+      StringBuilder logicString = new StringBuilder();
+
+      // This should now just be creating logic by making a string of all the requirements in order and replacing requirementIds with their respective true/false value
+      for (ProcessStepEventLogic logicStep: action.getProcessStepEventLogicList()) {
+        if (logicStep.getOperationCode() != null) {
+          logicString.append(" ").append(logicStep.getOperationCode()).append(" ");
+        } else if (logicStep.getProcessStepEventRequirementId() != null) {
+          Optional<ProjectProcessStepRequirement> requirement = requirements.stream().filter(r -> r.getId().equals(logicStep.getProcessStepEventRequirementId())).findFirst();
+          requirement.ifPresent(r -> logicString.append(r.getFulfilled().toString()));
+        }
+      }
+
+      ExpressionParser parser = new SpelExpressionParser();
+      if (logicString.length() > 0) {
+        // @TODO: humes, This is for debugging purposes
+//      final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
+//      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
+//      log.info("hi" + parser.parseExpression(logicString.toString()).getValue(Boolean.class));
+        return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
+      } else {
+        return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
+      }
+
     }
+
 
     return true;
   }
 
-  public Optional<ProjectProcessStepEvent> savePpsEventDetails(ProjectProcessStepEvent ppsEvent) {
+  public Optional<ProjectProcessStepEvent> savePpsEventDetails(ProjectProcessStepEvent ppsEvent) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -120,7 +166,7 @@ public class ProjectProcessStepEventService {
     return getPpsEvent(ppsEvent.getId());
   }
 
-  public ResponseEntity<Object> performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) {
+  public ResponseEntity<Object> performStepEventAction(Long ppsId, Long eventId, ProcessStepEventAction processStepEventAction) throws Exception {
     /*
      **High level pseudo logic:**
 
@@ -129,6 +175,8 @@ public class ProjectProcessStepEventService {
      * set the process step to the desired status IF not already in that status
      * do i need to perform auto triggers again if the PS status changed?  ...probably
      */
+    //todo: recheck if they are allowed to run the action?
+
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -176,7 +224,11 @@ public class ProjectProcessStepEventService {
     //if we made it to here then insert a record of having run the event
     params.put("processStepEventActionId", processStepEventAction.getId());
     params.put("createdById", currentUser.getId());
+    params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
     sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
+
+
+    //todo: pps auto triggers here
 
     return ResponseEntity.ok(getPpsEvent(eventId));
 

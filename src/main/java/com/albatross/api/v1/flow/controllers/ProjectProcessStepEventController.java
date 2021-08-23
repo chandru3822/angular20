@@ -24,19 +24,19 @@ public class ProjectProcessStepEventController {
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> insertPpsEvent(@PathVariable Long ppsId,
-                                                          @RequestBody ProcessStepEvent processStepEvent) {
+                                                          @RequestBody ProcessStepEvent processStepEvent) throws Exception {
     return projectProcessStepEventService.insertPpsEvent(ppsId, processStepEvent);
   }
 
   @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> getPpsEvent(@PathVariable Long ppsId,
-                                                       @PathVariable Long eventId) {
+                                                       @PathVariable Long eventId) throws Exception {
     return projectProcessStepEventService.getPpsEvent(eventId);
   }
 
   @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long ppsId,
-                                                               @RequestBody ProjectProcessStepEvent ppsEvent) {
+                                                               @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
     return projectProcessStepEventService.savePpsEventDetails(ppsEvent);
   }
 
@@ -57,7 +57,7 @@ public class ProjectProcessStepEventController {
   @PostMapping(value = "/{eventId}/action/perform", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> performStepEventAction (@PathVariable Long ppsId,
                                       @PathVariable Long eventId,
-                                      @RequestBody ActionRequest actionRequest) {
+                                      @RequestBody ActionRequest actionRequest) throws Exception {
     //save the custom field values
     projectProcessStepEventService.savePpsEventDetails(actionRequest.ppsEvent);
 

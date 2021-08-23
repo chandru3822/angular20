@@ -39,6 +39,13 @@
                                     cest.event_status_type as "eventStatusType",
                                     psea.archived,
                                     psea.always_enabled as "alwaysEnabled",
+                                    psea.multiple_uses as "multipleUses",
+                                    case when
+                                       (select id
+                                        from flow.project_process_step_event_action ppsea
+                                        where ppsea.project_process_step_event_id = ppse.id
+                                          and ppsea.process_step_event_action_id = psea.id limit 1) is null
+                                       then false else true end as "alreadyTriggered",
                                     coalesce((
                                      SELECT array_to_json(array_agg(row_to_json(logic)))
                                      FROM (
@@ -85,7 +92,8 @@
                                     left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
                                     left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
                              WHERE psea.process_step_event_id = pse.id
-                               AND psea.archived is not true) psea), '[]') AS "eventActions"
+                               AND psea.archived is not true
+                               order by psea.display_order) psea), '[]') AS "eventActions"
     from flow.project_process_step_event ppse
     inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
     inner join flow.company_process_step_status_type cpsst2 on pps.company_process_step_status_type_id = cpsst2.id
