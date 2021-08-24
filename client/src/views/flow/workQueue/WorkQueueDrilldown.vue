@@ -156,6 +156,7 @@
         search: '',
         ytfDoWeNeedThis: 0,
         timezone: this.$store.state.user.details.timezone.value,
+        userFullName: this.$store.state.user.details.fullName,
         showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
@@ -299,6 +300,7 @@
         try {
           let userPosition = this.userPositions.find(up => up.canAssign)
           await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
+          item['Owner'] = this.userFullName
           this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           item.owner = this.$store.state.user.details.fullName

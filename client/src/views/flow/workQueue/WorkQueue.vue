@@ -44,6 +44,10 @@
           </v-radio-group>
         </div>
         <v-row class="cards my-0">
+          <v-card flat color="transparent" class="ml-8"
+                  v-if="!selectedWorkQueueCategory || !selectedWorkQueueCategory.id">
+            Please select a Work Queue Category
+          </v-card>
           <v-card tile v-for="wq in workQueues" class="flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
