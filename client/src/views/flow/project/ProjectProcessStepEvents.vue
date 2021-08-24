@@ -384,10 +384,13 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
-          ppsEvent: this.eventDetails,
-          processStepEventAction: action
+          startTime: this.eventDetails.startTime,
+          endTime: this.eventDetails.endTime,
+          resourceId: this.eventDetails.resourceId,
+          companyEventStatusTypeId: this.eventDetails.companyEventStatusTypeId
         }
-        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/perform`, params)
+
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
         //we dont need to update the data now that the page is reloading
         // this.eventDetails = data
         // this.selectedEvent = data

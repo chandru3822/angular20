@@ -228,4 +228,77 @@
       values (:projectProcessStepEventId, :processStepEventActionId, :createdById)
   ]]></projectProcessStepEvent.insertAuditRow>
 
+  <projectProcessStepEvent.getPpsEventAction><![CDATA[
+    SELECT psea.id,
+           psea.action_name as "actionName",
+           psea.require_start_time as "requireStartTime",
+           psea.require_end_time as "requireEndTime",
+           psea.require_resource as "requireResource",
+           psea.process_step_event_id as "processStepEventId",
+           psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+           psea.company_event_status_type_id as "companyEventStatusTypeId",
+           psea.created_by_id as "createdById",
+           psea.modified_by_id as "modifiedById",
+           cpsst.process_step_status_type as "processStepStatusType",
+           cpsst.process_step_status_type_id as "rootProcessStepStatusTypeId",
+           cest.event_status_type as "eventStatusType",
+           psea.archived,
+           psea.always_enabled as "alwaysEnabled",
+           psea.multiple_uses as "multipleUses",
+           case when
+                  (select id
+                   from flow.project_process_step_event_action ppsea
+                   where ppsea.project_process_step_event_id = :ppsEventId
+                     and ppsea.process_step_event_action_id = psea.id limit 1) is null
+                  then false else true end as "alreadyTriggered",
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(logic)))
+                      FROM (
+                             SELECT psl.id,
+                                    psl.archived,
+                                    psl.process_step_event_requirement_id as "processStepEventRequirementId",
+                                    psl.operation_type_id as "operationTypeId",
+                                    ot.operation_type as "operationType",
+                                    ot.operation_code as "operationCode",
+                                    psl.created_by_id as "createdById",
+                                    psl.modified_by_id as "modifiedById",
+                                    psr.requirement_nbr as "requirementNbr",
+                                    psr.immutable as "processStepRequirementImmutable",
+                                    psl.sql_order as "sqlOrder"
+                             FROM flow.process_step_event_logic psl
+                                    left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                    left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
+                             WHERE psl.process_step_event_action_id = psea.id
+                               and psl.archived is not true
+                             ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList",
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(fields)))
+                      FROM (
+                             select pseaf.id,
+                                    cf.id as "customFieldId",
+                                    pseaf.process_step_event_action_id as "processStepEventActionId",
+                                    cfg.group_name as "groupName",
+                                    cf.field_name as "fieldName",
+                                    cfga.id as "customFieldGroupAssignmentId",
+                                    coalesce(pseaf.required, false) as required,
+                                    coalesce(not pseaf.required, false) as optional
+                             from flow.custom_field_group_assignment cfga
+                                    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                                    left join flow.process_step_event_action_field pseaf on cfga.id = pseaf.custom_field_group_assignment_id and pseaf.process_step_event_action_id = psea.id and pseaf.archived is false
+                             where cot.object_type_id = 6
+                               and cfga.archived is not true
+                               and cf.archived is not true
+                               and cfg.archived is not true
+                               and cfg.event_id = psea.process_step_event_id
+                             order by cfg.group_order, cfga.field_order ) fields), '[]') AS "customFields"
+    FROM flow.process_step_event_action psea
+           left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+           left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+    WHERE psea.id = :actionId
+      AND psea.archived is not true
+    order by psea.display_order
+  ]]></projectProcessStepEvent.getPpsEventAction>
+
 </sql>

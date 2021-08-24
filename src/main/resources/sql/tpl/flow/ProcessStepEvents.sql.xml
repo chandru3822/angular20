@@ -265,7 +265,7 @@ where pse.process_step_id = :processStepId
                                                psl.sql_order as "sqlOrder"
                                         FROM flow.process_step_event_logic psl
                                                left join flow.operation_type ot on ot.id = psl.operation_type_id
-                                               left join flow.process_step_requirement psr on psr.id = psl.process_step_event_requirement_id
+                                               left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
                                         WHERE psl.process_step_event_action_id = psea.id
                                           and psl.archived is not true
                                         ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList"

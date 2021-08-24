@@ -424,6 +424,7 @@
       this.getCompanyProcessStepStatuses()
       await this.getEventDetails()
       this.getAssignedEventStatusTypes()
+      this.getOperationTypes()
     },
     methods: {
       //populate requirements so that events can use them any time they change from the requirements component

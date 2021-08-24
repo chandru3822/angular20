@@ -1,8 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,9 +36,9 @@ public class ProjectProcessStepEventController {
   }
 
   @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long ppsId,
+  public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long eventId,
                                                                @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
-    return projectProcessStepEventService.savePpsEventDetails(ppsEvent);
+    return projectProcessStepEventService.savePpsEventDetails(eventId, ppsEvent);
   }
 
   @GetMapping(value = "/{projectProcessStepEventId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,21 +55,16 @@ public class ProjectProcessStepEventController {
   }
 
   //action
-  @PostMapping(value = "/{eventId}/action/perform", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{eventId}/action/{actionId}/perform", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> performStepEventAction (@PathVariable Long ppsId,
-                                      @PathVariable Long eventId,
-                                      @RequestBody ActionRequest actionRequest) throws Exception {
+                                                        @PathVariable Long eventId,
+                                                        @PathVariable Long actionId,
+                                                        @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
     //save the custom field values
-    projectProcessStepEventService.savePpsEventDetails(actionRequest.ppsEvent);
+    projectProcessStepEventService.savePpsEventDetails(eventId, ppsEvent);
 
     //do the action
-    return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionRequest.processStepEventAction);
-  }
-
-  @Data
-  public static class ActionRequest {
-    private ProjectProcessStepEvent ppsEvent;
-    private ProcessStepEventAction processStepEventAction;
+    return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
   }
 
 }
