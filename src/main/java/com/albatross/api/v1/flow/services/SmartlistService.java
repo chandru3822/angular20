@@ -1445,7 +1445,7 @@ public class SmartlistService {
     }
 
     if(null != smartlist.getWorkQueueTypeId()) {
-      query.append(" order by flow.project_process_step.date_created ");
+      query.append(" order by \"Days In Queue\" desc ");
     }
 
     query.append(";");
