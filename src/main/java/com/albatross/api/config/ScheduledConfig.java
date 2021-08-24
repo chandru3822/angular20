@@ -1,5 +1,6 @@
 package com.albatross.api.config;
 
+import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.SMSService;
@@ -50,12 +51,17 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.cacheAvailability.enabled:false}")
     private boolean runCachedAvailability;
 
+  @Value(value = "${app.cron.processGenesysContacts.enabled:false}")
+  private Boolean updateGenesysContacts;
+
     @Value(value = "${app.cron.refreshUserPositionOrgs.enabled:false}")
     private boolean refreshUserPositionOrgs;
 
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
+    private final GenesysService genesysService;
+
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -95,6 +101,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
             log.info("*** CRON: end cache availability ***");
         }
     }
+
+  //    every  day at 2 am
+  @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
+  public void updateGenesysContacts() {
+    if (updateGenesysContacts) {
+      genesysService.processGenesysContacts();
+    }
+  }
 
     // last day of every month
 //    @Scheduled(cron = "0 0 0 L * ?")

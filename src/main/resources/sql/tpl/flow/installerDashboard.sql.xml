@@ -1,6 +1,7 @@
 <sql>
   <installerDashboard.getRegionalManagers><![CDATA[
-    select up.org_id as positionId, concat(u.first_name, ' ', u.last_name) AS full_name
+    select up.org_id as positionId, concat(u.first_name, ' ', u.last_name) AS full_name,
+        (case when u.id = :userId then u.id end) as userId
     from flow.user u
          inner join flow.user_position up on u.id = up.user_id
          inner join flow.org o on o.id = up.org_id
@@ -63,17 +64,18 @@
                   AND pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'sameWeekCloseoutDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(swc)))
-                            FROM (select project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
                                          pd.installation_end_time, pd.substantial_completion_date,
                                          (case when
                                           (
-                                            (substantial_completion_date is not null
+                                            substantial_completion_date is not null
                                                 AND
-                                            substantial_completion_date::date between date_trunc('week', installation_end_time::date at time zone 'US/Mountain')::date
-                                                                                and date_trunc('week', installation_end_time::date at time zone 'US/Mountain')::date + 7)
-                                           ) then true else false end) as isNumerator
+                                            substantial_completion_date::date between (date_trunc('week', ((pd.installation_end_time::date)+1)::date))
+                                                                                and (date_trunc('week', ((pd.installation_end_time::date)+1)::date)::date)+6
+                                           ) then true else false end) as isNumerator, pps.id as processStepId
                                   from brs.project_details pd
                                     inner join flow.project p on pd.project_id = p.id
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id
                                   where
                                       (installation_end_time::date between :startDate::date and :endDate::date
                                           AND
@@ -98,16 +100,17 @@
             pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'onTimeCloseoutDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(otc)))
-                            FROM (select project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
-                                         pd.installation_end_time, pd.substantial_completion_date,
+                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                                         pd.installation_end_time, pd.installation_closeout_start_time, pd.substantial_completion_date,
                                          (case when
                                             ((substantial_completion_date is not null AND installation_end_time::date = substantial_completion_date::date)
                                                 OR
                                             (substantial_completion_date is not null AND installation_closeout_end_time::date between :startDate::date and :endDate::date
                                                 AND installation_closeout_end_time::date = substantial_completion_date::date))
-                                               then true else false end) as isNumerator
+                                               then true else false end) as isNumerator, pps.id as processStepId
                                   from brs.project_details pd
                                     inner join flow.project p on pd.project_id = p.id
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id
                                   where
                                       installation_end_time::date between :startDate::date and :endDate::date
                                         AND
@@ -118,7 +121,30 @@
             (
               pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
               AND
-              pd.ahj_inspection_outcome_name = 'Pass'
+              (pd.ahj_inspection_outcome_name = 'Pass' OR
+               pd.ahj_inspection_outcome_name = 'Fail' AND (
+
+                   (select string_agg(lov.name, ', ')
+                    from flow.list_of_value lov
+                    where lov.id = any ((
+                        select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                        where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                                                                                                                                                   where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                                                                                                      and custom_field_group_id = (select cfg.id
+                                                                                                                                                   from flow.custom_field_group cfg
+                                                                                                                                                            inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                                                                                                                                   where  cfg.archived is not true
+                                                                                                                                                     and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                                                                                              and process_step_id =
+                                                                                                                                                                                                                  (select id from flow.process_step
+                                                                                                                                                                                                                   where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                      and process_step_id =
+                                                                                                          (select id from flow.process_step
+                                                                                                           where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[]))
+
+
+                   ) not ILIKE '%crew%')
             )
         AND
         pd.installation_resource in (:crewIds)) ::numeric(10,2)
@@ -131,9 +157,63 @@
             pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'inspectionApprovalDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(ia)))
-                            FROM (select project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
                                          pd.installation_end_time, pd.substantial_completion_date, pd.ahj_inspection_start_time, pd.ahj_inspection_outcome_name,
-                                         (pd.ahj_inspection_outcome_name = 'Pass') as isNumerator
+
+                                         (select string_agg(lov.name, ', ')
+                                          from flow.list_of_value lov
+                                          where lov.id = any ((
+                                          select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                                          where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                              where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                            and custom_field_group_id = (select cfg.id
+                                              from flow.custom_field_group cfg
+                                              inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                              where  cfg.archived is not true
+                                            and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                           and process_step_id =
+                                                               (select id from flow.process_step
+                                                                where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                              project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                            and process_step_id =
+                                              (select id from flow.process_step
+                                              where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) as ahj_inspection_fail_reason,
+
+                                         (select text_value from flow.project_process_step_custom_field_value
+                                          where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                              where field_name = 'Inspection Fail Feedback' and company_id = pd.company_id and archived is false)
+                                            and custom_field_group_id = (select cfg.id
+                                              from flow.custom_field_group cfg
+                                              inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                              where  cfg.archived is not true
+                                            and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                           and process_step_id =
+                                                               (select id from flow.process_step
+                                                                where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                              project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                            and process_step_id =
+                                              (select id from flow.process_step
+                                              where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true)) as inspection_fail_feedback,
+
+                                         (pd.ahj_inspection_outcome_name = 'Pass' OR
+                                          pd.ahj_inspection_outcome_name = 'Fail' AND ((select string_agg(lov.name, ', ')
+                                                      from flow.list_of_value lov
+                                                      where lov.id = any ((
+                                                          select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                                                          where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                                                                                                                                                                                     where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                                                                                                                                        and custom_field_group_id = (select cfg.id
+                                                                                                                                                                                     from flow.custom_field_group cfg
+                                                                                                                                                                                              inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                                                                                                                                                                     where  cfg.archived is not true
+                                                                                                                                                                                       and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                                                                                                                                and process_step_id =
+                                                                                                                                                                                                                                                    (select id from flow.process_step
+                                                                                                                                                                                                                                                     where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                                                  project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                        and process_step_id =
+                                                                                                                                            (select id from flow.process_step
+                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) not ILIKE '%crew%')) as isNumerator
                                   from brs.project_details pd
                                     inner join flow.project p on pd.project_id = p.id
                                   where
