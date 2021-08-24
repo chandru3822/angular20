@@ -226,7 +226,8 @@ BEGIN
             contact_id                     = new.contact_id,
             project_created_date           = new.date_created,
             company_project_status_type_id = new.company_project_status_type_id,
-            company_project_status_type    = v_company_project_status
+            company_project_status_type    = v_company_project_status,
+            archived                       = new.archived
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
