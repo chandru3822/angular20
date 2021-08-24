@@ -505,7 +505,8 @@
         // }
 
         // if (validSave) {
-          await this.updateFieldGroups()
+        //now that round robin is not in the pps, we can just directly update the fields
+        await this.updateFieldGroups()
         // }
       },
       async updateFieldGroups() {

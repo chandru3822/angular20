@@ -307,7 +307,18 @@ export default {
       this.$nextTick(() => {
         this.$refs.eventFieldForm.validate()
       })
-    }
+    },
+    eventsLoading: function (newValue, oldValue) {
+      /*
+      //  NOTE: eventsLoading actually comes from the ppsLoading value from the parent component
+      //  if the ppsLoading goes from false to true,
+      //  then it means that the user saved data and we need to reload the selected event (if there is one)
+      //  in order to determine which actions should be enabled/disabled
+      */
+      if(!oldValue && newValue && this.eventDetails?.id) {
+        this.getEventDetails(this.eventDetails)
+      }
+    },
   },
   computed: {},
   methods: {
