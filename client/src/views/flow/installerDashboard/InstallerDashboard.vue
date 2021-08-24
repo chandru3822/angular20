@@ -373,6 +373,8 @@
         try {
           const {data} = await getRequest(`/installerDashboard/regionalManagers`)
           this.regionalManagers = data
+          // If the logged in user is in this list, select them by default
+          this.selectedRegionalManagers = this.regionalManagers.filter(u => u.userId);
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Regional Managers')
@@ -388,6 +390,7 @@
 
           const {data} = await getRequest(`/installerDashboard/installationCrew/`+ regionalManagersIds)
           this.installationCrew = data
+          this.toggleSelectAllCrews();
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Installation Crew')

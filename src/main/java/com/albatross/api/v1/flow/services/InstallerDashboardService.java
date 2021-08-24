@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.WorkQueue;
-import com.albatross.api.v1.flow.model.WorkQueueOwner;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -62,6 +59,7 @@ public class InstallerDashboardService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
 
     List<Owner> results = sqlCache.query("installerDashboard.getRegionalManagers", params, Owner.class);
     return results;
