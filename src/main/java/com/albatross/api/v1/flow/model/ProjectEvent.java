@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 public class ProjectEvent {
 
     private Long projectProcessStepEventId, projectProcessStepId, processStepEventId, processStepId,
-      projectId, eventStatusTypeId, companyEventStatusTypeId, processStepStatusTypeId;
+      projectId, eventStatusTypeId, companyEventStatusTypeId, processStepStatusTypeId, resourceId;
     private String processStepName, resourceName, eventName, eventType, phone, mobile, eventStatusType, lastUpdated, dateCreated;
     private Timestamp start, end;
 }

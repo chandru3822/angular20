@@ -27,6 +27,7 @@
             </td>
             <td class="text-left" id="qa-event-name">{{item.eventName}}</td>
             <td class="text-left" id="qa-event-start">{{ item.start | formatDate('timestamp') }}</td>
+            <td class="text-left">{{item.resourceName}}</td>
             <td class="text-left" id="qa-event-status">{{item.eventStatusType}}</td>
           </tr>
         </template>
@@ -50,6 +51,7 @@ export default {
       {text: 'ID', value: 'id', show: true},
       {text: 'Name', value: 'eventName', show: true},
       {text: 'Start', value: 'start', show: true},
+      {text: 'Resource', value: 'resourceName', show: true},
       {text: 'Status', value: 'companyEventStatusType', show: true},
     ]
     }
