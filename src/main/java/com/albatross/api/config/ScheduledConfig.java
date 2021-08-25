@@ -102,11 +102,13 @@ public class ScheduledConfig implements SchedulingConfigurer {
         }
     }
 
-  //    every  day at 2 am
-  @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
   public void updateGenesysContacts() {
     if (updateGenesysContacts) {
+      log.info("*** CRON: start processing Genesys contacts ***");
       genesysService.processGenesysContacts();
+      log.info("*** CRON: end processing Genesys contacts ***");
     }
   }
 
