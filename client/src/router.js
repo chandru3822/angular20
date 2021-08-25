@@ -174,6 +174,64 @@ const router = new Router({
           },
           children: []
         }, {
+          path: '/reimbursement',
+          name: 'reimbursement',
+          meta: {title: 'Albatross - Reimbursement'},
+          component: () => {
+            if (store.getters.userHasFeature('REIMBURSEMENT')) {
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Reimbursement.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+        }, {
+          path: '/expenseBudgets',
+          name: 'expenseBudgets',
+          meta: {title: 'Albatross - Expense Budgets'},
+          component: () => {
+            if (store.getters.userHasFeature('EXPENSE_BUDGETS')) {
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/ExpenseBudgets.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'budgets',
+              name: 'monthlyBudgets',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSE_BUDGETS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/MonthlyBudgets.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'templates',
+              name: 'expenseBudgetTemplates',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSE_BUDGETS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/Templates.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'types',
+              name: 'expenseBudgetTypes',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSE_BUDGETS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/Types.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }
+          ]
+        }, {
           path: '/expenses',
           name: 'expenses',
           meta: {title: 'Albatross - Expenses'},

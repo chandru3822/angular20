@@ -3,49 +3,44 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">GL Codes</v-toolbar-title>
+          <v-toolbar-title class="app-title">Budget Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[createNew = !createNew, newGlCode = {}]">
+            <v-btn text @click="[createNew = !createNew, newBudgetType = {}]">
               <v-icon>add</v-icon>
-              Add GL Code
+              Add Budget Type
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
-          <h3>New GL Code</h3>
+          <h3>New Budget Type</h3>
           <v-text-field text
                         type="text"
-                        label="GL Code"
-                        v-model="newGlCode.code">
-          </v-text-field>
-          <v-text-field text
-                        type="text"
-                        label="Description"
-                        v-model="newGlCode.description">
+                        label="Budget Type"
+                        v-model="newBudgetType.name">
           </v-text-field>
           <v-btn color="primaryCustom" dark class="white--text"
-                 :disabled="!newGlCode.code || !newGlCode.description"
-                 @click="saveGlCode(newGlCode, true)">
+                 :disabled="!newBudgetType.name"
+                 @click="saveBudgetType(newBudgetType, true)">
             Save
           </v-btn>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
           :headers="headers"
-          :items="filterGlCodes()"
+          :items="filterBudgetTypes()"
           :items-per-page="-1"
           :mobile-breakpoint="0"
           hide-default-footer
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No GL Codes
+            No Budget Types
           </template>
 
           <template #no-results>
-            No GL Codes
+            No Budget Types
           </template>
 
           <template #item="{ item, index }">
@@ -54,22 +49,11 @@
                 <v-text-field text
                               type="text"
                               v-if="index === editIndex"
-                              label="GL Code"
-                              v-model="item.code">
+                              label="Budget Type"
+                              v-model="item.name">
                 </v-text-field>
                 <div v-else>
-                  {{ item.code }}
-                </div>
-              </td>
-              <td class="text-left">
-                <v-text-field text
-                              type="text"
-                              v-if="index === editIndex"
-                              label="Description"
-                              v-model="item.description">
-                </v-text-field>
-                <div v-else>
-                  {{ item.description }}
+                  {{ item.name }}
                 </div>
               </td>
               <td>
@@ -77,7 +61,7 @@
                   <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="saveGlCode(item, false)" v-if="index === editIndex">
+                  <v-btn small text @click="saveBudgetType(item, false)" v-if="index === editIndex">
                     <v-icon>save</v-icon>
                   </v-btn>
                   <v-btn small text @click="editIndex = null" v-if="index === editIndex">
@@ -99,7 +83,7 @@
                       </v-card-title>
 
                       <v-card-text class="pt-4">
-                        Are you sure you want to delete this GL Code <strong>{{item.code}}</strong>?
+                        Are you sure you want to delete this Budget Type <strong>{{item.name}}</strong>?
                       </v-card-text>
 
                       <v-divider></v-divider>
@@ -113,7 +97,7 @@
                         <v-btn
                           color="primaryCustom"
                           text
-                          @click="deleteGlCode(item)">
+                          @click="deleteBudgetType(item)">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -135,35 +119,34 @@ import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
-  name: 'GlCodes',
+  name: 'ExpenseBudgetTypes',
 
   computed: {},
   data() {
     return {
       snackbar: {},
       createNew: false,
-      newGlCode: {},
+      newBudgetType: {},
       editIndex: null,
-      glCodes: [],
+      budgetTypes: [],
       headers: [
-        {text: 'Code', value: 'code', show: true},
-        {text: 'Description', value: 'description', show: true},
+        {text: 'Type', value: 'name', show: true},
         {text: null, value: 'icons', show: true}
       ],
     }
   },
   created() {
-    this.getGlCodes()
+    this.getBudgetTypes()
   },
   methods: {
-    filterGlCodes() {
-      return this.glCodes.filter(glc => !glc.archived)
+    filterBudgetTypes() {
+      return this.budgetTypes.filter(bt => !bt.archived)
     },
-    async getGlCodes() {
+    async getBudgetTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/expenses/glCodes`, 'blueraven')
-        this.glCodes = data
+        const {data} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
+        this.budgetTypes = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -172,26 +155,26 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteGlCode(item) {
+    async deleteBudgetType(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/expenses/glCode/${item.id}`, 'blueraven')
+        await deleteRequest(`/expenseBudgets/budgetType/${item.id}`, 'blueraven')
         item.archived = true
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting GL Code')
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Budget Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveGlCode(item, isNew) {
+    async saveBudgetType(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/expenses/glCode`, item, 'blueraven')
+        const {data} = await postRequest(`/expenseBudgets/budgetType`, item, 'blueraven')
         if(isNew) {
-          this.glCodes.push(data)
-          this.newGlCode = {}
+          this.budgetTypes.push(data)
+          this.newBudgetType = {}
           this.createNew = false
         } else {
           this.editIndex = null
@@ -199,7 +182,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting GL Code')
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Budget Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
