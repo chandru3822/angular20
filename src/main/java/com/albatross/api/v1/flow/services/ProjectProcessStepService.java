@@ -385,9 +385,13 @@ public class ProjectProcessStepService {
 
     for(Map<String, Object> result: results) {
       cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
-      List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()), null);
-      if (!newPpsIds.isEmpty()) {
-        createdPpsIds.addAll(newPpsIds);
+      try {
+        List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()), null);
+        if (!newPpsIds.isEmpty()) {
+          createdPpsIds.addAll(newPpsIds);
+        }
+      } catch (Exception e) {
+        // Errors will already be printed to log. Silently swallow exception so we can keep trying other PPSs
       }
     }
 
