@@ -17,7 +17,7 @@ public class ExpenseBudget {
   private String userFullName, budgetType, notes, fullBudgetName;
   private Long userId, budgetTypeId, originalExpenseBudgetId;
   private Double amount, totalExpenses, balance;
-  private Date dateCreated, dateUpdated;
+  private Date dateCreated, dateModified;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private Date startDate, endDate;

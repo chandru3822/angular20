@@ -10,9 +10,9 @@ import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -152,7 +152,7 @@ public class ExpenseBudgetService {
     return results;
   }
 
-  public ResponseEntity updateBudget(ExpenseBudget expenseBudget){
+  public Optional<ExpenseBudget> updateBudget(ExpenseBudget expenseBudget){
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -166,6 +166,7 @@ public class ExpenseBudgetService {
     params.put("createdById", expenseBudget.getUserId());
     params.put("notes", expenseBudget.getNotes());
 
+    Long budgetIdToReturn = null;
     Long oldId = expenseBudget.getId();
 
     if(null != oldId){
@@ -183,6 +184,7 @@ public class ExpenseBudgetService {
         //we don't actually edit budget expenses, we add a new row to keep a history and only display the most recent one
         params.put("originalExpenseBudgetId", expenseBudget.getOriginalExpenseBudgetId());
         Long newId = sqlCache.updateReturningId("expenseBudget.insertExpenseBudget", params, "id").longValue();
+        budgetIdToReturn = newId;
 
         //update any expenses and reimbursement requests with the old id to the new id
         HashMap<String, Object> budgetIds = new HashMap<>();
@@ -192,7 +194,8 @@ public class ExpenseBudgetService {
         sqlCache.update("reimbursement.updateLineItemsToNewBudgetId", budgetIds);
       }else{
         //return error message
-        return new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
+        throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "", new Exception());
+//        return new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
       }
     }else{
       //add the new budget with its own id as the original expense budget id if one doesn't already exist in time period
@@ -203,17 +206,21 @@ public class ExpenseBudgetService {
       templateParams.put("budgetTypeId", expenseBudget.getBudgetTypeId());
 
       Optional<ExpenseBudget> existingExpenseBudget = sqlCache.get("expenseBudget.checkIfExistsByUserAndBudgetType", templateParams, ExpenseBudget.class);
-      if(!existingExpenseBudget.isPresent()){
+      if(existingExpenseBudget.isEmpty()){
         Long id = sqlCache.updateReturningId("expenseBudget.insertOriginalExpenseBudget", params, "id").longValue();
-
+        budgetIdToReturn = id;
         if(id > 0){
           HashMap<String, Object> updateOriginal = new HashMap<>();
           updateOriginal.put("id", id);
           sqlCache.update("expenseBudget.updateOriginalExpenseBudget", updateOriginal);
         }
+      } else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already has a budget that overlaps the selected days.", new Exception());
       }
     }
-    return null;
+    HashMap<String, Object> ebParams = new HashMap<>();
+    ebParams.put("id", budgetIdToReturn);
+    return sqlCache.get("expenseBudget.getOne", ebParams, ExpenseBudget.class);
   }
 
   public List<User> getAvailableUsers() {

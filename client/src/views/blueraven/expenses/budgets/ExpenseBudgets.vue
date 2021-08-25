@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-app-bar dense tabs color="white" class="elevation-1">
+        <v-app-bar dense tabs color="white" class="elevation-1 mb-1">
           <v-toolbar-title>Expense Budgets</v-toolbar-title>
           <v-tabs :optional="false" color="primaryCustom"
                   slot="extension"

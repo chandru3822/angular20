@@ -8,7 +8,6 @@ import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,7 +68,7 @@ public class ExpenseBudgetController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity updateBudget(@RequestBody ExpenseBudget expenseBudget) {
+  public Optional<ExpenseBudget> updateBudget(@RequestBody ExpenseBudget expenseBudget) {
     return expenseBudgetService.updateBudget(expenseBudget);
   }
 

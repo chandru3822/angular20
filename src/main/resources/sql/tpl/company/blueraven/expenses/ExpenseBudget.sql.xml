@@ -115,7 +115,7 @@
                                   eb.original_expense_budget_id,
                                   max(eb.date_created) date_created
                                 FROM brs.expense_budget eb
-                                    WHERE eb.archived is not true
+                                WHERE eb.archived is not true
                                 GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id)
             SELECT
               eb.id,
@@ -128,21 +128,51 @@
               eb.user_id,
               u.first_name || ' ' || u.last_name as user_full_name,
               eb.date_created,
-              eb.date_updated,
+              eb.date_modified,
               eb.original_expense_budget_id
             FROM brs.expense_budget eb
-              INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
-              INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
-              INNER JOIN brs."user" u on u.id = eb.user_id
+                   INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
+                   INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+                   INNER JOIN flow."user" u on u.id = eb.user_id
             WHERE eb.archived is not true
             ORDER BY user_full_name, start_date
         ]]>
   </expenseBudget.getAll>
 
+  <expenseBudget.getOne>
+    <![CDATA[
+        WITH single_row AS (SELECT
+                              eb.user_id,
+                              eb.budget_type_id,
+                              eb.original_expense_budget_id,
+                              max(eb.date_created) date_created
+                            FROM brs.expense_budget eb
+                            WHERE eb.archived is not true
+                            GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id)
+        SELECT
+          eb.id,
+          bt.name as budget_type,
+          eb.budget_type_id,
+          eb.start_date,
+          eb.end_date,
+          eb.notes,
+          eb.amount,
+          eb.user_id,
+          u.first_name || ' ' || u.last_name as user_full_name,
+          eb.date_created,
+          eb.date_modified,
+          eb.original_expense_budget_id
+        FROM brs.expense_budget eb
+               INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
+               INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+               INNER JOIN flow."user" u on u.id = eb.user_id
+        WHERE eb.id = :id
+    ]]>
+  </expenseBudget.getOne>
+
   <expenseBudget.insertOriginalExpenseBudget>
     INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, created_by_id, notes) VALUES
     (:budgetTypeId, :startDate, :endDate, :amount, :userId, :createdById, :notes)
-
   </expenseBudget.insertOriginalExpenseBudget>
 
   <expenseBudget.updateOriginalExpenseBudget>
