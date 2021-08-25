@@ -307,7 +307,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          let msg = e.data.includes('already assigned') ? e.data : 'Error Saving Owner'
+          let alreadyAssigned = e.data.includes('already assigned')
+          let msg = alreadyAssigned ? e.data : 'Error Saving Owner'
+          if(alreadyAssigned) {
+            item['Owner'] = 'Already Assigned. Please Refresh.'
+          }
           this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
