@@ -174,6 +174,31 @@ const router = new Router({
           },
           children: []
         }, {
+          path: '/expenses',
+          name: 'expenses',
+          meta: {title: 'Albatross - Expenses'},
+          component: () => {
+            if (store.getters.userHasFeature('EXPENSES')) {
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Expenses.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'glCodes',
+              name: 'glCodes',
+              meta: {title: 'Albatross - GL Codes'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/GlCodes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }
+          ]
+        }, {
           path: '/closerDashboard',
           name: 'closerDashboard',
           meta: {title: 'Albatross - Closer Dashboard'},

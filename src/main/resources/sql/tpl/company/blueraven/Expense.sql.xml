@@ -1,0 +1,45 @@
+<sql>
+  <expense.glCodes.getAll><![CDATA[
+    SELECT
+      id,
+      code,
+      description,
+      archived
+    FROM brs.gl_code gl
+    where archived is false
+    order by code
+  ]]></expense.glCodes.getAll>
+
+  <expense.glCodes.getOne><![CDATA[
+    SELECT
+      id,
+      code,
+      description,
+      archived
+    FROM brs.gl_code gl
+    where id = :id
+  ]]></expense.glCodes.getOne>
+
+  <expense.glCodes.insertGlCode><![CDATA[
+    INSERT INTO brs.gl_code(code, description, created_by_id)
+    values(:code, :description, :userId)
+  ]]></expense.glCodes.insertGlCode>
+
+  <expense.glCodes.updateGlCode><![CDATA[
+    UPDATE brs.gl_code
+      SET code = :code,
+          description = :description,
+          modified_by_id = :userId,
+          date_modified = now()
+    WHERE id = :id
+  ]]></expense.glCodes.updateGlCode>
+
+  <expense.glCodes.deleteGlCode><![CDATA[
+    UPDATE brs.gl_code
+      SET archived = true,
+          modified_by_id = :userId,
+          date_modified = now()
+    WHERE id = :id
+  ]]></expense.glCodes.deleteGlCode>
+
+</sql>
