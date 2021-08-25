@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 @ConditionalOnProperty(prefix = "app.scheduled.blueraven", value = "enabled")
 public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
-  @Value(value = "${app.cron.processGenesysContacts.enabled:false}")
+  @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
 
   private final GenesysService genesysService;
