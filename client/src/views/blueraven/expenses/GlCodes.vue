@@ -7,8 +7,8 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[createNew = !createNew, newGlCode = {}]">
-              <v-icon>add</v-icon>
-              Add GL Code
+              <v-icon v-if="!createNew">add</v-icon>
+              {{createNew ? 'cancel' : 'Add GL Code'}}
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -199,7 +199,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting GL Code')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving GL Code')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

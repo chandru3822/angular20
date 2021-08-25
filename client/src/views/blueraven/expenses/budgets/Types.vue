@@ -7,8 +7,8 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[createNew = !createNew, newBudgetType = {}]">
-              <v-icon>add</v-icon>
-              Add Budget Type
+              <v-icon v-if="!createNew">add</v-icon>
+              {{createNew ? 'cancel' : 'Add Budget Type'}}
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -182,7 +182,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Budget Type')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Budget Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.expenses;
 
+import com.albatross.api.v1.company.blueraven.models.expenses.BudgetTemplate;
 import com.albatross.api.v1.company.blueraven.models.expenses.BudgetType;
 import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
@@ -38,8 +39,23 @@ public class ExpenseBudgetController {
   public void deleteBudgetType(@PathVariable Long id) {
     expenseBudgetService.deleteBudgetType(id);
   }
-
   //end budget types here
+  //budget templates here
+  @GetMapping(value = "/templates", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<BudgetTemplate> getBudgetTemplates() {
+    return expenseBudgetService.getAllBudgetTemplates();
+  }
+
+  @PostMapping(value = "/templates", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<BudgetTemplate> updateBudgetTemplate(@RequestBody BudgetTemplate budgetTemplate){
+    return expenseBudgetService.updateBudgetTemplate(budgetTemplate);
+  }
+
+  @DeleteMapping(value = "/templates/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteBudgetTemplate(@PathVariable Long id){
+    expenseBudgetService.deleteBudgetTemplate(id);
+  }
+  //end budget templates here
 
   @GetMapping(value = "/list",  produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ExpenseBudget> getBudgets() {

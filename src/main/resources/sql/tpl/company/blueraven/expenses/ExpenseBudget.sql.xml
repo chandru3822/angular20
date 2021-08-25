@@ -49,6 +49,64 @@
         ]]>
   </expenseBudget.budgetType.deleteBudgetType>
 
+  <expenseBudget.templates.getAll><![CDATA[
+           SELECT
+              tem.id,
+              bt.name as budget_type,
+              tem.budget_type_id,
+              tem.amount,
+              tem.archived,
+              tem.user_id,
+              u.first_name || ' ' || u.last_name as user_full_name
+            FROM brs.budget_template tem
+              INNER JOIN brs.budget_type bt on bt.id = tem.budget_type_id
+              INNER JOIN flow."user" u on u.id = tem.user_id
+            WHERE tem.archived is not true
+            ORDER BY user_full_name, budget_type
+        ]]></expenseBudget.templates.getAll>
+
+  <expenseBudget.templates.getOne><![CDATA[
+           SELECT
+              tem.id,
+              bt.name as budget_type,
+              tem.budget_type_id,
+              tem.amount,
+              tem.archived,
+              tem.user_id,
+              u.first_name || ' ' || u.last_name as user_full_name
+            FROM brs.budget_template tem
+              INNER JOIN brs.budget_type bt on bt.id = tem.budget_type_id
+              INNER JOIN flow."user" u on u.id = tem.user_id
+            WHERE tem.id = :id
+        ]]></expenseBudget.templates.getOne>
+
+  <expenseBudget.templates.insertBudgetTemplate>
+    <![CDATA[
+            INSERT INTO brs.budget_template(user_id, budget_type_id, amount, created_by_id)
+            values(:userId, :budgetTypeId, :amount, :createdById)
+    ]]></expenseBudget.templates.insertBudgetTemplate>
+
+  <expenseBudget.templates.updateBudgetTemplate>
+    <![CDATA[
+            UPDATE brs.budget_template
+              SET user_id = :userId,
+                  budget_type_id = :budgetTypeId,
+                  amount = :amount,
+                  date_modified = now(),
+                  modified_by_id = :updatedById
+            WHERE id = :id
+        ]]>
+  </expenseBudget.templates.updateBudgetTemplate>
+
+  <expenseBudget.templates.deleteBudgetTemplate><![CDATA[
+            UPDATE brs.budget_template
+              SET archived = true,
+                  date_modified = now(),
+                  modified_by_id = :updatedById
+            WHERE id = :id
+        ]]>
+  </expenseBudget.templates.deleteBudgetTemplate>
+
   <expenseBudget.getAll>
     <![CDATA[
             WITH single_row AS (SELECT
@@ -82,8 +140,8 @@
   </expenseBudget.getAll>
 
   <expenseBudget.insertOriginalExpenseBudget>
-    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, created_by_id, updated_by_id, notes) VALUES
-    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :createdById, :updatedById, :notes)
+    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, created_by_id, notes) VALUES
+    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :createdById, :notes)
 
   </expenseBudget.insertOriginalExpenseBudget>
 
@@ -94,8 +152,8 @@
   </expenseBudget.updateOriginalExpenseBudget>
 
   <expenseBudget.insertExpenseBudget>
-    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, original_expense_budget_id, created_by_id, updated_by_id, notes) VALUES
-    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :updatedById, :notes)
+    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, original_expense_budget_id, created_by_id, notes) VALUES
+    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :notes)
   </expenseBudget.insertExpenseBudget>
 
   <expenseBudget.getUsersWithBudget>
@@ -114,12 +172,12 @@
 
   <expenseBudget.getAvailableUsers>
     <![CDATA[
-            select u.id,
-              u.first_name || ' ' || u.last_name as full_name
-            from brs.user_positions_vw u
-            where position_id in (3,6,10,73,237) and u.active is true
-              and u.start_date < now() at time zone 'US/Mountain'
-              and (u.end_date is null or u.end_date > now() at time zone 'US/Mountain')
+            select upv.user_id as id,
+                   upv.first_name || ' ' || upv.last_name as full_name
+            from flow.user_positions_vw upv
+            where position_id in (3,6,10,73,237)
+              and upv.start_date < now()
+              and (upv.end_date is null or upv.end_date > now())
             ORDER BY full_name
         ]]>
   </expenseBudget.getAvailableUsers>
