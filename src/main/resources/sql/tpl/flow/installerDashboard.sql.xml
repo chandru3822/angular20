@@ -75,7 +75,7 @@
                                            ) then true else false end) as isNumerator, pps.id as processStepId
                                   from brs.project_details pd
                                     inner join flow.project p on pd.project_id = p.id
-                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id and pps.main = true
                                   where
                                       (installation_end_time::date between :startDate::date and :endDate::date
                                           AND
@@ -110,7 +110,7 @@
                                                then true else false end) as isNumerator, pps.id as processStepId
                                   from brs.project_details pd
                                     inner join flow.project p on pd.project_id = p.id
-                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id and pps.main = true
                                   where
                                       installation_end_time::date between :startDate::date and :endDate::date
                                         AND

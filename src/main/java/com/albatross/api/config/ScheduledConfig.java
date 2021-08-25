@@ -68,6 +68,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
         taskRegistrar.setScheduler(taskExecutor());
     }
 
+    /*
+    //
+    // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN, THAT IS WHEN AUTO TRIGGERS
+    // FYI: RUN AND THEY DO SOME HEAVY LIFTING ON THE DB
+    //
+    */
+
+
     @PostConstruct
     public void init() {
         log.info("*** CRON: cron service enabled ***");
@@ -102,11 +110,13 @@ public class ScheduledConfig implements SchedulingConfigurer {
         }
     }
 
-  //    every  day at 2 am
-  @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
   public void updateGenesysContacts() {
     if (updateGenesysContacts) {
+      log.info("*** CRON: start processing Genesys contacts ***");
       genesysService.processGenesysContacts();
+      log.info("*** CRON: end processing Genesys contacts ***");
     }
   }
 
