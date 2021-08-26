@@ -68,6 +68,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
         taskRegistrar.setScheduler(taskExecutor());
     }
 
+    /*
+    //
+    // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN, THAT IS WHEN AUTO TRIGGERS
+    // FYI: RUN AND THEY DO SOME HEAVY LIFTING ON THE DB
+    //
+    */
+
+
     @PostConstruct
     public void init() {
         log.info("*** CRON: cron service enabled ***");

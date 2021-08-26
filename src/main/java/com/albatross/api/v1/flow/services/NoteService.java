@@ -87,10 +87,10 @@ public class NoteService {
   }
 
   public Note saveNote(Long typeId, Note note) {
-    return saveNote(typeId, note, false);
+    return saveNote(typeId, note, false, false);
   }
 
-  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote) {
+  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote, Boolean isProjectProdStats) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
@@ -115,6 +115,12 @@ public class NoteService {
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
         sqlCache.update("note.insertProjectProcessStepWorkQueueNoteRelation", p2);
+      } else if(isProjectProdStats) {
+        // isProjectProdStats is used for Installer Dashboard
+        p2.put("projectId", note.getPrimaryId());
+        p2.put("productionType", note.getInstallDashTile());
+        p2.put("noteId", noteId);
+        sqlCache.update("note.insertProjectProdStatsNoteRelation", p2);
       } else {
         //add to the glue table only if it is a new note
         p2.put("primaryId", note.getPrimaryId());
