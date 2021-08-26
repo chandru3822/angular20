@@ -2,6 +2,8 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.security.jwt.JwtClaims;
+import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.UserController;
@@ -61,6 +63,9 @@ public class UserService {
 
   @Autowired
   AmazonS3 s3;
+
+  @Autowired
+  private JwtUtils jwtUtils;
 
   @Value("${security.doCompanyDefaultValidation:false}")
   private Boolean doCompanyDefaultValidation;
@@ -147,7 +152,7 @@ public class UserService {
 
     if(null != user.getId()) {
       id = user.getId();
-      params.put("modifiedById", currentUser.getId());
+      params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
       //save user status
@@ -178,7 +183,7 @@ public class UserService {
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("id", currentUser.getCompanyId());
       Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
-      params.put("createdById", currentUser.getId());
+      params.put("createdById", currentUser.trueUserId());
       String newPwd = null;
       if(c.isPresent() && null != c.get().getDefaultPassword()) {
         newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
@@ -299,7 +304,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", userStatusType.getId());
     params.put("hasAccess", userStatusType.getHasAccess());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("user.saveUserStatusType", params);
   }
 
@@ -317,7 +322,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("user.deleteUserCompany", params);
 
     //per judson request also remove the user_status for that company and user
@@ -334,7 +339,7 @@ public class UserService {
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
     params.put("userStatusTypeId", req.getCompanyUserStatusTypeId());
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     sqlCache.update("user.upsertUserCompany", params);
 
     //check if there is already a user status for this user and company, if not, add new
@@ -349,7 +354,7 @@ public class UserService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     params.put("userId", userId);
     params.put("userStatusTypeId", userStatusTypeId);
 
@@ -406,14 +411,31 @@ public class UserService {
     }
   }
 
-  public ResponseEntity getLoggedInUser() {
+  public ResponseEntity getLoggedInUser(String authHeader) {
     User user = securityService.getCurrentUser();
-
+    JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
     if(null != user) {
       User response = findByUsernameIgnoreCase(null, user.getId());
+      List<FeatureAccessControl> results;
+      if(null != user.getMasqueradingUserId() && null != jwt.getCompanyId()) {
+        response.setCompanyId(jwt.getCompanyId());
 
-      List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        //check if the masquerading user is a 7oaks employee
+        Boolean masqueradingUserIs7oaks = securityService.userIsSuperAdmin(user.getMasqueradingUserId());
+        if(!masqueradingUserIs7oaks) {
+          //if the masquerading user is not 7oaks/super admin - then need to remove any access that the masquerading user does not ALSO have access to
+          results = securityService.getMasqueradedUserFeatureAccess(user.getId(), jwt.getCompanyId(), user.getMasqueradingUserId());
+        } else {
+          //if the masquerading user is a 7oaks employee/super admin - then just use their normal access
+          results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        }
+      } else {
+        //regular access getter
+        results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+      }
+
       response.setFeatureAccess(results);
+      response.setMasqueradingUserId(user.getMasqueradingUserId());
       return ResponseEntity.ok(response);
     } else {
       return ResponseEntity.badRequest().body("No user found");
@@ -463,7 +485,7 @@ public class UserService {
 
   public void addNotificationToken(Long userId, String token) {
     try {
-      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().getId()));
+      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().trueUserId()));
     } catch (DuplicateKeyException e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Token already exists on given user", e);
     }
@@ -505,7 +527,7 @@ public class UserService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());
 
@@ -514,7 +536,7 @@ public class UserService {
     params.clear();
     params.put("userId", userId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     sqlCache.update("user.addAttachment", params);
 

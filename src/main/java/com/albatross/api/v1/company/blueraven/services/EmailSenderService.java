@@ -37,10 +37,10 @@ public class EmailSenderService {
 
       if(null != emailSender.getId()) {
         params.put("id", emailSender.getId());
-        params.put("modifiedById", user.getId());
+        params.put("modifiedById", user.trueUserId());
         sqlCache.update("emailSender.updateEmailSender", params);
       } else {
-        params.put("createdById", user.getId());
+        params.put("createdById", user.trueUserId());
         sqlCache.update("emailSender.insertEmailSender", params);
       }
     }

@@ -362,6 +362,7 @@ export default {
     showActivity: Boolean,
     primaryId: Number,
     secondaryId: Number,
+    installDashTile: String,
     isWqtNote: Boolean,
     notes: Array,
     type: String
@@ -415,17 +416,33 @@ export default {
     async saveNote(n) {
       try {
         this.savingNote = true
-        // @randa: Probably should create an object type enum on the frontend that mimics the backend?
-        let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
-        const {data} = await postRequest(url, {
-          primaryId: this.primaryId,
-          id: n.reply ? null : n.id,
-          note: n.reply ? n.reply : n.note,
-          parentId: n.reply ? n.id : null,
-          //these 2 fields are for pps pswqt notes which require 2 keys to save/get
-          projectProcessStepId: this.primaryId,
-          processStepWorkQueueTypeId: this.secondaryId,
-        })
+        let url = '';
+        let body = {};
+        if (this.installDashTile != null) {
+          url = `/note/saveProjectProdStatsNote`
+          body = {
+            primaryId: this.primaryId,
+            id: n.reply ? null : n.id,
+            note: n.reply ? n.reply : n.note,
+            parentId: n.reply ? n.id : null,
+            installDashTile: this.installDashTile
+          }
+        }
+        else {
+          // @randa: Probably should create an object type enum on the frontend that mimics the backend?
+          url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
+          body = {
+            primaryId: this.primaryId,
+            id: n.reply ? null : n.id,
+            note: n.reply ? n.reply : n.note,
+            parentId: n.reply ? n.id : null,
+            //these 2 fields are for pps pswqt notes which require 2 keys to save/get
+            projectProcessStepId: this.primaryId,
+            processStepWorkQueueTypeId: this.secondaryId,
+          }
+        }
+
+        const {data} = await postRequest(url, body)
         // this.notes.unshift(data)
         if(n.reply) {
           n.reply = null

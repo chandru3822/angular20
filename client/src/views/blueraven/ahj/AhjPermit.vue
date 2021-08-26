@@ -792,6 +792,7 @@
           }
 
           this.ahjPermit = cloneDeep(data)
+          window.document.title = `AHJ - ${this.ahjPermit.ahjName}`
           this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
           this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
           this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())

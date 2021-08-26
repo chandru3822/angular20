@@ -356,6 +356,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/design`, 'blueraven')
+          window.document.title = `AHJ - ${data.ahjName}`
           this.ahjDesign = cloneDeep(data)
           this.ahjDesign.updateAllInState = false
         } catch (e) {

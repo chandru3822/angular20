@@ -1,6 +1,6 @@
 <template>
   <v-container class="app-container">
-    <v-dialog v-model="showModal" max-width="1300">
+    <v-dialog v-model="showModal" max-width="1600">
       <ProductionStatsDrilldown
                       :start-date="startDate"
                       :end-date="endDate"
@@ -288,7 +288,7 @@
           { text: 'Rank', value: 'rnk', width: 80, show: true },
           { text: 'Crew', value: 'crewname', width: 80, show: true },
           { text: 'Substantial Completions kW', value: 'substantialcompletions', width: 80, show: true },
-          { text: 'Inspection Approval %', value: 'inspectionapproval', width: 80, show: true },
+          { text: 'Inspection Pass Rate', value: 'inspectionapproval', width: 80, show: true },
           { text: 'Score (kw x Pass rate)', value: 'score', width: 80, show: true },
         ],
         showModal: false
@@ -373,6 +373,8 @@
         try {
           const {data} = await getRequest(`/installerDashboard/regionalManagers`)
           this.regionalManagers = data
+          // If the logged in user is in this list, select them by default
+          this.selectedRegionalManagers = this.regionalManagers.filter(u => u.userId);
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Regional Managers')
@@ -388,6 +390,7 @@
 
           const {data} = await getRequest(`/installerDashboard/installationCrew/`+ regionalManagersIds)
           this.installationCrew = data
+          this.toggleSelectAllCrews();
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Installation Crew')

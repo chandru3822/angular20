@@ -71,7 +71,7 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("ownerId", user.getId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long smartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
     return getSmartlist(smartlistId);
   }
@@ -92,7 +92,7 @@ public class SmartlistService {
 
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     // enforce rule that only project, process step, and contact row types can have a table view display
     if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
@@ -213,14 +213,14 @@ public class SmartlistService {
   @Transactional
   public List<SmartlistLogic> updateLogic(Long smartlistId, List<SmartlistLogic> logic) {
     User user = securityService.getCurrentUser();
-    sqlCache.update("smartlist.archiveLogic", Map.of("smartlistId", smartlistId, "userId", user.getId()));
+    sqlCache.update("smartlist.archiveLogic", Map.of("smartlistId", smartlistId, "userId", user.trueUserId()));
 
     if (!logic.isEmpty()) {
       HashMap<String, Object> params = null;
       int counter = 0;
       for (SmartlistLogic l : logic) {
         params = om.convertValue(l, HashMap.class);
-        params.put("userId", user.getId());
+        params.put("userId", user.trueUserId());
         params.put("sqlOrder", counter++);
         sqlCache.update("smartlist.updateLogic", params);
       }
@@ -236,7 +236,7 @@ public class SmartlistService {
     params.put("smartlistFieldId", assignment.getSmartlistFieldId());
     params.put("customFieldGroupAssignmentId", assignment.getCustomFieldGroupAssignmentId());
     params.put("displayOrder", assignment.getDisplayOrder());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("processStepId", assignment.getProcessStepId());
     params.put("projectDetailsColumn", assignment.getProjectDetailsColumn());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
@@ -246,7 +246,7 @@ public class SmartlistService {
   public SmartlistRequirement addRequirement(Long smartlistId, SmartlistRequirement requirement) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
     return getRequirementById(requirementId);
@@ -254,23 +254,23 @@ public class SmartlistService {
 
   public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
-    params.put("userId", securityService.getCurrentUser().getId());
+    params.put("userId", securityService.getCurrentUser().trueUserId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     sqlCache.update("smartlist.updateRequirement", params);
     return getRequirementById(requirement.getId());
   }
 
   public void deleteRequirement(Long requirementId) {
-    sqlCache.update("smartlist.deleteRequirement", Map.of("requirementId", requirementId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.update("smartlist.deleteRequirement", Map.of("requirementId", requirementId, "userId", securityService.getCurrentUser().trueUserId()));
   }
 
   public void deleteFieldAssignment(Long fieldId) {
-    sqlCache.update("smartlist.deleteField", Map.of("id", fieldId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.update("smartlist.deleteField", Map.of("id", fieldId, "userId", securityService.getCurrentUser().trueUserId()));
   }
 
   public void updateDisplayOrder(List<SmartlistFieldAssignment> fields) {
     fields.forEach(field -> {
-      sqlCache.update("smartlist.updateDisplayOrder", Map.of("id", field.getId(), "displayOrder", field.getDisplayOrder(), "userId", securityService.getCurrentUser().getId()));
+      sqlCache.update("smartlist.updateDisplayOrder", Map.of("id", field.getId(), "displayOrder", field.getDisplayOrder(), "userId", securityService.getCurrentUser().trueUserId()));
     });
   }
 
@@ -328,11 +328,11 @@ public class SmartlistService {
 
     HashMap<String, Object> params = om.convertValue(newSmartlist, HashMap.class);
     params.put("ownerId", user.getId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     Long newSmartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
 
-    sqlCache.update("smartlist.copyAssignedFields", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));
-    sqlCache.update("smartlist.copyRequirements", Map.of("newId", newSmartlistId, "userId", user.getId(), "oldId", smartlistId));
+    sqlCache.update("smartlist.copyAssignedFields", Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
+    sqlCache.update("smartlist.copyRequirements", Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
 
     return getSmartlist(newSmartlistId);
   }
@@ -523,15 +523,15 @@ public class SmartlistService {
     StringBuilder whereClause = new StringBuilder();
 
     // Get smartlist system lists
-    withClause.append(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, 3::int)), ");
+    withClause.append(String.format(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, %s::int)), ", companyId));
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -578,7 +578,13 @@ public class SmartlistService {
         "       flow.project.project_name                                                                             as \"Project Name\",\n" +
         "       flow.process_step.process_step_name                                                                   as \"Process Step Name\",\n" +
         "       cpsst.process_step_status_type                                                                        as \"Process Step Status Type\",\n" +
-        "       DATE_PART('day', now() - flow.project_process_step.date_created)                                      as \"Days In Queue\",\n" +
+          "       (select coalesce((select extract(days from now()::timestamp - wqc.date_entered_queue)\n" +
+          "          from flow.work_queue_cycle wqc\n" +
+          "            inner join flow.process_step_work_queue_type_process_step_status_type pswqtpstt on wqc.process_step_work_queue_type_process_step_status_type_id = pswqtpstt.id\n" +
+          "            inner join flow.process_step_work_queue_type pswqt2 on  pswqt2.id = pswqtpstt.process_step_work_queue_type_id\n" +
+          "          where wqc.project_process_step_id = flow.project_process_step.id\n" +
+          "            and pswqt2.id = pswqt.id\n" +
+          "            and wqc.date_exited_queue is null), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\"," +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
           " (select array_to_string(array(\n" +
@@ -1439,7 +1445,7 @@ public class SmartlistService {
     }
 
     if(null != smartlist.getWorkQueueTypeId()) {
-      query.append(" order by flow.project_process_step.date_created ");
+      query.append(" order by \"Days In Queue\" desc ");
     }
 
     query.append(";");
@@ -1463,11 +1469,11 @@ public class SmartlistService {
     query.append("with ");
 
     // Get smartlist system lists
-    query.append("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
-    query.append("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    query.append("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
-    query.append("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
-    query.append("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
+    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");

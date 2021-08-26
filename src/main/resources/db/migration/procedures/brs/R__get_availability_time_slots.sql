@@ -248,7 +248,7 @@ BEGIN
                                   ((($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp at time zone
                                     coalesce(t1.timezone, t.timezone))::timestamp with time zone at time zone
                                    'UTC')                           as available_times,
-                                  30                                as default_appointment_length,
+                                  60                                as default_appointment_length,
                                   coalesce(t1.timezone, t.timezone) as pczu_timezone
                            from flow.postal_code_zone pcz
                                   inner join flow.company_timezone ct on ct.id = pcz.company_timezone_id

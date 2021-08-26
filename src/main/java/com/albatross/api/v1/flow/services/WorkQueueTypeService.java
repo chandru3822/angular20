@@ -61,7 +61,7 @@ public class WorkQueueTypeService {
     User user = securityService.getCurrentUser();
     sqlCache.update("workQueueType.deleteType",
         ImmutableMap.of("id", typeId,
-            "modifiedById", user.getId()));
+            "modifiedById", user.trueUserId()));
   }
 
 
@@ -71,7 +71,7 @@ public class WorkQueueTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId() );
     params.put("id", type.getId() );
-    params.put("modifiedById", user.getId() );
+    params.put("modifiedById", user.trueUserId() );
     params.put("workQueueCategoryId", type.getWorkQueueCategoryId() );
     params.put("displayOrder", type.getDisplayOrder() );
     params.put("workQueueType", type.getWorkQueueType() );
@@ -101,7 +101,7 @@ public class WorkQueueTypeService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueType", type.getWorkQueueType());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     params.put("workQueueCategoryId", type.getWorkQueueCategoryId());
     params.put("companyId", user.getCompanyId());
     Long id = sqlCache.updateReturningId("workQueueType.insertType", params, "id").longValue();
@@ -118,7 +118,7 @@ public class WorkQueueTypeService {
 
     sqlCache.update("workQueueType.deleteProcessStepWorkQueueType",
       ImmutableMap.of("id", id,
-        "modifiedById", currentUser.getId()));
+        "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<ProcessStepWorkQueueType> getProcessStepWorkQueueType(Long id) {
@@ -132,7 +132,7 @@ public class WorkQueueTypeService {
     User currentUser = securityService.getCurrentUser();
 
     Long id = sqlCache.updateReturningId("workQueueType.insertProcessStepWorkQueueType",
-      ImmutableMap.of("createdById", currentUser.getId(),
+      ImmutableMap.of("createdById", currentUser.trueUserId(),
         "workQueueTypeId", wqt.getWorkQueueTypeId(),
         "processStepId", wqt.getProcessStepId()), "id").longValue();
 
@@ -158,7 +158,7 @@ public class WorkQueueTypeService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     for(WorkQueueTypeProjectStatus ps : processStepWorkQueueType.getProjectStatuses()) {
       if(null != ps.getId() && ps.getArchived()) {
@@ -179,7 +179,7 @@ public class WorkQueueTypeService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     for(WorkQueueTypeProcessStepStatus ps : processStepWorkQueueType.getProcessStepStatuses()) {
       if(null != ps.getId() && ps.getArchived()) {

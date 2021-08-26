@@ -83,6 +83,11 @@
       values (:projectProcessStepId, :processStepWorkQueueTypeId, :noteId)
   ]]></note.insertProjectProcessStepWorkQueueNoteRelation>
 
+  <note.insertProjectProdStatsNoteRelation><![CDATA[
+    insert into flow.project_prod_stats_note(project_id, project_production_stats_type_id, note_id)
+      values (:projectId, (select id from flow.project_production_stats_type where production_stats_type = :productionType), :noteId)
+  ]]></note.insertProjectProdStatsNoteRelation>
+
   <note.deleteNote><![CDATA[
     update flow.note
         set archived = true,

@@ -73,7 +73,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("id", id);
 
     sqlCache.update("tournament.delete", params);
@@ -83,7 +83,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("id", tournament.getId());
     params.put("tournamentName", tournament.getTournamentName());
     params.put("tournamentOwnerTypeId", tournament.getTournamentOwnerTypeId());
@@ -99,7 +99,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("tournamentName", tournament.getTournamentName());
     params.put("tournamentOwnerTypeId", tournament.getTournamentOwnerTypeId());
     params.put("tournamentFormulaId", tournament.getTournamentFormulaId());
@@ -149,7 +149,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("numberOfUsers", bracket.getNumberOfUsers());
     params.put("tournamentId", bracket.getTournamentId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
     return getBracket(id);
@@ -162,7 +162,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("numberOfUsers", bracket.getNumberOfUsers());
     params.put("tournamentId", bracket.getTournamentId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
 
@@ -178,7 +178,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("id", id);
 
     sqlCache.update("tournament.deleteBracket", params);
@@ -191,7 +191,7 @@ public class TournamentService {
     params.put("bracketId", round.getTournamentBracketId());
     params.put("startDate", round.getStartDate());
     params.put("endDate", round.getEndDate());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     //if replicating then always insert
     if(null != round.getId() && !replicate) {
@@ -209,7 +209,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("id", round.getId());
 
     sqlCache.update("tournament.deleteRound", params);
@@ -220,7 +220,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     params.put("bracketId", bracketId);
 
     sqlCache.query("tournament.generateMatches", params, String.class);
@@ -230,7 +230,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     for(Match m : matches) {
       //advance each match
@@ -247,7 +247,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     for(Match m : matches) {
       //advance each match
@@ -269,7 +269,7 @@ public class TournamentService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     params.put("userId", userId);
     params.put("matchId", matchId);
 

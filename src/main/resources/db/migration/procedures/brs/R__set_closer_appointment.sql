@@ -149,7 +149,7 @@ BEGIN
                  inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
                  inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
             and pst4.id in (1, 4)
-        where (ppscfv2.timestamp_value,  ppscfv1.timestamp_value) overlaps ( p_appointment_start_time,(p_appointment_start_time + (90 || 'minutes')::interval)::timestamp)
+        where (ppscfv.timestamp_value,  ppscfv2.timestamp_value) overlaps ( p_appointment_start_time,(p_appointment_start_time + (case when p_remote is true then 60 else 90 end || 'minutes')::interval)::timestamp)
           and ppscfv1.int_value = v_user_position_id;
 
         if v_user_already_assigned < 1 and v_user_already_assigned_to_another_project_id < 1 then
@@ -209,7 +209,7 @@ BEGIN
 
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
-                set timestamp_value = p_appointment_start_time + (case when p_remote is false then 90 else 30 end || 'minutes')::interval,
+                set timestamp_value = p_appointment_start_time + (case when p_remote is false then 90 else 60 end || 'minutes')::interval,
                     modified_by_id  = p_current_user_id,
                     date_modified   = now()
                 where id = v_project_process_step_custom_field_value_id;
@@ -219,7 +219,7 @@ BEGIN
                                                                           timestamp_value,
                                                                           date_created, created_by_id, archived)
                 VALUES (p_project_process_step_id, 6, p_appointment_start_time +
-                                                      (case when p_remote is false then 90 else 30 end || 'minutes')::interval, now(),
+                                                      (case when p_remote is false then 90 else 60 end || 'minutes')::interval, now(),
                         p_current_user_id, false);
             end if;
             -- raise notice 'user id %',v_user_id;
@@ -234,7 +234,7 @@ BEGIN
                                 v_user_id::integer,
                                 p_appointment_start_time::timestamp,
                                 (p_appointment_start_time +
-                                 (case when p_remote is false then 90 else 30 end || 'minutes')::interval)::timestamp,
+                                 (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp,
                                 v_user_full_name,
                                 v_user_email;
         elsif v_user_already_assigned_to_another_project_id > 0 and v_user_already_assigned = 0 and array_length(p_users, 1) > 1 then

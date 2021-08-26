@@ -87,17 +87,17 @@ public class NoteService {
   }
 
   public Note saveNote(Long typeId, Note note) {
-    return saveNote(typeId, note, false);
+    return saveNote(typeId, note, false, false);
   }
 
-  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote) {
+  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote, Boolean isProjectProdStats) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
     params.put("note", note.getNote());
     // parentId is used for a hierarchy of notes - currently we don't use it
     params.put("parentId", note.getParentId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     // @randa: Would an upsert be better here? -- i dont think so because there is not a unique constraint i could throw on it.  the same user can add multiple notes to the same project/contact/user/etc
     Long noteId;
@@ -115,6 +115,12 @@ public class NoteService {
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
         sqlCache.update("note.insertProjectProcessStepWorkQueueNoteRelation", p2);
+      } else if(isProjectProdStats) {
+        // isProjectProdStats is used for Installer Dashboard
+        p2.put("projectId", note.getPrimaryId());
+        p2.put("productionType", note.getInstallDashTile());
+        p2.put("noteId", noteId);
+        sqlCache.update("note.insertProjectProdStatsNoteRelation", p2);
       } else {
         //add to the glue table only if it is a new note
         p2.put("primaryId", note.getPrimaryId());
@@ -190,7 +196,7 @@ public class NoteService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("noteId", noteId);
 
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("note.deleteNote", params);
   }
 

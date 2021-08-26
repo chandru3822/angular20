@@ -55,11 +55,11 @@ public class ZipCodeService {
 
     if(null != zipCode.getId()) {
       id = zipCode.getId();
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("id", id);
       sqlCache.update("propToolZipCode.update", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolZipCode.insert", params, "id").longValue();
     }
@@ -71,7 +71,7 @@ public class ZipCodeService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("propToolZipCode.delete", params);
   }
