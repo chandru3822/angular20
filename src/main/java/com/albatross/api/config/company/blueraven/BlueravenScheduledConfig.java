@@ -41,11 +41,6 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   //
   */
 
-  @Override
-  public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-    taskRegistrar.setScheduler(taskExecutor());
-  }
-
   @PostConstruct
   public void init() {
     log.info("*** BRS_CRON: cron service enabled ***");
