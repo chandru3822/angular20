@@ -585,8 +585,9 @@ public class SmartlistService {
           "          where wqc.project_process_step_id = flow.project_process_step.id\n" +
           "            and pswqt2.id = pswqt.id\n" +
           "            and wqc.date_exited_queue is null\n" +
-          "            order by wqc.date_entered_queue desc\n" +
-          "           limit 1 ), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\"," +
+          "            and pswqt2.archived is false\n" +
+          "            and pswqtpstt.archived is false\n" +
+          "       ), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\", \n" +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
           " (select array_to_string(array(\n" +
