@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Reimbursement Requests</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}, getDataForNewRequest()]">
+            <v-btn text @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}]">
               <v-icon v-if="!createNew">add</v-icon>
               {{createNew ? 'cancel' : 'Add Reimbursement Request'}}
             </v-btn>
@@ -158,7 +158,90 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <v-row v-else>
+      <v-col cols="12">
+        <v-card flat class="pa-4">
+        <v-btn text @click="selectedRequest = {}">Back</v-btn><br/>
+          <v-row class="px-4">
+            <v-col cols="12" sm="5">
+              <h3 class="mb-5">Reimbursement Request Details</h3>
+              <table>
+                <tr><td class="left-column">Submitted By:</td><td>{{selectedRequest.createdBy}}</td></tr>
+                <tr><td class="left-column">Position:</td><td>{{selectedRequest.positionName}}</td></tr>
+                <tr><td class="left-column">Amount:</td><td>{{selectedRequest.amount | currency('$', 2)}}</td></tr>
+                <tr><td class="left-column">Expense Date:</td><td>{{selectedRequest.expenseDate | formatDate('date')}}</td></tr>
+                <tr><td class="left-column">Budget User:</td><td>{{selectedRequest.expenseBudgetUser}}</td></tr>
+                <tr><td class="left-column">Budget Type:</td><td>{{selectedRequest.budgetType}}</td></tr>
+                <tr><td class="left-column">Request Created On:</td><td>{{selectedRequest.dateCreated | formatDate('date')}}</td></tr>
+                <tr><td class="left-column">ID Number:</td><td>{{selectedRequest.id}}</td></tr>
+                <tr>
+                  <td class="left-column">Request Details:</td>
+                  <td>
+                    <v-card flat class="detail-container">
+                      {{selectedRequest.details}}
+                    </v-card>
+                  </td>
+                </tr>
+              </table>
+            </v-col>
+            <v-col cols="12" sm="7" class="pt-0">
+                <v-data-table
+                  v-if="selectedRequest.expenses.length > 0"
+                  :headers="expenseHeaders"
+                  :items="selectedRequest.expenses"
+                  disable-sort
+                  :items-per-page="-1"
+                  :mobile-breakpoint="0"
+                  hide-default-footer
+                  class="elevation-0 fix-column-width-bug square-card"
+                >
+                  <template #header.icons="{}">
+                    <div class="text-right mr-2">
+                      <v-btn text x-small @click="selectedRequest.expenses.push({})">
+                        <v-icon>add</v-icon>
+                      </v-btn>
+                    </div>
+                  </template>
 
+                  <template #item="{ item, index }">
+                    <tr :class="{'shaded-row': index % 2}">
+                      <td class="text-left">
+                        <v-autocomplete v-model="item.glCodeId"
+                                        :items="glCodes"
+                                        label="GL Code"
+                                        hide-details
+                                        single-line
+                                        item-text="code"
+                                        item-value="id"
+                        >
+                          <template slot='item' slot-scope='{ item }'>
+                            {{ item.code }} - {{ item.description }}
+                          </template>
+                        </v-autocomplete>
+                      </td>
+                      <td class="text-left">
+                        <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
+                                        :items="usersWithBudget"
+                                        label="Budget User"
+                                        item-text="fullName"
+                                        single-line
+                                        hide-details
+                                        item-value="id"
+                                        class="clickable"
+                                        @input="getBudgetTypesForUser()"
+                        ></v-autocomplete>
+                      </td>
+
+                    </tr>
+                  </template>
+                </v-data-table>
+
+            </v-col>
+          </v-row>
+        </v-card>
+        {{selectedRequest}}
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -207,10 +290,19 @@ export default {
         {text: 'Expense Date', value: 'expenseDate', show: true},
         {text: null, value: 'icons', show: true}
       ],
+      expenseHeaders: [
+        {text: 'GL Code', value: 'glCode', show: true},
+        {text: 'Budget User', value: 'budgetUser', show: true},
+        {text: 'Budget Type', value: 'budgetType', show: true},
+        {text: 'Amount', value: 'amount', show: true},
+        {text: null, value: 'icons', show: true, width: '50px'}
+      ],
     }
   },
   created() {
     this.getReimbursementRequests()
+    this.getGlCodes()
+    this.getUsersWithBudget()
   },
   watch: {
     userSearchText (val) {
@@ -297,12 +389,6 @@ export default {
         }
       }
     },
-    getDataForNewRequest() {
-      if(this.createNew) {
-        this.getGlCodes()
-        this.getUsersWithBudget()
-      }
-    },
     getReimbursementUsersDebounced(val) {
       clearTimeout(this._searchTimerId)
       this._searchTimerId = setTimeout(() => {
@@ -368,5 +454,14 @@ export default {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.left-column {
+  width: 175px;
+}
+
+.detail-container {
+  width: 250px;
+  height: auto
 }
 </style>
