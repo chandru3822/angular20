@@ -2,36 +2,41 @@
   <reimbursement.getPendingRequests>
     <![CDATA[
             SELECT rr.id,
-              rr.amount,
-              rr.date_created,
-              rr.details,
-              rr.attachment_id,
-              rr.expense_date,
-              rr.reimbursement_request_status_id,
-              rr.expense_budget_id,
-              eb.user_id as expense_budget_user_id,
-              ebu.first_name || ' ' || ebu.last_name as expense_budget_user,
-              bt.name as budget_type,
-              rr.created_by_user_id,
-              u.first_name || ' ' || u.last_name as created_by,
-              upv.position_name,
-              coalesce((SELECT array_to_json(array_agg(row_to_json(expenses)))
-                        FROM (
-                               SELECT e.id,
-                                      e.date_created "dateCreated",
-                                      e.expense_amount "expenseAmount"
-                               FROM brs.expense e
-                                 WHERE e.reimbursement_request_id = rr.id
-                                    AND e.rejected_date is null
-                             ) AS expenses), '[]') AS expenses
-            FROM brs.reimbursement_request rr
-              INNER JOIN flow."user" u on u.id = rr.created_by_user_id
-              LEFT JOIN flow.user_positions_vw upv on upv.id = u.id and upv.active is true and upv.primary_flag is true
-              LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
-              LEFT JOIN flow."user" ebu on ebu.id = eb.user_id
-              LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
-            WHERE rr.reimbursement_request_status_id = 3
-                and rr.archived is not true
+       rr.amount,
+       rr.date_created,
+       rr.details,
+       rr.attachment_id,
+       rr.expense_date,
+       rr.reimbursement_request_status_id,
+       rr.expense_budget_id,
+       eb.user_id as expense_budget_user_id,
+       ebu.first_name || ' ' || ebu.last_name as expense_budget_user,
+       bt.name as budget_type,
+       rr.created_by_id,
+       u.first_name || ' ' || u.last_name as created_by,
+       p.position as position_name,
+       coalesce((SELECT array_to_json(array_agg(row_to_json(expenses)))
+                 FROM (
+                        SELECT e.id,
+                               e.date_created "dateCreated",
+                               e.expense_amount "expenseAmount"
+                        FROM brs.expense e
+                        WHERE e.reimbursement_request_id = rr.id
+                          AND e.rejected_date is null
+                      ) AS expenses), '[]') AS expenses
+FROM brs.reimbursement_request rr
+       INNER JOIN flow."user" u on u.id = rr.created_by_id
+       LEFT JOIN flow.user_position up on up.user_id = u.id
+                                   and up.archived is false
+                                     and up.primary_flag is true
+                      and up.start_date < now()
+                      and (up.end_date is null or up.end_date > now())
+       left join flow.position p on p.id = up.position_id
+       LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
+       LEFT JOIN flow."user" ebu on ebu.id = eb.user_id
+       LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+WHERE rr.reimbursement_request_status_id = 3
+  and rr.archived is not true
         ]]>
   </reimbursement.getPendingRequests>
 
@@ -113,13 +118,14 @@
 
   <reimbursement.getAllActiveUsers>
     <![CDATA[
-            SELECT distinct u.id,
-              u.first_name || ' ' || u.last_name full_name
-            from flow.user_positions_vw u
-            where  u.first_name || ' ' || u.last_name ILIKE '%' || replace(translate(trim(:searchText), ',.&^%#[]()$*-+=', ''), ' ', '%') || '%'
-                   and upv.start_date < now()
-                  and (upv.end_date is null or upv.end_date > now())
-            ORDER BY full_name
+        SELECT distinct upv.user_id as id,
+                        upv.first_name || ' ' || upv.last_name full_name
+        from flow.user_positions_vw upv
+        where  upv.first_name || ' ' || upv.last_name ILIKE '%' || replace(translate(trim(:searchText), ',.&^%#[]()$*-+=', ''), ' ', '%') || '%'
+          and upv.archived is false
+          and upv.start_date < now()
+          and (upv.end_date is null or upv.end_date > now())
+        ORDER BY full_name
         ]]>
   </reimbursement.getAllActiveUsers>
 

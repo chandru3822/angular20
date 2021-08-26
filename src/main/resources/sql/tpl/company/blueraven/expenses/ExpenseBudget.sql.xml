@@ -186,16 +186,21 @@
     (:budgetTypeId, :startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :notes)
   </expenseBudget.insertExpenseBudget>
 
+
+  <expenseBudget.getAvailableBudgetsForUser>
+    SELECT * FROM brs.get_available_budgets_for_user(:userId::integer, :expenseDate::DATE)
+  </expenseBudget.getAvailableBudgetsForUser>
+
   <expenseBudget.getUsersWithBudget>
     <![CDATA[
-            select DISTINCT u.id,
-              u.first_name || ' ' || u.last_name as full_name
-            from brs.user_positions_vw u
-              INNER JOIN brs.expense_budget eb on eb.user_id = u.id
-            where position_id in (3,6,10,227,237,238,226,219,73) and u.active is true
-                  and u.start_date < now() at time zone 'US/Mountain'
-                  and (u.end_date is null or u.end_date > now() at time zone 'US/Mountain')
-                  and eb.archived is not true
+            select DISTINCT u.user_id as id,
+                u.first_name || ' ' || u.last_name as full_name
+            from flow.user_positions_vw u
+                   INNER JOIN brs.expense_budget eb on eb.user_id = u.user_id
+            where position_id in (3,6,10,227,237,238,226,219,73) and u.archived is false
+              and u.start_date < now() at time zone 'US/Mountain'
+              and (u.end_date is null or u.end_date > now() at time zone 'US/Mountain')
+              and eb.archived is not true
             ORDER BY full_name;
         ]]>
   </expenseBudget.getUsersWithBudget>

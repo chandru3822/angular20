@@ -133,6 +133,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getGlCodes} from './expenseService'
 
 export default {
   name: 'GlCodes',
@@ -162,7 +163,7 @@ export default {
     async getGlCodes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/expenses/glCodes`, 'blueraven')
+        const {data} = await getGlCodes()
         this.glCodes = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

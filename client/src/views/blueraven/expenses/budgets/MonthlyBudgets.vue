@@ -157,7 +157,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import {getBudgetTypes} from './budgetService'
+import {getBudgetTypes} from '../expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"

@@ -244,6 +244,18 @@ const router = new Router({
           },
           children: [
             {
+              path: 'reimbursementRequests',
+              name: 'reimbursementRequests',
+              meta: {title: 'Albatross - Reimbursement Requests'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/ReimbursementRequests.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
               path: 'glCodes',
               name: 'glCodes',
               meta: {title: 'Albatross - GL Codes'},

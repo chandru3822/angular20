@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-app-bar dense tabs color="white" class="elevation-1">
+        <v-app-bar dense tabs color="white" class="elevation-1 mb-1">
           <v-toolbar-title>Expense Management</v-toolbar-title>
           <v-tabs :optional="false" color="primaryCustom"
                   slot="extension"
@@ -35,6 +35,10 @@
         snackbar: {},
         model: '',
         tabs: [ {
+          label: 'Reimbursement Requests',
+          path: '/expenses/reimbursementRequests',
+          display: this.$store.getters.userHasFeature('EXPENSES')
+        }, {
           label: 'GL Codes',
           path: '/expenses/glCodes',
           display: this.$store.getters.userHasFeature('EXPENSES')

@@ -152,7 +152,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import {getBudgetTypes} from './budgetService'
+import {getBudgetTypes} from '../expenseService'
 
 export default {
   name: 'ExpenseBudgetTemplates',

@@ -234,14 +234,12 @@ public class ExpenseBudgetService {
   }
 
   public String getAvailableBudgetsForUser(Long userId, String expenseDate) {
-    String sqlQuery = "SELECT * FROM brs.get_available_budgets_for_user(:userId::integer, :expenseDate::DATE)";
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("expenseDate", expenseDate);
 
-    String updated = sqlCache.queryForObject(sqlQuery, params, String.class);
-    return updated;
+    String updated = sqlCache.queryForObject("expenseBudget.getAvailableBudgetsForUser", params, String.class);
+    return null != updated ? updated : "[]";
   }
 
   public List<ExpenseBudget> getBudgetExpensesVsRemaining(Long userId, String startDate, String endDate){
