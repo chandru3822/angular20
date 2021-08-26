@@ -583,7 +583,7 @@ public class SmartlistService {
           "            inner join flow.process_step_work_queue_type_process_step_status_type pswqtpstt on wqc.process_step_work_queue_type_process_step_status_type_id = pswqtpstt.id\n" +
           "            inner join flow.process_step_work_queue_type pswqt2 on  pswqt2.id = pswqtpstt.process_step_work_queue_type_id\n" +
           "          where wqc.project_process_step_id = flow.project_process_step.id\n" +
-          "            and pswqt2.id = pswqt.id\n" +
+          "            and pswqt2.id = " + smartlist.getWorkQueueTypeId() + "\n" +
           "            and wqc.date_exited_queue is null), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\"," +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
