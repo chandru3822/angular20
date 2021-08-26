@@ -43,7 +43,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   @Override
   public void configureTasks(ScheduledTaskRegistrar blueravenTaskRegistrar) {
-    blueravenTaskRegistrar.setScheduler(taskExecutor());
+    blueravenTaskRegistrar.setScheduler(blueravenTaskExecutor());
   }
 
   @PostConstruct
@@ -62,7 +62,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   }
 
   @Bean(destroyMethod = "shutdown")
-  public Executor taskExecutor() {
+  public Executor blueravenTaskExecutor() {
     return Executors.newScheduledThreadPool(10);
   }
 
