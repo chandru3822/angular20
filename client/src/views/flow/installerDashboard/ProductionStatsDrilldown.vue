@@ -34,7 +34,7 @@
           <td v-if="title === 'Same-week Closeout %' || title === 'On-time Closeout %'" class="text-left">
             <router-link :to="`/project/${item.project_id}/processStep/${item.processstepid}?processStepId=3365`" target="_blank">{{ item.project_id }}</router-link>
           </td>
-          <td v-else-if="title === 'Inspection Pass Rate'" class="text-left">
+          <td v-else-if="title === 'Inspection Pass Rate' || title === 'Substantial Completions'" class="text-left">
             <router-link :to="`/project/${item.project_id}`" target="_blank">{{ item.project_id }}</router-link>
           </td>
           <td v-else class="text-left">{{item.project_id}}</td>
@@ -45,8 +45,49 @@
           <td class="text-left">{{item.substantial_completion_date | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Pass Rate'" class="text-left">{{item.ahj_inspection_start_time | formatDate('date')}}</td>
           <td v-show="title === 'Inspection Pass Rate'" class="text-left">{{item.ahj_inspection_outcome_name}}</td>
-          <td v-show="title === 'Inspection Pass Rate'" class="text-left">{{item.ahj_inspection_fail_reason}}</td>
-          <td v-show="title === 'Inspection Pass Rate'" class="text-left">{{item.inspection_fail_feedback}}</td>
+          <td v-show="title === 'Inspection Pass Rate'" class="text-left inspection-fail-col-td">{{item.ahj_inspection_fail_reason}}</td>
+          <td v-show="title === 'Inspection Pass Rate'" class="text-left inspection-fail-col-td">{{item.inspection_fail_feedback}}</td>
+          <td class="notes-column">
+            <div class="flex-display align-center" >
+                  <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
+                     {{item.notes[0].note}}
+                  </pre>
+              <v-spacer></v-spacer>
+              <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
+                <v-icon>mdi-comment-text-multiple</v-icon>
+              </v-btn>
+            </div>
+            <v-dialog
+              :key="ytfDoWeNeedThis"
+              v-model="item.showNotesModal"
+            >
+              <v-card class="wqt-notes-container">
+                <v-card-title class="primary-custom-bg white--text">{{item.project_name}} - {{title}}</v-card-title>
+                <v-card-text class="py-3">
+                  <NotesAndActivity
+                    :showNotes="true"
+                    :showActivity="false"
+                    :notes="item.notes"
+                    :primary-id="item.project_id"
+                    :install-dash-tile="title"
+                    type="ProjectProductionStats"
+                  />
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+
+                  <v-btn
+                    color="primaryCustom"
+                    class="white--text mr-2 mb-3"
+                    @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
+                  >
+                    Close
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </td>
         </tr>
       </template>
     </v-data-table>
@@ -55,9 +96,13 @@
 
 <script>
   import constants from '@/helpers/constants'
+  import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 
   export default {
     name: 'ProductionStatsDrilldown',
+    components: {
+      NotesAndActivity
+    },
     props: {
       startDate: String,
       endDate: String,
@@ -86,8 +131,10 @@
           {text: 'AHJ Inspection Date', value: 'ahj_inspection_start_time', show: true},
           {text: 'AHJ Inspection Outcome', value: 'ahj_inspection_outcome_name', show: true},
           {text: 'AHJ Inspection Fail Reason', value: 'ahj_inspection_fail_reason', show: true},
-          {text: 'Inspection Fail Feedback', value: 'inspection_fail_feedback', show: true}
-        ]
+          {text: 'Inspection Fail Feedback', value: 'inspection_fail_feedback', show: true},
+          {text: 'Notes', value: 'notes', show: true}
+        ],
+        ytfDoWeNeedThis: 0,
       }
     },
     computed: {
@@ -144,18 +191,21 @@
 <style lang="scss">
   #stats-drilldown .v-data-table__wrapper {
     height: calc(100vh - 325px);
-    width: 1300px;
+    width: 1600px;
     min-height: 350px;
   }
   .green-row {
     background-color: #c3fad2;
+  }
+  .inspection-fail-col-td {
+    width: 175px;
   }
 </style>
 
 <style lang="scss" scoped>
   #stats-drilldown {
     height: calc(100vh - 150px);
-    width: 1300px;
+    width: 1600px;
     min-height: 300px;
   }
 </style>
