@@ -1,4 +1,4 @@
-create table flow.project_production_stats_type
+CREATE TABLE if not exists flow.project_production_stats_type
 (
     id                       serial                not null,
     production_stats_type varchar(100)           not null,
