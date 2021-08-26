@@ -33,7 +33,7 @@ public class FinancierService {
     params.put("name", financier.getName());
     params.put("submissionMethod", financier.getSubmissionMethod());
     params.put("archived", financier.getArchived());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     return sqlCache.update("financier.add", params);
   }
@@ -46,7 +46,7 @@ public class FinancierService {
     params.put("name", financier.getName());
     params.put("submissionMethod", financier.getSubmissionMethod());
     params.put("archived", financier.getArchived());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("financier.update", params);
   }

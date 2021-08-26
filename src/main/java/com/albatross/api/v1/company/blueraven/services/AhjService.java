@@ -41,7 +41,7 @@ public class AhjService {
   public Optional<AhjSummary> saveAhj(Long id, AhjSummary ahjSummary) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("name", ahjSummary.getName());
     params.put("metroAreaId", ahjSummary.getMetroAreaId());
     params.put("companyStateId", ahjSummary.getCompanyStateId());
@@ -98,7 +98,7 @@ public class AhjService {
     params.put("description", item.getDescription());
     params.put("displayOrder", item.getDisplayOrder());
     params.put("checklistTypeId", item.getChecklistTypeId());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("failedInspectionResourceId", item.getFailedInspectionResourceId());
     params.put("failedInspectionDate", item.getFailedInspectionDate());
     params.put("failedInspectionProject", item.getFailedInspectionProject());
@@ -124,7 +124,7 @@ public class AhjService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", itemId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.checklist.delete", params);
   }
@@ -142,7 +142,7 @@ public class AhjService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("name", contact.getName());
     params.put("title", contact.getTitle());
     params.put("email", contact.getEmail());
@@ -176,7 +176,7 @@ public class AhjService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.contact.delete", params);
   }

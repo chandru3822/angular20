@@ -115,7 +115,6 @@
         label="Available Values (list of value id)"
         item-text="name"
         item-value="id"
-        attach
       />
 
 <!--      if field is a multi-select list -->
@@ -127,7 +126,6 @@
         multiple
         item-text="name"
         item-value="id"
-        attach
       />
 
 <!--      if field doesn't have any custom values, display the data type requirements -->
@@ -138,7 +136,6 @@
         :items="dataTypeRequirements"
         item-text="dataTypeValue"
         item-value="id"
-        attach
         @input="resetNewDataTypeRequirement"
       />
 
@@ -302,7 +299,6 @@
               label="Available Values"
               item-text="name"
               item-value="id"
-              attach
           />
 
           <!--      if field is a multi-select list -->
@@ -314,7 +310,6 @@
               multiple
               item-text="name"
               item-value="id"
-              attach
           />
 
           <!--      if field doesn't have any custom values, display the data type requirements -->
@@ -326,7 +321,6 @@
               item-text="dataTypeValue"
               item-value="id"
               @input="resetNewDataTypeRequirement"
-              attach
           />
 
           <!--      if nothing else sticks, then it's a regular text input -->

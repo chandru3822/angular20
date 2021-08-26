@@ -54,6 +54,7 @@
         inner join flow.feature f on f.id = cf.feature_id
     where cf.company_id = :companyId
     and cf.archived is not true
+    and cf.hidden is not true
     order by cf.feature_name
   ]]></feature.getAllForCompany>
 
@@ -77,6 +78,7 @@
     from flow.company_feature cf
     where cf.company_id = :companyId
       and cf.archived is not true
+      and cf.hidden is not true
     order by cf.feature_name
   ]]></feature.getAllForCompanyWithAccess>
 
@@ -86,6 +88,7 @@
        cf.company_id as "companyId",
        cf.feature_id as "featureId",
        cf.archived,
+       cf.hidden,
        coalesce((
                     SELECT array_to_json(array_agg(row_to_json(accessControl)))
                     FROM (
@@ -107,11 +110,12 @@
         and cf.archived is not true
       order by cf.feature_name
   ]]></feature.getForUser>
-  
+
   <feature.getPositionAccessForUser><![CDATA[
     select distinct feature_id,
            cf.feature_name,
            f.feature_code,
+           cf.hidden,
            ac.access_code,
            pac.enabled
     from flow.position_feature_access_control pac
@@ -163,6 +167,93 @@
       and (up.end_date is null or up.end_date >= now())
       and cf.company_id = :companyId
   ]]></feature.getAccessForUser>
+
+  <feature.getMasqueradedUserFeatureAccess><![CDATA[
+    with masq_user_access as (
+        WITH t as (
+        select feature_id, cf.feature_name, f.feature_code, ac.access_code, uac.enabled
+        from flow.user_feature_access_control uac
+               inner join flow.company_feature cf on cf.id = uac.company_feature_id
+               inner join flow.company c on c.id = :companyId
+               inner join flow.feature f on f.id = cf.feature_id
+               inner join flow.access_control ac on ac.id = uac.access_control_id
+        where user_id = :userId
+          and cf.archived is not true
+          and enabled is true
+          and cf.company_id = :companyId
+      )
+                                SELECT *
+                                FROM t
+                                UNION
+                                select distinct feature_id,
+                                                cf.feature_name,
+                                                f.feature_code,
+                                                ac.access_code,
+                                                pac.enabled
+                                from flow.position_feature_access_control pac
+                                       inner join flow.position p on p.id = pac.position_id and p.company_id = :companyId
+                                       inner join flow.company_feature cf on cf.id = pac.company_feature_id
+                                       inner join flow.company c on c.id = cf.company_id and c.id = :companyId
+                                       inner join flow.user_position up
+                                                  on up.position_id = pac.position_id and up.user_id = :userId
+                                       inner join flow.feature f on f.id = cf.feature_id
+                                       inner join flow.access_control ac on ac.id = pac.access_control_id
+                                WHERE pac.enabled is true
+                                  and up.archived is not true
+                                  and up.start_date <= now()
+                                  and cf.archived is not true
+                                  and (up.end_date is null or up.end_date >= now())
+                                  and cf.company_id = :companyId
+      )
+      select *
+      from masq_user_access mua
+      where exists(
+                WITH t1 as (
+                  select feature_id, cf2.feature_name, f2.feature_code, ac2.access_code, uac2.enabled
+                  from flow.user_feature_access_control uac2
+                         inner join flow.company_feature cf2 on cf2.id = uac2.company_feature_id
+                         inner join flow.company c2 on c2.id = :companyId
+                         inner join flow.feature f2 on f2.id = cf2.feature_id
+                         inner join flow.access_control ac2 on ac2.id = uac2.access_control_id
+                  where user_id = :trueUserId
+                    and mua.feature_id = cf2.feature_id
+                    and mua.feature_code = f2.feature_code
+                    and mua.feature_name = cf2.feature_name
+                    and mua.access_code = ac2.access_code
+                    and mua.enabled = uac2.enabled
+                    and cf2.archived is not true
+                    and enabled is true
+                    and cf2.company_id = :companyId
+                )
+                SELECT *
+                FROM t1
+                UNION
+                select distinct feature_id,
+                                cf3.feature_name,
+                                f3.feature_code,
+                                ac3.access_code,
+                                pac3.enabled
+                from flow.position_feature_access_control pac3
+                       inner join flow.position p3 on p3.id = pac3.position_id and p3.company_id = :companyId
+                       inner join flow.company_feature cf3 on cf3.id = pac3.company_feature_id
+                       inner join flow.company c3 on c3.id = cf3.company_id and c3.id = :companyId
+                       inner join flow.user_position up3
+                                  on up3.position_id = pac3.position_id and up3.user_id = :trueUserId
+                       inner join flow.feature f3 on f3.id = cf3.feature_id
+                       inner join flow.access_control ac3 on ac3.id = pac3.access_control_id
+                WHERE pac3.enabled is true
+                  and up3.archived is not true
+                  and mua.feature_id = cf3.feature_id
+                  and mua.feature_code = f3.feature_code
+                  and mua.feature_name = cf3.feature_name
+                  and mua.access_code = ac3.access_code
+                  and mua.enabled = pac3.enabled
+                  and up3.start_date <= now()
+                  and cf3.archived is not true
+                  and (up3.end_date is null or up3.end_date >= now())
+                  and cf3.company_id = :companyId
+              )
+  ]]></feature.getMasqueradedUserFeatureAccess>
 
   <feature.upsertUserFeatureAccessControl><![CDATA[
     insert into flow.user_feature_access_control(company_feature_id, access_control_id, user_id, enabled)

@@ -94,7 +94,7 @@
             ></v-autocomplete>
             <div class="mb-3">
               <label>Active:</label>
-              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.activeFlag" @change="dirtySystemFields = true">
+              <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2" v-model="org.activeFlag" @change="dirtySystemFields = true">
             </div>
             <div class="mb-3">
               <label>Show in Scheduling Tool:</label>
@@ -172,6 +172,7 @@
         states: [],
         fieldsSaving: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'ADMIN'),
         orgId: parseInt(this.$route.params.id),
         companyId: this.$store.state.user.details.companyId,
         parentId: this.$store.state.user.details.parentCompanyId,

@@ -182,7 +182,6 @@
               :items="processStepStatuses"
               label="Available Values"
               multiple
-              attach
               @change="validateRequirementForm()"
               item-text="processStepStatusType"
               return-object
@@ -339,7 +338,6 @@
                     :items="item.availableListOfValues"
                     label="Available Values"
                     multiple
-                    attach
                     @change="validateRequirementForm()"
                     item-text="name"
                     return-object

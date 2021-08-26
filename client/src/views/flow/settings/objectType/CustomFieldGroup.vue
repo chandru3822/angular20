@@ -55,9 +55,7 @@
           return-object
           height="35px"
           class="d-inline-block mr-3"
-          @change="ownerReadOnlyPositionsChanged = true"
-          attach
-        >
+          @change="ownerReadOnlyPositionsChanged = true">
           <v-list-item
             slot="prepend-item"
             ripple
@@ -245,7 +243,6 @@
                                   return-object
                                   autocomplete="off"
                                   @input="assignCustomField(item)"
-                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
@@ -259,7 +256,6 @@
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
-                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.processStepName }}
@@ -273,7 +269,6 @@
                                   return-object
                                   autocomplete="off"
                                   @input="assignAncillaryCustomField(item)"
-                                  attach
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
@@ -318,9 +313,7 @@
                                         return-object
                                         height="35px"
                                         class="d-inline-block mr-3"
-                                        @change="cf.positionsChanged = true"
-                                        attach
-                                      >
+                                        @change="cf.positionsChanged = true">
                                         <v-list-item
                                           slot="prepend-item"
                                           ripple
@@ -380,7 +373,6 @@
                                         height="35px"
                                         class="d-inline-block mr-3"
                                         @change="cf.hiddenPositionsChanged = true"
-                                        attach
                                       >
                                         <v-list-item
                                           slot="prepend-item"

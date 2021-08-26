@@ -116,10 +116,10 @@ public class OrgTypeService {
     if(orgType.getId() != null) {
       id = orgType.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("orgType.updateOrgType", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       id = sqlCache.updateReturningId("orgType.insertOrgType", params, "id").longValue();
     }
 

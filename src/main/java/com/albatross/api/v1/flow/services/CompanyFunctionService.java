@@ -91,7 +91,7 @@ public class CompanyFunctionService {
     queryParams.put("customFieldGroupAssignmentId", param.getCustomFieldGroupAssignmentId());
     queryParams.put("dynamicValue", param.getDynamicValue());
     queryParams.put("systemValueId", param.getSystemValueId());
-    queryParams.put("userId", currentUser.getId());
+    queryParams.put("userId", currentUser.trueUserId());
 
     Long id = null;
     if(null != param.getId()) {

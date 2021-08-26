@@ -27,7 +27,7 @@ public class UserAccountDetails implements UserDetails {
     @JsonIgnore
     private boolean accountNonExpired, accountNonLocked, credentialsNonExpired, enabled;
     private String firstName, lastName, fullName, awsBucket, companyAbbreviation;
-    private Long masqueradeId, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId;
+    private Long masqueradingUserId, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId;
     private Set<GrantedAuthority> authorities;
 
     public UserAccountDetails() {
@@ -40,6 +40,7 @@ public class UserAccountDetails implements UserDetails {
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.fullName = user.getFullName();
+        this.masqueradingUserId = user.getMasqueradingUserId();
         this.awsBucket = user.getAwsBucket();
         this.companyId = user.getCompanyId();
         this.parentCompanyId = user.getParentCompanyId();
@@ -74,8 +75,8 @@ public class UserAccountDetails implements UserDetails {
      * The ID of the current user within context of business logic, such as masquerading / etc; useful for
      * pulling data when pretending to be someone else.
      */
-    public Long getEffectiveId(){
-        return masqueradeId != null ? masqueradeId : id;
+    public Long getTrueUserId(){
+        return masqueradingUserId != null ? masqueradingUserId : id;
     }
 
     /**
@@ -116,8 +117,8 @@ public class UserAccountDetails implements UserDetails {
         return enabled;
     }
 
-    public Long getMasqueradeId() {
-        return masqueradeId;
+    public Long getMasqueradingUserId() {
+        return masqueradingUserId;
     }
 
     public String getAwsBucket() {
@@ -136,8 +137,8 @@ public class UserAccountDetails implements UserDetails {
         return fullName;
     }
 
-    public void setMasqueradeId(Long masqueradeId) {
-        this.masqueradeId = masqueradeId;
+    public void setMasqueradingUserId(Long masqueradingUserId) {
+        this.masqueradingUserId = masqueradingUserId;
     }
 
     public void setAwsBucket(String awsBucket) {
