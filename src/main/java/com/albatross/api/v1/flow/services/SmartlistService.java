@@ -392,7 +392,7 @@ public class SmartlistService {
     String query;
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
-    if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId()) {
+    if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId() && !smartlist.isProjectDetails()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
@@ -584,7 +584,10 @@ public class SmartlistService {
           "            inner join flow.process_step_work_queue_type pswqt2 on  pswqt2.id = pswqtpstt.process_step_work_queue_type_id\n" +
           "          where wqc.project_process_step_id = flow.project_process_step.id\n" +
           "            and pswqt2.id = pswqt.id\n" +
-          "            and wqc.date_exited_queue is null), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\"," +
+          "            and wqc.date_exited_queue is null\n" +
+          "            and pswqt2.archived is false\n" +
+          "            and pswqtpstt.archived is false\n" +
+          "       ), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\", \n" +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
           " (select array_to_string(array(\n" +
@@ -1383,7 +1386,13 @@ public class SmartlistService {
               whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-            whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+            //if this is a text requirement using null/not null requirement
+            if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+              //treat empty strings as null
+              whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+            } else {
+              whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+            }
           } else {
             if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
@@ -1445,7 +1454,7 @@ public class SmartlistService {
     }
 
     if(null != smartlist.getWorkQueueTypeId()) {
-      query.append(" order by flow.project_process_step.date_created ");
+      query.append(" order by \"Days In Queue\" desc ");
     }
 
     query.append(";");
@@ -1621,7 +1630,13 @@ public class SmartlistService {
           projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-        projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        //if this is a text requirement using null/not null requirement
+        if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+          //treat empty strings as null
+          projectsWhereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+        } else {
+          projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        }
       } else if(Objects.equals(r.getReferenceTable(), "flow.project_user")) {
         projectsWhereClause.append(String.format("\"project_user_position\".id = %s and ", requirementValue));
       } else if(Objects.equals(r.getReferenceTable(), "flow.contact_user")) {
@@ -1999,7 +2014,13 @@ public class SmartlistService {
             whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
           }
         } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-          whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+          //if this is a text requirement using null/not null requirement
+          if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+            //treat empty strings as null
+            whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+          } else {
+            whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+          }
         } else {
           if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));

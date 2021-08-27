@@ -226,7 +226,8 @@ BEGIN
             contact_id                     = new.contact_id,
             project_created_date           = new.date_created,
             company_project_status_type_id = new.company_project_status_type_id,
-            company_project_status_type    = v_company_project_status
+            company_project_status_type    = v_company_project_status,
+            archived                       = new.archived
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
@@ -410,12 +411,19 @@ BEGIN
                     v_value = v_value || '::text';
                 end if;
                 v_project_id2 = coalesce(v_project_id, v_project_id1);
+                case when v_record.update_first_value_only is false then
+                  v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
+                          where project_id = $$ || v_project_id2;
+                 -- raise notice 'what is the sql %',v_sql;
+                else
                 v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$,$$
                           ||v_record.update_first_value_only_id||$$ = $$|| new.id|| $$
                           where project_id = $$ || v_project_id2 || $$ and
-                          case when $$ || v_record.update_first_value_only || $$ is true then ($$ ||
-                        v_record.field_to_update ||
-                        $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and  $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$)) else 1=1 end $$;
+                          ($$ || v_record.field_to_update ||
+                        $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and  $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$))$$;
+               -- raise notice 'what is the sql %',v_sql;
+                end case;
+
                 begin
                     execute v_sql;
                 exception
@@ -490,14 +498,21 @@ BEGIN
                                   ' at time zone ' || quote_literal('US/Mountain') || ')::date';
 
                     end if;
+                    case when v_record.update_first_value_only is false then
+                      --raise notice 'am I here*********';
+                      v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
+                              v_value || $$
+                            where project_id = $$ || v_project_id2;
+                      --raise notice 'what is the sql in the second field %',v_sql;
+                    else
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
                             v_value || $$,$$
                               ||v_record.update_first_value_only_id||$$ = $$|| new.id|| $$
-                            where project_id = $$ || v_project_id2 || $$ and
-                    case when $$ || v_record.update_first_value_only || $$ is true then ($$ ||
-                            v_record.second_field_to_update ||
-                            $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$)) else 1=1 end $$;
-                    -- raise notice 'what is the sql %',v_sql;
+                            where project_id = $$ || v_project_id2 || $$ and ($$ ||
+                            v_record.second_field_to_update || $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$))$$;
+                    --raise notice 'what is the sql in the second field %',v_sql;
+                    end case;
+
                     begin
                         execute v_sql;
                     exception

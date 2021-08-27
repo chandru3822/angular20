@@ -270,8 +270,8 @@ public class ProjectProcessStepService {
     params.put("projectProcessStepId", ppsId);
     List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
     for(ProjectProcessStep step : steps) {
-      //only run if the referring project process step is active
-      if(step.getProcessStepStatusTypeId() == 1) {
+      //only run if the referring project process step is active and not in the same process step we're currently running
+      if(step.getProcessStepStatusTypeId() == 1 && !step.getProcessStepId().equals(processStepId)) {
         performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId);
       }
     }

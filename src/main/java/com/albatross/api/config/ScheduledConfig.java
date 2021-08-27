@@ -1,5 +1,6 @@
 package com.albatross.api.config;
 
+import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.SMSService;
@@ -50,17 +51,30 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.cacheAvailability.enabled:false}")
     private boolean runCachedAvailability;
 
+  @Value(value = "${app.cron.processGenesysContacts.enabled:false}")
+  private Boolean updateGenesysContacts;
+
     @Value(value = "${app.cron.refreshUserPositionOrgs.enabled:false}")
     private boolean refreshUserPositionOrgs;
 
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
+    private final GenesysService genesysService;
+
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(taskExecutor());
     }
+
+    /*
+    //
+    // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN, THAT IS WHEN AUTO TRIGGERS
+    // FYI: RUN AND THEY DO SOME HEAVY LIFTING ON THE DB
+    //
+    */
+
 
     @PostConstruct
     public void init() {
@@ -95,6 +109,16 @@ public class ScheduledConfig implements SchedulingConfigurer {
             log.info("*** CRON: end cache availability ***");
         }
     }
+
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  public void updateGenesysContacts() {
+    if (updateGenesysContacts) {
+      log.info("*** CRON: start processing Genesys contacts ***");
+      genesysService.processGenesysContacts();
+      log.info("*** CRON: end processing Genesys contacts ***");
+    }
+  }
 
     // last day of every month
 //    @Scheduled(cron = "0 0 0 L * ?")
