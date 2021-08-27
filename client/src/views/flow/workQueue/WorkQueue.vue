@@ -44,10 +44,14 @@
           </v-radio-group>
         </div>
         <v-row class="cards my-0">
+          <v-card flat color="transparent" class="ml-8"
+                  v-if="!selectedWorkQueueCategory || !selectedWorkQueueCategory.id">
+            Please select a Work Queue Category
+          </v-card>
           <v-card tile v-for="wq in workQueues" class="flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
                   :key="wq.id"
-                  width="288" :height="wqHasMetrics(wq) ? 223 : 121">
+                  width="288" :height="wqHasMetrics(wq) ? 223 : 105">
             <v-card-text class="pa-0">
               <router-link class="no-text-decoration card-link"
                            :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
@@ -299,7 +303,7 @@ export default {
   position: absolute;
   padding: 4px 8px;
   font-size: 12px;
-  top: 121px;
+  top: 105px;
   left: 0;
   z-index: 2 !important;
   width: 35px;
@@ -345,7 +349,7 @@ export default {
 
 .card-title-container {
   width: 100%;
-  height: 121px;
+  height: 105px;
   padding-right: 24px;
   padding-left: 24px;
   border-top-right-radius: 9px !important;
@@ -383,16 +387,17 @@ export default {
 }
 
 .card-metrics-container {
-  height: 102px;
+  height: 118px;
   width: calc(100% - 5px);
   position: absolute;
-  top: 121px;
+  top: 105px;
   bottom: 0;
   right: 0;
   left: 5px;
   font-size: 12px;
   display: flex;
   flex-direction: column;
+  //padding-top: 24px;
   justify-content: center;
 }
 
@@ -404,7 +409,7 @@ export default {
 .card-metrics-expected-cycle {
   height: 20px;
   font-size: 12px;
-  padding-top: 4px;
+  padding-top: 8px;
 }
 
 .card-metric {
@@ -413,14 +418,10 @@ export default {
   display: inline-block;
 }
 
-.card-metric-extra-padding {
-  padding-top: 10px;
-}
-
 .card-metric-percent {
   font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 3px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 .card-metric-difference {

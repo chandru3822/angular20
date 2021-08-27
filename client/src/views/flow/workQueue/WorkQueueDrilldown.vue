@@ -156,6 +156,7 @@
         search: '',
         ytfDoWeNeedThis: 0,
         timezone: this.$store.state.user.details.timezone.value,
+        userFullName: this.$store.state.user.details.fullName,
         showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
@@ -299,13 +300,18 @@
         try {
           let userPosition = this.userPositions.find(up => up.canAssign)
           await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
+          item['Owner'] = this.userFullName
           this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           item.owner = this.$store.state.user.details.fullName
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          let msg = e.data.includes('already assigned') ? e.data : 'Error Saving Owner'
+          let alreadyAssigned = e.data.includes('already assigned')
+          let msg = alreadyAssigned ? e.data : 'Error Saving Owner'
+          if(alreadyAssigned) {
+            item['Owner'] = 'Already Assigned. Please Refresh.'
+          }
           this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

@@ -392,7 +392,7 @@ public class SmartlistService {
     String query;
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
-    if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId()) {
+    if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId() && !smartlist.isProjectDetails()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
@@ -523,15 +523,15 @@ public class SmartlistService {
     StringBuilder whereClause = new StringBuilder();
 
     // Get smartlist system lists
-    withClause.append(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, 3::int)), ");
-    withClause.append(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, 3::int)), ");
+    withClause.append(String.format(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, %s::int)), ", companyId));
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -584,7 +584,10 @@ public class SmartlistService {
           "            inner join flow.process_step_work_queue_type pswqt2 on  pswqt2.id = pswqtpstt.process_step_work_queue_type_id\n" +
           "          where wqc.project_process_step_id = flow.project_process_step.id\n" +
           "            and pswqt2.id = pswqt.id\n" +
-          "            and wqc.date_exited_queue is null), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\"," +
+          "            and wqc.date_exited_queue is null\n" +
+          "            and pswqt2.archived is false\n" +
+          "            and pswqtpstt.archived is false\n" +
+          "       ), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\", \n" +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
           " (select array_to_string(array(\n" +
@@ -1383,7 +1386,13 @@ public class SmartlistService {
               whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-            whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+            //if this is a text requirement using null/not null requirement
+            if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+              //treat empty strings as null
+              whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+            } else {
+              whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+            }
           } else {
             if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
@@ -1445,7 +1454,7 @@ public class SmartlistService {
     }
 
     if(null != smartlist.getWorkQueueTypeId()) {
-      query.append(" order by flow.project_process_step.date_created ");
+      query.append(" order by \"Days In Queue\" desc ");
     }
 
     query.append(";");
@@ -1469,11 +1478,11 @@ public class SmartlistService {
     query.append("with ");
 
     // Get smartlist system lists
-    query.append("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
-    query.append("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    query.append("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
-    query.append("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, 3::int)), ");
-    query.append("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, 3::int)), ");
+    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -1621,7 +1630,13 @@ public class SmartlistService {
           projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-        projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        //if this is a text requirement using null/not null requirement
+        if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+          //treat empty strings as null
+          projectsWhereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+        } else {
+          projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+        }
       } else if(Objects.equals(r.getReferenceTable(), "flow.project_user")) {
         projectsWhereClause.append(String.format("\"project_user_position\".id = %s and ", requirementValue));
       } else if(Objects.equals(r.getReferenceTable(), "flow.contact_user")) {
@@ -1999,7 +2014,13 @@ public class SmartlistService {
             whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
           }
         } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-          whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+          //if this is a text requirement using null/not null requirement
+          if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+            //treat empty strings as null
+            whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+          } else {
+            whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+          }
         } else {
           if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));

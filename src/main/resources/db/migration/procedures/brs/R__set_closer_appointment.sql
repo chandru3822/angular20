@@ -149,7 +149,7 @@ BEGIN
                  inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
                  inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
             and pst4.id in (1, 4)
-        where (ppscfv2.timestamp_value,  ppscfv1.timestamp_value) overlaps ( p_appointment_start_time,(p_appointment_start_time + (90 || 'minutes')::interval)::timestamp)
+        where (ppscfv.timestamp_value,  ppscfv2.timestamp_value) overlaps ( p_appointment_start_time,(p_appointment_start_time + (case when p_remote is true then 60 else 90 end || 'minutes')::interval)::timestamp)
           and ppscfv1.int_value = v_user_position_id;
 
         if v_user_already_assigned < 1 and v_user_already_assigned_to_another_project_id < 1 then

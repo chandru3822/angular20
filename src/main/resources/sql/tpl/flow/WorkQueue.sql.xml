@@ -558,7 +558,7 @@ where case
           else true end
   and wqt.company_id = :parentCompanyId
   and wqt.archived is not true
-  and wqt.id in (134, 96, 144, 110)
+  and wqt.id in (134, 96, 144, 110, 152)
 order by wqc.display_order, wqt.display_order
   ]]></workQueue.getInstallerDashboardWorkQueues>
 </sql>
