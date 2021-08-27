@@ -635,4 +635,17 @@ public class GenesysService {
     }
   }
 
+  public void updateContactIds(String listOfContactIds) {
+    String[] contactIds = listOfContactIds.split(",");
+    for (String contactId: contactIds) {
+      try {
+        Long contactIdToUpdate = Long.parseLong(contactId);
+        updateContact(contactIdToUpdate);
+      } catch (Exception e) {
+        String msg = "GENESYS: Error updating contact id (" +contactId + "): {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+  }
+
 }
