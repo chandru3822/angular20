@@ -256,6 +256,18 @@ const router = new Router({
               },
             },
             {
+              path: 'submittedExpenses',
+              name: 'submittedExpenses',
+              meta: {title: 'Albatross - Submitted Expenses'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/SubmittedExpenses.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
               path: 'glCodes',
               name: 'glCodes',
               meta: {title: 'Albatross - GL Codes'},

@@ -39,6 +39,10 @@
           path: '/expenses/reimbursementRequests',
           display: this.$store.getters.userHasFeature('EXPENSES')
         }, {
+          label: 'Submitted Expenses',
+          path: '/expenses/submittedExpenses',
+          display: this.$store.getters.userHasFeature('EXPENSES')
+        }, {
           label: 'GL Codes',
           path: '/expenses/glCodes',
           display: this.$store.getters.userHasFeature('EXPENSES')

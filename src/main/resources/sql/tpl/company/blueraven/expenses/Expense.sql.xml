@@ -76,7 +76,9 @@
               rr.details reimbursement_request_details
             FROM brs.expense e
               INNER JOIN flow."user" u on u.id = e.user_id
-              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.active is true
+              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
+                                                                and up.start_date < now()
+                                                                and (up.end_date is null or up.end_date > now())
               LEFT JOIN flow.position pos on pos.id = up.position_id
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
@@ -90,6 +92,7 @@
                 and e.archived is not true
                 AND e.rejected_date is null
                 AND (rr.reimbursement_request_status_id is null or rr.reimbursement_request_status_id != 6)
+            order by e.date_submitted
         ]]>
   </expense.getAllInDateRange>
 
@@ -109,6 +112,7 @@
               eb.budget_type_id,
               e.expense_date,
               e.gl_code_id,
+              e.archived,
               pos.id position_id,
               pos.position position_name,
               eb.user_id expense_budget_user_id,
@@ -126,7 +130,9 @@
               rr.details reimbursement_request_details
             FROM brs.expense e
               INNER JOIN flow."user" u on u.id = e.user_id
-              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.active is true
+              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
+                                            and up.start_date < now()
+                                            and (up.end_date is null or up.end_date > now())
               LEFT JOIN flow.position pos on pos.id = up.position_id
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
@@ -141,6 +147,7 @@
                   AND e.skip_approval is not true
                   AND e.rejected_date is null
                   AND (rr.reimbursement_request_status_id is null or rr.reimbursement_request_status_id not in (2,6))
+            order by e.date_submitted
         ]]>
   </expense.getAllUnpaid>
 
@@ -177,7 +184,9 @@
               rr.details reimbursement_request_details
             FROM brs.expense e
               INNER JOIN flow."user" u on u.id = e.user_id
-              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.active is true
+              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
+                                                          and up.start_date < now()
+                                                          and (up.end_date is null or up.end_date > now())
               LEFT JOIN flow.position pos on pos.id = up.position_id
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
