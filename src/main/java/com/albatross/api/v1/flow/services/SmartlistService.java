@@ -2256,7 +2256,15 @@ public class SmartlistService {
 //    headers.get(0).setName("processStepId");
 
     for (SmartlistFieldAssignment f : headers) {
-      builder.addColumn(workQueueSmartlist && null != f.getProcessStepName() ? f.getProcessStepName() + " - " + f.getName() : f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
+      String headerName = f.getName();
+      //if it is a work queue smartlist the custom columns have the process step name in them so this part has to be different
+      if(workQueueSmartlist && null != f.getProcessStepName()) {
+        headerName = f.getProcessStepName() + " - " + f.getName();
+        if (headerName.length() > 63) {
+          headerName = headerName.substring(0, 63);
+        }
+      }
+      builder.addColumn(headerName, CsvSchema.ColumnType.NUMBER_OR_STRING);
     }
 
     CsvSchema schema = builder.build().withHeader();
