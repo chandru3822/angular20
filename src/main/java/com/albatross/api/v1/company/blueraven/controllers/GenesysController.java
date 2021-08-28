@@ -135,4 +135,16 @@ public class GenesysController {
       return ResponseEntity.badRequest().body("Error updating contact");
     }
   }
+
+  @PutMapping(value = "/updateContactIds")
+  public ResponseEntity updateContact(@RequestBody String listOfContactIds) {
+    try {
+      genesysService.updateContactIds(listOfContactIds);
+      return ResponseEntity.ok("Contacts successfully updated.");
+    } catch (Exception e) {
+      String msg = "GENE: Error updating contact: {}";
+      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error updating contact");
+    }
+  }
 }
