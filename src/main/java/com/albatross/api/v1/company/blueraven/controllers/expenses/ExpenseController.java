@@ -79,16 +79,14 @@ public class ExpenseController {
     return expenseService.getAllPaidExpenses(startDate, endDate);
   }
 
-  @PostMapping(value = "/markExpensesPaid/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void payExpenses(@PathVariable("userId") Long userId,
-                          @RequestBody List<Expense> expenses) {
-    expenseService.payExpenses(userId, expenses);
+  @PostMapping(value = "/markExpensesPaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void payExpenses(@RequestBody List<Expense> expenses) {
+    expenseService.payExpenses(expenses);
   }
 
-  @PostMapping(value = "/markExpensesApproved/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void approveExpenses(@PathVariable("userId") Long userId,
-                              @RequestBody List<Expense> expenses) {
-    expenseService.approveExpenses(userId, expenses);
+  @PostMapping(value = "/markExpensesApproved", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void approveExpenses(@RequestBody List<Expense> expenses) {
+    expenseService.approveExpenses(expenses);
   }
 
   @PostMapping(value = "/markExpensesRejected", produces = MediaType.APPLICATION_JSON_VALUE)

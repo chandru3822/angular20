@@ -233,6 +233,7 @@
               SET expense_budget_id = :expenseBudgetId,
                   expense_date = :expenseDate,
                   gl_code_id = :glCodeId,
+                  notes = :notes,
                   expense_amount = :expenseAmount,
                   modified_by_id = :updatedByUserId,
                   paid_date = :paidDate,
@@ -256,7 +257,7 @@
   <expense.payExpense>
     <![CDATA[
             UPDATE brs.expense
-            SET paid_date = (now() at time zone 'US/Mountain') + interval '2 day',
+            SET paid_date = now() + interval '2 day',
               paid_by_id = :paidById,
               date_modified = now(),
               modified_by_id = :paidById
@@ -272,7 +273,7 @@
                   date_modified = now(),
                   modified_by_id = :approvedById,
                   submitted_by_id = :reviewedById,
-                  date_submitted = :dateReviewed
+                  date_submitted = coalesce(:dateReviewed, now())
             WHERE id = :id;
         ]]>
   </expense.approveExpense>

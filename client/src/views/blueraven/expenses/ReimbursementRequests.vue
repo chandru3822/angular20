@@ -109,12 +109,6 @@
                   <v-btn small text @click="selectedRequest = item">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="saveReimbursementRequest(item, false)" v-if="index === editIndex">
-                    <v-icon>save</v-icon>
-                  </v-btn>
-                  <v-btn small text @click="editIndex = null" v-if="index === editIndex">
-                    cancel
-                  </v-btn>
                   <v-dialog
                     v-model="item.deleteConfirm"
                     width="500">

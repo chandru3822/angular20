@@ -134,11 +134,13 @@ public class ExpenseService {
     return results;
   }
 
-  public void payExpenses(Long userId, List<Expense> expenses) {
+  public void payExpenses(List<Expense> expenses) {
+    User currentUser = securityService.getCurrentUser();
+
     for (Expense e : expenses) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", e.getId());
-      params.put("paidById", userId);
+      params.put("paidById", currentUser.trueUserId());
       sqlCache.update("expense.payExpense", params);
 
       if (null != e.getReimbursementRequestId()) {
@@ -157,12 +159,14 @@ public class ExpenseService {
     }
   }
 
-  public void approveExpenses(Long userId, List<Expense> expenses) {
+  public void approveExpenses(List<Expense> expenses) {
+    User currentUser = securityService.getCurrentUser();
+
     for (Expense e : expenses) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", e.getId());
-      params.put("approvedById", userId);
-      params.put("reviewedById", e.getSubmittedById());
+      params.put("approvedById", currentUser.trueUserId());
+      params.put("reviewedById", null == e.getSubmittedById() ? currentUser.trueUserId() : e.getSubmittedById());
       params.put("dateReviewed", e.getDateSubmitted());
       sqlCache.update("expense.approveExpense", params);
 
@@ -217,6 +221,7 @@ public class ExpenseService {
     params.put("expenseDate", expense.getExpenseDate());
     params.put("expenseAmount", expense.getExpenseAmount());
     params.put("paidDate", expense.getPaidDate());
+    params.put("notes", expense.getNotes());
     params.put("paidById", null == expense.getPaidDate() ? null : expense.getPaidById());
     params.put("submittedById", submittedById);
 

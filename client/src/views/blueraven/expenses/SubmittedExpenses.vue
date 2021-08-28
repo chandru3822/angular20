@@ -7,21 +7,78 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div class="pt-5">
-              <v-btn color="primaryCustom"
-                     v-if="selectedExpenses.length > 0 && canPay"
-                     class="white--text">
-                Mark as Paid
-              </v-btn>
-              <v-btn color="primaryCustom"
-                     v-if="selectedExpenses.length > 0 && canApprove"
-                     class="white--text ml-5">
-                Approve
-              </v-btn>
-              <v-btn color="red"
-                     v-if="selectedExpenses.length > 0 && canReject"
-                     class="white--text ml-5">
-                Reject
-              </v-btn>
+              <v-menu v-model="paymentDropdown"
+                      v-if="selectedExpenses.length > 0 && canPay"
+                      bottom offset-y min-width="350"
+                      :close-on-content-click="false">
+                <template #activator="{on}">
+                  <v-btn v-on="on" dark color="primaryCustom" class="ml-3">Mark as Paid</v-btn>
+                </template>
+                <v-card class="pa-5">
+                  <v-card-title>
+                    <span class="headline">Confirm</span>
+                  </v-card-title>
+
+                  <v-card-text>
+                    Are you sure you want to pay all selected expenses?
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="secondaryButton" text @click="paymentDropdown = false">Cancel</v-btn>
+                    <v-btn color="primaryCustom" class="white--text" raised
+                           :disabled="paymentConfirmLoading"
+                           @click="confirmPayment()">Yes</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
+              <v-menu v-model="approveDropdown"
+                      v-if="selectedExpenses.length > 0 && canApprove"
+                      bottom offset-y min-width="350"
+                      :close-on-content-click="false">
+                <template #activator="{on}">
+                  <v-btn v-on="on" dark color="primaryCustom" class="ml-3">Approve</v-btn>
+                </template>
+                <v-card class="pa-5">
+                  <v-card-title>
+                    <span class="headline">Confirm</span>
+                  </v-card-title>
+
+                  <v-card-text>
+                    Are you sure you want to approve all selected expenses?
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="secondaryButton" text @click="approveDropdown = false">Cancel</v-btn>
+                    <v-btn color="primaryCustom" class="white--text" raised
+                           :disabled="approveConfirmLoading"
+                           @click="confirmApproval()">Yes</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
+              <v-menu v-model="rejectDropdown"
+                      v-if="selectedExpenses.length > 0 && canReject"
+                      bottom offset-y min-width="350"
+                      :close-on-content-click="false">
+                <template #activator="{on}">
+                  <v-btn v-on="on" dark color="red" class="ml-3">Reject</v-btn>
+                </template>
+                <v-card class="pa-5">
+                  <label>Reason for Rejection: (required)</label>
+                  <v-textarea class="py-2" hide-details
+                              auto-grow filled
+                              rows="4"
+                              background-color="#F2F6F8"
+                              v-model="rejectionReason">
+                  </v-textarea>
+                  <v-btn class="mr-3" @click="rejectDropdown = false">Cancel</v-btn>
+                  <v-btn @click="confirmRejection()"
+                         :disabled="!rejectionReason || rejectConfirmLoading"
+                         class="white--text" color="red">Reject
+                  </v-btn>
+                </v-card>
+              </v-menu>
               <v-btn color="primaryCustom"
                      @click="exportExpenses"
                      :disabled="selectedExpenses.length === 0"
@@ -107,14 +164,8 @@
               <td class="text-left">{{ item.paidBy }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text @click="selectedExpense = item">
+                  <v-btn small text @click="[selectedExpense = item, getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
                     <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text @click="saveSubmittedExpense(item, false)" v-if="index === editIndex">
-                    <v-icon>save</v-icon>
-                  </v-btn>
-                  <v-btn small text @click="editIndex = null" v-if="index === editIndex">
-                    cancel
                   </v-btn>
                   <v-dialog
                     v-model="item.deleteConfirm"
@@ -160,6 +211,98 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <v-row v-else>
+      <v-col cols="12">
+        <v-toolbar flat class="cfg-header-bar" dense>
+          <v-toolbar-title class="app-title">
+            <v-btn text @click="selectedExpense = {}">Back</v-btn>
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-card flat class="px-5">
+          <v-card-text class="py-1">
+            <v-text-field text
+                          :disabled="true"
+                          label="Purchaser"
+                          v-model="selectedExpense.createdBy">
+            </v-text-field>
+            <DatetimePickerInput
+              v-model="selectedExpense.expenseDate"
+              :timezone="timezone"
+              :type="'date'"
+              :readonly="selectedExpense.approvalDate !== null"
+              :format="'MM/DD/YYYY'"
+              label="Expense Date"
+            />
+            <v-autocomplete v-model="selectedExpense.glCodeId"
+                            :items="glCodes"
+                            label="GL Code"
+                            :disabled="selectedExpense.approvalDate !== null"
+                            item-text="code"
+                            item-value="id"
+            >
+              <template slot='item' slot-scope='{ item }'>
+                {{ item.code }} - {{ item.description }}
+              </template>
+            </v-autocomplete>
+            <v-autocomplete v-model="selectedExpense.expenseBudgetUserId"
+                            :items="usersWithBudget"
+                            label="Budget User"
+                            :disabled="selectedExpense.approvalDate !== null"
+                            item-text="fullName"
+                            item-value="id"
+                            @input="getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)"
+            ></v-autocomplete>
+            <v-autocomplete v-model="selectedExpense.expenseBudgetId"
+                            :items="budgetTypesForUser"
+                            label="Budget Type"
+                            :disabled="selectedExpense.approvalDate !== null"
+                            item-text="budgetType"
+                            item-value="id"
+            ></v-autocomplete>
+            <v-text-field text
+                          type="number"
+                          :disabled="selectedExpense.approvalDate !== null"
+                          label="Amount"
+                          v-model.number="selectedExpense.expenseAmount">
+            </v-text-field>
+            <v-text-field text
+                          :disabled="true"
+                          label="ID Number"
+                          v-model.number="selectedExpense.reimbursementRequestId">
+            </v-text-field>
+            <label>Details:</label>
+            <v-textarea class="py-2" hide-details
+                        auto-grow filled
+                        :disabled="true"
+                        rows="4"
+                        background-color="#F2F6F8"
+                        v-model="selectedExpense.reimbursementRequestDetails">
+            </v-textarea>
+            <label>Notes:</label>
+            <v-textarea class="py-2" hide-details
+                        auto-grow filled
+                        :disabled="selectedExpense.approvalDate !== null"
+                        rows="4"
+                        background-color="#F2F6F8"
+                        v-model="selectedExpense.notes">
+            </v-textarea>
+
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="secondaryButton" text @click="selectedExpense = {}">Cancel</v-btn>
+            <v-btn color="primaryCustom" class="white--text" raised
+                   :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
+                            || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.expenseAmount"
+                   @click="saveSubmittedExpense(selectedExpense)">Save Changes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -184,6 +327,13 @@ export default {
       snackbar: {},
       timezone: this.$store.state.user.details.timezone.value,
       selectedExpense: {},
+      approveDropdown: false,
+      approveConfirmLoading: false,
+      paymentDropdown: false,
+      paymentConfirmLoading: false,
+      rejectDropdown: false,
+      rejectConfirmLoading: false,
+      rejectionReason: '',
       editIndex: null,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 500],
@@ -422,76 +572,116 @@ export default {
         'Details'
       ]
     },
-    async saveSubmittedExpense(item, isNew) {
+    async confirmApproval() {
       this.$store.commit(AppMutations.SET_LOADING, true)
+      this.approveConfirmLoading = true
       try {
-        //not sure what this is yet
-        // item.skipApproval = self.skipApproval;
-        //there is already an endpoint for lists of these so just sending up as a list
-        let listOfItem = [item]
-        const {data} = await postRequest(`/expenses/addExpenseItems`, listOfItem, 'blueraven')
-        if (isNew) {
-          //do not add the new one to the list cuz it already got approved
-          this.newSubmittedExpense = {}
-          this.createNew = false
-        } else {
-          this.editIndex = null
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        await postRequest(`/expenses/markExpensesApproved`, this.selectedExpenses, 'blueraven')
+        //coolness
+        window.location.reload()
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Submitted Expense')
+        this.snackbar = getSnackbar('ERROR', 'Error Approving Selected Expenses')
+        this.approveConfirmLoading = false
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    // async getBudgetTypesForUser(item, expenseDate) {
-    //   //reset the budget id every time a user or expense date changes
-    //   item.expenseBudgetId = null
-    //   if (null != item.expenseBudgetUserId && null != expenseDate) {
-    //     this.$store.commit(AppMutations.SET_LOADING, true)
-    //     try {
-    //       let params = {
-    //         userId: item.expenseBudgetUserId,
-    //         expenseDate: expenseDate
-    //       }
-    //       const {data} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
-    //       this.budgetTypesForUser = data
-    //       this.$store.commit(AppMutations.SET_LOADING, false)
-    //     } catch (e) {
-    //       console.error('*** ERROR ***', e)
-    //       this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-    //       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    //       this.$store.commit(AppMutations.SET_LOADING, false)
-    //     }
-    //   }
-    // },
-    // async getGlCodes() {
-    //   this.$store.commit(AppMutations.SET_LOADING, true)
-    //   try {
-    //     const {data} = await getGlCodes()
-    //     this.glCodes = data
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   } catch (e) {
-    //     console.error('*** ERROR ***', e)
-    //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   }
-    // },
-    // async getUsersWithBudget() {
-    //   this.$store.commit(AppMutations.SET_LOADING, true)
-    //   try {
-    //     const {data} = await getUsersWithBudget()
-    //     this.usersWithBudget = data
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   } catch (e) {
-    //     console.error('*** ERROR ***', e)
-    //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   }
-    // },
+    async confirmPayment() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.paymentConfirmLoading = true
+      try {
+        await postRequest(`/expenses/markExpensesPaid`, this.selectedExpenses, 'blueraven')
+        //coolness
+        window.location.reload()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Marking Selected Expenses as Paid')
+        this.paymentConfirmLoading = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async confirmRejection() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.rejectConfirmLoading = true
+      try {
+        this.selectedExpenses.forEach(e => {
+          e.notes = this.rejectionReason
+        })
+        await postRequest(`/expenses/markExpensesRejected`, this.selectedExpenses, 'blueraven')
+        //coolness
+        window.location.reload()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Rejecting Selected Expenses')
+        this.rejectConfirmLoading = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveSubmittedExpense(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/expenses`, item, 'blueraven')
+        //yep
+        window.location.reload()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes to Expense')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getBudgetTypesForUser(item, expenseDate, reloadForChange) {
+      //reset the budget id if they change it but not if loading for the first time on this screen
+      if(reloadForChange) {
+        item.expenseBudgetId = null
+      }
+      if (null != item.expenseBudgetUserId && null != expenseDate) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            userId: item.expenseBudgetUserId,
+            expenseDate: expenseDate
+          }
+          const {data} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
+          this.budgetTypesForUser = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async getGlCodes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getGlCodes()
+        this.glCodes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getUsersWithBudget() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getUsersWithBudget()
+        this.usersWithBudget = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>
