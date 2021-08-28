@@ -169,11 +169,13 @@ public class ExpenseService {
     }
   }
 
-  public void rejectExpenses(Long userId, List<Expense> expenses) {
+  public void rejectExpenses(List<Expense> expenses) {
+    User currentUser = securityService.getCurrentUser();
+
     for (Expense expense : expenses) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", expense.getId());
-      params.put("rejectedById", userId);
+      params.put("rejectedById", currentUser.trueUserId());
 
       if (null != expense.getReimbursementRequestId()) {
         //if one line item is rejected then the rest in that request have to be rejected as well

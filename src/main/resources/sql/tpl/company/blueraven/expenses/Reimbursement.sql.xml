@@ -19,7 +19,8 @@
                  FROM (
                         SELECT e.id,
                                e.date_created "dateCreated",
-                               e.expense_amount "expenseAmount"
+                               e.expense_amount "expenseAmount",
+                               e.reimbursement_request_id as "reimbursementRequestId"
                         FROM brs.expense e
                         WHERE e.reimbursement_request_id = rr.id
                           AND e.rejected_date is null
@@ -79,7 +80,7 @@ WHERE rr.reimbursement_request_status_id = 3
                details = :details,
                attachment_id = :attachmentId,
                expense_budget_id = :expenseBudgetId,
-               created_by_user_id = :createdByUserId,
+               created_by_id = :createdByUserId,
                expense_date = :expenseDate,
                reimbursement_request_status_id = :statusId
             WHERE id = :id;

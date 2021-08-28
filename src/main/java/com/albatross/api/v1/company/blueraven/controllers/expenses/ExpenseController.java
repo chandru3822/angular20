@@ -91,10 +91,9 @@ public class ExpenseController {
     expenseService.approveExpenses(userId, expenses);
   }
 
-  @PostMapping(value = "/markExpensesRejected/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void rejectExpenses(@PathVariable("userId") Long userId,
-                             @RequestBody List<Expense> expenses) {
-    expenseService.rejectExpenses(userId, expenses);
+  @PostMapping(value = "/markExpensesRejected", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void rejectExpenses(@RequestBody List<Expense> expenses) {
+    expenseService.rejectExpenses(expenses);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
