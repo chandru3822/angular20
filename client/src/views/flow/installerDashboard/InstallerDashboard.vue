@@ -1,6 +1,6 @@
 <template>
   <v-container class="app-container">
-    <v-dialog v-model="showModal" max-width="1300">
+    <v-dialog v-model="showModal" max-width="1600">
       <ProductionStatsDrilldown
                       :start-date="startDate"
                       :end-date="endDate"

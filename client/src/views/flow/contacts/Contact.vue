@@ -463,9 +463,14 @@ export default {
           this.contact.projects = data.projects
           this.dirtySystemFields = false
           await this.saveCustomFieldValues()
-          // Save BlueRaven Solar Contacts to Genesys
-          if (this.companyId === 3) {
-            await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+
+          try {
+            // Save BlueRaven Solar Contacts to Genesys
+            if (this.companyId === 3) {
+              await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+            }
+          } catch (e) {
+            console.error('*** ERROR ***', e)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
