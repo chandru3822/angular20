@@ -88,7 +88,8 @@
                                   where
                                       substantial_completion_date between :startDate::date and :endDate::date
                                       AND
-                                       pd.installation_resource in (:crewIds)) sc), '[]'),
+                                       pd.installation_resource in (:crewIds)
+                                order by pd.installation_end_time asc) sc), '[]'),
 
         'sameWeekCloseout', (select coalesce((select count(*) from brs.project_details pd
             where
@@ -161,7 +162,8 @@
                                   where
                                       (installation_end_time::date between :startDate::date and :endDate::date
                                           AND
-                                       pd.installation_resource in (:crewIds))) swc), '[]'),
+                                       pd.installation_resource in (:crewIds))
+                                order by pd.installation_end_time asc) swc), '[]'),
 
         'onTimeCloseout', (select coalesce((select count(*) from brs.project_details pd
             where
@@ -238,7 +240,8 @@
                                   where
                                       installation_end_time::date between :startDate::date and :endDate::date
                                         AND
-                                      pd.installation_resource in (:crewIds)) otc), '[]'),
+                                      pd.installation_resource in (:crewIds)
+                                order by pd.installation_end_time asc) otc), '[]'),
 
         'inspectionApproval', (select coalesce((select count(*) from brs.project_details pd
         where
@@ -268,7 +271,7 @@
                                                                                                            where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[]))
 
 
-                   ) not ILIKE '%crew%')
+                   ) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))
             )
         AND
         pd.installation_resource in (:crewIds)) ::numeric(10,2)
@@ -337,7 +340,7 @@
                                                                   project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
                                                                                                                                         and process_step_id =
                                                                                                                                             (select id from flow.process_step
-                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) not ILIKE '%crew%')) as isNumerator,
+                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))) as isNumerator,
                                          coalesce((
                                           SELECT array_to_json(array_agg(row_to_json(notes)))
                                           FROM (
@@ -383,7 +386,8 @@
                                   where
                                       pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
                                       AND
-                                      pd.installation_resource in (:crewIds)) ia), '[]')
+                                      pd.installation_resource in (:crewIds)
+                                order by pd.ahj_inspection_start_time asc) ia), '[]')
         )
   ]]></installerDashboard.getDashboardValues>
 </sql>

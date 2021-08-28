@@ -353,7 +353,7 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(leadLevel, apiInstance, null, false);
+    String contactListId = getContactListId(leadLevel, apiInstance, null, true);
     // If no Contact  List is found
     if (contactListId == null) {
       return;
@@ -630,6 +630,19 @@ public class GenesysService {
         updateContact(contactId);
       } catch (Exception e) {
         String msg = "GENESYS: Error updating contact id: {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+  }
+
+  public void updateContactIds(String listOfContactIds) {
+    String[] contactIds = listOfContactIds.split(",");
+    for (String contactId: contactIds) {
+      try {
+        Long contactIdToUpdate = Long.parseLong(contactId);
+        updateContact(contactIdToUpdate);
+      } catch (Exception e) {
+        String msg = "GENESYS: Error updating contact id (" +contactId + "): {}";
         log.error(msg, e.getMessage());
       }
     }
