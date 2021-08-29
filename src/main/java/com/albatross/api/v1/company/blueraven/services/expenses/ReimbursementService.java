@@ -34,6 +34,7 @@ public class ReimbursementService {
 
 
   public Long updateRequest(ReimbursementRequest reimbursementRequest) {
+    User currentUser = securityService.getCurrentUser();
 
     Long statusId = 3L;
 
@@ -43,7 +44,7 @@ public class ReimbursementService {
     params.put("details", reimbursementRequest.getDetails());
     params.put("attachmentId", reimbursementRequest.getAttachmentId());
     params.put("expenseBudgetId", reimbursementRequest.getExpenseBudgetId());
-    params.put("createdByUserId", reimbursementRequest.getCreatedById());
+    params.put("createdById", currentUser.trueUserId());
     params.put("expenseDate", reimbursementRequest.getExpenseDate());
     Long id;
     if(reimbursementRequest.getId() != null && reimbursementRequest.getReimbursementRequestStatusId() == null){
@@ -60,12 +61,7 @@ public class ReimbursementService {
     }else{
       //if this is a new request and the user making request is not the same as the budget user, mark it as pending supervisor approval
       //unless it is Austin Thompson submitting to Dane's budget
-      User currentUser = securityService.getCurrentUser();
-      Long userId = currentUser.getId();
-      Long masqueradeId = securityService.getCurrentUserDetails().getMasqueradingUserId();
-      if(null != masqueradeId){
-        userId = masqueradeId;
-      }
+      Long userId = currentUser.trueUserId();
 
       if(reimbursementRequest.getExpenseBudgetUserId() != null
         && !userId.equals(reimbursementRequest.getExpenseBudgetUserId())
@@ -106,9 +102,11 @@ public class ReimbursementService {
     return results;
   }
 
-  public List<ReimbursementRequest> getRequestsForUserByStatus(Long userId, Long statusId, String startDate, String endDate) {
+  public List<ReimbursementRequest> getRequestsForUserByStatus(Long statusId, String startDate, String endDate) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
+    params.put("userId", currentUser.getId());
     params.put("statusId", statusId);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
@@ -126,18 +124,22 @@ public class ReimbursementService {
     return results;
   }
 
-  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(Long supervisorId, Long statusId){
+  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(Long statusId){
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("supervisorId", supervisorId);
+    params.put("supervisorId", currentUser.getId());
     params.put("statusId", statusId);
 
     List<ReimbursementRequest> results = sqlCache.query("reimbursement.getRequestsForSupervisorByStatus", params, ReimbursementRequest.class);
     return results;
   }
 
-  public String getMonthlySubmittedReport(Long userId, String startDate, String endDate){
+  public String getMonthlySubmittedReport(String startDate, String endDate){
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
+    params.put("userId", currentUser.getId());
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 

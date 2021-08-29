@@ -53,10 +53,10 @@ WHERE rr.reimbursement_request_status_id = 3
               rr.expense_budget_id,
               eb.user_id as expense_budget_user_id,
               bt.name as budget_type,
-              rr.created_by_user_id,
+              rr.created_by_id,
               u.first_name || ' ' || u.last_name as created_by
             FROM brs.reimbursement_request rr
-              INNER JOIN flow."user" u on u.id = rr.created_by_user_id
+              INNER JOIN flow."user" u on u.id = rr.created_by_id
               LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
               LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
             WHERE rr.reimbursement_request_status_id = :statusId
@@ -68,8 +68,8 @@ WHERE rr.reimbursement_request_status_id = 3
 
   <reimbursement.insert>
     <![CDATA[
-            INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_user_id, expense_date, reimbursement_request_status_id)
-            values(:amount, :details, :attachmentId, :expenseBudgetId, :createdByUserId, :expenseDate, :statusId);
+            INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id, expense_date, reimbursement_request_status_id)
+            values(:amount, :details, :attachmentId, :expenseBudgetId, :createdById, :expenseDate, :statusId);
         ]]>
   </reimbursement.insert>
 
@@ -80,7 +80,7 @@ WHERE rr.reimbursement_request_status_id = 3
                details = :details,
                attachment_id = :attachmentId,
                expense_budget_id = :expenseBudgetId,
-               created_by_id = :createdByUserId,
+               modified_by_id = :createdById,
                expense_date = :expenseDate,
                reimbursement_request_status_id = :statusId
             WHERE id = :id;
@@ -150,10 +150,10 @@ WHERE rr.reimbursement_request_status_id = 3
               rr.expense_budget_id,
               eb.user_id as expense_budget_user_id,
               bt.name as budget_type,
-              rr.created_by_user_id,
+              rr.created_by_id,
               u.first_name || ' ' || u.last_name as created_by
             FROM brs.reimbursement_request rr
-              INNER JOIN flow."user" u on u.id = rr.created_by_user_id
+              INNER JOIN flow."user" u on u.id = rr.created_by_id
               LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
               LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
             WHERE rr.reimbursement_request_status_id = :statusId

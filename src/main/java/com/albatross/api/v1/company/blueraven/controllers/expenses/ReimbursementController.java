@@ -88,12 +88,11 @@ public class ReimbursementController {
     return reimbursementService.getPendingReimbursementRequests();
   }
 
-  @GetMapping(value = "/requests/{userId}/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ReimbursementRequest> getRequestsForUserByStatus(@PathVariable("userId") Long userId,
-                                                               @RequestParam Long statusId,
+  @GetMapping(value = "/requests/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getRequestsForUserByStatus(@RequestParam Long statusId,
                                                                @RequestParam String startDate,
                                                                @RequestParam String endDate) {
-    return reimbursementService.getRequestsForUserByStatus(userId, statusId, startDate, endDate);
+    return reimbursementService.getRequestsForUserByStatus(statusId, startDate, endDate);
   }
 
 
@@ -109,17 +108,15 @@ public class ReimbursementController {
 //    return attachmentService.getAttachmentsBySourceIdAndType(bucket, sourceId, attachmentSourceTypeId);
 //  }
 
-  @GetMapping(value = "/requests/supervisor/{userId}/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(@PathVariable("userId") Long userId,
-                                                                     @RequestParam Long statusId) {
-    return reimbursementService.getRequestsForSupervisorByStatus(userId, statusId);
+  @GetMapping(value = "/requests/supervisor/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(@RequestParam Long statusId) {
+    return reimbursementService.getRequestsForSupervisorByStatus(statusId);
   }
 
-  @GetMapping(value = "/getMonthlySubmittedReport/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getMonthlyBudgetReport(@PathVariable("userId") Long userId,
-                                       @RequestParam String startDate,
+  @GetMapping(value = "/getMonthlySubmittedReport", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getMonthlySubmittedReport(@RequestParam String startDate,
                                        @RequestParam String endDate) {
-    return reimbursementService.getMonthlySubmittedReport(userId, startDate, endDate);
+    return reimbursementService.getMonthlySubmittedReport(startDate, endDate);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

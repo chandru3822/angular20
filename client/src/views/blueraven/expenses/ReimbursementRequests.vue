@@ -33,7 +33,7 @@
             :type="'date'"
             :format="'MM/DD/YYYY'"
             label="Expense Date"
-            :change-callback="getBudgetTypesForUser(newReimbursementRequest, newReimbursementRequest.expenseDate)"
+            :change-callback="getBudgetTypesForUser"
           />
           <v-autocomplete v-model="newReimbursementRequest.glCodeId"
                           :items="glCodes"
@@ -50,7 +50,7 @@
                           label="Budget User"
                           item-text="fullName"
                           item-value="id"
-                          @input="getBudgetTypesForUser(newReimbursementRequest, newReimbursementRequest.expenseDate)"
+                          @input="getBudgetTypesForUserNew"
           ></v-autocomplete>
           <v-autocomplete v-model="newReimbursementRequest.expenseBudgetId"
                           :items="budgetTypesForUser"
@@ -538,6 +538,9 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async getBudgetTypesForUserNew() {
+      return this.getBudgetTypesForUser(this.newReimbursementRequest, this.newReimbursementRequest.expenseDate)
     },
     async getBudgetTypesForUser(item, expenseDate) {
       //reset the budget id every time a user or expense date changes

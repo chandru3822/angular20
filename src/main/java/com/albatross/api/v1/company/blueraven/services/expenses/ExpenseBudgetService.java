@@ -261,9 +261,11 @@ public class ExpenseBudgetService {
   }
 
 
-  public String getMonthlyBudgetReport(Long userId, String startDate, String endDate){
+  public String getMonthlyBudgetReport(String startDate, String endDate){
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
+    params.put("userId", currentUser.getId());
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
