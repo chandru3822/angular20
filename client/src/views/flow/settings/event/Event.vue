@@ -6,7 +6,7 @@
           <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
         </v-toolbar>
         <v-toolbar flat class="app-toolbar">
-          <h3>Events</h3>
+          <h3>{{ event.eventName }}</h3>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs>
