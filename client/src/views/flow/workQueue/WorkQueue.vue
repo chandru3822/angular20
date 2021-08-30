@@ -1,7 +1,7 @@
 <template>
   <v-container class="wq-container">
     <v-row>
-      <v-col cols="12" class="px-0 pt-3">
+      <v-col cols="12" class="pt-3">
         <v-card color="white" class="square-card work-queue-container-top">
           <v-autocomplete v-model="selectedWorkQueueCategory"
                           :items="workQueueCategories"
@@ -45,7 +45,7 @@
             </v-radio-group>
           </div>
         </v-card>
-        <v-card color="white" class="square-card work-queue-container-bottom">
+        <v-card color="white" class="square-card work-queue-container-bottom mt-3">
           <v-row class="cards my-0">
             <v-card flat color="transparent" class="ml-8"
                     v-if="!selectedWorkQueueCategory || !selectedWorkQueueCategory.id">
@@ -282,10 +282,6 @@ export default {
 </style>
 
 <style scoped lang="scss">
-.wq-container {
-  margin-left: 32px !important;
-  margin-right: 32px !important;
-}
 
 .work-queue-container-top {
   padding: 26px 28px 16px 28px;
@@ -293,7 +289,6 @@ export default {
 
 .work-queue-container-bottom {
   padding: 26px 28px;
-  margin-top: 28px;
 }
 
 .work-queue-selector {
@@ -465,6 +460,7 @@ export default {
 
 .radio-group-container {
   display: flex;
+  margin-left: -20px;
 }
 
 .expectation-met {
