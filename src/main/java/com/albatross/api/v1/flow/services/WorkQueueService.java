@@ -95,16 +95,6 @@ public class WorkQueueService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-//    String sqlKey = "workQueue.getProcessStepsByTypeId";
-
-    //todo: this is a total whack-a-hack, need to remove this after we do a more configurable work queue in a future release
-//    if(workQueueTypeId == 98 || workQueueTypeId == 99 || workQueueTypeId == 106) {
-//      sqlKey = "workQueue.getProcessStepsByTypeIdForHack";
-//    }
-
-//    List<WorkQueueDetail> results = sqlCache.query(sqlKey, params, new WorkQueueDetailMapper<>(WorkQueueDetail.class, om));
-    //count should be the same regardless of the hack or not
-//    Integer count = sqlCache.queryForObject("workQueue.getProcessStepsByTypeIdCount", params, Integer.class);
     Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());

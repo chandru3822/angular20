@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/genesys")
@@ -117,6 +118,30 @@ public class GenesysController {
       return ResponseEntity.badRequest().body("Error updating contact");
     }
     catch (IOException e) {
+      String msg = "GENE: Error updating contact: {}";
+      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error updating contact");
+    }
+  }
+
+  @PutMapping(value = "/migrateContactIds")
+  public ResponseEntity updateContact(@RequestBody List<Map<String, String>> data) {
+    try {
+      genesysService.updateContactIds(data);
+      return ResponseEntity.ok("Contact successfully updated.");
+    } catch (Exception e) {
+      String msg = "GENE: Error updating contact: {}";
+      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error updating contact");
+    }
+  }
+
+  @PutMapping(value = "/updateContactIds")
+  public ResponseEntity updateContact(@RequestBody String listOfContactIds) {
+    try {
+      genesysService.updateContactIds(listOfContactIds);
+      return ResponseEntity.ok("Contacts successfully updated.");
+    } catch (Exception e) {
       String msg = "GENE: Error updating contact: {}";
       log.error(msg, e.getMessage());
       return ResponseEntity.badRequest().body("Error updating contact");

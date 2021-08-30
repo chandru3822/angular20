@@ -108,8 +108,16 @@ public class CustomFieldValueService {
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
     try {
       User user = securityService.getCurrentUser();
-      Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-      List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+      Boolean systemAdmin;
+      List<UserPosition> userPositions;
+      try {
+        systemAdmin = user.getHighestCompanyId() == 1L;
+        userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+      } catch (Exception e) {
+        // Handle values for Cron job call for Genesys contacts
+        systemAdmin = false;
+        userPositions = null;
+      }
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("objectTypeId", ObjectType.get(objectType).id);
