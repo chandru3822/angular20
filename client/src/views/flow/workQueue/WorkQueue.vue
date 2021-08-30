@@ -54,7 +54,7 @@
             <v-card flat tile v-for="wq in workQueues" class="flex-display card-main"
                     :class="{'clickable': wq.workQueueCount > 0}"
                     :key="wq.id"
-                    width="288" :height="wqHasMetrics(wq) ? 223 : 105">
+                    width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
                 <router-link class="no-text-decoration card-link"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
