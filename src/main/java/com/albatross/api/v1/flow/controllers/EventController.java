@@ -68,6 +68,11 @@ public class EventController {
     return new ResponseEntity<>(eventService.getCompanyEventStatuses(), HttpStatus.OK);
   }
 
+  @DeleteMapping(value = "/{eventId}/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteStatusFromEvent(@PathVariable Long id) {
+    eventService.deleteStatusFromEvent(id);
+  }
+
   @GetMapping(value = "/{eventId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyEventStatusType>> getAssignedEventStatuses(@PathVariable Long eventId) {
     return new ResponseEntity<>(eventService.getAssignedEventStatuses(eventId), HttpStatus.OK);
@@ -79,7 +84,7 @@ public class EventController {
   }
 
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteCompanyProjectStatus(@PathVariable Long id) {
+  public void deleteCompanyEventStatus(@PathVariable Long id) {
     eventService.deleteCompanyEventStatus(id);
   }
 

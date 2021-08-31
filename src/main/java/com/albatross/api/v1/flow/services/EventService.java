@@ -144,6 +144,15 @@ public class EventService {
     return getOneCompanyEventStatusType(id);
   }
 
+  public void deleteStatusFromEvent(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", currentUser.trueUserId());
+    params.put("id", id);
+
+    sqlCache.update("event.deleteStatusFromEvent", params);
+  }
+
   public void deleteCompanyEventStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

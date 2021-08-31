@@ -377,6 +377,21 @@ export default {
       }
 
     },
+    async deleteStatusTypeFromEvent (item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        item.archived = true
+        await deleteRequest(`/event/${this.eventId}/companyStatus/${item.id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Event Status Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event Status Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

@@ -238,6 +238,14 @@
     values (:rootEventStatusTypeId, :eventStatusType, :companyId, :currentUserId)
   ]]></event.insertCompanyStatus>
 
+  <event.deleteStatusFromEvent><![CDATA[
+      update flow.event_company_event_status_type
+        set archived = true,
+        modified_by_id = :currentUserId,
+        date_modified = now()
+    where id = :id
+  ]]></event.deleteStatusFromEvent>
+
   <event.deleteCompanyStatus><![CDATA[
       update flow.company_event_status_type
         set archived = true,
