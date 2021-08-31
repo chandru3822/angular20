@@ -87,7 +87,8 @@
               </v-btn>
             </div>
           </v-toolbar-items>
-          <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-items>
             <div class="flex-display pt-5">
               <DatetimePickerInput v-model="startDate"
@@ -123,92 +124,94 @@
         </v-toolbar>
         <v-divider></v-divider>
 
-        <v-data-table
-          :headers="headers"
-          :items="filterSubmittedExpenses()"
-          :items-per-page="-1"
-          :mobile-breakpoint="0"
-          disable-sort
-          fixed-header
-          class="elevation-1 fix-column-width-bug square-card"
-        >
-          <template #no-data>
-            No Submitted Expenses
-          </template>
+        <div class="submitted-expense-table-container">
+          <v-data-table
+            :headers="headers"
+            :items="filterSubmittedExpenses()"
+            :items-per-page="-1"
+            :mobile-breakpoint="0"
+            disable-sort
+            fixed-header
+            class="elevation-1 fix-column-width-bug square-card submitted-expense-table"
+          >
+            <template #no-data>
+              No Submitted Expenses
+            </template>
 
-          <template #no-results>
-            No Submitted Expenses
-          </template>
+            <template #no-results>
+              No Submitted Expenses
+            </template>
 
-          <template #header.selectBox="{}">
-            <v-checkbox v-model="selectAllExpenses" @change="toggleSelectAllExpenses()"></v-checkbox>
-          </template>
+            <template #header.selectBox="{}">
+              <v-checkbox v-model="selectAllExpenses" @change="toggleSelectAllExpenses()"></v-checkbox>
+            </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td><v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox></td>
-              <td class="text-left">{{ item.createdBy }}</td>
-              <td class="text-left">{{ item.positionName }}</td>
-              <td class="text-left">{{ item.expenseAmount | currency('$', 2) }}</td>
-              <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
-              <td class="text-left">{{ item.glCode }}</td>
-              <td class="text-left">{{ item.budgetType }}</td>
-              <td class="text-left">{{ item.expenseBudgetUser }}</td>
-              <td class="text-left">{{ item.dateCreated | formatDate('date') }}</td>
-              <td class="text-left">{{ item.createdBy }}</td>
-              <td class="text-left">{{ item.dateSubmitted | formatDate('date') }}</td>
-              <td class="text-left">{{ item.submittedBy }}</td>
-              <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
-              <td class="text-left">{{ item.approvedBy }}</td>
-              <td class="text-left">{{ item.paidDate | formatDate('date') }}</td>
-              <td class="text-left">{{ item.paidBy }}</td>
-              <td>
-                <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text @click="[selectedExpense = item, getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="headline grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Are you sure you want to delete this Submitted Expense for <strong>{{ item.createdBy }}:
-                        {{ item.amount | currency('$', 2) }}</strong>?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.deleteConfirm = false">
-                          No
+            <template #item="{ item, index }">
+              <tr :class="{'shaded-row': index % 2}">
+                <td><v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox></td>
+                <td class="text-left">{{ item.createdBy }}</td>
+                <td class="text-left">{{ item.positionName }}</td>
+                <td class="text-left">{{ item.expenseAmount | currency('$', 2) }}</td>
+                <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
+                <td class="text-left">{{ item.glCode }}</td>
+                <td class="text-left">{{ item.budgetType }}</td>
+                <td class="text-left">{{ item.expenseBudgetUser }}</td>
+                <td class="text-left">{{ item.dateCreated | formatDate('date') }}</td>
+                <td class="text-left">{{ item.createdBy }}</td>
+                <td class="text-left">{{ item.dateSubmitted | formatDate('date') }}</td>
+                <td class="text-left">{{ item.submittedBy }}</td>
+                <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
+                <td class="text-left">{{ item.approvedBy }}</td>
+                <td class="text-left">{{ item.paidDate | formatDate('date') }}</td>
+                <td class="text-left">{{ item.paidBy }}</td>
+                <td>
+                  <div style="display: flex; justify-content: flex-end">
+                    <v-btn small text @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
+                      <v-icon>edit</v-icon>
+                    </v-btn>
+                    <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                      <template #activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
                         </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deleteSubmittedExpense(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text class="pt-4">
+                          Are you sure you want to delete this Submitted Expense for <strong>{{ item.createdBy }}:
+                          {{ item.amount | currency('$', 2) }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="deleteSubmittedExpense(item)">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </div>
       </v-col>
     </v-row>
     <v-row v-else>
@@ -290,6 +293,21 @@
                         v-model="selectedExpense.notes">
             </v-textarea>
 
+            <label>Receipt Image:</label>
+            <div class="receipt-image-background">
+              <v-tooltip bottom max-width="300px"
+                         v-if="renderRequestImage && selectedExpense.presignedUrl"
+                         content-class="receipt-image-tooltip">
+                <template v-slot:activator="{ on:tooltip }">
+                  <v-img name="receiptImg" class="receipt-image"
+                         v-on="{ ...tooltip }"
+                         alt="receipt-image" :src="selectedExpense.presignedUrl"></v-img>
+                </template>
+                <v-card class="receipt-image-hover-container">
+                  <img class="receipt-image-hovered" :src="selectedExpense.presignedUrl">
+                </v-card>
+              </v-tooltip>
+            </div>
           </v-card-text>
 
           <v-card-actions>
@@ -310,7 +328,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
-import {getGlCodes, getUsersWithBudget} from './expenseService'
+import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
 import { saveAs } from 'file-saver'
@@ -335,6 +353,7 @@ export default {
       rejectConfirmLoading: false,
       rejectionReason: '',
       editIndex: null,
+      renderRequestImage: false,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 500],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -682,13 +701,30 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getRequestAttachmentPresignedUrl(item) {
+      this.renderRequestImage = false
+      console.log('randaLogger',item)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getReimbursementRequestImage(item.reimbursementRequestId)
+        item.presignedUrl = data
+        //this forces the dom to re-render the presignedUrl and i hate myself
+        this.renderRequestImage = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>
 
 <style lang="scss">
 #submitted-expense-container .v-data-table__wrapper {
-  height: calc(100vh - 290px);
+  height: calc(100vh - 375px);
   min-height: 300px;
 }
 
@@ -714,5 +750,34 @@ export default {
   height: auto
 }
 
+.submitted-expense-table-container {
+  max-width: 100% !important;
+}
 
+.submitted-expense-table {
+  min-width: 1400px !important;
+}
+
+
+.receipt-image-background {
+  max-width: 250px !important;
+}
+
+.receipt-image-tooltip {
+  max-width: 100% !important;
+  background-color: transparent;
+  opacity: 1 !important;
+}
+
+.receipt-image-hover-container {
+  max-width: 100%;
+  height: auto;
+}
+
+.receipt-image-hovered {
+  max-width: 100%;
+  max-height: calc(100vh - 200px);
+  height: auto;
+  width: auto;
+}
 </style>

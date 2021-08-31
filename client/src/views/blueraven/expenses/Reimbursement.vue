@@ -213,22 +213,22 @@
               Submitted Reimbursements
             </v-card-title>
             <v-card-text class="pt-4">
-              <table>
+              <table class="detail-table">
                 <tr>
-                  <td>Pending Approval:</td>
-                  <td>{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Pending Approval:</td>
+                  <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Pending Payment:</td>
-                  <td>{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Pending Payment:</td>
+                  <td class="detail-column text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Paid:</td>
-                  <td>{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Paid:</td>
+                  <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
-                <tr>
-                  <td>Total Reimbursements:</td>
-                  <td>{{ submittedReport.total || 0 | currency('$', 2) }}</td>
+                <tr class="total-row">
+                  <td class="detail-column">Total Reimbursements:</td>
+                  <td class="detail-column text-right">{{ submittedReport.total || 0 | currency('$', 2) }}</td>
                 </tr>
               </table>
             </v-card-text>
@@ -239,30 +239,30 @@
               Recruiting Budget
             </v-card-title>
             <v-card-text class="pt-4">
-              <table>
+              <table class="detail-table">
                 <tr>
-                  <td>Monthly Budget:</td>
-                  <td>{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Monthly Budget:</td>
+                  <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Pending Approval:</td>
-                  <td>{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Pending Approval:</td>
+                  <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Pending Payment:</td>
-                  <td>{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Pending Payment:</td>
+                  <td class="detail-column text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Paid:</td>
-                  <td>{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Paid:</td>
+                  <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Other:</td>
-                  <td>{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Other:</td>
+                  <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td>Remaining Budget:</td>
-                  <td>{{ submittedReport.total || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column">Remaining Budget:</td>
+                  <td class="detail-column text-right">{{ submittedReport.total || 0 | currency('$', 2) }}</td>
                 </tr>
               </table>
             </v-card-text>
@@ -568,7 +568,17 @@ export default {
   width: auto;
 }
 
-//.company-logo-background {
-//  background-color: #bbbbbb;
-//}
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-column {
+  width: 50%;
+}
+
+.total-row {
+  border-top: solid 1px #D8D8D8;
+  font-weight: bold;
+}
 </style>

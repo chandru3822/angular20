@@ -106,7 +106,7 @@
               <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text @click="selectedRequest = item">
+                  <v-btn small text @click="[selectedRequest = item, getRequestAttachmentPresignedUrl(item)]">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-dialog
@@ -238,6 +238,23 @@
                     </v-card>
                   </td>
                 </tr>
+                <tr>
+                  <td class="left-column">Receipt Image:</td>
+                  <td class="receipt-image-background">
+                    <v-tooltip bottom max-width="300px"
+                               v-if="renderRequestImage && selectedRequest.presignedUrl"
+                               content-class="receipt-image-tooltip">
+                      <template v-slot:activator="{ on:tooltip }">
+                        <v-img name="receiptImg" class="receipt-image"
+                               v-on="{ ...tooltip }"
+                               alt="receipt-image" :src="selectedRequest.presignedUrl"></v-img>
+                      </template>
+                      <v-card class="receipt-image-hover-container">
+                        <img class="receipt-image-hovered" :src="selectedRequest.presignedUrl">
+                      </v-card>
+                    </v-tooltip>
+                  </td>
+                </tr>
               </table>
             </v-col>
             <v-col cols="12" sm="7" class="pt-0">
@@ -335,7 +352,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
-import {getGlCodes, getUsersWithBudget} from './expenseService'
+import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 
 export default {
@@ -387,7 +404,8 @@ export default {
       rejectDropdown: false,
       glError: false,
       budgetError: false,
-      amountError: false
+      amountError: false,
+      renderRequestImage: false
     }
   },
   created() {
@@ -476,7 +494,7 @@ export default {
         } else if (item.expenseBudgetUserId == null || (item.expenseBudgetId == null && item.expenseBudgetUserId !== -1)) {
           this.budgetError = true
         } else {
-          item.userId = this.selectedRequest.createdByUserId;
+          item.userId = this.selectedRequest.createdById;
           item.expenseDate = this.selectedRequest.expenseDate;
           item.notes = null;
           item.reimbursementRequestId = this.selectedRequest.id
@@ -611,6 +629,22 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getRequestAttachmentPresignedUrl(item) {
+      this.renderRequestImage = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getReimbursementRequestImage(item.id)
+        item.presignedUrl = data
+        //this forces the dom to re-render the presignedUrl and i hate myself
+        this.renderRequestImage = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>
@@ -638,4 +672,27 @@ export default {
   width: 250px;
   height: auto
 }
+
+.receipt-image-background {
+  max-width: 250px !important;
+}
+
+.receipt-image-tooltip {
+  max-width: 100% !important;
+  background-color: transparent;
+  opacity: 1 !important;
+}
+
+.receipt-image-hover-container {
+  max-width: 100%;
+  height: auto;
+}
+
+.receipt-image-hovered {
+  max-width: 100%;
+  max-height: calc(100vh - 200px);
+  height: auto;
+  width: auto;
+}
+
 </style>

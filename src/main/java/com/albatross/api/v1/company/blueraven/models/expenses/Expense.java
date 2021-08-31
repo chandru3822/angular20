@@ -16,7 +16,7 @@ public class Expense {
   private String glCode, createdBy, approvedBy, paidBy, budgetType, notes,
     submittedBy, expenseBudgetUser, positionName, reimbursementRequestDetails;
   private Double expenseAmount;
-  private Long expenseBudgetId, createdByUserId, approvedById, paidByUserId, reimbursementRequestId,
+  private Long expenseBudgetId, createdById, approvedById, paidByUserId, reimbursementRequestId,
     userId, paidById, glCodeId, submittedById, expenseBudgetUserId, updatedByUserId, rejectedByUserId, positionId;
   private Date dateCreated, approvalDate, paidDate, expenseDate, dateSubmitted, rejectedDate;
   private Boolean skipApproval, archived;
