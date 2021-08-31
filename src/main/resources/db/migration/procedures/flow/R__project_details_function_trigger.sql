@@ -535,6 +535,301 @@ CREATE TRIGGER update_project_details_trg
     FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_details_process_steps();
 
+
+
+CREATE OR REPLACE FUNCTION flow.update_project_details_process_steps_from_events()
+  RETURNS TRIGGER AS
+$body$
+
+declare
+  v_project_id                     integer;
+  v_sql                            character varying;
+  v_value                          character varying;
+  v_record                         record;
+  v_parent_project_process_step_id integer;
+  v_timestamp_value                timestamp;
+  v_project_id1                    integer;
+  v_field_name                     varchar;
+  v_parent_custom_field_id         integer;
+  v_project_id2                    integer;
+BEGIN
+
+  select pps.project_id
+  into v_project_id
+  from flow.project_process_step_event ppse
+   inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+  where ppse.id = new.project_process_step_event_id
+    and pps.main is true;
+
+  select pps.project_id
+  into v_project_id1
+  from flow.project_process_step_event ppse
+   inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+         inner join flow.process_step ps on pps.process_step_id = ps.id
+  where ppse.id = new.project_process_step_event_id;
+
+
+  select cf.field_name, cf.parent_custom_field_id
+  into v_field_name,v_parent_custom_field_id
+  from flow.custom_field_group_assignment cfga
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
+  where cfga.id = new.custom_field_group_assignment_id
+    and cfga.archived is false;
+
+
+  if v_parent_custom_field_id = 10541 then
+    select pps2.parent_project_process_step_id
+    into v_parent_project_process_step_id
+    from flow.project_process_step pps2
+    where pps2.id = new.project_process_step_id;
+
+    if v_parent_project_process_step_id is not null then
+
+      select timestamp_value
+      into v_timestamp_value
+      from flow.project_process_step pps3
+             inner join flow.project_process_step_custom_field_value ppscfv
+                        on pps3.id = ppscfv.project_process_step_id and
+                           ppscfv.custom_field_group_assignment_id = 5
+      where pps3.id = v_parent_project_process_step_id
+        and pps3.process_step_id = 1;
+    else
+      select min(timestamp_value)
+      into v_timestamp_value
+      from flow.project_process_step pps4
+             inner join flow.project_process_step_custom_field_value ppscfv1
+                        on pps4.id = ppscfv1.project_process_step_id and
+                           ppscfv1.custom_field_group_assignment_id = 5
+      where pps4.project_id = v_project_id1
+        and pps4.process_step_id = 1
+      limit 1;
+
+    end if;
+
+    if new.int_value is not null then
+      update brs.project_details
+      set first_appointment_id = new.int_value,
+          first_appointment_pps_id = new.project_process_step_id
+      where project_id = v_project_id1
+        and (first_appointment_id is null or (first_appointment_pps_id is not null and first_appointment_pps_id = new.project_process_step_id));
+    end if;
+
+    if new.int_value in (2, 1139, 1140) then
+
+      update brs.project_details
+      set setter_milestone_pay = coalesce(v_timestamp_value, now()),
+          setter_milestone_pay_ppscfv_id = new.id
+      where project_id = v_project_id1
+        and (setter_milestone_pay is null or (setter_milestone_pay_ppscfv_id is not null and setter_milestone_pay_ppscfv_id = new.id));
+
+      update brs.project_details
+      set first_appointment_pitched    = coalesce(v_timestamp_value, now()),
+          first_appointment_pitched_id = new.int_value,
+          first_appointment_pitched_ppscfv_id = new.id
+      where project_id = v_project_id1
+        and (first_appointment_pitched is null or (first_appointment_pitched_ppscfv_id is not null and first_appointment_pitched_ppscfv_id = new.id));
+    elsif new.int_value in (3) then
+      update brs.project_details
+      set setter_milestone_pay = coalesce(v_timestamp_value, now()),
+          setter_milestone_pay_ppscfv_id = new.id
+      where project_id = v_project_id1
+        and (setter_milestone_pay is null or (setter_milestone_pay_ppscfv_id is not null and setter_milestone_pay_ppscfv_id = new.id));
+
+      update brs.project_details
+      set first_appointment_missed    = coalesce(v_timestamp_value, now()),
+          first_appointment_missed_id = new.int_value,
+          first_appointment_missed_ppscfv_id = new.id
+      where project_id = v_project_id1
+        and (first_appointment_missed is null or (first_appointment_missed_ppscfv_id is not null and first_appointment_missed_ppscfv_id = new.id));
+    elseif new.int_value is not null and
+           new.int_value not in (2, 3, 1139, 1140) then
+      update brs.project_details
+      set first_appointment_not_pitched_or_missed    =coalesce(v_timestamp_value, now()),
+          first_appointment_not_pitched_or_missed_id = new.int_value,
+          first_appointment_not_pitched_or_missed_ppscfv_id = new.id
+      where project_id = v_project_id1
+        and (first_appointment_not_pitched_or_missed is null or (first_appointment_not_pitched_or_missed_ppscfv_id is not null and first_appointment_not_pitched_or_missed_ppscfv_id = new.id));
+    end if;
+  elsif v_parent_custom_field_id = 9958 and
+        new.timestamp_value is not null then
+    update brs.project_details
+    set first_appointment        = new.timestamp_value,
+        first_appointment_pps_id = new.project_process_step_id
+    where project_id = v_project_id1
+      and (first_appointment is null or (first_appointment_pps_id is not null and first_appointment_pps_id = new.project_process_step_id));
+  end if;
+
+
+  for v_record in
+    select pdc.id,
+           field_to_update,
+           data_type_id,
+           pdc.second_field_to_update,
+           pdc.second_data_type_id,
+           cf.list_of_value_id,
+           pdc.update_first_value_only,
+           pdc.update_first_value_only_id
+    from brs.project_details_config pdc
+           inner join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+    loop
+
+      if v_record.id is not null and v_record.data_type_id in (1, 2, 3, 4, 5, 6, 7) and
+         (v_project_id is not null or v_record.update_first_value_only is true) then
+        if v_record.data_type_id = 1 then
+          case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
+          v_value = v_value || '::date';
+        elsif v_record.data_type_id = 2 then
+          case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
+          v_value = v_value || '::timestamp';
+        elsif v_record.data_type_id = 4 then
+          case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
+          v_value = v_value || '::numeric';
+        elsif v_record.data_type_id = 5 then
+          case when new.text_value is null then select 'null' into v_value; else select quote_literal(new.text_value) into v_value; end case;
+          v_value = v_value || '::text';
+        elsif v_record.data_type_id = 6 then
+          case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
+          v_value = v_value || '::integer';
+        elsif v_record.data_type_id = 3 then
+          case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
+          v_value = v_value || '::boolean';
+        elsif v_record.data_type_id = 7 then
+          case when new.int_array_value is null or new.int_array_value = '{}' then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
+                                                                                                                    from flow.list_of_value lov
+                                                                                                                    where lov.id = any (new.int_array_value::integer[])
+                                                                                                                    into v_value; end case;
+          v_value = v_value || '::text';
+        end if;
+        v_project_id2 = coalesce(v_project_id, v_project_id1);
+        case when v_record.update_first_value_only is false then
+          v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
+                          where project_id = $$ || v_project_id2;
+          -- raise notice 'what is the sql %',v_sql;
+          else
+            v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$,$$
+                      ||v_record.update_first_value_only_id||$$ = $$|| new.id|| $$
+                          where project_id = $$ || v_project_id2 || $$ and
+                          ($$ || v_record.field_to_update ||
+                    $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and  $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$))$$;
+          -- raise notice 'what is the sql %',v_sql;
+          end case;
+
+        begin
+          execute v_sql;
+        exception
+          when others then
+            insert into flow.trigger_error(project_process_step_custom_value_id, error)
+            values (new.id, SQLERRM);
+        end;
+
+
+        if v_record.second_field_to_update is not null then
+          if v_record.field_to_update in
+             ('proposal_number_id', 'proposal_number_id_closer_appointment', 'proposal_number_id_booking',
+              'proposal_number_id_final_design') then
+            case when new.int_value is null then select 'null' into v_value;
+              else
+                select quote_literal(proposal_nbr)
+                into v_value
+                from brs.proposal_log_history
+                where id = new.int_value;
+              end case;
+          elsif v_record.field_to_update = 'closer_user_position_id' and
+                v_record.second_field_to_update = 'closer_user_id' then
+            case when new.int_value is null then select 'null' into v_value;
+              else
+                select quote_literal(user_id)
+                into v_value
+                from flow.user_position
+                where id = new.int_value;
+              end case;
+          elsif v_record.field_to_update = 'closer_user_position_id' and
+                v_record.second_field_to_update = 'closer_name' then
+            case when new.int_value is null then select 'null' into v_value;
+              else
+                select quote_literal(first_name || ' ' || last_name)
+                into v_value
+                from flow.user u
+                       inner join flow.user_position up on up.user_id = u.id
+                where up.id = new.int_value;
+              end case;
+          elsif v_record.field_to_update in ('installation_resource', 'permit_pack_submittal_resource',
+                                             'in_house_mpu_permit_submittal_resource',
+                                             'permit_pickup_resource', 'ac_compressor_relocation_resource',
+                                             'as_built_permit_pickup_resource',
+                                             'as_built_permit_submission_resource',
+                                             'in_house_mpu_permit_pickup_resource', 'in_house_mpu_resource',
+                                             'installation_closeout_resource',
+                                             'non_standard_installation_resource',
+                                             'outsource_mpu_resource', 'reroof_resource',
+                                             'structural_upgrade_resource',
+                                             'tree_trimming_resource', 'trenching_resource',
+                                             'work_order_resource') then
+
+            case when new.int_value is null then select 'null' into v_value;
+              else
+                select quote_literal(org_name)
+                into v_value
+                from flow.org o
+                where o.id = new.int_value;
+              end case;
+            -- raise notice 'value&&&&&&&&&&&& = %',v_value;
+          elsif v_record.list_of_value_id is not null then
+            case when new.int_value is null then select 'null' into v_value;
+              else
+                select quote_literal(name)
+                into v_value
+                from flow.list_of_value
+                where id = new.int_value;
+              end case;
+          elsif v_record.data_type_id = 2 and v_record.second_data_type_id = 1 then
+            case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
+            v_value = '(' || v_value || '::timestamp at time zone ' || quote_literal('UTC') ||
+                      ' at time zone ' || quote_literal('US/Mountain') || ')::date';
+
+          end if;
+          case when v_record.update_first_value_only is false then
+            --raise notice 'am I here*********';
+            v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
+                    v_value || $$
+                            where project_id = $$ || v_project_id2;
+            --raise notice 'what is the sql in the second field %',v_sql;
+            else
+              v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
+                      v_value || $$,$$
+                        ||v_record.update_first_value_only_id||$$ = $$|| new.id|| $$
+                            where project_id = $$ || v_project_id2 || $$ and ($$ ||
+                      v_record.second_field_to_update || $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$))$$;
+            --raise notice 'what is the sql in the second field %',v_sql;
+            end case;
+
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_custom_value_id, error)
+              values (new.id, SQLERRM);
+          end;
+        end if;
+      end if;
+    end loop;
+  RETURN NULL;
+END
+$body$
+  LANGUAGE plpgsql;
+
+
+drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
+CREATE TRIGGER update_project_details_from_events_trg
+  after INSERT or update
+  ON flow.project_process_step_event_custom_field_value
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.update_project_details_process_steps_from_events();
+
+
 CREATE OR REPLACE FUNCTION flow.pps_update_project_details()
     RETURNS TRIGGER AS
 $body$
