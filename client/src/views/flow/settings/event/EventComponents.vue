@@ -115,14 +115,14 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-select v-if="addNewType"
+        <v-autocomplete v-if="addNewType"
                   v-model="newType.attachmentTypeId"
                   :items="availableAttachmentTypes"
                   label="Select Attachment Type"
                   item-text="attachmentType"
                   item-value="id"
                   @input="assignNewType"
-        ></v-select>
+        ></v-autocomplete>
         <v-card flat >
           <draggable v-model="eventAttachmentTypes" group="projectAttachmentTypes"
                      :disabled="!userCanEdit"
