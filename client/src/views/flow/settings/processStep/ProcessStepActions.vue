@@ -1080,7 +1080,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/operation`)
-        this.operationTypes = orderBy(data, [o => o.opferationType.toLowerCase()])
+        this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
