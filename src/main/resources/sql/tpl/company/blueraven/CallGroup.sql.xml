@@ -186,7 +186,6 @@
         inner join brs.call_group_phone_number cgpn on cg.id = cgpn.call_group_id
     where cgpc.postal_code = :postalCode and cg.active
         and cg.archived is not true and cgpc.archived is not true and cgpn.archived is not true
-        and cgpn.call_count< cg.max_call_count
     order by cgpn.id asc
   ]]></callGroup.getCallerGroupNumbers>
 

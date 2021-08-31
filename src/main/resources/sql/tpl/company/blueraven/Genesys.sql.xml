@@ -61,7 +61,7 @@
             date_modified = now()
   ]]></genesys.upsertCustomFieldValue>
 
-  <genesys.getContactIdsWeek1><![CDATA[
+  <genesys.getContactIdsWeek1Level1><![CDATA[
     select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
         and contact_id in (
           select contact_id
@@ -71,9 +71,9 @@
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
             and archived = false
     )
-  ]]></genesys.getContactIdsWeek1>
+  ]]></genesys.getContactIdsWeek1Level1>
 
-  <genesys.getContactIdsWeek2><![CDATA[
+  <genesys.getContactIdsWeek2Level1><![CDATA[
     select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
         and contact_id in (
           select contact_id
@@ -83,9 +83,9 @@
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
             and archived = false
     )
-  ]]></genesys.getContactIdsWeek2>
+  ]]></genesys.getContactIdsWeek2Level1>
 
-  <genesys.getContactIdsAged><![CDATA[
+  <genesys.getContactIdsAgedLevel1><![CDATA[
     select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
         and contact_id in (
           select contact_id
@@ -95,5 +95,113 @@
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
             and archived = false
     )
-  ]]></genesys.getContactIdsAged>
+  ]]></genesys.getContactIdsAgedLevel1>
+
+  <genesys.getContactIdsWeek1Level2><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsWeek1Level2>
+
+  <genesys.getContactIdsWeek2Level2><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsWeek2Level2>
+
+  <genesys.getContactIdsAgedLevel2><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsAgedLevel2>
+
+  <genesys.getContactIdsWeek1Level3><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsWeek1Level3>
+
+  <genesys.getContactIdsWeek2Level3><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsWeek2Level3>
+
+  <genesys.getContactIdsAgedLevel3><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsAgedLevel3>
+
+  <genesys.getContactIdsWeek1Level10><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsWeek1Level10>
+
+  <genesys.getContactIdsWeek2Level10><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsWeek2Level10>
+
+  <genesys.getContactIdsAgedLevel10><![CDATA[
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value = 700
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+            and archived = false
+    )
+  ]]></genesys.getContactIdsAgedLevel10>
 </sql>

@@ -210,8 +210,19 @@ BEGIN
                                         loan_product,
                                         number_of_promotion_payments,
                                         promotion_payment_amount,
-                                        proposal_tool_version
-)
+                                        proposal_tool_version,
+                                        storage_brand,
+                                        storage_size_kwh,
+                                        financed_ancillary_cost_with_fees,
+                                        financed_system_cost_with_fees,
+                                        discount,
+                                        manual_adjustment,
+                                        total_promotion_amount,
+                                        storage_cost_with_fees,
+                                        site_survey_resource_type,
+                                        site_survey_time_estimate,
+                                        site_survey_items
+  )
   VALUES (new.proposal->>'_filename',
     new.project_id,
     new.proposal->>'Full Name',
@@ -419,7 +430,18 @@ BEGIN
           new.proposal->>'Loan Product',
           new.proposal->>'Number of Promotion Payments',
           new.proposal->>'Promotion Payment Amount',
-          new.proposal->>'Proposal Tool Version'
+          new.proposal->>'Proposal Tool Version',
+          new.proposal->>'Storage Brand',
+          new.proposal->>'Storage Size (kWh)',
+          new.proposal->>'Financed Ancillary Cost With Fees',
+          new.proposal->>'Financed System Cost With Fees',
+          new.proposal->>'Discount',
+          new.proposal->>'Manual Adjustment',
+          new.proposal->>'Total Promotion Amount',
+          new.proposal->>'Storage Cost With Fees',
+          new.proposal->>'Site Survey Resource Type',
+          new.proposal->>'Site Survey Time Estimate',
+          new.proposal->>'Site Survey Items'
          );
   RETURN NEW;
 END;
