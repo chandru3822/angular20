@@ -99,7 +99,7 @@
                         item-value="id"
               ></v-select>
               <v-btn color="primaryCustom" class="white--text ml-3"
-                    @click="setDataForMonth">
+                     @click="setDataForMonth">
                 Load
               </v-btn>
             </div>
@@ -114,9 +114,9 @@
             <v-card-text class="pt-4">
               <table>
                 <thead>
-                  <th>Expense Date</th>
-                  <th>Amount</th>
-                  <th>Details</th>
+                <th>Expense Date</th>
+                <th>Amount</th>
+                <th>Details</th>
                 </thead>
                 <tr v-for="req in rejectedRequests">
                   <td>{{ req.expenseDate | formatDate('date') }}</td>
@@ -132,11 +132,66 @@
               Requests Needing Approval
             </v-card-title>
             <v-card-text class="pt-4">
-              <table>
+              <table v-if="!needsApprovalRequest || !needsApprovalRequest.id">
                 <tr v-for="req in requestsNeedingApproval">
-                  <td>{{ req.createdBy }} - {{req.dateCreated | date}} - Click for more details</td>
+                  <td>
+                    <a @click="needsApprovalRequest = req">
+                      {{ req.createdBy }} - {{ req.dateCreated | formatDate('date') }} - Click for more details
+                    </a>
+                  </td>
                 </tr>
               </table>
+              <table v-else class="pb-3">
+                <tr>
+                  <td class="left-column pb-3">
+                    <v-btn @click="needsApprovalRequest = {}">Back</v-btn>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="left-column">Created By:</td>
+                  <td>{{ needsApprovalRequest.createdBy }}</td>
+                </tr>
+                <tr>
+                  <td class="left-column">Created Date:</td>
+                  <td>{{ needsApprovalRequest.dateCreated | formatDate('date') }}</td>
+                </tr>
+                <tr>
+                  <td class="left-column">Budget Type:</td>
+                  <td>{{ needsApprovalRequest.budgetType }}</td>
+                </tr>
+                <tr>
+                  <td class="left-column">Expense Date:</td>
+                  <td>{{ needsApprovalRequest.expenseDate | formatDate('date') }}</td>
+                </tr>
+                <tr>
+                  <td class="left-column">Amount:</td>
+                  <td>{{ needsApprovalRequest.amount | currency('$', 2) }}</td>
+                </tr>
+                <tr>
+                  <td class="left-column">Details:</td>
+                  <td>{{ needsApprovalRequest.details }}</td>
+                </tr>
+              </table>
+              <v-divider></v-divider>
+              <h2>RANDA SHOW RECEIPT IMAGE HERE!!</h2>
+              <v-divider></v-divider>
+              <div class="pt-3">
+                <label>Notes: (required for rejecting)</label>
+                <v-textarea class="py-2" hide-details
+                            auto-grow filled
+                            rows="4"
+                            background-color="#F2F6F8"
+                            v-model="needsApprovalRequest.notes">
+                </v-textarea>
+                <v-btn color="primaryCustom"
+                       @click="setRequestStatusWithNotes(needsApprovalRequest, 1)"
+                       class="white--text">Approve</v-btn>
+                <v-btn color="red"
+                       @click="setRequestStatusWithNotes(needsApprovalRequest, 2)"
+                       :disabled="!needsApprovalRequest.notes"
+                       class="white--text ml-3">Reject
+                </v-btn>
+              </div>
             </v-card-text>
           </v-card>
 
@@ -152,11 +207,11 @@
                 </tr>
                 <tr>
                   <td>Pending Payment:</td>
-                  <td>{{ submittedReport.pending_payment || 0 | currency('$', 2)}}</td>
+                  <td>{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
                   <td>Paid:</td>
-                  <td>{{ submittedReport.paid || 0 | currency('$', 2)}}</td>
+                  <td>{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
                   <td>Total Reimbursements:</td>
@@ -182,15 +237,15 @@
                 </tr>
                 <tr>
                   <td>Pending Payment:</td>
-                  <td>{{ submittedReport.pending_payment || 0 | currency('$', 2)}}</td>
+                  <td>{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
                   <td>Paid:</td>
-                  <td>{{ submittedReport.paid || 0 | currency('$', 2)}}</td>
+                  <td>{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
                   <td>Other:</td>
-                  <td>{{ submittedReport.paid || 0 | currency('$', 2)}}</td>
+                  <td>{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
                   <td>Remaining Budget:</td>
@@ -231,6 +286,7 @@ export default {
       receiptLogo: {},
       companyId: this.$store.state.user.details.companyId,
       newReimbursement: {},
+      needsApprovalRequest: {},
       availableBudgets: [{
         fullBudgetName: 'N/A',
         id: -1,
@@ -349,41 +405,81 @@ export default {
     },
     async getMonthlySubmittedReport() {
       const {data} = await getRequestWithParams(`/reimbursement/getMonthlySubmittedReport`, {
-        params: {
-          startDate: this.startDate,
-          endDate: this.endDate
-        }}, 'blueraven'
+          params: {
+            startDate: this.startDate,
+            endDate: this.endDate
+          }
+        }, 'blueraven'
       )
       this.submittedReport = data && data[0] ? data[0] : {}
     },
     async getMonthlyBudgetReport() {
       const {data} = await getRequestWithParams(`/expenseBudgets/getMonthlyBudgetReport`, {
-        params: {
-          startDate: this.startDate,
-          endDate: this.endDate
-        }}, 'blueraven'
+          params: {
+            startDate: this.startDate,
+            endDate: this.endDate
+          }
+        }, 'blueraven'
       )
       this.budgetReport = data && data[0] ? data[0] : {}
     },
     async getRejectedRequests(statusId) {
       const {data} = await getRequestWithParams(`/reimbursement/requests/byStatus`, {
-        params: {
-          statusId,
-          startDate: this.startDate,
-          endDate: this.endDate
-        }}, 'blueraven'
+          params: {
+            statusId,
+            startDate: this.startDate,
+            endDate: this.endDate
+          }
+        }, 'blueraven'
       )
       this.rejectedRequests = data
     },
     async getRequestsForSupervisorByStatus(statusId) {
       const {data} = await getRequestWithParams(`/reimbursement/requests/supervisor/byStatus`, {
-        params: {
-          statusId,
-          startDate: this.startDate,
-          endDate: this.endDate
-        }}, 'blueraven'
+          params: {
+            statusId,
+            startDate: this.startDate,
+            endDate: this.endDate
+          }
+        }, 'blueraven'
       )
       this.requestsNeedingApproval = data
+    },
+    async confirmPayment() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.paymentConfirmLoading = true
+      try {
+        await postRequest(`/expenses/markExpensesPaid`, this.selectedExpenses, 'blueraven')
+        //coolness
+        window.location.reload()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Marking Selected Expenses as Paid')
+        this.paymentConfirmLoading = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    setRequestStatusWithNotes(request, statusId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        request.reimbursementRequestStatusId = statusId
+        const {data} = postRequest(`/reimbursement/request/updateStatus`, request, 'blueraven')
+        this.needsApprovalRequest = {}
+        //dont show the one that just got approved/rejected
+        this.requestsNeedingApproval = this.requestsNeedingApproval.filter((r) => r.id !== request.id)
+        let status = statusId === 2 ? 'Rejected' : 'Approved'
+        let msg = 'Reimbursement Request ' + status
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('SUCCESS', msg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Status')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     setDataForMonth() {
       let dateRange = this.getMonthDateRange(this.selectedMonth, this.selectedYear)
@@ -399,7 +495,7 @@ export default {
       //the the monthly submitted report
       this.getMonthlySubmittedReport()
 
-      if (this.$store.getters.userHasAnyPosition([3,6])) {
+      if (this.$store.getters.userHasAnyPosition([3, 6])) {
         this.getMonthlyBudgetReport()
       }
     },

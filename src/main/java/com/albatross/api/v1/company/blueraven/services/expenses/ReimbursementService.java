@@ -81,9 +81,12 @@ public class ReimbursementService {
   }
 
   public void updateRequestStatus(ReimbursementRequest reimbursementRequest) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("reimbursementRequestStatusId", reimbursementRequest.getReimbursementRequestStatusId());
     params.put("id", reimbursementRequest.getId());
+    params.put("userId", currentUser.trueUserId());
     sqlCache.update("reimbursement.updateStatus", params);
 
     if(null != reimbursementRequest.getNotes()){

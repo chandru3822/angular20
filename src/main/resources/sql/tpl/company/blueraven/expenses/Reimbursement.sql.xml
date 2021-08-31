@@ -91,8 +91,10 @@ WHERE rr.reimbursement_request_status_id = 3
   <reimbursement.updateStatus>
     <![CDATA[
             UPDATE brs.reimbursement_request
-              SET reimbursement_request_status_id = :reimbursementRequestStatusId
-            WHERE id = :id;
+            SET reimbursement_request_status_id = :reimbursementRequestStatusId,
+                date_modified = now(),
+                modified_by_id = :userId
+            WHERE id = :id
         ]]>
   </reimbursement.updateStatus>
 
