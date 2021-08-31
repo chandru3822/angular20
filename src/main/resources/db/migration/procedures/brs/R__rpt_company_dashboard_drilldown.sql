@@ -38,6 +38,7 @@ BEGIN
                                        left outer join flow.company_state cs on cs.id = c.company_state_id
                                        left outer join flow.state s on s.id = cs.state_id
                               where ((fa.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                and pd.archived is false
                                 and case
                                         when p_company_id is not null and p_company_id != 2 and p_company_id != 2
                                             then pd.company_id = p_company_id
@@ -61,6 +62,7 @@ BEGIN
                                            left outer join flow.company_state cs on cs.id = c.company_state_id
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -89,6 +91,7 @@ BEGIN
                                            inner join flow.list_of_value lov on lov.id = pd.first_appointment_pitched_id
                                   where ((pd.first_appointment_pitched at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -113,6 +116,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.installation_agreement_signed_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -137,6 +141,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.site_survey_verified_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -161,6 +166,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -185,6 +191,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -209,6 +216,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.final_design_signed_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -233,6 +241,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.final_design_complete_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -257,6 +266,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.plan_set_created_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -281,6 +291,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.permit_pack_complete at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -305,6 +316,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where least(((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
                                               permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -329,6 +341,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.permit_approved_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -353,6 +366,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.installation_scheduled at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -381,6 +395,7 @@ BEGIN
                                   where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date or
                                          ((pd.installation_closeout_start_time at time zone 'UTC') at time zone
                                           'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date)
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -405,6 +420,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.substantial_completion_date at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -432,6 +448,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where (pd.ahj_inspection_scheduled_date BETWEEN p_custom_start_date and p_custom_end_date or
                                          pd.ahj_reinspection_scheduled_date BETWEEN p_custom_start_date and p_custom_end_date)
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -461,6 +478,7 @@ BEGIN
                                           'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date or
                                          ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone
                                           'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date)
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -485,6 +503,7 @@ BEGIN
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((pd.ahj_final_inspection_verified at time zone 'UTC') at time zone
                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
@@ -510,8 +529,9 @@ BEGIN
                                            inner join flow.contact c on c.id = p.contact_id
                                            left outer join flow.company_state cs on cs.id = c.company_state_id
                                            left outer join flow.state s on s.id = cs.state_id
-                                  where pd.verified_inspection_approval_received_by_utility_date BETWEEN p_custom_start_date and p_custom_end_date
-                                     or pd.ahj_inspection_approval_submitted_date BETWEEN p_custom_start_date and p_custom_end_date
+                                  where (pd.verified_inspection_approval_received_by_utility_date BETWEEN p_custom_start_date and p_custom_end_date
+                                     or pd.ahj_inspection_approval_submitted_date BETWEEN p_custom_start_date and p_custom_end_date)
+                                      and pd.archived is false
                                       and case
                                               when p_company_id is not null and p_company_id != 2
                                                   then pd.company_id = p_company_id
@@ -535,6 +555,7 @@ BEGIN
                                            left outer join flow.company_state cs on cs.id = c.company_state_id
                                            left outer join flow.state s on s.id = cs.state_id
                                   where pd.final_completion_submitted_date BETWEEN p_custom_start_date and p_custom_end_date
+                                    and pd.archived is false
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
