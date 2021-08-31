@@ -4,6 +4,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/flow/projectProcessStep")
@@ -38,7 +40,10 @@ public class ProjectProcessStepController {
 
       return new ResponseEntity<>(pps, HttpStatus.OK);
     } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+      final String errMessage = String.format("Unable to get PPS, PPS ID: %s *** %s", projectProcessStepId, e.getMessage());
+      log.error(errMessage);
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
   }
 
@@ -57,7 +62,10 @@ public class ProjectProcessStepController {
     try {
       return new ResponseEntity<>(projectProcessStepService.getActionResult(actionId, ppsId), HttpStatus.OK);
     } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+      final String errMessage = String.format("Unable to get action result, action ID: %s, PPS ID: %s *** %s", actionId, ppsId, e.getMessage());
+      log.error(errMessage);
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
   }
   @PostMapping(value = "/{ppsId}/action/{actionId}")
@@ -83,7 +91,10 @@ public class ProjectProcessStepController {
       projectProcessStepService.performAction(action, pps);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+      final String errMessage = String.format("PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",  actionId, ppsId, e.getMessage());
+      log.error(errMessage);
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
   }
 
