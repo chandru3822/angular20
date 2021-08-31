@@ -168,6 +168,7 @@
                 <td class="text-left">{{item.customer_name }}</td>
                 <td class="text-left">{{item.system_size }}</td>
                 <td class="text-left">{{item.closer }}</td>
+                <td class="text-left">{{item.user_id }}</td>
                 <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
                 <td class="text-left">{{item.source_name }}</td>
                 <td class="text-left">{{item.cancelled_date }}</td>
@@ -464,6 +465,7 @@
           {text: 'Customer Name', value: 'customer_name', show: true},
           {text: 'System Size (kW)', value: 'system_size', show: true},
           {text: 'Sales Rep', value: 'closer', show: true},
+          {text: 'User ID', value: 'user_id', show: true},
           {text: 'Current Pay', value: 'current_pay', show: true},
           {text: 'Source', value: 'source_name', show: true},
           {text: 'Cancelled', value: 'cancelled_date', show: true},
@@ -494,6 +496,7 @@
           {text: 'Project ID', value: 'project_id', show: true},
           {text: 'Customer Name', value: 'customer_name', show: true},
           {text: 'Setter', value: 'setter', show: true},
+          {text: 'User ID', value: 'user_id', show: true},
           {text: 'Current Pay', value: 'current_pay', show: true},
           {text: 'Source', value: 'source_name', show: true},
           {text: 'Cancelled', value: 'cancelled_date', show: true},
@@ -785,7 +788,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Accounting Review.csv';
-          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
           csvData += '\n';
 
           this.accountingData.forEach(p => {
@@ -795,6 +798,7 @@
                 p.customer_name + ',' +
                 p.system_size + ',' +
                 p.closer + ',' +
+                p.user_id + ',' +
                 p.current_pay + ',' +
                 p.source_name + ',' +
                 p.cancelled_date + ',' +
