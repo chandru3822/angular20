@@ -9,203 +9,419 @@
                       @prodStatsDrilldownDialogClosed="showModal = false"
       ></ProductionStatsDrilldown>
     </v-dialog>
-    <v-row>
-      <v-col cols="12">
-        <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Installer Dashboard</v-toolbar-title>
-        </v-toolbar>
-        <v-divider class="mt-3"/>
-        <v-row class="px-4">
-          <v-col cols="3" md="2">
-            <v-autocomplete v-model="selectedRegionalManagers"
-                            :items="regionalManagers"
-                            label="Regional Installation Manager"
-                            multiple
-                            clearable
-                            return-object
-                            item-text="fullName"
-                            @change="getInstallationCrew()"
-                            @click:clear="selectedInstallationCrews = []">
-              <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllManagers()"
-              >
-                <v-list-item-action>
-                  <v-icon>{{ iconManagers }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
-              <span v-if="index === 0" class="primary--text caption">
-                {{ selectedRegionalManagers.length }} selected
-              </span>
-              </template>
-            </v-autocomplete>
-          </v-col>
-          <v-col cols="3" md="2">
-            <v-autocomplete v-model="selectedInstallationCrews"
-                            :items="installationCrew"
-                            label="Installation Crews"
-                            multiple
-                            clearable
-                            return-object
-                            item-text="fullName">
-              <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllCrews()"
-              >
-                <v-list-item-action>
-                  <v-icon>{{ iconCrews }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
-              <span v-if="index === 0" class="primary--text caption">
-                {{ selectedInstallationCrews.length }} selected
-              </span>
-              </template>
-            </v-autocomplete>
-          </v-col>
-          <v-col cols="3" md="2">
-            <v-select attach class="date-range-dropdown" py-2
-                      v-model="selectedDateRange"
-                      :items="dateRanges"
-                      label="Date Range"
-                      @change="setDateRange()"
-                      hide-details
-            ></v-select>
-          </v-col>
-          <v-col cols="3" md="2">
-            <DatetimePickerInput :custom-class="'date-range-date'"  py-2
-                                 v-model="startDate"
-                                 :timezone="timezone"
-                                 :maxDate="endDate"
-                                 :type="'date'"
-                                 label="Start Date"
-                                 @input="setDateRangeCustom(false)"
-                                 hide-details
-                                 :hide-prepend-icon="true"
-            ></DatetimePickerInput>
-          </v-col>
-          <v-col cols="3" md="2">
-            <DatetimePickerInput :custom-class="'date-range-date'"  py-2
-                                 v-model="endDate"
-                                 :timezone="timezone"
-                                 :minDate="startDate"
-                                 :type="'date'"
-                                 @input="setDateRangeCustom(false)"
-                                 label="End Date"
-                                 hide-details
-                                 :hide-prepend-icon="true"
-            ></DatetimePickerInput>
-          </v-col>
-          <v-col cols="3" md="2">
-            <v-btn color="primaryCustom" class="white--text"
-                   :disabled="selectedInstallationCrews.length < 1"
-                   @click="getDashboardValues()">Go</v-btn>
-          </v-col>
-        </v-row>
-        <v-row>
+
+    <!-- Non-Mobile code -->
+    <template v-if="!constants.IS_MOBILE">
+      <v-row>
+        <v-col cols="12">
           <v-toolbar flat class="app-toolbar">
-            <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Production Stats</v-toolbar-title>
+            <v-toolbar-title class="app-title">Installer Dashboard</v-toolbar-title>
           </v-toolbar>
-        </v-row>
-        <v-row>
-          <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
-                  width="200" height="100" >
-            <div class="card-accent" :style="{'background-color': 'white'}"></div>
+          <v-divider class="mt-3"/>
+          <v-row class="px-4">
+            <v-col cols="3" md="2">
+              <v-autocomplete v-model="selectedRegionalManagers"
+                              :items="regionalManagers"
+                              label="Regional Installation Manager"
+                              multiple
+                              clearable
+                              return-object
+                              item-text="fullName"
+                              @change="getInstallationCrew()"
+                              @click:clear="selectedInstallationCrews = []">
+                <v-list-item
+                  slot="prepend-item"
+                  ripple
+                  @click="toggleSelectAllManagers()"
+                >
+                  <v-list-item-action>
+                    <v-icon>{{ iconManagers }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item>
+                <v-divider
+                  slot="prepend-item"
+                  class="mt-2"
+                ></v-divider>
+                <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+                >
+                <span v-if="index === 0" class="primary--text caption">
+                  {{ selectedRegionalManagers.length }} selected
+                </span>
+                </template>
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="3" md="2">
+              <v-autocomplete v-model="selectedInstallationCrews"
+                              :items="installationCrew"
+                              label="Installation Crews"
+                              multiple
+                              clearable
+                              return-object
+                              item-text="fullName">
+                <v-list-item
+                  slot="prepend-item"
+                  ripple
+                  @click="toggleSelectAllCrews()"
+                >
+                  <v-list-item-action>
+                    <v-icon>{{ iconCrews }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item>
+                <v-divider
+                  slot="prepend-item"
+                  class="mt-2"
+                ></v-divider>
+                <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+                >
+                <span v-if="index === 0" class="primary--text caption">
+                  {{ selectedInstallationCrews.length }} selected
+                </span>
+                </template>
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="3" md="2">
+              <v-select attach class="date-range-dropdown" py-2
+                        v-model="selectedDateRange"
+                        :items="dateRanges"
+                        label="Date Range"
+                        @change="setDateRange()"
+                        hide-details
+              ></v-select>
+            </v-col>
+            <v-col cols="3" md="2">
+              <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                                   v-model="startDate"
+                                   :timezone="timezone"
+                                   :maxDate="endDate"
+                                   :type="'date'"
+                                   label="Start Date"
+                                   @input="setDateRangeCustom(false)"
+                                   hide-details
+                                   :hide-prepend-icon="true"
+              ></DatetimePickerInput>
+            </v-col>
+            <v-col cols="3" md="2">
+              <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                                   v-model="endDate"
+                                   :timezone="timezone"
+                                   :minDate="startDate"
+                                   :type="'date'"
+                                   @input="setDateRangeCustom(false)"
+                                   label="End Date"
+                                   hide-details
+                                   :hide-prepend-icon="true"
+              ></DatetimePickerInput>
+            </v-col>
+            <v-col cols="3" md="2">
+              <v-btn color="primaryCustom" class="white--text"
+                     :disabled="selectedInstallationCrews.length < 1"
+                     @click="getDashboardValues()">Go</v-btn>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-toolbar flat class="app-toolbar">
+              <v-toolbar-title class="app-title">Production Stats</v-toolbar-title>
+            </v-toolbar>
+          </v-row>
+          <v-row>
+            <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
+                    width="200" height="100" >
+              <div class="card-accent" :style="{'background-color': 'white'}"></div>
+                <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
+                  <div class="text-left">{{stat.name}}</div>
+                  <div class="card-count">{{stat.value}}</div>
+                </v-card-text>
+            </v-card>
+          </v-row>
+          <v-row>
+            <v-toolbar flat class="app-toolbar">
+              <v-toolbar-title class="app-title">WIP</v-toolbar-title>
+            </v-toolbar>
+          </v-row>
+          <v-row>
+            <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
+                    :class="{'clickable': wq.workQueueCount > 0}"
+                    :key="wq.id"
+                    width="200" height="100" >
+              <div class="card-accent" :style="{'background-color': wq.color}"></div>
+              <v-card-text class="pt-1">
+                <router-link class="no-text-decoration card-link" target="_blank"
+                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
+                                                                                                          installationCrewIds}}">
+                  <div class="text-left">{{wq.workQueueType}}</div>
+                  <div class="card-count">{{wq.workQueueCount}}</div>
+                </router-link>
+              </v-card-text>
+            </v-card>
+          </v-row>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-toolbar flat class="app-toolbar">
+          <v-toolbar-title class="app-title">Key Performance Metrics</v-toolbar-title>
+        </v-toolbar>
+        <v-col cols="3" md="2">
+          <v-select attach class="date-range-dropdown" py-2
+                    v-model="metricsSelectedDateRange"
+                    :items="dateRanges"
+                    label="Date Range"
+                    @change="setMetricsDateRange()"
+                    hide-details
+          ></v-select>
+        </v-col>
+        <v-col cols="3" md="2">
+          <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                               v-model="metricsStartDate"
+                               :timezone="timezone"
+                               :maxDate="metricsEndDate"
+                               :type="'date'"
+                               @input="setDateRangeCustom(true)"
+                               label="Start Date"
+                               hide-details
+                               :hide-prepend-icon="true"
+          ></DatetimePickerInput>
+        </v-col>
+        <v-col cols="3" md="2">
+          <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                               v-model="metricsEndDate"
+                               :timezone="timezone"
+                               :minDate="metricsStartDate"
+                               :type="'date'"
+                               @input="setDateRangeCustom(true)"
+                               label="End Date"
+                               hide-details
+                               :hide-prepend-icon="true"
+          ></DatetimePickerInput>
+        </v-col>
+        <v-col cols="3" md="2">
+            <v-btn
+              color="primaryCustom"
+              class="white--text mr-2 mb-3"
+              @click="getPerformanceMetrics"
+            >
+              Go
+            </v-btn>
+        </v-col>
+      </v-row>
+    </template>
+
+    <!-- Mobile code -->
+    <template v-if="constants.IS_MOBILE">
+      <v-row>
+        <v-col cols="12">
+          <v-toolbar flat class="app-toolbar">
+            <v-toolbar-title class="app-title">Installer Dashboard</v-toolbar-title>
+          </v-toolbar>
+          <v-divider class="mt-3"/>
+          <v-row class="px-4">
+            <v-row>
+              <v-col cols="5" md="2">
+                <v-autocomplete v-model="selectedRegionalManagers" class="zzzz"
+                                :items="regionalManagers"
+                                label="Regional Installation Manager"
+                                multiple
+                                clearable
+                                return-object
+                                item-text="fullName"
+                                @change="getInstallationCrew()"
+                                @click:clear="selectedInstallationCrews = []">
+                  <v-list-item
+                    slot="prepend-item"
+                    ripple
+                    @click="toggleSelectAllManagers()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconManagers }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    slot="prepend-item"
+                    class="mt-2"
+                  ></v-divider>
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                  <span v-if="index === 0" class="primary--text caption">
+                    {{ selectedRegionalManagers.length }} selected
+                  </span>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+              <v-col cols="5" md="2">
+                <v-autocomplete v-model="selectedInstallationCrews"
+                                :items="installationCrew"
+                                label="Installation Crews"
+                                multiple
+                                clearable
+                                return-object
+                                item-text="fullName">
+                  <v-list-item
+                    slot="prepend-item"
+                    ripple
+                    @click="toggleSelectAllCrews()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconCrews }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    slot="prepend-item"
+                    class="mt-2"
+                  ></v-divider>
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                  <span v-if="index === 0" class="primary--text caption">
+                    {{ selectedInstallationCrews.length }} selected
+                  </span>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="5" md="2">
+                <v-select attach class="date-range-dropdown" py-2
+                          v-model="selectedDateRange"
+                          :items="dateRanges"
+                          label="Date Range"
+                          @change="setDateRange()"
+                          hide-details
+                ></v-select>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="5" md="2">
+                <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                                     v-model="startDate"
+                                     :timezone="timezone"
+                                     :maxDate="endDate"
+                                     :type="'date'"
+                                     label="Start Date"
+                                     @input="setDateRangeCustom(false)"
+                                     hide-details
+                                     :hide-prepend-icon="true"
+                ></DatetimePickerInput>
+              </v-col>
+              <v-col cols="5" md="2">
+                <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                                     v-model="endDate"
+                                     :timezone="timezone"
+                                     :minDate="startDate"
+                                     :type="'date'"
+                                     @input="setDateRangeCustom(false)"
+                                     label="End Date"
+                                     hide-details
+                                     :hide-prepend-icon="true"
+                ></DatetimePickerInput>
+              </v-col>
+            </v-row>
+            <v-col cols="5" md="2">
+              <v-btn color="primaryCustom" class="white--text"
+                     :disabled="selectedInstallationCrews.length < 1"
+                     @click="getDashboardValues()">Go</v-btn>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-toolbar flat class="app-toolbar">
+              <v-toolbar-title class="app-title">Production Stats</v-toolbar-title>
+            </v-toolbar>
+          </v-row>
+          <v-row>
+            <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
+                    width="200" height="100" >
+              <div class="card-accent" :style="{'background-color': 'white'}"></div>
               <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
                 <div class="text-left">{{stat.name}}</div>
                 <div class="card-count">{{stat.value}}</div>
               </v-card-text>
-          </v-card>
-        </v-row>
-        <v-row>
-          <v-toolbar flat class="app-toolbar">
-            <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">WIP</v-toolbar-title>
-          </v-toolbar>
-        </v-row>
-        <v-row>
-          <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
-                  :class="{'clickable': wq.workQueueCount > 0}"
-                  :key="wq.id"
-                  width="200" height="100" >
-            <div class="card-accent" :style="{'background-color': wq.color}"></div>
-            <v-card-text class="pt-1">
-              <router-link class="no-text-decoration card-link" target="_blank"
-                           :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
-                                                                                                        installationCrewIds}}">
-                <div class="text-left">{{wq.workQueueType}}</div>
-                <div class="card-count">{{wq.workQueueCount}}</div>
-              </router-link>
-            </v-card-text>
-          </v-card>
-        </v-row>
+            </v-card>
+          </v-row>
+          <v-row>
+            <v-toolbar flat class="app-toolbar">
+              <v-toolbar-title class="app-title">WIP</v-toolbar-title>
+            </v-toolbar>
+          </v-row>
+          <v-row>
+            <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
+                    :class="{'clickable': wq.workQueueCount > 0}"
+                    :key="wq.id"
+                    width="200" height="100" >
+              <div class="card-accent" :style="{'background-color': wq.color}"></div>
+              <v-card-text class="pt-1">
+                <router-link class="no-text-decoration card-link" target="_blank"
+                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
+                                                                                                          installationCrewIds}}">
+                  <div class="text-left">{{wq.workQueueType}}</div>
+                  <div class="card-count">{{wq.workQueueCount}}</div>
+                </router-link>
+              </v-card-text>
+            </v-card>
+          </v-row>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-toolbar flat class="app-toolbar">
+          <v-toolbar-title class="app-title">Key Performance Metrics</v-toolbar-title>
+        </v-toolbar>
+      </v-row>
+      <v-row>
+        <v-col cols="5" md="2">
+          <v-select attach class="date-range-dropdown" py-2
+                    v-model="metricsSelectedDateRange"
+                    :items="dateRanges"
+                    label="Date Range"
+                    @change="setMetricsDateRange()"
+                    hide-details
+          ></v-select>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="4" md="2">
+          <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                               v-model="metricsStartDate"
+                               :timezone="timezone"
+                               :maxDate="metricsEndDate"
+                               :type="'date'"
+                               @input="setDateRangeCustom(true)"
+                               label="Start Date"
+                               hide-details
+                               :hide-prepend-icon="true"
+          ></DatetimePickerInput>
+        </v-col>
+        <v-col cols="4" md="2">
+          <DatetimePickerInput :custom-class="'date-range-date'"  py-2
+                               v-model="metricsEndDate"
+                               :timezone="timezone"
+                               :minDate="metricsStartDate"
+                               :type="'date'"
+                               @input="setDateRangeCustom(true)"
+                               label="End Date"
+                               hide-details
+                               :hide-prepend-icon="true"
+          ></DatetimePickerInput>
+        </v-col>
+      </v-row>
+      <v-col cols="5" md="2">
+        <v-btn
+          color="primaryCustom"
+          class="white--text mr-2 mb-3"
+          @click="getPerformanceMetrics"
+        >
+          Go
+        </v-btn>
       </v-col>
-    </v-row>
-    <v-row>
-      <v-toolbar flat class="app-toolbar">
-        <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Key Performance Metrics</v-toolbar-title>
-      </v-toolbar>
-      <v-col cols="3" md="2">
-        <v-select attach class="date-range-dropdown" py-2
-                  v-model="metricsSelectedDateRange"
-                  :items="dateRanges"
-                  label="Date Range"
-                  @change="setMetricsDateRange()"
-                  hide-details
-        ></v-select>
-      </v-col>
-      <v-col cols="3" md="2">
-        <DatetimePickerInput :custom-class="'date-range-date'"  py-2
-                             v-model="metricsStartDate"
-                             :timezone="timezone"
-                             :maxDate="metricsEndDate"
-                             :type="'date'"
-                             @input="setDateRangeCustom(true)"
-                             label="Start Date"
-                             hide-details
-                             :hide-prepend-icon="true"
-        ></DatetimePickerInput>
-      </v-col>
-      <v-col cols="3" md="2">
-        <DatetimePickerInput :custom-class="'date-range-date'"  py-2
-                             v-model="metricsEndDate"
-                             :timezone="timezone"
-                             :minDate="metricsStartDate"
-                             :type="'date'"
-                             @input="setDateRangeCustom(true)"
-                             label="End Date"
-                             hide-details
-                             :hide-prepend-icon="true"
-        ></DatetimePickerInput>
-      </v-col>
-      <v-col cols="3" md="2">
-          <v-btn
-            color="primaryCustom"
-            class="white--text mr-2 mb-3"
-            @click="getPerformanceMetrics"
-          >
-            Go
-          </v-btn>
-      </v-col>
-    </v-row>
+    </template>
 
     <v-data-table
       :headers="headers"

@@ -71,7 +71,7 @@
                 {{item['Active Process Steps']}}
               </td>
               <td v-for="c in customColumns">
-                {{c.processStepName == null ? item[c.name] : item[c.processStepName + ' - ' + c.name]}}
+                {{ getColumnValue(item, c)}}
               </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
@@ -202,6 +202,14 @@
       await this.getWorkDetails()
     },
     methods: {
+      getColumnValue (item, c) {
+        if(c.processStepName == null) {
+          return item[c.name]
+        } else {
+          let columnName = c.processStepName + ' - ' + c.name
+          return item[columnName.substring(0,63)]
+        }
+      },
       async exportCsv () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -262,8 +270,9 @@
           this.customColumns.forEach(c => {
             let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
             this.headers.push( {
+              // text: textValue,
               text: textValue,
-              value: textValue,
+              value: textValue.substring(0,63),
               sort: (a, b) => {
                 //if it is a date, format the string as a date and sort by that value
                 if((null != a && a.match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.match(/^\d{4}-\d{2}-\d{2}/))) {

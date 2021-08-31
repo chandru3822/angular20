@@ -90,7 +90,13 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
+    and  flow.get_difference_of_dates_by_duration(
+    (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+    (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+    and wqc2.is_cancelled is false;
 
   select count(1)
   into v_short_window_entered
@@ -99,7 +105,13 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
+    and  flow.get_difference_of_dates_by_duration(
+           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+    and wqc2.is_cancelled is false;
 
   select count(1)
   into v_long_window_exited
@@ -108,7 +120,13 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
+    and  flow.get_difference_of_dates_by_duration(
+           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+    and wqc2.is_cancelled is false;
 
   select count(1)
   into v_long_window_entered
@@ -117,17 +135,25 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
-    and pswqt2.work_queue_type_id = p_work_queue_type_id and pswqtpsst2.archived is false and pswqt2.archived is false;
+    and  flow.get_difference_of_dates_by_duration(
+           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+    and wqc2.is_cancelled is false;
 
   select count(1) as short_window_numerator
   into v_short_window_numerator
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
                     on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.process_step_status_type psst
+                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and
+                       pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
                     on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
          inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
@@ -140,14 +166,44 @@ BEGIN
                 (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
                 ((now() at time zone 'US/Mountain')::timestamp -
                  (short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
-                date_part(v_cycle_duration_type,
-                          ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp -
-                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <=
-                v_expected_cycle
+                flow.get_difference_of_dates_by_duration(
+                     (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                     (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0 and
+                case
+                  when v_cycle_duration_type = 'Days' then
+                      flow.get_difference_of_dates_by_duration(
+                        (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                        (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 1) <=
+                      v_expected_cycle
+                  when v_cycle_duration_type = 'Hours' then
+                      flow.get_difference_of_dates_by_duration(
+                        (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                        (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 2) <=
+                      v_expected_cycle
+                  else
+                      flow.get_difference_of_dates_by_duration(
+                        (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                        (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 3) <=
+                      v_expected_cycle
+                  end
           else
-              date_part(v_cycle_duration_type, ((now() at time zone 'US/Mountain')::timestamp -
-                                                (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <
-              v_expected_cycle
+            case
+              when v_cycle_duration_type = 'Days' then
+                  flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
+                                                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                                                           1) <
+                  v_expected_cycle
+              when v_cycle_duration_type = 'Hours' then
+                  flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
+                                                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                                                           2) <
+                  v_expected_cycle
+              else
+                  flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
+                                                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                                                           3) <
+                  v_expected_cycle
+              end
     end;
 
   select count(1) as short_window_denominator
@@ -155,10 +211,12 @@ BEGIN
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
                     on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.process_step_status_type psst
+                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and
+                       pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
                     on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
          inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
@@ -170,7 +228,10 @@ BEGIN
           when wqc.date_exited_queue is not null then
               (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
               ((now() at time zone 'US/Mountain')::timestamp -
-               (short_window || ' ' || v_short_window_duration_type)::interval)::timestamp
+               (short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
+            flow.get_difference_of_dates_by_duration(
+                     (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                     (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
           else
             wqc.date_exited_queue is null
     end;
@@ -181,10 +242,12 @@ BEGIN
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
                     on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.process_step_status_type psst
+                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and
+                       pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
                     on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
          inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
@@ -197,14 +260,45 @@ BEGIN
                 (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
                 ((now() at time zone 'US/Mountain')::timestamp -
                  (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
-                date_part(v_cycle_duration_type,
-                          ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp -
-                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <=
-                v_expected_cycle
+                flow.get_difference_of_dates_by_duration(
+                  (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                  (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0 and
+                case
+                  when v_cycle_duration_type = 'Days' then
+                      flow.get_difference_of_dates_by_duration(
+                        (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                        (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 1) <=
+                      v_expected_cycle
+                  when v_cycle_duration_type = 'Hours' then
+                      flow.get_difference_of_dates_by_duration(
+                        (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                        (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 2) <=
+                      v_expected_cycle
+                  else
+                      flow.get_difference_of_dates_by_duration(
+                        (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                        (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 3) <=
+                      v_expected_cycle
+                  end
+
           else
-              date_part(v_cycle_duration_type, ((now() at time zone 'US/Mountain')::timestamp -
-                                                (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp)) <
-              v_expected_cycle
+            case
+              when v_cycle_duration_type = 'Days' then
+                  flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
+                                                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                                                           1) <
+                  v_expected_cycle
+              when v_cycle_duration_type = 'Hours' then
+                  flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
+                                                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                                                           2) <
+                  v_expected_cycle
+              else
+                  flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
+                                                           (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                                                           3) <
+                  v_expected_cycle
+              end
     end;
 
   select count(1) as long_window_denominator
@@ -212,10 +306,12 @@ BEGIN
   from flow.work_queue_cycle wqc
          inner join flow.company_process_step_status_type cpsst
                     on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.process_step_status_type psst
+                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and pswqtpsst.archived is false
+                    on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and
+                       pswqtpsst.archived is false
          inner join flow.process_step_work_queue_type pswqt
                     on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
          inner join flow.process_step ps on ps.id = pswqt.process_step_id and ps.archived is false
@@ -227,7 +323,10 @@ BEGIN
           when wqc.date_exited_queue is not null then
               (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
               ((now() at time zone 'US/Mountain')::timestamp -
-               (long_window || ' ' || v_long_window_duration_type)::interval)::timestamp
+               (long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
+              flow.get_difference_of_dates_by_duration(
+                (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+                (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
           else
             wqc.date_exited_queue is null
     end;

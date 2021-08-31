@@ -197,4 +197,14 @@ public class ContactLeadController {
   public void updateContactMvfglobal(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/wishone", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactWishone (@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/amplifysolarmarketing", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAmplifySolarMarketing(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
