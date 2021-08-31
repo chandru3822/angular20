@@ -441,7 +441,7 @@ BEGIN
           new.proposal->>'Storage Cost With Fees',
           new.proposal->>'Site Survey Resource Type',
           new.proposal->>'Site Survey Time Estimate',
-          new.proposal->>'Site Survey Items',
+          new.proposal->>'Site Survey Items'
          );
   RETURN NEW;
 END;
