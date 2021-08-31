@@ -18,6 +18,9 @@ BEGIN
     select date_part('Days',
                      (p_end_date - p_start_date)) / 7
     into v_numeric_value;
+  elsif p_duration_type_id = 4 then
+    select EXTRACT(EPOCH FROM ((p_end_date - p_start_date)))
+    into v_numeric_value;
   end if;
 
   return v_numeric_value;
