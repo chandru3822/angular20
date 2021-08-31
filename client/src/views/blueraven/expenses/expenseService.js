@@ -27,6 +27,15 @@ export async function getUsersWithBudget() {
   }
 }
 
+export async function getReimbursementRequestImage(requestId) {
+  try {
+    const {data, status} = await getRequest(`/reimbursement/request/${requestId}/image`, 'blueraven')
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 
 
 

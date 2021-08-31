@@ -44,7 +44,7 @@
                       auto-grow filled
                       rows="4"
                       background-color="#F2F6F8"
-                      v-model="newReimbursement.notes">
+                      v-model="newReimbursement.details">
           </v-textarea>
           <label>Receipt Image: </label>
           <div v-if="!receiptLogo || !receiptLogo.id" class="mb-5">
@@ -54,7 +54,7 @@
                 :accept="acceptedFileTypes"
                 class="file-input clickable"
                 :disabled="savingReceiptImage"
-                @change="uploadFile($event.target.files, attachmentTypeId, companyId)"
+                @change="uploadFile($event.target.files, attachmentTypeId)"
                 name="avatar"
               >
             </form>
@@ -64,7 +64,7 @@
           </div>
           <v-btn color="primaryCustom" class="white--text"
                  :disabled="!newReimbursement.expenseDate || !newReimbursement.expenseBudgetId || !newReimbursement.amount
-                            || !receiptLogo || !receiptLogo.id || !newReimbursement.notes"
+                            || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
                  @click="submitReimbursementRequest()">
             Submit
           </v-btn>
@@ -135,62 +135,75 @@
               <table v-if="!needsApprovalRequest || !needsApprovalRequest.id">
                 <tr v-for="req in requestsNeedingApproval">
                   <td>
-                    <a @click="needsApprovalRequest = req">
-                      {{ req.createdBy }} - {{ req.dateCreated | formatDate('date') }} - Click for more details
+                    <a @click="[needsApprovalRequest = req, getRequestAttachmentPresignedUrl()]">
+                      {{ req.createdBy }} - {{ req.expenseDate | formatDate('date') }} - Click for more details
                     </a>
                   </td>
                 </tr>
               </table>
-              <table v-else class="pb-3">
-                <tr>
-                  <td class="left-column pb-3">
-                    <v-btn @click="needsApprovalRequest = {}">Back</v-btn>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="left-column">Created By:</td>
-                  <td>{{ needsApprovalRequest.createdBy }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Created Date:</td>
-                  <td>{{ needsApprovalRequest.dateCreated | formatDate('date') }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Budget Type:</td>
-                  <td>{{ needsApprovalRequest.budgetType }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Expense Date:</td>
-                  <td>{{ needsApprovalRequest.expenseDate | formatDate('date') }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Amount:</td>
-                  <td>{{ needsApprovalRequest.amount | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Details:</td>
-                  <td>{{ needsApprovalRequest.details }}</td>
-                </tr>
-              </table>
-              <v-divider></v-divider>
-              <h2>RANDA SHOW RECEIPT IMAGE HERE!!</h2>
-              <v-divider></v-divider>
-              <div class="pt-3">
-                <label>Notes: (required for rejecting)</label>
-                <v-textarea class="py-2" hide-details
-                            auto-grow filled
-                            rows="4"
-                            background-color="#F2F6F8"
-                            v-model="needsApprovalRequest.notes">
-                </v-textarea>
-                <v-btn color="primaryCustom"
-                       @click="setRequestStatusWithNotes(needsApprovalRequest, 1)"
-                       class="white--text">Approve</v-btn>
-                <v-btn color="red"
-                       @click="setRequestStatusWithNotes(needsApprovalRequest, 2)"
-                       :disabled="!needsApprovalRequest.notes"
-                       class="white--text ml-3">Reject
-                </v-btn>
+              <div v-else>
+                <table class="pb-3">
+                  <tr>
+                    <td class="left-column pb-3">
+                      <v-btn @click="needsApprovalRequest = {}">Back</v-btn>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="left-column">Created By:</td>
+                    <td>{{ needsApprovalRequest.createdBy }}</td>
+                  </tr>
+                  <tr>
+                    <td class="left-column">Created Date:</td>
+                    <td>{{ needsApprovalRequest.dateCreated | formatDate('date') }}</td>
+                  </tr>
+                  <tr>
+                    <td class="left-column">Budget Type:</td>
+                    <td>{{ needsApprovalRequest.budgetType }}</td>
+                  </tr>
+                  <tr>
+                    <td class="left-column">Expense Date:</td>
+                    <td>{{ needsApprovalRequest.expenseDate | formatDate('date') }}</td>
+                  </tr>
+                  <tr>
+                    <td class="left-column">Amount:</td>
+                    <td>{{ needsApprovalRequest.amount | currency('$', 2) }}</td>
+                  </tr>
+                  <tr>
+                    <td class="left-column">Details:</td>
+                    <td>{{ needsApprovalRequest.details }}</td>
+                  </tr>
+                </table>
+                <v-divider></v-divider>
+                <div class="receipt-image-background" v-if="renderApprovalRequestImage && needsApprovalRequest.presignedUrl">
+                  <v-tooltip bottom max-width="300px" content-class="receipt-image-tooltip">
+                    <template v-slot:activator="{ on:tooltip }">
+                        <v-img name="receiptImg" class="receipt-image"
+                               v-on="{ ...tooltip }"
+                               alt="receipt-image" :src="needsApprovalRequest.presignedUrl"></v-img>
+                    </template>
+                    <v-card class="receipt-image-hover-container">
+                      <img class="receipt-image-hovered" :src="needsApprovalRequest.presignedUrl">
+                    </v-card>
+                  </v-tooltip>
+                </div>
+                <v-divider class="mt-3" v-if="renderApprovalRequestImage && needsApprovalRequest.presignedUrl"></v-divider>
+                <div class="pt-3">
+                  <label>Notes: (required for rejecting)</label>
+                  <v-textarea class="py-2" hide-details
+                              auto-grow filled
+                              rows="4"
+                              background-color="#F2F6F8"
+                              v-model="needsApprovalRequest.notes">
+                  </v-textarea>
+                  <v-btn color="primaryCustom"
+                         @click="setRequestStatusWithNotes(needsApprovalRequest, 1)"
+                         class="white--text">Approve</v-btn>
+                  <v-btn color="red"
+                         @click="setRequestStatusWithNotes(needsApprovalRequest, 2)"
+                         :disabled="!needsApprovalRequest.notes"
+                         class="white--text ml-3">Reject
+                  </v-btn>
+                </div>
               </div>
             </v-card-text>
           </v-card>
@@ -266,8 +279,9 @@ import {AppMutations} from '@/stores/AppStore'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
-import {Actions} from "@/store";
+import {Actions} from "@/store"
 import moment from 'moment'
+import {getReimbursementRequestImage} from './expenseService'
 
 export default {
   name: 'Reimbursement',
@@ -286,6 +300,7 @@ export default {
       receiptLogo: {},
       companyId: this.$store.state.user.details.companyId,
       newReimbursement: {},
+      renderApprovalRequestImage: false,
       needsApprovalRequest: {},
       availableBudgets: [{
         fullBudgetName: 'N/A',
@@ -332,7 +347,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newReimbursement.attachmentId = this.receiptLogo.id
-        // this.newReimbursement.createdByUserId = currentUser.min.id
 
         if (this.newReimbursement.expenseBudgetId === -1) {
           this.newReimbursement.expenseBudgetId = null
@@ -358,14 +372,30 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async uploadFile(files, attachmentTypeId, sourceId) {
+    async getRequestAttachmentPresignedUrl() {
+      this.renderApprovalRequestImage = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getReimbursementRequestImage(this.needsApprovalRequest.id)
+        this.needsApprovalRequest.presignedUrl = data
+        //this forces the dom to re-render the presignedUrl and i hate myself
+        this.renderApprovalRequestImage = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async uploadFile(files, attachmentTypeId) {
       try {
         this.savingReceiptImage = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_UPLOAD, {
           file: files[0],
           attachmentTypeId,
-          sourceId,
+          sourceId: null,
           callback: async (img, error) => {
             this.savingReceiptImage = false
             if (error?.error) {
@@ -390,12 +420,13 @@ export default {
     },
     async getBudgetsForUserForExpenseDate() {
       let date = moment(this.newReimbursement.expenseDate).format('YYYY-MM-DD')
-      const {data} = getRequestWithParams(`/expenseBudgets/availableForUser`, {
+      const {data} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {
         params: {
           userId: this.userId,
           expenseDate: date
         }
       }, 'blueraven')
+      console.log('randaLogger',data)
       this.availableBudgets = data || []
       this.availableBudgets.push({
         fullBudgetName: 'N/A',
@@ -517,6 +548,24 @@ export default {
 
 .reimbursement-range-selector {
   max-width: 100px;
+}
+
+.receipt-image-tooltip {
+  max-width: 100% !important;
+  background-color: transparent;
+  opacity: 1 !important;
+}
+
+.receipt-image-hover-container {
+  max-width: 100%;
+  height: auto;
+}
+
+.receipt-image-hovered {
+  max-width: 100%;
+  max-height: calc(100vh - 200px);
+  height: auto;
+  width: auto;
 }
 
 //.company-logo-background {

@@ -10,7 +10,7 @@ declare
 BEGIN
 
   -- get all active position ids for user
-  select array(select position_id
+  select array(select distinct position_id
                into v_position_ids
                from flow.user_positions_vw u
                where user_id = p_platform_user_id
@@ -33,7 +33,7 @@ BEGIN
         SELECT distinct org_id as region_id
         FROM flow.user_positions_vw u
         where u.user_id = p_platform_user_id
-          and u.org_level_id = 5
+          and u.org_level_id = 10 -- 10 = level 5 = region for company_id = 3
           and u.position_id in (1, 2)
       )
       select user_id
@@ -50,7 +50,7 @@ BEGIN
         SELECT distinct org_id as region_id
         FROM flow.user_positions_vw u
         where u.user_id = p_platform_user_id
-          and u.org_level_id = 5
+          and u.org_level_id = 10 -- 10 = level 5 = region for company_id = 3
           and u.position_id in (4, 5)
       )
       select user_id

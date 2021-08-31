@@ -8,6 +8,7 @@ import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetSer
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseService;
 import com.albatross.api.v1.company.blueraven.services.expenses.ReimbursementService;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class ReimbursementController {
   private final ReimbursementService reimbursementService;
   private final ExpenseBudgetService expenseBudgetService;
   private final ExpenseService expenseService;
+  private final AttachmentService attachmentService;
 
   @PostMapping(value = "/request", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity submitReimbursementRequest(@RequestBody ReimbursementRequest reimbursementRequest) {
@@ -64,7 +66,7 @@ public class ReimbursementController {
         if(null != reimbursementRequest.getAttachmentId()){
           //add to the attachment join table
           //todo: @randa this
-          //attachmentService.addToJoinTable(reimbursementRequest.getAttachmentId(), reimbursementRequest.getId(), 4L, true);
+          attachmentService.addToJoinTable(reimbursementRequest.getAttachmentId(), reimbursementRequest.getId(), 4L, true);
         }
       }
 
@@ -86,6 +88,11 @@ public class ReimbursementController {
   @GetMapping(value = "/requests/pending", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ReimbursementRequest> getPendingReimbursementRequests() {
     return reimbursementService.getPendingReimbursementRequests();
+  }
+
+  @GetMapping(value = "/request/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getRequestAttachmentPresignedUrl(@PathVariable Long id) {
+    return attachmentService.getAttachmentPresignedUrl(id, 4L);
   }
 
   @GetMapping(value = "/requests/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
