@@ -76,13 +76,18 @@ public class ProjectService {
   }
 
   public List<Project> getProjectsInGeoArea(DensitySearch search) {
+    User currentUser = securityService.getCurrentUser();
+
     if(null != search.getUpperBoundLatitude() && null != search.getUpperBoundLongitude() && null != search.getLowerBoundLatitude() && null != search.getLowerBoundLongitude()) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("upperBoundLatitude", search.getUpperBoundLatitude());
       params.put("upperBoundLongitude", search.getUpperBoundLongitude());
       params.put("lowerBoundLatitude", search.getLowerBoundLatitude());
       params.put("lowerBoundLongitude", search.getLowerBoundLongitude());
+      params.put("currentUserId", currentUser.getId());
       params.put("companyProjectStatusTypeIds", search.getCompanyProjectStatusTypeIds());
+      //if no search type is sent in then return "all projects" //1 = all project, 2 = my projects, 3 = downline projects
+      params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
       List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
       return results;
     } else {

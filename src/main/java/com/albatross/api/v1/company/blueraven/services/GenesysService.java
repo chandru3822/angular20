@@ -353,7 +353,7 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(leadLevel, apiInstance, null, false);
+    String contactListId = getContactListId(leadLevel, apiInstance, null, true);
     // If no Contact  List is found
     if (contactListId == null) {
       return;
@@ -588,14 +588,53 @@ public class GenesysService {
 
   public void processGenesysContacts()  {
     // Get list of Contact IDs that need to be put into each Genesys Contact List
-    List<Contact> contacts = sqlCache.query("genesys.getContactIdsWeek1", null, Contact.class);
+    /*
+      Lead Level 1
+     */
+    List<Contact> contacts = sqlCache.query("genesys.getContactIdsWeek1Level1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_week1");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek2", null, Contact.class);
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_week2");
 
-    contacts = sqlCache.query("genesys.getContactIdsAged", null, Contact.class);
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_aged");
+
+    /*
+      Lead Level 2
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_aged");
+
+    /*
+      Lead Level 3
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_aged");
+
+    /*
+      Lead Level 10
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_aged");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
@@ -630,6 +669,19 @@ public class GenesysService {
         updateContact(contactId);
       } catch (Exception e) {
         String msg = "GENESYS: Error updating contact id: {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+  }
+
+  public void updateContactIds(String listOfContactIds) {
+    String[] contactIds = listOfContactIds.split(",");
+    for (String contactId: contactIds) {
+      try {
+        Long contactIdToUpdate = Long.parseLong(contactId);
+        updateContact(contactIdToUpdate);
+      } catch (Exception e) {
+        String msg = "GENESYS: Error updating contact id (" +contactId + "): {}";
         log.error(msg, e.getMessage());
       }
     }

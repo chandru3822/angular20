@@ -20,6 +20,7 @@
           </v-autocomplete>
           <v-autocomplete v-model="userId"
                     :items="users"
+                    v-if="showAllUsers"
                     :readonly="!viewAll"
                     :disabled="!viewAll"
                     label="Select a User..."
@@ -29,6 +30,12 @@
                     @input="[orgId = null, getApptLength()]"
                           attach>
           </v-autocomplete>
+          <v-text-field text
+                        v-else
+                        :disabled="true"
+                        label="User"
+                        v-model="currentUser">
+          </v-text-field>
           <div class="mb-4" v-if="userId || orgId">
             <label>Default Appointment Length (minutes)</label>
             <v-text-field
@@ -50,7 +57,7 @@
           </div>
         </div>
         <v-divider class="mb-2"></v-divider>
-        <v-card class="mt-3 elevation-4" v-if="userId || orgId">
+        <v-card class="mt-3 elevation-4" v-if="(userId || orgId) && !usersLoading">
           <v-app-bar dense tabs class="elevation-1">
             <v-tabs :optional="false" color="primaryCustom"
                     background-color="white" v-model="model" slider-color="primaryCustom">
@@ -80,7 +87,8 @@
         return this.tabs.filter(tab => tab.display)
       },
       resourceProps() {
-        if (this.userId) { return { userId: this.userId, useSlotSchedule: this.useSlotSchedule() }}
+        if (this.userId) {
+          return { userId: this.userId, useSlotSchedule: this.useSlotSchedule() }}
         if (this.orgId) { return { orgId: this.orgId, useSlotSchedule: false }}
       }
     },
@@ -97,6 +105,8 @@
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'),
         viewAll: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
         userId: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : this.$store.state.user.details.id,
+        showAllUsers: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
+        currentUser: this.$store.state.user.details.fullName,
         // userId: 2410262,
         usersLoading: false,
         model: '',
@@ -112,16 +122,17 @@
       }
     },
     created() {
-      this.getOrgs()
-      this.getUsers()
       if(null !== this.userId) {
         this.getApptLength()
+      } else {
+        this.getOrgs()
+        this.getUsers()
       }
     },
     methods: {
       useSlotSchedule() {
         if(this.userId) {
-          let user = this.users.find(u => u.id === this.userId)
+          let user = this.showAllUsers ? this.users.find(u => u.id === this.userId) : this.$store.state.user.details
           let useSlots = false
           user?.userPositions?.forEach(up => {
             if(up.useSlotSchedule) {
@@ -147,16 +158,19 @@
         }
       },
       async getUsers() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.usersLoading = true
         try {
           const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
             isSchedulingTool: false
           }})
           this.users = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
           this.usersLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
+          this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
@@ -178,7 +192,7 @@
       },
       async getApptLength() {
         if(this.orgId || this.userId) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          // this.$store.commit(AppMutations.SET_LOADING, true)
           this.valueChanged = false
           try {
             const {data} = await getRequestWithParams(`/availability/appointments/length`, { params: {
@@ -186,12 +200,12 @@
                 orgId: this.orgId,
               }})
             this.defaultAppointmentLength = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            // this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.valueChanged = false
             this.defaultAppointmentLength = null
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            // this.$store.commit(AppMutations.SET_LOADING, false)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Default Appointment Length')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }

@@ -271,7 +271,7 @@
                                                                                                            where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[]))
 
 
-                   ) not ILIKE ANY(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))
+                   ) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))
             )
         AND
         pd.installation_resource in (:crewIds)) ::numeric(10,2)
@@ -340,7 +340,7 @@
                                                                   project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
                                                                                                                                         and process_step_id =
                                                                                                                                             (select id from flow.process_step
-                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) not ILIKE ANY(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))) as isNumerator,
+                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))) as isNumerator,
                                          coalesce((
                                           SELECT array_to_json(array_agg(row_to_json(notes)))
                                           FROM (
