@@ -188,6 +188,15 @@ CREATE TABLE if not exists flow.process_step_event
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+create index if not exists pse_process_step_event_id_idx
+  on flow.process_step_event (process_step_id);
+create index if not exists pse_event_id_idx
+  on flow.process_step_event (event_id);
+create index if not exists pse_initial_company_event_status_type_id_idx
+  on flow.process_step_event (initial_company_event_status_type_id);
+create index if not exists pse_unique_behavior_type_id_idx
+  on flow.process_step_event (unique_behavior_type_id);
+
 CREATE TABLE if not exists flow.project_process_step_event
 (
   id                           serial  NOT NULL,
@@ -219,7 +228,14 @@ CREATE TABLE if not exists flow.project_process_step_event
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-
+create index if not exists ppse_project_process_step_id_idx
+  on flow.project_process_step_event (project_process_step_id);
+create index if not exists ppse_process_step_event_id_idx
+  on flow.project_process_step_event (process_step_event_id);
+create index if not exists ppse_resource_id_idx
+  on flow.project_process_step_event (resource_id);
+create index if not exists ppse_company_event_status_type_id_idx
+  on flow.project_process_step_event (company_event_status_type_id);
 
 CREATE TABLE if not exists flow.project_process_step_event_custom_field_value
 (
@@ -252,6 +268,20 @@ CREATE TABLE if not exists flow.project_process_step_event_custom_field_value
 CREATE INDEX if not exists ppsecfv_project_process_step_event_id_idx ON flow.project_process_step_event_custom_field_value (project_process_step_event_id);
 
 CREATE INDEX if not exists ppsecfv_custom_field_group_assignment_id_idx ON flow.project_process_step_event_custom_field_value (custom_field_group_assignment_id);
+CREATE INDEX if not exists ppsecfv_date_value_idx ON
+  flow.project_process_step_event_custom_field_value (date_value);
+CREATE INDEX if not exists ppsecfv_timestamp_value_idx ON
+  flow.project_process_step_event_custom_field_value (timestamp_value);
+CREATE INDEX if not exists ppsecfv_boolean_value_idx ON
+  flow.project_process_step_event_custom_field_value (boolean_value);
+CREATE INDEX if not exists ppsecfv_text_value_idx ON
+  flow.project_process_step_event_custom_field_value (text_value);
+CREATE INDEX if not exists ppsecfv_numeric_value_idx ON
+  flow.project_process_step_event_custom_field_value (numeric_value);
+CREATE INDEX if not exists ppsecfv_int_value_idx ON
+  flow.project_process_step_event_custom_field_value (int_value);
+CREATE INDEX if not exists ppsecfv_int_array_value_idx ON
+  flow.project_process_step_event_custom_field_value (int_array_value);
 
 ALTER TABLE flow.project_process_step_event_custom_field_value
   ADD CONSTRAINT ppsecfv_unique_cfga_pps_event_id UNIQUE (project_process_step_event_id, custom_field_group_assignment_id);
@@ -279,6 +309,11 @@ CREATE TABLE if not exists flow.project_process_step_event_attachment
     REFERENCES flow.user (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists ppsea_attachment_id_idx ON
+  flow.project_process_step_event_attachment (attachment_id);
+CREATE INDEX if not exists ppsea_project_process_step_event_id_idx ON
+  flow.project_process_step_event_attachment (project_process_step_event_id);
 
 CREATE TABLE if NOT EXISTS flow.process_step_event_action
 (
@@ -316,6 +351,13 @@ CREATE TABLE if NOT EXISTS flow.process_step_event_action
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists psea_process_step_event_id_idx ON
+  flow.process_step_event_action (process_step_event_id);
+CREATE INDEX if not exists psea_company_event_status_type_id_idx ON
+  flow.process_step_event_action (company_event_status_type_id);
+CREATE INDEX if not exists psea_company_process_step_status_type_id_idx ON
+  flow.process_step_event_action (company_process_step_status_type_id);
+
 CREATE TABLE if NOT EXISTS flow.process_step_event_action_field
 (
   id                               serial  not null,
@@ -342,6 +384,11 @@ CREATE TABLE if NOT EXISTS flow.process_step_event_action_field
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists pseaf_process_step_event_action_id_idx ON
+  flow.process_step_event_action_field (process_step_event_action_id);
+CREATE INDEX if not exists pseaf_custom_field_group_assignment_id_idx ON
+  flow.process_step_event_action_field (custom_field_group_assignment_id);
+
 CREATE TABLE if NOT EXISTS flow.project_process_step_event_action
 (
   id                            serial                                    not null,
@@ -361,6 +408,11 @@ CREATE TABLE if NOT EXISTS flow.project_process_step_event_action
     REFERENCES flow.user (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists ppsea_project_process_step_event_id_idx ON
+  flow.project_process_step_event_action (project_process_step_event_id);
+CREATE INDEX if not exists ppsea_process_step_event_action_id_idx ON
+  flow.project_process_step_event_action (process_step_event_action_id);
 
 create index if not exists ppsea_project_process_step_event_id_idx on flow.project_process_step_event_action (project_process_step_event_id);
 
@@ -502,4 +554,49 @@ CREATE INDEX if not exists erpdv_process_step_event_requirement_id_idx ON flow.e
 --add column for fn params
 alter table flow.requirement_param_dynamic_value
   add column if not exists process_step_event_requirement_id int references flow.process_step_event_requirement (id);
+
+
+
+
+create table if not exists flow.project_process_step_event_audit
+(
+  id                           serial
+    constraint project_process_step_event_audit_pk
+      primary key,
+  project_process_step_event_id integer,
+  project_process_step_id      integer,
+  process_step_event_id        integer,
+  resource_id                  integer,
+  company_event_status_type_id integer,
+  start_time                   timestamp,
+  end_time                     timestamp,
+  date_created                 timestamp,
+  date_modified                timestamp,
+  created_by_id                integer,
+  modified_by_id               integer,
+  archived                     boolean
+);
+
+create index if not exists ppsea_project_process_step_event_id_idx
+  on flow.project_process_step_event_audit (project_process_step_event_id);
+create index if not exists ppsea_project_process_step_id_idx
+  on flow.project_process_step_event_audit (project_process_step_id);
+create index if not exists ppsea_process_step_event_id_idx
+  on flow.project_process_step_event_audit (process_step_event_id);
+
+
+create table flow.project_process_step_event_custom_field_value_audit
+(
+  id                                         serial
+    constraint project_process_step_event_custom_field_value_audit_pk
+      primary key,
+  project_process_step_event_custom_field_value_id integer not null,
+  old_value                                  text,
+  new_value                                  text,
+  date_modified                              timestamp,
+  modified_by_id                             integer
+);
+
+create index if not exists ppsea_project_process_step_event_cfv_audit_id_idx
+  on flow.project_process_step_event_custom_field_value_audit (project_process_step_event_custom_field_value_id);
 
