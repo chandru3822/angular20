@@ -17,7 +17,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by John Berns on 2020-04-21.
@@ -42,7 +45,7 @@ public class RebateService {
   public List<RebatePayment> getPending() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("createdBy", user.getId());
+    params.put("createdBy", user.trueUserId());
     return sqlCache.query("rebate.getPaymentsPending", params, RebatePayment.class);
   }
 
@@ -77,7 +80,7 @@ public class RebateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("batchId", batchId);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     //set the batch as void
     sqlCache.update("rebate.voidBatch", params);
@@ -93,7 +96,7 @@ public class RebateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("paymentId", rebatePayment.getPaymentId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("note", rebatePayment.getVoidNote());
 
     //set the payment as void
@@ -105,7 +108,7 @@ public class RebateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("paymentId", rebatePayment.getPaymentId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     //set the payment as void
     sqlCache.update("rebate.unvoidSinglePayment", params);
@@ -116,7 +119,7 @@ public class RebateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("paymentId", rebatePayment.getPaymentId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("note", rebatePayment.getVoidNote());
 
     sqlCache.update("rebate.updatePaymentNote", params);
@@ -133,7 +136,7 @@ public class RebateService {
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", rebatePayment.getProjectId());
-    parameters.addValue("createdById", currentUser.getId());
+    parameters.addValue("createdById", currentUser.trueUserId());
     parameters.addValue("totalAmount", rebatePayment.getTotalPromotionAmount());
     parameters.addValue("promotionPayments", rebatePayment.getNumberOfPromotionPayments());
 
@@ -148,7 +151,7 @@ public class RebateService {
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", rebatePayment.getProjectId());
-    parameters.addValue("userId", currentUser.getId());
+    parameters.addValue("userId", currentUser.trueUserId());
     parameters.addValue("paymentAmount", rebatePayment.getPaymentAmount());
 
     jdbc.queryForObject(sqlQuery, parameters, String.class);
@@ -168,7 +171,7 @@ public class RebateService {
     //create batch
     HashMap<String, Object> batchParams = new HashMap<>();
     batchParams.put("paymentIds", rebatePayment.getPaymentIds());
-    batchParams.put("userId", user.getId());
+    batchParams.put("userId", user.trueUserId());
     Long batchId = sqlCache.updateReturningId("rebate.createBatch", batchParams, "id").longValue();
 
     //assign payments to batch id and set status to processed
@@ -195,7 +198,7 @@ public class RebateService {
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("paymentId", rebatePayment.getPaymentId());
-    parameters.addValue("userId", currentUser.getId());
+    parameters.addValue("userId", currentUser.trueUserId());
     parameters.addValue("paymentAmount", rebatePayment.getPaymentAmount());
 
     jdbc.queryForObject(sqlQuery, parameters, String.class);
@@ -210,7 +213,7 @@ public class RebateService {
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("paymentId", paymentId);
-    parameters.addValue("userId", currentUser.getId());
+    parameters.addValue("userId", currentUser.trueUserId());
 
     jdbc.queryForObject(sqlQuery, parameters, String.class);
   }

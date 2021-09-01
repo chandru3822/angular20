@@ -6,6 +6,11 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.model.*;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +22,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -42,6 +48,13 @@ public class ContactService {
   private final ProjectProcessStepService projectProcessStepService;
 
   private final ObjectMapper om;
+
+  private final AmazonS3 s3;
+
+  private final AttachmentService attachmentService;
+
+  @Value("${aws.storageBucket}")
+  private String storageBucket;
 
   public Page<Contact> searchContacts(String query, String overrideType, Pageable pageable) {
     User user = securityService.getCurrentUser();
@@ -118,7 +131,7 @@ public class ContactService {
   public void deleteContact(Long contactId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("contactId", contactId);
     sqlCache.update("contact.delete", params);
   }
@@ -147,13 +160,13 @@ public class ContactService {
       Contact existingContact = getContact(id);
 
       params.put("contactTypeId", contact.getContactTypeId());
-      params.put("modifiedById", currentUser.getId());
+      params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
       //add update when we add that to the UI
       sqlCache.update("contact.updateContact", params);
 
       if (!existingContact.getProjects().isEmpty() && !existingContact.getProjects().get(0).getProjectName().equals(contact.getFirstName() + " " + contact.getLastName())) {
-        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.getId()));
+        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.trueUserId()));
       }
     } else {
       UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
@@ -163,7 +176,7 @@ public class ContactService {
         log.info("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
       }
       params.put("contactTypeId", ContactType.LEAD.id);
-      params.put("createdById", currentUser.getId());
+      params.put("createdById", currentUser.trueUserId());
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
@@ -176,7 +189,7 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ownerUserPositionId", owner != null ? owner.getUserPositionId() : null);
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("contact.updateOwner", params);
   }
@@ -190,7 +203,7 @@ public class ContactService {
     params.put("city", contact.getMailingCity());
     params.put("stateId", contact.getCompanyStateId());
     params.put("postalCode", contact.getMailingPostalCode());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", contact.getId());
     //add update when we add that to the UI
     sqlCache.update("contact.updateMailingAddress", params);
@@ -209,7 +222,7 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     params.put("contactTypeId", ContactType.CUSTOMER.id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("contact.convertToContact", params);
 
     //get contact to get their full name for the project and also so a parent can find this contact
@@ -234,6 +247,58 @@ public class ContactService {
 
     //return project data so the frontend can navigate to project/{id}
     return project.orElse(null);
+  }
+
+  public List<Attachment> getContactAttachments(Long contactId, Boolean isMobile) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    List<Attachment> attachments = sqlCache.query("contact.getContactAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long contactId, Long attachmentTypeId) throws IOException {
+    User user = securityService.getCurrentUser();
+
+    if (file.isEmpty()) {
+      throw new RuntimeException("File cannot be empty");
+    }
+
+    //get keyPattern from attachmentType
+    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
+    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentLength(file.getSize());
+    metadata.setContentType(file.getContentType());
+    metadata.setCacheControl("public, max-age=31536000");
+
+    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+
+    PutObjectResult result = s3.putObject(objectRequest
+      .withCannedAcl(CannedAccessControlList.PublicRead));
+
+    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
+    params.put("contentType", file.getContentType());
+    params.put("key", key);
+    params.put("size", file.getSize());
+    params.put("createdById", user.trueUserId());
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", user.getCompanyId());
+
+    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+
+    params.clear();
+    params.put("contactId", contactId);
+    params.put("attachmentId", attachmentId);
+    params.put("createdById", user.trueUserId());
+
+    sqlCache.update("contact.addAttachment", params);
+
+    return attachmentService.findById(attachmentId);
   }
 
   public static class ContactMapper<T> extends BeanPropertyRowMapper<T> {

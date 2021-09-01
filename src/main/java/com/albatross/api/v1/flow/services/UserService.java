@@ -2,9 +2,17 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.security.jwt.JwtClaims;
+import com.albatross.api.security.jwt.JwtUtils;
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +29,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +46,9 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
+  @Value("${aws.storageBucket}")
+  private String storageBucket;
+
   @Autowired
   AttachmentService attachmentService;
 
@@ -46,6 +60,12 @@ public class UserService {
 
   @Autowired
   ObjectMapper om;
+
+  @Autowired
+  AmazonS3 s3;
+
+  @Autowired
+  private JwtUtils jwtUtils;
 
   @Value("${security.doCompanyDefaultValidation:false}")
   private Boolean doCompanyDefaultValidation;
@@ -132,7 +152,7 @@ public class UserService {
 
     if(null != user.getId()) {
       id = user.getId();
-      params.put("modifiedById", currentUser.getId());
+      params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
       //save user status
@@ -163,7 +183,7 @@ public class UserService {
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("id", currentUser.getCompanyId());
       Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
-      params.put("createdById", currentUser.getId());
+      params.put("createdById", currentUser.trueUserId());
       String newPwd = null;
       if(c.isPresent() && null != c.get().getDefaultPassword()) {
         newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
@@ -284,7 +304,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", userStatusType.getId());
     params.put("hasAccess", userStatusType.getHasAccess());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("user.saveUserStatusType", params);
   }
 
@@ -302,7 +322,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     sqlCache.update("user.deleteUserCompany", params);
 
     //per judson request also remove the user_status for that company and user
@@ -319,7 +339,7 @@ public class UserService {
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
     params.put("userStatusTypeId", req.getCompanyUserStatusTypeId());
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     sqlCache.update("user.upsertUserCompany", params);
 
     //check if there is already a user status for this user and company, if not, add new
@@ -334,7 +354,7 @@ public class UserService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("currentUserId", user.getId());
+    params.put("currentUserId", user.trueUserId());
     params.put("userId", userId);
     params.put("userStatusTypeId", userStatusTypeId);
 
@@ -391,14 +411,31 @@ public class UserService {
     }
   }
 
-  public ResponseEntity getLoggedInUser() {
+  public ResponseEntity getLoggedInUser(String authHeader) {
     User user = securityService.getCurrentUser();
-
+    JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
     if(null != user) {
       User response = findByUsernameIgnoreCase(null, user.getId());
+      List<FeatureAccessControl> results;
+      if(null != user.getMasqueradingUserId() && null != jwt.getCompanyId()) {
+        response.setCompanyId(jwt.getCompanyId());
 
-      List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        //check if the masquerading user is a 7oaks employee
+        Boolean masqueradingUserIs7oaks = securityService.userIsSuperAdmin(user.getMasqueradingUserId());
+        if(!masqueradingUserIs7oaks) {
+          //if the masquerading user is not 7oaks/super admin - then need to remove any access that the masquerading user does not ALSO have access to
+          results = securityService.getMasqueradedUserFeatureAccess(user.getId(), jwt.getCompanyId(), user.getMasqueradingUserId());
+        } else {
+          //if the masquerading user is a 7oaks employee/super admin - then just use their normal access
+          results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        }
+      } else {
+        //regular access getter
+        results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+      }
+
       response.setFeatureAccess(results);
+      response.setMasqueradingUserId(user.getMasqueradingUserId());
       return ResponseEntity.ok(response);
     } else {
       return ResponseEntity.badRequest().body("No user found");
@@ -448,10 +485,62 @@ public class UserService {
 
   public void addNotificationToken(Long userId, String token) {
     try {
-      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().getId()));
+      sqlCache.update("user.addNotificationToken", Map.of("userId", userId, "token", token, "createdById", securityService.getCurrentUser().trueUserId()));
     } catch (DuplicateKeyException e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Token already exists on given user", e);
     }
+  }
+
+  public List<Attachment> getUserAttachments(Long userId, Boolean isMobile) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    List<Attachment> attachments = sqlCache.query("user.getUserAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long userId, Long attachmentTypeId) throws IOException {
+    User user = securityService.getCurrentUser();
+
+    if (file.isEmpty()) {
+      throw new RuntimeException("File cannot be empty");
+    }
+
+    //get keyPattern from attachmentType
+    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
+    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentLength(file.getSize());
+    metadata.setContentType(file.getContentType());
+    metadata.setCacheControl("public, max-age=31536000");
+
+    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+
+    PutObjectResult result = s3.putObject(objectRequest
+      .withCannedAcl(CannedAccessControlList.PublicRead));
+
+    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
+    params.put("contentType", file.getContentType());
+    params.put("key", key);
+    params.put("size", file.getSize());
+    params.put("createdById", user.trueUserId());
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", user.getCompanyId());
+
+    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+
+    params.clear();
+    params.put("userId", userId);
+    params.put("attachmentId", attachmentId);
+    params.put("createdById", user.trueUserId());
+
+    sqlCache.update("user.addAttachment", params);
+
+    return attachmentService.findById(attachmentId);
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

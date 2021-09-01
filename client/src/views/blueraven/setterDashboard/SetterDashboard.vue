@@ -687,7 +687,7 @@
                      :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
                   <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 2" class="milestone-star"z
+                  <v-icon v-if="q1_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
                   <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
@@ -708,7 +708,7 @@
                      :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">
                   <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 2" class="milestone-star"z
+                  <v-icon v-if="q2_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>
                   <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>
@@ -729,7 +729,7 @@
                      :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">
                   <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 2" class="milestone-star"z
+                  <v-icon v-if="q3_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>
                   <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>
@@ -750,7 +750,7 @@
                      :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">
                   <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>
                   <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 2" class="milestone-star"z
+                  <v-icon v-if="q4_points > 2" class="milestone-star"
                           :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>
                   <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>
                   <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>

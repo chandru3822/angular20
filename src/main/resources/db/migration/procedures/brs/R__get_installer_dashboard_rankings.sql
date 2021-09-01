@@ -27,24 +27,45 @@ RETURN QUERY SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                                       AND pd.installation_resource = o.id
                                    ),0) as substantialCompletions) ::numeric(10, 2),
 
-                           (select coalesce((select count(*)
-                                             from brs.project_details pd
-                                             where (installation_start_time::date between p_start_date and p_end_date
-                                                 AND
-                                                    ((substantial_completion_date is not null AND
-                                                     installation_start_time::date = substantial_completion_date::date)
-                                                    OR
-                                                    (substantial_completion_date is null AND
-                                                     installation_start_time::date =
-                                                     (now() at time zone 'US/Mountain')::date))
-                                                 )
-                                               AND pd.installation_resource = o.id) ::numeric(10, 2)
-                                                /
-                                            (NULLIF((select count(*)
-                                                     from brs.project_details pd
-                                                     where installation_start_time::date between p_start_date and p_end_date
-                                                       AND pd.installation_resource = o.id), 0) ::numeric(10, 2)),
-                                            0)) ::numeric(10, 2) as inspectionApproval
+                           (select coalesce((select count(*) from brs.project_details pd
+                            where
+                                (
+                                  pd.ahj_inspection_start_time::date between p_start_date and p_end_date
+                                  AND
+                                  (pd.ahj_inspection_outcome_name = 'Pass' OR
+                                   pd.ahj_inspection_outcome_name = 'Fail' AND (
+
+                                       (select string_agg(lov.name, ', ')
+                                        from flow.list_of_value lov
+                                        where lov.id = any ((
+                                            select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                                            where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                                                                                                                                                                       where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                                                                                                                          and custom_field_group_id = (select cfg.id
+                                                                                                                                                                       from flow.custom_field_group cfg
+                                                                                                                                                                                inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                                                                                                                                                       where  cfg.archived is not true
+                                                                                                                                                                         and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                                                                                                                  and process_step_id =
+                                                                                                                                                                                                                                      (select id from flow.process_step
+                                                                                                                                                                                                                                       where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                                    project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                          and process_step_id =
+                                                                                                                              (select id from flow.process_step
+                                                                                                                               where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[]))
+
+
+                                       ) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))
+                                )
+                            AND
+                            pd.installation_resource = o.id) ::numeric(10,2)
+                                        /
+                            NULLIF(((select count(*) from brs.project_details pd
+                                where pd.ahj_inspection_start_time::date between p_start_date and p_end_date
+                                AND
+                                pd.ahj_inspection_outcome is not null
+                                AND
+                                pd.installation_resource = o.id) ::numeric(10,2)),0),0)) ::numeric(10, 2) as inspectionApproval
                       from flow.org o
                       where org_type_id = 6
                         and archived = false
@@ -54,7 +75,6 @@ RETURN QUERY SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                                     then company_id = p_parent_company_id
                                 else company_id = p_company_id
                           end
-                      limit 9
                   ) b
          ) c
     ) as sub_rows;

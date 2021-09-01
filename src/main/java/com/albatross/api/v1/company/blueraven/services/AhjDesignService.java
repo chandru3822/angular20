@@ -1,11 +1,13 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.models.ahj.*;
-import com.albatross.api.v1.flow.model.User;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjContact;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjRequirement;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanWrapper;
@@ -44,7 +46,7 @@ public class AhjDesignService {
       return design;
     } else {
       User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.getId());
+      params.put("currentUser", currentUser.trueUserId());
 
       // add a blank design and return that
       Integer id = sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -63,7 +65,7 @@ public class AhjDesignService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("codes", design.getCodes());
     params.put("note", design.getNote());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     params.put("referenceStandards", design.getReferenceStandards());
     params.put("groundSnowLoad", design.getGroundSnowLoad());

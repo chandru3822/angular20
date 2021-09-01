@@ -3,7 +3,10 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Proposal;
+import com.albatross.api.v1.flow.model.ProposalLog;
+import com.albatross.api.v1.flow.model.ProposalLogExportTemplate;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.propTool.Adder;
 import com.albatross.api.v1.flow.model.propTool.Panel;
 import com.albatross.api.v1.flow.services.propTool.PanelService;
@@ -105,7 +108,7 @@ public class ProposalService {
     Long id;
     if(null != prop.getId()) {
       id = prop.getId();
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("id", id);
       sqlCache.update("propToolProposal.update", params);
 
@@ -121,7 +124,7 @@ public class ProposalService {
     } else {
       Long proposalNumber = jdbc.queryForObject(cache.getByKey("propToolProposal.import.sqlId"), Maps.newHashMap(), Long.class);
 
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("companyId", user.getCompanyId());
       params.put("proposalNumber", proposalNumber);
 

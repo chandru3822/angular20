@@ -101,7 +101,7 @@
           <v-col cols="12">
             <v-card-text>
               <v-row>
-                <v-col cols="12" md="6">
+                <v-col cols="12" md="4">
                   <v-text-field
                     text
                     label="Smartlist Name"
@@ -110,21 +110,7 @@
                   />
                 </v-col>
 
-                <v-col cols="12" md="6">
-                  <v-autocomplete
-                    v-model="smartlist.viewObjectTypeId"
-                    :items="viewObjectTypes"
-                    item-text="objectType"
-                    item-value="objectTypeId"
-                    label="Table View Display"
-                    placeholder="Select one..."
-                    :rules="requiredRules"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-row>
-                <v-col cols="12" md="6">
+                <v-col cols="12" md="4">
                   <v-dialog
                     v-model="showObjectTypeDialog"
                     width="500"
@@ -139,6 +125,7 @@
                         placeholder="Select one..."
                         :rules="requiredRules"
                         @change="checkObjectTypeChange"
+                        attach
                       />
                     </template>
 
@@ -173,6 +160,25 @@
                   </v-dialog>
                 </v-col>
 
+                <v-col
+                  cols="12"
+                  md="4"
+                  v-if="smartlist.companyObjectTypeId && !isUserOrgObjectType"
+                  v-cloak
+                >
+                  <v-autocomplete
+                    v-model="smartlist.viewObjectTypeId"
+                    :items="viewObjectTypes"
+                    item-text="objectType"
+                    item-value="objectTypeId"
+                    label="Table View Display"
+                    placeholder="Select one..."
+                    attach
+                  />
+                </v-col>
+              </v-row>
+
+              <v-row>
                 <v-col cols="4" md="2">
                   <v-checkbox
                     v-model="smartlist.shared"
@@ -281,6 +287,7 @@
               :items="filteredProjectDetailsColumns"
               item-value="projectDetailsColumn"
               item-text="name"
+              attach
             />
           </template>
 
@@ -292,6 +299,7 @@
               item-value="objectTypeId"
               item-text="objectType"
               @input="getAvailableFields"
+              attach
             />
 
             <v-autocomplete
@@ -302,6 +310,7 @@
               item-value="processStepId"
               item-text="processStepName"
               @input="calculateAvailableFields"
+              attach
             />
 
             <v-autocomplete
@@ -311,6 +320,7 @@
               :items="availableFields"
               item-text="name"
               return-object
+              attach
             />
           </template>
 
@@ -539,7 +549,7 @@ export default {
       return this.smartlist.companyObjectTypeId !== null && this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id === 4
     },
     isUserOrgObjectType () {
-      if (this.smartlist.companyObjectTypeId !== null) {
+      if (this.smartlist.companyObjectTypeId) {
         const objectTypeId = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id
         return objectTypeId && [3, 5].includes(objectTypeId)
       }
@@ -993,5 +1003,11 @@ export default {
 
 .v-list-item:nth-of-type(even) {
   @extend .shaded-row;
+}
+
+::v-deep {
+  [v-cloak] {
+    display: none;
+  }
 }
 </style>

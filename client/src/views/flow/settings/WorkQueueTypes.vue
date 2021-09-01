@@ -2,7 +2,7 @@
   <v-container id="work-queue-types-container">
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-toolbar flat class="app-toolbar">
+        <v-toolbar flat class="app-toolbar toolbar-z-index-override">
           <v-autocomplete
             v-model="selectedWorkQueueCategoryId"
             :items="filteredCategories"
@@ -10,6 +10,7 @@
             item-text="workQueueCategory"
             item-value="id"
             @input="filterCategories()"
+            attach
           ></v-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -31,6 +32,7 @@
               label="Work Queue Category"
               item-text="workQueueCategory"
               item-value="id"
+              attach
             ></v-autocomplete>
             <v-btn :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
           </div>
@@ -62,15 +64,15 @@
             <template #item="{ item, index }">
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
-                <td style="width: 50px">
+                <td style="width: 50px" @click="goToDetails(item)">
                   <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text icon small class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
-                <td class="text-left">
+                <td class="text-left" @click="goToDetails(item)">
                   {{item.workQueueType}}
                 </td>
-                <td class="text-left">
+                <td class="text-left" @click="goToDetails(item)">
                   {{item.workQueueCategory}}
                 </td>
                 <td class="text-right">
@@ -137,7 +139,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
 

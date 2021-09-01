@@ -5,7 +5,9 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.WhiteListType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CompanyObjectType;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +59,7 @@ public class ObjectTypeService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("companyObjectTypeId", companyObjectType.getId());
     params.put("statusReadOnly", companyObjectType.getStatusReadOnly());

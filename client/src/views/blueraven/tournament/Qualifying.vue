@@ -95,7 +95,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, logError, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby"
   import ScoreDrilldown from "./component/ScoreDrilldown";

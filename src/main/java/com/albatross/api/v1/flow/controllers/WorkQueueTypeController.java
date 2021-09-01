@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.DurationType;
+import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
+import com.albatross.api.v1.flow.model.WorkQueueType;
 import com.albatross.api.v1.flow.services.WorkQueueTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,11 @@ public class WorkQueueTypeController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueueType> getWorkQueueTypes (@RequestParam(required = false) Boolean sortByName) {
     return workQueueTypeService.getWorkQueueTypes(sortByName);
+  }
+
+  @GetMapping(value = "/durationTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<DurationType> getDurationTypes () {
+    return workQueueTypeService.getDurationTypes();
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -76,6 +76,7 @@
                                 v-model="newProcessStepStatusTypeId"
                                 item-text="processStepStatusType"
                                 item-value="id"
+                                attach
                                 :loading="companyStatusesLoading"
                                 autocomplete="off"
                                 @input="assignStatusTypeToProcessStep"
@@ -175,6 +176,7 @@
                                 label="Select Work Queue Type"
                                 item-value="id"
                                 item-text="workQueueType"
+                                attach
                 >
                   <template slot="item" slot-scope="data">
                     <!-- HTML that describes how select should render items when the select is open -->
@@ -189,8 +191,7 @@
                   :disabled="!userCanEdit"
                   label="Project Status Types"
                   item-text="fakeText"
-                  return-object
-                >
+                  return-object>
                   <template #selection="{ item, index }">
                     <span :class="{'bold': item.projectStatusTypeId == null}">
                       <span v-if="index !== 0" class="grey--text">
@@ -226,8 +227,7 @@
                   :disabled="!userCanEdit"
                   label="Process Step Status Types"
                   item-text="fakeText"
-                  return-object
-                >
+                  return-object>
                   <template #selection="{ item, index }">
                     <span :class="{'bold': item.processStepStatusTypeId == null}">
                       <span v-if="index !== 0" class="grey--text">
@@ -292,8 +292,7 @@
                         :disabled="!userCanEdit"
                         label="Project Status Types"
                         item-text="fakeText"
-                        return-object
-                      >
+                        return-object>
                         <template #selection="{ item, index }">
                           <span :class="{'bold': item.projectStatusTypeId == null}">
                             <span v-if="index !== 0 && !item.archived" class="grey--text">
@@ -331,8 +330,7 @@
                         :disabled="!userCanEdit"
                         label="Process Step Status Types"
                         item-text="fakeText"
-                        return-object
-                      >
+                        return-object>
                         <template #selection="{ item, index }">
                           <span :class="{'bold': item.processStepStatusTypeId == null}">
                             <span v-if="index !== 0 && !item.archived" class="grey--text">
@@ -456,7 +454,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewLink">
-              <v-select v-if="addNewLink"
+              <v-select attach v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
                         label="Select Link"
@@ -547,6 +545,7 @@
                               item-text="attachmentType"
                               item-value="id"
                               @input="assignNewType"
+                              attach
               ></v-autocomplete>
             </v-card>
             <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0 && expandAttachmentTypes">

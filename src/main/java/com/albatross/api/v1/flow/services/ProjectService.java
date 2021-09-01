@@ -29,10 +29,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,6 +73,26 @@ public class ProjectService {
     params.put("projectProcessStepId", projectProcessStepId);
     Long projectId = sqlCache.queryForObject("project.getProjectIdByProjectProcessStepId", params, Long.class);
     return projectId;
+  }
+
+  public List<Project> getProjectsInGeoArea(DensitySearch search) {
+    User currentUser = securityService.getCurrentUser();
+
+    if(null != search.getUpperBoundLatitude() && null != search.getUpperBoundLongitude() && null != search.getLowerBoundLatitude() && null != search.getLowerBoundLongitude()) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("upperBoundLatitude", search.getUpperBoundLatitude());
+      params.put("upperBoundLongitude", search.getUpperBoundLongitude());
+      params.put("lowerBoundLatitude", search.getLowerBoundLatitude());
+      params.put("lowerBoundLongitude", search.getLowerBoundLongitude());
+      params.put("currentUserId", currentUser.getId());
+      params.put("companyProjectStatusTypeIds", search.getCompanyProjectStatusTypeIds());
+      //if no search type is sent in then return "all projects" //1 = all project, 2 = my projects, 3 = downline projects
+      params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
+      List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
+      return results;
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
+    }
   }
 
   public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String overrideType, String sortColumn, String sortDirection, Pageable pageable) {
@@ -173,7 +195,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
     params.put("projectId", projectId);
 
     sqlCache.update("project.delete", params);
@@ -202,7 +224,7 @@ public class ProjectService {
     params.put("companyStateId", project.getCompanyStateId());
     params.put("postalCode", project.getPostalCode());
     params.put("companyCountryId", project.getCompanyCountryId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("project.update", params);
 
@@ -217,7 +239,7 @@ public class ProjectService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", projectId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("ownerUserPositionId", owner.getUserPositionId());
 
     sqlCache.update("project.updateOwner", params);
@@ -226,27 +248,31 @@ public class ProjectService {
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
     User user = securityService.getCurrentUser();
 
-    // Get active company project status type so new projects can have an active status
-    CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
-    Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
+    if(null != contactId && null != processId) {
+      // Get active company project status type so new projects can have an active status
+      CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
+      Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("contactId", contactId );
-    params.put("createdById", user.getId() );
-    params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
-    params.put("processId", processId );
-    params.put("street1", contact.getStreet1() );
-    params.put("city", contact.getCity() );
-    params.put("companyStateId", contact.getCompanyStateId());
-    params.put("companyCountryId", contact.getCompanyCountryId() );
-    params.put("postalCode", contact.getPostalCode() );
-    params.put("companyProjectStatusTypeId", companyStatusTypeId );
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("contactId", contactId);
+      params.put("createdById", user.trueUserId());
+      params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
+      params.put("processId", processId);
+      params.put("street1", contact.getStreet1());
+      params.put("city", contact.getCity());
+      params.put("companyStateId", contact.getCompanyStateId());
+      params.put("companyCountryId", contact.getCompanyCountryId());
+      params.put("postalCode", contact.getPostalCode());
+      params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
-    Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
-    Optional<Project> project = getProject(id);
-    //load coordinates when new project added
-    project.ifPresent(value -> getProjectCoordinates(value, id));
-    return project;
+      Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
+      Optional<Project> project = getProject(id);
+      //load coordinates when new project added
+      project.ifPresent(value -> getProjectCoordinates(value, id));
+      return project;
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact ID and Process ID are required to add a project.", new Exception());
+    }
   }
 
   public void getProjectCoordinates(Project project, Long id) {
@@ -309,7 +335,7 @@ public class ProjectService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("companyId", companyId);
     params.put("attachmentTypeId", attachmentTypeId);
 
@@ -318,7 +344,7 @@ public class ProjectService {
     params.clear();
     params.put("projectId", projectId);
     params.put("attachmentId", attachmentId);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     sqlCache.update("project.addAttachment", params);
 
@@ -386,7 +412,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", companyProjectStatusTypeId);
     params.put("companyId", currentUser.getCompanyId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("project.saveInitialProjectStatusType", params);
   }
@@ -394,9 +420,10 @@ public class ProjectService {
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
     params.put("projectStatusType", status.getProjectStatusType());
+    params.put("color", status.getColor());
     params.put("companyId", currentUser.getCompanyId());
     Long id;
 
@@ -423,7 +450,7 @@ public class ProjectService {
   public void deleteCompanyProjectStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.getId());
+    params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
     sqlCache.update("project.deleteCompanyStatus", params);

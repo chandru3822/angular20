@@ -228,7 +228,7 @@
           </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-5">
-            <v-select label="From"
+            <v-select attach label="From"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
@@ -320,17 +320,19 @@
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+  import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import {getOrgFilters} from '@/services/orgService'
   import max from 'lodash.max'
   import 'quill/dist/quill.snow.css'
+  import {quillEditor} from 'vue-quill-editor'
   import { saveAs } from 'file-saver'
 
   export default {
     name: 'Users',
+    components: {QuillEditor: quillEditor},
     watch: {
       options: {
         handler() {
@@ -467,7 +469,7 @@
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
         if (this.filters.statuses && this.filters.statuses.length > 0) {
           this.dataLoading = true
-          const { sortBy, sortDesc, page, itemsPerPage } = this.options
+          const { page, itemsPerPage } = this.options
           try {
             const params = {
               search: this.filters.search,

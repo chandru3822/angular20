@@ -7,7 +7,10 @@ import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.services.*;
+import com.albatross.api.v1.flow.services.HubspotWebhookService;
+import com.albatross.api.v1.flow.services.SMSService;
+import com.albatross.api.v1.flow.services.SystemListService;
+import com.albatross.api.v1.flow.services.UserPositionService;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,10 +54,10 @@ public class ContactLeadService {
     params.put("lastName", CleanString.replaceApostrophe(cl.getLastName()));
     params.put("street1", cl.getAddress());
     params.put("city", cl.getCity());
-    params.put("postalCode", cl.getZip());
+    params.put("postalCode", cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)));
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
     params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
     params.put("contactTypeId", ContactType.LEAD.id);
@@ -310,7 +313,7 @@ public class ContactLeadService {
     }
 
     for (CustomFieldValue cfv: cfvList) {
-      saveCustomFieldValue(cfv, contactId, currentUser.getId());
+      saveCustomFieldValue(cfv, contactId, currentUser.trueUserId());
     }
 
     try {
@@ -326,8 +329,8 @@ public class ContactLeadService {
     }
 
     try {
-      if (ricochetEnabled && !cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
-            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L)) {
+      if (ricochetEnabled && (cl.getLeadLevel() == null || (!cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
+            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L)))) {
         postToRicochet(ricochetLead, params);
       }
       else {
@@ -422,7 +425,14 @@ public class ContactLeadService {
     CustomFieldValue leadLevel = new CustomFieldValue();
     leadLevel.setCustomFieldGroupAssignmentId(20977L);
     leadLevel.setFieldName("Lead Level");
-    leadLevel.setIntValue(3L);
+
+    if (!lead.getLead_source().isBlank() && lead.getLead_source().equals("Organic")) {
+      leadLevel.setIntValue(0L);
+    }
+    else {
+      leadLevel.setIntValue(3L);
+    }
+
     saveCustomFieldValue(leadLevel, contactId, leadOwnerUserId);
     cfvList.add(leadLevel);
 

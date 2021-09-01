@@ -4,7 +4,10 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ScheduleController;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.ProjectWithEvents;
+import com.albatross.api.v1.flow.model.ScheduleEvent;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -154,7 +157,7 @@ public class ScheduleService {
       User user = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectProcessStepId", ev.getProjectProcessStepId());
-      params.put("userId", user.getId());
+      params.put("userId", user.trueUserId());
       params.put("sourceId", ev.getProjectProcessStepId());
 
       //default values so we can call the same query all the other ones do

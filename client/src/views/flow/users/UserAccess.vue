@@ -42,6 +42,7 @@
                           return-object
                           autocomplete="off"
                           @input="saveUserOrgCalendars"
+                          attach
           />
           <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
         </v-card>
@@ -169,7 +170,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/feature/user/${this.userId}`)
-          this.userCompanyFeatures = data
+          this.userCompanyFeatures = data.filter(d => !d.hidden)
           this.userAccessLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -266,11 +267,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

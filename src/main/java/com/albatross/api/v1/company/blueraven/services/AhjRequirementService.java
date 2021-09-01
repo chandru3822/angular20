@@ -1,10 +1,9 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjRequirement;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.utils.SqlCache;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +39,9 @@ public class AhjRequirementService {
       params.put("ahjId", ahjId);
       params.put("requirementTypeId", ahjRequirement.getRequirementTypeId());
       params.put("statusId", 1);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       params.put("position", ahjRequirement.getPosition());
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       params.put("description", ahjRequirement.getDescription());
 
       Integer id = sqlCache.get("ahj.requirement.add", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -64,7 +63,7 @@ public class AhjRequirementService {
         parameters.addValue("position", ahjRequirement.getPosition());
         parameters.addValue("complete", ahjRequirement.getComplete());
         parameters.addValue("statusId", ahjRequirement.getStatusId());
-        parameters.addValue("userId", user.getId());
+        parameters.addValue("userId", user.trueUserId());
         parameters.addValue("archived", ahjRequirement.getArchived());
 
         jdbc.queryForObject(sqlQuery, parameters, String.class);
@@ -81,7 +80,7 @@ public class AhjRequirementService {
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("originalRequirementId", originalRequirementId);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
 
       sqlCache.update("ahj.requirement.archive", params);
     }

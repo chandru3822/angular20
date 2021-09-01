@@ -238,7 +238,8 @@ where cpsst.process_step_status_type_id = 1 and
 
   <projectProcessStep.getUsingStatusByPpsId><![CDATA[
     select distinct pps_usage.id as project_process_step_id,
-                cpsst.process_step_status_type_id
+                    cpsst.process_step_status_type_id,
+                    pps_src.process_step_id
     from flow.project_process_step pps_src
              inner join flow.process_step_requirement psr on psr.reference_process_step_id = pps_src.process_step_id and psr.archived is not true
              inner join flow.process_step_logic psl on psr.id = psl.process_step_requirement_id and psl.archived is not true

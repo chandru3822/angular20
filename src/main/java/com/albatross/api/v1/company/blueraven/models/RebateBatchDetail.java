@@ -1,10 +1,6 @@
 package com.albatross.api.v1.company.blueraven.models;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import java.util.Date;

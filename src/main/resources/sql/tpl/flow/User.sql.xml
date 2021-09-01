@@ -625,4 +625,55 @@
   insert into flow.user_notification_token (user_id, token, created_by_id)
   values (:userId, :token, :createdById)
 ]]></user.addNotificationToken>
+
+  <user.getUserAttachments><![CDATA[
+    select
+      a.id,
+      a.size,
+      a.uuid,
+      a.date_created,
+      a.date_modified,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key,
+      a.archived,
+      substring(filename, '\.([^\.]+)$') as file_extension,
+      ua.user_id,
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+    from flow.user_attachment ua
+           inner join flow.attachment a on a.id = ua.attachment_id
+           inner join flow."user" u ON a.created_by_id = u.id
+    where ua.user_id = :userId
+      and a.archived is not true
+    order by ua.date_created desc
+  ]]></user.getUserAttachments>
+
+  <user.addAttachment><![CDATA[
+    insert into flow.user_attachment(attachment_id, user_id, created_by_id)
+    values (:attachmentId, :userId, :createdById)
+  ]]></user.addAttachment>
+
+  <user.isSuperAdmin><![CDATA[
+    select case when uc.id is not null then true else false end
+    from flow.user_company uc
+      inner join flow."user" u on uc.user_id = u.id
+    where uc.user_id = :userId
+      and uc.company_id = 1
+      and uc.archived is false
+      and u.archived is false
+  ]]></user.isSuperAdmin>
+
+  <user.hasAccessInCompany><![CDATA[
+    select case when uc.id is not null then true else false end
+    from flow.user_company uc
+       inner join flow."user" u on uc.user_id = u.id
+       inner join flow.company_user_status cus on cus.user_id = u.id
+       inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.company_id = :companyId
+    where uc.user_id = :userId
+      and uc.company_id = :companyId
+      and ust.has_access is true
+      and uc.archived is false
+      and u.archived is false
+  ]]></user.hasAccessInCompany>
 </sql>

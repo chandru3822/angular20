@@ -5,8 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.Source;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -57,7 +56,7 @@ public class CommissionManagementService {
         params.put("positionId", commissionPlan.getPositionId());
 
         User currentUser = securityService.getCurrentUser();
-        params.put("userId", currentUser.getId());
+        params.put("userId", currentUser.trueUserId());
 
         String key = "commissionPlan.create";
 
@@ -143,7 +142,7 @@ public class CommissionManagementService {
         params.put("planId", id);
         params.put("startDate", commissionPlan.getStartDate());
         params.put("positionId", commissionPlan.getPositionId());
-        params.put("createdBy", securityService.getCurrentUser().getId());
+        params.put("createdBy", securityService.getCurrentUser().trueUserId());
 
         try (Connection connection = dataSource.getConnection()) {
 
@@ -205,7 +204,7 @@ public class CommissionManagementService {
     public void approvePlan(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        params.put("approvedBy", securityService.getCurrentUser().getId());
+        params.put("approvedBy", securityService.getCurrentUser().trueUserId());
         params.put("statusId", CommissionPlanStatus.ACTIVE.getId());
 
         sqlCache.update("commissionPlan.approve", params);
@@ -224,7 +223,7 @@ public class CommissionManagementService {
     public void inactivatePlan(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("updatedBy", securityService.getCurrentUser().trueUserId());
         params.put("statusId", CommissionPlanStatus.INACTIVE.getId());
 
         sqlCache.update("commissionPlan.inactivate", params);

@@ -35,6 +35,7 @@
           item-value="project_details_column"
           item-text="name"
           return-object
+          attach
           @input="[
             resetNewField(),
             getOperators(newRequirement.selectedField.dataTypeId),
@@ -51,6 +52,7 @@
           item-value="objectTypeId"
           item-text="objectType"
           @input="[resetNewObjectType(), getAvailableFields()]"
+          attach
         />
 
         <v-autocomplete
@@ -61,6 +63,7 @@
           item-value="processStepId"
           item-text="processStepName"
           @input="[resetNewProcessStep(), calculateAvailableFields()]"
+          attach
         />
 
         <v-autocomplete
@@ -70,6 +73,7 @@
           :items="availableFields"
           item-text="name"
           return-object
+          attach
           @input="[
             resetNewField(),
             getOperators(newRequirement.selectedField.dataTypeId),
@@ -88,6 +92,7 @@
         v-model="newRequirement.operatorTypeId"
         label="Operator"
         :items="operators"
+        attach
         item-text="operatorType"
         item-value="id"
         @input="resetNewOperatorType"
@@ -233,6 +238,7 @@
               label="Field"
               item-text="name"
               disabled
+              attach
             />
           </template>
 
@@ -243,6 +249,7 @@
               label="Object Type"
               item-text="objectType"
               disabled
+              attach
             />
 
             <v-autocomplete
@@ -252,6 +259,7 @@
               label="Process Step"
               item-text="processStepName"
               disabled
+              attach
             />
 
             <v-autocomplete
@@ -260,6 +268,7 @@
               label="Field"
               item-text="name"
               disabled
+              attach
             />
           </template>
 
@@ -269,6 +278,7 @@
             :items="operators"
             item-text="operatorType"
             item-value="id"
+            attach
           />
 
           <!--      @TODO humes: on change, reset any value that follows -->

@@ -49,7 +49,7 @@ public class ProcessStepActionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("actionId", actionId);
     sqlCache.update("processStepAction.deleteAction", params);
   }
@@ -71,7 +71,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     for(ProcessStepAction action : actions) {
       params.put("displayOrder", action.getDisplayOrder());
-      params.put("modifiedById", currentUser.getId());
+      params.put("modifiedById", currentUser.trueUserId());
       params.put("id", action.getId());
       //save each display_order
       sqlCache.update("processStepAction.updateActionDisplayOrder", params);
@@ -86,7 +86,7 @@ public class ProcessStepActionService {
     params.put("alwaysEnabled", action.getAlwaysEnabled());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", action.getId());
     params.put("removeProcessStepOwner", action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
     params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
@@ -130,7 +130,7 @@ public class ProcessStepActionService {
           logicParams.put("processStepRequirementId", logic.getProcessStepRequirementId());
           logicParams.put("operationTypeId", logic.getOperationTypeId());
           logicParams.put("sqlOrder", count);
-          logicParams.put("createdById", currentUser.getId());
+          logicParams.put("createdById", currentUser.trueUserId());
           sqlCache.update("processStepAction.insertLogic", logicParams);
           count++;
         }
@@ -144,7 +144,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionName", action.getActionName());
     params.put("actionTypeId", action.getActionTypeId());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("processStepId", action.getProcessStepId());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
@@ -179,7 +179,7 @@ public class ProcessStepActionService {
     params.put("processStepId", child.getProcessStepId());
     params.put("processStepActionId", actionId);
     params.put("displayOrder", child.getDisplayOrder());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("companyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
     params.put("existingCompanyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
     params.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
@@ -195,7 +195,7 @@ public class ProcessStepActionService {
     params.put("processStepActionId", actionId);
     params.put("existingCompanyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
     params.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     Long id = sqlCache.updateReturningId("processStepAction.saveChildProcessStatuses", params, "id").longValue();
     return getActionChildStep(id);
@@ -213,7 +213,7 @@ public class ProcessStepActionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childProcessId);
 
     sqlCache.update("processStepAction.deleteActionChildStep", params);
@@ -223,7 +223,7 @@ public class ProcessStepActionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
     params.put("existingCompanyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
@@ -237,7 +237,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("linkId", child.getLinkId());
     params.put("processStepActionId", actionId);
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     Long id = sqlCache.updateReturningId("processStepAction.addLinkToAction", params, "id").longValue();
     return getActionChildLink(id);
@@ -255,7 +255,7 @@ public class ProcessStepActionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childLinkId);
     sqlCache.update("processStepAction.deleteLinkFromAction", params);
   }
@@ -267,7 +267,7 @@ public class ProcessStepActionService {
     params.put("companyFunctionId", child.getCompanyFunctionId());
     params.put("processStepActionId", actionId);
     params.put("displayOrder", child.getDisplayOrder());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
 
     Long id = sqlCache.updateReturningId("processStepAction.addChildFunctionToAction", params, "id").longValue();
 
@@ -288,7 +288,7 @@ public class ProcessStepActionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childProcessId);
     sqlCache.update("processStepAction.deleteActionChildFunction", params);
   }
@@ -297,7 +297,7 @@ public class ProcessStepActionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
     sqlCache.update("processStepAction.updateActionChildFunction", params);
@@ -317,10 +317,10 @@ public class ProcessStepActionService {
 
         if(null != p.getId()){
           dynamicParams.put("id", p.getId());
-          dynamicParams.put("modifiedById", currentUser.getId());
+          dynamicParams.put("modifiedById", currentUser.trueUserId());
           sqlCache.update("processStepAction.updateActionParamDynamicValue", dynamicParams);
         }else {
-          dynamicParams.put("createdById", currentUser.getId());
+          dynamicParams.put("createdById", currentUser.trueUserId());
           sqlCache.update("processStepAction.insertActionParamDynamicValue", dynamicParams);
         }
       }

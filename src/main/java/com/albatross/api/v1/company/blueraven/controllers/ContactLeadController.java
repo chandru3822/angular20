@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -172,6 +175,36 @@ public class ContactLeadController {
 
   @PostMapping(value = "/solardirectappt", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateContactSolarDirectAppt(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/strategicsolarsolutions", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactStrategicSolarSolutions(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/encompassleads", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactEncompassLeads(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/lightload", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactLightload(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/mvfglobal", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactMvfglobal(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/wishone", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactWishone (@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/amplifysolarmarketing", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAmplifySolarMarketing(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
 }

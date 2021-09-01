@@ -226,7 +226,8 @@ BEGIN
             contact_id                     = new.contact_id,
             project_created_date           = new.date_created,
             company_project_status_type_id = new.company_project_status_type_id,
-            company_project_status_type    = v_company_project_status
+            company_project_status_type    = v_company_project_status,
+            archived                       = new.archived
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
@@ -315,41 +316,47 @@ BEGIN
 
         if new.int_value is not null then
             update brs.project_details
-            set first_appointment_id = new.int_value
+            set first_appointment_id = new.int_value,
+                first_appointment_pps_id = new.project_process_step_id
             where project_id = v_project_id1
-              and first_appointment_id is null;
+              and (first_appointment_id is null or (first_appointment_pps_id is not null and first_appointment_pps_id = new.project_process_step_id));
         end if;
 
         if new.int_value in (2, 1139, 1140) then
 
             update brs.project_details
-            set setter_milestone_pay = coalesce(v_timestamp_value, now())
+            set setter_milestone_pay = coalesce(v_timestamp_value, now()),
+                setter_milestone_pay_ppscfv_id = new.id
             where project_id = v_project_id1
-             and setter_milestone_pay is null;
+             and (setter_milestone_pay is null or (setter_milestone_pay_ppscfv_id is not null and setter_milestone_pay_ppscfv_id = new.id));
 
             update brs.project_details
             set first_appointment_pitched    = coalesce(v_timestamp_value, now()),
-                first_appointment_pitched_id = new.int_value
+                first_appointment_pitched_id = new.int_value,
+                first_appointment_pitched_ppscfv_id = new.id
             where project_id = v_project_id1
-              and first_appointment_pitched is null;
+              and (first_appointment_pitched is null or (first_appointment_pitched_ppscfv_id is not null and first_appointment_pitched_ppscfv_id = new.id));
         elsif new.int_value in (3) then
             update brs.project_details
-            set setter_milestone_pay = coalesce(v_timestamp_value, now())
+            set setter_milestone_pay = coalesce(v_timestamp_value, now()),
+                setter_milestone_pay_ppscfv_id = new.id
             where project_id = v_project_id1
-              and setter_milestone_pay is null;
+              and (setter_milestone_pay is null or (setter_milestone_pay_ppscfv_id is not null and setter_milestone_pay_ppscfv_id = new.id));
 
             update brs.project_details
             set first_appointment_missed    = coalesce(v_timestamp_value, now()),
-                first_appointment_missed_id = new.int_value
+                first_appointment_missed_id = new.int_value,
+                first_appointment_missed_ppscfv_id = new.id
             where project_id = v_project_id1
-              and first_appointment_missed is null;
+              and (first_appointment_missed is null or (first_appointment_missed_ppscfv_id is not null and first_appointment_missed_ppscfv_id = new.id));
         elseif new.int_value is not null and
                new.int_value not in (2, 3, 1139, 1140) then
             update brs.project_details
             set first_appointment_not_pitched_or_missed    =coalesce(v_timestamp_value, now()),
-                first_appointment_not_pitched_or_missed_id = new.int_value
+                first_appointment_not_pitched_or_missed_id = new.int_value,
+                first_appointment_not_pitched_or_missed_ppscfv_id = new.id
             where project_id = v_project_id1
-              and first_appointment_not_pitched_or_missed is null;
+              and (first_appointment_not_pitched_or_missed is null or (first_appointment_not_pitched_or_missed_ppscfv_id is not null and first_appointment_not_pitched_or_missed_ppscfv_id = new.id));
         end if;
     elsif v_parent_custom_field_id = 9958 and
           new.timestamp_value is not null then
@@ -357,7 +364,7 @@ BEGIN
         set first_appointment        = new.timestamp_value,
             first_appointment_pps_id = new.project_process_step_id
         where project_id = v_project_id1
-          and first_appointment is null;
+          and (first_appointment is null or (first_appointment_pps_id is not null and first_appointment_pps_id = new.project_process_step_id));
     end if;
 
 
@@ -368,7 +375,8 @@ BEGIN
                pdc.second_field_to_update,
                pdc.second_data_type_id,
                cf.list_of_value_id,
-               pdc.update_first_value_only
+               pdc.update_first_value_only,
+               pdc.update_first_value_only_id
         from brs.project_details_config pdc
                  inner join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
@@ -403,11 +411,19 @@ BEGIN
                     v_value = v_value || '::text';
                 end if;
                 v_project_id2 = coalesce(v_project_id, v_project_id1);
-                v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
+                case when v_record.update_first_value_only is false then
+                  v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
+                          where project_id = $$ || v_project_id2;
+                 -- raise notice 'what is the sql %',v_sql;
+                else
+                v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$,$$
+                          ||v_record.update_first_value_only_id||$$ = $$|| new.id|| $$
                           where project_id = $$ || v_project_id2 || $$ and
-                          case when $$ || v_record.update_first_value_only || $$ is true then $$ ||
-                        v_record.field_to_update ||
-                        $$ is null else 1=1 end $$;
+                          ($$ || v_record.field_to_update ||
+                        $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and  $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$))$$;
+               -- raise notice 'what is the sql %',v_sql;
+                end case;
+
                 begin
                     execute v_sql;
                 exception
@@ -482,13 +498,21 @@ BEGIN
                                   ' at time zone ' || quote_literal('US/Mountain') || ')::date';
 
                     end if;
+                    case when v_record.update_first_value_only is false then
+                      --raise notice 'am I here*********';
+                      v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
+                              v_value || $$
+                            where project_id = $$ || v_project_id2;
+                      --raise notice 'what is the sql in the second field %',v_sql;
+                    else
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
-                            v_value || $$
-                            where project_id = $$ || v_project_id2 || $$ and
-                    case when $$ || v_record.update_first_value_only || $$ is true then $$ ||
-                            v_record.second_field_to_update ||
-                            $$ is null else 1=1 end $$;
-                    -- raise notice 'what is the sql %',v_sql;
+                            v_value || $$,$$
+                              ||v_record.update_first_value_only_id||$$ = $$|| new.id|| $$
+                            where project_id = $$ || v_project_id2 || $$ and ($$ ||
+                            v_record.second_field_to_update || $$ is null or ( $$ || v_record.update_first_value_only_id || $$ is not null and $$|| v_record.update_first_value_only_id || $$ = $$ || new.id || $$))$$;
+                    --raise notice 'what is the sql in the second field %',v_sql;
+                    end case;
+
                     begin
                         execute v_sql;
                     exception
@@ -654,6 +678,7 @@ declare
     v_sql             character varying;
     v_value           character varying;
     v_record          record;
+    v_count           bigint;
 BEGIN
 
 
@@ -692,6 +717,19 @@ BEGIN
             end loop;
 
 
+    end if;
+
+    if (TG_OP = 'UPDATE') THEN
+
+      select count(1)
+      into v_count
+      from flow.user_position up
+      inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+      where up.user_id = new.modified_by_id and
+            up.end_date is null and wlp.custom_field_group_assignment_id = 395;
+      if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
+        raise exception 'You do not have rights to update the Lead Source for this Contact.';
+      end if;
     end if;
 
     RETURN NULL;

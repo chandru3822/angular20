@@ -5,18 +5,20 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.SMSService;
+import com.albatross.api.v1.flow.services.VerseWebhookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.mypurecloud.sdk.v2.*;
 import com.mypurecloud.sdk.v2.api.OutboundApi;
-import com.mypurecloud.sdk.v2.api.request.*;
+import com.mypurecloud.sdk.v2.api.request.GetOutboundContactlistsRequest;
 import com.mypurecloud.sdk.v2.extensions.AuthResponse;
-import com.mypurecloud.sdk.v2.model.*;
+import com.mypurecloud.sdk.v2.model.ContactList;
+import com.mypurecloud.sdk.v2.model.ContactListEntityListing;
+import com.mypurecloud.sdk.v2.model.DialerContact;
+import com.mypurecloud.sdk.v2.model.WritableDialerContact;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,6 +56,9 @@ public class GenesysService {
 
   @Autowired
   private SMSService smsService;
+
+  @Autowired
+  private VerseWebhookService verseWebhookService;
 
   @Autowired
   private SqlCache sqlCache;
@@ -185,7 +190,7 @@ public class GenesysService {
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
       params.put("sourceId", contact.getId());
-      params.put("userId", currentUser.getId());
+      params.put("userId", currentUser.trueUserId());
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
       return true;
     }
@@ -223,18 +228,6 @@ public class GenesysService {
     contactMap.put("Contacted Call Attempts", "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
-    /*
-    No longer required by Genesys, commenting out in case needed in the future
-    contactMap.put("contact_type", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("Lead Main State", "");
-    contactMap.put("CallRecordLastAttempt-mobile", "");
-    contactMap.put("CallRecordLastResult-mobile", "");
-    contactMap.put("CallRecordLastAgentWrapup-mobile", "");
-    contactMap.put("SmsLastAttempt-mobile", "");
-    contactMap.put("SmsLastResult-mobile", "");
-    contactMap.put("Callable-mobile", 1);
-    contactMap.put("AutomaticTimeZone-mobile", "");
-    */
     contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
@@ -243,11 +236,25 @@ public class GenesysService {
     contactMap.put("date_created", formatter.format(calendar.getTime()));
 
     getCfvValues(contactMap, values);
+    String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
+
     wdc.setData(contactMap);
+
+    String leadLevel = (String) contactMap.remove("lead_level");
+    if (leadLevel.equals("20")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap, false);
+      return;
+    }
+    else if (leadLevel.equals("21")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap, true);
+      return;
+    }
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(contactMap, apiInstance);
+    String contactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, false);
     // If no Contact  List is found
     if (contactListId == null) {
       return;
@@ -256,6 +263,16 @@ public class GenesysService {
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+
+    if (genesysContactListName == null || genesysContactListName.isEmpty()) {
+      String oldContactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, true);
+      // If no Contact  List is found
+      if (contactListId == null) {
+        return;
+      }
+
+      List<DialerContact> dcOld = apiInstance.postOutboundContactlistContacts(oldContactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+    }
   }
 
   private void updateGenesysCfv(Long contactId, String textValue, Long cfgaId) {
@@ -270,7 +287,7 @@ public class GenesysService {
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
   }
 
@@ -306,17 +323,6 @@ public class GenesysService {
     contactMap.put("Contacted Call Attempts", "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
-
-    /*
-    No longer required by Genesys, commenting out in case needed in the future
-    contactMap.put("CallRecordLastAttempt-mobile", "");
-    contactMap.put("CallRecordLastResult-mobile", "");
-    contactMap.put("CallRecordLastAgentWrapup-mobile", "");
-    contactMap.put("SmsLastAttempt-mobile", "");
-    contactMap.put("SmsLastResult-mobile", "");
-    contactMap.put("Callable-mobile", 1);
-    contactMap.put("AutomaticTimeZone-mobile", "");
-    */
     contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
@@ -329,12 +335,25 @@ public class GenesysService {
     // Add Lead Level custom field so that value gets pulled
     values.add(customFieldGroups.get(1).getCustomFieldValues().stream().filter(cfg -> cfg.getCustomFieldId().equals(10982L)).findFirst().orElse(null));
     getCfvValues(contactMap, customFieldGroups.get(0).getCustomFieldValues());
+    contactMap.remove("genesys_contact_list_name");
+
+    String leadLevel = (String) contactMap.remove("lead_level");
+    if (leadLevel.equals("20")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap, false);
+      return;
+    }
+    else if (leadLevel.equals("21")) {
+      contactMap.put("state", contact.getState());
+      verseWebhookService.postContact(contactMap, true);
+      return;
+    }
 
     dc.setData(contactMap);
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(contactMap, apiInstance);
+    String contactListId = getContactListId(leadLevel, apiInstance, null, true);
     // If no Contact  List is found
     if (contactListId == null) {
       return;
@@ -361,6 +380,7 @@ public class GenesysService {
     contactMap.put("lead_level", "");
     contactMap.put("referral", false);
     contactMap.put("retargeted", false);
+    contactMap.put("genesys_contact_list_name", "");
 
     for (CustomFieldValue cfv: values) {
       String value = "";
@@ -394,6 +414,9 @@ public class GenesysService {
         }
         else if (cfv.getFieldName().equals("Referral")) {
           contactMap.put("referral", cfv.getBooleanValue() == null ? false : cfv.getBooleanValue());
+        }
+        else if (cfv.getFieldName().equals("Genesys Contact List Name")) {
+          contactMap.put("genesys_contact_list_name", cfv.getFieldValue());
         }
       }
     }
@@ -472,7 +495,7 @@ public class GenesysService {
     // Add a row to the phone log table
     params.put("callGroupId", currentlyUsedGroupId);
     params.put("phoneNumber", phoneNumber);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
     sqlCache.update("callGroup.addPhoneLog", params);
 
     if (!phoneNumber.isEmpty()) {
@@ -487,7 +510,7 @@ public class GenesysService {
     }
   }
 
-  private String getContactListName(String leadLevel) {
+  private String getContactListOldName(String leadLevel) {
     if (leadLevel.equals("1")) {
       return "Level 1";
     }
@@ -506,16 +529,46 @@ public class GenesysService {
 
     return null;
   }
+
+  private String getContactListName(String leadLevel) {
+    if (leadLevel.equals("1")) {
+      return "leadlevel1_Day1";
+    }
+    else if (leadLevel.equals("2")) {
+      return "Leadlevel2";
+    }
+    else if (leadLevel.equals("3")) {
+      return "Leadlevel3";
+    }
+    else if (leadLevel.equals("9")) {
+      return "Level 9";
+    }
+    else if (leadLevel.equals("10")) {
+      return "Leadlevel10";
+    }
+
+    return null;
+  }
   // Get the Genesys id of the Contact List from Genesys
-  private String getContactListId(HashMap<String, Object> contactMap, OutboundApi apiInstance) throws IOException, ApiException {
+  private String getContactListId(String leadLevel, OutboundApi apiInstance, String genesysContactListName, Boolean useOldContactLists) throws IOException, ApiException {
     GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
+    String contactListName = "";
+    if (genesysContactListName == null || genesysContactListName.isEmpty()) {
+      if (useOldContactLists) {
+        contactListName = getContactListOldName(leadLevel);
+      }
+      else {
+        contactListName = getContactListName(leadLevel);
+      }
 
-    String leadLevel = (String) contactMap.get("lead_level");
-    String contactListName = getContactListName(leadLevel);
-    if (contactListName == null) {
-      return null;
+      if (contactListName == null) {
+        return null;
+      }
+    }
+    else {
+      contactListName = genesysContactListName;
     }
 
     String contactListId = "";
@@ -529,8 +582,109 @@ public class GenesysService {
     if (contactListId.isEmpty()) {
       return null;
     }
-    // Remove lead level from the parameters sent to Genesys, since it is not needed
-    contactMap.remove("lead_level");
+
     return contactListId;
   }
+
+  public void processGenesysContacts()  {
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    /*
+      Lead Level 1
+     */
+    List<Contact> contacts = sqlCache.query("genesys.getContactIdsWeek1Level1", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel1_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level1", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel1_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel1", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel1_aged");
+
+    /*
+      Lead Level 2
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_aged");
+
+    /*
+      Lead Level 3
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_aged");
+
+    /*
+      Lead Level 10
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_aged");
+  }
+
+  private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
+    for (Contact contact: contacts) {
+      List<CustomFieldGroup> customFieldGroups = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), contact.getId());
+      List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
+
+      CustomFieldValue genesysContactListName = new CustomFieldValue();
+      genesysContactListName.setFieldName("Genesys Contact List Name");
+      genesysContactListName.setFieldValue(contactListName);
+      values.add(genesysContactListName);
+
+      try {
+        addContact(contact.getId(), values, false);
+      } catch (Exception e) {
+        String msg = "GENESYS: Error updating contact list: {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+  }
+
+  public void updateContactIds(List<Map<String, String>> data) {
+    for (Map<String, String> contactValuesMap: data) {
+      Long contactId = Long.parseLong(contactValuesMap.get("contactId"));
+      String genesysContactId = contactValuesMap.get("genesysContactId");
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("contactId", contactId);
+      params.put("genesysContactId", genesysContactId);
+      sqlCache.update("genesys.updateGenesysContactIdByContactId", params);
+      try {
+        updateContact(contactId);
+      } catch (Exception e) {
+        String msg = "GENESYS: Error updating contact id: {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+  }
+
+  public void updateContactIds(String listOfContactIds) {
+    String[] contactIds = listOfContactIds.split(",");
+    for (String contactId: contactIds) {
+      try {
+        Long contactIdToUpdate = Long.parseLong(contactId);
+        updateContact(contactIdToUpdate);
+      } catch (Exception e) {
+        String msg = "GENESYS: Error updating contact id (" +contactId + "): {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+  }
+
 }

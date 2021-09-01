@@ -19,7 +19,7 @@
           <v-btn class="mb-1" @click="newUtility.utilityStates.push({})">Add State</v-btn>
           <v-card class="px-4" flat v-for="(us, index) in newUtility.utilityStates" :key="index">
             <v-row>
-              <v-select v-model="us.companyStateId"
+              <v-select attach v-model="us.companyStateId"
                         class="mr-4"
                         :items="states"
                         no-data-text="No States Available"
@@ -73,7 +73,7 @@
               </div>
               <v-card class="px-4" flat color="transparent" v-for="(us, index) in filterBy(item.utilityStates, false, 'archived')" :key="index">
                 <v-row v-show="us.archived != true">
-                  <v-select v-model="us.companyStateId"
+                  <v-select attach v-model="us.companyStateId"
                             :items="states"
                             class="mr-4"
                             no-data-text="No States Available"
@@ -204,7 +204,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getCompanyStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
   import Vue2Filters from 'vue2-filters'
 

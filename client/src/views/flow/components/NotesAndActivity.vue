@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <v-col>
     <v-toolbar color="transparent" class="elevation-0">
       <v-toolbar-title>Notes</v-toolbar-title>
     </v-toolbar>
-    <v-card class="square-card">
+    <v-card class="square-card mx-4">
       <v-toolbar flat dense color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
       </v-toolbar>
@@ -344,23 +344,25 @@
 
     </v-card>
 
-  </div>
+  </v-col>
 </template>
 
 <script>
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-
-import Vue2Filters from "vue2-filters";
+import Vue2Filters from "vue2-filters"
+import { Mentionable } from 'vue-mention'
 
 export default {
   name: 'NotesAndActivity',
+  components: {Mentionable},
   mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,
     showActivity: Boolean,
     primaryId: Number,
     secondaryId: Number,
+    installDashTile: String,
     isWqtNote: Boolean,
     notes: Array,
     type: String
@@ -414,17 +416,33 @@ export default {
     async saveNote(n) {
       try {
         this.savingNote = true
-        // @randa: Probably should create an object type enum on the frontend that mimics the backend?
-        let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
-        const {data} = await postRequest(url, {
-          primaryId: this.primaryId,
-          id: n.reply ? null : n.id,
-          note: n.reply ? n.reply : n.note,
-          parentId: n.reply ? n.id : null,
-          //these 2 fields are for pps pswqt notes which require 2 keys to save/get
-          projectProcessStepId: this.primaryId,
-          processStepWorkQueueTypeId: this.secondaryId,
-        })
+        let url = '';
+        let body = {};
+        if (this.installDashTile != null) {
+          url = `/note/saveProjectProdStatsNote`
+          body = {
+            primaryId: this.primaryId,
+            id: n.reply ? null : n.id,
+            note: n.reply ? n.reply : n.note,
+            parentId: n.reply ? n.id : null,
+            installDashTile: this.installDashTile
+          }
+        }
+        else {
+          // @randa: Probably should create an object type enum on the frontend that mimics the backend?
+          url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
+          body = {
+            primaryId: this.primaryId,
+            id: n.reply ? null : n.id,
+            note: n.reply ? n.reply : n.note,
+            parentId: n.reply ? n.id : null,
+            //these 2 fields are for pps pswqt notes which require 2 keys to save/get
+            projectProcessStepId: this.primaryId,
+            processStepWorkQueueTypeId: this.secondaryId,
+          }
+        }
+
+        const {data} = await postRequest(url, body)
         // this.notes.unshift(data)
         if(n.reply) {
           n.reply = null
@@ -501,7 +519,4 @@ export default {
   color: var(--v-primary-base);
   font-weight: bold;
 }
-</style>
-<style lang="scss">
-
 </style>

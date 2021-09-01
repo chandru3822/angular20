@@ -21,7 +21,8 @@
                     v-model="newType.projectStatusTypeId"
                     item-value="id"
                     label="Select a Category"
-                    item-text="projectStatusType"></v-autocomplete>
+                    item-text="projectStatusType"
+                          attach></v-autocomplete>
           <v-btn :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
         </v-card>
         <v-data-table
@@ -51,7 +52,8 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Select a Category"
-                        item-text="projectStatusType"></v-autocomplete>
+                        item-text="projectStatusType"
+                        attach></v-autocomplete>
               <div  v-if="!item.isDefault" class="mb-3">
                 <v-dialog
                   v-model="item.setInitialConfirm"
@@ -113,6 +115,16 @@
                   <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
                 </form>
               </div>
+              <div>
+                <label>Status Color</label>
+                <v-color-picker class="my-3"
+                                v-model="item.color"
+                                :canvas-height="colorOptions.height"
+                                :width="colorOptions.width"
+                                :mode="colorOptions.mode"
+                                :hide-mode-switch="colorOptions.hideModeSwitch">
+                </v-color-picker>
+              </div>
               <v-btn color="primaryCustom" dark class="white--text"
                      :disabled="!item.projectStatusType || !item.projectStatusTypeId"
                      @click="saveType(item, false)">Save</v-btn>
@@ -138,8 +150,16 @@
                 <img v-if="item.icon && item.icon.presignedUrl"
                      class="status-icon-grid" :src="item.icon.presignedUrl">
               </td>
+              <td class="text-left">
+                <v-avatar
+                  :tile="false"
+                  :size="30"
+                  :color="item.color"
+                  class="account-img clickable bordered">
+                </v-avatar>
+              </td>
               <td class="text-right">
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text v-if="!expanded.includes(item)" @click="[initItemColor(item), expanded = [item]]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
@@ -201,7 +221,7 @@
 
   import orderBy from 'lodash.orderby'
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -214,6 +234,12 @@
       return {
         snackbar: {},
         constants,
+        colorOptions: {
+          canvasHeight: 75,
+          width: 200,
+          mode: 'hexa',
+          hideModeSwitch: true
+        },
         statusTypes: [],
         expanded: [],
         rootStatusTypes: [],
@@ -227,6 +253,7 @@
           {text: 'Status', value: 'rootProjectStatusType', show: true},
           {text: 'Initial', value: 'initial', show: true},
           {text: 'Icon', value: 'icon', show: true},
+          {text: 'Color', value: 'color', show: true},
           {text: '', value: 'icons', show: true},
         ],
         addNew: false,
@@ -256,6 +283,9 @@
     computed: {
     },
     methods: {
+      initItemColor(item) {
+        item.color = item.color ?? '#FFFFFF'
+      },
       async saveOrderChanges (types) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

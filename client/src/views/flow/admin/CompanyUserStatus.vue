@@ -62,7 +62,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {getUserStatusTypes} from '@/services/userService'
 
@@ -119,11 +119,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

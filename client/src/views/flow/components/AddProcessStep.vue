@@ -22,21 +22,24 @@
                     item-value="id"
                     placeholder="Select one..."
                     @input="[getCancelledStatuses(), getActiveStatusesAssignedToStep() ]"
-                    return-object/>
+                    return-object
+                     />
     <v-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
                     v-if="null != selectedStep"
                     :items="activeStatusesAssignedToStep"
                     label="Set initial status to:"
                     item-text="processStepStatusType"
                     item-value="id"
-                    placeholder="Select one..."/>
+                    placeholder="Select one..."
+                    attach/>
     <v-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
                     v-if="null != selectedStep"
                     :items="cancelledCompanyStatuses"
                     label="Set status of existing active steps of the same type to:"
                     item-text="processStepStatusType"
                     item-value="id"
-                    placeholder="Select one..."/>
+                    placeholder="Select one..."
+                    attach/>
     <v-btn
         class="add-process-step-btn primary"
         :disabled="selectedStep == null || !newPps.existingCompanyProcessStepStatusTypeId || !newPps.initialCompanyProcessStepStatusTypeId"
@@ -49,10 +52,9 @@
 </template>
 
 <script>
-import {getRequest, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
+import { getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-
 
 export default {
   name: 'AddProcessStep',

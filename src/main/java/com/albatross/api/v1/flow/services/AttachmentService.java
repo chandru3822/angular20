@@ -318,7 +318,7 @@ public class AttachmentService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("attachment.deleteById", params);
   }
@@ -329,7 +329,7 @@ public class AttachmentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
     params.put("attachmentTypeId", attachmentTypeId);
-    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.update("attachment.deleteBySourceAndType", params);
   }
@@ -348,7 +348,7 @@ public class AttachmentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("filename", attachment.getFilename());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.trueUserId());
 
     sqlCache.update("attachment.update", params);
 
@@ -391,7 +391,7 @@ public class AttachmentService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
-    params.put("createdById", currentUser.getId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", currentUser.getCompanyId());
 

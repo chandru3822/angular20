@@ -26,8 +26,6 @@
 
 <script>
   import Vue2Filters from 'vue2-filters'
-
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -48,7 +46,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

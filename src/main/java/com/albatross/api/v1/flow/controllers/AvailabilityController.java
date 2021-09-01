@@ -92,8 +92,9 @@ public class AvailabilityController {
   public List<TimeSlot> getTimeSlots(@RequestParam Long projectId,
                                      @RequestParam String startTime,
                                      @RequestParam String endTime,
-                                     @RequestParam String availableDate) {
-    return availabilityService.getTimeSlots(projectId, startTime, endTime, availableDate);
+                                     @RequestParam String availableDate,
+                                     @RequestParam(required = false) Boolean remote) {
+    return availabilityService.getTimeSlots(projectId, startTime, endTime, availableDate, remote);
   }
 
   @PostMapping(value = "/setCloserAppointment", produces = MediaType.APPLICATION_JSON_VALUE)

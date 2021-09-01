@@ -49,9 +49,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import constants from "@/helpers/constants";
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getSnackbar} from '@/helpers/helpers'
   import { saveAs } from 'file-saver'
-  import cloneDeep from "lodash.clonedeep";
 
   export default {
     name: 'Summary',
@@ -188,11 +187,3 @@
     }
   }
 </script>
-
-<style lang="scss">
-</style>
-
-<style lang="scss" scoped>
-
-</style>
-

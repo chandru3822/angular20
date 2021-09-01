@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostalCodeZone {
 
-  private Long id, companyId, distributionTimeFrameDays, schedulableFutureDays;
-  private String zoneName;
-  private Boolean archived;
+  private Long id, companyId, distributionTimeFrameDays, schedulableFutureDays, companyTimezoneId;
+  private String zoneName, timezone;
+  private Boolean archived, remote;
 }

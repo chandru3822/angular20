@@ -89,7 +89,7 @@
                     </v-col>
                     <v-col cols="6" class="pl-4">
                       <div v-for="item in getCustomFieldsForGroup(7)" :key="item.id">
-                        <v-select v-model="item.intValue"
+                        <v-select attach v-model="item.intValue"
                                   @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                   :items="item.listOfValues"
                                   :readonly="!userCanEdit"
@@ -160,7 +160,7 @@
                   <div class="flex-display flex-wrap justify-space-between">
                     <div class="flex-display custom-field"
                          v-for="item in getCustomFieldsForGroup(9)" :key="item.id">
-                      <v-select v-model="item.intValue"
+                      <v-select attach v-model="item.intValue"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 :items="item.listOfValues"
                                 :readonly="!userCanEdit"
@@ -242,7 +242,7 @@
                 </v-card-title>
                 <v-card-text class="mt-4">
                   <div v-for="item in getCustomFieldsForGroup(25)" :key="item.id">
-                    <v-select v-model="item.intValue"
+                    <v-select attach v-model="item.intValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               :items="item.listOfValues"
                               :readonly="!userCanEdit"
@@ -281,7 +281,7 @@
                 </v-card-title>
                 <v-card-text class="mt-4">
                   <div v-for="item in getCustomFieldsForGroup(8)" :key="item.id">
-                    <v-select v-model="item.intValue"
+                    <v-select attach v-model="item.intValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               :items="item.listOfValues"
                               :readonly="!userCanEdit"
@@ -337,7 +337,7 @@
                               auto-grow
                   ></v-textarea>
                   <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id">
-                    <v-select v-if="item.customFieldId === 56"
+                    <v-select attach v-if="item.customFieldId === 56"
                               v-model="item.intValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               :items="item.listOfValues"
@@ -389,7 +389,7 @@
                   <div class="flex-display justify-space-between flex-nowrap">
                     <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id"
                          :class="[{'mr-4': item.customFieldId === 55}, {'ml-4': item.customFieldId === 61}]">
-                      <v-select v-if="[55,61].indexOf(item.customFieldId) !== -1"
+                      <v-select attach v-if="[55,61].indexOf(item.customFieldId) !== -1"
                                 v-model="item.intValue"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 :items="item.listOfValues"
@@ -462,7 +462,7 @@
                     </v-card-title>
                     <v-card-text>
                       <div v-for="item in getCustomFieldsForGroup(23)" :key="item.id" class="mt-4">
-                        <v-select v-model="item.intValue"
+                        <v-select attach v-model="item.intValue"
                                   @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                   :items="item.listOfValues"
                                   :readonly="!userCanEdit"
@@ -545,7 +545,7 @@
                            class="mb-8"
                   ></AhjLink>
                   <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
-                    <v-select v-if="item.customFieldId === 60"
+                    <v-select attach v-if="item.customFieldId === 60"
                               v-model="item.intValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
@@ -582,7 +582,7 @@
                     </v-card-title>
                     <v-card-text class="mt-4">
                       <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
-                        <v-select v-if="item.customFieldId === 40"
+                        <v-select attach v-if="item.customFieldId === 40"
                                   v-model="item.intValue"
                                   :readonly="!userCanEdit"
                                   :disabled="!userCanEdit"
@@ -635,7 +635,7 @@
                       Final Completion Submission
                     </v-card-title>
                     <v-card-text class="mt-4">
-                      <v-select v-model="selectedFinancier"
+                      <v-select attach v-model="selectedFinancier"
                                 @change="dataWasChanged = true"
                                 :items="financiers"
                                 item-text="name"
@@ -729,6 +729,7 @@
         try {
           const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
           this.ahjUtility = cloneDeep(data)
+          window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
           this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name?.toLowerCase())
           this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name?.toLowerCase())
           this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name?.toLowerCase())

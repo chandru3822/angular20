@@ -71,7 +71,7 @@
                 item-value="id"
               ></v-select>
               <div v-for="(sf, index) in schedulingFields" :key="index">
-                <v-select v-model="newGroup.schedulingFields[index]"
+                <v-select attach v-model="newGroup.schedulingFields[index]"
                           text
                           :items="sf.availableCustomFields"
                           :label="`Please select a field to be used as the ${sf.fieldType}`"
@@ -297,8 +297,7 @@
                                           return-object
                                           height="35px"
                                           class="d-inline-block mr-3"
-                                          @change="cf.positionsChanged = true"
-                                        >
+                                          @change="cf.positionsChanged = true">
                                           <v-list-item
                                             slot="prepend-item"
                                             ripple
@@ -501,7 +500,6 @@
   import {getEventTypes} from '@/services/scheduleService'
   import {
     getRequest,
-    deleteRequest,
     putRequest,
     postRequest,
     getRequestWithParams,

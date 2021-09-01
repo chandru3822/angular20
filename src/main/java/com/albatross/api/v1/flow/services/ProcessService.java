@@ -5,7 +5,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.StatusType;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -78,7 +77,7 @@ public class ProcessService {
                 ImmutableMap.of("companyId", process.getCompanyId(),
                     "id", process.getId(),
                     "processName", process.getProcessName(),
-                    "modifiedById", currentUser.getId()));
+                    "modifiedById", currentUser.trueUserId()));
     }
 
     public Optional<CompanyProcess> insertProcess(CompanyProcess process) {
@@ -87,7 +86,7 @@ public class ProcessService {
         // parentCompanyId will be used for sharing processes later on
         Long id = sqlCache.updateReturningId("process.insert",
             ImmutableMap.of("processName", process.getProcessName(),
-                "createdById", user.getId(),
+                "createdById", user.trueUserId(),
                 "parentCompanyId", process.getParentCompanyId()),
             "id").longValue();
 
@@ -107,7 +106,7 @@ public class ProcessService {
         sqlCache.update("process.deleteProcessStepFromProcess",
             ImmutableMap.of("companyId", currentUser.getCompanyId(),
                 "processStepProcessId", processStepProcessId,
-                "modifiedById", currentUser.getId()));
+                "modifiedById", currentUser.trueUserId()));
     }
 
     public List<ProcessStep> availableProcessSteps(Long companyProcessId) {
@@ -147,7 +146,7 @@ public class ProcessService {
         User currentUser = securityService.getCurrentUser();
         HashMap<String, Object> params = new HashMap<>();
         params.put("companyProcessId", companyProcessId);
-        params.put("createdById", currentUser.getId());
+        params.put("createdById", currentUser.trueUserId());
         params.put("processStepId", processStepProcess.getProcessStepId());
 
         Long id = sqlCache.updateReturningId("process.insertProcessStepProcess", params, "id").longValue();
@@ -179,7 +178,7 @@ public class ProcessService {
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("companyProcessId", companyProcessId);
-        params.put("modifiedById", currentUser.getId());
+        params.put("modifiedById", currentUser.trueUserId());
         params.put("initialStep", processStepProcess.isInitialStep());
         params.put("displayOrder", processStepProcess.getDisplayOrder());
         params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
@@ -198,7 +197,7 @@ public class ProcessService {
             //if there is an id, do nothing it has already been saved. otherwise insert a row
             if(null == p.getProcessStepProcessOwningPositionId()){
                 params.put("positionId", p.getPositionId());
-                params.put("createdById", currentUser.getId());
+                params.put("createdById", currentUser.trueUserId());
                 //added unique constraint and changed to upsert. will unarchive if trying to add dupe
                 sqlCache.update("process.insertOwningPosition", params);
             }
@@ -221,7 +220,7 @@ public class ProcessService {
 //
 //        HashMap<String, Object> params = new HashMap<>();
 //        params.put("processId", processId);
-//        params.put("modifiedById", currentUser.getId());
+//        params.put("modifiedById", currentUser.trueUserId());
 //        params.put("initialStep", processStepProcess.isInitialStep());
 //        params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
 //        params.put("processStepProcessId", processStepProcess.getId());

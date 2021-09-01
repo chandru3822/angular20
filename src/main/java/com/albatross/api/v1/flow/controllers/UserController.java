@@ -19,8 +19,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -132,8 +134,8 @@ public class UserController {
   }
 
   @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity getLoggedInUser() {
-    return userService.getLoggedInUser();
+  public ResponseEntity getLoggedInUser(@RequestHeader("Authorization") String authHeader) {
+    return userService.getLoggedInUser(authHeader);
   }
 
   @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -235,5 +237,18 @@ public class UserController {
   public ResponseEntity<Void> addTokenToUser(@PathVariable Long userId, @RequestBody UserNotificationTokenDTO token) {
     userService.addNotificationToken(userId, token.getToken());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping(value = "/{userId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Attachment>> getUserAttachments(@PathVariable Long userId,
+                                                             @PathVariable(required = false) Boolean isMobile) {
+    return new ResponseEntity<>(userService.getUserAttachments(userId, isMobile), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{userId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Attachment> uploadUserAttachment(@PathVariable Long userId,
+                                                         @RequestParam Long attachmentTypeId,
+                                                         @RequestParam("file") MultipartFile file) throws IOException {
+    return new ResponseEntity<>(userService.addAttachment(file, userId, attachmentTypeId), HttpStatus.OK);
   }
 }

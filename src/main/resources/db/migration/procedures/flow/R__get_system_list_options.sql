@@ -40,6 +40,7 @@ BEGIN
                                                                        where c.id = p_company_id) )
               and upv.org_id = any(p_system_list_option_ids )
               and upv.has_access is true
+              and upv.archived is false
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             union
@@ -75,6 +76,7 @@ BEGIN
                                                                      where c.id = p_company_id) )
               and upv.has_access is true
               and upv.position_id = any ( p_system_list_option_ids)
+              and upv.archived is false
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             union

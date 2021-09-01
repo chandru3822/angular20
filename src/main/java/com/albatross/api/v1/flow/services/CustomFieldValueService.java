@@ -81,7 +81,7 @@ public class CustomFieldValueService {
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
-        params.put("userId", currentUser.getId());
+        params.put("userId", currentUser.trueUserId());
 
         //only used on upsert
         params.put("id", cfv.getId());
@@ -108,8 +108,16 @@ public class CustomFieldValueService {
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
     try {
       User user = securityService.getCurrentUser();
-      Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-      List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+      Boolean systemAdmin;
+      List<UserPosition> userPositions;
+      try {
+        systemAdmin = user.getHighestCompanyId() == 1L;
+        userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+      } catch (Exception e) {
+        // Handle values for Cron job call for Genesys contacts
+        systemAdmin = false;
+        userPositions = null;
+      }
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("objectTypeId", ObjectType.get(objectType).id);
@@ -157,7 +165,7 @@ public class CustomFieldValueService {
     params.put("intValue", cfv.getIntValue());
     params.put("timestampValue", cfv.getTimestampValue());
     params.put("dateValue", cfv.getDateValue());
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
     sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 

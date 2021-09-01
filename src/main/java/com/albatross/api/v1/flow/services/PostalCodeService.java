@@ -82,7 +82,7 @@ public class PostalCodeService {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     for(PostalCodeAllocationUser u : allocationUsers) {
       params.put("pczuId", u.getPostalCodeZoneUserId());
@@ -98,6 +98,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("zoneName", zone.getZoneName());
+    params.put("companyTimezoneId", zone.getCompanyTimezoneId());
     params.put("distributionTimeFrameDays", zone.getDistributionTimeFrameDays());
     params.put("schedulableFutureDays", zone.getSchedulableFutureDays());
 
@@ -105,10 +106,10 @@ public class PostalCodeService {
     if(null != zone.getId()) {
       id = zone.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
+      params.put("modifiedById", user.trueUserId());
       sqlCache.update("postalCode.updateZone", params);
     } else {
-      params.put("createdById", user.getId());
+      params.put("createdById", user.trueUserId());
       id = sqlCache.updateReturningId("postalCode.insertZone", params, "id").longValue();
     }
 
@@ -120,7 +121,7 @@ public class PostalCodeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("postalCode.deleteZone", params);
   }
@@ -131,7 +132,8 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
     params.put("userId", zoneUser.getUserId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
+    params.put("companyTimezoneId", null);
     params.put("postalCodeZoneUserTypeId", postalCodeZoneUserTypeId);
 
     Long id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
@@ -145,7 +147,8 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
     params.put("userId", zoneUser.getUserId());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
+    params.put("companyTimezoneId", zoneUser.getCompanyTimezoneId());
     params.put("postalCodeZoneUserTypeId", PostalCodeZoneUserType.SCHEDULE_TO.id);
 
     sqlCache.update("postalCode.insertZoneUser", params);
@@ -154,12 +157,25 @@ public class PostalCodeService {
     return getScheduleToUsers(zoneId);
   }
 
+  public PostalCodeZoneUser updateAllocationUser(Long pczuId, PostalCodeAllocationUser zoneUser) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("pczuId", pczuId);
+    params.put("modifiedById", user.trueUserId());
+    params.put("companyTimezoneId", zoneUser.getCompanyTimezoneId());
+
+    sqlCache.update("postalCode.updateZoneUser", params);
+
+    return getZoneUser(pczuId);
+  }
+
   public void deleteUser(Long id) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("postalCode.deleteZoneUser", params);
   }
@@ -184,7 +200,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", pc.getPostalCodeZoneId());
     params.put("postalCode", pc.getPostalCode());
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Optional<PostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCode.class);
     if(result.isPresent() && !result.get().getPostalCodeZoneArchived()) {
@@ -219,7 +235,7 @@ public class PostalCodeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("modifiedById", user.getId());
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("postalCode.deleteZoneCode", params);
   }
@@ -273,6 +289,17 @@ public class PostalCodeService {
     params.put("userId", user.getId());
 
     List<User> results = sqlCache.query("postalCode.userCanSchedule", params, User.class);
+    return results.size() > 0;
+  }
+
+  public Boolean userCanScheduleRemote() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+
+    List<User> results = sqlCache.query("postalCode.userCanScheduleRemote", params, User.class);
     return results.size() > 0;
   }
 

@@ -55,8 +55,7 @@
           return-object
           height="35px"
           class="d-inline-block mr-3"
-          @change="ownerReadOnlyPositionsChanged = true"
-        >
+          @change="ownerReadOnlyPositionsChanged = true">
           <v-list-item
             slot="prepend-item"
             ripple
@@ -149,7 +148,7 @@
                   <span v-else>{{item.groupName}}</span>
                 </td>
                 <td class="text-left">
-                  <v-select v-if="item.edit && isProject"
+                  <v-select attach v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
                             label="Tab"
@@ -314,8 +313,7 @@
                                         return-object
                                         height="35px"
                                         class="d-inline-block mr-3"
-                                        @change="cf.positionsChanged = true"
-                                      >
+                                        @change="cf.positionsChanged = true">
                                         <v-list-item
                                           slot="prepend-item"
                                           ripple
@@ -513,7 +511,7 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 
-import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+import { getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {

@@ -3,7 +3,10 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CompanyFeature;
+import com.albatross.api.v1.flow.model.Feature;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +37,6 @@ public class FeatureService {
   private final SecurityService securityService;
 
   public List<Feature> getAllFeatures() {
-    User user = securityService.getCurrentUser();
     List<Feature> results = sqlCache.query("feature.getAll", Collections.EMPTY_MAP, Feature.class);
     return results;
   }
@@ -46,7 +48,7 @@ public class FeatureService {
     List<Feature> results = sqlCache.query("feature.getCompanyTools", params, Feature.class);
     return results;
   }
-  
+
   public List<FeatureAccessControl> getPositionAccessForUser(Long userId) {
     User user = securityService.getCurrentUser();
     //this function gets ALL position feature access for a user_id (excludes user_access)

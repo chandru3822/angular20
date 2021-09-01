@@ -2,10 +2,9 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
-
-import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanWrapper;
@@ -44,7 +43,7 @@ public class AhjInspectionService {
       return inspection;
     } else {
       User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.getId());
+      params.put("currentUser", currentUser.trueUserId());
 
       // add a blank inspection and return that
       Integer id = sqlCache.get("ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -75,7 +74,7 @@ public class AhjInspectionService {
     params.put("obtainingResultsPortalPassword", inspection.getObtainingResultsPortalPassword());
     params.put("businessLicense", inspection.getBusinessLicense());
     params.put("contractorLicense", inspection.getContractorLicense());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("ladderRequired", inspection.getLadderRequired());
     params.put("timeWindow", inspection.getTimeWindow());
     params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
@@ -148,7 +147,7 @@ public class AhjInspectionService {
     params.put("username", link.getUsername());
     params.put("password", link.getPassword());
     params.put("notes", link.getNotes());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("linkTypeId", link.getLinkTypeId());
 
     if (linkId == null) {
@@ -169,7 +168,7 @@ public class AhjInspectionService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", linkId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.inspection.link.delete", params);
   }

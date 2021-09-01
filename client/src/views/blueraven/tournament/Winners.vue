@@ -96,7 +96,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, logError, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import moment from 'moment'
   import ScoreDrilldown from "./component/ScoreDrilldown"

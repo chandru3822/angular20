@@ -1,20 +1,19 @@
 package com.albatross.api.v1.company.blueraven.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
-import lombok.extern.slf4j.Slf4j;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import com.albatross.api.utils.SqlCache;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +46,7 @@ public class AhjPermitService {
       return permit;
     } else {
       User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.getId());
+      params.put("currentUser", currentUser.trueUserId());
 
       // add a blank permit and return that
       Integer id = sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
@@ -73,7 +72,7 @@ public class AhjPermitService {
     params.put("contractorLicense", permit.getContractorLicense());
     params.put("businessLicenseExpirationDate", permit.getBusinessLicenseExpirationDate());
     params.put("contractorLicenseExpirationDate", permit.getContractorLicenseExpirationDate());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("otherLicense", permit.getOtherLicense());
     params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
     params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
@@ -147,7 +146,7 @@ public class AhjPermitService {
     params.put("username", link.getUsername());
     params.put("password", link.getPassword());
     params.put("notes", link.getNotes());
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
     params.put("linkTypeId", link.getLinkTypeId());
 
     if (linkId == null) {
@@ -167,7 +166,7 @@ public class AhjPermitService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", linkId);
-    params.put("currentUser", currentUser.getId());
+    params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.permit.link.delete", params);
   }

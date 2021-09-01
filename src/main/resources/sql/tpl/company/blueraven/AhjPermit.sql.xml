@@ -4,6 +4,7 @@
       SELECT
         p.*,
         ahj.metro_area_id,
+        ahj.name as ahj_name,
         cs.state_id,
         s.state AS "stateName",
         coalesce((
