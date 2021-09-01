@@ -163,7 +163,9 @@
 
   <workQueueType.insertProcessStepWorkQueueType><![CDATA[
       insert into flow.process_step_work_queue_type (process_step_id, work_queue_type_id, created_by_id)
-        values (:processStepId, :workQueueTypeId, :createdById)
+      values (:processStepId, :workQueueTypeId, :createdById)
+      on conflict (process_step_id,work_queue_type_id)
+        do update set archived = false
   ]]></workQueueType.insertProcessStepWorkQueueType>
 
   <workQueueType.deleteProcessStepWorkQueueType>
