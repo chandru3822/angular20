@@ -549,6 +549,7 @@ public class AvailabilityService {
       params.put("projectId", request.getProjectId());
       params.put("userId", user.trueUserId());
       params.put("projectProcessStepId", request.getProjectProcessStepId());
+      params.put("projectProcessStepEventId", request.getProjectProcessStepEventId());
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);

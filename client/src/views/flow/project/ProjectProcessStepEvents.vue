@@ -572,6 +572,7 @@ export default {
         let body = {
           projectId: this.projectId,
           projectProcessStepId: this.projectProcessStepId,
+          projectProcessStepEventId: this.eventDetails.id, // i think?
           // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
