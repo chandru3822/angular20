@@ -585,7 +585,7 @@ create index if not exists ppsea_process_step_event_id_idx
   on flow.project_process_step_event_audit (process_step_event_id);
 
 
-create table flow.project_process_step_event_custom_field_value_audit
+create table if not exists flow.project_process_step_event_custom_field_value_audit
 (
   id                                         serial
     constraint project_process_step_event_custom_field_value_audit_pk
