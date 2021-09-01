@@ -588,8 +588,14 @@ export default {
           this.availabilityDateField.dateValue = null
           this.timeSlots = []
           this.selectedTimeSlot = {}
+          //set the start time, end time and resource on the event
+          this.eventDetails.startTime = data.appointmentStartTime
+          this.eventDetails.endTime = data.appointmentEndTime
+          this.eventDetails.resourceId = data.userPositionId
+          this.eventDetails.resource = data.userFullName
+          this.uniqueAlreadyHasValue = true
+
         }
-        await this.getProcessStep()
       } catch (e) {
         logError(e)
         let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'

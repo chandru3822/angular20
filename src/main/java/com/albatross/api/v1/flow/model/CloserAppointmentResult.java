@@ -11,7 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class CloserAppointmentResult {
 
-  private Long userId;
+  private Long userId, userPositionId;
   private String userFirstName, userLastName, userFullName, userEmail;
   private Date appointmentStartTime, appointmentEndTime;
   private Boolean success;

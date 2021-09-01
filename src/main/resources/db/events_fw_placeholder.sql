@@ -1,3 +1,10 @@
+drop FUNCTION if  exists flow.set_closer_appointment(p_project_id integer,
+                                                     p_current_user_id integer,
+                                                     p_project_process_step_id integer,
+                                                     p_appointment_start_time timestamp,
+                                                     p_users integer array,
+                                                     p_remote boolean);
+
 insert into flow.flow_type(flow_type)
   (select 'Event' where not exists(select id from flow.flow_type where flow_type = 'Event'));
 
