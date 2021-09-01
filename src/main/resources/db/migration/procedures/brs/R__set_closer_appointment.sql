@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
                                                        p_current_user_id integer,
                                                        p_project_process_step_id integer,
+                                                       p_project_process_step_event_id integer,
                                                        p_appointment_start_time timestamp,
                                                        p_users integer array,
                                                        p_remote boolean default false)
@@ -12,7 +13,8 @@ CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
             appointment_start_time timestamp,
             appointment_end_time   timestamp,
             user_full_name         text,
-            user_email             text
+            user_email             text,
+            user_position_id       integer
           )
 AS
 $BODY$
@@ -143,15 +145,17 @@ BEGIN
 
     if  v_user_already_assigned_to_another_project_id < 1 then
 
-      insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
-                                                  company_event_status_type_id, start_time, end_time, date_created,
-                                                  created_by_id)
-      values(p_project_process_step_id,(select pse.id
-                                        from flow.process_step_event pse
-                                        where pse.unique_behavior_type_id = 1),v_user_position_id,
-             1,p_appointment_start_time,(p_appointment_start_time +
-                                         (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp,
-             now(),p_current_user_id);
+      update flow.project_process_step_event
+        set project_process_step_id = p_project_process_step_id,
+            process_step_event_id = (select pse.id
+                                     from flow.process_step_event pse
+                                     where pse.unique_behavior_type_id = 1),
+            resource_id = v_user_position_id,
+            start_time = p_appointment_start_time,
+            end_time = (p_appointment_start_time +
+                        (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp
+            where id = p_project_process_step_event_id;
+
 
       update brs.set_closer_appointment_audit
       set closer_selected = true
@@ -162,7 +166,8 @@ BEGIN
                           (p_appointment_start_time +
                            (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp,
                           v_user_full_name,
-                          v_user_email;
+                          v_user_email,
+                          v_user_position_id;
     elsif v_user_already_assigned_to_another_project_id > 0 and array_length(p_users, 1) > 1 then
       p_users = array_remove(p_users, v_user_id);
       -- raise notice 'i am here';
@@ -173,11 +178,11 @@ BEGIN
                                                     p_appointment_start_time,
                                                     p_users);
     else
-      return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text;
+      return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text,null::integer;
     end if;
 
   else
-    return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text;
+    return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text,null::integer;
   end if;
 
 
