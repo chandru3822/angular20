@@ -11,5 +11,6 @@ public class DensitySearch {
 
   private Double upperBoundLatitude, upperBoundLongitude, lowerBoundLatitude, lowerBoundLongitude;
   private List<Long> companyProjectStatusTypeIds;
+  private Long searchTypeId; //1 = all project, 2 = my projects, 3 = downline projects
 
 }
