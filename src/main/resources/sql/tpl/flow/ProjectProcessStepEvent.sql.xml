@@ -103,7 +103,7 @@
                                                     and cfga.archived is not true
                                                     and cf.archived is not true
                                                     and cfg.archived is not true
-                                                    and cfg.event_id = pse.id
+                                                    and cfg.event_id = e.id
                                                   order by cfg.group_order, cfga.field_order ) fields), '[]') AS "customFields"
                              FROM flow.process_step_event_action psea
                                     left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
