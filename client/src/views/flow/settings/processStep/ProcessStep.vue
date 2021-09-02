@@ -32,7 +32,7 @@
             </v-btn>
           </div>
         </div>
-        <v-tabs class="tabs-bar">
+        <v-tabs class="tabs-bar" v-model="activeTab">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0"
                  :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
@@ -73,18 +73,22 @@
         processStep: {},
         tabs: [
           {
+            id: 1,
             label: 'UI Components',
             path: `/settings/processStep/${this.$route.params.id}/components`,
           },
           {
+            id: 2,
             label: 'Custom Field Groups',
             path: `/settings/processStep/${this.$route.params.id}/customFieldGroups`,
           },
           {
+            id: 3,
             label: 'Actions',
             path: `/settings/processStep/${this.$route.params.id}/actions`,
           },
           {
+            id: 4,
             label: 'events',
             path: `/settings/processStep/${this.$route.params.id}/events`,
           }
@@ -92,6 +96,15 @@
       }
     },
     computed: {
+      //this should not be so hard
+      activeTab: {
+        get: function() {
+          return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
+        },
+        set: function(val) {
+          return val
+        }
+      }
     },
     async created () {
       this.getProcessStepDetails()

@@ -420,7 +420,6 @@
     computed: {},
     async created() {
       //get event details
-      console.log('randaLogger', this.eventId)
       this.getCompanyProcessStepStatuses()
       await this.getEventDetails()
       this.getAssignedEventStatusTypes()
