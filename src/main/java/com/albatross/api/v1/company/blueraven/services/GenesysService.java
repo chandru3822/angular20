@@ -495,7 +495,14 @@ public class GenesysService {
     // Add a row to the phone log table
     params.put("callGroupId", currentlyUsedGroupId);
     params.put("phoneNumber", phoneNumber);
-    params.put("createdById", user.trueUserId());
+
+    try {
+      params.put("createdById", user.trueUserId());
+    } catch (Exception e) {
+      // Sales Dev Lead's user ID
+      params.put("createdById", 2371412L);
+    }
+
     sqlCache.update("callGroup.addPhoneLog", params);
 
     if (!phoneNumber.isEmpty()) {
