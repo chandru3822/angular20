@@ -46,6 +46,14 @@
           label: 'GL Codes',
           path: '/expenses/glCodes',
           display: this.$store.getters.userHasFeature('EXPENSES')
+        }, {
+          label: 'Monthly Budgets',
+          path: '/expenses/monthlyBudgets',
+          display: this.$store.getters.userHasFeature('EXPENSES')
+        }, {
+          label: 'Budget Types',
+          path: '/expenses/budgetTypes',
+          display: this.$store.getters.userHasFeature('EXPENSES')
         }]
       }
     },

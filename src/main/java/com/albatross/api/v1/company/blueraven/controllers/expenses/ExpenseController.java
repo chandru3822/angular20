@@ -99,16 +99,4 @@ public class ExpenseController {
     expenseService.deleteExpense(id);
   }
 
-  @PostMapping(value = "/populate-next-months-budgets", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void populateNextMonthsBudgets(
-    @RequestParam(required = false) String date
-  ) {
-    ZonedDateTime theDate = null;
-    if (date != null) {
-      theDate = ZonedDateTime.parse(date);
-    }
-
-    expenseService.populateNextMonthsBudgets(theDate);
-  }
-
 }

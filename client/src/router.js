@@ -185,53 +185,6 @@ const router = new Router({
             }
           },
         }, {
-          path: '/expenseBudgets',
-          name: 'expenseBudgets',
-          meta: {title: 'Albatross - Expense Budgets'},
-          component: () => {
-            if (store.getters.userHasFeature('EXPENSE_BUDGETS')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/ExpenseBudgets.vue')
-            } else {
-              return accessDenied()
-            }
-          },
-          children: [
-            {
-              path: 'budgets',
-              name: 'monthlyBudgets',
-              meta: {title: 'Albatross - Expense Budgets'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSE_BUDGETS', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/MonthlyBudgets.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
-            }, {
-              path: 'templates',
-              name: 'expenseBudgetTemplates',
-              meta: {title: 'Albatross - Expense Budgets'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSE_BUDGETS', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/Templates.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
-            }, {
-              path: 'types',
-              name: 'expenseBudgetTypes',
-              meta: {title: 'Albatross - Expense Budgets'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSE_BUDGETS', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/budgets/Types.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
-            }
-          ]
-        }, {
           path: '/expenses',
           name: 'expenses',
           meta: {title: 'Albatross - Expenses'},
@@ -274,6 +227,29 @@ const router = new Router({
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
                   return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/GlCodes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
+              path: 'monthlyBudgets',
+              name: 'monthlyBudgets',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/MonthlyBudgets.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'budgetTypes',
+              name: 'expenseBudgetTypes',
+              meta: {title: 'Albatross - Budget Types'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/BudgetTypes.vue')
                 } else {
                   return accessDenied()
                 }

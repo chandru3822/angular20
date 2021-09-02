@@ -11,9 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -234,27 +231,6 @@ public class ExpenseService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     sqlCache.update("expense.deleteExpense", params);
-  }
-
-  public void populateNextMonthsBudgets(ZonedDateTime theDate) {
-    if (theDate == null) {
-      theDate = ZonedDateTime.now();
-    }
-
-    String date = theDate
-      .withZoneSameInstant(ZoneId.of("US/Mountain"))
-      .toLocalDate()
-      .format(DateTimeFormatter.ISO_DATE);
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("date", date);
-
-    log.info("Populating next month's expense budgets (using {})", date);
-    sqlCache.getBySql(
-      "SELECT blueraven.populate_next_months_budgets(date(:date))",
-      params,
-      String.class
-    );
   }
 
 }

@@ -1,5 +1,5 @@
 insert into flow.feature (feature_name, feature_code, feature_path, is_system)
-select 'Expenses', 'EXPENSES', null, true
+select 'Expenses', 'EXPENSES', '/expenses/reimbursementRequests', true
 where not exists ( select id
                    from flow.feature where feature_code = 'EXPENSES' );
 
@@ -12,7 +12,7 @@ where not exists ( select id
 
 
 insert into flow.feature (feature_name, feature_code, feature_path, is_system)
-select 'Reimbursement', 'REIMBURSEMENT', null, true
+select 'Reimbursement', 'REIMBURSEMENT', '/reimbursement', true
 where not exists ( select id
                    from flow.feature where feature_code = 'REIMBURSEMENT' );
 
