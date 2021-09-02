@@ -600,3 +600,64 @@ create table if not exists flow.project_process_step_event_custom_field_value_au
 create index if not exists ppsea_project_process_step_event_cfv_audit_id_idx
   on flow.project_process_step_event_custom_field_value_audit (project_process_step_event_custom_field_value_id);
 
+
+DO
+$$
+  BEGIN
+    ALTER TABLE brs.project_details
+      RENAME COLUMN  setter_milestone_pay_ppscfv_id TO setter_milestone_pay_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'setter_milestone_pay_ppscfv_id does not exists';
+  END;
+$$;
+
+DO
+$$
+  BEGIN
+    ALTER TABLE brs.project_details
+      RENAME COLUMN first_appointment_pitched_ppscfv_id TO first_appointment_pitched_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'first_appointment_pitched_ppscfv_id does not exists';
+  END;
+$$;
+
+DO
+$$
+  BEGIN
+    ALTER TABLE brs.project_details
+      RENAME COLUMN first_appointment_missed_ppscfv_id TO first_appointment_missed_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'first_appointment_missed_ppscfv_id does not exists';
+  END;
+$$;
+
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN first_appointment_not_pitched_or_missed_ppscfv_id TO first_appointment_not_pitched_or_missed_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'first_appointment_not_pitched_or_missed_ppscfv_id does not exists';
+  END;
+$$;
+
+
+
+update brs.project_details_config
+set update_first_value_only_id = 'setter_milestone_pay_ppsecfv_id'
+where update_first_value_only_id = 'setter_milestone_pay_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'first_appointment_pitched_ppsecfv_id'
+where update_first_value_only_id = 'first_appointment_pitched_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'first_appointment_missed_ppsecfv_id'
+where update_first_value_only_id = 'first_appointment_missed_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppsecfv_id'
+where update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppscfv_id';
+
+
