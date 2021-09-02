@@ -95,6 +95,10 @@ public class ContactService {
 
   public Contact getContact(Long contactId) {
     User user = securityService.getCurrentUser();
+    return getContact(contactId, user);
+  }
+
+  public Contact getContact(Long contactId, User user) {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();

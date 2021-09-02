@@ -709,7 +709,7 @@ public class SmartlistService {
             final String uuid = joinTables.stream()
               .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
               .map(t -> {
-                if (Objects.equals(t.getReferenceTable(), "flow.user") || Objects.equals(t.getReferenceTable(), "flow.process_step")) {
+                if (Objects.equals(f.getReferenceTable(), "flow.user") || Objects.equals(f.getReferenceTable(), "flow.process_step") || Objects.equals(f.getReferenceTable(), "flow.project_process_step")) {
                   return t.getPpsTable();
                 } else {
                   return t.getReferenceTable();
@@ -726,10 +726,12 @@ public class SmartlistService {
           }
         } else if (f.getJoinTable() != null && f.getJoinColumn() != null) {
           f.setValueReferenceTable(UUID.randomUUID().toString());
+          f.setPpsTable((UUID.randomUUID().toString()));
           joinTables.add(f);
         }
       } else {
         f.setValueReferenceTable(UUID.randomUUID().toString());
+        f.setPpsTable(UUID.randomUUID().toString());
         joinTables.add(f);
       }
 

@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
@@ -209,7 +210,13 @@ public class GenesysService {
       contact = contactService.getHubspotContact(contactId);
     }
     else {
-      contact = contactService.getContact(contactId);
+      User user = new User();
+      user.setId(SystemSettings.CRON_USER.getId());
+      user.setCompanyId(3L);
+      user.setHighestCompanyId(3L);
+      user.setParentCompanyId(3L);
+      user.setHighestParentCompanyId(3L);
+      contact = contactService.getContact(contactId, user);
     }
 
     WritableDialerContact wdc = new WritableDialerContact();
@@ -495,7 +502,10 @@ public class GenesysService {
     // Add a row to the phone log table
     params.put("callGroupId", currentlyUsedGroupId);
     params.put("phoneNumber", phoneNumber);
-    params.put("createdById", user.trueUserId());
+
+    //if user is null then it is coming from the cron, use the cron user id
+    params.put("createdById", null != user ? user.trueUserId() : SystemSettings.CRON_USER.getId());
+
     sqlCache.update("callGroup.addPhoneLog", params);
 
     if (!phoneNumber.isEmpty()) {
@@ -588,14 +598,53 @@ public class GenesysService {
 
   public void processGenesysContacts()  {
     // Get list of Contact IDs that need to be put into each Genesys Contact List
-    List<Contact> contacts = sqlCache.query("genesys.getContactIdsWeek1", null, Contact.class);
+    /*
+      Lead Level 1
+     */
+    List<Contact> contacts = sqlCache.query("genesys.getContactIdsWeek1Level1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_week1");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek2", null, Contact.class);
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_week2");
 
-    contacts = sqlCache.query("genesys.getContactIdsAged", null, Contact.class);
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_aged");
+
+    /*
+      Lead Level 2
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel2", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel2_aged");
+
+    /*
+      Lead Level 3
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel3", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel3_aged");
+
+    /*
+      Lead Level 10
+     */
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_week1");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek2Level10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_week2");
+
+    contacts = sqlCache.query("genesys.getContactIdsAgedLevel10", null, Contact.class);
+    addContactsToGenesys(contacts, "leadlevel10_aged");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
