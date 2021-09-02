@@ -179,6 +179,8 @@ public class ExpenseService {
     for (Expense expense : expenses) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", expense.getId());
+      //dont ask why i have 2 of the same, i just dont want to figure it out either
+      params.put("userId", currentUser.trueUserId());
       params.put("rejectedById", currentUser.trueUserId());
 
       if (null != expense.getReimbursementRequestId()) {
