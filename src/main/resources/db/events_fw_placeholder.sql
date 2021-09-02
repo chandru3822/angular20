@@ -601,6 +601,12 @@ create index if not exists ppsea_project_process_step_event_cfv_audit_id_idx
   on flow.project_process_step_event_custom_field_value_audit (project_process_step_event_custom_field_value_id);
 
 
+alter table flow.project_process_step_event_custom_field_value
+add column  if not exists migrate_project_process_step_custom_field_value_id integer;
+
+create index if not exists ppsecfv_migrate_project_process_step_custom_field_value_id_idx
+  on flow.project_process_step_event_custom_field_value (migrate_project_process_step_custom_field_value_id);
+
 DO
 $$
   BEGIN
@@ -659,5 +665,8 @@ where update_first_value_only_id = 'first_appointment_missed_ppscfv_id';
 update brs.project_details_config
 set update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppsecfv_id'
 where update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppscfv_id';
+
+--site_survey_verified_date_ppscfv_id,
+--appointment_check_in_ppscfv_id,
 
 
