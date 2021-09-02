@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
@@ -209,7 +210,13 @@ public class GenesysService {
       contact = contactService.getHubspotContact(contactId);
     }
     else {
-      contact = contactService.getContact(contactId);
+      User user = new User();
+      user.setId(SystemSettings.CRON_USER.getId());
+      user.setCompanyId(3L);
+      user.setHighestCompanyId(3L);
+      user.setParentCompanyId(3L);
+      user.setHighestParentCompanyId(3L);
+      contact = contactService.getContact(contactId, user);
     }
 
     WritableDialerContact wdc = new WritableDialerContact();
@@ -496,12 +503,8 @@ public class GenesysService {
     params.put("callGroupId", currentlyUsedGroupId);
     params.put("phoneNumber", phoneNumber);
 
-    try {
-      params.put("createdById", user.trueUserId());
-    } catch (Exception e) {
-      // Sales Dev Lead's user ID
-      params.put("createdById", 2371412L);
-    }
+    //if user is null then it is coming from the cron, use the cron user id
+    params.put("createdById", null != user ? user.trueUserId() : SystemSettings.CRON_USER.getId());
 
     sqlCache.update("callGroup.addPhoneLog", params);
 

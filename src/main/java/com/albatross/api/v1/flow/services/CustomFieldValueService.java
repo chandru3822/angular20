@@ -106,6 +106,7 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
+    //todo: @randa - this has a security bug - if a user were to send in a contact id for a company they did not have access to it would still load the data
     try {
       User user = securityService.getCurrentUser();
       Boolean systemAdmin;

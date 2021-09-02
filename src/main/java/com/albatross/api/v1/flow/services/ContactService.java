@@ -95,12 +95,16 @@ public class ContactService {
 
   public Contact getContact(Long contactId) {
     User user = securityService.getCurrentUser();
-    Boolean isParent = user != null ? user.getCompanyId().equals(user.getHighestParentCompanyId()) : true;
+    return getContact(contactId, user);
+  }
+
+  public Contact getContact(Long contactId, User user) {
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user != null ? user.getCompanyId() : 3);
+    params.put("companyId", user.getCompanyId());
     params.put("contactId", contactId);
-    params.put("parentCompanyId", user != null ? user.getHighestParentCompanyId() : 3);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
