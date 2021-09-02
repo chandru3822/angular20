@@ -61,7 +61,9 @@ const store = new Vuex.Store({
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
-          formData.append('sourceId', sourceId)
+          if(null != sourceId) {
+            formData.append('sourceId', sourceId)
+          }
           formData.append('deleteFirst', deleteFirst)
 
           const resp = await postRequest('/attachment', formData)

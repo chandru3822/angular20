@@ -292,7 +292,7 @@ export default {
 <style scoped lang="scss">
 .company-logo {
   margin-top: 15px;
-  max-width: 200px;
+  max-width: 100%;
   height: auto;
 }
 
