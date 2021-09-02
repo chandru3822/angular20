@@ -182,6 +182,7 @@
     <![CDATA[
       insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, project_status_type_id, process_step_work_queue_type_id, created_by_id)
       values (:companyProjectStatusTypeId, :projectStatusTypeId, :processStepWorkQueueTypeId, :userId)
+      on conflict (company_project_status_type_id, project_status_type_id, process_step_work_queue_type_id) do nothing;
     ]]>
   </workQueueType.insertProjectStatusType>
 
@@ -216,6 +217,7 @@
     <![CDATA[
       insert into flow.process_step_work_queue_type_process_step_status_type(company_process_step_status_type_id, process_step_status_type_id, process_step_work_queue_type_id, created_by_id)
       values (:companyProcessStepStatusTypeId, :processStepStatusTypeId, :processStepWorkQueueTypeId, :userId)
+      on conflict (company_process_step_status_type_id, process_step_status_type_id, process_step_work_queue_type_id) do nothing
     ]]>
   </workQueueType.insertProcessStepStatusType>
 
