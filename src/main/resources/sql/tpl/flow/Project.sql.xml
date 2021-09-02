@@ -36,14 +36,16 @@
            p.postal_code
     FROM   flow.project p
           inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
-      inner join flow.company_state cs on p.company_state_id = cs.id
-      inner join flow.state s on cs.state_id = s.id
+          inner join flow.company_state cs on p.company_state_id = cs.id
+          inner join flow.state s on cs.state_id = s.id
+          left join flow.user_position up on up.id = p.user_position_id
     WHERE  st_makepoint(p.longitude, p.latitude)
            && ST_MakeEnvelope (
                :upperBoundLongitude, :upperBoundLatitude,
                :lowerBoundLongitude, :lowerBoundLatitude,
                4326)
      and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::INTEGER[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::integer[] ) else 1=1 end
+     and case when :searchTypeId::int = 2 then up.user_id = :currentUserId::int else 1=1 end
   ]]></project.getProjectsInGeoArea>
 
   <project.existsInHierarchy><![CDATA[
