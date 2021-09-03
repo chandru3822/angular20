@@ -294,7 +294,13 @@ public class GenesysService {
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
-    params.put("userId", currentUser.trueUserId());
+
+    try {
+      params.put("userId", currentUser.trueUserId());
+    } catch (Exception e) {
+      params.put("userId", SystemSettings.CRON_USER.getId());
+    }
+
     sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
   }
 
