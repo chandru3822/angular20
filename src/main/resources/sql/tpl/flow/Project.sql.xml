@@ -48,6 +48,127 @@
      and case when :searchTypeId::int = 2 then up.user_id = :currentUserId::int else 1=1 end
   ]]></project.getProjectsInGeoArea>
 
+  <project.getProjectsInGeoAreaDownline><![CDATA[
+    SELECT limited_projects.id,
+               limited_projects.project_name,
+               limited_projects.contact_id,
+               limited_projects.date_created,
+               limited_projects.street1,
+               limited_projects.street2,
+               limited_projects.city,
+               limited_projects.state,
+               limited_projects.state_abbreviation,
+               limited_projects."postalCode",
+               limited_projects.status_type_id,
+               limited_projects.company_project_status_type_id,
+               limited_projects.status_type,
+               limited_projects.project_status_type,
+               limited_projects.process_name,
+               limited_projects.contact,
+               limited_projects.project_status_type_id,
+               limited_projects.company_project_status_type_color,
+               limited_projects.latitude,
+               limited_projects.longitude,
+               limited_projects.company_state_id
+        FROM (
+               with project_ids as (
+                   with positions as (
+                       select up.org_id as parent_org_id,up.user_id as user_id
+                       from flow.user_position up
+                       where (up.end_date is null or up.end_date > now())
+                             -- judson had me change this: up.primary_flag is true
+                         and up.archived is not true
+                         and user_id = :currentUserId
+                   ),
+                        org_ids as (
+                            select t.id
+                            from positions p
+                                     join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
+                                          on true),
+                   all_positions as(
+                          select array_agg(up4.id) as user_position_ids
+                          from flow.user_position up4
+                          inner join positions p4 on p4.user_id = up4.user_id
+                       )
+                   select array_agg(project_ids) as project_ids
+                   from (
+                   select distinct p.id as project_ids
+                   from org_ids o
+                            inner join flow.user_position up2 on up2.org_id = o.id
+                          inner join flow.project p on p.user_position_id = up2.id
+                   where p.archived is not true
+                   union
+                   select distinct p.id as project_ids
+                   from org_ids o
+                            inner join flow.user_position up2 on up2.org_id = o.id
+                            inner join flow.contact c on c.owner_user_position_id = up2.id
+                            inner join flow.project p on p.contact_id = c.id
+                   where p.archived is not true
+                   union
+                   select  distinct p3.id as project_ids
+                   from all_positions p5
+                            inner join flow.contact c on c.owner_user_position_id = any(p5.user_position_ids)
+                            inner join flow.project p3 on p3.contact_id = c.id
+                   where p3.archived is not true
+
+                  union
+                      select  distinct p3.id as project_ids
+                       from all_positions p5
+                        inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids)
+                      where p3.archived is not true
+                       )as foo)
+               select p.id,
+                      p.project_name,
+                      p.contact_id,
+                      p.date_created,
+                      p.street1,
+                      p.street2,
+                      p.city,
+                      s.state,
+                      s.abbreviation           as state_abbreviation,
+                      p.postal_code            as "postalCode",
+                      cp.status_type_id,
+                      st.status_type,
+                      p.company_project_status_type_id,
+                      cpst.project_status_type,
+                      pr.process_name,
+                      (select row_to_json(contact1)
+                       from (
+                                select c.id,
+                                       c.phone,
+                                       c.mobile
+                            ) contact1)::jsonb as contact,
+                      cpst.project_status_type_id,
+                      cpst.color as company_project_status_type_color,
+                      p.latitude,
+                      p.longitude,
+                      p.company_state_id
+               from flow.project p
+                        inner join project_ids pi on p.id = any (pi.project_ids)
+                        inner join flow.company_process cp on cp.id = p.company_process_id
+                        inner join flow.process pr on pr.id = cp.process_id
+                        inner join flow.status_type st on st.id = cp.status_type_id
+                        inner join flow.company_project_status_type cpst
+                                   on cpst.id = p.company_project_status_type_id
+                        inner join flow.contact c on c.id = p.contact_id
+                        left join flow.company_state cs on cs.id = p.company_state_id
+                        left join flow.state s on s.id = cs.state_id
+               where
+                 case
+                   when :isParent then cp.company_id = any
+                                       (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                   else cp.company_id = :companyId
+                 end
+                 and p.archived is not true
+                 and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::INTEGER[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::integer[] ) else 1=1 end
+                 and st_makepoint(p.longitude, p.latitude)
+                   && ST_MakeEnvelope (
+                                      :upperBoundLongitude, :upperBoundLatitude,
+                                      :lowerBoundLongitude, :lowerBoundLatitude,
+                                      4326)
+           ) as limited_projects;
+  ]]></project.getProjectsInGeoAreaDownline>
+
   <project.existsInHierarchy><![CDATA[
     select p.id
     from flow.project p
