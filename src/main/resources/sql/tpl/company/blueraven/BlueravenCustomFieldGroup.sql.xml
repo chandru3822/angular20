@@ -25,7 +25,8 @@
                                           cf.field_name as "fieldName",
                                           cf.company_data_type_id as "companyDataTypeId",
                                           cfg.object_type_id as "objectTypeId",
-
+                                          cdt.data_type_id as "dataTypeId",
+                                          cdt.has_list_values as "hasListValues",
                                           coalesce((
                                                        SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                        FROM (
