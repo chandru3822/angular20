@@ -53,3 +53,6 @@ select cfga.custom_field_id, cfg.object_type_id, 2350555
 from brs.custom_field_group_assignment cfga
        inner join brs.custom_field cf on cfga.custom_field_id = cf.id
        inner join brs.custom_field_group cfg on cfga.custom_field_group_id = cfg.id;
+
+-- mark the Installation Safety and Quality Form object type as archived, i'm pretty sure we dont use it anymore
+update brs.object_type set archived = true where object_code = 'INSTALLATION_SAFETY';

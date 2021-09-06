@@ -56,7 +56,7 @@ export default {
       apiPath: this.$store.state.user.details.apiPath,
       headers: [
         {text: 'Object Type', value: 'objectType'},
-        // {text: '', value: 'delete', sortable: false}
+        {text: '', value: 'icons', show: true},
       ],
     }
   },

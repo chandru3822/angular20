@@ -15,7 +15,7 @@
         </v-toolbar>
         <v-container>
           <v-card flat class="mb-4">
-            Note: Some company specific screens ignore the display order of Custom Fields Groups displayed here.
+            Note: Some company specific screens ignore the display order and group name of Custom Fields Groups represented here.
           </v-card>
           <v-text-field v-if="addNew"
               v-model="newGroup.groupName"
