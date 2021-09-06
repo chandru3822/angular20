@@ -55,6 +55,7 @@
               prepend-inner-icon="search"
               label="Search"
               single-line
+              clearable
               hide-details
             ></v-text-field>
           </v-card-title>
@@ -286,6 +287,9 @@
   export default {
     name: 'CustomFields',
     mixins: [Vue2Filters.mixin],
+    props: {
+      apiPath: {type: String}
+    },
     components: {
       draggable,
     },
@@ -327,14 +331,15 @@
           listOfValues: [],
           customFieldObjectTypes: []
         },
-
       }
     },
     async created() {
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()
-      this.getSystemLists()
+      if(!this.apiPath) {
+        this.getSystemLists()
+      }
     },
     methods: {
       filterDataTypes (item) {
@@ -348,7 +353,7 @@
       async getCustomFields() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getAll`)
+          const {data} = await getRequest(`/customField/getAll`, this.apiPath)
           data.forEach(d => {
             d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
           })
@@ -403,7 +408,8 @@
       async getCustomFieldObjectTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
+          console.log('randaLogger',this.apiPath)
+          const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath)
           data.forEach(d => d.archived = true)
           this.customFieldObjectTypes = cloneDeep(data)
           this.objectFilters = data
@@ -434,7 +440,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           item.archived = true
-          const {data} = await putRequest(`/customField/delete/${item.id}`)
+          const {data} = await putRequest(`/customField/delete/${item.id}`, this.apiPath)
           if (data?.length > 0) {
             this.deleteError = true
             this.fieldsInUse = data
@@ -499,7 +505,7 @@
           }
 
           object.fieldName = object.newFieldName ?? object.fieldName
-          const {data} = await postRequest(`/customField`, object)
+          const {data} = await postRequest(`/customField`, object, this.apiPath)
           data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
           this.$set(object, 'listOfValues', data.listOfValues)
 

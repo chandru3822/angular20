@@ -49,6 +49,120 @@ public class BlueravenCustomFieldGroupService {
     return results;
   }
 
+  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId(Long objectTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", objectTypeId);
+
+    List<CustomFieldGroup> results = sqlCache.query("blueravenCustomFieldGroup.assignment.getByObjectTypeId", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+    return results;
+  }
+
+  public CustomFieldGroup addCustomFieldGroup(CustomFieldGroup customFieldGroup, Long objectTypeId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("groupName", customFieldGroup.getGroupName());
+    params.put("objectTypeId", objectTypeId);
+    params.put("createdById", user.trueUserId());
+
+    Long id = sqlCache.updateReturningId("blueravenCustomFieldGroup.insertCustomFieldGroup", params, "id").longValue();
+    params.put("id", id);
+
+    Optional<CustomFieldGroup> group = sqlCache.get("blueravenCustomFieldGroup.assignment.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    return group.orElse(null);
+  }
+
+  public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", customFieldGroup.getId());
+    params.put("groupOrder", customFieldGroup.getGroupOrder());
+    params.put("groupName", customFieldGroup.getGroupName());
+    params.put("modifiedById", user.trueUserId());
+
+    sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldGroup", params);
+
+    Optional<CustomFieldGroup> group = sqlCache.get("blueravenCustomFieldGroup.assignment.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    return group.orElse(null);
+  }
+
+  public void updateCustomFieldGroups(List<CustomFieldGroup> customFieldGroups) {
+    for(CustomFieldGroup cfg : customFieldGroups){
+      updateCustomFieldGroup(cfg);
+    }
+  }
+
+  public void deleteFieldFromGroup(Long cfgaId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.trueUserId());
+    params.put("id", cfgaId);
+
+    sqlCache.update("blueravenCustomFieldGroup.assignment.deleteFieldFromGroup", params);
+  }
+
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyObjectTypeId", companyObjectTypeId);
+    params.put("groupId", groupId);
+
+    List<CustomField> results = sqlCache.query("blueravenCustomFieldGroup.assignment.getAvailableCustomFieldsInGroup", params, CustomField.class);
+
+    return results;
+  }
+
+  public CustomField addFieldToGroup(CustomField customField) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("customFieldGroupId", customField.getCustomFieldGroupId());
+    params.put("customFieldId", customField.getId());
+    params.put("createdById", currentUser.trueUserId());
+    params.put("fieldOrder", customField.getFieldOrder());
+
+    Long id = sqlCache.updateReturningId("blueravenCustomFieldGroup.assignment.addFieldToGroup", params, "id").longValue();
+
+    return getCustomField(id);
+  }
+
+  public CustomField getCustomField(Long id){
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<CustomField> result = sqlCache.get("blueravenCustomFieldGroup.assignment.getCustomField", params, CustomField.class);
+    return result.orElse(null);
+  }
+
+  public void deleteFieldGroup(Long cfgId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.trueUserId());
+    params.put("id", cfgId);
+
+    sqlCache.update("blueravenCustomFieldGroup.deleteCustomFieldGroup", params);
+
+  }
+
+  public void updateFieldInGroup(CustomField customField) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", customField.getId());
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("fieldOrder", customField.getFieldOrder());
+
+    sqlCache.update("blueravenCustomFieldGroup.assignment.updateFieldInGroup", params);
+  }
+
+  public void updateFieldsInGroup(List<CustomField> customFields) {
+    for(CustomField cf : customFields){
+      updateFieldInGroup(cf);
+    }
+  }
+
+
   public Boolean fieldHasValue (CustomFieldValue cv) {
     return null != cv.getId() || null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
         || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
