@@ -443,6 +443,7 @@
       select u.id,
              u.first_name,
              u.last_name,
+             u.username,
              u.email,
              u.phone_number,
              u.phone_extension,
