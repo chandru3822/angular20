@@ -34,10 +34,10 @@ CREATE TABLE if NOT EXISTS brs.custom_field_object_type
 CREATE INDEX if not exists brs_cfot_object_type_id_idx ON brs.custom_field_object_type (object_type_id);
 CREATE INDEX if not exists brs_cfot_custom_field_id_idx ON brs.custom_field_object_type (custom_field_id);
 
-alter table brs.custom_field_group add column date_created       timestamp without time zone default now();
-alter table brs.custom_field_group add column date_modified       timestamp without time zone;
-alter table brs.custom_field_group add column created_by_id  integer references flow."user"(id);
-alter table brs.custom_field_group add column modified_by_id  integer references flow."user"(id);
+alter table brs.custom_field_group add column if not exists date_created       timestamp without time zone default now();
+alter table brs.custom_field_group add column if not exists date_modified       timestamp without time zone;
+alter table brs.custom_field_group add column if not exists created_by_id  integer references flow."user"(id);
+alter table brs.custom_field_group add column if not exists modified_by_id  integer references flow."user"(id);
 
 update brs.custom_field_group
 set created_by_id = 2350555;
