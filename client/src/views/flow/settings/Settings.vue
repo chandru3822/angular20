@@ -146,11 +146,11 @@ export default {
       }, {
         path: '/settings/companyCustomFields',
         title: 'Company Custom Fields',
-        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath && this.$store.getters.isFullAdmin,
+        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
       }, {
         path: '/settings/companyObjectTypes',
         title: 'Company Object Types',
-        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath && this.$store.getters.isFullAdmin,
+        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
       },
       {
         header: 'User Management',

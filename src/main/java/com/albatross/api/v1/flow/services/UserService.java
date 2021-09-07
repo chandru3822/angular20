@@ -257,6 +257,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("username", username);
     params.put("userId", userId);
+    //had to make a change cuz for a 7oaks employee in a non-alba context it wasn't loading some company specific columns we needed on the frontend
     Optional<User> user = sqlCache.get("user.findByUsernameIgnoreCase", params, new UserMapper<>(User.class, om));
     return user.orElse(null);
   }
