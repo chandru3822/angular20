@@ -26,7 +26,7 @@ public class UserAccountDetails implements UserDetails {
     private String password;
     @JsonIgnore
     private boolean accountNonExpired, accountNonLocked, credentialsNonExpired, enabled;
-    private String firstName, lastName, fullName, awsBucket, companyAbbreviation;
+    private String firstName, lastName, fullName, awsBucket, companyAbbreviation, apiPath;
     private Long masqueradingUserId, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId;
     private Set<GrantedAuthority> authorities;
 

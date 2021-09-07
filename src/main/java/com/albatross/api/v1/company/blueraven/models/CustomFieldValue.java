@@ -12,7 +12,7 @@ import java.util.List;
 public class CustomFieldValue {
 
   private Long id, sourceId, customFieldGroupAssignmentId, customFieldGroupId,
-               customFieldId, fieldOrder, listOfValueId, companyDataTypeId;
+               customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId;
   private Boolean valueWasChanged;
 
   // not sure on these types
@@ -21,7 +21,7 @@ public class CustomFieldValue {
 
   // double??
   private Double numericValue;
-  private Boolean booleanValue;
+  private Boolean booleanValue, hasListValues;
 
   private List<ListOfValue> listOfValues;
 
