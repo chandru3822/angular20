@@ -147,7 +147,7 @@
                         tabindex=1
                         v-model="item.newFieldName"
                     ></v-text-field>
-                    <div class="text-left read-only-label">
+                    <div v-if="!apiPath" class="text-left read-only-label">
                       <label>Read-only:</label>
                       <input type="checkbox" :readonly="!userCanEdit"
                              :disabled="!userCanEdit" class="ml-2" v-model="item.readonly">

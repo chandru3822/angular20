@@ -59,111 +59,113 @@ public class BlueravenCustomFieldService {
     return result.orElse(null);
   }
 
-  public CustomField saveField(CustomField customField) throws SQLException {
+  public CustomField saveField(CustomField customField) {
     User user = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldName", customField.getFieldName());
-    params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
-    params.put("systemListId", customField.getCompanySystemListId());
-    params.put("systemListOptionIds", null == customField.getSystemListOptionIds() || customField.getSystemListOptionIds().isEmpty()
-      ? null : createSqlArrayOfType("int", customField.getSystemListOptionIds()));
-    Long id = null;
-    boolean doInsertAfterHandlingOtherScenarios = false;
-    boolean insertParentRecordIfNeeded = false;
-    boolean insertSqlKey = false;
-
-    if(null != customField.getId()) {
-      // edit existing custom field
-      id = customField.getId();
-      params.put("id", id);
-      params.put("modifiedById", user.trueUserId());
-      sqlCache.update("blueravenCustomField.saveField", params);
+    if(user.getCompanyId() != 3) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
     } else {
-      // have to insert the list of values first if needed to get the listOfValueId
-      doInsertAfterHandlingOtherScenarios = true;
-      // only insert the parent list value record if this is a new custom field
-      insertParentRecordIfNeeded = true;
-    }
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("fieldName", customField.getFieldName());
+      Long id = null;
+      boolean doInsertAfterHandlingOtherScenarios = false;
+      boolean insertParentRecordIfNeeded = false;
+      boolean insertSqlKey = false;
 
-    Long parentId = null;
-    Long lovCreatedById;
-
-    if(customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
-      if(insertParentRecordIfNeeded) {
-        // use created by unless field already existed then use modified id as the created for the list value row (WUT? WHY? this should always be the logged in user)
-        lovCreatedById = user.trueUserId();
-
-        //insert the parent row if this is a new field
-        HashMap<String, Object> lovParent = new HashMap<>();
-        lovParent.put("name", customField.getFieldName());
-        lovParent.put("parentId", null);
-        lovParent.put("createdById", user.trueUserId());
-        parentId = sqlCache.updateReturningId("blueravenCustomField.insertListOfValue", lovParent, "id").longValue();
+      if (null != customField.getId()) {
+        // edit existing custom field
+        id = customField.getId();
+        params.put("id", id);
+        params.put("modifiedById", user.trueUserId());
+        sqlCache.update("blueravenCustomField.saveField", params);
       } else {
-        parentId = customField.getListOfValueId();
-        lovCreatedById = user.trueUserId();
+        // have to insert the list of values first if needed to get the listOfValueId
+        doInsertAfterHandlingOtherScenarios = true;
+        // only insert the parent list value record if this is a new custom field
+        insertParentRecordIfNeeded = true;
       }
 
-      //insert the rest of the list values
-      for(ListOfValue lov : customField.getListOfValues()) {
-        HashMap<String, Object> lovParams = new HashMap<>();
-        lovParams.put("name", lov.getName());
-        lovParams.put("parentId", parentId);
-        lovParams.put("createdById", lovCreatedById);
-        lovParams.put("modifiedById", user.trueUserId());
-        lovParams.put("displayOrder", lov.getDisplayOrder());
+      Long parentId = null;
+      Long lovCreatedById;
 
-        if(null != lov.getId() && !lov.getArchived()) {
-          // do update of row
-          lovParams.put("id", lov.getId());
-          sqlCache.update("blueravenCustomField.updateListOfValue", lovParams);
-        } else if (lov.getArchived()) {
-          // do archive of row
-          lovParams.put("id", lov.getId());
-          sqlCache.update("blueravenCustomField.archiveListOfValue", lovParams);
+      if (customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
+        if (insertParentRecordIfNeeded) {
+          // use created by unless field already existed then use modified id as the created for the list value row (WUT? WHY? this should always be the logged in user)
+          lovCreatedById = user.trueUserId();
+
+          //insert the parent row if this is a new field
+          HashMap<String, Object> lovParent = new HashMap<>();
+          lovParent.put("name", customField.getFieldName());
+          lovParent.put("parentId", null);
+          lovParent.put("createdById", user.trueUserId());
+          parentId = sqlCache.updateReturningId("blueravenCustomField.insertListOfValue", lovParent, "id").longValue();
         } else {
-          // do row insert
-          sqlCache.update("blueravenCustomField.insertListOfValue", lovParams);
+          parentId = customField.getListOfValueId();
+          lovCreatedById = user.trueUserId();
+        }
+
+        //insert the rest of the list values
+        for (ListOfValue lov : customField.getListOfValues()) {
+          HashMap<String, Object> lovParams = new HashMap<>();
+          lovParams.put("name", lov.getName());
+          lovParams.put("parentId", parentId);
+          lovParams.put("createdById", lovCreatedById);
+          lovParams.put("modifiedById", user.trueUserId());
+          lovParams.put("displayOrder", lov.getDisplayOrder());
+
+          if (null != lov.getId() && !lov.getArchived()) {
+            // do update of row
+            lovParams.put("id", lov.getId());
+            sqlCache.update("blueravenCustomField.updateListOfValue", lovParams);
+          } else if (lov.getArchived()) {
+            // do archive of row
+            lovParams.put("id", lov.getId());
+            sqlCache.update("blueravenCustomField.archiveListOfValue", lovParams);
+          } else {
+            // do row insert
+            sqlCache.update("blueravenCustomField.insertListOfValue", lovParams);
+          }
+        }
+
+      }
+
+      if (doInsertAfterHandlingOtherScenarios) {
+        params.put("listOfValueId", parentId);
+        params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+        params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
+        params.put("companyId", customField.getCompanyId());
+        params.put("systemListId", customField.getCompanySystemListId());
+        params.put("createdById", user.trueUserId());
+        params.put("companyDataTypeId", customField.getCompanyDataTypeId());
+
+        // insert new custom field with listOfValueId if needed
+        id = sqlCache.updateReturningId("blueravenCustomField.insertField", params, "id").longValue();
+      }
+
+      // add / delete custom field object types
+      if (null != customField.getCustomFieldObjectTypes()) {
+        for (CustomFieldObjectType cfot : customField.getCustomFieldObjectTypes()) {
+          handleCustomFieldObjectTypes(id, cfot);
         }
       }
 
+      return findCustomFieldById(id);
     }
-
-    if(doInsertAfterHandlingOtherScenarios) {
-      params.put("listOfValueId", parentId);
-      params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
-      params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
-      params.put("companyId", customField.getCompanyId());
-      params.put("systemListId", customField.getCompanySystemListId());
-      params.put("createdById", user.trueUserId());
-      params.put("companyDataTypeId", customField.getCompanyDataTypeId());
-
-      // insert new custom field with listOfValueId if needed
-      id = sqlCache.updateReturningId("blueravenCustomField.insertField", params, "id").longValue();
-    }
-
-    // add / delete custom field object types
-    if(null != customField.getCustomFieldObjectTypes()) {
-      for(CustomFieldObjectType cfot : customField.getCustomFieldObjectTypes()) {
-        handleCustomFieldObjectTypes(id, cfot);
-      }
-    }
-
-    return findCustomFieldById(id);
   }
 
   public List<CustomField> deleteField(Long id) {
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldId", id);
-    params.put("modifiedById", currentUser.trueUserId());
+    if(currentUser.getCompanyId() != 3) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+    } else {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("fieldId", id);
+      params.put("modifiedById", currentUser.trueUserId());
 
-    //todo: add in the validations after this is all working
-    //check if field is in use by a custom field group
+      //todo: add in the validations after this is all working
+      //check if field is in use by a custom field group
 //    List <CustomField> fields = sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);
 
-    //if the field is assigned somewhere, return those values to frontend
+      //if the field is assigned somewhere, return those values to frontend
 //    if(!fields.isEmpty()) {
 //      return fields;
 //    } else {
@@ -171,6 +173,7 @@ public class BlueravenCustomFieldService {
       sqlCache.update("blueravenCustomField.deleteField", params);
       return null;
 //    }
+    }
   }
 
   private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
