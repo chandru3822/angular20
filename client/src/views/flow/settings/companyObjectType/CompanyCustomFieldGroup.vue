@@ -83,6 +83,43 @@
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
+                    <v-dialog
+                      v-if="userCanEdit"
+                      v-model="item.deleteConfirm"
+                      width="500">
+                      <template #activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text>
+                          Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="deleteGroup(item)">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
                   </div>
                 </td>
               </tr>
@@ -158,7 +195,7 @@
                               <v-btn
                                   color="primaryCustom"
                                   text
-                                  @click="deleteFieldFromGroup(cf, null, cf.id)">
+                                  @click="deleteFieldFromGroup(cf)">
                                 Yes
                               </v-btn>
                             </v-card-actions>
@@ -353,10 +390,25 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteFieldFromGroup(item, customFieldGroupId, customFieldGroupAssignmentId) {
+    async deleteGroup(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await deleteRequest(`/customFieldGroup/assignment/${customFieldGroupAssignmentId}`, 'blueraven')
+        const {data} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
+        item.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteFieldFromGroup(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
