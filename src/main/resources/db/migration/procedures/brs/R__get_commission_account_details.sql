@@ -14,6 +14,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      customer_name                               VARCHAR,
                      system_size                                 NUMERIC(10,2),
                      user_id                              bigint,
+                     employee_id                                 text,
                      closer                                      TEXT,
                      closer_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,
@@ -128,6 +129,10 @@ BEGIN
                         p.project_name,
                         pd.system_size,
                         u.id as closer_user_id,
+                        (select text_value
+                         from flow.user_custom_field_value ucfv
+                         where custom_field_group_assignment_id = 19176
+                           and ucfv.user_id = u.id ),
                         u.first_name||' '||u.last_name                                  AS closer,
                         (ust.user_status_type = 'Terminated')                           AS closer_is_terminated,
                         lov_source.name as source_name,
