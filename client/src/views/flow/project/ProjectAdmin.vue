@@ -263,7 +263,7 @@ export default {
         {text: 'Last Activity', value: 'lastUpdated', show: true},
         {text: 'Status', value: 'processStepStatusType', show: true},
         {text: 'Primary', value: 'main', show: true},
-        {text: 'History', value: 'historyHere', show: this.$store.getters.isFullAdmin},
+        {text: 'History', value: 'historyHere', show: true},
         // {text: '', value: 'delete', sortable: false}
       ],
       uuid,
