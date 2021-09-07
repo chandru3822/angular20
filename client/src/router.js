@@ -430,8 +430,38 @@ const router = new Router({
                   return accessDenied()
                 }
               }
-            },
-            {
+            }, {
+              path: 'companyCustomFields',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/CompanyCustomFields.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'companyObjectTypes',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/companyObjectType/CompanyObjectTypes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'companyObjectTypes/:id',
+              name: 'companyObjectTypes',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/companyObjectType/CompanyObjectType.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'tournaments',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -602,7 +632,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue')
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/FlowCustomFields.vue')
                 } else {
                   return accessDenied()
                 }

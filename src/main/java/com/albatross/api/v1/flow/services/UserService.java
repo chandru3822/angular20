@@ -288,6 +288,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     Optional<User> user = sqlCache.get("user.findUserById", params, User.class);
+    //note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning the company's api path or aws bucket even when in that context
     return user.orElse(null);
   }
 
@@ -415,7 +416,7 @@ public class UserService {
     User user = securityService.getCurrentUser();
     JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
     if(null != user) {
-      User response = findByUsernameIgnoreCase(null, user.getId());
+      User response = findUserById(user.getId());
       List<FeatureAccessControl> results;
       if(null != user.getMasqueradingUserId() && null != jwt.getCompanyId()) {
         response.setCompanyId(jwt.getCompanyId());

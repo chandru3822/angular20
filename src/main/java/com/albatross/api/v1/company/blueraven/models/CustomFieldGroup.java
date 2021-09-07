@@ -23,5 +23,8 @@ public class CustomFieldGroup {
 
   // This list is used when looking at custom field VALUES in a group
   private List<CustomFieldValue> customFieldValues;
+
+  //randa is dumb and struggles with updating certain values in the dom when they aren't on the obj to begin with
+  private Boolean edit = false;
 }
 

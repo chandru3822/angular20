@@ -306,6 +306,8 @@
        u.password,
        u.username,
        u.email,
+       c.aws_bucket,
+       c.api_path,
        u.phone_number,
        u.phone_extension,
        u.login_attempts,
@@ -368,6 +370,7 @@
                            and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
     from flow.user u
          inner join flow.user_company uc on uc.user_id = u.id
+         inner join flow.company c on c.id = uc.company_id
          left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
          left join flow.feature f on f.id = cf.feature_id
     where case when :username::text is not null then lower(username) = lower(:username::text)
@@ -405,46 +408,71 @@
   ]]></user.findByUsernameOrEmailIgnoreCase>
 
   <user.findUserById><![CDATA[
-    select u.id,
-           u.first_name,
-           u.last_name,
-           u.email,
-           u.phone_number,
-           u.phone_extension,
-           concat(u.first_name, ' ', u.last_name) AS full_name,
-           u.password,
-           coalesce(u.default_company_id, uc.company_id) as company_id,
-           c.aws_bucket,
-           (select has_access
-           from flow.company_user_status cus
-                inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
-             where user_id = u.id
-             and ust.company_id = uc.company_id
-           ) as has_access,
-           ( select parent_company_id
-                from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-             ( select case when parent_company_id is null or parent_company_id = 1
-                then coalesce(u.default_company_id, uc.company_id)
-                else parent_company_id end
-                from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
-           (
-             select c.id from flow.company c
-             inner join flow.user_company uc on uc.company_id = c.id
-             where uc.user_id = u.id
-              and uc.archived is not true
-              and c.archived is not true
-             order by level
-             limit 1
-           ) as highest_company_id
-    from flow.user u
-      inner join flow.user_company uc on uc.user_id = u.id
-      inner join flow.company c on c.id = uc.company_id
-    where u.id = :id
-      and uc.is_default is true
-      and uc.archived is not true
-      and c.archived is not true
+    with t1 as (
+      select u.id,
+             u.first_name,
+             u.last_name,
+             u.email,
+             u.phone_number,
+             u.phone_extension,
+             concat(u.first_name, ' ', u.last_name)                       AS full_name,
+             u.password,
+             coalesce(u.default_company_id, uc.company_id)                as company_id,
+             c.aws_bucket,
+             c.api_path,
+             (select has_access
+              from flow.company_user_status cus
+                     inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
+              where user_id = u.id
+                and ust.company_id = uc.company_id
+             )                                                            as has_access,
+             (select parent_company_id
+              from flow.company c
+              where c.id = coalesce(u.default_company_id, uc.company_id)) as parent_company_id,
+             (select case
+                       when parent_company_id is null or parent_company_id = 1
+                         then coalesce(u.default_company_id, uc.company_id)
+                       else parent_company_id end
+              from flow.company c
+              where c.id = coalesce(u.default_company_id, uc.company_id)) as highest_parent_company_id,
+             (
+               select c.id
+               from flow.company c
+                      inner join flow.user_company uc on uc.company_id = c.id
+               where uc.user_id = u.id
+                 and uc.archived is not true
+                 and c.archived is not true
+               order by level
+               limit 1
+             )                                                            as highest_company_id
+      from flow.user u
+             inner join flow.user_company uc on uc.user_id = u.id
+             inner join flow.company c on c.id = uc.company_id
+      where u.id = :id
+        and uc.is_default is true
+        and uc.archived is not true
+        and c.archived is not true
+    )
+    select id,
+           first_name,
+           last_name,
+           email,
+           phone_number,
+           phone_extension,
+           full_name,
+           password,
+           company_id,
+           case when highest_company_id = 1 and company_id != highest_company_id then
+              (select aws_bucket from flow.company where id = company_id )
+             else aws_bucket end,
+           case when highest_company_id = 1 and company_id != highest_company_id then
+                  (select api_path from flow.company where id = company_id )
+                else api_path end,
+           has_access,
+           parent_company_id,
+           highest_parent_company_id,
+           highest_company_id
+    from t1
   ]]></user.findUserById>
 
   <user.getCompanyUserStatuses><![CDATA[
