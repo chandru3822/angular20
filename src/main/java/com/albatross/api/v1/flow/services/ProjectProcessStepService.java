@@ -38,7 +38,6 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -289,6 +288,11 @@ public class ProjectProcessStepService {
 
           sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
       }
+  }
+
+  public List<ProjectProcessStepHistory> getPpsHistory(Long projectProcessStepId) {
+    List<ProjectProcessStepHistory> results = sqlCache.query("projectProcessStep.getHistory", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStepHistory.class);
+    return results;
   }
 
     public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {

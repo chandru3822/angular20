@@ -15,6 +15,7 @@
       :type="'date'"
       :min-date="minDate"
       :max-date="maxDate"
+      :filled="filledStyle"
       :format="'MMMM DD, YYYY'"
       :label="field.fieldName"
       :readonly="readonly"
@@ -26,6 +27,7 @@
       v-model="field.timestampValue"
       :timezone="this.timezone"
       type="timestamp"
+      :filled="filledStyle"
       :required="required"
       :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
@@ -38,6 +40,7 @@
       v-model="field.booleanValue"
       :label="field.fieldName"
       :rules="getRequiredRule()"
+      :filled="filledStyle"
       :disabled="readonly"
       :ripple="false"
       @change="callback(field)"
@@ -49,6 +52,7 @@
       :readonly="readonly"
       placeholder=" "
       :rules="getRequiredRule()"
+      :filled="filledStyle"
       :label="field.fieldName"
       type="number"
       v-model.number="field.numericValue"
@@ -63,6 +67,7 @@
       :disabled="readonly"
       placeholder=" "
       :rules="getRequiredRule()"
+      :filled="filledStyle"
       :label="field.fieldName"
       v-model="field.textValue"
       @change="callback(field)"
@@ -74,6 +79,7 @@
       :readonly="readonly"
       :label="field.fieldName"
       placeholder=" "
+      :filled="filledStyle"
       :rules="getRequiredRule()"
       type="number"
       v-model.number="field.intValue"
@@ -88,6 +94,7 @@
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
+      :filled="filledStyle"
       :rules="getRequiredRule()"
       :items="field.listOfValues"
       :label="field.fieldName"
@@ -101,6 +108,7 @@
       text
       multiple
       placeholder=" "
+      :filled="filledStyle"
       :items="field.listOfValues"
       :clearable="!readonly"
       :readonly="readonly"
@@ -118,6 +126,7 @@
       v-model="field.intValue"
       text
       :clearable="!readonly"
+      :filled="filledStyle"
       :readonly="readonly"
       :disabled="readonly"
       :items="field.listOfValues"
@@ -133,6 +142,7 @@
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
+      :filled="filledStyle"
       :clearable="!readonly"
       :items="field.listOfValues"
       :label="field.fieldName"
@@ -171,6 +181,8 @@ export default {
     },
     minDate: String,
     maxDate: String,
+    //had to add filledStyle to allow the AHJ screens to use the custom value input but keep its same style. that makes me super happy
+    filledStyle: Boolean,
     callback: Function
   },
   components: {

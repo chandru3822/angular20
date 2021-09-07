@@ -76,7 +76,7 @@
 
       <v-data-table
        class="elevation-1"
-       :headers="headers"
+       :headers="displayedHeaders"
        :items="projectProcessSteps"
        fixed-header
        multi-sort
@@ -158,12 +158,44 @@
                 </v-card>
               </v-dialog>
             </td>
+            <td class="text-left" v-if="$store.getters.isFullAdmin">
+              <v-btn small text @click="getPpsHistory(projectProcessStep)">
+                <v-icon>mdi-chart-timeline</v-icon>
+              </v-btn>
+            </td>
 <!--            <td class="text-right">-->
 <!--              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>-->
 <!--            </td>-->
           </tr>
         </template>
       </v-data-table>
+      <v-dialog
+        v-model="showPpsHistory"
+        min-width="1000">
+        <v-card>
+          <v-card-title
+            class="headline grey lighten-2"
+            primary-title
+          >
+            Project Process Step History
+          </v-card-title>
+
+          <v-card-text class="pt-3">
+            <PpsHistoryTable :selected-pps-history="selectedPpsHistory"></PpsHistoryTable>
+          </v-card-text>
+
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              @click="[showPpsHistory = false, selectedPpsHistory = []]">
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-col>
   </v-col>
 
@@ -198,6 +230,7 @@ import {getRequest, getRequestWithParams, postRequest, deleteRequest, getSnackba
 import {getAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
+import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
 const NEW_STATUS_TO_USE = {id: null}
@@ -210,6 +243,8 @@ export default {
       project: {},
       alteringPrimaryFlag: false,
       projectProcessSteps: [],
+      showPpsHistory: false,
+      selectedPpsHistory: [],
       process: {},
       contact: {},
       snackbar: {},
@@ -222,12 +257,13 @@ export default {
       isProjectProcessStepsLoading: false,
       selectedNewProjectProcessStep: null,
       headers: [
-        {text: 'ID', value: 'projectProcessStepId'},
-        {text: 'Type', value: 'processStepName'},
-        {text: 'Owner', value: 'owner.fullName'},
-        {text: 'Last Activity', value: 'lastUpdated'},
-        {text: 'Status', value: 'processStepStatusType'},
-        {text: 'Primary', value: 'main'},
+        {text: 'ID', value: 'projectProcessStepId', show: true},
+        {text: 'Type', value: 'processStepName', show: true},
+        {text: 'Owner', value: 'owner.fullName', show: true},
+        {text: 'Last Activity', value: 'lastUpdated', show: true},
+        {text: 'Status', value: 'processStepStatusType', show: true},
+        {text: 'Primary', value: 'main', show: true},
+        {text: 'History', value: 'historyHere', show: true},
         // {text: '', value: 'delete', sortable: false}
       ],
       uuid,
@@ -240,7 +276,13 @@ export default {
   },
   components: {
     ProjectProcessStepStatus,
-    AddProcessStep
+    AddProcessStep,
+    PpsHistoryTable
+  },
+  computed: {
+    displayedHeaders () {
+      return this.headers.filter(header => header.show)
+    },
   },
   async created () {
     this.getContact()
@@ -408,6 +450,21 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting project')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getPpsHistory(pps) {
+      try {
+        this.showPpsHistory = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await getRequest(`/projectProcessStep/${pps.projectProcessStepId}/history`)
+        this.showPpsHistory = true
+        this.selectedPpsHistory = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error getting project process step history')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)

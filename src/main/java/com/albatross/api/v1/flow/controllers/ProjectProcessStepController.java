@@ -58,6 +58,15 @@ public class ProjectProcessStepController {
     }
   }
 
+  @GetMapping(value = "/{ppsId}/history", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStepHistory>> getPpsHistory(@PathVariable Long ppsId) {
+    try {
+      return new ResponseEntity<>(projectProcessStepService.getPpsHistory(ppsId), HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @GetMapping(value = "/{ppsId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStepAction> getActionResult(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
@@ -69,6 +78,7 @@ public class ProjectProcessStepController {
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
   }
+
   @PostMapping(value = "/{ppsId}/action/{actionId}")
   public ResponseEntity<Void> performAction(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {

@@ -173,6 +173,10 @@ public class AttachmentService {
    * @param sourceId ID of the source
    * @return
    */
+  public String getAttachmentPresignedUrl(Long sourceId, Long attachmentTypeId) {
+    return getAttachmentPresignedUrl(storageBucket, sourceId, attachmentTypeId);
+  }
+
   public String getAttachmentPresignedUrl(String bucket, Long sourceId, Long attachmentTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
@@ -365,7 +369,6 @@ public class AttachmentService {
    */
   public Attachment create(MultipartFile file, Long sourceId, Long attachmentTypeId, Boolean deleteFirst) throws IOException {
     User currentUser = securityService.getCurrentUser();
-    log.info("EOF: maybe it is related to this endpoint??? file added by user: {}", currentUser.getId());
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
@@ -396,8 +399,10 @@ public class AttachmentService {
     params.put("companyId", currentUser.getCompanyId());
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
-    //add to join
-    addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
+    //add to join - only if they sent in a sourceId (sometimes we have to upload the attachment first before having the source id (i.e. reimbursement requests)
+    if(null != sourceId) {
+      addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
+    }
 
     return findById(attachmentId);
   }
