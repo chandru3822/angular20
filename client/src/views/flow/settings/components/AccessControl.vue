@@ -25,19 +25,20 @@
         </template>
 
         <template v-slot:header.data-table-select="{ on, props }">
-          <v-simple-checkbox v-bind="props" v-on="on" v-if="userCanEdit"></v-simple-checkbox>
+          <v-simple-checkbox :ripple="false" v-bind="props" v-on="on" v-if="userCanEdit"></v-simple-checkbox>
         </template>
 
         <template #item="{ item, index, isSelected, select }">
           <tr :class="{ 'shaded-row': index % 2 }">
             <td class="text-center">
-              <v-simple-checkbox v-if="userCanEdit" :value="isSelected" @input="select($event)"></v-simple-checkbox>
+              <v-simple-checkbox :ripple="false" v-if="userCanEdit" :value="isSelected" @input="select($event)"></v-simple-checkbox>
             </td>
             <td class="text-left">
               {{ item.featureName }}
             </td>
-            <td v-for="acl in item.accessControl">
+            <td v-for="acl in accessControlLevels">
               <input type="checkbox" :readonly="!userCanEdit"
+                     v-if="featureUsesAccessLevel(item, acl)"
                      :disabled="!userCanEdit" v-model="acl.enabled" @input="[acl.dirty = true, item.dirty = true, callback(companyFeatureList)]">
 
               <v-icon class="ml-2 mb-1" small color="activeBlue"
@@ -82,6 +83,7 @@
         secondaryFeatureAccess: [],
         accessControlList: [],
         parentId: this.$store.state.user.details.parentCompanyId,
+        accessControlLevels: [],
         headers: [
           { text: 'Feature', value: 'featureName', show: true },
 
@@ -110,14 +112,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      featureUsesAccessLevel (item, acl) {
+        let matchingAccessLevel = item.accessControl.find(ac => { return ac.accessCode === acl.accessCode })
+        return matchingAccessLevel ?? false
+      },
       secondaryHasAccess (item, acl) {
         let matchingAccessLevel = this.secondaryFeatureAccess.find(ac => { return ac.featureId === item.featureId && ac.accessCode === acl.accessCode })
         return matchingAccessLevel?.enabled ?? false
       },
-      populateHeaders () {
-        //todo. not my favorite
-        if(this.companyFeatureList?.length > 0) {
-          this.companyFeatureList[0]?.accessControl?.forEach(acl => {
+      async populateHeaders () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/accessControl`)
+          this.accessControlLevels = data
+          data.forEach(acl => {
             this.headers.push({
               text: acl.accessLevel,
               value: 'MODIFY-ME',
@@ -126,6 +134,12 @@
               show: true
             })
           })
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       populateSelectedRows () {
@@ -215,7 +229,7 @@
           try {
             const {data} = await getRequest(`/feature/withAccess`)
             this.companyFeatureList = data
-            this.populateHeaders()
+            await this.populateHeaders()
             this.populateSelectedRows()
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {

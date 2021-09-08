@@ -100,6 +100,7 @@
                                     ac.access_code as "accessCode",
                                     ufac.enabled
                              from flow.access_control ac
+                                      inner join flow.feature_access_control fac on fac.access_control_id = ac.id and fac.feature_id = cf.feature_id
                                       left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
                                and ufac.company_feature_id = cf.id
                                 and ufac.user_id = :userId
@@ -112,7 +113,7 @@
   ]]></feature.getForUser>
 
   <feature.getPositionAccessForUser><![CDATA[
-    select distinct feature_id,
+    select distinct cf.feature_id,
            cf.feature_name,
            f.feature_code,
            cf.hidden,
@@ -125,6 +126,7 @@
          inner join flow.user_position up on up.position_id = pac.position_id and up.user_id = :userId
          inner join flow.feature f on f.id = cf.feature_id
          inner join flow.access_control ac on ac.id = pac.access_control_id
+         inner join flow.feature_access_control fac on ac.id = fac.access_control_id and fac.feature_id = f.id
     WHERE pac.enabled is true
     and up.archived is not true
       and up.start_date <= now()
