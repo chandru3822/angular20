@@ -96,7 +96,8 @@
                                                     ac.access_code as "accessCode",
                                                     pfac.enabled
                                              from flow.access_control ac
-                                                      left join flow.position_feature_access_control pfac on ac.id = pfac.access_control_id
+                                                inner join flow.feature_access_control fac on fac.access_control_id = ac.id and fac.feature_id = cf.feature_id
+                                                left join flow.position_feature_access_control pfac on ac.id = pfac.access_control_id
                                                                                                              and pfac.company_feature_id = cf.id
                                                                                                              and pfac.position_id = p.id
                                              order by ac.display_order
