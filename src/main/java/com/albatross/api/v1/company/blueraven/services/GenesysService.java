@@ -463,46 +463,14 @@ public class GenesysService {
       return "+13852921523";
     }
 
-    if (callGroupPhoneNumbers.size() > 1) {
-      for (int i = 0; i < callGroupPhoneNumbers.size(); i++) {
-        if (callGroupPhoneNumbers.get(i).getLastUsed()) {
-          previousUsedGroupPhoneId = callGroupPhoneNumbers.get(i).getId();
-          // If at the end of list of numbers, select the first number as the next number to use
-          if (i == callGroupPhoneNumbers.size() - 1) {
-            currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
-            currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
-            phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
-          }
-          else {
-            currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(i+1).getId();
-            currentlyUsedGroupId = callGroupPhoneNumbers.get(i+1).getCallGroupId();
-            phoneNumber = callGroupPhoneNumbers.get(i+1).getPhoneNumber();
-          }
-          break;
-        }
-      }
-      // If no number has lastUsed = true, select the first number to use as the current number
-      if (previousUsedGroupPhoneId == null) {
-        currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
-        currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
-        phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
-      }
-    }
-    else {
-      currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
-      currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
-      phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
-    }
+    // Select the number with the lowest call count
+    currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
+    currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
+    phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
 
-    // Mark the previous Phone Number as no longer being lastUsed
-    if (previousUsedGroupPhoneId != null) {
-      params.put("previousUsedId", previousUsedGroupPhoneId);
-      sqlCache.update("callGroup.updateLastUsedPhoneNumber", params);
-    }
-
-    // Mark the current Phone Number as being lastUsed and increment call count
+    // Increment call count of the number used
     params.put("currentlyUsedId", currentlyUsedGroupPhoneId);
-    sqlCache.update("callGroup.updateCurrentlyUsedPhoneNumber", params);
+    sqlCache.update("callGroup.updatePhoneNumberCallCount", params);
 
 
     // Add a row to the phone log table
@@ -516,7 +484,7 @@ public class GenesysService {
 
     if (!phoneNumber.isEmpty()) {
       try {
-        return smsService.cleanPhoneNumber("+" + contact.getCountryId() + phoneNumber);
+        return smsService.cleanPhoneNumber("+" + (null != contact.getCountryId() ? contact.getCountryId() : "1")   + phoneNumber);
       } catch (NumberParseException e) {
         return "+1385-292-1523";
       }
