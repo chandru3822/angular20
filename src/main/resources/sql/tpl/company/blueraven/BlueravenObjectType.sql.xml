@@ -1,0 +1,20 @@
+<sql>
+  <blueravenObjectType.getCompanyObjectTypes><![CDATA[
+    select cot.id,
+       cot.id company_object_type_id,
+       cot.object_type
+    from brs.object_type cot
+    where cot.archived is not true
+    order by cot.object_type
+  ]]></blueravenObjectType.getCompanyObjectTypes>
+
+  <objectType.getCompanyObjectTypeDetail><![CDATA[
+   select cot.id,
+       cot.id company_object_type_id,
+       cot.archived
+    from brs.object_type cot
+    where cot.id = :objectTypeId
+      and cot.archived is not true
+  ]]></objectType.getCompanyObjectTypeDetail>
+
+</sql>

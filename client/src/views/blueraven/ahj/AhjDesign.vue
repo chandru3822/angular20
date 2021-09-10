@@ -23,16 +23,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div class="flex-display" v-for="item in getCustomFieldsForGroup(12)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        item-text="name"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="false"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <AhjDocumentsButton v-if="item.customFieldId === 1"
                                   title="Documents"
                                   :user-can-edit="userCanEdit"
@@ -59,16 +56,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(13)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-text="name"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="false"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
             </div>
           </v-card-text>
         </v-card>
@@ -87,16 +81,13 @@
             </v-card-subtitle>
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
-                <v-select attach v-model="item.intValue"
-                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                          :items="item.listOfValues"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          item-text="name"
-                          item-value="id"
-                          :label="item.fieldName"
-                          filled
-                ></v-select>
+                <CustomValueInput
+                  :callback="(item) => updateDirtyValue(item)"
+                  :readonly="false"
+                  :showFieldName="false"
+                  :field="item"
+                  :filled-style="true"
+                />
                 <AhjDocumentsButton v-if="item.customFieldId === 7"
                                     title="Documents"
                                     :user-can-edit="userCanEdit"
@@ -130,16 +121,13 @@
             </v-card-subtitle>
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
-                <v-select attach v-model="item.intValue"
-                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                          :items="item.listOfValues"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          item-text="name"
-                          item-value="id"
-                          :label="item.fieldName"
-                          filled
-                ></v-select>
+                <CustomValueInput
+                  :callback="(item) => updateDirtyValue(item)"
+                  :readonly="false"
+                  :showFieldName="false"
+                  :field="item"
+                  :filled-style="true"
+                />
                 <AhjDocumentsButton v-if="item.customFieldId === 10"
                                     title="Documents"
                                     :user-can-edit="userCanEdit"
@@ -174,16 +162,13 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2"
                    v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
-                <v-select attach v-model="item.intValue"
-                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                          :items="item.listOfValues"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          item-text="name"
-                          item-value="id"
-                          :label="item.fieldName"
-                          filled
-                ></v-select>
+                <CustomValueInput
+                  :callback="(item) => updateDirtyValue(item)"
+                  :readonly="false"
+                  :showFieldName="false"
+                  :field="item"
+                  :filled-style="true"
+                />
                 <AhjDocumentsButton v-if="item.customFieldId === 14"
                                     title="Documents"
                                     :user-can-edit="userCanEdit"
@@ -320,7 +305,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import AhjDocumentsButton from './components/AhjDocumentsButton'
   import AhjRequirement from './components/AhjRequirements'
-
+  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -329,6 +314,7 @@
     components: {
       AhjDocumentsButton,
       AhjRequirement,
+      CustomValueInput
     },
     computed: {
       userCanEdit() {
@@ -352,6 +338,10 @@
       }
     }),
     methods: {
+      updateDirtyValue(item) {
+        item.valueWasChanged = true
+        this.dataWasChanged = true
+      },
       async getAhjDesign() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

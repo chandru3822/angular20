@@ -42,7 +42,7 @@ public class AttachmentController {
   }
 
   @PostMapping(value = "")
-  public Attachment uploadAttachment(@RequestParam Long sourceId,
+  public Attachment uploadAttachment(@RequestParam(required = false) Long sourceId,
                                      @RequestParam Long attachmentTypeId,
                                      @RequestParam(required = false, defaultValue = "true") Boolean deleteFirst,
                                      @RequestParam("file") MultipartFile file) throws IOException {

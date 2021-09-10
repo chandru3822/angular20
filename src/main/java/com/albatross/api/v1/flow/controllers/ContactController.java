@@ -84,7 +84,11 @@ public class ContactController {
     public Project convertToContact(@PathVariable Long contactId,
                                   @RequestBody CompanyProcess process) {
         // need to return the project so the frontend can navigate to /project/{id}
-        return contactService.convertToContact(contactId, process);
+        try {
+          return contactService.convertToContact(contactId, process);
+        } catch (Exception e) {
+          throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+        }
     }
 
   @GetMapping(value = "/{contactId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)

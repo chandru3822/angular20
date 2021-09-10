@@ -7,6 +7,26 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
     select from flow.delete_project_process_step(:projectProcessStepId);
   ]]></projectProcessStep.delete>
 
+  <projectProcessStep.getHistory><![CDATA[
+    select ppsa.*,
+           owner.first_name || ' ' || owner.last_name as owner,
+           created_by.first_name || ' ' || created_by.last_name as created_by,
+           modified_by.first_name || ' ' || modified_by.last_name as modified_by,
+           ppsa.company_process_step_status_type_id,
+           cpsst.process_step_status_type as company_process_step_status_type,
+           cpsst.process_step_status_type_id,
+           psst.process_step_status_type
+    from flow.project_process_step_audit ppsa
+      inner join flow.company_process_step_status_type cpsst on ppsa.company_process_step_status_type_id = cpsst.id
+      inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+    left join flow.user_position up on ppsa.user_position_id = up.id
+    left join flow."user" owner on up.user_id = owner.id
+    inner join flow."user" created_by on created_by.id = ppsa.created_by_id
+    left join flow."user" modified_by on modified_by.id = ppsa.modified_by_id
+    where ppsa.project_process_step_id = :projectProcessStepId
+    order by date_modified nulls first
+  ]]></projectProcessStep.getHistory>
+
   <projectProcessStep.getProjectProcessStep><![CDATA[
     select * from flow.get_pps_with_actions_and_requirements(:stepId::integer)
   ]]></projectProcessStep.getProjectProcessStep>
@@ -248,6 +268,6 @@ where cpsst.process_step_status_type_id = 1 and
              inner join flow.project_process_step pps_usage on pps_usage.process_step_id = psa.process_step_id and pps_usage.project_id = pps_src.project_id and pps_usage.archived is not true
              inner join flow.company_process_step_status_type cpsst on pps_usage.company_process_step_status_type_id = cpsst.id
     where pps_src.id = :projectProcessStepId
-      and pps_src.archived is not true
+      and pps_src.archived is not true and pps_src.process_step_id != pps_usage.process_step_id
   ]]></projectProcessStep.getUsingStatusByPpsId>
 </sql>

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -95,12 +96,16 @@ public class ContactService {
 
   public Contact getContact(Long contactId) {
     User user = securityService.getCurrentUser();
-    Boolean isParent = user != null ? user.getCompanyId().equals(user.getHighestParentCompanyId()) : true;
+    return getContact(contactId, user);
+  }
+
+  public Contact getContact(Long contactId, User user) {
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user != null ? user.getCompanyId() : 3);
+    params.put("companyId", user.getCompanyId());
     params.put("contactId", contactId);
-    params.put("parentCompanyId", user != null ? user.getHighestParentCompanyId() : 3);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
@@ -215,6 +220,7 @@ public class ContactService {
     return sqlCache.query("contact.getOwners", Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany), Owner.class);
   }
 
+  @Transactional
   public Project convertToContact(Long contactId, CompanyProcess process) {
     User currentUser = securityService.getCurrentUser();
 
@@ -241,7 +247,16 @@ public class ContactService {
       //create all initial project_process_steps - these wont have a userPositionId
       for (ProcessStepProcess step : initialProcessSteps) {
         //the last companyProcessStepStatusTypeId can be null because an initial process step shouldn't need to cancel any pre-existing steps of the same type
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null, null);
+        Long newPpsId = projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null, null);
+
+        try {
+          projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails(), null);
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new RuntimeException(errMessage);
+        }
       }
     }
 

@@ -321,7 +321,7 @@
                 </v-btn>
                 <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="userCanDelete">
                   <template #activator="{ on }">
-                    <v-btn v-on="on" small text>
+                    <v-btn v-on="on" small text :disabled="cannotDeleteSchedule(item)">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </template>
@@ -500,7 +500,10 @@
 
 
         // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
-        if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
+        if(moment(s.startDate).isBefore(moment(), 'd')) {
+          this.saveError = true
+          this.saveErrorMsg = '* Start Date cannot be before today.'
+        } else if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
           this.saveError = true
           this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
         }
@@ -626,6 +629,10 @@
           this.$set(dayToUpdate, 'startTime', day.startTime)
           this.$set(dayToUpdate, 'endTime', day.endTime)
         }
+      },
+      cannotDeleteSchedule(item) {
+        //per judson request - cannot delete schedules that have a start date prior to or equal to today
+        return moment(item.startDate) <= moment()
       },
       async archiveSchedule(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
