@@ -275,11 +275,16 @@
               value: textValue.substring(0,63),
               sort: (a, b) => {
                 //if it is a date, format the string as a date and sort by that value
-                if((null != a && a.match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.match(/^\d{4}-\d{2}-\d{2}/))) {
+                //without the .toString() this fails for numeric values
+                if((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))) {
                   return new Date(a) - new Date(b)
                 } else {
                   //otherwise sort normally
-                  return null != a ? a.localeCompare(b) : a - b
+                  if(typeof a === 'number' || typeof b === 'number') {
+                    return (a === null) - (b === null) || a - b
+                  } else {
+                    return null != a ? a.localeCompare(b) : a - b
+                  }
                 }
               },
               show: true })
