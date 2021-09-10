@@ -212,4 +212,5 @@ public class ContactLeadController {
   public void updateContactLeadGenesis(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
 }
