@@ -65,6 +65,60 @@ BEGIN
 
                  select jsonb_build_object((select cfga.id
                                             from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 344
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.total_promotion_amount::numeric,
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 11157
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), nullif(trim(plh.storage_size_kwh), '')::numeric,
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 11317
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.storage_cost_with_fees::numeric,
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 11158
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), (select lov2.id
+                                                                                             from flow.list_of_value lov
+                                                                                                    inner join flow.custom_field cf on cf.list_of_value_id = lov.id
+                                                                                                    inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+                                                                                               and cf.company_id = v_company_id
+                                                                                               and cf.id = 11158 and cf.archived is false
+                                                                                             where lov2.name::text = plh.storage_brand),
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 11316
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.financed_system_cost_with_fees::numeric,
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 11315
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.financed_ancillary_cost_with_fees::numeric,
+                                            (select cfga.id
+                                            from flow.custom_field cf
                                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
                                                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                                             where cf.parent_custom_field_id = 10306
@@ -217,14 +271,14 @@ BEGIN
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id), v_number_of_arrays,
-                            (select cfga.id
-                             from flow.custom_field cf
-                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
-                                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                             where cf.parent_custom_field_id = 10430
-                               and cfga.archived is false and cf.archived is false and cfg.archived is false
-                               and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), round(coalesce(promotion_eighteen_months_free::numeric,0)::numeric,2)::numeric,
+--                             (select cfga.id
+--                              from flow.custom_field cf
+--                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+--                                       inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+--                              where cf.parent_custom_field_id = 10430
+--                                and cfga.archived is false and cf.archived is false and cfg.archived is false
+--                                and cf.company_id = v_company_id
+--                                and cfg.process_step_id = p_process_step_id), round(coalesce(promotion_eighteen_months_free::numeric,0)::numeric,2)::numeric,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id

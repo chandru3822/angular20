@@ -106,15 +106,18 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
+    //todo: @randa - this has a security bug - if a user were to send in a contact id for a company they did not have access to it would still load the data
     try {
-      User user = securityService.getCurrentUser();
+      User user;
       Boolean systemAdmin;
       List<UserPosition> userPositions;
       try {
+        user = securityService.getCurrentUser();
         systemAdmin = user.getHighestCompanyId() == 1L;
         userPositions = userPositionService.getAllActiveUserPositions(user.getId());
       } catch (Exception e) {
         // Handle values for Cron job call for Genesys contacts
+        user = null;
         systemAdmin = false;
         userPositions = null;
       }

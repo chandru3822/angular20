@@ -27,16 +27,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-text="name"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
                             :readonly="!userCanEdit"
@@ -228,16 +225,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(2)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        item-text="name"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
                             :readonly="!userCanEdit"
@@ -292,16 +286,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(24)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-text="name"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
                             :readonly="!userCanEdit"
@@ -352,16 +343,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(3)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-text="name"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
@@ -436,16 +424,13 @@
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(4)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        item-text="name"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
@@ -491,16 +476,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(5)" :key="item.id">
-              <v-select attach v-model="item.intValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :items="item.listOfValues"
-                        item-text="name"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        item-value="id"
-                        :label="item.fieldName"
-                        filled
-              ></v-select>
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
                             :readonly="!userCanEdit"
@@ -711,6 +693,7 @@
 
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
     name: 'ahjPermit',
@@ -720,6 +703,7 @@
       AhjDocument,
       AhjLink,
       AhjServicingFot,
+      CustomValueInput
     },
     computed: {
       userCanEdit() {
@@ -764,6 +748,10 @@
       cancellationDocuments: [],
     }),
     methods: {
+      updateDirtyValue(item) {
+        item.valueWasChanged = true
+        this.dataWasChanged = true
+      },
       reformatDates() {
         // Reformat dates to remove timestamps
         this.ahjPermit.businessLicenseExpirationDate = this.ahjPermit.businessLicenseExpirationDate ? moment(this.ahjPermit.businessLicenseExpirationDate).format('YYYY-MM-DD') : null

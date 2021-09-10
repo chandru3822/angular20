@@ -98,7 +98,8 @@
                                     ac.id as "accessControlId",
                                     ac.access_level as "accessLevel",
                                     ac.access_code as "accessCode",
-                                    ufac.enabled
+                                    ufac.enabled,
+                                    coalesce(( select true from flow.feature_access_control fac where fac.access_control_id = ac.id and fac.feature_id = cf.feature_id), false) as "usedByFeature"
                              from flow.access_control ac
                                       left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
                                and ufac.company_feature_id = cf.id
@@ -112,12 +113,13 @@
   ]]></feature.getForUser>
 
   <feature.getPositionAccessForUser><![CDATA[
-    select distinct feature_id,
+    select distinct cf.feature_id,
            cf.feature_name,
            f.feature_code,
            cf.hidden,
            ac.access_code,
-           pac.enabled
+           pac.enabled,
+           coalesce(( select true from flow.feature_access_control fac where fac.access_control_id = ac.id and fac.feature_id = cf.feature_id), false) as "usedByFeature"
     from flow.position_feature_access_control pac
          inner join flow.position p on p.id = pac.position_id and p.company_id = :companyId
          inner join flow.company_feature cf on cf.id = pac.company_feature_id

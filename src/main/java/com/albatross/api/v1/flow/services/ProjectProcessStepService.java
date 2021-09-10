@@ -38,7 +38,6 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -161,12 +160,12 @@ public class ProjectProcessStepService {
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
 
-    //check for any actions using this PS - Status as a requirement - including SELF if active
+    //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
     //run auto triggers for those actions
     List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
     for(ProjectProcessStep step : steps) {
-      //only run if the referring project process step is active and not in the same process step we're currently running
-      if(step.getProcessStepStatusTypeId() == 1 && !step.getProcessStepId().equals(pps.getProcessStepId())) {
+      //only run if the referring project process step is active and we're in autotriggers
+      if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null) {
         performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId);
       }
     }
@@ -264,13 +263,13 @@ public class ProjectProcessStepService {
     if (performAutoTrigger) {
       this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
     }
-    //check for any actions using this PS - Status as a requirement - including SELF if active
+    //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
     //run auto triggers for those actions
     params.put("projectProcessStepId", ppsId);
     List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", params, ProjectProcessStep.class);
     for(ProjectProcessStep step : steps) {
-      //only run if the referring project process step is active and not in the same process step we're currently running
-      if(step.getProcessStepStatusTypeId() == 1 && !step.getProcessStepId().equals(processStepId)) {
+      //only run if the referring project process step is active and we're in autotriggers
+      if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null) {
         performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId);
       }
     }
@@ -289,6 +288,11 @@ public class ProjectProcessStepService {
 
           sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
       }
+  }
+
+  public List<ProjectProcessStepHistory> getPpsHistory(Long projectProcessStepId) {
+    List<ProjectProcessStepHistory> results = sqlCache.query("projectProcessStep.getHistory", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStepHistory.class);
+    return results;
   }
 
     public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
