@@ -1,6 +1,7 @@
 import Vue from "vue"
 import Router from 'vue-router'
 import Login from './views/Login.vue'
+import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import store from './store'
 import {UserMutations} from './stores/UserStore'
 import {getRequest} from '@/helpers/helpers'
@@ -25,7 +26,8 @@ const router = new Router({
     {
       path: '/passwordReset/:uuid?',
       name: 'forgotPasswordReset',
-      component: () => import(/* webpackChunkName: "passwordReset" */ './views/ForgotPasswordReset.vue'),
+      component: ForgotPasswordReset,
+      // component: () => import(/* webpackChunkName: "passwordReset" */ './views/ForgotPasswordReset.vue'),
       props: true
     },
     {
