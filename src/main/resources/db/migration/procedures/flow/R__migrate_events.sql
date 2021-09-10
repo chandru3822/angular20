@@ -102,6 +102,9 @@ BEGIN
       elsif x.process_step_id = 5 then
         perform flow.migrate_schedule_site_survey_to_events(v_event_id,
                                                             x.project_process_step_id);
+      elsif x.process_step_id = 98 then
+        perform flow.migrate_schedule_resurvey_to_events(v_event_id,
+                                                            x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;

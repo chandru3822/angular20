@@ -26,6 +26,11 @@ BEGIN
   from update_data ud
   where ud.id = cfg3.id;
 
+  update flow.custom_field_group_assignment
+  set archived = true
+  where custom_field_group_id = p_custom_field_group_id
+  and ancillary_custom_field_group_assignment_id is not null;
+
 
 END
 $$

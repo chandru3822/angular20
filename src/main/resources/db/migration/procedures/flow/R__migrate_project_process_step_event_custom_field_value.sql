@@ -1,7 +1,8 @@
 CREATE OR REPLACE function flow.migrate_project_process_step_event_custom_field_value(p_event_id integer,
                                                                                       p_group_id integer,
                                                                                       p_project_process_step_id integer,
-                                                                                      p_cfga_id integer)
+                                                                                      p_cfga_id integer,
+                                                                                      p_new_cfga_id boolean default false)
   returns void as
 $$
   declare
@@ -29,7 +30,10 @@ BEGIN
                                                                  date_modified, created_by_id, modified_by_id,
                                                                  migrate_project_process_step_custom_field_value_id)
     (select p_event_id,
-            ppscfv2.custom_field_group_assignment_id,
+            case when p_new_cfga_id is true and p_cfga_id is not null then
+              (select id
+                from flow.custom_field_group_assignment cfga
+                where migrated_cfga_id = p_cfga_id) else ppscfv2.custom_field_group_assignment_id end,
             ppscfv2.date_value,
             ppscfv2.timestamp_value,
             ppscfv2.boolean_value,

@@ -666,7 +666,6 @@ update brs.project_details_config
 set update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppsecfv_id'
 where update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppscfv_id';
 
---site_survey_verified_date_ppscfv_id,
---appointment_check_in_ppscfv_id,
 
+alter table flow.custom_field_group_assignment add column  if not exists  migrated_cfga_id integer;
 

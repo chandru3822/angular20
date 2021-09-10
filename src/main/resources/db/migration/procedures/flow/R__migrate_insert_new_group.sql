@@ -2,10 +2,11 @@ CREATE OR REPLACE function flow.migrate_insert_new_group(p_group_name varchar,
                                                          p_group_order integer,
                                                          p_process_step_id integer,
                                                          p_event_type_id integer)
-  returns void as
+  returns integer as
 $$
 declare
   v_company_object_type_id integer;
+  v_cfg_id                 integer;
 BEGIN
 
   if p_event_type_id is not null then
@@ -27,8 +28,10 @@ BEGIN
   insert into flow.custom_field_group(group_name, company_object_type_id, group_order,
                                       process_step_id, event_id, date_created,
                                       created_by_id)
-  values (p_group_name,v_company_object_type_id,p_group_order,p_process_step_id,p_event_type_id,now(),2350555);
+  values (p_group_name, v_company_object_type_id, p_group_order, p_process_step_id, p_event_type_id, now(), 2350555)
+  returning id into v_cfg_id;
 
+  return v_cfg_id;
 END
 $$
   LANGUAGE plpgsql VOLATILE
