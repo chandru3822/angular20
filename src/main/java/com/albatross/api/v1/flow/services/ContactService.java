@@ -250,7 +250,7 @@ public class ContactService {
         Long newPpsId = projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null, null);
 
         try {
-          projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails(), null);
+          projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
         } catch (Exception e) {
           final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
           log.error(errMessage);

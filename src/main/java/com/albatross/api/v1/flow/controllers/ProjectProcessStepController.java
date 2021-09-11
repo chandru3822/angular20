@@ -119,7 +119,7 @@ public class ProjectProcessStepController {
     Long newPpsId = projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null);
 
     try {
-      projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails(), null);
+      projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
     } catch (Exception e) {
       final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
       log.error(errMessage);
@@ -164,11 +164,11 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null);
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null, null);
 
         // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free time... good one
         try {
-          projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails(), null);
+          projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
         } catch (Exception e) {
           final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", projectProcessStepId, e.getMessage());
           log.error(errMessage);
