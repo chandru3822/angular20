@@ -77,7 +77,7 @@ public class CustomFieldValueController {
       if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
           for (Long ppsId : ppsIds) {
-              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
       }
 
@@ -108,7 +108,7 @@ public class CustomFieldValueController {
       if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
           for (Long ppsId : ppsIds) {
-              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
       }
 
@@ -121,7 +121,7 @@ public class CustomFieldValueController {
                                                                           @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
-    projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails(), null);
+    projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
 
 
     // grab all PPS where the updated fields are ancillary and perform auto triggers there
@@ -133,7 +133,7 @@ public class CustomFieldValueController {
         for (Long ppsId : ppsIds) {
             // Don't re-check the ppsId we just previously did
             if (!ppsId.equals(projectProcessStepId)) {
-                projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+                projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
             }
         }
     }
@@ -159,7 +159,7 @@ public class CustomFieldValueController {
             if (!cfgaIds.isEmpty()) {
                 List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
                 for (Long ppsId : ppsIds) {
-                    projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+                    projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
                 }
             }
         }

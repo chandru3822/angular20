@@ -45,7 +45,7 @@
             <v-icon small>edit</v-icon>
           </v-list-item-action>
           <v-list-item-title :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
-            <a :href="link.link" class="list-link">{{ link.name }}</a>
+            <a :href="link.link" target="_blank" class="list-link">{{ link.name }}</a>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
