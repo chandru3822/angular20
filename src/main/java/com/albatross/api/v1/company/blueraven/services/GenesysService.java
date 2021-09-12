@@ -366,7 +366,7 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(leadLevel, apiInstance, null, true);
+    String contactListId = getContactListId(leadLevel, apiInstance, null, false);
     // If no Contact  List is found
     if (contactListId == null) {
       return;
