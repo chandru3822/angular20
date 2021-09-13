@@ -268,8 +268,6 @@ public class GenesysService {
     }
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
-    // Store the Genesys Contact ID
-    updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
 
     if (genesysContactListName == null || genesysContactListName.isEmpty()) {
       String oldContactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, true);
@@ -279,6 +277,8 @@ public class GenesysService {
       }
 
       List<DialerContact> dcOld = apiInstance.postOutboundContactlistContacts(oldContactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+      // Store the Genesys Contact ID for the old list
+      updateGenesysCfv(contact.getId(), dcOld.get(0).getId(), 19357L);
     }
   }
 
