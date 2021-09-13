@@ -270,7 +270,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring project process step is active and we're in autotriggers
       if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId);
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId, new ArrayList<>());
       }
     }
 
@@ -438,11 +438,15 @@ public class ProjectProcessStepService {
                             createdPpsIds.addAll(newPpsIds);
                           }
                       }
+                  } catch (StackOverflowError e) {
+                    final String errMessage = String.format("PPS: INFINITE LOOP DETECTED - Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
+                    log.error(errMessage);
+                    throw new RuntimeException(errMessage);
                   } catch (Exception e) {
                     final String errMessage = String.format("PPS: Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
-                      log.error(errMessage);
-                      e.printStackTrace();
-                      throw new RuntimeException(errMessage);
+                    log.error(errMessage);
+                    e.printStackTrace();
+                    throw new RuntimeException(errMessage);
                   }
               }
           });
