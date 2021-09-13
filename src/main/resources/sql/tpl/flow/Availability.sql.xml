@@ -364,7 +364,7 @@
   ]]></availability.getDistinctRecurringEvents>
 
   <availability.cacheAvailability><![CDATA[
-        select brs.cache_available_time_slots()
+        select from brs.cache_available_time_slots()
   ]]></availability.cacheAvailability>
 
   <availability.updateGeoLocation><![CDATA[
