@@ -443,6 +443,7 @@
       select u.id,
              u.first_name,
              u.last_name,
+             u.username,
              u.email,
              u.phone_number,
              u.phone_extension,
@@ -475,7 +476,36 @@
                  and c.archived is not true
                order by level
                limit 1
-             )                                                            as highest_company_id
+             )                                                            as highest_company_id,
+             coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(positions)))
+                          FROM (
+                                 SELECT up.id,
+                                        up.user_id                                     as "userId",
+                                        p.position,
+                                        p.schedulable,
+                                        p.scheduler,
+                                        up.position_id                                 as "positionId",
+                                        up.org_id                                      as "orgId",
+                                        o.org_name                                     as "orgName",
+                                        up.start_date                                  as "startDate",
+                                        up.end_date                                    as "endDate",
+                                        up.primary_flag                                as "primaryFlag",
+                                        p.use_slot_schedule                            as "useSlotSchedule",
+                                        up.archived,
+                                        (select json_agg(json_build_object(
+                                                             'orgId', h.org_id,
+                                                             'orgName', h.org_name,
+                                                             'positionLevel', h.position_level,
+                                                             'orgLevelId', h.org_level_id
+                                                           ) order by h.org_level_id)::jsonb
+                                         from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
+                                 FROM flow.user_position up
+                                        inner join flow.position p on p.id = up.position_id
+                                        inner join flow.org o on o.id = up.org_id
+                                 WHERE up.user_id = u.id
+                                   and up.archived is not true
+                                   and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
       from flow.user u
              inner join flow.user_company uc on uc.user_id = u.id
              inner join flow.company c on c.id = uc.company_id
@@ -488,10 +518,12 @@
            first_name,
            last_name,
            email,
+           username,
            phone_number,
            phone_extension,
            full_name,
            password,
+           "userPositions",
            company_id,
            case when highest_company_id = 1 and company_id != highest_company_id then
               (select aws_bucket from flow.company where id = company_id )

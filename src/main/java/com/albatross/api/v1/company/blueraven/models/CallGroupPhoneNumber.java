@@ -15,7 +15,7 @@ public class CallGroupPhoneNumber {
 
   private Long id, callGroupId;
   private String phoneNumber;
-  private Boolean archived, active, lastUsed, maxCallCountHit;
+  private Boolean archived, active, maxCallCountHit;
   private List<User> users;
   private Integer callCount;
   private Date dateCreated;

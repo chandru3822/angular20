@@ -288,7 +288,7 @@ public class UserService {
   public User findUserById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<User> user = sqlCache.get("user.findUserById", params, User.class);
+    Optional<User> user = sqlCache.get("user.findUserById", params, new UserMapper<>(User.class, om));
     //note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning the company's api path or aws bucket even when in that context
     return user.orElse(null);
   }
