@@ -24,8 +24,6 @@
             label="Location (optional)"
           ></v-text-field>
           <DatetimePickerInput
-            :readonly="!userCanEdit"
-            :disabled="!userCanEdit"
             v-model="newAppt.startTime"
             :timezone="this.timezone"
             :type="newAppt.allDay ? dateType : timestampType"
@@ -33,8 +31,6 @@
             :label="newAppt.allDay ? 'Start Date' : 'Start Time'"
           />
           <DatetimePickerInput
-            :readonly="!userCanEdit"
-            :disabled="!userCanEdit"
             v-model="newAppt.endTime"
             :timezone="this.timezone"
             :type="newAppt.allDay ? dateType : timestampType"
