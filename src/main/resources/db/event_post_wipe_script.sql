@@ -26,7 +26,7 @@ alter table flow.event
 add column if not exists temp_cfg_id int;
 --add events (adds the default resource custom field as well)
 insert into flow.event(event_name, company_id, created_by_id, resource_custom_field_id, temp_cfg_id)
-select cfg.group_name,
+select cfg.group_name || ' - ' || ps.process_step_name,
        3,
        2350555,
        (select custom_field_id from flow.custom_field_group_assignment cfga
@@ -36,6 +36,7 @@ select cfg.group_name,
        cfg.id
 from flow.custom_field_group cfg
        inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+       inner join flow.process_step ps on cfg.process_step_id = ps.id
 where cfg.event_type_id is not null
   and cfg.archived is false
   and cot.company_id = 3;
@@ -57,7 +58,7 @@ select (select process_step_id
           and e.temp_cfg_id = cfg.id),
        e.id,
        (select company_event_status_type_id from flow.event_company_event_status_type where event_id = e.id limit 1),
-       case when e.event_name = 'Closer Appointment Scheduling' then 1 else null end,
+       case when e.event_name = 'Closer Appointment Scheduling - Schedule Closer Appointment' then 1 else null end,
        0,
        2350555
 from flow.event e;
@@ -81,5 +82,4 @@ from flow.event e;
 -- drop table flow.process_step_event_requirement cascade;
 -- drop table flow.process_step_event_logic cascade;
 -- drop table flow.event_requirement_param_dynamic_value cascade;
-
 
