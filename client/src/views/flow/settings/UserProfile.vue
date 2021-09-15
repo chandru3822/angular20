@@ -62,6 +62,7 @@
                         v-if="!userIsMasquerading"
                         placeholder="Enter a new password"
                         required
+                        autocomplete="new-password"
                         type="password"
                         :rules="[passwordRule]"
                         label="Change Password">
@@ -71,6 +72,7 @@
                         placeholder="Verify password"
                         required
                         type="password"
+                        autocomplete="new-password"
                         :rules="[passwordRule]"
                         label="Confirm Password">
           </v-text-field>
