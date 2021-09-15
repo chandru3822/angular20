@@ -26,7 +26,6 @@
                                       cfga.require_on_insert as "requireOnInsert"
                                FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
                                WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true) customFields), '[]') AS "customFields"
       from flow.custom_field_group cfg
@@ -90,7 +89,6 @@
                                                         AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              FROM flow.custom_field_group_assignment cfga
                                     inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                     inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfga.archived is not true
