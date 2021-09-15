@@ -422,18 +422,22 @@ public class ProjectProcessStepService {
               final boolean isSameProcessStep = (callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId()));
               if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && !isSameProcessStep && !performedActions.contains(action.getId())) {
                   try {
+                    // Added this to get fresh pps values when looking at each action. Possible performance hit. Might want to lighten the previous getProjectProcessStep call,
+                    // which might potentially enable this one to get lighter also
+                      ProjectProcessStep updatedPps = this.getProjectProcessStep(ppsId);
+
                       List<Long> reqIds = action.getProcessStepLogicList().stream()
                           .filter(step -> step.getProcessStepRequirementId() != null)
                           .map(ProcessStepLogic::getProcessStepRequirementId)
                           .collect(Collectors.toList());
 
-                      List<ProjectProcessStepRequirement> reqs = pps.getAutoTriggeredActionRequirements().stream()
+                      List<ProjectProcessStepRequirement> reqs = updatedPps.getAutoTriggeredActionRequirements().stream()
                           .filter(r -> reqIds.contains(r.getId()))
                           .collect(Collectors.toList());
-                    ProjectProcessStepAction actionResult = this.canPerformAction(action, pps, reqs);
+                    ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps, reqs);
                       if (actionResult.getCanPerform()) {
                           performedActions.add(action.getId());
-                          List<Long> newPpsIds = this.performAction(action, pps, performedActions);
+                          List<Long> newPpsIds = this.performAction(action, updatedPps, performedActions);
                           if (!newPpsIds.isEmpty()) {
                             createdPpsIds.addAll(newPpsIds);
                           }

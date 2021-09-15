@@ -36,7 +36,7 @@
     <excel.import.insert>
       <![CDATA[
               insert into brs.proposal_log (proposal_date, source, proposal, proposal_nbr, project_id)
-                  values ( :proposalDate, :source, :proposal, :proposalId, :projectId)
+                  values (current_date, :source, :proposal, :proposalId, :projectId)
               returning *
           ]]>
     </excel.import.insert>
