@@ -42,6 +42,7 @@
                             label="Phone"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
+                            :rules="userPhoneRule"
                             @change="dirtySystemFields = true"
                             placeholder=" "
                             v-model="user.phoneNumber"></v-text-field>
@@ -219,6 +220,10 @@
             exact: true,
             to: `/users`
           },
+        ],
+        userPhoneRule: [
+          v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+          v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"
         ],
         snackbar: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
