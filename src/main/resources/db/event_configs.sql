@@ -54,42 +54,42 @@ INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_c
 INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Online Permit Submission', 11349, 3, '2021-08-27 22:11:14.516982', null, 2356764, null, false, null);
 INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - In Person Permit Submission', 11348, 3, '2021-08-27 22:02:32.405101', '2021-08-27 22:02:38.105738', 2356764, 2356764, false, null);
 -- LIST OF VALUES with their custom fields
-with parent_lov as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-  VALUES ('Event Outcome', null, null, 0, '2021-08-27 22:07:43.802669', null, 2356764, null, false, null, null)
-  returning id
-), child_lov_1 as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-    VALUES ('Permit Submitted', null, (select id from parent_lov), 0, '2021-08-27 22:07:43.804367', '2021-08-27 22:16:18.405520', 2356764, 2356764, false, null, null)
-), child_lov_2 as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-    VALUES ('Permit Not Submitted - Technician No Show', null, (select id from parent_lov), 1, '2021-08-27 22:07:43.805709', '2021-08-27 22:16:18.406860', 2356764, 2356764, false, null, null)
-), child_lov_3 as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-  VALUES ('Permit Not Submitted - Other', null, (select id from parent_lov), 2, '2021-08-27 22:07:43.806974', '2021-08-27 22:16:18.408067', 2356764, 2356764, false, null, null)
-) -- then insert the custom field with the appropriate list of value
-INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id)
-values ((select id from parent_lov), 3, 'Permit Submission Event Outcome', 7, '2021-08-27 22:07:43.809448', '2021-08-27 22:16:18.403989', 2356764, 2356764, false, null, null, null, null, false, null, null);
-
-with parent_lov as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-    VALUES ('Permit Pickup and Delivery Event Outcome', null, null, 0, '2021-08-27 22:17:09.198700', null, 2356764, null, false, null, null)
-    returning id
-), child_lov_1 as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-    VALUES ('Permit On Site', null, (select id from parent_lov), 0, '2021-08-27 22:17:09.200148', null, 2356764, null, false, null, null)
-), child_lov_2 as (
-INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-  VALUES ('Permit Not On Site - Technician No Show', null, (select id from parent_lov), 1, '2021-08-27 22:17:09.201387', null, 2356764, null, false, null, null)
-), child_lov_3 as (
-  INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
-VALUES ('Permit Not On Site - Other', null, (select id from parent_lov), 2, '2021-08-27 22:17:09.202630', null, 2356764, null, false, null, null)
-) -- then insert the custom field with the appropriate list of value
-INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id)
-VALUES ((select id from parent_lov), 3, 'Permit Pickup and Delivery Event Outcome', 7, '2021-08-27 22:17:09.205111', null, 2356764, null, false, null, null, null, null, false, null, null);
--- CUSTOM FIELDS -non-lov
-INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id) VALUES (null, 3, 'Permit Pickup Scheduled By', 10, '2021-08-27 22:13:06.331713', null, 2356764, null, false, 2, '{165,168,173}', null, null, false, null, null);
-INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id) VALUES (null, 3, 'Permit Signature Scheduled By', 10, '2021-08-27 22:15:20.519558', null, 2356764, null, false, 2, '{165,168,173}', null, null, false, null, null);
+-- with parent_lov as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--   VALUES ('Event Outcome', null, null, 0, '2021-08-27 22:07:43.802669', null, 2356764, null, false, null, null)
+--   returning id
+-- ), child_lov_1 as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--     VALUES ('Permit Submitted', null, (select id from parent_lov), 0, '2021-08-27 22:07:43.804367', '2021-08-27 22:16:18.405520', 2356764, 2356764, false, null, null)
+-- ), child_lov_2 as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--     VALUES ('Permit Not Submitted - Technician No Show', null, (select id from parent_lov), 1, '2021-08-27 22:07:43.805709', '2021-08-27 22:16:18.406860', 2356764, 2356764, false, null, null)
+-- ), child_lov_3 as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--   VALUES ('Permit Not Submitted - Other', null, (select id from parent_lov), 2, '2021-08-27 22:07:43.806974', '2021-08-27 22:16:18.408067', 2356764, 2356764, false, null, null)
+-- ) -- then insert the custom field with the appropriate list of value
+-- INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id)
+-- values ((select id from parent_lov), 3, 'Permit Submission Event Outcome', 7, '2021-08-27 22:07:43.809448', '2021-08-27 22:16:18.403989', 2356764, 2356764, false, null, null, null, null, false, null, null);
+--
+-- with parent_lov as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--     VALUES ('Permit Pickup and Delivery Event Outcome', null, null, 0, '2021-08-27 22:17:09.198700', null, 2356764, null, false, null, null)
+--     returning id
+-- ), child_lov_1 as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--     VALUES ('Permit On Site', null, (select id from parent_lov), 0, '2021-08-27 22:17:09.200148', null, 2356764, null, false, null, null)
+-- ), child_lov_2 as (
+-- INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+--   VALUES ('Permit Not On Site - Technician No Show', null, (select id from parent_lov), 1, '2021-08-27 22:17:09.201387', null, 2356764, null, false, null, null)
+-- ), child_lov_3 as (
+--   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
+-- VALUES ('Permit Not On Site - Other', null, (select id from parent_lov), 2, '2021-08-27 22:17:09.202630', null, 2356764, null, false, null, null)
+-- ) -- then insert the custom field with the appropriate list of value
+-- INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id)
+-- VALUES ((select id from parent_lov), 3, 'Permit Pickup and Delivery Event Outcome', 7, '2021-08-27 22:17:09.205111', null, 2356764, null, false, null, null, null, null, false, null, null);
+-- -- CUSTOM FIELDS -non-lov
+-- INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id) VALUES (null, 3, 'Permit Pickup Scheduled By', 10, '2021-08-27 22:13:06.331713', null, 2356764, null, false, 2, '{165,168,173}', null, null, false, null, null);
+-- INSERT INTO flow.custom_field (list_of_value_id, company_id, field_name, company_data_type_id, date_created, date_modified, created_by_id, modified_by_id, archived, company_system_list_id, system_list_option_ids, custom_field_sql_reference_table, custom_field_sql_key, readonly, migrated_original_id, parent_custom_field_id) VALUES (null, 3, 'Permit Signature Scheduled By', 10, '2021-08-27 22:15:20.519558', null, 2356764, null, false, 2, '{165,168,173}', null, null, false, null, null);
 -- CUSTOM FIELD OBJECT TYPE RELATION
 INSERT INTO flow.custom_field_object_type (custom_field_id, company_object_type_id, archived, show_on_insert, date_created, date_modified, created_by_id, modified_by_id, require_on_insert) VALUES ((select id from flow.custom_field where company_id = 3 and field_name = 'AHJ'), (select id from flow.company_object_type where company_id = 3 and object_type_id = 6), false, false, '2021-08-26 20:31:07.469339', null, 2350555, null, false);
 INSERT INTO flow.custom_field_object_type (custom_field_id, company_object_type_id, archived, show_on_insert, date_created, date_modified, created_by_id, modified_by_id, require_on_insert) VALUES ((select id from flow.custom_field where company_id = 3 and field_name = 'Permit Type'), (select id from flow.company_object_type where company_id = 3 and object_type_id = 6), false, false, '2021-08-27 22:04:28.065036', null, 2356764, null, false);
