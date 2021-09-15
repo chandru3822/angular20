@@ -7,45 +7,46 @@
 
   <customFieldGroupAssignment.getOne><![CDATA[
     select cfg.*,
-       ot.object_type,
-       cott.tab_name,
-       coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
-       et.event_type,
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(customFields)))
-                    FROM (
-                             SELECT cfga.id,
-                                    cfga.custom_field_group_id as "customFieldGroupId",
-                                    cfga.custom_field_id as "customFieldId",
-                                    cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                    cfga.field_order as "fieldOrder",
-                                    cfga.archived,
-                                    cf.field_name as "fieldName",
-                                    cfot.id as "customFieldObjectTypeId",
-                                    cfot.show_on_insert as "showOnInsert",
-                                    cfot.require_on_insert as "requireOnInsert"
-                             FROM flow.custom_field_group_assignment cfga
+             ot.object_type,
+             cott.tab_name,
+             coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
+             et.event_type,
+             coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(customFields)))
+                        FROM (
+                               SELECT cfga.id,
+                                      cfga.custom_field_group_id as "customFieldGroupId",
+                                      cfga.custom_field_id as "customFieldId",
+                                      cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                      cfga.field_order as "fieldOrder",
+                                      cfga.archived,
+                                      cf.field_name as "fieldName",
+                                      cfot.id as "customFieldObjectTypeId",
+                                      cfga.show_on_insert as "showOnInsert",
+                                      cfga.require_on_insert as "requireOnInsert"
+                               FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
-                             WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true) customFields), '[]') AS "customFields"
-    from flow.custom_field_group cfg
+                                      inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
+                               WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true) customFields), '[]') AS "customFields"
+      from flow.custom_field_group cfg
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
              inner join flow.object_type ot on ot.id = cot.object_type_id
              left join flow.event_type et on et.id = cfg.event_type_id
              left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id
-    where cfg.id = :id
+      where cfg.id = :id
   ]]></customFieldGroupAssignment.getOne>
 
   <customFieldGroupAssignment.getByObjectTypeId><![CDATA[
     select cfg.*,
-       cfg.group_name as original_group_name,
-       cott.tab_name,
-       coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
-       ot.object_type,
-       cott.tab_name,
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(customFields)))
-                    FROM (
+           cfg.group_name as original_group_name,
+           cott.tab_name,
+           coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
+           ot.object_type,
+           cott.tab_name,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(customFields)))
+                      FROM (
                              SELECT cfga.id,
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.custom_field_id as "customFieldId",
@@ -57,39 +58,40 @@
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfot.id as "customFieldObjectTypeId",
-                                    cfot.show_on_insert as "showOnInsert",
-                                    cfot.require_on_insert as "requireOnInsert",
+                                    cfga.show_on_insert as "showOnInsert",
+                                    cfga.require_on_insert as "requireOnInsert",
                                     null as "processStepName",
                                     null as "groupName",
                                     coalesce((
-                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                        FROM (
-                                                 SELECT wlp.id,
-                                                                        wlp.position_id as "positionId",
-                                                                        wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                        wlp.created_by_id as "createdById",
-                                                                        wlp.modified_by_id as "modifiedById",
-                                                                        wlp.archived
-                                                                 FROM flow.white_listed_position wlp
-                                                                 WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                   AND wlp.white_list_type_id = 1
-                                                                   AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
-                                                                   coalesce((
-                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                        FROM (
-                                                                 SELECT wlp.id,
-                                                                        wlp.position_id as "positionId",
-                                                                        wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                        wlp.created_by_id as "createdById",
-                                                                        wlp.modified_by_id as "modifiedById",
-                                                                        wlp.archived
-                                                                 FROM flow.white_listed_position wlp
-                                                                 WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                   AND wlp.white_list_type_id = 2
-                                                                   AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                               SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                               FROM (
+                                                      SELECT wlp.id,
+                                                             wlp.position_id as "positionId",
+                                                             wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                             wlp.created_by_id as "createdById",
+                                                             wlp.modified_by_id as "modifiedById",
+                                                             wlp.archived
+                                                      FROM flow.white_listed_position wlp
+                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                        AND wlp.white_list_type_id = 1
+                                                        AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                               FROM (
+                                                      SELECT wlp.id,
+                                                             wlp.position_id as "positionId",
+                                                             wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                             wlp.created_by_id as "createdById",
+                                                             wlp.modified_by_id as "modifiedById",
+                                                             wlp.archived
+                                                      FROM flow.white_listed_position wlp
+                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                        AND wlp.white_list_type_id = 2
+                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              FROM flow.custom_field_group_assignment cfga
-                                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+                                    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                                    inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfga.archived is not true
                                AND cfot.archived is not true
@@ -106,29 +108,29 @@
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfot.id as "customFieldObjectTypeId",
-                                    cfot.show_on_insert as "showOnInsert",
-                                    cfot.require_on_insert as "requireOnInsert",
+                                    cfga.show_on_insert as "showOnInsert",
+                                    cfga.require_on_insert as "requireOnInsert",
                                     ps.process_step_name as "processStepName",
                                     cfg2.group_name as "groupName",
                                     '[]' as whiteListedPositions,
                                     '[]' as hiddenWhiteListedPositions
                              FROM flow.custom_field_group_assignment cfga
-                                      inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                      inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                      inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg2.company_object_type_id
-                                      left join flow.process_step ps on cfg2.process_step_id = ps.id
+                                    inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                    inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                    inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+                                    inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg2.company_object_type_id
+                                    left join flow.process_step ps on cfg2.process_step_id = ps.id
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfot.archived is not true
                                AND cfga.archived is not true
                              ORDER BY "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-        from flow.custom_field_group cfg
-                 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                 inner join flow.object_type ot on ot.id = cot.object_type_id
-                 left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id and cott.archived is not true
-        where cot.id = :companyObjectTypeId
-          and cfg.archived is not true
-        order by cott.display_order, cfg.group_order, cfg.group_name
+    from flow.custom_field_group cfg
+           inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+           inner join flow.object_type ot on ot.id = cot.object_type_id
+           left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id and cott.archived is not true
+    where cot.id = :companyObjectTypeId
+      and cfg.archived is not true
+    order by cott.display_order, cfg.group_order, cfg.group_name
   ]]></customFieldGroupAssignment.getByObjectTypeId>
 
   <customFieldGroupAssignment.getCustomFieldsInGroup><![CDATA[
