@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,7 +102,7 @@ public class ProjectProcessStepController {
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      projectProcessStepService.performAction(action, pps);
+      projectProcessStepService.performAction(action, pps, new ArrayList<>());
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
       final String errMessage = String.format("PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",  actionId, ppsId, e.getMessage());
@@ -164,7 +165,7 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null, null);
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null, null, new ArrayList<>());
 
         // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free time... good one
         try {

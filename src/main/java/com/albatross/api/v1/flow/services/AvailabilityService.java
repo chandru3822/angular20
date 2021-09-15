@@ -614,7 +614,7 @@ public class AvailabilityService {
 
   public void cacheAvailability() {
 
-    sqlCache.update("availability.cacheAvailability", Collections.emptyMap());
+    sqlCache.query("availability.cacheAvailability", Collections.emptyMap(), String.class);
   }
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {

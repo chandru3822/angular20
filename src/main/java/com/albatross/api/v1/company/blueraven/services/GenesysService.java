@@ -268,8 +268,10 @@ public class GenesysService {
     }
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
-    // Store the Genesys Contact ID
-    updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+    if (leadLevel.equals("3")) {
+      // Store the Genesys Contact ID
+      updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+    }
 
     if (genesysContactListName == null || genesysContactListName.isEmpty()) {
       String oldContactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, true);
@@ -279,6 +281,10 @@ public class GenesysService {
       }
 
       List<DialerContact> dcOld = apiInstance.postOutboundContactlistContacts(oldContactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+      if (!leadLevel.equals("3")) {
+        // Store the Genesys Contact ID for the old list
+        updateGenesysCfv(contact.getId(), dcOld.get(0).getId(), 19357L);
+      }
     }
   }
 
@@ -366,22 +372,32 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(leadLevel, apiInstance, null, false);
-    // If no Contact  List is found
-    if (contactListId == null) {
+
+    List<String> contactListIds = new ArrayList<>();
+    if (leadLevel.equals("3")) {
+      contactListIds = getContactListIds(leadLevel, apiInstance);
+    }
+    else {
+      contactListIds.add(getContactListId(leadLevel, apiInstance, null, true));
+    }
+
+    // If no Contact List is found in Genesys
+    if (contactListIds.isEmpty()) {
       return;
     }
 
-    // Try with the Contact ID first (for imported contacts)
-    // if that doesn't work use the Genesys Agent ID (newly created Contacts)
-    try {
-      apiInstance.putOutboundContactlistContact(contactListId, contact.getId().toString(), dc);
-    } catch (ApiException e) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("contactId", contact.getId());
-      Optional<String> genesysContactId = sqlCache.get("genesys.getGenesysContactIdByContactId", params, new SingleColumnRowMapper<>(String.class));
-      if (genesysContactId.isPresent()) {
-        apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
+    for (String contactListId: contactListIds) {
+      // Try with the Contact ID first (for imported contacts)
+      // if that doesn't work use the Genesys Agent ID (newly created Contacts)
+      try {
+        apiInstance.putOutboundContactlistContact(contactListId, contact.getId().toString(), dc);
+      } catch (ApiException e) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("contactId", contact.getId());
+        Optional<String> genesysContactId = sqlCache.get("genesys.getGenesysContactIdByContactId", params, new SingleColumnRowMapper<>(String.class));
+        if (genesysContactId.isPresent()) {
+          apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
+        }
       }
     }
   }
@@ -533,6 +549,19 @@ public class GenesysService {
 
     return null;
   }
+
+  private HashSet<String> getContactListNameCron(String leadLevel) {
+    if (leadLevel.equals("3")) {
+      return new HashSet<>() {{
+        add("leadlevel3_week1");
+        add("leadlevel3_week2");
+        add("leadlevel3_aged");
+      }};
+    }
+
+    return new HashSet<>();
+  }
+
   // Get the Genesys id of the Contact List from Genesys
   private String getContactListId(String leadLevel, OutboundApi apiInstance, String genesysContactListName, Boolean useOldContactLists) throws IOException, ApiException {
     GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
@@ -568,6 +597,26 @@ public class GenesysService {
     }
 
     return contactListId;
+  }
+
+  // Get the Genesys id of the Contact List from Genesys
+  private List<String> getContactListIds(String leadLevel, OutboundApi apiInstance) throws IOException, ApiException {
+    HashSet<String> contactListNames = new HashSet<>();
+    List<String> contactListIds = new ArrayList<>();
+    GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
+    goclr.setPageSize(100);
+    ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
+    contactListNames.add(getContactListOldName(leadLevel));
+    contactListNames.add(getContactListName(leadLevel));
+    contactListNames.addAll(getContactListNameCron(leadLevel));
+
+    for (ContactList cl: contactListEntity.getEntities()) {
+      if (contactListNames.contains(cl.getName())) {
+        contactListIds.add(cl.getId());
+      }
+    }
+
+    return contactListIds;
   }
 
   public void processGenesysContacts()  {
