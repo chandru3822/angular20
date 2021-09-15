@@ -539,7 +539,7 @@
                                                                    AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              from flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id - cfg.company_object_type_id
+                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
