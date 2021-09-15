@@ -135,7 +135,7 @@ public class ProjectProcessStepService {
     sqlCache.update("projectProcessStep.removeOwner", params);
   }
 
-  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers, Long cancelledCompanyProcessStepStatusTypeId, Long callingProcessStepActionId, Long callingProcessStepId) {
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers, Long cancelledCompanyProcessStepStatusTypeId, Long callingProcessStepActionId, Long callingProcessStepId, List<Long> performedActions) {
     User user = securityService.getCurrentUser();
     ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
@@ -166,7 +166,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring project process step is active and we're in autotriggers
       if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, callingProcessStepId);
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, callingProcessStepId, performedActions);
       }
     }
   }
@@ -270,7 +270,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring project process step is active and we're in autotriggers
       if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId);
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId, new ArrayList<>());
       }
     }
 
@@ -404,11 +404,11 @@ public class ProjectProcessStepService {
 
   @Transactional
   public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
-    return performAutoTriggerActions(ppsId, userDetails, null, null);
+    return performAutoTriggerActions(ppsId, userDetails, null, null, new ArrayList<>());
   }
 
   @Transactional
-  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId) {
+  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, List<Long> performedActions) {
       // Set the security context so we have user details in the async downline
       securityService.setCurrentUserDetails(userDetails);
 
@@ -420,7 +420,7 @@ public class ProjectProcessStepService {
           pps.getActions().forEach(action -> {
               final boolean isSameAction = (callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId()));
               final boolean isSameProcessStep = (callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId()));
-              if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && !isSameProcessStep) {
+              if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && !isSameProcessStep && !performedActions.contains(action.getId())) {
                   try {
                       List<Long> reqIds = action.getProcessStepLogicList().stream()
                           .filter(step -> step.getProcessStepRequirementId() != null)
@@ -432,16 +432,21 @@ public class ProjectProcessStepService {
                           .collect(Collectors.toList());
                     ProjectProcessStepAction actionResult = this.canPerformAction(action, pps, reqs);
                       if (actionResult.getCanPerform()) {
-                          List<Long> newPpsIds = this.performAction(action, pps);
+                          performedActions.add(action.getId());
+                          List<Long> newPpsIds = this.performAction(action, pps, performedActions);
                           if (!newPpsIds.isEmpty()) {
                             createdPpsIds.addAll(newPpsIds);
                           }
                       }
+                  } catch (StackOverflowError e) {
+                    final String errMessage = String.format("PPS: INFINITE LOOP DETECTED - Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
+                    log.error(errMessage);
+                    throw new RuntimeException(errMessage);
                   } catch (Exception e) {
                     final String errMessage = String.format("PPS: Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
-                      log.error(errMessage);
-                      e.printStackTrace();
-                      throw new RuntimeException(errMessage);
+                    log.error(errMessage);
+                    e.printStackTrace();
+                    throw new RuntimeException(errMessage);
                   }
               }
           });
@@ -451,7 +456,7 @@ public class ProjectProcessStepService {
   }
 
   @Transactional
-  public List<Long> performAction(ProcessStepAction action, ProjectProcessStep pps) {
+  public List<Long> performAction(ProcessStepAction action, ProjectProcessStep pps, List<Long> performedActions) {
     /*
      **High level pseudo logic:**
 
@@ -467,7 +472,7 @@ public class ProjectProcessStepService {
     User user = securityService.getCurrentUser();
     //update process step status if needed
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), true, null, action.getId(), pps.getProcessStepId());
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), true, null, action.getId(), pps.getProcessStepId(), performedActions);
     }
 
     //remove process step owner if needed (BR request, dont hate)
@@ -480,7 +485,7 @@ public class ProjectProcessStepService {
       this.setProjectStatus(pps.getProjectId(), action.getCompanyProjectStatusTypeId(), false);
     }
 
-    performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());
+    performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), performedActions);
 
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
@@ -488,7 +493,7 @@ public class ProjectProcessStepService {
       Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId());
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
-          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId());
+          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions);
       }
     });
 
@@ -950,7 +955,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-    public void performChildFunctions(Long actionId, Long ppsId, Long processStepId) {
+    public void performChildFunctions(Long actionId, Long ppsId, Long processStepId, List<Long> performedActions) {
         List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
         childFunctions.forEach(childFunction -> {
             try {
@@ -963,7 +968,7 @@ public class ProjectProcessStepService {
         });
 
         if (!childFunctions.isEmpty()) {
-          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), actionId, processStepId);
+          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), actionId, processStepId, performedActions);
         }
     }
 

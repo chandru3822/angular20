@@ -160,8 +160,8 @@
                 <DatetimePickerInput
                   v-model="schedule.startDate"
                   :timezone="timezone"
-                  :readonly="!userCanAdd"
-                  :disabled="!userCanAdd"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -170,8 +170,8 @@
                 <DatetimePickerInput
                   v-model="schedule.endDate"
                   :timezone="timezone"
-                  :readonly="!userCanAdd"
-                  :disabled="!userCanAdd"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
