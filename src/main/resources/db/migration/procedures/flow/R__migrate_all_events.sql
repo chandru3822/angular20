@@ -15,7 +15,9 @@ declare
   v_cfg_id_153_ns                integer;
   v_cfg_id_153_ri                integer;
   v_installation_id              integer;
-v_permit_pickup_delivery_id     integer;
+  v_permit_pickup_delivery_id    integer;
+  v_permit_submission_id         integer;
+  v_energization_id              integer;
 
 BEGIN
 
@@ -52,6 +54,16 @@ BEGIN
   into v_permit_pickup_delivery_id
   from flow.event
   where temp_cfg_id = 47;
+
+  select id
+  into v_permit_submission_id
+  from flow.event
+  where temp_cfg_id = 28;
+
+  select id
+  into v_energization_id
+  from flow.event
+  where temp_cfg_id = 362;
 
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
   raise notice 'starting Schedule closer appointment';
@@ -258,7 +270,7 @@ BEGIN
             hidden
      from flow.custom_field_group_assignment cfga
      where id in (
-       21609,19027,19028));
+                  21609, 19027, 19028));
   perform flow.migrate_events(153);
 
   raise notice 'starting installation process';
@@ -274,8 +286,19 @@ BEGIN
   raise notice 'starting Permit pickup delivery';
   perform flow.migrate_events(16);
 
+  raise notice 'starting Permit Submission';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_permit_submission_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_permit_submission_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_permit_submission_id);
 
+  perform flow.migrate_events(13);
 
+  raise notice 'starting Energization';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_energization_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_energization_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_energization_id);
+
+  perform flow.migrate_events(85);
 
 
   --this updates all project_details

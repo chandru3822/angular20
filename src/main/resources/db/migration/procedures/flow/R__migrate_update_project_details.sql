@@ -117,6 +117,18 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+  with update_data as (
+    select ppsecfv.id as project_process_step_event_custom_field_value_id,
+           pd.id as project_details_id
+    from brs.project_details pd
+           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.online_submission_time_ppsecfv_id
+    where pd.online_submission_time is not null and online_submission_time_ppsecfv_id is not null
+  )
+  update brs.project_details pd2
+  set online_submission_time_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+  from update_data ud
+  where ud.project_details_id = pd2.id;
+
 
 END
 $$

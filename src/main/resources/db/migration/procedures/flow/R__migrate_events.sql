@@ -123,6 +123,12 @@ BEGIN
       elsif x.process_step_id = 16 then
         perform flow.migrate_schedule_permit_pickup_delivery_to_events(v_event_id,
                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 13 then
+        perform flow.migrate_schedule_permit_submission_to_events(v_event_id,
+                                                          x.project_process_step_id);
+      elsif x.process_step_id = 85 then
+        perform flow.migrate_schedule_energization_to_events(v_event_id,
+                                                          x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
