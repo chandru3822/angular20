@@ -706,6 +706,17 @@ $$
   END;
 $$;
 
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN online_submission_time_ppscfv_id TO online_submission_time_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'online_submission_time_ppscfv_id does not exists';
+  END;
+$$;
+
 
 
 update brs.project_details_config
@@ -744,7 +755,9 @@ update brs.project_details_config
 set update_first_value_only_id = 'installation_scheduled_ppsecfv_id'
 where update_first_value_only_id = 'installation_scheduled_ppscfv_id';
 
-
+update brs.project_details_config
+set update_first_value_only_id = 'online_submission_time_ppsecfv_id'
+where update_first_value_only_id = 'online_submission_time_ppscfv_id';
 
 alter table flow.custom_field_group_assignment add column  if not exists  migrated_cfga_id integer;
 
