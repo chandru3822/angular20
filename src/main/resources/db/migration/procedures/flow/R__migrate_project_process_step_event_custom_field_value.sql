@@ -2,7 +2,8 @@ CREATE OR REPLACE function flow.migrate_project_process_step_event_custom_field_
                                                                                       p_group_id integer,
                                                                                       p_project_process_step_id integer,
                                                                                       p_cfga_id integer,
-                                                                                      p_new_cfga_id boolean default false)
+                                                                                      p_new_cfga_id boolean default false,
+                                                                                      p_event_type_id integer default null)
   returns void as
 $$
   declare
@@ -20,7 +21,7 @@ BEGIN
     from flow.custom_field_group_assignment cfga
     where cfga.id = p_cfga_id;
   end if;
-
+--raise notice 'p_event_id = %  p_project_process_step_id = % p_cfga_id = % p_event_type_id = %',p_event_id,p_project_process_step_id,p_cfga_id,p_event_type_id;
   insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id,
                                                                  custom_field_group_assignment_id,
                                                                  date_value, timestamp_value, boolean_value,
@@ -31,8 +32,10 @@ BEGIN
                                                                  migrate_project_process_step_custom_field_value_id)
     (select p_event_id,
             case when p_new_cfga_id is true and p_cfga_id is not null then
-              (select id
+              (select cfga.id
                 from flow.custom_field_group_assignment cfga
+                inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                inner join flow.event e on e.id = cfg.event_id and e.id = p_event_type_id
                 where migrated_cfga_id = p_cfga_id) else ppscfv2.custom_field_group_assignment_id end,
             ppscfv2.date_value,
             ppscfv2.timestamp_value,

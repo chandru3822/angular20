@@ -1,11 +1,12 @@
 CREATE OR REPLACE function flow.migrate_schedule_resurvey_to_events(p_event_id integer,
-                                                                       p_project_process_step_id integer)
+                                                                    p_project_process_step_id integer)
   returns void as
 $$
 
 declare
-  v_resurvey_pps_id              integer;
+  v_resurvey_pps_id                 integer;
   v_site_survey_verification_pps_id integer;
+  v_schedule_resurvey_id            integer;
 BEGIN
 
   select id
@@ -26,6 +27,10 @@ BEGIN
     limit 1;
   end if;
 
+  select id
+  into v_schedule_resurvey_id
+  from flow.event
+  where temp_cfg_id = 121;
   -- this migrates Resurvey Details
 
   perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
@@ -34,30 +39,29 @@ BEGIN
                                                                      null);
 
 
-
 /*closeout details for resurvey*/
 
   if v_site_survey_verification_pps_id is not null then
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 19360,true);
+                                                                       v_site_survey_verification_pps_id, 19360, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 19363,true);
+                                                                       v_site_survey_verification_pps_id, 19363, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 19364,true);
+                                                                       v_site_survey_verification_pps_id, 19364, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21122,true);
+                                                                       v_site_survey_verification_pps_id, 21122, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id,  20859,true);
+                                                                       v_site_survey_verification_pps_id, 20859, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21201,true);
+                                                                       v_site_survey_verification_pps_id, 21201, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21202,true);
+                                                                       v_site_survey_verification_pps_id, 21202, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21205,true);
+                                                                       v_site_survey_verification_pps_id, 21205, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21203,true);
+                                                                       v_site_survey_verification_pps_id, 21203, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21204,true);
+                                                                       v_site_survey_verification_pps_id, 21204, true),v_schedule_resurvey_id;
   end if;
 
   if v_resurvey_pps_id is not null then
@@ -96,16 +100,6 @@ BEGIN
     set archived = true
     where id = v_site_survey_verification_pps_id;
   end if;
-
-  insert into brs.project_details_config(company_id, custom_field_group_assignment_id,
-                                         field_to_update, data_type_id, display_name,
-                                         second_field_to_update, second_data_type_id,
-                                         update_first_value_only, update_first_value_only_id)
-  (select company_id, (select id from flow.custom_field_group_assignment where migrated_cfga_id = 21122),
-          field_to_update, data_type_id, display_name,
-          second_field_to_update, second_data_type_id,
-          update_first_value_only, update_first_value_only_id
-    from brs.project_details_config where company_id = 3 and custom_field_group_assignment_id = 21122);
 
 
 END

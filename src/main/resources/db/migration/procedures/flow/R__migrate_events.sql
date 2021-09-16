@@ -105,6 +105,24 @@ BEGIN
       elsif x.process_step_id = 98 then
         perform flow.migrate_schedule_resurvey_to_events(v_event_id,
                                                             x.project_process_step_id);
+      elsif x.process_step_id = 168 then
+        perform flow.migrate_schedule_ahj_inspection_sc_to_events(v_event_id,
+                                                         x.project_process_step_id);
+      elsif x.process_step_id = 40 then
+        perform flow.migrate_schedule_ahj_inspection_nsc_to_events(v_event_id,
+                                                                  x.project_process_step_id);
+      elsif x.process_step_id = 153 then
+        perform flow.migrate_schedule_ahj_reinspection_wc_to_events(v_event_id,
+                                                                   x.project_process_step_id);
+      elsif x.process_step_id = 3365 then
+        perform flow.migrate_schedule_installation_to_events(v_event_id,
+                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 3383 then
+        perform flow.migrate_schedule_installation_closeout_to_events(v_event_id,
+                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 16 then
+        perform flow.migrate_schedule_permit_pickup_delivery_to_events(v_event_id,
+                                                                      x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;

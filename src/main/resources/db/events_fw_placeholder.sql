@@ -274,8 +274,8 @@ CREATE INDEX if not exists ppsecfv_timestamp_value_idx ON
   flow.project_process_step_event_custom_field_value (timestamp_value);
 CREATE INDEX if not exists ppsecfv_boolean_value_idx ON
   flow.project_process_step_event_custom_field_value (boolean_value);
-CREATE INDEX if not exists ppsecfv_text_value_idx ON
-  flow.project_process_step_event_custom_field_value (text_value);
+-- CREATE INDEX if not exists ppsecfv_text_value_idx ON
+--   flow.project_process_step_event_custom_field_value (text_value);
 CREATE INDEX if not exists ppsecfv_numeric_value_idx ON
   flow.project_process_step_event_custom_field_value (numeric_value);
 CREATE INDEX if not exists ppsecfv_int_value_idx ON
@@ -283,6 +283,7 @@ CREATE INDEX if not exists ppsecfv_int_value_idx ON
 CREATE INDEX if not exists ppsecfv_int_array_value_idx ON
   flow.project_process_step_event_custom_field_value (int_array_value);
 
+alter table flow.project_process_step_event_custom_field_value drop constraint  if exists ppsecfv_unique_cfga_pps_event_id;
 ALTER TABLE flow.project_process_step_event_custom_field_value
   ADD CONSTRAINT ppsecfv_unique_cfga_pps_event_id UNIQUE (project_process_step_event_id, custom_field_group_assignment_id);
 
@@ -648,6 +649,63 @@ $$
   END;
 $$;
 
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN site_survey_verified_date_ppscfv_id TO site_survey_verified_date_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'site_survey_verified_date_ppscfv_id does not exists';
+  END;
+$$;
+
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN appointment_check_in_ppscfv_id TO appointment_check_in_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'appointment_check_in_ppsecfv_id does not exists';
+  END;
+$$;
+
+
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN ahj_final_inspection_verified_ppscfv_id TO ahj_final_inspection_verified_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'ahj_final_inspection_verified_ppsecfv_id does not exists';
+  END;
+$$;
+
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN ahj_inspection_scheduled_date_ppscfv_id TO ahj_inspection_scheduled_date_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'ahj_inspection_scheduled_date_ppsecfv_id does not exists';
+  END;
+$$;
+
+
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN installation_scheduled_ppscfv_id TO installation_scheduled_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'installation_scheduled_ppscfv_id does not exists';
+  END;
+$$;
+
 
 
 update brs.project_details_config
@@ -665,6 +723,27 @@ where update_first_value_only_id = 'first_appointment_missed_ppscfv_id';
 update brs.project_details_config
 set update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppsecfv_id'
 where update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'site_survey_verified_date_ppsecfv_id'
+where update_first_value_only_id = 'site_survey_verified_date_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'appointment_check_in_ppsecfv_id'
+where update_first_value_only_id = 'appointment_check_in_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'ahj_final_inspection_verified_ppsecfv_id'
+where update_first_value_only_id = 'ahj_final_inspection_verified_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'ahj_inspection_scheduled_date_ppsecfv_id'
+where update_first_value_only_id = 'ahj_inspection_scheduled_date_ppscfv_id';
+
+update brs.project_details_config
+set update_first_value_only_id = 'installation_scheduled_ppsecfv_id'
+where update_first_value_only_id = 'installation_scheduled_ppscfv_id';
+
 
 
 alter table flow.custom_field_group_assignment add column  if not exists  migrated_cfga_id integer;
