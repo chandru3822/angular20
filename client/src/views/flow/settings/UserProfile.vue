@@ -45,6 +45,7 @@
                         label="Username">
           </v-text-field>
           <v-text-field v-model="user.phoneNumber"
+                        :rules="userPhoneRule"
                         placeholder="Enter a value"
                         required
                         label="Phone">
@@ -62,6 +63,7 @@
                         v-if="!userIsMasquerading"
                         placeholder="Enter a new password"
                         required
+                        autocomplete="new-password"
                         type="password"
                         :rules="[passwordRule]"
                         label="Change Password">
@@ -71,6 +73,7 @@
                         placeholder="Verify password"
                         required
                         type="password"
+                        autocomplete="new-password"
                         :rules="[passwordRule]"
                         label="Confirm Password">
           </v-text-field>
@@ -151,6 +154,10 @@ export default {
       constants,
       addImage: false,
       snackbar: {},
+      userPhoneRule: [
+        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"
+      ],
       // timeValue: '2014-06-01T12:00:00Z',
       // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),

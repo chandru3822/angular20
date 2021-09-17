@@ -591,11 +591,22 @@
             </v-btn>
           </v-card>
           <v-card flat v-if="expandActions">
+            <v-card-title class="pt-0">
+              <v-text-field
+                v-model="actionSearch"
+                prepend-inner-icon="search"
+                label="Search Actions"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-card-title>
+            <v-divider></v-divider>
             <v-data-table
               :headers="actionHeaders"
               :items="filterActions()"
               :items-per-page="-1"
               single-expand
+              :search="actionSearch"
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
               :mobile-breakpoint="0"
@@ -1374,6 +1385,7 @@
         addChildFunction: false,
         actionLogicError: false,
         actionLogicErrorMsg: '',
+        actionSearch: '',
         newChildProcessStep: {},
         cancelledCompanyStatuses: [],
         activeStatusesAssignedToStep: [],

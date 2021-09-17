@@ -396,7 +396,13 @@ public class GenesysService {
         params.put("contactId", contact.getId());
         Optional<String> genesysContactId = sqlCache.get("genesys.getGenesysContactIdByContactId", params, new SingleColumnRowMapper<>(String.class));
         if (genesysContactId.isPresent()) {
-          apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
+          try {
+            apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
+          } catch (ApiException ae) {
+            JSONObject apiException = new JSONObject(ae.getRawBody());
+            String msg = "GENE: Error updating contactId " + contactId.toString()+": {}";
+            log.error(msg, apiException.getString("message"));
+          }
         }
       }
     }
