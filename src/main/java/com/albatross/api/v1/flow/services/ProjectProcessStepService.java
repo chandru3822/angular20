@@ -1529,14 +1529,14 @@ public class ProjectProcessStepService {
         switch (r.getDataTypeRequirementId().intValue()) {
           case 6:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? zonedFieldValue.toLocalDateTime() : null, zonedNow.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
             break;
           case 7:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? zonedFieldValue.toLocalDateTime() : null, zonedNow.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
             break;
           case 8:
-            passed = compareDates((fieldValue != null) ? fieldValue : null, zonedNow, r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? zonedFieldValue.toLocalDateTime() : null, zonedNow, r.getOperatorTypeId());
             break;
           case 9:
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
