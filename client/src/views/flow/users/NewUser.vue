@@ -34,7 +34,7 @@
               ></v-select>
               <v-text-field text
                             label="Phone"
-                            :rules="requiredRules"
+                            :rules="userPhoneRule"
                             v-model="user.phoneNumber"></v-text-field>
               <v-text-field text
                             label="E-Mail"
@@ -159,7 +159,12 @@
         filters: [],
         timezone: this.$store.state.user.details.timezone.value,
         newPositionHierarchyPopulated: false,
-        newPosition: {}
+        newPosition: {},
+        userPhoneRule: [
+          () => ((this.user.phoneNumber != null && this.user.phoneNumber !== '')) || "Field is required",
+          v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+          v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
+        ],
       }
     },
     created() {
