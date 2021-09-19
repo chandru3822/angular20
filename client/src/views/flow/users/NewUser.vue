@@ -23,19 +23,6 @@
                             label="Last Name"
                             :rules="requiredRules"
                             v-model="user.lastName"></v-text-field>
-              <v-text-field text
-                            label="Address"
-                            v-model="user.street1"></v-text-field>
-              <v-text-field text
-                            label="City"
-                            v-model="user.city"></v-text-field>
-              <v-autocomplete v-model="user.companyStateId"
-                              :items="states"
-                              autocomplete="off"
-                              label="State"
-                              item-text="state"
-                              item-value="id"
-                              attach/>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select attach v-model="user.userStatusTypeId"
@@ -53,15 +40,6 @@
                             label="E-Mail"
                             :rules="emailRules"
                             v-model="user.email"></v-text-field>
-              <v-text-field text
-                            label="Zip Code"
-                            v-model="user.postalCode"></v-text-field>
-              <v-select attach v-model="user.companyCountryId"
-                        :items="countries"
-                        label="Country"
-                        item-text="country"
-                        item-value="id"
-              ></v-select>
             </v-col>
           </v-row>
         </v-container>
