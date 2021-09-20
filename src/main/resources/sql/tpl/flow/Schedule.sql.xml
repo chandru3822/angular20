@@ -58,6 +58,7 @@
       ppse.id as project_process_step_event_id,
       pse.id as process_step_event_id,
       e.event_name,
+      e.id as event_id,
       sl.system_list_type_id,
       ppse.start_time as start,
       ppse.end_time as "end",
