@@ -268,10 +268,8 @@ public class GenesysService {
     }
 
     List<DialerContact> dc = apiInstance.postOutboundContactlistContacts(contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
-    if (leadLevel.equals("3")) {
-      // Store the Genesys Contact ID
-      updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
-    }
+    // Store the Genesys Contact ID
+    updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
 
     if (genesysContactListName == null || genesysContactListName.isEmpty()) {
       String oldContactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, true);
@@ -281,10 +279,6 @@ public class GenesysService {
       }
 
       List<DialerContact> dcOld = apiInstance.postOutboundContactlistContacts(oldContactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
-      if (!leadLevel.equals("3")) {
-        // Store the Genesys Contact ID for the old list
-        updateGenesysCfv(contact.getId(), dcOld.get(0).getId(), 19357L);
-      }
     }
   }
 
@@ -373,13 +367,7 @@ public class GenesysService {
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
 
-    List<String> contactListIds = new ArrayList<>();
-    if (leadLevel.equals("3")) {
-      contactListIds = getContactListIds(leadLevel, apiInstance);
-    }
-    else {
-      contactListIds.add(getContactListId(leadLevel, apiInstance, null, true));
-    }
+    List<String> contactListIds = getContactListIds(leadLevel, apiInstance);
 
     // If no Contact List is found in Genesys
     if (contactListIds.isEmpty()) {
@@ -387,6 +375,11 @@ public class GenesysService {
     }
 
     for (String contactListId: contactListIds) {
+      // Skip empty Contact list Id's, shouldn't happen but if they do
+      if (contactListId == null || contactListId.isEmpty()) {
+        continue;
+      }
+
       // Try with the Contact ID first (for imported contacts)
       // if that doesn't work use the Genesys Agent ID (newly created Contacts)
       try {
@@ -557,11 +550,32 @@ public class GenesysService {
   }
 
   private HashSet<String> getContactListNameCron(String leadLevel) {
-    if (leadLevel.equals("3")) {
+    if (leadLevel.equals("1")) {
+      return new HashSet<>() {{
+        add("leadlevel1_week1");
+        add("leadlevel1_week2");
+        add("leadlevel1_aged");
+      }};
+    }
+    else if (leadLevel.equals("2")) {
+      return new HashSet<>() {{
+        add("leadlevel2_week1");
+        add("leadlevel2_week2");
+        add("leadlevel2_aged");
+      }};
+    }
+    else if (leadLevel.equals("3")) {
       return new HashSet<>() {{
         add("leadlevel3_week1");
         add("leadlevel3_week2");
         add("leadlevel3_aged");
+      }};
+    }
+    else if (leadLevel.equals("10")) {
+      return new HashSet<>() {{
+        add("leadlevel10_week1");
+        add("leadlevel10_week2");
+        add("leadlevel10_aged");
       }};
     }
 
