@@ -63,6 +63,13 @@ select (select process_step_id
        2350555
 from flow.event e;
 
+--change the Installer unique behavior to be on Schedule Closer Appt instead of Closer Appt - per M.M. per Judson
+update flow.custom_field_group
+set unique_behavior_type_id = 2
+where process_step_id = 1
+  and group_name = 'Closer Appointment Scheduling'
+  and archived is false;
+
 --attachment types
 
 
