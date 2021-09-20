@@ -351,6 +351,12 @@ public class GenesysService {
     contactMap.remove("genesys_contact_list_name");
 
     String leadLevel = (String) contactMap.remove("lead_level");
+
+    // Genesys contacts will have a lead level
+    if (leadLevel == null || leadLevel.isEmpty()) {
+      return;
+    }
+
     if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
       verseWebhookService.postContact(contactMap, false);
