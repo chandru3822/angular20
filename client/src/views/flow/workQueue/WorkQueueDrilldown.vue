@@ -47,7 +47,6 @@
                   :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
                 <v-text-field outlined
-                              v-if="header.value !== 'notes' && header.text !== 'Next Follow-up Date'"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
@@ -80,15 +79,16 @@
               <td v-for="c in customColumns">
                 {{ getColumnValue(item, c)}}
               </td>
+              <td class="note-created-at">
+                {{item.firstNoteCreatedAt | formatDate('timestamp')}}
+              </td>
               <td class="notes-follow-up">
-                <div v-if="item.notes && item.notes.length > 0">
-                  {{item.notes[0].followUpDate | formatDate('date')}}
-                </div>
+                  {{item.followUpDate | formatDate('date')}}
               </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
-                  <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
-                     {{item.notes[0].note}}
+                  <pre class="app-pre-wrapper">
+                     {{item.firstNoteContent}}
                   </pre>
                   <v-spacer></v-spacer>
                   <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
@@ -145,6 +145,8 @@
   import {DateTime} from 'luxon'
   import cloneDeep from 'lodash.clonedeep'
   import constants from '@/helpers/constants'
+  import moment from 'moment'
+
   import {
     getRequestWithParams,
     postRequest,
@@ -287,8 +289,14 @@
           this.results.forEach(r => {
             r.showNotesModal = false
             r.notes = JSON.parse(r['Notes'])
+            r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null,
+            r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
+            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('MM/DD/YYYY h:mm a') : null,
+            r.firstNoteContent = r.notes[0]?.note,
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
             r.owningPositions = JSON.parse(r['Owning Positions'])
+            console.log('result 1 here',r.firstNoteCreatedAt)
+            console.log('result 1 here',r.firstNoteCreatedAtFormatted)
           })
 
           this.masterResults = cloneDeep(this.results)
@@ -322,13 +330,29 @@
           })
           //add the notes column to the end
           this.headers.push({
-            text: 'Next Follow-up Date',
-            value: 'notes',
+            text: 'Note Created At',
+            value: 'firstNoteCreatedAtFormatted',
+            width: 200,
             sort: (a,b) => {
-              return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
+              console.log('randaLogger', a)
+              // return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
+              // return new Date(a) - new Date(b)
+              if(null != a || null != b) {
+                return new Date(a) - new Date(b)
+              } else {
+                return (a === null) - (b === null) || a - b
+              }
             },
             show: true })
-          this.headers.push({ text: 'Note Content', value: 'notes', sortable: false, show: true, width: 250 })
+          this.headers.push({
+            text: 'Next Follow-up Date',
+            value: 'followUpDate',
+            sort: (a,b) => {
+              // return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
+              return new Date(a) - new Date(b)
+            },
+            show: true })
+          this.headers.push({ text: 'Note Content', value: 'firstNoteContent', sortable: false, show: true, width: 250 })
 
           //check for a cached search and filter results accordingly
           if(this.cachedFilters[this.workQueueTypeId]) {
