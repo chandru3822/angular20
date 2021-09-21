@@ -545,7 +545,7 @@ public class ProjectService {
         params.put("latitude", latitude);
         params.put("longitude", longitude);
         params.put("id", id);
-
+        log.info("PROJ: Trying to update geo location for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
         sqlCache.update("project.updateGeoLocation", params);
         locationUtils.getTimezoneByLatLong(id, longitude, latitude, new CustomTimeZoneFunction());
 
