@@ -61,7 +61,7 @@ public class UserController {
     if (userService.usernameExists(user.getUsername(), user.getId())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use", new Exception());
     }
-    if (null != user.getNewPassword() && user.getNewPassword().length() < 8) {
+    if (null != user.getNewPassword() && !user.getNewPassword().isEmpty() && user.getNewPassword().length() < 8) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
     }
     if (user.getUsername().length() < 3) {

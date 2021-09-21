@@ -139,8 +139,8 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getInsertFieldsByType(null, ObjectType.ORGANIZATION.id);
   }
 
-  @PutMapping(value = "/updateFieldShowOrRequireOnInsert", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateFieldShowOrRequireOnInsert(@RequestBody CustomFieldObjectType objectType) {
-    customFieldGroupService.updateFieldShowOrRequireOnInsert(objectType);
+  @PutMapping(value = "/updateFieldShowOrRequire", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateFieldShowOrRequire(@RequestBody CustomField customField) {
+    customFieldGroupService.updateFieldShowOrRequire(customField);
   }
 }
