@@ -50,7 +50,7 @@
 
   <note.insertNote><![CDATA[
     insert into flow.note(parent_id, created_by_id, note, follow_up_date)
-    values (:parentId, :userId, :note, :followUpDate)
+    values (:parentId, :userId, :note, :followUpDate::date)
   ]]></note.insertNote>
 
   <note.getNote><![CDATA[
@@ -74,7 +74,7 @@
         set note = :note,
             modified_by_id = :userId,
             date_modified = now(),
-            follow_up_date = :followUpDate
+            follow_up_date = :followUpDate::date
     where id = :id
   ]]></note.updateNote>
 

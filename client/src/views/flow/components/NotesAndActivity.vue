@@ -420,8 +420,8 @@ export default {
       selectedParent: {},
       headers: [
         {text: 'Notes Feed', value: 'note', show: true},
-        {text: 'Created By', value: 'createdBy', show: true},
-        {text: 'Follow Up Date', value: 'followUpDate', show: this.isWqtNote},
+        {text: 'Note Created', value: 'createdBy', show: true},
+        {text: 'Next Follow-up Date', value: 'followUpDate', show: this.isWqtNote},
         {text: null, value: 'icons', show: true, width: '50px'}
       ],
       expanded: [],

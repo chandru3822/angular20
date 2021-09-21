@@ -9,6 +9,13 @@
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-switch
+              v-if="results.length > 0"
+              v-model="hideFutureFollowUps"
+              class="mx-2 mt-5"
+              label="Hide Records with a next follow-up date in the future"
+              @change="filterFutureFollowUps()"
+            />
             <v-btn text @click="exportCsv" v-if="results.length > 0">
               <v-icon class="mr-2">mdi-cloud-download</v-icon>
               Export
@@ -40,7 +47,7 @@
                   :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
                 <v-text-field outlined
-                              v-if="header.value !== 'notes' && header.text !== 'Follow Up Date'"
+                              v-if="header.value !== 'notes' && header.text !== 'Next Follow-up Date'"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
@@ -154,6 +161,7 @@
       return {
         snackbar: {},
         showNotesModal: false,
+        hideFutureFollowUps: false,
         selectedPps: {},
         filters: {},
         cachedFilters: {},
@@ -170,6 +178,7 @@
         unassigned: this.$route.query.unassigned,
         installationCrewIds: this.$route.query.installationCrewIds,
         results: [],
+        filteredResults: [],
         masterResults: [],
         customColumns: [],
         totalItems: 0,
@@ -204,9 +213,22 @@
     computed: {},
     async created() {
       this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
+      this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqDrilldownFollowUps')) || false
       await this.getWorkDetails()
     },
     methods: {
+      filterFutureFollowUps() {
+        localStorage.setItem('hideFutureWqDrilldownFollowUps', JSON.stringify(this.hideFutureFollowUps))
+        if(this.hideFutureFollowUps) {
+          this.filteredResults = cloneDeep(this.results)
+          this.results = this.results.filter(r => {
+            let firstNoteFollowUp = r.notes[0]?.followUpDate
+            return firstNoteFollowUp === null || firstNoteFollowUp === undefined || new Date(firstNoteFollowUp) <= new Date()
+          })
+        } else {
+          this.results = cloneDeep(this.filteredResults)
+        }
+      },
       getColumnValue (item, c) {
         if(c.processStepName == null) {
           return item[c.name]
@@ -271,6 +293,10 @@
 
           this.masterResults = cloneDeep(this.results)
 
+          if(this.hideFutureFollowUps) {
+            this.filterFutureFollowUps()
+          }
+
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
             let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
@@ -296,13 +322,13 @@
           })
           //add the notes column to the end
           this.headers.push({
-            text: 'Follow Up Date',
+            text: 'Next Follow-up Date',
             value: 'notes',
             sort: (a,b) => {
               return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
             },
             show: true })
-          this.headers.push({ text: 'Notes', value: 'notes', sortable: false, show: true, width: 250 })
+          this.headers.push({ text: 'Note Content', value: 'notes', sortable: false, show: true, width: 250 })
 
           //check for a cached search and filter results accordingly
           if(this.cachedFilters[this.workQueueTypeId]) {

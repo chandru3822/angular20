@@ -15,7 +15,7 @@ import java.util.List;
 public class Note {
 
   private Long id, parentId, createdById;
-  private String note, createdBy, installDashTile;
+  private String note, createdBy, installDashTile, followUpDate;
   private Boolean archived;
   private UserPosition createdByPrimaryPosition;
 
@@ -27,7 +27,7 @@ public class Note {
   //it bugs me that i have to add these for the ppswqt note that needs 2 primary ids
   private Long projectProcessStepId, processStepWorkQueueTypeId;
 
-  private Date dateCreated, followUpDate;
+  private Date dateCreated;
 
   private List<Note> childNotes;
 
