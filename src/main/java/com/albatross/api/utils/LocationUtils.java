@@ -33,6 +33,7 @@ public class LocationUtils {
         .query(address)
         .build();
 
+
     mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
       @Override
       public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
