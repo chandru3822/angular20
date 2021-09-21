@@ -3,6 +3,7 @@ package com.albatross.api.config;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
+import com.albatross.api.v1.flow.services.ProjectService;
 import com.albatross.api.v1.flow.services.SMSService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,10 +58,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.refreshUserPositionOrgs.enabled:false}")
     private boolean refreshUserPositionOrgs;
 
+    @Value(value = "${app.cron.fillProjectGeoCoords.enabled:false}")
+    private boolean fillProjectGeoCoords;
+
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
     private final GenesysService genesysService;
+    private final ProjectService projectService;
 
 
     @Override
@@ -127,6 +132,16 @@ public class ScheduledConfig implements SchedulingConfigurer {
         log.info("*** CRON: start auto triggers ***");
         projectProcessStepService.performTimeBasedAutoTriggers();
         log.info("*** CRON: end auto triggers ***");
+      }
+    }
+
+    // @TODO: This is temporary - https://trello.com/c/IUk94IAk
+    @Scheduled(cron = "0 30 23 * * *", zone = "America/Denver")
+    public void fillProjectGeoCoords() {
+      if (fillProjectGeoCoords) {
+        log.info("*** CRON: start project geo coords ***");
+        projectService.fillGeoCoords();
+        log.info("*** CRON: end project geo coords ***");
       }
     }
 
