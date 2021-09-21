@@ -12,7 +12,7 @@
             <v-switch
               v-if="results.length > 0"
               v-model="hideFutureFollowUps"
-              class="mx-2 mt-5"
+              class="mx-2 mt-5 wq-follow-up-switch"
               label="Hide Records with a next follow-up date in the future"
               @change="filterFutureFollowUps()"
             />
@@ -428,6 +428,15 @@
 
   #wq-drilldown-table .v-data-table-header th {
     white-space: nowrap;
+  }
+
+  .wq-follow-up-switch label {
+    font-size: 14px;
+  }
+
+  .wq-follow-up-switch .v-input--selection-controls__input {
+    transform: scale(0.775);
+    transform-origin: center;
   }
 </style>
 

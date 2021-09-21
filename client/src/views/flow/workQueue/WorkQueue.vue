@@ -307,9 +307,10 @@ export default {
 .wq-follow-up-switch label {
   font-size: 14px;
 }
-.wq-follow-up-switch input {
-  height: 10px !important;
-  max-height: 10px !important;
+
+.wq-follow-up-switch .v-input--selection-controls__input {
+  transform: scale(0.775);
+  transform-origin: center;
 }
 </style>
 
