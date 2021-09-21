@@ -241,7 +241,11 @@
       <!-- FUNNEL -->
       <div class="funnel-container">
         <div v-show="funnelStats.length > 0" id="funnel-background"
-             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"></div>
+             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"
+             :stype="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
+                                    showPipelineCustomDates && windowInnerWidth >= 1135 ? '84px' :
+                                    windowInnerWidth < 1135 ? '63px' : '69px'}"
+        ></div>
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
@@ -676,11 +680,15 @@
       <v-col cols="12" id="incentive-container">
         <img id="incentive-banner" src="../../../assets/blueraven/top_gun_white.svg" alt="incentive competition banner">
         <div id="milestones-container">
-          <div id="aim-high-phase" class="milestone" :class="{'active-milestone': is_q1}"
+          <div id="aim-high-phase" class="milestone" :class="{'active-milestone': is_q1,
+                        'align-items-center': windowInnerWidth < 1135,
+                        'align-items-flex-start': windowInnerWidth >= 1135
+                        }"
                @click="milestoneDrilldown(1)">
             <span class="milestone-top-label">Aim High</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q1_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ pitchCounts.q1 }} Pitches</span>
                 <div class="milestone-stars-container"
@@ -697,11 +705,16 @@
             <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
           </div>
 
-          <div id="fly-phase" class="milestone" :class="{'active-milestone': is_q2}"
+          <div id="fly-phase" class="milestone"
+               :class="{'active-milestone': is_q2,
+                        'align-items-center': windowInnerWidth < 1135 || is_q2,
+                        'align-items-flex-end': is_q1,
+                        'align-items-flex-start': is_q3 || is_q4}"
                @click="milestoneDrilldown(2)">
             <span class="milestone-top-label">Fly</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q2_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ pitchCounts.q2 }} Pitches</span>
                 <div class="milestone-stars-container"
@@ -718,11 +731,16 @@
             <span class="milestone-bottom-label">{{ q2_lower_label }}</span>
           </div>
 
-          <div id="fight-phase" class="milestone" :class="{'active-milestone': is_q3}"
+          <div id="fight-phase" class="milestone"
+               :class="{'active-milestone': is_q3,
+                        'align-items-center': windowInnerWidth < 1135 || is_q3,
+                        'align-items-flex-end': is_q1 || is_q2,
+                        'align-items-flex-start': is_q4}"
                @click="milestoneDrilldown(3)">
             <span class="milestone-top-label">Fight</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q3_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ pitchCounts.q3 }} Pitches</span>
                 <div class="milestone-stars-container"
@@ -739,11 +757,15 @@
             <span class="milestone-bottom-label">{{ q3_lower_label }}</span>
           </div>
 
-          <div id="win-phase" class="milestone" :class="{'active-milestone': is_q4}"
+          <div id="win-phase" class="milestone"
+               :class="{'active-milestone': is_q4,
+                        'align-items-center': windowInnerWidth < 1135,
+                        'align-items-flex-end': windowInnerWidth >= 1135}"
                @click="milestoneDrilldown(4)">
             <span class="milestone-top-label">Win</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q4_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ pitchCounts.q4 }} Pitches</span>
                 <div class="milestone-stars-container"
@@ -773,7 +795,9 @@
             <div id="seventh-segment" class="progress-bar-segment"></div>
             <div id="eighth-segment" class="progress-bar-segment"></div>
             <div id="ninth-segment" class="progress-bar-segment"></div>
-            <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px'}"></div>
+            <div id="progress-bar-fill"
+                 :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px',
+                          width: percentAchieved + '%'}"></div>
           </div>
         </div>
 
@@ -843,7 +867,6 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import $ from 'jquery'
   import moment from 'moment'
   import constants from '@/helpers/constants'
   import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
@@ -976,6 +999,7 @@
       }
     }),
     computed: {
+      windowInnerWidth () { return window.innerWidth},
       is_q1 () { return this.currentQuarter === 1 },
       is_q2 () { return this.currentQuarter === 2 },
       is_q3 () { return this.currentQuarter === 3 },
@@ -1135,18 +1159,6 @@
             this.q3_points = this.calcPointsForQuarter(this.pitchCounts.q3)
             this.q4_points = this.calcPointsForQuarter(this.pitchCounts.q4)
 
-            // Get milestone medals
-            this.q1_medal_icon = this.getMilestoneMedal(this.q1_points)
-            this.q2_medal_icon = this.getMilestoneMedal(this.q2_points)
-            this.q3_medal_icon = this.getMilestoneMedal(this.q3_points)
-            this.q4_medal_icon = this.getMilestoneMedal(this.q4_points)
-
-            // Set milestone medals
-            $('#aim-high-phase .milestone-content .milestone-content-left-side').addClass(this.q1_medal_icon)
-            $('#fly-phase .milestone-content .milestone-content-left-side').addClass(this.q2_medal_icon)
-            $('#fight-phase .milestone-content .milestone-content-left-side').addClass(this.q3_medal_icon)
-            $('#win-phase .milestone-content .milestone-content-left-side').addClass(this.q4_medal_icon)
-
             // Get lower milestone labels
             this.q1_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q1)
             this.q2_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q2)
@@ -1157,7 +1169,6 @@
             this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 9) * 100
             this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
             this.progressBarIsFull = this.percentAchieved === 100
-            $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
             this.incentiveDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1168,41 +1179,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.incentiveDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      checkWindowWidth () {
-        if (window.innerWidth < 1135) {
-          $('#aim-high-phase').css('align-items', 'center')
-          $('#fly-phase').css('align-items', 'center')
-          $('#fight-phase').css('align-items', 'center')
-          $('#win-phase').css('align-items', 'center')
-          $('#aim-high-phase.active-milestone').css('align-items', 'center')
-          $('#fly-phase.active-milestone').css('align-items', 'center')
-          $('#fight-phase.active-milestone').css('align-items', 'center')
-          $('#win-phase.active-milestone').css('align-items', 'center')
-        } else {
-          if (this.is_q1) {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'flex-end')
-            $('#fight-phase').css('align-items', 'flex-end')
-            $('#win-phase').css('align-items', 'flex-end')
-          } else if (this.is_q2) {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'center')
-            $('#fight-phase').css('align-items', 'flex-end')
-            $('#win-phase').css('align-items', 'flex-end')
-          } else if (this.is_q3) {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'flex-start')
-            $('#fight-phase').css('align-items', 'center')
-            $('#win-phase').css('align-items', 'flex-end')
-          } else {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'flex-start')
-            $('#fight-phase').css('align-items', 'flex-start')
-            $('#win-phase').css('align-items', 'flex-end')
-          }
         }
       },
 
@@ -2049,26 +2025,6 @@
         }
       },
 
-      fixFunnelTopMargin () {
-        if (this.showPipelineCustomDates) {
-          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
-            $('#funnel-background').css('margin-top', '80px')
-          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('#funnel-background').css('margin-top', '82px')
-          } else if (window.innerWidth >= 1135) {
-            $('#funnel-background').css('margin-top', '84px')
-          }
-        } else {
-          if (window.innerWidth >= 737) {
-            $('#funnel-background').css('margin-top', '63px')
-          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('#funnel-background').css('margin-top', '63px')
-          } else if (window.innerWidth >= 1135) {
-            $('#funnel-background').css('margin-top', '69px')
-          }
-        }
-      },
-
       formatFunnelDate (date) {
         if (!date) return null
 
@@ -2271,10 +2227,6 @@
       this.switchTabs(this.tabNum)
     },
     mounted () {
-      $(window).bind('resize', this.checkWindowWidth)
-      this.checkWindowWidth()
-      $(window).bind('resize', this.fixFunnelTopMargin)
-
       this.myDynamicRepWatcher = this.$watch(
         () => this.$refs.repSelect.isMenuActive,
         (val) => {
@@ -2284,13 +2236,22 @@
           }
         })
     },
-    beforeDestroy () {
-      $(window).unbind('resize')
-    }
   }
 </script>
 
 <style lang="scss" scoped>
+  .align-items-center {
+    align-items: center;
+  }
+
+  .align-items-flex-start {
+    align-items: flex-start;
+  }
+
+  .align-items-flex-end {
+    align-items: flex-end;
+  }
+
   #setter-dash-container {
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
