@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.ObjLongConsumer;
 
 @Slf4j
@@ -62,6 +65,31 @@ public class ProjectService {
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
+
+  // @TODO: Project geo coords are nulling out and causing this issue - https://trello.com/c/IUk94IAk
+  // Remove this function and it's associated cron once the actual problem is fixed
+  public void fillGeoCoords() {
+    User cronUser = new User();
+    cronUser.setId(SystemSettings.CRON_USER.getId());
+    securityService.setCurrentUserDetails(new UserAccountDetails(cronUser, Collections.emptyList()));
+
+    List<Long> ids = sqlCache.query("project.getNoGeoCoords", null, new SingleColumnRowMapper<>(Long.class));
+
+    ids.forEach(projectId -> {
+      Optional<Project> project = this.getProject(projectId);
+      project.ifPresent(p -> {
+        try {
+          // Spreading out the http calls so we don't potentially overload the cron. I know it's not
+          // thread safe, but this is just a temporary band aid... ¯\_(ツ)_/¯
+          TimeUnit.MILLISECONDS.sleep(500);
+          getProjectCoordinates(p, p.getId());
+        } catch (InterruptedException ie) {
+          log.info("PROJ: Thread interruption during sleep");
+          Thread.currentThread().interrupt();
+        }
+      });
+    });
+  }
 
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
@@ -548,7 +576,8 @@ public class ProjectService {
         log.info("PROJ: Trying to update geo location for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
         sqlCache.update("project.updateGeoLocation", params);
         locationUtils.getTimezoneByLatLong(id, longitude, latitude, new CustomTimeZoneFunction());
-
+      } else {
+        log.info("PROJ: Null geo location fetched for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
       }
     }
   }
@@ -570,8 +599,9 @@ public class ProjectService {
         params.put("id", id);
 
         sqlCache.update("project.updateTimeZone", params);
+      } else {
+        log.info("PROJ: Null timezone fetched for Project ID: {}", id);
       }
-
     }
   }
 }
