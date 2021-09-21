@@ -27,7 +27,7 @@ public class Note {
   //it bugs me that i have to add these for the ppswqt note that needs 2 primary ids
   private Long projectProcessStepId, processStepWorkQueueTypeId;
 
-  private Date dateCreated;
+  private Date dateCreated, followUpDate;
 
   private List<Note> childNotes;
 

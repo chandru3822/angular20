@@ -40,7 +40,7 @@
                   :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
                 <v-text-field outlined
-                              v-if="header.value !== 'notes'"
+                              v-if="header.value !== 'notes' && header.text !== 'Follow Up Date'"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
@@ -72,6 +72,11 @@
               </td>
               <td v-for="c in customColumns">
                 {{ getColumnValue(item, c)}}
+              </td>
+              <td class="notes-follow-up">
+                <div v-if="item.notes && item.notes.length > 0">
+                  {{item.notes[0].followUpDate | formatDate('date')}}
+                </div>
               </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
@@ -290,7 +295,14 @@
               show: true })
           })
           //add the notes column to the end
-          this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
+          this.headers.push({
+            text: 'Follow Up Date',
+            value: 'notes',
+            sort: (a,b) => {
+              return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
+            },
+            show: true })
+          this.headers.push({ text: 'Notes', value: 'notes', sortable: false, show: true, width: 250 })
 
           //check for a cached search and filter results accordingly
           if(this.cachedFilters[this.workQueueTypeId]) {

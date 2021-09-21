@@ -635,6 +635,7 @@ public class SmartlistService {
         "                                    n.date_created as \"dateCreated\",\n" +
         "                                    n.date_modified as \"dateModified\",\n" +
         "                                    n.created_by_id as \"createdById\",\n" +
+        "                                    n.follow_up_date as \"followUpDate\",\n" +
         "                                    concat(creator.first_name, ' ', creator.last_name) as \"createdBy\",\n" +
         "                                    n.modified_by_id as \"modifiedById\",\n" +
         "                                    pn.project_process_step_id as \"projectProcessStepId\",\n" +
@@ -648,6 +649,7 @@ public class SmartlistService {
         "                                                                 n2.date_created as \"dateCreated\",\n" +
         "                                                                 n2.date_modified as \"dateModified\",\n" +
         "                                                                 n2.created_by_id as \"createdById\",\n" +
+        "                                                                 n2.follow_up_date as \"followUpDate\",\n" +
         "                                                                 concat(creator2.first_name, ' ', creator2.last_name) as \"createdBy\",\n" +
         "                                                                 n2.modified_by_id as \"modifiedById\",\n" +
         "                                                                 pn2.project_process_step_id as \"projectProcessStepId\",\n" +

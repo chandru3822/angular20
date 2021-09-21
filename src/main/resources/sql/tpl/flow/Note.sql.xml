@@ -11,6 +11,7 @@
        n.date_created,
        n.date_modified,
        n.created_by_id,
+       n.follow_up_date as "followUpDate",
        concat(creator.first_name, ' ', creator.last_name) as created_by,
        n.modified_by_id,
        pn.project_process_step_id,
@@ -24,6 +25,7 @@
                                     n2.date_created as "dateCreated",
                                     n2.date_modified as "dateModified",
                                     n2.created_by_id as "createdById",
+                                    n2.follow_up_date as "followUpDate",
                                     concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
                                     n2.modified_by_id as "modifiedById",
                                     pn2.project_process_step_id as "projectProcessStepId",
@@ -47,8 +49,8 @@
   ]]></note.getProjectProcessStepWorkQueueNotes>
 
   <note.insertNote><![CDATA[
-    insert into flow.note(parent_id, created_by_id, note)
-    values (:parentId, :userId, :note)
+    insert into flow.note(parent_id, created_by_id, note, follow_up_date)
+    values (:parentId, :userId, :note, :followUpDate)
   ]]></note.insertNote>
 
   <note.getNote><![CDATA[
@@ -58,6 +60,7 @@
            n.date_created,
            n.date_modified,
            n.created_by_id,
+           n.follow_up_date,
            n.archived,
            concat(creator.first_name, ' ', creator.last_name) AS created_by,
            n.modified_by_id
@@ -70,7 +73,8 @@
     update flow.note
         set note = :note,
             modified_by_id = :userId,
-            date_modified = now()
+            date_modified = now(),
+            follow_up_date = :followUpDate
     where id = :id
   ]]></note.updateNote>
 
