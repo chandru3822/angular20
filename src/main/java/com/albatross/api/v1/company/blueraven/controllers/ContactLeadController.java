@@ -213,4 +213,14 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/allieddigitalmedia", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAlliedDigitalMedia(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/solarmarketingexperts", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarMarketingExperts(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
 }
