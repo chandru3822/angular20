@@ -975,6 +975,8 @@ public class SmartlistService {
           query.append(" inner join flow.position on flow.position.id = flow.user_position.position_id and flow.position.archived is not true ");
           query.append(" inner join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
           query.append(" inner join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id and flow.user_status_type.archived is not true ");
+          query.append(" inner join flow.user_position_hierarchy_vw on flow.user_position_hierarchy_vw.user_id = flow.user.id and flow.user_position_hierarchy_vw.org_id = flow.org.id and flow.user_position_hierarchy_vw.position_id = flow.position.id ");
+          query.append(" left join lateral jsonb_array_elements(user_position_hierarchy_vw.hierarchy) obj(val) ON obj.val->>'level' = '4' ");
 
           whereClause.append(String.format(" flow.user_status_type.company_id = any(%s) and ", companySubquery));
           whereClause.append(String.format(" flow.position.company_id = any(%s) and ", companySubquery));
