@@ -44,24 +44,28 @@ public class CustomFieldValueService {
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId) {
     for(CustomFieldGroup cfg : results) {
       for(CustomFieldValue cv : cfg.getCustomFieldValues()){
-        if(null != cv.getCustomFieldSqlKey()) {
-          cv.setHasListValues(true);
-          String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
-          if(null != sql) {
-            cv.setHasListValues(true);
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("projectId", projectId);
-            params.put("userId", userId);
-            List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
-            cv.setListOfValues(listOfValues);
-          }
-        } else if (null != cv.getCompanySystemListId()) {
-          cv.setHasListValues(true);
-//          cv.getIntValue() is passed so we can add to the sub option list any option already selected but no longer available in the list
-          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue(), companyId);
-          cv.setListOfValues(listOfValues);
-        }
+        handleCustomListValueForCfv(cv, projectId, userId, companyId);
       }
+    }
+  }
+
+  public void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId) {
+    if(null != cv.getCustomFieldSqlKey()) {
+      cv.setHasListValues(true);
+      String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
+      if(null != sql) {
+        cv.setHasListValues(true);
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("projectId", projectId);
+        params.put("userId", userId);
+        List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
+        cv.setListOfValues(listOfValues);
+      }
+    } else if (null != cv.getCompanySystemListId()) {
+      cv.setHasListValues(true);
+//          cv.getIntValue() is passed so we can add to the sub option list any option already selected but no longer available in the list
+      List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue(), companyId);
+      cv.setListOfValues(listOfValues);
     }
   }
 
@@ -172,6 +176,23 @@ public class CustomFieldValueService {
     sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 
+  public List<CustomFieldValue> getUserProfileFields(Long companyId, Long objectTypeId) {
+    User user = securityService.getCurrentUser();
+    Long realCompanyId = null != companyId ? companyId : user.getCompanyId();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", realCompanyId);
+    params.put("objectTypeId", objectTypeId);
+    params.put("userId", user.trueUserId());
+
+    List<CustomFieldValue> results = sqlCache.query("customFieldValues.user.getUserProfileFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
+
+    for(CustomFieldValue cv : results) {
+      handleCustomListValueForCfv(cv, null, user.trueUserId(), realCompanyId);
+    }
+
+    return results;
+  }
+
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
@@ -202,6 +223,23 @@ public class CustomFieldValueService {
       TypeReference<List<WhiteListedPosition>> hiddenWhiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "hiddenWhiteListedPositions",
           new JsonCollectionDeserializer(hiddenWhiteListedPositionsRef, objectMapper));
+    }
+  }
+
+  public static class CustomFieldValueMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public CustomFieldValueMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValues",
+        new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
     }
   }
 }

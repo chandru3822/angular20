@@ -224,10 +224,10 @@ export default {
       try {
         this.contact.companyId = this.companyId
         const {data} = await postRequest(`/contact`, this.contact)
-        if(data && data.id) {
+        if(data && data.id && this.dirtyCfvs?.length > 0) {
           await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)
           // Save BlueRaven Solar Contacts to Genesys
-          if (this.companyId == 3) {
+          if (this.companyId === 3) {
             await postRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
           }
 

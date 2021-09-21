@@ -419,13 +419,19 @@
                           </div>
                           <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && !isProject">
                             <div>
+                              <input type="checkbox" v-model="cf.showOnUserProfile" :readonly="!userCanEdit"
+                                     v-if="parseInt(typeId) === 3"
+                                     :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
+                              Show On User Profile
+                            </div>
+                            <div>
                               <input type="checkbox" v-model="cf.showOnInsert" :readonly="!userCanEdit"
-                                     :disabled="!userCanEdit" @change="updateShowOrRequireOnInsert(cf)">
+                                     :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
                               Show On Insert
                             </div>
                             <div v-if="cf.showOnInsert" class="pl-2 pt-1">
                               <input type="checkbox" v-model="cf.requireOnInsert" :readonly="!userCanEdit"
-                                     :disabled="!userCanEdit" @change="updateShowOrRequireOnInsert(cf)">
+                                     :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
                               Require On Insert
                             </div>
                           </div>
@@ -926,15 +932,16 @@ export default {
     filterCustomFieldGroups () {
       return this.customFieldGroups.filter(cfgt => { return !cfgt.archived})
     },
-    async updateShowOrRequireOnInsert(cf) {
+    async updateShowOrRequire(cf) {
       try {
         const objectType = {
-          id: cf.customFieldObjectTypeId,
+          customFieldGroupAssignmentId: cf.customFieldGroupAssignmentId,
+          showOnUserProfile: cf.showOnUserProfile,
           showOnInsert: cf.showOnInsert,
           //can only set requireOnInsert true if showOnInsert is also true
           requireOnInsert: cf.showOnInsert ? cf.requireOnInsert : false
         }
-        await putRequest(`/customFieldGroup/updateFieldShowOrRequireOnInsert`, objectType)
+        await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
         this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)

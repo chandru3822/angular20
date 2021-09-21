@@ -19,7 +19,7 @@ public class CustomField {
       customFieldObjectTypeId, dataTypeId, companySystemListId, scheduleFieldTypeId;
   private List<Long> systemListOptionIds;
   private String fieldName, objectType, groupName, customFieldSqlKey, customFieldSqlReferenceTable, processStepName;
-  private Boolean archived, showOnInsert, requireOnInsert, hasListValues, allowMultiple, readonly, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentHidden, useParentData;
+  private Boolean archived, showOnInsert, requireOnInsert, showOnUserProfile, hasListValues, allowMultiple, readonly, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentHidden, useParentData;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;

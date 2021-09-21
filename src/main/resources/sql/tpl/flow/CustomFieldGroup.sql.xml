@@ -31,6 +31,10 @@
     where id = :id
   ]]></customFieldGroup.deleteCustomFieldGroup>
 
+  <customFieldGroup.getUserProfileFields><![CDATA[
+
+  ]]></customFieldGroup.getUserProfileFields>
+
   <customFieldGroup.getInsertFieldsByType><![CDATA[
     select cfg.id,
            cfg.group_name as "groupName",
@@ -52,7 +56,9 @@
                                     cf.field_name as "fieldName",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_data_type_id as "companyDataTypeId",
+                                    cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.show_on_insert as "showOnInsert",
+                                    cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.require_on_insert as "requireOnInsert",
                                     cdt.data_type_id as "dataTypeId",
                                     cdt.has_list_values as "hasListValues",
@@ -113,14 +119,15 @@
     order by cfg.group_order
   ]]></customFieldGroup.getInsertFieldsByType>
 
-  <customFieldGroup.updateFieldShowOrRequireOnInsert><![CDATA[
+  <customFieldGroup.updateFieldShowOrRequire><![CDATA[
     update flow.custom_field_group_assignment
       set show_on_insert = :showOnInsert,
+        show_on_user_profile = :showOnUserProfile,
         require_on_insert = :requireOnInsert,
         modified_by_id = :modifiedById,
         date_modified = now()
-    where id = :id
-  ]]></customFieldGroup.updateFieldShowOrRequireOnInsert>
+    where id = :customFieldGroupAssignmentId
+  ]]></customFieldGroup.updateFieldShowOrRequire>
 
   <customFieldGroup.checkForFieldsInUse><![CDATA[
     select null as field_name,
