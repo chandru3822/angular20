@@ -53,7 +53,7 @@
                   <v-form ref="projectEditForm">
                     <v-text-field
                       v-model="project.projectName"
-                      label="ProjectName"
+                      label="Project Name"
                     ></v-text-field>
                     <v-text-field
                       v-model="project.street1"
