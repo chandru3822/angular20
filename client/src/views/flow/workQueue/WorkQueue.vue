@@ -54,7 +54,7 @@
                 color="primaryCustom"
                 v-model="hideFutureFollowUps"
                 class="mx-2 mt-5 wq-follow-up-switch"
-                label="Hide Records with a next follow-up date in the future"
+                label="Hide work with a next follow-up date in the future"
                 @change="getWorkQueues()"
               />
             </v-col>
