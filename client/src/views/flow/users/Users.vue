@@ -28,6 +28,7 @@
               label="Primary Only"
               @change="handleOrgFilterChange(false)"
           />
+          <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn :disabled="!this.usersSelected" text @click="msgDialog = true">
@@ -211,6 +212,43 @@
       </v-col>
     </v-row>
 
+    <v-dialog v-model="selectedUsersDialog" max-width="700px" class="selected-users-dialog">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Selected Users</span>
+        </v-card-title>
+        <v-data-table
+          :headers="usersTableHeaders"
+          :items="selectedUsersDetails"
+          :footer-props="footerProps"
+          :fixed-header="true"
+          disable-sort
+          class="elevation-1"
+        >
+          <template #no-data>
+            No users available
+          </template>
+
+          <template #no-results>
+            No users available
+          </template>
+
+          <template #item="{ item, index }">
+            <tr>
+              <td class="text-left">{{item.fullName}}</td>
+              <td class="text-left">{{item.position}}</td>
+            </tr>
+          </template>
+        </v-data-table>
+        <v-card-actions class="flex-display justify-end">
+          <v-btn
+            @click="selectedUsersDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="msgDialog" max-width="800px">
       <v-card>
         <v-card-title class="headline" primary-title>
@@ -358,7 +396,7 @@
         positions: [],
         descending: true,
         footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-options': [10, 50, 100, 1000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
@@ -386,9 +424,15 @@
           statuses: [],
           positions: []
         },
+        usersTableHeaders: [
+          { text: 'Name', value: 'fullName', show: true, width: '125px' },
+          { text: 'Position', value: 'position', show: true, width: '125px' }
+        ],
         selectAllUsers: false,
         selectedUsers: [],
+        selectedUsersDetails: [],
         msgDialog: false,
+        selectedUsersDialog: false,
         messageTab: 1,
         fromEmail: '',
         fromEmails: [],
@@ -486,6 +530,7 @@
             if (selectAll) {
                 const {data} = await postRequest(`/user/search?page=${page-1}&size=9999`, params)
                 this.allUsers = data.content;
+                this.selectedUsersDetails = data.content;
             }
             else {
                 const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
@@ -621,8 +666,10 @@
       toggleSingleSelect(item) {
         if (item.selected) {
           this.selectedUsers.push(item.id)
+          this.selectedUsersDetails.push(item)
         } else {
           this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
+          this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
           this.selectAllUsers = false
         }
       },
@@ -632,6 +679,7 @@
         }
         else {
           this.selectedUsers = []
+          this.selectedUsersDetails = []
         }
 
         this.users.forEach(u => {
@@ -874,6 +922,9 @@
   .count-span {
     font-size: 0.85em;
     color: grey;
+  }
+  .user-selected {
+    margin-left: 150px;
   }
 
 </style>
