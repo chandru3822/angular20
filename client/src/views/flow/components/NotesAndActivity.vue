@@ -9,38 +9,53 @@
       </v-toolbar>
       <v-divider></v-divider>
       <v-card class="px-3 elevation-0 square-card">
-          <Mentionable
-            :keys="['@']"
-            :items="users"
-            offset="6"
-            insert-space
-          >
-            <v-textarea class="py-2" hide-details
-                        auto-grow
-                        rows="4"
-                        @change="dirtyNote = true"
-                        background-color="#F2F6F8"
-                        filled v-model="note.note">
-            </v-textarea>
+        <Mentionable
+          :keys="['@']"
+          :items="users"
+          offset="6"
+          insert-space
+        >
+          <v-textarea class="py-2" hide-details
+                      auto-grow
+                      rows="4"
+                      @change="dirtyNote = true"
+                      background-color="#F2F6F8"
+                      filled v-model="note.note">
+          </v-textarea>
 
-            <template #no-result>
-              <div class="dim">
-                No result
-              </div>
-            </template>
+          <template #no-result>
+            <div class="dim">
+              No result
+            </div>
+          </template>
 
-            <template #item-@="{ item }">
-              <div class="user">
+          <template #item-@="{ item }">
+            <div class="user">
                 <span class="dim">
                   ({{ item.value }})
                 </span>
-              </div>
-            </template>
-          </Mentionable>
-        <div class="text-left mb-2">
+            </div>
+          </template>
+        </Mentionable>
+        <div class="follow-up-reminder" v-if="isWqtNote">
+          <label class="mr-3">Set follow-up reminder for: </label>
+          <DatetimePickerInput
+            v-model="note.followUpDate"
+            :timezone="timezone"
+            :type="'date'"
+            :outlined="'outlined'"
+            :format="'MM/DD/YYYY'"
+            placeholder="Choose Date"
+            :hide-details="true"
+            :show-append-icon="true"
+            :hide-prepend-icon="true"
+          />
+        </div>
+        <div class="text-left mb-2 mt-5">
           <v-btn color="primaryCustom" class="white--text"
                  :disabled="!note.note || savingNote"
-                 @click="saveNote(note)">Save</v-btn>
+                 @click="saveNote(note)">Save
+          </v-btn>
           <v-btn text v-if="note.note" @click="[note={}, dirtyNote = false]">
             <span>cancel</span>
           </v-btn>
@@ -49,18 +64,17 @@
       <v-divider></v-divider>
 
       <v-spacer></v-spacer>
-      <h4 class="pl-3 pt-2">Notes Feed</h4>
       <v-data-table
-        :headers="headers"
+        :headers="displayedHeaders"
         :items="filterNotes()"
         :items-per-page="-1"
         single-expand
         item-key="id"
+        disable-sort
         :expanded.sync="expanded"
         hide-default-footer
-        hide-default-header
         class="elevation-0 mt-1"
-        >
+      >
 
         <template #no-data>
           There are no notes to display
@@ -70,7 +84,7 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr class="text-left" :class="{'shaded-row': index % 2}" v-if="item.edit" >
+          <tr class="text-left" :class="{'shaded-row': index % 2}" v-if="item.edit">
             <td class="py-2 pl-5" colspan="3">
               <Mentionable
                 :keys="['@']"
@@ -99,11 +113,27 @@
                   </div>
                 </template>
               </Mentionable>
+              <div class="follow-up-reminder" v-if="isWqtNote">
+                <label class="mr-3">Set follow-up reminder for: </label>
+                <DatetimePickerInput
+                  v-model="item.followUpDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :outlined="'outlined'"
+                  :format="'MM/DD/YYYY'"
+                  placeholder="Choose Date"
+                  :hide-details="true"
+                  :show-append-icon="true"
+                  :hide-prepend-icon="true"
+                />
+              </div>
               <div class="text-left mb-2">
                 <v-btn color="primaryCustom" class="white--text"
                        :disabled="!item.note"
-                       @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save</v-btn>
-                <v-btn text @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
+                       @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save
+                </v-btn>
+                <v-btn text
+                       @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
                   <span>cancel</span>
                 </v-btn>
               </div>
@@ -114,7 +144,7 @@
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
                    @click="expanded=[item]" class="pl-4 note-see-comments clickable">
-                See {{ item.childNotes.length}} comment{{item.childNotes.length > 1 ? 's' : ''}}...
+                See {{ item.childNotes.length }} comment{{ item.childNotes.length > 1 ? 's' : '' }}...
               </div>
               <div v-else-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)"
                    @click="expanded=[]" class="pl-4 note-see-comments clickable">
@@ -122,9 +152,12 @@
               </div>
             </td>
             <td class="note-created-by">
-              {{item.createdBy}} {{item.dateCreated | formatDate('timestamp')}}
+              {{ item.createdBy }} {{ item.dateCreated | formatDate('timestamp') }}
             </td>
-            <td class="text-right"  style="width: 50px;">
+            <td class="note-follow-up-date" v-if="isWqtNote">
+              {{ item.followUpDate | formatDate('date') }}
+            </td>
+            <td class="text-right" style="width: 50px;">
               <v-menu v-model="item.noteMenu"
                       :close-on-content-click="true"
                       min-width="290px">
@@ -138,7 +171,7 @@
                     <v-list-item-title>Add Comment</v-list-item-title>
                   </v-list-item>
                   <v-list-item v-if="item.createdById === userId || $store.getters.isFullAdmin"
-                    @click="[item.oldNote = item.note, item.edit = true]">
+                               @click="[item.oldNote = item.note, item.edit = true]">
                     <v-list-item-title>Edit Note</v-list-item-title>
                   </v-list-item>
                   <v-dialog
@@ -223,7 +256,8 @@
                 </v-btn>
                 <v-btn class="ml-2" v-if="item.reply"
                        @click="[item.reply=null, item.showReply = false, !item.childNotes || item.childNotes.length === 0 ? expanded=[] : null]">
-                  cancel</v-btn>
+                  cancel
+                </v-btn>
               </div>
             </div>
             <div v-for="(cn, index) in filterBy(item.childNotes, false, 'archived')" :key="index">
@@ -259,7 +293,8 @@
                 <div class="text-left mb-2">
                   <v-btn color="primaryCustom" class="white--text"
                          :disabled="!cn.note"
-                         @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save</v-btn>
+                         @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save
+                  </v-btn>
                   <v-btn text @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
                     <span>cancel</span>
                   </v-btn>
@@ -269,12 +304,12 @@
                 <v-col cols="11" class="pr-0">
                   <v-card color="#F2F6F8" class="py-0">
                     <v-card-title class="reply-note-creator pt-1 pb-0">
-                      {{cn.createdBy}}
+                      {{ cn.createdBy }}
                       <v-spacer></v-spacer>
-                      {{cn.dateCreated | formatDate('timestamp')}}
+                      {{ cn.dateCreated | formatDate('timestamp') }}
                     </v-card-title>
                     <v-card-text class="reply-note pb-1">
-                      <pre class="app-pre-wrapper">{{cn.note}}</pre>
+                      <pre class="app-pre-wrapper">{{ cn.note }}</pre>
                     </v-card-text>
                   </v-card>
                 </v-col>
@@ -289,7 +324,7 @@
                     </template>
                     <v-list>
                       <v-list-item v-if="cn.createdById === userId || $store.getters.isFullAdmin"
-                                 @click="[cn.oldNote = cn.note, cn.edit = true]">
+                                   @click="[cn.oldNote = cn.note, cn.edit = true]">
                         <v-list-item-title>Edit Comment</v-list-item-title>
                       </v-list-item>
                       <v-dialog
@@ -351,11 +386,12 @@
 import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
-import { Mentionable } from 'vue-mention'
+import {Mentionable} from 'vue-mention'
+import DatetimePickerInput from "@/components/DatetimePickerInput"
 
 export default {
   name: 'NotesAndActivity',
-  components: {Mentionable},
+  components: {Mentionable, DatetimePickerInput},
   mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,
@@ -367,7 +403,7 @@ export default {
     notes: Array,
     type: String
   },
-  data () {
+  data() {
     return {
       snackbar: {},
       addNote: false,
@@ -375,22 +411,29 @@ export default {
       dirtyNote: false,
       savingNote: false,
       userId: this.$store.state.user.details.id,
+      timezone: this.$store.state.user.details.timezone.value,
       noteOptions: [
-        { label: 'Add Comment' },
-        { label: 'Edit Note' },
-        { label: 'Delete Note' },
+        {label: 'Add Comment'},
+        {label: 'Edit Note'},
+        {label: 'Delete Note'},
       ],
       selectedParent: {},
       headers: [
-        { text: 'note', value: 'note', show: true },
-        { text: '', value: 'createdBy', show: true },
-        { text: null, value: 'icons', show: true, width: '50px' }
+        {text: 'Notes Feed', value: 'note', show: true},
+        {text: 'Note Created', value: 'createdBy', show: true},
+        {text: 'Next Follow-up Date', value: 'followUpDate', show: this.isWqtNote},
+        {text: null, value: 'icons', show: true, width: '50px'}
       ],
       expanded: [],
       users: []
     }
   },
-  created () {
+  computed: {
+    displayedHeaders() {
+      return this.headers.filter(header => header.show)
+    },
+  },
+  created() {
     this.getUsers()
   },
   methods: {
@@ -402,7 +445,7 @@ export default {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         await deleteRequest(`/note/${n.id}`)
         n.archived = true
-        if(isChildNote) {
+        if (isChildNote) {
           item.childNotes = item.childNotes.filter(cn => !cn.archived)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
@@ -427,8 +470,7 @@ export default {
             parentId: n.reply ? n.id : null,
             installDashTile: this.installDashTile
           }
-        }
-        else {
+        } else {
           // @randa: Probably should create an object type enum on the frontend that mimics the backend?
           url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
           body = {
@@ -439,16 +481,17 @@ export default {
             //these 2 fields are for pps pswqt notes which require 2 keys to save/get
             projectProcessStepId: this.primaryId,
             processStepWorkQueueTypeId: this.secondaryId,
+            followUpDate: n.followUpDate
           }
         }
 
         const {data} = await postRequest(url, body)
         // this.notes.unshift(data)
-        if(n.reply) {
+        if (n.reply) {
           n.reply = null
           n.showReply = false
           n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
-        } else if(!n.id) {
+        } else if (!n.id) {
           this.$props.notes.unshift(data)
           this.note = {}
         }
@@ -464,7 +507,9 @@ export default {
       }
     },
     filterNotes() {
-      return this.notes.filter(n => { return !n.archived})
+      return this.notes.filter(n => {
+        return !n.archived
+      })
     },
     getUsers: async function () {
       try {
@@ -491,32 +536,45 @@ export default {
   font-size: 11px;
   font-style: italic;
 }
+
 .note-see-comments {
   font-size: 11px;
   font-style: italic;
   color: #6B777D;
 }
+
 .reply-note-item {
   background-color: #F2F6F8;
   padding: 5px 15px;
   border-radius: 10px;
 }
+
 .reply-note-creator {
   color: var(--v-primaryCustom-base) !important;
   font-weight: 600;
   font-size: 12px;
 }
+
 .reply-note {
   color: var(--v-primaryCustom-base) !important;
   font-size: 12px;
   font-style: italic;
 }
+
 .reply-button-dots {
   display: flex;
   align-items: center;
 }
+
 .dim:hover {
   color: var(--v-primary-base);
   font-weight: bold;
+}
+
+.follow-up-reminder {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  width: 500px !important;
 }
 </style>
