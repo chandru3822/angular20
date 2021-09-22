@@ -164,7 +164,7 @@ public class UserService {
 //        handleSavingUserCompanies(user.getCompanies(), user.getId());
 //      }
       //save user password if sent in
-      if(null != user.getNewPassword()) {
+      if(null != user.getNewPassword() && !user.getNewPassword().isEmpty()) {
         //todo: remove this check after we turn it on and mobile is working
         if(doCompanyDefaultValidation) {
           Boolean passwordIsCompanyDefault = securityService.passwordIsCompanyDefault(user.getId(), user.getNewPassword());

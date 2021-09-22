@@ -376,6 +376,7 @@
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'),
         selectedIndex: null,
         newSchedule: {},
         allowedMinutesStep: m => m % 30 === 0,
@@ -631,8 +632,8 @@
         }
       },
       cannotDeleteSchedule(item) {
-        //per judson request - cannot delete schedules that have a start date prior to or equal to today
-        return moment(item.startDate) <= moment()
+        //per judson request - cannot delete schedules that have a start date prior to or equal to today (unless they have admin permission)
+        return !this.userIsAdmin && moment(item.startDate) <= moment()
       },
       async archiveSchedule(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)

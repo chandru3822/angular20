@@ -512,6 +512,10 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
             }, {
+              path: 'userProfileAdmin',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfileAdmin.vue'),
+            }, {
               path: 'company',
               meta: {title: 'Albatross - Settings'},
               component: () => {

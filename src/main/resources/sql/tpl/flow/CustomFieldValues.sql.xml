@@ -107,6 +107,62 @@
     order by cfg.group_order;
   ]]></customFieldValues.project.getCustomFieldGroupsAndValues>
 
+  <customFieldValues.user.getUserProfileFields><![CDATA[
+    select ucv.id,
+          ucv.user_id as "userId",
+          ucv.date_value as "dateValue",
+          ucv.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+          ucv.timestamp_value as "timestampValue",
+          ucv.boolean_value as "booleanValue",
+          ucv.text_value as "textValue",
+          ucv.numeric_value as "numericValue",
+          ucv.int_value as "intValue",
+          ucv.int_array_value as "intArrayValue",
+          cfga.custom_field_group_id as "customFieldGroupId",
+          cfga.id as "customFieldGroupAssignmentId",
+          cfga.read_only as "customFieldGroupAssignmentReadOnly",
+          cfga.hidden as "customFieldGroupAssignmentHidden",
+          cfga.custom_field_id as "customFieldId",
+          cfga.field_order as "fieldOrder",
+          cf.list_of_value_id as "listOfValueId",
+          cf.field_name as "fieldName",
+          cf.readonly,
+          cf.custom_field_sql_key as "customFieldSqlKey",
+          cf.company_system_list_id as "companySystemListId",
+          cf.system_list_option_ids as "systemListOptionIds",
+          cf.custom_field_sql_key as "customFieldSqlKey",
+          cf.company_data_type_id as "companyDataTypeId",
+          cdt.data_type_id as "dataTypeId",
+          cdt.has_list_values as "hasListValues",
+          coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                     FROM (
+                            select lov.id,
+                                   lov.name,
+                                   lov.code,
+                                   lov.parent_id,
+                                   lov.display_order
+                            from flow.list_of_value lov
+                            where lov.parent_id is not null
+                              and lov.parent_id = cf.list_of_value_id
+                              and lov.archived is not true
+                            order by lov.display_order
+                          ) listOfValues), '[]') AS "listOfValues"
+    from flow.custom_field_group_assignment cfga
+          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+          inner join flow.custom_field_group cfg2 on cfg2.id = cfga.custom_field_group_id
+          inner join flow.company_object_type cot on cfg2.company_object_type_id = cot.id
+          inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg2.company_object_type_id
+          inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+          left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :userId
+    where cfga.show_on_user_profile is true
+     and cfga.archived is not true
+     and cot.object_type_id = :objectTypeId
+     and cfot.archived is not true
+    order by cfga.field_order, cf.field_name
+
+  ]]></customFieldValues.user.getUserProfileFields>
+
   <customFieldValues.contact.getCustomFieldGroupsAndValues><![CDATA[
     select cfg.id,
        cfg.group_name as "groupName",

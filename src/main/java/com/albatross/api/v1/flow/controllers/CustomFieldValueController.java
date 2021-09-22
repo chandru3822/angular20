@@ -54,6 +54,11 @@ public class CustomFieldValueController {
     return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.USER.toString(), id);
   }
 
+  @GetMapping(value = "/getUserProfileFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldValue> getUserProfileFields () {
+    return customFieldValueService.getUserProfileFields(null, ObjectType.USER.id);
+  }
+
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> getFieldsByProjectId(@PathVariable Long projectId) {
     return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROJECT.toString(), projectId);

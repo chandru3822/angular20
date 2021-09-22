@@ -2,44 +2,52 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar" v-if="!constants.IS_MOBILE">
+        <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="validate">
+              <v-icon class="mr-2">mdi-content-save</v-icon>
+              Save Changes
+            </v-btn>
+
+            <v-btn text v-if="userIsAdmin" :to="`/settings/userProfileAdmin`">
+              <v-icon class="mr-2">mdi-cogs</v-icon>
+              Admin
+            </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
-<!--        <v-card flat style="background: aliceblue" class="text-center">-->
-<!--          <div class="pt-5">-->
-<!--            Changing the timezone in the account menu should change this value: <br/>-->
-<!--            (this section is just temporary for testing)-->
-<!--          </div>-->
-<!--          <div class="pt-5 font-weight-bold">-->
-<!--            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone.value) }}-->
-<!--          </div>-->
-<!--        </v-card>-->
       </v-col>
     </v-row>
     <v-form ref="userForm">
       <v-row>
         <v-col cols="12" md="6">
+<!--          yes, i realize this should be done better. buuuuut i just dont wanna -->
           <v-text-field v-model="user.firstName"
                         placeholder="Enter a value"
                         required
+                        v-if="showOnUserProfile('First Name')"
                         :rules="requiredRules"
                         label="First Name">
           </v-text-field>
           <v-text-field v-model="user.lastName"
                         placeholder="Enter a value"
                         required
+                        v-if="showOnUserProfile('Last Name')"
                         :rules="requiredRules"
                         label="Last Name">
           </v-text-field>
           <v-text-field v-model="user.email"
                         placeholder="Enter a value"
                         required
+                        v-if="showOnUserProfile('Email')"
                         :rules="emailRules"
                         label="E-mail">
           </v-text-field>
           <v-text-field v-model="user.username"
                         placeholder="Enter a value"
                         required
+                        v-if="showOnUserProfile('Username')"
                         type="search"
                         :rules="usernameRules"
                         label="Username">
@@ -47,29 +55,29 @@
           <v-text-field v-model="user.phoneNumber"
                         :rules="userPhoneRule"
                         placeholder="Enter a value"
+                        v-if="showOnUserProfile('Phone')"
                         required
                         label="Phone">
           </v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
           <v-select attach v-model="user.notificationTypeId"
                     :items="userNotificationTypes"
                     label="Notification"
+                    v-if="showOnUserProfile('Notification')"
                     item-text="userNotificationType"
                     item-value="id"
                     autocomplete="off">
           </v-select>
           <v-text-field v-model="user.newPassword"
-                        v-if="!userIsMasquerading"
+                        v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Enter a new password"
                         required
-                        autocomplete="new-password"
                         type="password"
+                        autocomplete="new-password"
                         :rules="[passwordRule]"
                         label="Change Password">
           </v-text-field>
           <v-text-field v-model="user.newPasswordConfirm"
-                        v-if="!userIsMasquerading"
+                        v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Verify password"
                         required
                         type="password"
@@ -77,7 +85,7 @@
                         :rules="[passwordRule]"
                         label="Confirm Password">
           </v-text-field>
-          <v-autocomplete v-if="!userIsAlbatross"
+          <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
                           v-model="user.homePageCompanyFeatureId"
                           :items="homePages"
                           label="Default Home Page"
@@ -90,17 +98,21 @@
           ></v-autocomplete>
         </v-col>
       </v-row>
-      <v-row>
-        <v-col cols="12" class="text-center">
-          <v-btn @click="validate">
-            <v-icon>mdi-content-save</v-icon>
-            Save Changes
-          </v-btn>
-        </v-col>
-      </v-row>
     </v-form>
     <v-divider class="mt-3 mb-3"></v-divider>
     <v-row>
+      <v-col cols="12" md="6">
+        <h3>Custom Fields</h3>
+        <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <CustomValueInput v-for="(cf, idx) in userProfileCustomFields"
+                        :key="idx"
+                        :callback="populateDirtyCfvs"
+                        :required="cf.requireOnInsert"
+                        :field="cf"></CustomValueInput>
+      </v-col>
+    </v-row>
+    <v-divider class="mt-3 mb-3"></v-divider>
+    <v-row v-if="showOnUserProfile('Profile Image')">
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">Profile Image</v-toolbar-title>
@@ -140,14 +152,22 @@
 
 <script>
 import { Actions } from '@/store'
+import SpinnerInline from '@/components/SpinnerInline'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {getUserProfileDefaultFields} from '@/services/userService'
+
+import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import {getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
   name: 'UserProfile',
+  components: {
+    SpinnerInline,
+    CustomValueInput
+  },
   data () {
     return {
       loadComplete: false,
@@ -158,12 +178,17 @@ export default {
         v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
         v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"
       ],
+      loadingUserProfileCustomFields: false,
+      userProfileCustomFields: [],
+      userProfileDefaultFields: [],
+      dirtyCfvs: [],
       // timeValue: '2014-06-01T12:00:00Z',
       // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),
       user: {},
       homePages: [],
       userIsAlbatross: false,
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'),
       userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
@@ -192,6 +217,8 @@ export default {
       this.userIsAlbatross = true
       this.getUser(this.userIsAlbatross)
     } else {
+      await this.getUserProfileDefaultFields()
+      this.getUserProfileCustomFields()
       this.getHomePages()
       this.getUser(false)
     }
@@ -212,6 +239,39 @@ export default {
         return 'Password Fields Must Match'
       } else {
         return true
+      }
+    },
+    showOnUserProfile(fieldName) {
+      return this.userProfileDefaultFields.filter(df => df.fieldName === fieldName).length > 0
+    },
+    async getUserProfileCustomFields() {
+      this.loadingUserProfileCustomFields = true
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customFieldValues/getUserProfileFields`)
+        this.userProfileCustomFields = data
+        this.loadingUserProfileCustomFields = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.loadingUserProfileCustomFields = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getUserProfileDefaultFields() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getUserProfileDefaultFields()
+        this.userProfileDefaultFields = data.filter(d => d.showOnUserProfile)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Default Fields')
+        this.loadingUserProfileCustomFields = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getHomePages () {
@@ -245,7 +305,10 @@ export default {
     async saveUser () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, this.user)
+        const {data} = await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, this.user)
+        if(data && data.id && this.dirtyCfvs?.length > 0) {
+          await postRequest(`/customFieldValues/user/${data.id}`, this.dirtyCfvs)
+        }
         this.user.newPassword = null
         this.user.newPasswordConfirm = null
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
@@ -327,6 +390,14 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+
+      if (!match) {
+        this.dirtyCfvs.push(field)
+      }
+
     }
   }
 }
