@@ -91,7 +91,8 @@
                      {{item.firstNoteContent}}
                   </pre>
                   <v-spacer></v-spacer>
-                  <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
+                  {{item.id}}
+                  <v-btn small fab text @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
@@ -110,6 +111,8 @@
                         :primary-id="item.projectProcessStepId"
                         :secondary-id="item.processStepWorkQueueTypeId"
                         type="ProjectProcessStep"
+                        :callback="(item) => updateRowNotes(item)"
+
                       />
                     </v-card-text>
 
@@ -166,6 +169,7 @@
         hideFutureFollowUps: false,
         selectedPps: {},
         filters: {},
+        notesPpsIndex: null, //this is used to know which row to update after a note is changed
         cachedFilters: {},
         constants,
         search: '',
@@ -295,8 +299,6 @@
             r.firstNoteContent = r.notes[0]?.note,
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
             r.owningPositions = JSON.parse(r['Owning Positions'])
-            console.log('result 1 here',r.firstNoteCreatedAt)
-            console.log('result 1 here',r.firstNoteCreatedAtFormatted)
           })
 
           this.masterResults = cloneDeep(this.results)
@@ -434,6 +436,12 @@
           localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
           return matchCount === numFiltersUsed
         })
+      },
+      updateRowNotes(item) {
+        this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null
+        this.results[this.notesPpsIndex].firstNoteCreatedAt = item.dateCreated
+        this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('MM/DD/YYYY h:mm a') : null
+        this.results[this.notesPpsIndex].firstNoteContent = item.note
       }
     },
 
