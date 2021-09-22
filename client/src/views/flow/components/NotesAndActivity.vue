@@ -401,7 +401,8 @@ export default {
     installDashTile: String,
     isWqtNote: Boolean,
     notes: Array,
-    type: String
+    type: String,
+    callback: Function
   },
   data() {
     return {
@@ -494,6 +495,10 @@ export default {
         } else if (!n.id) {
           this.$props.notes.unshift(data)
           this.note = {}
+        }
+        if(this.isWqtNote && (!n.id || this.$props.notes.findIndex(i => i.id === n.id) === 0)) {
+          //if it is a new (non-child) note or edit to the first note, send the note back in the callback so the wq ui can be updated
+          this.callback(data)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
