@@ -28,8 +28,9 @@ public class WorkQueueController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId,
                                         @RequestParam(required = false) Boolean unassigned,
-                                        @RequestParam(required = false) Long userId) {
-    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned);
+                                        @RequestParam(required = false) Long userId,
+                                        @RequestParam(required = false) Boolean filterFutureFollowUps) {
+    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned, filterFutureFollowUps);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

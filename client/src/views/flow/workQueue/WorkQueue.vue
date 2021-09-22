@@ -25,25 +25,40 @@
           <!--                  return-object-->
           <!--                  @input="getWorkQueues(false)"-->
           <!--        ></v-select>-->
-          <div class="radio-group-container mt-0">
-            <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
-              <v-radio class="d-inline-block mx-4 wq-radio-label"
-                       label="% Completed On Time"
-                       small
-                       :value="0"
-                       :class="{'inactive-radio': selectedViewType !== 0}"
-              ></v-radio>
-              <v-radio class="d-inline-block mx-4 wq-radio-label"
-                       label="Projects Completed"
-                       :value="1"
-                       :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
-                       :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
-              <v-radio class="d-inline-block mx-4 wq-radio-label"
-                       label="Change in WIP"
-                       :value="2"
-                       :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
-            </v-radio-group>
-          </div>
+          <v-row>
+            <v-col cols="12" md="6" class="py-0">
+              <div class="radio-group-container mt-0">
+                <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
+                  <v-radio class="d-inline-block mx-4 wq-radio-label"
+                           label="% Completed On Time"
+                           small
+                           :value="0"
+                           :class="{'inactive-radio': selectedViewType !== 0}"
+                  ></v-radio>
+                  <v-radio class="d-inline-block mx-4 wq-radio-label"
+                           label="Projects Completed"
+                           :value="1"
+                           :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
+                           :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
+                  <v-radio class="d-inline-block mx-4 wq-radio-label"
+                           label="Change in WIP"
+                           :value="2"
+                           :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
+                </v-radio-group>
+              </div>
+            </v-col>
+            <v-col cols="12" md="6" class="py-0 future-follow-ups-column">
+              <v-switch
+                dense
+                hide-details
+                color="primaryCustom"
+                v-model="hideFutureFollowUps"
+                class="mx-2 mt-5 wq-follow-up-switch"
+                label="Hide Records with a next follow-up date in the future"
+                @change="getWorkQueues()"
+              />
+            </v-col>
+          </v-row>
         </v-card>
         <v-card color="white" class="square-card work-queue-container-bottom mt-3">
           <v-row class="cards my-0">
@@ -155,6 +170,7 @@ export default {
     return {
       snackbar: {},
       model: {},
+      hideFutureFollowUps: false,
       showAll: false,
       selectedWorkQueueCategory: {},
       workQueueCategories: [],
@@ -171,6 +187,8 @@ export default {
     this.getWorkQueueCategories()
     // this.getWorkQueueOwners()
     this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
+    this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+    console.log('randaLogger', this.hideFutureFollowUps)
     if (this.selectedWorkQueueCategory.id) {
       this.getWorkQueues()
     }
@@ -208,6 +226,7 @@ export default {
     },
     async getWorkQueues() {
       localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
+      localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       if (this.selectedWorkQueueCategory?.id || this.showAll) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -215,7 +234,8 @@ export default {
             params: {
               workQueueCategoryId: this.selectedWorkQueueCategory.id,
               userId: this.selectedUserPosition.userId,
-              unassigned: this.selectedUserPosition.unassigned
+              unassigned: this.selectedUserPosition.unassigned,
+              filterFutureFollowUps: this.hideFutureFollowUps
             }
           })
           this.workQueues = data
@@ -279,9 +299,26 @@ export default {
 .wq-radio-label .v-icon, .wq-radio-label label {
   font-size: 14px;
 }
+
+.wq-radio-label .v-icon, .wq-radio-label label {
+  font-size: 14px;
+}
+
+.wq-follow-up-switch label {
+  font-size: 14px;
+}
+
+.wq-follow-up-switch .v-input--selection-controls__input {
+  transform: scale(0.775);
+  transform-origin: center;
+}
 </style>
 
 <style scoped lang="scss">
+.future-follow-ups-column {
+  display: flex;
+  justify-content: end;
+}
 
 .work-queue-container-top {
   padding: 26px 28px 16px 28px;

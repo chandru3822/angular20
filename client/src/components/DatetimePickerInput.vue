@@ -13,6 +13,7 @@
       :class="customClass"
       :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
+      :placeholder="placeholder"
       :rules="getRequiredRule()"
       :prepend-icon="hidePrependIcon ? '' : 'event'"
       :append-icon="showAppendIcon ? 'event' : ''"
@@ -68,6 +69,7 @@ export default {
     timezone: String,
     type: String,
     label: String,
+    placeholder: String,
     format: String,
     inputFormat: String,
     minDate: String,

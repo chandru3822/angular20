@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.ObjectTypeService;
 import com.albatross.api.v1.flow.services.SmartlistService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -133,7 +134,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/{smartlistId}/csv", produces = "text/csv")
   public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId,
-                                                    @RequestParam(required = false) String timezone) {
+                                                    @RequestParam(required = false) String timezone) throws JsonProcessingException {
     return new ResponseEntity<>(smartlistService.getCsv(smartlistId, timezone), HttpStatus.OK);
   }
 
