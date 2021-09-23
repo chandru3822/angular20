@@ -413,7 +413,6 @@ export default {
       }
     },
     async saveUserTimezone(user) {
-      console.log('randaLogger',user)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await putRequest(`/postalCode/zone/user/${user.postalCodeZoneUserId}`, user)
