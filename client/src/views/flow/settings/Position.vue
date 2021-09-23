@@ -27,7 +27,7 @@
                         :disabled="!userCanEdit"
                         label="Position Name">
           </v-text-field>
-          <v-select
+          <v-autocomplete
               v-model="position.orgTypeId"
               :items="orgTypes"
               :readonly="!userCanEdit"
@@ -35,7 +35,7 @@
               label="Organization Type"
               item-text="orgType"
               item-value="id"
-          ></v-select>
+          ></v-autocomplete>
           <div class="mb-3">
             <label>Show in Scheduling Tool:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
