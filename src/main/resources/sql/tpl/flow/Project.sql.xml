@@ -288,6 +288,8 @@
         cp.company_id,
         cp.process_id,
         p.time_zone,
+        p.latitude,
+        p.longitude,
         pro.process_name,
         p.contact_id,
         p.created_by_id,

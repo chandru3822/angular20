@@ -268,11 +268,13 @@ public class ProjectService {
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
+    Double latitude = project.getLatitude();
+    Double longitude = project.getLongitude();
+    String timezone = project.getTimeZone();
+
     //load coordinates when new project added and include in the update statement instead of the old garbage
     if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
       List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode()));
-      Double latitude = null, longitude = null;
-      String timezone = null;
       if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
         //1 = lat, 0 = long
         latitude = coordinates.get(1);
@@ -283,11 +285,11 @@ public class ProjectService {
           timezone = mapboxApiService.getTimezone(latitude, longitude);
         }
       }
-
-      params.put("latitude", latitude);
-      params.put("longitude", longitude);
-      params.put("timezone", timezone);
     }
+
+    params.put("latitude", latitude);
+    params.put("longitude", longitude);
+    params.put("timezone", timezone);
 
     sqlCache.update("project.update", params);
 
