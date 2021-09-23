@@ -702,7 +702,7 @@ export default {
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
+        this.snackbar = getSnackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
