@@ -251,7 +251,7 @@
                    THEN -- Office FDC Rank table
                      up.org_id = :selectedOrgId
                  ELSE -- Company Ranking (2nd row of tables)
-                       up.position_id = 1
+                       up.position_id in (1,2,3,133,237,517)
                      AND up.archived IS FALSE
                      AND up.end_date IS NULL
                      AND o.active_flag IS TRUE
