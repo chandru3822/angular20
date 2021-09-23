@@ -221,7 +221,7 @@ public class ContactService {
   }
 
   @Transactional
-  public Project convertToContact(Long contactId, CompanyProcess process) {
+  public Project convertToContact(Long contactId, CompanyProcess process) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     //save contact_type_id
