@@ -17,7 +17,8 @@
       :max-date="maxDate"
       :filled="filledStyle"
       :format="'MMMM DD, YYYY'"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :readonly="readonly"
       @input="callback(field)"
     />
@@ -30,7 +31,8 @@
       :filled="filledStyle"
       :required="required"
       :format="'MMMM DD, YYYY, h:mm A'"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :readonly="readonly"
       @input="callback(field)"
     />
@@ -38,7 +40,8 @@
     <v-checkbox
       v-if="field.dataTypeId === 3"
       v-model="field.booleanValue"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :rules="getRequiredRule()"
       :filled="filledStyle"
       :disabled="readonly"
@@ -53,7 +56,8 @@
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       type="number"
       v-model.number="field.numericValue"
       @change="callback(field)"
@@ -68,7 +72,8 @@
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       v-model="field.textValue"
       @change="callback(field)"
     />
@@ -77,7 +82,8 @@
       v-if="field.dataTypeId === 6 && !field.hasListValues"
       text
       :readonly="readonly"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       placeholder=" "
       :filled="filledStyle"
       :rules="getRequiredRule()"
@@ -97,7 +103,8 @@
       :filled="filledStyle"
       :rules="getRequiredRule()"
       :items="field.listOfValues"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       item-value="id"
       item-text="name"
       @input="callback(field)"
@@ -114,7 +121,8 @@
       :readonly="readonly"
       :disabled="readonly"
       :rules="getRequiredRule()"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       v-model="field.intArrayValue"
       item-value="id"
       item-text="name"
@@ -130,7 +138,8 @@
       :readonly="readonly"
       :disabled="readonly"
       :items="field.listOfValues"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :rules="getRequiredRule()"
       placeholder=" "
       item-value="id"
@@ -145,7 +154,8 @@
       :filled="filledStyle"
       :clearable="!readonly"
       :items="field.listOfValues"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :readonly="readonly"
       :disabled="readonly"
       :rules="getRequiredRule()"
@@ -178,6 +188,14 @@ export default {
     showFieldName: {
       type: Boolean,
       default: true
+    },
+    hideLabel: {
+      type: Boolean,
+      default: false
+    },
+    hideDetails: {
+      type: Boolean,
+      default: false
     },
     minDate: String,
     maxDate: String,
