@@ -15,7 +15,8 @@ create or replace function flow.get_project_available_owners(p_company_id int, p
 $$
 BEGIN
   return query
-    select u.id as user_id,
+    select  DISTINCT ON (u.first_name, u.last_name, u.id)
+           u.id as user_id,
            u.first_name,
            u.last_name,
            concat(u.first_name, ' ', u.last_name) as full_name,
@@ -35,7 +36,8 @@ BEGIN
     and up.start_date <= now()
     and (up.end_date is null or up.end_date >= now())
     and p.project_owner is true
-    order by u.first_name, u.last_name;
+      --ordering by u.id is silly but required by the distinct on thing
+    order by u.first_name, u.last_name, u.id, up.primary_flag desc;
 END
 $$
   language plpgsql;

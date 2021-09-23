@@ -15,15 +15,26 @@
     </v-col>
 
     <v-col cols="12">
+      <v-card flat class="square-card pb-3 px-3" color="white">
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
+      </v-card>
+      <v-divider></v-divider>
       <v-data-table
         class="elevation-1"
         :headers="headers"
         :items="smartlists"
         fixed-header
         multi-sort
-        hide-default-footer
+        :search="search"
+        :items-per-page="25"
+        :footer-props="footerProps"
         :loading="isSmartlistsLoading"
-        disable-pagination
       >
         <template #no-data>
           No available smartlists
@@ -60,7 +71,11 @@ export default {
       constants,
       isSmartlistsLoading: false,
       snackbar: {},
+      search: '',
       smartlists: [],
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 500]
+      },
       headers: [
         {text: 'Name', value: 'name'},
         {text: 'Table Display View', value: 'objectType'},

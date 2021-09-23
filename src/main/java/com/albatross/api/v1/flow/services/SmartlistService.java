@@ -339,6 +339,25 @@ public class SmartlistService {
     return getSmartlist(newSmartlistId);
   }
 
+  public String getSmartlistSqlString(Long smartlistId) {
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    String query;
+
+    if (smartlist.getObjectTypeId() == 4) {
+      query = buildProcessStepSql(smartlist, fields);
+    } else {
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    }
+
+    return query;
+  }
+
   public SmartlistResult getSmartlistResults(Long smartlistId) {
     Smartlist smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
@@ -916,6 +935,8 @@ public class SmartlistService {
         query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
         query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
         query.append(" left join flow.project on flow.project.contact_id = flow.contact.id ");
+        query.append(" left join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id ");
+        query.append(" left join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id ");
         query.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id ");
         query.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id ");
         query.append(" left join flow.org on flow.org.id = \"contact_user_position\".org_id ");
@@ -1420,8 +1441,9 @@ public class SmartlistService {
                 } else {
                   // If this field is process step owner,
                   // OR if this field is project owner,
+                  // OR if this field is contact owner,
                   // make sure we're getting past instances where this user had the same position and not just the current primary position
-                  if ((r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) || (r.getObjectTypeId() == 1 && Objects.equals(r.getReferenceTable(), "flow.project_user")) ) {
+                  if ((r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) || (r.getObjectTypeId() == 1 && Objects.equals(r.getReferenceTable(), "flow.project_user")) || (r.getObjectTypeId() == 2 && Objects.equals(r.getReferenceTable(), "flow.contact_user")) ) {
                     final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                     whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
                   } else {
