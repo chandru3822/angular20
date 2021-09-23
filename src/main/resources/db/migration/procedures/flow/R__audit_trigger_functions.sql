@@ -297,7 +297,7 @@ BEGIN
                                    city, postal_code, time_zone, latitude, longitude, company_state_id,
                                    company_country_id)
     values(new.id, new.contact_id, new.company_process_id, new.project_name,
-           new.date_created, now(), new.created_by_id, new.modified_by_id,
+           new.date_created, new.date_modified, new.created_by_id, new.modified_by_id,
            new.company_project_status_type_id, new.user_position_id, new.street1, new.street2,
            new.city, new.postal_code, new.time_zone, new.latitude, new.longitude, new.company_state_id,
            new.company_country_id);
@@ -326,7 +326,7 @@ BEGIN
         values(new.id, new.contact_type_id, new.first_name, new.last_name,
                new.street1, new.street2, new.city, new.postal_code, new.phone, new.email,
                new.prospect_status, new.mobile, new.mailing_street1, new.mailing_street2,
-               new.mailing_city, new.mailing_postal_code, new.date_created, now(),
+               new.mailing_city, new.mailing_postal_code, new.date_created, new.date_modified,
                new.created_by_id, new.modified_by_id, new.company_id, new.archived, new.title,
                new.owner_user_position_id, new.migrate_lead_id, new.company_state_id,
                new.mailing_company_state_id, new.company_country_id);
@@ -350,7 +350,7 @@ BEGIN
                                 username, archived, uuid, expiry_date)
     values(new.id, new.first_name, new.last_name, new.email,
            new.password, new.phone_number, new.created_by_id, new.date_created,
-           new.modified_by_id, now(), new.default_company_id,
+           new.modified_by_id, new.date_modified, new.default_company_id,
            new.username, new.archived, new.uuid, new.expiry_date);
 
 
@@ -376,7 +376,7 @@ BEGIN
                                                 migrated_work_type_id, migrated_org_id, migrated_start_time, migrated_end_time)
     values(new.id, new.project_id, new.process_step_id,
            new.user_position_id, new.company_process_step_status_type_id,
-           new.process_step_complete_date, new.date_created, now(),
+           new.process_step_complete_date, new.date_created, new.date_modified,
            new.created_by_id, new.modified_by_id, new.archived, new.main, new.migrated_created_date,
            new.migrated_work_type_id, new.migrated_org_id, new.migrated_start_time, new.migrated_end_time);
 
@@ -402,7 +402,7 @@ BEGIN
                                                 distribution_time_frame_days, schedulable_future_days,
                                                 date_zone_created)
         values(new.id, new.company_id, new.zone_name, new.archived, new.date_created,
-               now(), new.created_by_id, new.modified_by_id,
+               new.date_modified, new.created_by_id, new.modified_by_id,
                new.distribution_time_frame_days, new.schedulable_future_days,
                now());
     elsif (TG_OP = 'UPDATE')  THEN
@@ -412,7 +412,7 @@ BEGIN
             zone_name = new.zone_name,
             archived = new.archived,
             date_created = new.date_created,
-            date_modified = now(),
+            date_modified = new.date_modified,
             created_by_id = new.created_by_id,
             modified_by_id = new.modified_by_id,
             distribution_time_frame_days = new.distribution_time_frame_days,
@@ -444,7 +444,7 @@ BEGIN
                                                      postal_code_zone_user_type_id, user_id, manual_allocation,
                                                      date_user_created)
         values(new.id, new.postal_code_zone_id, new.archived, new.date_created,
-               now(), new.created_by_id, new.modified_by_id,
+               new.date_modified, new.created_by_id, new.modified_by_id,
                new.postal_code_zone_user_type_id, new.user_id, new.manual_allocation,
                now());
     elsif (TG_OP = 'UPDATE') THEN
@@ -452,7 +452,7 @@ BEGIN
         set postal_code_zone_id = new.postal_code_zone_id,
             archived = new.archived,
             date_created = new.date_created,
-            date_modified = now(),
+            date_modified = new.date_modified,
             created_by_id = new.created_by_id,
             modified_by_id = new.modified_by_id,
             postal_code_zone_user_type_id = new.postal_code_zone_user_type_id,
