@@ -1418,8 +1418,10 @@ public class SmartlistService {
                 if (r.getSmartlistSystemListId() != null) {
                   whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
                 } else {
-                  // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-                  if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                  // If this field is process step owner,
+                  // OR if this field is project owner,
+                  // make sure we're getting past instances where this user had the same position and not just the current primary position
+                  if ((r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) || (r.getObjectTypeId() == 1 && Objects.equals(r.getReferenceTable(), "flow.project_user")) ) {
                     final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                     whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
                   } else {
