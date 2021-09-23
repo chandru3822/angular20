@@ -336,7 +336,6 @@
             value: 'firstNoteCreatedAtFormatted',
             width: 200,
             sort: (a,b) => {
-              console.log('randaLogger', a)
               // return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
               // return new Date(a) - new Date(b)
               if(null != a || null != b) {

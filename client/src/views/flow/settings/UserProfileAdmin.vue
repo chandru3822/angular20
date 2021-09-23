@@ -94,7 +94,6 @@ export default {
       }
     },
     async updateShowOnUserProfile(item) {
-      console.log('randaLogger',item)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await putRequest(`/defaultField`, item)

@@ -188,7 +188,6 @@ export default {
     // this.getWorkQueueOwners()
     this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-    console.log('randaLogger', this.hideFutureFollowUps)
     if (this.selectedWorkQueueCategory.id) {
       this.getWorkQueues()
     }
