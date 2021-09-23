@@ -14,7 +14,8 @@ returns table (
 $$
 BEGIN
 return query
-select u.id as user_id,
+select  DISTINCT ON (u.last_name, u.first_name, u.id)
+       u.id as user_id,
        u.first_name,
        u.last_name,
        concat(u.first_name, ' ', u.last_name) as full_name,
@@ -34,7 +35,8 @@ where
   and ust.has_access is true
   and up.start_date <= now()
   and (up.end_date is null or up.end_date >= now())
-order by u.last_name, u.first_name;
+--ordering by u.id is silly but required by the distinct on thing
+order by u.last_name, u.first_name, u.id, up.primary_flag desc;
 END
 $$
 language plpgsql;

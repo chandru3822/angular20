@@ -550,6 +550,8 @@ export default {
       if (this.newRequirement.objectTypeId === 2 && this.newRequirement.selectedField.name === 'Contact Owner') {
         try {
           const {data} = await getRequest(`/contact/owners`)
+          //do i just filter here when there are dupes?
+
           this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
           this.newRequirement.selectedField.hasListValues = true
         } catch (e) {

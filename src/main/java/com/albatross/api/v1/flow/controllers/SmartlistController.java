@@ -47,6 +47,13 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.addSmartlist(smartlist), HttpStatus.OK);
   }
 
+  //humes dont hate, i added an endpoint so i could get the sql string on the frontend.
+  //this has helped me a ton with work queues especially when the say it is only failing in prod
+  @GetMapping(value = "/{smartlistId}/getSqlString", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getSqlString (@PathVariable Long smartlistId) {
+    return smartlistService.getSmartlistSqlString(smartlistId);
+  }
+
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> getSmartlist(@PathVariable Long smartlistId) {
     User user = securityService.getCurrentUser();
