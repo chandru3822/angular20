@@ -68,7 +68,7 @@ public class MapboxApiService {
       String timezone = null;
       if(null != formattedData && null != formattedData.features() && null != formattedData.features().get(0)) {
         Feature firstFeature = formattedData.features().get(0);
-        if(null != firstFeature.properties()) {
+        if(null != firstFeature.properties() && null != firstFeature.properties().get("TZID")) {
           timezone = firstFeature.properties().get("TZID").getAsString();
         }
       }

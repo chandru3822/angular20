@@ -268,13 +268,15 @@ public class ProjectService {
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
+    //pre-populate lat/long/tz with the existing project values
     Double latitude = project.getLatitude();
     Double longitude = project.getLongitude();
     String timezone = project.getTimeZone();
 
-    //load coordinates when new project added and include in the update statement instead of the old garbage
+    //if the project address changed, reload the coordinates
     if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
       List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode()));
+      //if we found new coordinates then uses those values
       if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
         //1 = lat, 0 = long
         latitude = coordinates.get(1);
@@ -284,6 +286,11 @@ public class ProjectService {
           //if we have a lat/long then attempt to load the timezone
           timezone = mapboxApiService.getTimezone(latitude, longitude);
         }
+      } else {
+        //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+        latitude = null;
+        longitude = null;
+        timezone = null;
       }
     }
 
