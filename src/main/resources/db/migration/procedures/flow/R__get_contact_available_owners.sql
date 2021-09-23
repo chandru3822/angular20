@@ -32,6 +32,7 @@ where
        else p.company_id = p_company_id
     end
   and p.contact_owner is true
+  and up.archived is false
   and ust.has_access is true
   and up.start_date <= now()
   and (up.end_date is null or up.end_date >= now())
