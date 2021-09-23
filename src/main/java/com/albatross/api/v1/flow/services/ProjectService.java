@@ -7,6 +7,7 @@ import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -62,6 +63,8 @@ public class ProjectService {
   private final AmazonS3 s3;
 
   private final ObjectMapper om;
+
+  private final MapboxApiService mapboxApiService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -252,7 +255,7 @@ public class ProjectService {
       Owner.class);
   }
 
-  public void updateProject(Project project) {
+  public void updateProject(Project project) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -265,12 +268,29 @@ public class ProjectService {
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
+    //load coordinates when new project added and include in the update statement instead of the old garbage
+    if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
+      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode()));
+      Double latitude = null, longitude = null;
+      String timezone = null;
+      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        //1 = lat, 0 = long
+        latitude = coordinates.get(1);
+        longitude = coordinates.get(0);
+
+        if(null != latitude && null != longitude) {
+          //if we have a lat/long then attempt to load the timezone
+          timezone = mapboxApiService.getTimezone(latitude, longitude);
+        }
+      }
+
+      params.put("latitude", latitude);
+      params.put("longitude", longitude);
+      params.put("timezone", timezone);
+    }
+
     sqlCache.update("project.update", params);
 
-    //load coordinates when new project added
-    if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
-      getProjectCoordinates(project, project.getId());
-    }
   }
 
   public void updateProjectOwner(Long projectId, Owner owner) {
@@ -284,7 +304,7 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) throws Exception {
     User user = securityService.getCurrentUser();
 
     if(null != contactId && null != processId) {
@@ -304,10 +324,28 @@ public class ProjectService {
       params.put("postalCode", contact.getPostalCode());
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
+      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
+      Double latitude = null, longitude = null;
+      String timezone = null;
+      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        //1 = lat, 0 = long
+        latitude = coordinates.get(1);
+        longitude = coordinates.get(0);
+
+        if(null != latitude && null != longitude) {
+          //if we have a lat/long then attempt to load the timezone
+          timezone = mapboxApiService.getTimezone(latitude, longitude);
+        }
+      }
+
+      params.put("latitude", latitude);
+      params.put("longitude", longitude);
+      params.put("timezone", timezone);
+
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
       Optional<Project> project = getProject(id);
       //load coordinates when new project added
-      project.ifPresent(value -> getProjectCoordinates(value, id));
+//      project.ifPresent(value -> getProjectCoordinates(value, id));
       return project;
     } else {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact ID and Process ID are required to add a project.", new Exception());
@@ -318,6 +356,15 @@ public class ProjectService {
     //when the contact is new or the address changes, need to reload/save their lat/long from mapbox
     String projectAddress = getProjectAddress(project);
     locationUtils.getGeocode(projectAddress, id, new CustomGeoFunction());
+  }
+
+  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(street1);
+    sj.add(city);
+    sj.add(state + " " + postalCode);
+
+    return sj.toString();
   }
 
   public String getProjectAddress(Project project) {

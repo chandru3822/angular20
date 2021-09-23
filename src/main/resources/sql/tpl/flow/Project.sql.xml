@@ -364,7 +364,10 @@
       company_country_id = :companyCountryId,
       postal_code = :postalCode,
       modified_by_id = :modifiedById,
-      date_modified = now()
+      date_modified = now(),
+      latitude = :latitude,
+      longitude = :longitude,
+      time_zone = :timezone
     where id = :id
   </project.update>
 
@@ -378,8 +381,8 @@
 
   <project.insert>
     <![CDATA[
-      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code)
-      values (:contactId, :processId, trim(:projectName), :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode))
+      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone)
+      values (:contactId, :processId, trim(:projectName), :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone)
     ]]>
   </project.insert>
 
