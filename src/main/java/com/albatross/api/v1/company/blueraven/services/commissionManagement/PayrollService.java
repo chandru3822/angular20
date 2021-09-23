@@ -5,9 +5,11 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.PayrollActionType;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.PayrollAdjustmentType;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.PayrollStatus;
+import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.AccountSearchRequest;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
+import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.flow.model.OverrideResult;
 import com.google.common.collect.ImmutableMap;
 import lombok.Data;
@@ -36,6 +38,7 @@ public class PayrollService {
     private final SqlCache sqlCache;
     private final DataSource dataSource;
     private final SecurityService securityService;
+    private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
 
     public Long findCurrentPayroll(Long positionId) {
       HashMap<String, Object> params = new HashMap<>();
@@ -258,6 +261,8 @@ public class PayrollService {
 
         int update = sqlCache.update("payroll.updatePayroll", params);
 
+        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(updateRequest.getCustomFieldGroups(), payrollId);
+
         return update != 0;
     }
 
@@ -315,6 +320,7 @@ public class PayrollService {
     public static class PayrollUpdateRequest {
         private String description, periodEnd;
         private List<Integer> projectIds;
+        List<CustomFieldGroup> customFieldGroups;
     }
 
     @Data
