@@ -3,6 +3,8 @@ package com.albatross.api.v1.company.blueraven.services.commissionManagement;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.OverridePlanStatus;
+import com.albatross.api.v1.company.blueraven.models.CustomField;
+import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.BackdatedPlanApprovalCredentials;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.OverridePlanAllocation;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
@@ -63,6 +65,7 @@ public class OverridePlanService {
         private Double total = 0.0;
         private String name, description;
         private List<Long> receivingUsers, assignedUsers;
+        private List<CustomFieldGroup> customFieldGroups;
     }
 
     @Data
