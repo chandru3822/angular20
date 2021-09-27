@@ -30,18 +30,6 @@
             <td class="text-left pr-3"><strong>Description</strong></td>
             <td class="text-left">{{payroll.description}}</td>
           </tr>
-          <tr v-for="(cf, index) in firstCustomFieldGroup.customFieldValues" :key="cf.id">
-            <td class="text-left pr-3"><strong>{{cf.fieldName}}</strong></td>
-            <td class="text-left">
-              <CustomValueInput
-                :readonly="true"
-                :hide-label="true"
-                :hide-details="true"
-                :showFieldName="false"
-                :field="cf"
-              />
-            </td>
-          </tr>
           <tr v-for="(hx, idx) in payroll.history" :key="idx">
             <td class="text-left pr-3"><strong>{{hx.actionType}}</strong></td>
             <td class="text-left">{{hx.actionUser}} - {{hx.actionDate | formatDate('date')}}</td>
@@ -85,12 +73,10 @@
   import { saveAs } from 'file-saver'
   import constants from "@/helpers/constants";
   import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
     name: 'Payroll',
     components: {
-      CustomValueInput
     },
     data() {
       return {
@@ -152,7 +138,6 @@
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
         ],
-        firstCustomFieldGroup: {}
       }
     },
     created() {
@@ -177,7 +162,6 @@
         try {
           const {data} = await getRequest(`/payroll/${this.payrollId}`, 'blueraven')
           this.payroll = data
-          this.getCustomFieldGroups()
           this.populateStatusDetails()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -186,18 +170,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getCustomFieldGroups() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {sourceId: this.payroll.id, objectTypeId: 9}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.firstCustomFieldGroup = data?.length > 0 ? data[0] : {}
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getPayrollSnapshot() {
         this.$store.commit(AppMutations.SET_LOADING, true)

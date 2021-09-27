@@ -85,16 +85,6 @@
                             :disabled="!userCanEdit"
                             v-model="currentPayroll.description"></v-text-field>
 
-              <div v-if="customFieldGroups.length > 0">
-                <CustomValueInput
-                  v-for="item in customFieldGroups[0].customFieldValues"
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :showFieldName="false"
-                  :field="item"
-                />
-              </div>
-
               <div class="text-left">
                 <v-btn color="primaryCustom" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
                 <v-btn color="primaryCustom" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
@@ -524,7 +514,6 @@
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
         ],
-        customFieldGroups: [],
       }
     },
     computed: {
@@ -536,22 +525,6 @@
       this.getCurrentPayroll()
     },
     methods: {
-      updateDirtyValue(item) {
-        item.valueWasChanged = true
-        this.dataWasChanged = true
-      },
-      async getCustomFieldGroups() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {sourceId: this.currentPayroll.id, objectTypeId: 9}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroups = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
       toggleSelectAll () {
         this.accountingData.forEach(ad => {
           ad.selected = this.selectAll
@@ -638,8 +611,7 @@
         let params = {
           description: this.currentPayroll.description,
           periodEnd: this.currentPayroll.periodEnd,
-          projectIds: this.currentPayroll.selectedProjectIds,
-          customFieldGroups: this.customFieldGroups
+          projectIds: this.currentPayroll.selectedProjectIds
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -708,7 +680,7 @@
         try {
           const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
           this.currentPayroll = data
-          this.getCustomFieldGroups()
+
           this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
           this.getStatusColor()
           this.payrollLoading = false
