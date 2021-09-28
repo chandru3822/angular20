@@ -240,7 +240,7 @@
              INNER JOIN flow.project p ON p.id = pd.project_id
              INNER JOIN flow.company_project_status_type cp on p.company_project_status_type_id = cp.id
              INNER JOIN flow.user u ON u.id = pd.closer_user_id
-             INNER JOIN flow.user_position up ON up.user_id = u.id
+             INNER JOIN flow.user_position up ON up.user_id = u.id and up.id = p.user_position_id
              INNER JOIN flow.company_user_status cus on cus.user_id = u.id
              INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
              INNER JOIN flow.org o ON o.id = up.org_id
@@ -251,7 +251,7 @@
                    THEN -- Office FDC Rank table
                      up.org_id = :selectedOrgId
                  ELSE -- Company Ranking (2nd row of tables)
-                       up.position_id = 1
+                       up.position_id in (1,2,3,133,237,517)
                      AND up.archived IS FALSE
                      AND up.end_date IS NULL
                      AND o.active_flag IS TRUE

@@ -223,4 +223,9 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/consumervoice", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactConsumerVoice(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
 }

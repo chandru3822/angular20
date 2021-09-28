@@ -471,6 +471,14 @@
 <!--        Save Logic Changes-->
 <!--      </v-btn>-->
 <!--    </v-col>-->
+    <v-btn color="primaryCustom" dark class="white--text build-sql" @click="buildSql"
+           v-if="is7oaksAdmin || userId === 2350555">
+      <div>BUILD SQL</div>
+      <div>(only 7oaks and Judson)</div>
+    </v-btn>
+    <div v-if="sql != null" class="pa-5">
+      {{ sql }}
+    </div>
   </v-row>
 </v-container>
 </template>
@@ -527,7 +535,10 @@ export default {
       showToggleDialog: false,
       showObjectTypeDialog: false,
       originalObjectTypeId: null,
-      projectDetailsColumns: []
+      projectDetailsColumns: [],
+      sql: '',
+      is7oaksAdmin: this.$store.getters.isFullAdmin,
+      userId: this.$store.state.user.details.id,
     }
   },
   created () {
@@ -702,7 +713,7 @@ export default {
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
+        this.snackbar = getSnackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -953,7 +964,17 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    async buildSql() {
+      try {
+        const {data} = await getRequest(`/smartlist/${this.smartlist.id}/getSqlString`)
+        this.sql = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching sql')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     // **************************** smartlist logic on hold until smartlist v2 ***************************
     // clearLogic () {
     //   this.logic = []
@@ -1009,5 +1030,11 @@ export default {
   [v-cloak] {
     display: none;
   }
+}
+
+.build-sql {
+  position: absolute;
+  bottom: 10px;
+  right: 25px;
 }
 </style>

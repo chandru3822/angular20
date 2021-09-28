@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PGobject;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -337,6 +339,25 @@ public class SmartlistService {
     return getSmartlist(newSmartlistId);
   }
 
+  public String getSmartlistSqlString(Long smartlistId) {
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    String query;
+
+    if (smartlist.getObjectTypeId() == 4) {
+      query = buildProcessStepSql(smartlist, fields);
+    } else {
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    }
+
+    return query;
+  }
+
   public SmartlistResult getSmartlistResults(Long smartlistId) {
     Smartlist smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
@@ -358,7 +379,7 @@ public class SmartlistService {
     return new SmartlistResult(fields, results);
   }
 
-  public String getCsv(Long smartlistId, String timezone) {
+  public String getCsv(Long smartlistId, String timezone) throws JsonProcessingException {
     Smartlist smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
@@ -635,6 +656,7 @@ public class SmartlistService {
         "                                    n.date_created as \"dateCreated\",\n" +
         "                                    n.date_modified as \"dateModified\",\n" +
         "                                    n.created_by_id as \"createdById\",\n" +
+        "                                    n.follow_up_date as \"followUpDate\",\n" +
         "                                    concat(creator.first_name, ' ', creator.last_name) as \"createdBy\",\n" +
         "                                    n.modified_by_id as \"modifiedById\",\n" +
         "                                    pn.project_process_step_id as \"projectProcessStepId\",\n" +
@@ -648,6 +670,7 @@ public class SmartlistService {
         "                                                                 n2.date_created as \"dateCreated\",\n" +
         "                                                                 n2.date_modified as \"dateModified\",\n" +
         "                                                                 n2.created_by_id as \"createdById\",\n" +
+        "                                                                 n2.follow_up_date as \"followUpDate\",\n" +
         "                                                                 concat(creator2.first_name, ' ', creator2.last_name) as \"createdBy\",\n" +
         "                                                                 n2.modified_by_id as \"modifiedById\",\n" +
         "                                                                 pn2.project_process_step_id as \"projectProcessStepId\",\n" +
@@ -880,22 +903,7 @@ public class SmartlistService {
         }
     }
 
-    //add the most recent note at the very end, if this is a wq smartlist we dont need to delete the comma at the end
-    if(null != smartlist.getWorkQueueTypeId()) {
-      query.append(" (select n.note\n" +
-        "        from flow.note n\n" +
-        "               inner join flow.project_process_step_process_step_work_queue_type_note pn\n" +
-        "                          on pn.note_id = n.id\n" +
-        "        where n.archived is not true\n" +
-        "          and n.parent_id is null\n" +
-        "          and pn.project_process_step_id = flow.project_process_step.id\n" +
-        "          and pn.process_step_work_queue_type_id = pswqt.id\n" +
-        "        order by n.date_created desc\n" +
-        "         limit 1)                                              as \"Most Recent Note\" \n");
-    } else {
-      // Remove comma from last select field
-      query.deleteCharAt(query.length() - 2);
-    }
+    query.deleteCharAt(query.length() - 2);
 
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
@@ -927,6 +935,8 @@ public class SmartlistService {
         query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
         query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
         query.append(" left join flow.project on flow.project.contact_id = flow.contact.id ");
+        query.append(" left join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id ");
+        query.append(" left join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id ");
         query.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id ");
         query.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id ");
         query.append(" left join flow.org on flow.org.id = \"contact_user_position\".org_id ");
@@ -1429,8 +1439,11 @@ public class SmartlistService {
                 if (r.getSmartlistSystemListId() != null) {
                   whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
                 } else {
-                  // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-                  if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                  // If this field is process step owner,
+                  // OR if this field is project owner,
+                  // OR if this field is contact owner,
+                  // make sure we're getting past instances where this user had the same position and not just the current primary position
+                  if ((r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) || (r.getObjectTypeId() == 1 && Objects.equals(r.getReferenceTable(), "flow.project_user")) || (r.getObjectTypeId() == 2 && Objects.equals(r.getReferenceTable(), "flow.contact_user")) ) {
                     final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                     whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
                   } else {
@@ -2214,11 +2227,11 @@ public class SmartlistService {
 //    return query;
 //  }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers) {
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers) throws JsonProcessingException {
     return writeCsv(data, headers, false);
   }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist) {
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist) throws JsonProcessingException {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     if(workQueueSmartlist) {
@@ -2239,9 +2252,21 @@ public class SmartlistService {
       }
 
       //add most recent note header to the end after all the custom fields
-      SmartlistFieldAssignment sfa2 = new SmartlistFieldAssignment();
-      sfa2.setName("Most Recent Note");
-      headers.add(sfa2);
+//      SmartlistFieldAssignment sfa2 = new SmartlistFieldAssignment();
+//      sfa2.setName("Note Created At");
+//      headers.add(sfa2);
+
+      SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
+      sfa3.setName("Next Follow-up Date");
+      headers.add(sfa3);
+
+      SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
+      sfa4.setName("Note Content");
+      headers.add(sfa4);
+
+      SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
+      sfa5.setName("Note Created By");
+      headers.add(sfa5);
 
     }
 
@@ -2267,6 +2292,21 @@ public class SmartlistService {
         r.remove("lastUpdated");
         r.remove("Owning Positions");
 //        r.remove("Active Process Steps");
+
+        //handle notes
+        PGobject notesArray = ((PGobject) r.get("Notes"));
+        TypeReference<List<Note>> notesRef = new TypeReference<>() {};
+        List<Note> notes = om.readValue(notesArray.getValue(), notesRef);
+        if(notes.size() > 0) {
+          Note firstNote = notes.get(0);
+          r.put("Next Follow-up Date", firstNote.getFollowUpDate());
+          r.put("Note Content", firstNote.getNote());
+          r.put("Note Created By", firstNote.getCreatedBy());
+        } else {
+          r.put("Next Follow-up Date", null);
+          r.put("Note Content", null);
+          r.put("Note Created By", null);
+        }
         r.remove("Notes");
       }
 

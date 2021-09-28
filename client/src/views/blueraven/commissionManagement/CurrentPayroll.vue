@@ -80,9 +80,11 @@
               />
               <v-text-field text
                             label="Description"
+                            placeholder=" "
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="currentPayroll.description"></v-text-field>
+
               <div class="text-left">
                 <v-btn color="primaryCustom" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
                 <v-btn color="primaryCustom" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
@@ -382,16 +384,14 @@
   import constants from "@/helpers/constants";
   import sumBy from "lodash.sumby";
   import { saveAs } from 'file-saver'
+  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
     name: 'CurrentPayroll',
     mixins: [Vue2Filters.mixin],
     components: {
-
+      CustomValueInput,
       DatetimePickerInput
-    },
-    created() {
-      this.getCurrentPayroll()
     },
     watch: {
       '$store.state.brs.commissionPositionId': function () {
@@ -513,13 +513,16 @@
           {text: 'Override Earned', value: 'override_earned', show: true},
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
-        ]
+        ],
       }
     },
     computed: {
       headers() {
         return this.positionId === 1 ? this.closerHeaders : this.setterHeaders
       }
+    },
+    created() {
+      this.getCurrentPayroll()
     },
     methods: {
       toggleSelectAll () {
@@ -677,6 +680,7 @@
         try {
           const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
           this.currentPayroll = data
+
           this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
           this.getStatusColor()
           this.payrollLoading = false
