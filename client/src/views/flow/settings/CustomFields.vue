@@ -408,7 +408,6 @@
       async getCustomFieldObjectTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          console.log('randaLogger',this.apiPath)
           const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath)
           data.forEach(d => d.archived = true)
           this.customFieldObjectTypes = cloneDeep(data)

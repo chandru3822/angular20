@@ -703,7 +703,6 @@ export default {
     },
     async getRequestAttachmentPresignedUrl(item) {
       this.renderRequestImage = false
-      console.log('randaLogger',item)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getReimbursementRequestImage(item.reimbursementRequestId)

@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.ObjectTypeService;
 import com.albatross.api.v1.flow.services.SmartlistService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,13 @@ public class SmartlistController {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
     return new ResponseEntity<>(smartlistService.addSmartlist(smartlist), HttpStatus.OK);
+  }
+
+  //humes dont hate, i added an endpoint so i could get the sql string on the frontend.
+  //this has helped me a ton with work queues especially when the say it is only failing in prod
+  @GetMapping(value = "/{smartlistId}/getSqlString", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getSqlString (@PathVariable Long smartlistId) {
+    return smartlistService.getSmartlistSqlString(smartlistId);
   }
 
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -133,7 +141,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/{smartlistId}/csv", produces = "text/csv")
   public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId,
-                                                    @RequestParam(required = false) String timezone) {
+                                                    @RequestParam(required = false) String timezone) throws JsonProcessingException {
     return new ResponseEntity<>(smartlistService.getCsv(smartlistId, timezone), HttpStatus.OK);
   }
 

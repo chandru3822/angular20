@@ -86,6 +86,8 @@ BEGIN
                                    inner join flow.user_position up on u.id = up.user_id and up.position_id in (1,2,3,133,237,517)
                                                                  and up.archived is not true and up.id = upv.user_position_id
                                    inner join flow.org o on o.id = up.org_id
+                                   inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
+                            where ust.user_status_type != 'Expired'
                       ) as sub_rows  order by active desc, name) as sub_rows;
         else
             case when (v_org_level_id < 7) OR (326 = any (v_current_position_ids)) OR
@@ -107,8 +109,10 @@ BEGIN
                                                  end)                                                  as active,
                                              upv.user_position_id
                                       from flow.user_positions_vw upv
+                                        inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
                                       where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                         and upv.archived is not true
+                                        and ust.user_status_type != 'Expired'
                                   ) as users
                              order by active desc, name
                          ) as sub_rows;
@@ -131,9 +135,11 @@ BEGIN
                                                      end)                                                  as active,
                                                  upv.user_position_id
                                           from flow.user_positions_vw upv
+                                            inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
                                           where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                             and upv.archived is not true
                                              and upv.user_id = p_platform_user_id
+                                             and ust.user_status_type != 'Expired'
                                     ) as users
                                  order by active desc, name
                              ) as sub_rows;

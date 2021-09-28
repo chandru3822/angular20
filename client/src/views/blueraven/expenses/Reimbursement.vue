@@ -426,7 +426,6 @@ export default {
           expenseDate: date
         }
       }, 'blueraven')
-      console.log('randaLogger',data)
       this.availableBudgets = data || []
       this.availableBudgets.push({
         fullBudgetName: 'N/A',

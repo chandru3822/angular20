@@ -55,7 +55,9 @@
         <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
           <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
         </div>
-        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"></div>
+        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
+          :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
+                                 showApptsCreatedPipelineCustomDates && windowInnerWidth >= 1135 ? '83px' : '59px'}"></div>
         <table class="funnel-table" v-if="apptsCreatedPipelineData.length > 0">
           <tr class="funnel-tr">
             <th class="funnel-th"></th>
@@ -419,7 +421,9 @@
       <!-- FUNNEL -->
       <div class="funnel-container">
         <!-- FUNNEL BACKGROUND -->
-        <div v-show="apptsToFdcPipelineData.length > 0" id="appts-to-fdc-pipeline-funnel-background"></div>
+        <div v-show="apptsToFdcPipelineData.length > 0" id="appts-to-fdc-pipeline-funnel-background"
+          :style="{'margin-top': showApptsToFdcPipelineCustomDates && windowInnerWidth >= 1135 ? '87px' :
+                                 showApptsToFdcPipelineCustomDates ? '82px' : windowInnerWidth <= 1070 ? '60px' : '' }"></div>
 
         <!-- TODAY PERCENTAGE LINES -->
         <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
@@ -1009,11 +1013,16 @@
       <v-col cols="12" id="incentive-container">
         <img id="incentive-banner" src="../../../assets/blueraven/top_gun_white.svg" alt="incentive competition banner">
         <div id="milestones-container">
-          <div id="aim-high-phase" class="milestone" :class="{'active-milestone': is_q1}"
+          <div id="aim-high-phase" class="milestone"
+               :class="{'active-milestone': is_q1,
+                        'align-items-center': windowInnerWidth < 1135,
+                        'align-items-flex-start': windowInnerWidth >= 1135
+                        }"
                @click="milestoneDrilldown(1)">
             <span class="milestone-top-label">Aim High</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                :class="this.getMilestoneMedal(this.q1_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ fdcCounts.q1 }} FDC</span>
                 <div class="milestone-stars-container"
@@ -1030,11 +1039,16 @@
             <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
           </div>
 
-          <div id="fly-phase" class="milestone" :class="{'active-milestone': is_q2}"
+          <div id="fly-phase" class="milestone"
+               :class="{'active-milestone': is_q2,
+                        'align-items-center': windowInnerWidth < 1135 || is_q2,
+                        'align-items-flex-end': is_q1,
+                        'align-items-flex-start': is_q3 || is_q4}"
                @click="milestoneDrilldown(2)">
             <span class="milestone-top-label">Fly</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q2_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ fdcCounts.q2 }} FDC</span>
                 <div class="milestone-stars-container"
@@ -1051,11 +1065,16 @@
             <span class="milestone-bottom-label">{{ q2_lower_label }}</span>
           </div>
 
-          <div id="fight-phase" class="milestone" :class="{'active-milestone': is_q3}"
+          <div id="fight-phase" class="milestone"
+               :class="{'active-milestone': is_q3,
+                        'align-items-center': windowInnerWidth < 1135 || is_q3,
+                        'align-items-flex-end': is_q1 || is_q2,
+                        'align-items-flex-start': is_q4}"
                @click="milestoneDrilldown(3)">
             <span class="milestone-top-label">Fight</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q3_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ fdcCounts.q3 }} FDC</span>
                 <div class="milestone-stars-container"
@@ -1072,11 +1091,15 @@
             <span class="milestone-bottom-label">{{ q3_lower_label }}</span>
           </div>
 
-          <div id="win-phase" class="milestone" :class="{'active-milestone': is_q4}"
+          <div id="win-phase" class="milestone"
+               :class="{'active-milestone': is_q4,
+                        'align-items-center': windowInnerWidth < 1135,
+                        'align-items-flex-end': windowInnerWidth >= 1135}"
                @click="milestoneDrilldown(4)">
             <span class="milestone-top-label">Win</span>
             <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q4_points)"></div>
               <div class="milestone-content-right-side">
                 <span class="milestone-top-right-label">{{ fdcCounts.q4 }} FDC</span>
                 <div class="milestone-stars-container"
@@ -1106,7 +1129,9 @@
             <div id="seventh-segment" class="progress-bar-segment"></div>
             <div id="eighth-segment" class="progress-bar-segment"></div>
             <div id="ninth-segment" class="progress-bar-segment"></div>
-            <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px'}"></div>
+            <div id="progress-bar-fill"
+                 :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px',
+                          width: this.percentAchieved + '%'}"></div>
           </div>
         </div>
 
@@ -1178,7 +1203,6 @@
   import cloneDeep from 'lodash.clonedeep'
   import groupBy from 'lodash.groupby'
   import orderBy from 'lodash.orderby'
-  import $ from 'jquery'
   import moment from 'moment'
   import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
@@ -1379,6 +1403,7 @@
       }
     },
     computed: {
+      windowInnerWidth () { return window.innerWidth},
       is_q1 () { return this.currentQuarter === 1 },
       is_q2 () { return this.currentQuarter === 2 },
       is_q3 () { return this.currentQuarter === 3 },
@@ -1621,18 +1646,6 @@
             this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3, this.fdcCounts.q3QualificationMet)
             this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4, this.fdcCounts.q4QualificationMet)
 
-            // Get milestone medals
-            this.q1_medal_icon = this.getMilestoneMedal(this.q1_points)
-            this.q2_medal_icon = this.getMilestoneMedal(this.q2_points)
-            this.q3_medal_icon = this.getMilestoneMedal(this.q3_points)
-            this.q4_medal_icon = this.getMilestoneMedal(this.q4_points)
-
-            // Set milestone medals
-            $('#aim-high-phase .milestone-content .milestone-content-left-side').addClass(this.q1_medal_icon)
-            $('#fly-phase .milestone-content .milestone-content-left-side').addClass(this.q2_medal_icon)
-            $('#fight-phase .milestone-content .milestone-content-left-side').addClass(this.q3_medal_icon)
-            $('#win-phase .milestone-content .milestone-content-left-side').addClass(this.q4_medal_icon)
-
             // Get lower milestone labels
             this.q1_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q1)
             this.q2_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q2)
@@ -1643,7 +1656,6 @@
             this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 9) * 100
             this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
             this.progressBarIsFull = this.percentAchieved === 100
-            $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
             this.incentiveDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1654,41 +1666,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.incentiveDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      checkWindowWidth () {
-        if (window.innerWidth < 1135) {
-          $('#aim-high-phase').css('align-items', 'center')
-          $('#fly-phase').css('align-items', 'center')
-          $('#fight-phase').css('align-items', 'center')
-          $('#win-phase').css('align-items', 'center')
-          $('#aim-high-phase.active-milestone').css('align-items', 'center')
-          $('#fly-phase.active-milestone').css('align-items', 'center')
-          $('#fight-phase.active-milestone').css('align-items', 'center')
-          $('#win-phase.active-milestone').css('align-items', 'center')
-        } else {
-          if (this.is_q1) {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'flex-end')
-            $('#fight-phase').css('align-items', 'flex-end')
-            $('#win-phase').css('align-items', 'flex-end')
-          } else if (this.is_q2) {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'center')
-            $('#fight-phase').css('align-items', 'flex-end')
-            $('#win-phase').css('align-items', 'flex-end')
-          } else if (this.is_q3) {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'flex-start')
-            $('#fight-phase').css('align-items', 'center')
-            $('#win-phase').css('align-items', 'flex-end')
-          } else {
-            $('#aim-high-phase').css('align-items', 'flex-start')
-            $('#fly-phase').css('align-items', 'flex-start')
-            $('#fight-phase').css('align-items', 'flex-start')
-            $('#win-phase').css('align-items', 'flex-end')
-          }
         }
       },
 
@@ -1975,7 +1952,7 @@
       chooseApptsCreatedPipelineDateRange (dateRange) {
         if (this.showApptsCreatedPipelineCustomDates) {
           this.showApptsCreatedPipelineCustomDates = false
-          this.fixApptsCreatedFunnelTopMargin()
+          // this.fixApptsCreatedFunnelTopMargin()
         }
 
         this.apptsCreatedPipelineDateRange = dateRange
@@ -1995,7 +1972,7 @@
             break
           case 'Custom':
             this.showApptsCreatedPipelineCustomDates = true
-            this.fixApptsCreatedFunnelTopMargin()
+            // this.fixApptsCreatedFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -2007,11 +1984,11 @@
       chooseApptsToFdcPipelineDateRange (dateRange) {
         if (this.showApptsToFdcPipelineCustomDates) {
           this.showApptsToFdcPipelineCustomDates = false
-          this.fixApptsToFdcFunnelTopMargin()
+          // this.fixApptsToFdcFunnelTopMargin()
 
-          if (this.viewSelect === 'apptDateCohort') {
-            this.fixApptDateCohortBlueLinePosition()
-          }
+          // if (this.viewSelect === 'apptDateCohort') {
+          //   this.fixApptDateCohortBlueLinePosition()
+          // }
         }
 
         this.apptsToFdcPipelineDateRange = dateRange
@@ -2031,11 +2008,11 @@
             break
           case 'Custom':
             this.showApptsToFdcPipelineCustomDates = true
-            this.fixApptsToFdcFunnelTopMargin()
+            // this.fixApptsToFdcFunnelTopMargin()
 
-            if (this.viewSelect === 'apptDateCohort') {
-              this.fixApptDateCohortBlueLinePosition()
-            }
+            // if (this.viewSelect === 'apptDateCohort') {
+            //   this.fixApptDateCohortBlueLinePosition()
+            // }
 
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
@@ -2049,104 +2026,6 @@
         if (this.viewSelect !== view) {
           this.viewSelect = view
           this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
-        }
-      },
-
-      fixApptsCreatedFunnelTopMargin () {
-        if (this.showApptsCreatedPipelineCustomDates) {
-          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
-            $('#appts-created-pipeline-funnel-background').css('margin-top', '76px')
-          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('#appts-created-pipeline-funnel-background').css('margin-top', '78px')
-          } else if (window.innerWidth >= 1135) {
-            $('#appts-created-pipeline-funnel-background').css('margin-top', '83px')
-          }
-        } else {
-          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
-            $('#appts-created-pipeline-funnel-background').css('margin-top', '58px')
-          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('#appts-created-pipeline-funnel-background').css('margin-top', '60px')
-          } else if (window.innerWidth >= 1135) {
-            $('#appts-created-pipeline-funnel-background').css('margin-top', '59px')
-          }
-        }
-      },
-
-      fixApptsToFdcFunnelTopMargin () {
-        if (this.showApptsToFdcPipelineCustomDates) {
-          if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '82px')
-          } else if (window.innerWidth >= 1135) {
-            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '87px')
-          }
-        } else {
-          if (window.innerWidth <= 1070) {
-            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '60px')
-          }
-        }
-      },
-
-      fixApptDateCohortBlueLinePosition () {
-        if (this.showApptsToFdcPipelineCustomDates) {
-          if (window.innerWidth < 500) {
-            $('.upper-percentage-line').css('top', '156px')
-            $('.lower-percentage-line').css('top', '421px')
-            $('.upper-percentage').css('top', '281px')
-            $('.lower-percentage').css('top', '548px')
-          } else if (window.innerWidth >= 500 && window.innerWidth < 737) {
-            $('.upper-percentage-line').css('top', '142px')
-            $('.lower-percentage-line').css('top', '407px')
-            $('.upper-percentage').css('top', '267px')
-            $('.lower-percentage').css('top', '534px')
-          } else if (window.innerWidth >= 737 && window.innerWidth < 1070) {
-            $('.upper-percentage-line').css('top', '218px')
-            $('.lower-percentage-line').css('top', '556px')
-            $('.upper-percentage').css('top', '383px')
-            $('.lower-percentage').css('top', '706px')
-          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('.upper-percentage-line').css('top', '222px')
-            $('.lower-percentage-line').css('top', '585px')
-            $('.upper-percentage').css('top', '390px')
-            $('.lower-percentage').css('top', '753px')
-          } else if (window.innerWidth >= 1135) {
-            $('.upper-percentage-line').css('top', '226px')
-            $('.lower-percentage-line').css('top', '602px')
-            $('.upper-percentage').css('top', '407px')
-            $('.lower-percentage').css('top', '770px')
-          }
-        } else {
-          if (window.innerWidth < 500) {
-            $('.upper-percentage-line').css('top', '151px')
-            $('.lower-percentage-line').css('top', '416px')
-            $('.upper-percentage').css('top', '276px')
-            $('.lower-percentage').css('top', '543px')
-          } else if (window.innerWidth >= 500 && window.innerWidth < 737) {
-            $('.upper-percentage-line').css('top', '129px')
-            $('.lower-percentage-line').css('top', '394px')
-            $('.upper-percentage').css('top', '254px')
-            $('.lower-percentage').css('top', '521px')
-          } else if (window.innerWidth >= 737 && window.innerWidth < 1070) {
-            $('.upper-percentage-line').css('top', '197px')
-            $('.lower-percentage-line').css('top', '534px')
-            $('.upper-percentage').css('top', '362px')
-            $('.lower-percentage').css('top', '686px')
-          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
-            $('.upper-percentage-line').css('top', '201px')
-            $('.lower-percentage-line').css('top', '564px')
-            $('.upper-percentage').css('top', '370px')
-            $('.lower-percentage').css('top', '732px')
-          } else if (window.innerWidth >= 1135) {
-            $('.upper-percentage-line').css('top', '201px')
-            $('.lower-percentage-line').css('top', '576px')
-
-            if (window.innerWidth >= 1410) {
-              $('.upper-percentage').css('top', '383px')
-              $('.lower-percentage').css('top', '745px')
-            } else {
-              $('.upper-percentage').css('top', '382px')
-              $('.lower-percentage').css('top', '744px')
-            }
-          }
         }
       },
 
@@ -3087,10 +2966,6 @@
       this.switchTabs(this.tabNum)
     },
     mounted () {
-      $(window).bind('resize', this.checkWindowWidth)
-      this.checkWindowWidth()
-      $(window).bind('resize', this.fixApptsCreatedFunnelTopMargin)
-      $(window).bind('resize', this.fixApptsToFdcFunnelTopMargin)
 
       //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
       //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
@@ -3170,13 +3045,22 @@
           }
         })
     },
-    beforeDestroy () {
-      $(window).unbind('resize')
-    }
   }
 </script>
 
 <style lang="scss" scoped>
+  .align-items-center {
+    align-items: center;
+  }
+
+  .align-items-flex-start {
+    align-items: flex-start;
+  }
+
+  .align-items-flex-end {
+    align-items: flex-end;
+  }
+
   #closer-dash-container {
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
