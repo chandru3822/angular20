@@ -266,7 +266,48 @@
           </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-5">
-            <v-select attach label="From"
+          <v-autocomplete
+            v-model="selectedUsers"
+            :items="users"
+            multiple
+            clearable
+            label="To"
+            item-text="fullName"
+            item-value="id"
+            height="35px"
+            class="d-inline-block mr-3 user-autocomplete">
+            <v-divider
+              slot="prepend-item"
+              class="mt-2"
+            ></v-divider>
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
+                <span>{{ item.fullName }}</span>
+              </v-chip>
+              <span
+                v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
+                class="primary--text caption"
+              >{{ selectedUsers.length }} selected</span>
+            </template>
+
+            <template #item="data">
+              <template>
+                <v-list-item dense>
+                  <v-list-item-action>
+                    <v-checkbox @change="toggleSingleSelectAutocomplete(data.item)" :input-value="data.item.selected"></v-checkbox>
+                  </v-list-item-action>
+                  <v-list-item-title>
+                    <div @click="toggleSingleSelectAutocomplete(data.item)">{{ data.item.fullName }}</div>
+                  </v-list-item-title>
+                </v-list-item>
+              </template>
+            </template>
+          </v-autocomplete>
+
+          <v-select attach label="From"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
@@ -673,6 +714,18 @@
           this.selectAllUsers = false
         }
       },
+      toggleSingleSelectAutocomplete(item) {
+        if (item.selected) {
+          item.selected = false;
+          this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
+          this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
+          this.selectAllUsers = false
+        } else {
+          item.selected = true;
+          this.selectedUsers.push(item.id)
+          this.selectedUsersDetails.push(item)
+        }
+      },
       toggleSelectAllUsers () {
         if (this.selectAllUsers) {
           this.getUsers(true);
@@ -925,6 +978,9 @@
   }
   .user-selected {
     margin-left: 150px;
+  }
+  .user-autocomplete {
+    width: 200px;
   }
 
 </style>
