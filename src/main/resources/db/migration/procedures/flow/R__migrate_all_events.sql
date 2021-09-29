@@ -19,6 +19,7 @@ declare
   v_permit_submission_id         integer;
   v_energization_id              integer;
   v_retrofit_energization_id     integer;
+  v_eto_rebate_inspection_id     integer;
 
 BEGIN
 
@@ -70,6 +71,11 @@ BEGIN
   into v_retrofit_energization_id
   from flow.event
   where temp_cfg_id = 6811;
+
+  select id
+  into v_eto_rebate_inspection_id
+  from flow.event
+  where temp_cfg_id = 6706;
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
@@ -316,6 +322,12 @@ BEGIN
 
   perform flow.migrate_events(3431);
 
+  raise notice 'starting ETO Rebate Inspection';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_eto_rebate_inspection_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_eto_rebate_inspection_id);
+
+
+  perform flow.migrate_events(129);
 
 
   --this updates all project_details

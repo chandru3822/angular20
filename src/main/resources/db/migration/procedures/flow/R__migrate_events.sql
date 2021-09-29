@@ -97,11 +97,11 @@ BEGIN
 --TODO ask what company_event_status_type_id should be
 
       if x.process_step_id = 1 then
-        update brs.project_details
-        set first_appointment_ppse_id = v_event_id
-        where first_appointment is not null
-          and first_appointment_ppse_id is null
-          and first_appointment_pps_id = x.project_process_step_id;
+--         update brs.project_details
+--         set first_appointment_ppse_id = v_event_id
+--         where first_appointment is not null
+--           and first_appointment_ppse_id is null
+--           and first_appointment_ppse_id = x.project_process_step_id;
         perform flow.migrate_schedule_closer_appointment_to_events(v_event_id,
                                                                    x.project_process_step_id);
 
@@ -137,6 +137,9 @@ BEGIN
                                                              x.project_process_step_id);
       elsif x.process_step_id = 3431 then
         perform flow.migrate_schedule_retrofit_energization_to_events(v_event_id,
+                                                                      x.project_process_step_id);
+      elsif x.process_step_id = 129 then
+        perform flow.migrate_schedule_eto_rebate_inspection_to_events(v_event_id,
                                                                       x.project_process_step_id);
       end if;
 
