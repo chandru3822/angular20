@@ -82,7 +82,7 @@ BEGIN
   if v_pending_permit_pickup_id is not null then
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
                                                                        null,
-                                                                       v_verify_permit_pickup_pps_id,
+                                                                       v_pending_permit_pickup_id,
                                                                        1371);
 
   end if;
@@ -93,16 +93,17 @@ BEGIN
                                                                        v_verify_permit_pickup_pps_id,
                                                                        null);
   end if;
-
-  perform flow.migrate_insert_event_custom_field_value(p_event_id,
-                                                       21984,
-                                                       coalesce(v_verify_reschedule_needed, v_pending_reschedule_needed),
-                                                       null,
-                                                       null,
-                                                       coalesce(v_date_created_verify, v_date_created_pending),
-                                                       coalesce(v_date_modified_verify, v_date_modified_pending),
-                                                       coalesce(v_created_by_id_verify, v_created_by_id_pending),
-                                                       coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
+  if v_verify_reschedule_needed is not null or v_pending_reschedule_needed is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         21984,
+                                                         coalesce(v_verify_reschedule_needed, v_pending_reschedule_needed)::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         coalesce(v_date_created_verify, v_date_created_pending),
+                                                         coalesce(v_date_modified_verify, v_date_modified_pending),
+                                                         coalesce(v_created_by_id_verify, v_created_by_id_pending),
+                                                         coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
+  end if;
 
 
 --this update parent to the appropriate parent

@@ -29,7 +29,7 @@ BEGIN
              and cot.company_id = 3
              and ps.id = p_process_step_id
              -- and pps.id = 3263673
-           order by ps.id
+           order by pps.project_id, pps.date_created
 
     loop
       -- raise notice 'the record count = %, the pps_id = %',v_record_count,x.project_process_step_id;
@@ -94,41 +94,50 @@ BEGIN
                                             and e.temp_cfg_id = x.custom_field_group_id),
               v_resource_id, 1, v_start_date, v_end_date, 2350555)
       returning id into v_event_id;
-
+--TODO ask what company_event_status_type_id should be
 
       if x.process_step_id = 1 then
+        update brs.project_details
+        set first_appointment_ppse_id = v_event_id
+        where first_appointment is not null
+          and first_appointment_ppse_id is null
+          and first_appointment_pps_id = x.project_process_step_id;
         perform flow.migrate_schedule_closer_appointment_to_events(v_event_id,
                                                                    x.project_process_step_id);
+
       elsif x.process_step_id = 5 then
         perform flow.migrate_schedule_site_survey_to_events(v_event_id,
                                                             x.project_process_step_id);
       elsif x.process_step_id = 98 then
         perform flow.migrate_schedule_resurvey_to_events(v_event_id,
-                                                            x.project_process_step_id);
+                                                         x.project_process_step_id);
       elsif x.process_step_id = 168 then
         perform flow.migrate_schedule_ahj_inspection_sc_to_events(v_event_id,
-                                                         x.project_process_step_id);
+                                                                  x.project_process_step_id);
       elsif x.process_step_id = 40 then
         perform flow.migrate_schedule_ahj_inspection_nsc_to_events(v_event_id,
-                                                                  x.project_process_step_id);
+                                                                   x.project_process_step_id);
       elsif x.process_step_id = 153 then
         perform flow.migrate_schedule_ahj_reinspection_wc_to_events(v_event_id,
-                                                                   x.project_process_step_id);
+                                                                    x.project_process_step_id);
       elsif x.process_step_id = 3365 then
         perform flow.migrate_schedule_installation_to_events(v_event_id,
-                                                                    x.project_process_step_id);
+                                                             x.project_process_step_id);
       elsif x.process_step_id = 3383 then
         perform flow.migrate_schedule_installation_closeout_to_events(v_event_id,
-                                                                    x.project_process_step_id);
+                                                                      x.project_process_step_id);
       elsif x.process_step_id = 16 then
         perform flow.migrate_schedule_permit_pickup_delivery_to_events(v_event_id,
-                                                                      x.project_process_step_id);
+                                                                       x.project_process_step_id);
       elsif x.process_step_id = 13 then
         perform flow.migrate_schedule_permit_submission_to_events(v_event_id,
-                                                          x.project_process_step_id);
+                                                                  x.project_process_step_id);
       elsif x.process_step_id = 85 then
         perform flow.migrate_schedule_energization_to_events(v_event_id,
-                                                          x.project_process_step_id);
+                                                             x.project_process_step_id);
+      elsif x.process_step_id = 3431 then
+        perform flow.migrate_schedule_retrofit_energization_to_events(v_event_id,
+                                                                      x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
@@ -144,8 +153,10 @@ BEGIN
     select cfg.id
     from flow.custom_field_group cfg
            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.archived is false
-    where ps.id = p_process_step_id and cfg.archived is false and cfg.event_type_id is not null)
-  update flow.custom_field_group  cfg
+    where ps.id = p_process_step_id
+      and cfg.archived is false
+      and cfg.event_type_id is not null)
+  update flow.custom_field_group cfg
   set archived = true
   from update_data ud
   where ud.id = cfg.id;

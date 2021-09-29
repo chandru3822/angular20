@@ -295,7 +295,7 @@ export default {
       showRoundRobin: false,
       searchLoading: false,
       uniqueAlreadyHasValue: false,
-      availabilityDateField: {fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
+      availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
     }
   },
   async created() {
@@ -464,7 +464,7 @@ export default {
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match) {
+      if (!match && field?.id != -1) {
         this.dirtyCfvs.push(field)
       }
     },

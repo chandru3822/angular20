@@ -117,16 +117,17 @@ BEGIN
   end if;
 
 
-
-  perform flow.migrate_insert_event_custom_field_value(p_event_id,
-                                                       21983,
-                                                       coalesce(v_verify_permit_pack_needed, v_pending_permit_pack_needed),
-                                                       null,
-                                                       null,
-                                                       coalesce(v_date_created_verify, v_date_created_pending),
-                                                       coalesce(v_date_modified_verify, v_date_modified_pending),
-                                                       coalesce(v_created_by_id_verify, v_created_by_id_pending),
-                                                       coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
+  if v_verify_permit_pack_needed is not null or v_pending_permit_pack_needed is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         21983,
+                                                         coalesce(v_verify_permit_pack_needed, v_pending_permit_pack_needed)::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         coalesce(v_date_created_verify, v_date_created_pending),
+                                                         coalesce(v_date_modified_verify, v_date_modified_pending),
+                                                         coalesce(v_created_by_id_verify, v_created_by_id_pending),
+                                                         coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
+  end if;
 
 
 --this update parent to the appropriate parent

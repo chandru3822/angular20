@@ -61,7 +61,7 @@ BEGIN
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
                                                                        v_site_survey_verification_pps_id, 21203, true,v_schedule_resurvey_id);
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null,
-                                                                       v_site_survey_verification_pps_id, 21204, true),v_schedule_resurvey_id;
+                                                                       v_site_survey_verification_pps_id, 21204, true,v_schedule_resurvey_id);
   end if;
 
   if v_resurvey_pps_id is not null then

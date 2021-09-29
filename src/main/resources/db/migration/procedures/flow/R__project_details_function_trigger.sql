@@ -358,25 +358,25 @@ BEGIN
                 from brs.proposal_log_history
                 where id = new.int_value;
               end case;
-          elsif v_record.field_to_update = 'closer_user_position_id' and
-                v_record.second_field_to_update = 'closer_user_id' then
-            case when new.int_value is null then select 'null' into v_value;
-              else
-                select quote_literal(user_id)
-                into v_value
-                from flow.user_position
-                where id = new.int_value;
-              end case;
-          elsif v_record.field_to_update = 'closer_user_position_id' and
-                v_record.second_field_to_update = 'closer_name' then
-            case when new.int_value is null then select 'null' into v_value;
-              else
-                select quote_literal(first_name || ' ' || last_name)
-                into v_value
-                from flow.user u
-                       inner join flow.user_position up on up.user_id = u.id
-                where up.id = new.int_value;
-              end case;
+--           elsif v_record.field_to_update = 'closer_user_position_id' and
+--                 v_record.second_field_to_update = 'closer_user_id' then
+--             case when new.int_value is null then select 'null' into v_value;
+--               else
+--                 select quote_literal(user_id)
+--                 into v_value
+--                 from flow.user_position
+--                 where id = new.int_value;
+--               end case;
+--           elsif v_record.field_to_update = 'closer_user_position_id' and
+--                 v_record.second_field_to_update = 'closer_name' then
+--             case when new.int_value is null then select 'null' into v_value;
+--               else
+--                 select quote_literal(first_name || ' ' || last_name)
+--                 into v_value
+--                 from flow.user u
+--                        inner join flow.user_position up on up.user_id = u.id
+--                 where up.id = new.int_value;
+--               end case;
           elsif v_record.field_to_update in ('installation_resource', 'permit_pack_submittal_resource',
                                              'in_house_mpu_permit_submittal_resource',
                                              'permit_pickup_resource', 'ac_compressor_relocation_resource',
@@ -466,7 +466,6 @@ declare
   v_field_name              varchar;
   v_parent_custom_field_id  integer;
   v_project_id2             integer;
-  v_project_process_step_id integer;
 BEGIN
 
   select pps.project_id
@@ -494,11 +493,6 @@ BEGIN
 
 
   if v_parent_custom_field_id = 10541 then
-    select pps2.id
-    into v_project_process_step_id
-    from flow.project_process_step pps2
-           inner join flow.project_process_step_event ppse2 on pps2.id = ppse2.project_process_step_id
-    where ppse2.id = new.project_process_step_event_id;
 
     select start_time
     into v_timestamp_value
@@ -510,10 +504,10 @@ BEGIN
     if new.int_value is not null then
       update brs.project_details
       set first_appointment_id     = new.int_value,
-          first_appointment_pps_id = v_project_process_step_id
+          first_appointment_ppse_id = new.id
       where project_id = v_project_id1
         and (first_appointment_id is null or
-             (first_appointment_pps_id is not null and first_appointment_pps_id = v_project_process_step_id));
+             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
     end if;
 
     if new.int_value in (2, 1139, 1140) then
@@ -558,14 +552,6 @@ BEGIN
              (first_appointment_not_pitched_or_missed_ppsecfv_id is not null and
               first_appointment_not_pitched_or_missed_ppsecfv_id = new.id));
     end if;
-  elsif v_parent_custom_field_id = 9958 and
-        new.timestamp_value is not null then
-    update brs.project_details
-    set first_appointment        = new.timestamp_value,
-        first_appointment_pps_id = v_project_process_step_id
-    where project_id = v_project_id1
-      and (first_appointment is null or
-           (first_appointment_pps_id is not null and first_appointment_pps_id = v_project_process_step_id));
   end if;
 
 
@@ -646,25 +632,25 @@ BEGIN
                 from brs.proposal_log_history
                 where id = new.int_value;
               end case;
-          elsif v_record.field_to_update = 'closer_user_position_id' and
-                v_record.second_field_to_update = 'closer_user_id' then
-            case when new.int_value is null then select 'null' into v_value;
-              else
-                select quote_literal(user_id)
-                into v_value
-                from flow.user_position
-                where id = new.int_value;
-              end case;
-          elsif v_record.field_to_update = 'closer_user_position_id' and
-                v_record.second_field_to_update = 'closer_name' then
-            case when new.int_value is null then select 'null' into v_value;
-              else
-                select quote_literal(first_name || ' ' || last_name)
-                into v_value
-                from flow.user u
-                       inner join flow.user_position up on up.user_id = u.id
-                where up.id = new.int_value;
-              end case;
+--           elsif v_record.field_to_update = 'closer_user_position_id' and
+--                 v_record.second_field_to_update = 'closer_user_id' then
+--             case when new.int_value is null then select 'null' into v_value;
+--               else
+--                 select quote_literal(user_id)
+--                 into v_value
+--                 from flow.user_position
+--                 where id = new.int_value;
+--               end case;
+--           elsif v_record.field_to_update = 'closer_user_position_id' and
+--                 v_record.second_field_to_update = 'closer_name' then
+--             case when new.int_value is null then select 'null' into v_value;
+--               else
+--                 select quote_literal(first_name || ' ' || last_name)
+--                 into v_value
+--                 from flow.user u
+--                        inner join flow.user_position up on up.user_id = u.id
+--                 where up.id = new.int_value;
+--               end case;
           elsif v_record.field_to_update in ('installation_resource', 'permit_pack_submittal_resource',
                                              'in_house_mpu_permit_submittal_resource',
                                              'permit_pickup_resource', 'ac_compressor_relocation_resource',
@@ -738,6 +724,56 @@ CREATE TRIGGER update_project_details_from_events_trg
   ON flow.project_process_step_event_custom_field_value
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_details_process_steps_from_events();
+
+
+CREATE OR REPLACE FUNCTION flow.update_events()
+  RETURNS TRIGGER AS
+$body$
+
+declare
+  v_project_id integer;
+  v_closer_name varchar;
+  v_user_id integer;
+  v_user_position_id integer;
+BEGIN
+
+    select pps.project_id
+    into v_project_id
+    from flow.project_process_step_event ppse
+    inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+    where ppse.id = new.id;
+
+    select u.id,u.first_name ||' '||u.last_name,up.id
+    into v_user_id,v_closer_name,v_user_position_id
+    from flow.user u
+    inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
+    where up.id = new.resource_id;
+
+    update brs.project_details
+    set first_appointment        = new.start_time,
+        first_appointment_ppse_id = new.id
+    where project_id = v_project_id
+      and (first_appointment is null or
+           (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
+    update brs.project_details
+      set closer_user_id = v_user_id,
+          closer_name = v_closer_name,
+          closer_user_position_id = v_user_position_id
+    where project_id = v_project_id;
+
+
+
+  RETURN NULL;
+END
+$body$
+  LANGUAGE plpgsql;
+
+drop trigger if exists update_events_trg on flow.project_process_step_event;
+CREATE TRIGGER update_events_trg
+  after INSERT or update
+  ON flow.project_process_step_event
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.update_events();
 
 
 CREATE OR REPLACE FUNCTION flow.pps_update_project_details()

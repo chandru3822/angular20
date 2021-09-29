@@ -13,7 +13,7 @@ BEGIN
   select id
   into v_pending_energization_pps_id
   from flow.project_process_step
-  where process_step_id = 94
+  where process_step_id = 96
     and parent_project_process_step_id = p_project_process_step_id
   order by project_process_step.date_created desc
   limit 1;
@@ -22,7 +22,7 @@ BEGIN
     select id
     into v_pending_energization_pps_id
     from flow.project_process_step
-    where process_step_id = 67
+    where process_step_id = 97
       and parent_project_process_step_id = v_pending_energization_pps_id
     order by project_process_step.date_created desc
     limit 1;

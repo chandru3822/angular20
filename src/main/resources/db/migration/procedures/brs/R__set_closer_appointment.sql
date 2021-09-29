@@ -63,9 +63,10 @@ BEGIN
     insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
                                                  distance_from_actual_to_target, appointment_start_date,
                                                  is_only_user_available,
-                                                 created_date, available_users, created_by_id)
+                                                 created_date, available_users, created_by_id,closer_selected,
+                                                 project_process_step_event_id)
     values (p_project_id, v_user_id, p_project_process_step_id, 0, p_appointment_start_time, true, now(), p_users,
-            p_current_user_id);
+            p_current_user_id,true,p_project_process_step_event_id);
   else
     --   select p_users[1]
     --   into v_user_id;
@@ -74,7 +75,8 @@ BEGIN
                                                  total_lead_allocation, actual_lead_allocation, score,
                                                  lead_gen_num, lead_gen_den, self_gen, total_avail,
                                                  appointment_count_with_interval, appointment_count, created_date,
-                                                 available_users, created_by_id, manual_allocation)
+                                                 available_users, created_by_id, manual_allocation,
+                                                 project_process_step_event_id)
       (
         select p_project_id,
                t.user_id,
@@ -93,7 +95,8 @@ BEGIN
                now(),
                p_users,
                p_current_user_id,
-               t.manual_allocation
+               t.manual_allocation,
+               p_project_process_step_event_id
         from brs.get_total_lead_allocation(v_postal_code_zone_id, true,p_remote) as t
       );
 

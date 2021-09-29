@@ -18,6 +18,7 @@ declare
   v_permit_pickup_delivery_id    integer;
   v_permit_submission_id         integer;
   v_energization_id              integer;
+  v_retrofit_energization_id     integer;
 
 BEGIN
 
@@ -65,7 +66,15 @@ BEGIN
   from flow.event
   where temp_cfg_id = 362;
 
+  select id
+  into v_retrofit_energization_id
+  from flow.event
+  where temp_cfg_id = 6811;
+
+  drop trigger if exists update_events_trg on flow.project_process_step_event;
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
+  drop trigger if exists project_process_step_event_custom_field_value_audit_trg ON flow.project_process_step_event_custom_field_value;
+  drop trigger if exists concrete_project_process_step_event_audit_trg ON flow.project_process_step_event;
   raise notice 'starting Schedule closer appointment';
   perform flow.migrate_events(1);
   raise notice 'starting Site Survey Scheduling';
@@ -300,10 +309,57 @@ BEGIN
 
   perform flow.migrate_events(85);
 
+  raise notice 'starting retrofit Energization';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_energization_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_energization_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_retrofit_energization_id);
+
+  perform flow.migrate_events(3431);
+
+
 
   --this updates all project_details
   raise notice 'starting update project details';
 --   perform flow.migrate_update_project_details();
+
+  CREATE TRIGGER project_process_step_event_custom_field_value_audit_trg
+    after INSERT or update or delete
+    ON flow.project_process_step_event_custom_field_value
+    FOR EACH ROW
+  EXECUTE PROCEDURE flow.project_process_step_event_custom_field_audit();
+
+
+  CREATE TRIGGER concrete_project_process_step_event_audit_trg
+    after INSERT or update
+    ON flow.project_process_step_event
+    FOR EACH ROW
+  EXECUTE PROCEDURE flow.concrete_project_process_step_event_audit();
+
+
+  CREATE TRIGGER update_project_details_from_events_trg
+    after INSERT or update
+    ON flow.project_process_step_event_custom_field_value
+    FOR EACH ROW
+  EXECUTE PROCEDURE flow.update_project_details_process_steps_from_events();
+
+
+  CREATE TRIGGER update_events_trg
+    after INSERT or update
+    ON flow.project_process_step_event
+    FOR EACH ROW
+  EXECUTE PROCEDURE flow.update_events();
+
+  delete
+  from brs.project_details_config
+  where field_to_update = 'closer_user_position_id';
+
+  delete
+  from brs.project_details_config
+  where field_to_update = 'closer_appointment_end';
+
+  delete
+  from brs.project_details_config
+  where field_to_update = 'closer_appointment_start';
 
 END
 $$

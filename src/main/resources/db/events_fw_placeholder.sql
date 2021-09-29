@@ -717,6 +717,28 @@ $$
   END;
 $$;
 
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN first_appointment_pps_id TO first_appointment_ppse_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'first_appointment_pps_id does not exists';
+  END;
+$$;
+
+DO
+$$
+  BEGIN
+
+    ALTER TABLE brs.project_details
+      RENAME COLUMN first_appointment_id_pps_id TO first_appointment_id_ppsecfv_id;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'first_appointment_id_pps_id does not exists';
+  END;
+$$;
+
 
 
 update brs.project_details_config
@@ -759,5 +781,11 @@ update brs.project_details_config
 set update_first_value_only_id = 'online_submission_time_ppsecfv_id'
 where update_first_value_only_id = 'online_submission_time_ppscfv_id';
 
+
+
+alter table brs.project_details drop column if exists first_appointment_pps_id;
+alter table brs.project_details drop column if exists first_appointment_id_pps_id;
+
 alter table flow.custom_field_group_assignment add column  if not exists  migrated_cfga_id integer;
+alter table brs.set_closer_appointment_audit add column if not exists project_process_step_event_id integer;
 

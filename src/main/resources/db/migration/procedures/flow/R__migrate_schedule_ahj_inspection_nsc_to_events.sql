@@ -4,6 +4,7 @@ CREATE OR REPLACE function flow.migrate_schedule_ahj_inspection_nsc_to_events(p_
 $$
 
 declare
+  v_schedule_inspection_with_ahj_id      integer;
   v_pending_ahj_inspection_id            integer;
   v_need_ahj_verification_pps_id         integer;
   v_ahj_inspection_nsc_event_id          integer;
@@ -41,13 +42,19 @@ declare
   v_modified_by_id_need_needed           integer;
   v_modified_by_id_need_cat              integer;
 BEGIN
-
+  select id
+  into v_schedule_inspection_with_ahj_id
+  from flow.project_process_step
+  where process_step_id = 204
+    and parent_project_process_step_id = p_project_process_step_id
+  order by project_process_step.date_created desc
+  limit 1;
 
   select id
   into v_pending_ahj_inspection_id
   from flow.project_process_step
   where process_step_id = 152
-    and parent_project_process_step_id = p_project_process_step_id
+    and parent_project_process_step_id = v_schedule_inspection_with_ahj_id
   order by project_process_step.date_created desc
   limit 1;
 
@@ -132,36 +139,64 @@ BEGIN
                                                                        998, true, v_ahj_inspection_nsc_event_id);
   end if;
 
-  perform flow.migrate_insert_event_custom_field_value(p_event_id,
-                                                       19027,
-                                                       coalesce(v_inspection_need_reschedule_needed, v_inspection_pending_reschedule_needed),
-                                                       null,
-                                                       null,
-                                                       coalesce(v_date_created_need_needed, v_date_created_pending_needed),
-                                                       coalesce(v_date_modified_need_needed, v_date_modified_pending_needed),
-                                                       coalesce(v_created_by_id_need_needed, v_created_by_id_pending_needed),
-                                                       coalesce(v_modified_by_id_need_needed, v_modified_by_id_pending_needed), true, v_ahj_inspection_nsc_event_id);
-  perform flow.migrate_insert_event_custom_field_value(p_event_id,
-                                                       19028,
-                                                       coalesce(v_inspection_need_reschedule_reason, v_inspection_pending_reschedule_reason),
-                                                       null,
-                                                       null,
-                                                       coalesce(v_date_created_need_reason, v_date_created_pending_reason),
-                                                       coalesce(v_date_modified_need_reason, v_date_modified_pending_reason),
-                                                       coalesce(v_created_by_id_need_reason, v_created_by_id_pending_reason),
-                                                       coalesce(v_modified_by_id_need_reason, v_modified_by_id_pending_reason), true, v_ahj_inspection_nsc_event_id);
-  perform flow.migrate_insert_event_custom_field_value(p_event_id,
-                                                       21609,
-                                                       coalesce(v_inspection_need_category, v_inspection_pending_category),
-                                                       null,
-                                                       null,
-                                                       coalesce(v_date_created_need_cat, v_date_created_pending_cat),
-                                                       coalesce(v_date_modified_need_cat, v_date_modified_pending_cat),
-                                                       coalesce(v_created_by_id_need_cat, v_created_by_id_pending_cat),
-                                                       coalesce(v_modified_by_id_need_cat, v_modified_by_id_pending_cat), true, v_ahj_inspection_nsc_event_id);
+  if v_inspection_need_reschedule_needed is not null or v_inspection_pending_reschedule_needed is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         19027,
+                                                         coalesce(v_inspection_need_reschedule_needed,
+                                                                  v_inspection_pending_reschedule_needed)::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         coalesce(v_date_created_need_needed, v_date_created_pending_needed),
+                                                         coalesce(v_date_modified_need_needed, v_date_modified_pending_needed),
+                                                         coalesce(v_created_by_id_need_needed, v_created_by_id_pending_needed),
+                                                         coalesce(v_modified_by_id_need_needed,
+                                                                  v_modified_by_id_pending_needed), true,
+                                                         v_ahj_inspection_nsc_event_id);
+  end if;
+  if v_inspection_need_reschedule_reason is not null or v_inspection_pending_reschedule_reason is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         19028,
+                                                         null::timestamp,
+                                                         coalesce(v_inspection_need_reschedule_reason,
+                                                                  v_inspection_pending_reschedule_reason)::text,
+                                                         null::integer[],
+                                                         coalesce(v_date_created_need_reason, v_date_created_pending_reason),
+                                                         coalesce(v_date_modified_need_reason, v_date_modified_pending_reason),
+                                                         coalesce(v_created_by_id_need_reason, v_created_by_id_pending_reason),
+                                                         coalesce(v_modified_by_id_need_reason,
+                                                                  v_modified_by_id_pending_reason), true,
+                                                         v_ahj_inspection_nsc_event_id);
+  end if;
+  if v_inspection_need_category is not null or v_inspection_pending_category is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         21609,
+                                                         null::timestamp,
+                                                         null::text,
+                                                         coalesce(v_inspection_need_category, v_inspection_pending_category)::integer[],
+                                                         coalesce(v_date_created_need_cat, v_date_created_pending_cat),
+                                                         coalesce(v_date_modified_need_cat, v_date_modified_pending_cat),
+                                                         coalesce(v_created_by_id_need_cat, v_created_by_id_pending_cat),
+                                                         coalesce(v_modified_by_id_need_cat, v_modified_by_id_pending_cat),
+                                                         true, v_ahj_inspection_nsc_event_id);
+  end if;
 
 
 --this update parent to the appropriate parent
+  if v_schedule_inspection_with_ahj_id is not null then
+    update flow.project_process_step
+    set parent_project_process_step_id = p_project_process_step_id
+    where parent_project_process_step_id = v_schedule_inspection_with_ahj_id
+      and case
+            when v_pending_ahj_inspection_id is not null then
+              id != v_pending_ahj_inspection_id
+            else 1 = 1 end;
+
+    ---archives site_survey
+    update flow.project_process_step
+    set archived = true
+    where id = v_schedule_inspection_with_ahj_id;
+  end if;
+
   if v_pending_ahj_inspection_id is not null then
     update flow.project_process_step
     set parent_project_process_step_id = p_project_process_step_id

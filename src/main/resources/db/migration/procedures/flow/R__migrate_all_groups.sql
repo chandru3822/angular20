@@ -12,14 +12,17 @@ declare
   v_new_group_id_3365_SD integer;
   v_new_group_id_3365_IO integer;
   v_new_group_id_3365_NS integer;
-v_new_group_id_16_SC     integer;
-v_new_group_id_16_RPPD  integer;
-v_new_group_id_13_D integer;
-v_new_group_id_13_OC integer;
-v_new_group_id_13_RS integer;
-  v_new_group_id_85_D integer;
-  v_new_group_id_85_OC integer;
-  v_new_group_id_85_RS integer;
+  v_new_group_id_16_SC   integer;
+  v_new_group_id_16_RPPD integer;
+  v_new_group_id_13_D    integer;
+  v_new_group_id_13_OC   integer;
+  v_new_group_id_13_RS   integer;
+  v_new_group_id_85_D    integer;
+  v_new_group_id_85_OC   integer;
+  v_new_group_id_85_RS   integer;
+  v_new_group_id_3431_D  integer;
+  v_new_group_id_3431_OC integer;
+  v_new_group_id_3431_RS integer;
 
 BEGIN
   /*Schedule closer appointment*/
@@ -223,6 +226,7 @@ BEGIN
     where cfg.group_name = 'Reschedule Permit Pickup/Delivery'
       and cfg.event_id = p_event_type_id;
     perform flow.migrate_fields_to_group(v_new_group_id_16_RPPD, 21984, 0);
+    perform flow.migrate_fields_to_group(v_new_group_id_16_RPPD, 1371, 1);
   elsif p_process_step_id = 13 then
     select id
     into v_new_group_id_13_D
@@ -290,7 +294,33 @@ BEGIN
     perform flow.migrate_fields_to_group(v_new_group_id_85_RS, 1416, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_85_RS, 1417, 2);
 
+  elsif p_process_step_id = 3431 then
+    select id
+    into v_new_group_id_3431_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
 
+    select id
+    into v_new_group_id_3431_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3431_RS
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3431_D, 21529, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3431_D, 21523, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3431_OC, 21528, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3431_OC, 21530, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3431_RS, 21527, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3431_RS, 21525, 2);
 
   end if;
 
