@@ -31,7 +31,7 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn :disabled="!this.usersSelected" text @click="msgDialog = true">
+            <v-btn text @click="msgDialog = true">
               <v-icon v-if="constants.IS_MOBILE">email</v-icon>
               <span v-else>Send Email/Text</span>
             </v-btn>
@@ -354,7 +354,48 @@
             </v-card-actions>
         </div>
         <div v-else-if="messageTab == 2" style="height:700px;" class="pa-5">
-            <span class="count-span">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
+            <v-autocomplete
+              v-model="selectedUsers"
+              :items="allUsers"
+              multiple
+              clearable
+              label="To"
+              item-text="fullName"
+              item-value="id"
+              height="35px"
+              @click:clear="clearUsersAutocomplete()"
+              class="d-inline-block mr-3 user-autocomplete">
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
+                  <span>{{ item.fullName }}</span>
+                </v-chip>
+                <span
+                  v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
+                  class="primary--text caption"
+                >{{ selectedUsers.length }} selected</span>
+              </template>
+
+              <template #item="data">
+                <template>
+                  <v-list-item dense>
+                    <v-list-item-action>
+                      <v-checkbox @change="toggleSingleSelectAutocomplete(data.item)" :input-value="data.item.selected"></v-checkbox>
+                    </v-list-item-action>
+                    <v-list-item-title>
+                      <div @click="toggleSingleSelectAutocomplete(data.item)">{{ data.item.fullName }}</div>
+                    </v-list-item-title>
+                  </v-list-item>
+                </template>
+              </template>
+            </v-autocomplete>
+            <span class="count-span flex-display">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
 
             <v-textarea solo v-model="textMessage"
                         auto-grow
