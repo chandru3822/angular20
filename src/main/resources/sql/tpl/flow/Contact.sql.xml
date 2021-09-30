@@ -28,6 +28,8 @@
        c.email,
        c.phone,
        c.mobile,
+       c.latitude,
+       c.longitude,
        c.contact_type_id,
        ct.contact_type,
        c.company_id,
@@ -107,6 +109,8 @@
       concat(c.first_name, ' ', c.last_name) as full_name,
       c.email,
       c.phone,
+      c.latitude,
+      c.longitude,
       c.mobile,
       c.contact_type_id,
       c.postal_code,
@@ -137,6 +141,8 @@
            last_name = trim(:lastName),
            street1 = :street1,
            city = :city,
+           latitude = :latitude,
+           longitude = :longitude,
            company_state_id = :companyStateId,
            postal_code = :postalCode,
            company_country_id = :companyCountryId,
@@ -157,9 +163,41 @@
   ]]></contact.delete>
 
   <contact.insertContact><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, trim(:postalCode), :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id, latitude, longitude)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, trim(:postalCode), :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId, :latitude, :longitude)
   ]]></contact.insertContact>
+
+  <contact.getContactsToUpdateForLatLong><![CDATA[
+    select c.id, c.street1, c.city, c.company_state_id, st.state, st.abbreviation, c.postal_code
+    from flow.contact c
+    left join flow.company_state cs on c.company_state_id = cs.id
+    left join flow.state st on st.id = cs.state_id
+    where c.archived is false
+    and c.street1 is not null and c.city is not null
+      and c.temp_geo_attempted is false
+      and c.latitude is null
+      and c.longitude is null
+    and c.id not in (
+      select c2.id from flow.contact c2
+      inner join flow.project p on c2.id = p.contact_id
+      where p.street1 is not null and p.city is not null and p.company_state_id is not null and p.postal_code is not null
+      and p.street1 = c2.street1 and p.city = c2.city and p.company_state_id = c2.company_state_id and p.postal_code = c2.postal_code
+      and p.archived is false
+      and p.latitude is not null
+      and p.longitude is not null
+      and c2.archived is false
+      )
+    order by date_created desc
+    limit :limit
+  ]]></contact.getContactsToUpdateForLatLong>
+
+  <contact.updateLatLongTemp><![CDATA[
+    update flow.contact
+    set latitude = :latitude,
+        longitude = :longitude,
+        temp_geo_attempted = true
+    where id = :id
+  ]]></contact.updateLatLongTemp>
 
   <contact.getOwners><![CDATA[
     select * from flow.get_contact_available_owners(:companyId::int, :inParentCompany)

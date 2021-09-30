@@ -3,14 +3,13 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mapbox.geojson.Point;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.ObjLongConsumer;
 import java.util.stream.Collectors;
 
 
@@ -58,7 +56,6 @@ import java.util.stream.Collectors;
 public class AvailabilityService {
 
   private final SqlCache sqlCache;
-  private final LocationUtils locationUtils;
   private final SecurityService securityService;
   private final DataSource dataSource;
   private final ObjectMapper om;
@@ -67,6 +64,7 @@ public class AvailabilityService {
   private final ProjectProcessStepService projectProcessStepService;
   private final CustomFieldValueService customFieldValueService;
   private final UserPositionService userPositionService;
+  private final MapboxApiService mapboxApiService;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -300,7 +298,7 @@ public class AvailabilityService {
     return page;
   }
 
-  public ResourceAppointment saveAppointment(ResourceAppointment ra) {
+  public ResourceAppointment saveAppointment(ResourceAppointment ra) throws Exception {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -320,14 +318,46 @@ public class AvailabilityService {
     params.put("recurringEndTime", ra.getRecurringEndTime());
 
     Long id = null;
+    //lat long will be null for new or invalid addresses
+    Double latitude = ra.getLatitude();
+    Double longitude = ra.getLongitude();
 
     if (null != ra.getId()) {
       id = ra.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
+
+      //reload lat/long if location changed
+      if(null != ra.getReloadCoordinates() && ra.getReloadCoordinates()) {
+        List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        //if we found new coordinates then uses those values
+        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+        } else {
+          //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+          latitude = null;
+          longitude = null;
+        }
+      }
+      params.put("latitude", latitude);
+      params.put("longitude", longitude);
+
       sqlCache.update("availability.updateAppointment", params);
     } else {
+      List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        //1 = lat, 0 = long
+        latitude = coordinates.get(1);
+        longitude = coordinates.get(0);
+        ra.setLatitude(latitude);
+        ra.setLongitude(longitude);
+      }
+
       if (null == ra.getRepeat() || !ra.getRepeat()) {
+        params.put("latitude", latitude);
+        params.put("longitude", longitude);
         params.put("createdById", user.trueUserId());
         params.put("recurringEventId", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
@@ -337,14 +367,7 @@ public class AvailabilityService {
     }
 
     ResourceAppointment appt = getOneResourceAppointment(id);
-    if (null != ra.getLocation() && (null == ra.getId() || ra.getReloadCoordinates())) {
-      getAppointmentsCoordinates(ra.getLocation(), id);
-    }
     return appt;
-  }
-
-  public void getAppointmentsCoordinates(String address, Long id) {
-    locationUtils.getGeocode(address, id, new CustomGeoFunction());
   }
 
   public void processFutureRecurringEvents() {
@@ -483,6 +506,8 @@ public class AvailabilityService {
           params.put("title", null != ra.getTitle() ? ra.getTitle() : ra.getDescription());
           params.put("description", ra.getDescription());
           params.put("location", ra.getLocation());
+          params.put("latitude", ra.getLatitude());
+          params.put("longitude", ra.getLongitude());
           params.put("allDay", ra.getAllDay() != null && ra.getAllDay());
           params.put("companyId", user.getCompanyId());
           params.put("createdById", user.trueUserId());
@@ -736,31 +761,6 @@ public class AvailabilityService {
       };
       bw.registerCustomEditor(List.class, "resourceScheduleAvailability",
         new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
-    }
-  }
-
-  private class CustomGeoFunction implements ObjLongConsumer {
-
-    @Override
-    public void accept(Object geoResult, long id) {
-      // note: the coordinates in the returned object are reversed: Long, Lat
-
-      //get the lat and long from point
-      Point point = (Point) geoResult;
-      Double latitude, longitude;
-      List<Double> coordinates = point.coordinates();
-      latitude = coordinates.get(1);
-      longitude = coordinates.get(0);
-
-      if (null != latitude && null != longitude) {
-        //if lat and long then update appts's location
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("latitude", latitude);
-        params.put("longitude", longitude);
-        params.put("id", id);
-
-        sqlCache.update("availability.updateGeoLocation", params);
-      }
     }
   }
 

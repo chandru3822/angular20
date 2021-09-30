@@ -333,23 +333,32 @@ public class ProjectService {
       params.put("postalCode", contact.getPostalCode());
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
-      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
-      Double latitude = null, longitude = null;
+      //with my most recent changes the contact should already have a valid lat/long if the address was valid
+      params.put("latitude", contact.getLatitude());
+      params.put("longitude", contact.getLongitude());
       String timezone = null;
-      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-        //1 = lat, 0 = long
-        latitude = coordinates.get(1);
-        longitude = coordinates.get(0);
-
-        if(null != latitude && null != longitude) {
+      if(null != contact.getLatitude() && null != contact.getLongitude()) {
           //if we have a lat/long then attempt to load the timezone
-          timezone = mapboxApiService.getTimezone(latitude, longitude);
-        }
+          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
       }
-
-      params.put("latitude", latitude);
-      params.put("longitude", longitude);
       params.put("timezone", timezone);
+
+//      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
+//      Double latitude = null, longitude = null;
+//      String timezone = null;
+//      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+//        //1 = lat, 0 = long
+//        latitude = coordinates.get(1);
+//        longitude = coordinates.get(0);
+//
+//        if(null != latitude && null != longitude) {
+//          //if we have a lat/long then attempt to load the timezone
+//          timezone = mapboxApiService.getTimezone(latitude, longitude);
+//        }
+//      }
+//      params.put("latitude", latitude);
+//      params.put("longitude", longitude);
+//      params.put("timezone", timezone);
 
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
       Optional<Project> project = getProject(id);
