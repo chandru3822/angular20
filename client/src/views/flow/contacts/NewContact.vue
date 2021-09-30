@@ -233,6 +233,9 @@ export default {
 
           this.$router.push({name: 'contact', params: {id: data.id}})
           this.$store.commit(AppMutations.SET_LOADING, false)
+        } else {
+          this.$router.push({name: 'contact', params: {id: data.id}})
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
