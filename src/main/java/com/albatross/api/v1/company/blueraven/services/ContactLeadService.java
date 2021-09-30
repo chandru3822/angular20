@@ -106,25 +106,8 @@ public class ContactLeadService {
     params.put("longitude", longitude);
 
     if (stateValue != null) {
-
       params.put("state", stateValue);
       contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
-
-      // If State abbreviation was entered
-//      if (State.valueOfName(state) != State.UNKNOWN) {
-//        params.put("state", State.valueOfName(state).toString());
-//        // Case for State full name
-//        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
-//      }
-//      else if (State.valueOfAbbreviation(state.toUpperCase()) != State.UNKNOWN) {
-//        // Case for State abbreviation
-//        params.put("state", State.valueOfAbbreviation(state.toUpperCase()).toString());
-//        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
-//      }
-//      else {
-//        // Case for invalid State
-//        contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
-//      }
     }
     else {
       // Case for no State
