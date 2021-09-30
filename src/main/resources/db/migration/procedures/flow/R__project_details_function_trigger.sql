@@ -34,6 +34,7 @@ CREATE TRIGGER project_project_details_for_contact_trg
     after update
     ON flow.contact
     FOR EACH ROW
+    when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.project_details_from_contact();
 
 
