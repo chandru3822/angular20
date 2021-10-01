@@ -118,6 +118,7 @@ public class InstallAgreementController {
     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
   }
 
+  @Deprecated //  I believe this isn't used anywhere
   @GetMapping(value = "/loanStatus/{projectId}")
   public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId) {
       try {
