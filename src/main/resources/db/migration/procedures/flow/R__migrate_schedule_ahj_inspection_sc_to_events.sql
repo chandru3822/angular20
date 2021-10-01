@@ -58,12 +58,32 @@ BEGIN
   order by project_process_step.date_created desc
   limit 1;
 
+  if v_pending_ahj_inspection_id is null then
+    select id
+    into v_pending_ahj_inspection_id
+    from flow.project_process_step
+    where process_step_id = 152
+      and parent_project_process_step_id = p_project_process_step_id
+    order by project_process_step.date_created desc
+    limit 1;
+  end if;
+
   if v_pending_ahj_inspection_id is not null then
     select id
     into v_need_ahj_verification_pps_id
     from flow.project_process_step
     where process_step_id = 46
       and parent_project_process_step_id = v_pending_ahj_inspection_id
+    order by project_process_step.date_created desc
+    limit 1;
+  end if;
+
+  if v_need_ahj_verification_pps_id is null then
+    select id
+    into v_need_ahj_verification_pps_id
+    from flow.project_process_step
+    where process_step_id = 46
+      and parent_project_process_step_id = p_project_process_step_id
     order by project_process_step.date_created desc
     limit 1;
   end if;

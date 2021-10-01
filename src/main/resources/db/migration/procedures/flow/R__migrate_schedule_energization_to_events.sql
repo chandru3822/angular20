@@ -20,7 +20,7 @@ BEGIN
 
   if v_pending_energization_pps_id is not null then
     select id
-    into v_pending_energization_pps_id
+    into v_verify_energization_pps_id
     from flow.project_process_step
     where process_step_id = 97
       and parent_project_process_step_id = v_pending_energization_pps_id
