@@ -294,7 +294,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10428
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), round(plh.total_ancillary_cost,2),
+                               and cfg.process_step_id = p_process_step_id), round(coalesce(plh.total_ancillary_cost::integer,0::integer),2)::integer,
 --                             (select cfga.id
 --                              from flow.custom_field cf
 --                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
