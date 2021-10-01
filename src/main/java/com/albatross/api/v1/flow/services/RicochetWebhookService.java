@@ -4,6 +4,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.RicochetLead;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class RicochetWebhookService {
     private final SqlCache sqlCache;
+  private final MapboxApiService mapboxApiService;
 
     private String mapLeadStatus(String leadStatus) {
         switch (leadStatus) {
@@ -168,6 +172,24 @@ public class RicochetWebhookService {
                   contactId = sqlCache.queryForObjectOptional("ricochetWebhook.getContactIdByContactInfo", params, String.class);
               }
 
+              Double latitude = null, longitude = null;
+              try {
+                if(null != lead.getCustomer() && null != lead.getCustomer().getAddress()) {
+                  List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(lead.getCustomer().getAddress().getAddress1(), lead.getCustomer().getAddress().getCity(), lead.getCustomer().getAddress().getState(), lead.getCustomer().getAddress().getZip()));
+                  if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+                    //1 = lat, 0 = long
+                    latitude = coordinates.get(1);
+                    longitude = coordinates.get(0);
+                  }
+                }
+              } catch (Exception ex) {
+                log.error("CONTACT: Exception when attempting to get geo location.");
+              }
+
+              //these will just insert as null unless a valid geo location was found from above
+              params.put("latitude", latitude);
+              params.put("longitude", longitude);
+
               // if no contact ID was found in either check, creates a new lead/contact
               if (contactId.isEmpty()) {
                   Long newContactId = sqlCache.updateReturningId("ricochetWebhook.insertLead", params, "id").longValue();
@@ -177,6 +199,7 @@ public class RicochetWebhookService {
                   contactId = Optional.of(newContactId.toString());
               } else {
                   params.put("contactId", Long.parseLong(contactId.get()));
+
                   Long updatedContactId = sqlCache.updateReturningId("ricochetWebhook.updateLead", params, "id").longValue();
 
                   processCustomFieldValues(lead, updatedContactId, leadOwnerUserId);
@@ -201,6 +224,15 @@ public class RicochetWebhookService {
             log.error(msg, e);
             throw new Exception(msg, e);
         }
+    }
+
+    public String stringifyAddress(String street1, String city, String state, String postalCode) {
+      StringJoiner sj = new StringJoiner(", ");
+      sj.add(street1);
+      sj.add(city);
+      sj.add(state + " " + postalCode);
+
+      return sj.toString();
     }
 
     private String checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue) {

@@ -11,6 +11,7 @@ import com.albatross.api.v1.flow.services.HubspotWebhookService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.albatross.api.v1.flow.services.UserPositionService;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import java.util.*;
 public class ContactLeadService {
   private final SqlCache sqlCache;
   private final GenesysService genesysService;
+  private final MapboxApiService mapboxApiService;
 
   @Autowired
   private HubspotWebhookService hubspotWebhookService;
@@ -39,6 +41,15 @@ public class ContactLeadService {
   private final SecurityService securityService;
   private final SystemListService systemListService;
   private final UserPositionService userPositionService;
+
+  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(street1);
+    sj.add(city);
+    sj.add(state + " " + postalCode);
+
+    return sj.toString();
+  }
 
   public void saveContactLead(ContactLead cl) {
     RicochetLead ricochetLead = new RicochetLead();
@@ -71,22 +82,32 @@ public class ContactLeadService {
     Long contactId;
 
     String state = cl.getState();
-    if (state != null) {
-      // If State abbreviation was entered
-      if (State.valueOfName(state) != State.UNKNOWN) {
-        params.put("state", State.valueOfName(state).toString());
-        // Case for State full name
-        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
+    String stateValue = state == null ? null :
+      State.valueOfName(state) != State.UNKNOWN ? State.valueOfName(state).toString() :
+      State.valueOfAbbreviation(state.toUpperCase()) != State.UNKNOWN ? State.valueOfAbbreviation(state.toUpperCase()).toString() : null;
+
+    Double latitude = null, longitude = null;
+    //even if the state value is null, try to get a valid lat/long if there is at least an address and a city
+    if(cl.getAddress() != null && cl.getCity() != null) {
+      try {
+        List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(cl.getAddress(), cl.getCity(), stateValue, cl.getZip().substring(0, Math.min(cl.getZip().length(), 10))));
+        if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+        }
+      } catch (Exception ex) {
+        log.error("CONTACT: Exception when attempting to get geo location.");
       }
-      else if (State.valueOfAbbreviation(state.toUpperCase()) != State.UNKNOWN) {
-        // Case for State abbreviation
-        params.put("state", State.valueOfAbbreviation(state.toUpperCase()).toString());
-        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
-      }
-      else {
-        // Case for invalid State
-        contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
-      }
+    }
+
+    //these will just insert as null unless a valid geo location was found from above
+    params.put("latitude", latitude);
+    params.put("longitude", longitude);
+
+    if (stateValue != null) {
+      params.put("state", stateValue);
+      contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
     }
     else {
       // Case for no State
