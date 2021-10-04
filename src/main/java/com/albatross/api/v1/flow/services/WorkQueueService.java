@@ -103,7 +103,7 @@ public class WorkQueueService {
     log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
-    final String query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds);
+    final String query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     List<Map<String, Object>> randasResults = new ArrayList<>();

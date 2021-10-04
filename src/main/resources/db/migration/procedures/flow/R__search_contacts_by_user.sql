@@ -17,6 +17,8 @@ CREATE OR REPLACE FUNCTION flow.search_contacts_by_user(p_searchterm character v
                 company_state_id integer,
                 state            character varying,
                 abbreviation     character varying,
+                latitude         double precision,
+                longitude        double precision,
                 date_created     timestamp,
                 owner            jsonb
             )
@@ -58,6 +60,8 @@ BEGIN
                    limited_contacts.company_state_id,
                    limited_contacts.state,
                    limited_contacts.abbreviation,
+                   limited_contacts.latitude,
+                   limited_contacts.longitude,
                    limited_contacts.date_created,
                    limited_contacts.owner
             FROM (
@@ -95,6 +99,8 @@ BEGIN
                             c.company_state_id,
                             s.state,
                             s.abbreviation,
+                            c.latitude,
+                            c.longitude,
                             c.date_created,
                             (select json_build_object(
                                             'userId', u.id,
@@ -199,6 +205,8 @@ BEGIN
                        c.company_state_id,
                        s.state,
                        s.abbreviation,
+                       c.latitude,
+                       c.longitude,
                        c.date_created,
                        (select json_build_object(
                                        'userId', u.id,

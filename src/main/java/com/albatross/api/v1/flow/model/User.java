@@ -27,7 +27,7 @@ public class User {
     private List<Company> companies;
     private List<FeatureAccessControl> featureAccess;
     private List<UserPosition> userPositions;
-    private Boolean hasAccess;
+    private Boolean hasAccess, selected;
     private UUID uuid;
     private Timestamp expiryDate;
 

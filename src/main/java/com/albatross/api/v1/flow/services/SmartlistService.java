@@ -371,7 +371,7 @@ public class SmartlistService {
     if (smartlist.getObjectTypeId() == 4) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, true );
     }
 
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
@@ -416,7 +416,7 @@ public class SmartlistService {
     if (smartlist.getObjectTypeId() == 4 && null == smartlist.getWorkQueueTypeId() && !smartlist.isProjectDetails()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
     }
 
 //    log.info("*** {}", query);
@@ -524,10 +524,14 @@ public class SmartlistService {
   }
 
   public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
-    return buildSql(smartlist, fields, null, null);
+    return buildSql(smartlist, fields, null, null, false);
   }
 
-  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, List<Long> installationCrewIds) {
+  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Boolean addProjectContactIdFields) {
+    return buildSql(smartlist, fields, null, null, addProjectContactIdFields);
+  }
+
+  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, List<Long> installationCrewIds, Boolean addProjectContactIdFields) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
@@ -694,7 +698,7 @@ public class SmartlistService {
         "                         ) notes), '[]') AS \"Notes\", \n");
     }
 
-    if (List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+    if (List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue()) && addProjectContactIdFields) {
       query.append(" flow.project.id as project_id, ");
       query.append(" flow.contact.id as contact_id, ");
     }

@@ -19,6 +19,10 @@ public class Contact {
       phone, mobile, contactType, companyName;
   private Date dateCreated;
   private Boolean ownerReadOnly;
+  private Double latitude, longitude;
+
+  //tells server to update geolocation
+  private Boolean reloadCoordinates = false;
 
   private Owner owner;
 

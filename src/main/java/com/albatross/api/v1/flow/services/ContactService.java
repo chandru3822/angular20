@@ -6,6 +6,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -53,6 +54,8 @@ public class ContactService {
   private final AmazonS3 s3;
 
   private final AttachmentService attachmentService;
+
+  private final MapboxApiService mapboxApiService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -141,7 +144,34 @@ public class ContactService {
     sqlCache.update("contact.delete", params);
   }
 
-  public Contact updateContact(Contact contact) {
+  //todo: take this function away after we update the 1.6 million records geo temp
+  public void updateContactLatLong(Integer limit) throws Exception {
+    //limit = how many to try and run, is passed in from endpoint
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("limit", null == limit ? 100 : limit);
+    //this list should already only include contacts that had at least a street1 and city
+    List<Contact> contactsToUpdate = sqlCache.query("contact.getContactsToUpdateForLatLong", params, Contact.class);
+
+    for(Contact contact : contactsToUpdate) {
+      Double latitude = null, longitude = null;
+      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
+      //if we found new coordinates then uses those values
+      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        //1 = lat, 0 = long
+        latitude = coordinates.get(1);
+        longitude = coordinates.get(0);
+      }
+
+      //do this update even if lat/long are null so that it sets the temp_geo_attempted to true so we know not to try it again
+      HashMap<String, Object> params2 = new HashMap<>();
+      params2.put("id", contact.getId());
+      params2.put("latitude", latitude);
+      params2.put("longitude", longitude);
+      sqlCache.update("contact.updateLatLongTemp", params2);
+    }
+  }
+
+  public Contact updateContact(Contact contact) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -158,12 +188,31 @@ public class ContactService {
     params.put("companyId", null != contact.getCompanyId() ? contact.getCompanyId() : currentUser.getCompanyId());
 
     Long id;
+    Double latitude = contact.getLatitude();
+    Double longitude = contact.getLongitude();
 
     if (null != contact.getId()) {
       id = contact.getId();
 
       Contact existingContact = getContact(id);
 
+      //if the contact address changed, reload the coordinates
+      if(null != contact.getReloadCoordinates() && contact.getReloadCoordinates()) {
+        List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
+        //if we found new coordinates then uses those values
+        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+        } else {
+          //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+          latitude = null;
+          longitude = null;
+        }
+      }
+
+      params.put("latitude", latitude);
+      params.put("longitude", longitude);
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
@@ -174,18 +223,37 @@ public class ContactService {
         sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.trueUserId()));
       }
     } else {
+      //load contact geo location
+      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
+      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        //1 = lat, 0 = long
+        latitude = coordinates.get(1);
+        longitude = coordinates.get(0);
+      }
+
       UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
       params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
       if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
         //todo: come back and remove this at some point
         log.info("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
       }
+      params.put("latitude", latitude);
+      params.put("longitude", longitude);
       params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.trueUserId());
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
     return getContact(id);
+  }
+
+  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(street1);
+    sj.add(city);
+    sj.add(state + " " + postalCode);
+
+    return sj.toString();
   }
 
   public void updateOwner(Long id, Owner owner) {

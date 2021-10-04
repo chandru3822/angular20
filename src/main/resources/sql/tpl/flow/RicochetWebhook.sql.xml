@@ -60,8 +60,8 @@
   ]]></ricochetWebhook.getCompanyCountryIdByCompanyId>
 
   <ricochetWebhook.insertLead><![CDATA[
-    insert into flow.contact (contact_type_id, first_name, last_name, mobile, email, street1, city, postal_code, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
-    values (2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, :leadOwnerUserId, 3, :leadOwnerUserPositionId, :companyStateId::integer, :companyCountryId::integer)
+    insert into flow.contact (contact_type_id, first_name, last_name, mobile, email, street1, city, postal_code, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id,  latitude, longitude)
+    values (2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, :leadOwnerUserId, 3, :leadOwnerUserPositionId, :companyStateId::integer, :companyCountryId::integer, :latitude, :longitude)
     returning id;
   ]]></ricochetWebhook.insertLead>
 
@@ -73,6 +73,8 @@
         email = :email,
         street1 = :street1,
         city = :city,
+        latitude = :latitude,
+        longitude = :longitude,
         postal_code = :postalCode,
         company_state_id = :companyStateId::integer,
         date_modified = now(),

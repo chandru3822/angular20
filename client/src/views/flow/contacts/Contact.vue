@@ -458,8 +458,11 @@ export default {
     async saveContact() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-        // save contact
+        // save contact - tell server if address changed or not so we know whether to reload lat/long
+          this.contact.reloadCoordinates = this.addressChanged
           const {data} = await postRequest(`/contact`, this.contact)
+          this.addressChanged = false
+          this.contact.reloadCoordinates = false
           this.contact.projects = data.projects
           this.dirtySystemFields = false
           await this.saveCustomFieldValues()
