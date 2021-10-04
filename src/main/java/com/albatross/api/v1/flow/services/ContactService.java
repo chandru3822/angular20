@@ -147,8 +147,10 @@ public class ContactService {
   //todo: take this function away after we update the 1.6 million records geo temp
   public void updateContactLatLong(Integer limit) throws Exception {
     //limit = how many to try and run, is passed in from endpoint
+    int limitCount = null == limit ? 100 : limit;
     HashMap<String, Object> params = new HashMap<>();
-    params.put("limit", null == limit ? 100 : limit);
+    params.put("limit", limitCount);
+    log.info("*** CONTACTS: attempting to update lat/long for {} contacts ***", limitCount);
     //this list should already only include contacts that had at least a street1 and city
     List<Contact> contactsToUpdate = sqlCache.query("contact.getContactsToUpdateForLatLong", params, Contact.class);
 
@@ -169,6 +171,7 @@ public class ContactService {
       params2.put("longitude", longitude);
       sqlCache.update("contact.updateLatLongTemp", params2);
     }
+    log.info("*** CONTACTS: finished updating lat/long for {} contacts ***", limitCount);
   }
 
   public Contact updateContact(Contact contact) throws Exception {
