@@ -31,7 +31,7 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn :disabled="!this.usersSelected" text @click="msgDialog = true">
+            <v-btn text @click="msgDialog = true">
               <v-icon v-if="constants.IS_MOBILE">email</v-icon>
               <span v-else>Send Email/Text</span>
             </v-btn>
@@ -125,7 +125,7 @@
                           placeholder="Select..."
                           height="35px"
                           class="user-filter-select"
-                          @input="getUsers(false)"
+                          @input="getUsers()"
                 >
                   <v-list-item
                       slot="prepend-item"
@@ -266,7 +266,49 @@
           </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-5">
-            <v-select attach label="From"
+          <v-autocomplete
+            v-model="selectedUsers"
+            :items="allUsers"
+            multiple
+            clearable
+            label="To"
+            item-text="fullName"
+            item-value="id"
+            height="35px"
+            @click:clear="clearUsersAutocomplete()"
+            class="d-inline-block mr-3 user-autocomplete">
+            <v-divider
+              slot="prepend-item"
+              class="mt-2"
+            ></v-divider>
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
+                <span>{{ item.fullName }}</span>
+              </v-chip>
+              <span
+                v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
+                class="primary--text caption"
+              >{{ selectedUsers.length }} selected</span>
+            </template>
+
+            <template #item="data">
+              <template>
+                <v-list-item dense>
+                  <v-list-item-action>
+                    <v-checkbox @change="toggleSingleSelectAutocomplete(data.item)" :input-value="data.item.selected"></v-checkbox>
+                  </v-list-item-action>
+                  <v-list-item-title>
+                    <div @click="toggleSingleSelectAutocomplete(data.item)">{{ data.item.fullName }}</div>
+                  </v-list-item-title>
+                </v-list-item>
+              </template>
+            </template>
+          </v-autocomplete>
+
+          <v-select attach label="From"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
@@ -312,7 +354,48 @@
             </v-card-actions>
         </div>
         <div v-else-if="messageTab == 2" style="height:700px;" class="pa-5">
-            <span class="count-span">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
+            <v-autocomplete
+              v-model="selectedUsers"
+              :items="allUsers"
+              multiple
+              clearable
+              label="To"
+              item-text="fullName"
+              item-value="id"
+              height="35px"
+              @click:clear="clearUsersAutocomplete()"
+              class="d-inline-block mr-3 user-autocomplete">
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
+                  <span>{{ item.fullName }}</span>
+                </v-chip>
+                <span
+                  v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
+                  class="primary--text caption"
+                >{{ selectedUsers.length }} selected</span>
+              </template>
+
+              <template #item="data">
+                <template>
+                  <v-list-item dense>
+                    <v-list-item-action>
+                      <v-checkbox @change="toggleSingleSelectAutocomplete(data.item)" :input-value="data.item.selected"></v-checkbox>
+                    </v-list-item-action>
+                    <v-list-item-title>
+                      <div @click="toggleSingleSelectAutocomplete(data.item)">{{ data.item.fullName }}</div>
+                    </v-list-item-title>
+                  </v-list-item>
+                </template>
+              </template>
+            </v-autocomplete>
+            <span class="count-span flex-display">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
 
             <v-textarea solo v-model="textMessage"
                         auto-grow
@@ -375,7 +458,7 @@
       options: {
         handler() {
           if(!this.initialLoad) {
-            this.getUsers(false)
+            this.getUsers()
           }
         }
       }
@@ -474,7 +557,7 @@
           }
       },
       disableSendEmail() {
-          return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0)
+          return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0 && this.usersSelected)
       },
       disableSendText() {
           return !(this.textMessage.trim().length > 0)
@@ -507,9 +590,9 @@
         this.$router.push({name: 'userDetails', params: {id}})
       },
       debounceGetUsers: debounce( function () {
-        this.getUsers(false)
+        this.getUsers()
       }, 500),
-      async getUsers (selectAll) {
+      async getUsers () {
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
         if (this.filters.statuses && this.filters.statuses.length > 0) {
           this.dataLoading = true
@@ -527,23 +610,22 @@
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
               primaryFlag: this.primaryPositionsOnly
             }
-            if (selectAll) {
+            // Get allUsers once
+            if (this.allUsers.length < 1) {
                 const {data} = await postRequest(`/user/search?page=${page-1}&size=9999`, params)
                 this.allUsers = data.content;
-                this.selectedUsersDetails = data.content;
             }
-            else {
-                const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
-                this.users = data.content
-                this.totalUsers = data.totalElements
 
-                this.users.forEach(u => {
-                  // If the user isn't already a selected user, add to list of selected users
-                  if (this.selectedUsers.indexOf(u.id) !== -1) {
-                    u.selected = true;
-                  }
-                })
-            }
+            const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
+            this.users = data.content
+            this.totalUsers = data.totalElements
+
+            this.users.forEach(u => {
+              // If the user isn't already a selected user, add to list of selected users
+              if (this.selectedUsers.indexOf(u.id) !== -1) {
+                u.selected = true;
+              }
+            })
             this.dataLoading = false
             this.initialLoad = false
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -631,7 +713,7 @@
           if(!useSavedSearch) {
             this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
           }
-          await this.getUsers(false)
+          await this.getUsers()
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -656,10 +738,10 @@
         this.$nextTick(() => {
           if (this.selectAll) {
             this.filters.statuses = []
-            this.getUsers(false)
+            this.getUsers()
           } else {
             this.filters.statuses = this.statuses.map(s => s.id)
-            this.getUsers(false)
+            this.getUsers()
           }
         })
       },
@@ -667,15 +749,46 @@
         if (item.selected) {
           this.selectedUsers.push(item.id)
           this.selectedUsersDetails.push(item)
+          // Synchronize the selection of allUsers with users
+          this.allUsers.filter(u => u.id === item.id)[0].selected = true;
         } else {
           this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
           this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
+          // Synchronize the selection of allUsers with users
+          this.allUsers.filter(u => u.id === item.id)[0].selected = false;
           this.selectAllUsers = false
         }
       },
+      toggleSingleSelectAutocomplete(item) {
+        if (item.selected) {
+          item.selected = false;
+          this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
+          this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
+          debugger;
+          this.selectAllUsers = false
+          // Synchronize the selection of users with allUsers
+          this.users.filter(u => u.id === item.id)[0].selected = false;
+        } else {
+          item.selected = true;
+          this.selectedUsers.push(item.id)
+          this.selectedUsersDetails.push(item)
+          // Synchronize the selection of users with allUsers
+          this.users.filter(u => u.id === item.id)[0].selected = true;
+        }
+      },
+      clearUsersAutocomplete() {
+        this.selectedUsers = []
+        this.selectedUsersDetails = []
+        this.users.forEach(u => {
+          u.selected = false
+        });
+        this.allUsers.forEach(u => {
+          u.selected = false
+        });
+      },
       toggleSelectAllUsers () {
         if (this.selectAllUsers) {
-          this.getUsers(true);
+          this.getUsers();
         }
         else {
           this.selectedUsers = []
@@ -734,7 +847,7 @@
 
         this.selectAllUsers = false
         //reload the users
-        this.getUsers(false)
+        this.getUsers()
       },
       itemChecked(level, item) {
         if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
@@ -925,6 +1038,9 @@
   }
   .user-selected {
     margin-left: 150px;
+  }
+  .user-autocomplete {
+    width: 350px;
   }
 
 </style>

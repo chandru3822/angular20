@@ -62,9 +62,9 @@ BEGIN
         insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
                                                      distance_from_actual_to_target, appointment_start_date,
                                                      is_only_user_available,
-                                                     created_date, available_users, created_by_id)
+                                                     created_date, available_users, created_by_id, closer_selected)
         values (p_project_id, v_user_id, p_project_process_step_id, 0, p_appointment_start_time, true, now(), p_users,
-                p_current_user_id);
+                p_current_user_id, true);
     else
         --   select p_users[1]
         --   into v_user_id;

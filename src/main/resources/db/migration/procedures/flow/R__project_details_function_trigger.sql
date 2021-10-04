@@ -34,6 +34,7 @@ CREATE TRIGGER project_project_details_for_contact_trg
     after update
     ON flow.contact
     FOR EACH ROW
+    when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.project_details_from_contact();
 
 
@@ -317,9 +318,9 @@ BEGIN
         if new.int_value is not null then
             update brs.project_details
             set first_appointment_id = new.int_value,
-                first_appointment_pps_id = new.project_process_step_id
+                first_appointment_id_pps_id = new.project_process_step_id
             where project_id = v_project_id1
-              and (first_appointment_id is null or (first_appointment_pps_id is not null and first_appointment_pps_id = new.project_process_step_id));
+              and (first_appointment_id is null or (first_appointment_id_pps_id is not null and first_appointment_id_pps_id = new.project_process_step_id));
         end if;
 
         if new.int_value in (2, 1139, 1140) then
