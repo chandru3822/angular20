@@ -695,7 +695,7 @@ public class SmartlistService {
         "                               and pn.process_step_work_queue_type_id = pswqt.id\n" +
         "                             order by n.date_created desc\n" +
         "\n" +
-        "                         ) notes), '[]') AS \"Notes\", \n");
+        "                         ) notes), '[]') AS \"Notes\", ");
     }
 
     if (List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue()) && addProjectContactIdFields) {
