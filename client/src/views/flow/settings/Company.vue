@@ -25,11 +25,24 @@
                         :disabled="!userCanEdit"
                         label="Default Password">
           </v-text-field>
+          <v-text-field v-model.number="company.minuteIncrement"
+                        placeholder="Enter a value"
+                        required
+                        :rules="rules"
+                        @input="forceInteger"
+                        :step="1"
+                        :key="damnKeyThing"
+                        type="number"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        label="Minute Increment">
+          </v-text-field>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn :disabled="!company.companyName || !company.defaultPassword" @click="saveCompany" v-if="userCanEdit">
+          <v-btn :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
+                 @click="saveCompany" v-if="userCanEdit">
             <v-icon>mdi-content-save</v-icon>
             Save Changes
           </v-btn>
@@ -137,6 +150,10 @@ export default {
       addImage: false,
       snackbar: {},
       company: {},
+      rules: [
+        v => v >= 0 || 'Value must be greater than or equal to 0',
+        v => v <= 60 || 'Value must be less than or equal to 60',
+      ],
       validForm: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
@@ -150,11 +167,19 @@ export default {
       homePageLogo: {},
       //todo: 333 = home page logo - do this on backend?
       homePageAttachmentTypeId: 333,
+      damnKeyThing: 0
     }
   },
   computed: {
   },
   methods: {
+    forceInteger() {
+      console.log('randaLogger',this.company.minuteIncrement)
+      if(this.company.minuteIncrement % 1 !== 0) {
+        this.company.minuteIncrement = Math.floor(this.company.minuteIncrement);
+        this.damnKeyThing++
+      }
+    },
     passwordRule (value) {
       if (value && value.length < 8) {
         return 'Password must be at least 8 characters'

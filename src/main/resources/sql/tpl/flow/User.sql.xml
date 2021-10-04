@@ -308,6 +308,7 @@
                u.username,
                u.email,
                c.aws_bucket,
+               c.minute_increment,
                c.api_path,
                u.phone_number,
                u.phone_extension,
@@ -388,6 +389,9 @@
              t1.username,
              email,
              case when highest_company_id = 1 and company_id != highest_company_id then
+                    (select minute_increment from flow.company where id = company_id )
+                  else minute_increment end,
+             case when highest_company_id = 1 and company_id != highest_company_id then
                     (select aws_bucket from flow.company where id = company_id )
                   else aws_bucket end,
              case when highest_company_id = 1 and company_id != highest_company_id then
@@ -451,6 +455,7 @@
              u.password,
              coalesce(u.default_company_id, uc.company_id)                as company_id,
              c.aws_bucket,
+             c.minute_increment,
              c.api_path,
              (select has_access
               from flow.company_user_status cus
@@ -525,6 +530,9 @@
            password,
            "userPositions",
            company_id,
+           case when highest_company_id = 1 and company_id != highest_company_id then
+              (select minute_increment from flow.company where id = company_id )
+            else minute_increment end,
            case when highest_company_id = 1 and company_id != highest_company_id then
               (select aws_bucket from flow.company where id = company_id )
              else aws_bucket end,
