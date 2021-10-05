@@ -35,19 +35,19 @@ public class CommunicationService {
   private final FirebaseMessaging firebaseMessaging;
 
   @Async
-  public Future<Void> sendEmails(String subject, List<Long> userIDs, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail, String sentByName) {
+  public Future<Void> sendEmails(String subject, List<Long> userIDs, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail, String sentByName, Long sentByUserId) {
     for (Long userID : userIDs) {
       Optional<User> user = userService.getUser(userID, false);
       //do not send email if they do not have access to the system
       if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
-        sendEmail(subject, user.get().getEmail(), user.get(), templateContent, attachments, emailUnsubscribeURL, sentByEmail, sentByName);
+        sendEmail(subject, user.get().getEmail(), user.get(), templateContent, attachments, emailUnsubscribeURL, sentByEmail, sentByName, sentByUserId);
       }
     }
     return new AsyncResult<>(null);
   }
 
   @Async
-  public Future<Void> sendEmail(String subject, String emailAddress, User user, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail, String sentByName) {
+  public Future<Void> sendEmail(String subject, String emailAddress, User user, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail, String sentByName, Long sentByUserId) {
     //don't send email if user does not have access to the system
     if (user != null && user.getUserStatusType() != null && user.getHasAccess()){
 
@@ -57,7 +57,7 @@ public class CommunicationService {
         contextMap.put("user", user);
 
         renderTemplate(templateContent, output, contextMap);
-        mailService.sendMessage(emailAddress, subject, output.toString(), attachments, sentByEmail, sentByName);
+        mailService.sendMessage(emailAddress, subject, output.toString(), attachments, sentByEmail, sentByName, sentByUserId);
 
       } catch (Exception ex) {
         log.error("EMAIL: ERROR: Error sending email to address={}", emailAddress, ex);
@@ -67,11 +67,11 @@ public class CommunicationService {
   }
 
   @Async
-  public void sendEmail(String subject, String email, String template, Map<String, Object> context, String sentByEmail, String sentByName) {
+  public void sendEmail(String subject, String email, String template, Map<String, Object> context, String sentByEmail, String sentByName, Long sentByUserId) {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       renderTemplate(template, baos, context);
       // log.info("RENDERED EMAIL: to:{} subject:{}\n{}", email, subject, baos.toString());
-      mailService.sendMessage(email, subject, baos.toString(), null, sentByEmail, sentByName);
+      mailService.sendMessage(email, subject, baos.toString(), null, sentByEmail, sentByName, sentByUserId);
     } catch (Exception e) {
       log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
       e.printStackTrace();
