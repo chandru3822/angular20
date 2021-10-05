@@ -79,11 +79,13 @@ public class CommunicationController {
 
     @PostMapping(value = "/sendTexts")
     public HashMap<String, Object> sendTexts(@RequestBody SendTextsRequest sendTexts) {
-        String groupId = UUID.randomUUID().toString();
+      User currentUser = securityService.getCurrentUser();
+
+      String groupId = UUID.randomUUID().toString();
 
          for (Long userID : sendTexts.getUserIDs()) {
             Optional<User> user = userService.getUser(userID, false);
-            communicationService.queueTextMessages(groupId, user, sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
+            communicationService.queueTextMessages(groupId, user, sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs(), currentUser.trueUserId());
         }
 
         return new HashMap<String, Object>() {{
