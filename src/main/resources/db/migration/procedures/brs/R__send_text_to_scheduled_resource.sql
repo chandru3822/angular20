@@ -65,16 +65,16 @@ BEGIN
     end if;
 
   for r in
-    select phone_number
+    select phone_number, u.id as user_id
     from flow."user" u
     where array[id] <@ array[v_users_to_message]
     LOOP
       if r.phone_number is not null and v_message is not null then
-        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
-        values(p_current_user_id,
+        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+        values(r.user_id,
                v_message,
                (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
-               r.phone_number, now(), 1);
+               r.phone_number, now(), 1, p_current_user_id);
       end if;
     END LOOP;
 
