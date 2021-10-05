@@ -852,12 +852,14 @@
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
               let userIds;
-              if (this.selectAllUsers) {
-                userIds = this.allUsers.map(u => u.id);
-              }
-              else {
+              // if (this.selectAllUsers) {
+              //   userIds = this.allUsers.map(u => u.id);
+              // }
+              // else {
+              //   userIds = this.selectedUsers;
+              // }
+            //BR is aware that this will not allow them to truly select all users or to select more than 1000 records at a time
                 userIds = this.selectedUsers;
-              }
 
               let params;
 
