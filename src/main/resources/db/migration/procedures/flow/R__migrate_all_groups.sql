@@ -25,6 +25,24 @@ declare
   v_new_group_id_3431_RS integer;
   v_new_group_id_129_OC  integer;
   v_new_group_id_129_D   integer;
+  v_new_group_id_138_OC  integer;
+  v_new_group_id_138_D   integer;
+  v_new_group_id_146_OC  integer;
+  v_new_group_id_146_D   integer;
+  v_new_group_id_140_OC  integer;
+  v_new_group_id_140_D   integer;
+  v_new_group_id_144_OC  integer;
+  v_new_group_id_144_D   integer;
+  v_new_group_id_142_OC  integer;
+  v_new_group_id_142_D   integer;
+  v_new_group_id_148_OC  integer;
+  v_new_group_id_148_D   integer;
+  v_new_group_id_3414_OC  integer;
+  v_new_group_id_3414_D   integer;
+  v_new_group_id_3362_OC  integer;
+  v_new_group_id_3362_D   integer;
+  v_new_group_id_134_OC  integer;
+  v_new_group_id_134_D   integer;
 
 BEGIN
   /*Schedule closer appointment*/
@@ -342,6 +360,188 @@ BEGIN
     perform flow.migrate_fields_to_group(v_new_group_id_129_OC, 21132, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_129_OC, 21536, 2);
 
+  elsif p_process_step_id = 138 then
+    select id
+    into v_new_group_id_138_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_138_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_138_D, 19088, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_138_D, 17500, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_138_D, 17323, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_138_D, 19514, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_138_OC, 547, 1);
+
+  elsif p_process_step_id = 146 then
+    select id
+    into v_new_group_id_146_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_146_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_146_D, 19070, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_146_D, 17504, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_146_D, 17327, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_146_D, 19509, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_146_OC, 552, 1);
+
+  elsif p_process_step_id = 140 then
+    select id
+    into v_new_group_id_140_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_140_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_140_D, 19086, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_140_D, 17501, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_140_D, 17324, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_140_D, 19512, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_140_OC, 549, 1);
+
+  elsif p_process_step_id = 144 then
+    select id
+    into v_new_group_id_144_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_144_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_144_D, 19089, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_144_D, 17503, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_144_D, 17326, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_144_D, 19515, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_144_OC, 551, 1);
+
+  elsif p_process_step_id = 142 then
+    select id
+    into v_new_group_id_142_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_142_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_142_D, 19090, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_142_D, 17502, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_142_D, 17325, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_142_D, 19516, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_142_OC, 550, 1);
+  elsif p_process_step_id = 148 then
+    select id
+    into v_new_group_id_148_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_148_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_148_D, 19087, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_148_D, 17505, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_148_D, 17328, 3);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_148_OC, 553, 1);
+
+  elsif p_process_step_id = 3414 then
+    select id
+    into v_new_group_id_3414_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3414_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_D, 21222, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_D, 21223, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_D, 21227, 3);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_OC, 21224, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_OC, 21226, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_OC, 21225, 3);
+
+  elsif p_process_step_id = 3362 then
+    select id
+    into v_new_group_id_3362_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3362_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3362_D, 19588, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3362_D, 19589, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3362_D, 19590, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3362_D, 19591, 4);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3414_OC, 19594, 1);
+
+  elsif p_process_step_id = 134 then
+    select id
+    into v_new_group_id_134_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_134_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_134_D, 19083, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_134_D, 17321, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_134_D, 19511, 3);
+
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_134_OC, 542, 1);
 
   end if;
 
