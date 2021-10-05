@@ -81,7 +81,7 @@ public class CommunicationService {
   @Async
   public void queueTextMessages(String messageGroupId, Optional<User> userIn, String templateContent, List<URI> mediaURLs, Long loggedInUserId) {
       //dont try to send text if there is no phone number or the user doesnt have access
-      if (userIn.isPresent() && userIn.get().getPhoneNumber() != null && userIn.get().getUserStatusType() != null && userIn.get().getHasAccess()) {
+      if (null != userIn && userIn.isPresent() && userIn.get().getPhoneNumber() != null && userIn.get().getUserStatusType() != null && userIn.get().getHasAccess()) {
         User user = userIn.get();
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
           Map<String, Object> contextMap = new HashMap<>();
