@@ -103,12 +103,14 @@ public class CommunicationController {
 
         Map<String, File> temporaryFiles = new HashMap<>();
         try {
-            for (MultipartFile attachment: attachments) {
-                File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
-                try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
-                    IOUtils.copy(fileInput, fileOutput);
-                }
-                temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
+            if(null != attachments) {
+              for (MultipartFile attachment: attachments) {
+                  File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
+                  try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
+                      IOUtils.copy(fileInput, fileOutput);
+                  }
+                  temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
+              }
             }
 
             try {
