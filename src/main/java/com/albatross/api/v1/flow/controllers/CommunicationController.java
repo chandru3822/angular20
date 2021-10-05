@@ -102,7 +102,7 @@ public class CommunicationController {
     @RequestParam List<Long> userIds,
     @RequestParam(required = false) List<MultipartFile> attachments,
     HttpServletRequest request) throws Exception {
-
+    User currentUser = securityService.getCurrentUser();
     Map<String, File> temporaryFiles = new HashMap<>();
     try {
       if (null != attachments) {
@@ -122,7 +122,7 @@ public class CommunicationController {
           if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
             Future<Void> future = communicationService.sendEmail(subject, user.get().getEmail(), user.get(),
               template, Maps.transformValues(temporaryFiles, FileDataSource::new),
-              getUnsubscribeURLForEmails(request), from, "Blue Raven Sales Operation");
+              getUnsubscribeURLForEmails(request), from, "Blue Raven Sales Operation", currentUser.trueUserId());
 
             future.get();
           }
@@ -165,7 +165,7 @@ public class CommunicationController {
       communicationService.sendEmail(subject, emailAddress, user, templateContent,
         Maps.transformValues(temporaryFiles, FileDataSource::new),
         getUnsubscribeURLForEmails(request),
-        "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+        "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
     } finally {
       for (File temporaryFile : temporaryFiles.values()) {
         if (temporaryFile.exists()) {

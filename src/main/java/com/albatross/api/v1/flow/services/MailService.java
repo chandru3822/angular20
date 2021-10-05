@@ -1,7 +1,9 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SMTPAuthenticator;
+import com.albatross.api.utils.SqlCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -28,14 +32,21 @@ public class MailService {
         this.propConfig = propConfig;
     }
 
-    public void sendMessage(String to, String subject, String message, String sentByEmail, String sentByName) {
-        sendMessage(to, subject, message, null, sentByEmail, sentByName);
+    @Autowired
+    SecurityService securityService;
+
+    @Autowired
+    SqlCache sqlCache;
+
+    public void sendMessage(String to, String subject, String message, String sentByEmail, String sentByName, Long sentByUserId) {
+        sendMessage(to, subject, message, null, sentByEmail, sentByName, sentByUserId);
     }
 
-    public void sendMessage(String to, String subject, String message, Map<String, DataSource> attachments, String sentByEmail, String sentByName) {
+    public void sendMessage(String to, String subject, String message, Map<String, DataSource> attachments, String sentByEmail, String sentByName, Long sentByUserId) {
         // log.info("Sending message to {}: {}\n{}\n\n", to, subject, message);
 
         // NOTE: if email is for amy or jessica then you should send in SalesOps@blueravensolar.com as the email address
+        HashMap<String, Object> params = new HashMap<>();
 
         if(null == sentByEmail){
             sentByEmail = "support@blueravensolar.com";
@@ -72,7 +83,7 @@ public class MailService {
             MimeBodyPart bodyPart = new MimeBodyPart();
             bodyPart.setContent(message, "text/html; charset=utf-8");
             multiPart.addBodyPart(bodyPart);
-
+            ArrayList<String> attachmentNames = new ArrayList<>();
             if (attachments != null && attachments.size() > 0) {
 
                 for (String attachmentName : attachments.keySet()) {
@@ -83,6 +94,7 @@ public class MailService {
                     attachmentPart.setDataHandler(new DataHandler(attachment));
                     attachmentPart.setFileName(attachmentName);
                     multiPart.addBodyPart(attachmentPart);
+                    attachmentNames.add(attachmentName);
                 }
             }
 
@@ -92,6 +104,13 @@ public class MailService {
 
             log.info("EMAIL: MESSAGE SENT");
 
+            params.put("from", sentByEmail);
+            params.put("to", to);
+            params.put("subject", subject);
+            params.put("message", message);
+            params.put("attachments", attachmentNames.isEmpty() ? null : attachmentNames.toString().replace("[", "").replace("]", ""));
+            params.put("userId", sentByUserId);
+            sqlCache.update("email.insert", params);
         } catch (Exception e) {
             log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
         }
