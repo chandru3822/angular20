@@ -31,12 +31,6 @@ public class ContactLeadService {
   private final GenesysService genesysService;
   private final MapboxApiService mapboxApiService;
 
-  @Autowired
-  private HubspotWebhookService hubspotWebhookService;
-
-  @Value(value = "${app.ricochet.enabled:false}")
-  private Boolean ricochetEnabled;
-
   private final SMSService smsService;
   private final SecurityService securityService;
   private final SystemListService systemListService;
@@ -52,7 +46,7 @@ public class ContactLeadService {
   }
 
   public void saveContactLead(ContactLead cl) {
-    RicochetLead ricochetLead = new RicochetLead();
+    HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
 
     log.info(
@@ -113,7 +107,7 @@ public class ContactLeadService {
       // Case for no State
       contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
     }
-    ricochetLead.setContactId(contactId);
+    hubspotLead.setContactId(contactId);
 
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     // handles saving 'Lead Source' custom field
@@ -121,7 +115,7 @@ public class ContactLeadService {
       String leadSourceId = checkIfCustomFieldDropdownValueExists(520, cl.getLeadSource());
       CustomFieldValue leadSource = new CustomFieldValue();
       leadSource.setFieldName("Lead Source");
-      ricochetLead.setLead_source(cl.getLeadSource());
+      hubspotLead.setLead_source(cl.getLeadSource());
       if (!leadSourceId.equalsIgnoreCase("null")) {
         leadSource.setCustomFieldGroupAssignmentId(395L);
         leadSource.setIntValue(Long.parseLong(leadSourceId));
@@ -135,7 +129,7 @@ public class ContactLeadService {
       String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, cl.getLeadSourceDetail());
       CustomFieldValue leadSourceDetail = new CustomFieldValue();
       leadSourceDetail.setFieldName("Lead Source Detail");
-      ricochetLead.setLead_source_detail(cl.getLeadSourceDetail());
+      hubspotLead.setLead_source_detail(cl.getLeadSourceDetail());
       if (!leadSourceDetailId.equalsIgnoreCase("null")) {
         leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
         leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
@@ -348,20 +342,6 @@ public class ContactLeadService {
       String msg = "GENE: Error adding contact: {}";
       log.error(msg, e.getMessage());
     }
-
-    try {
-      if (ricochetEnabled && (cl.getLeadLevel() == null || (!cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
-            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L)))) {
-        postToRicochet(ricochetLead, params);
-      }
-      else {
-        log.info("RICOCHET: not enabled");
-      }
-
-    } catch (Exception e) {
-      String msg = "RICO: Failed to post Contact Lead information to Ricochet.";
-      log.error(msg, e);
-    }
   }
 
   private void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, Long leadOwnerUserId) {
@@ -386,7 +366,7 @@ public class ContactLeadService {
   }
 
   // Used to process Hubspot contact CustomFieldValues
-  public void processHubspotCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
+  public void processHubspotCustomFieldValues(HubspotLead lead, Long contactId, Long leadOwnerUserId) {
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
@@ -480,38 +460,5 @@ public class ContactLeadService {
       String msg = "GENE: Error adding Hubspot contact";
       log.error(msg, e);
     }
-  }
-
-  private void postToRicochet(RicochetLead lead, HashMap<String, Object> params) throws Exception {
-    // Not needed for non-Ricochet leads
-    lead.setHubspot_id(null);
-    lead.setStatus("New");
-    lead.setLeadOwner(null);
-
-    if (lead.getLead_source() == null) {
-      lead.setLead_source("Organic");
-    }
-
-    if (lead.getLead_source_detail() == null) {
-      lead.setLead_source_detail("DigitalOrganic");
-    }
-
-    RicochetLead.Customer customer = new RicochetLead.Customer();
-    customer.setFirstName(params.containsKey("firstName") ? (String) params.get("firstName") : null);
-    customer.setLastName(params.containsKey("lastName") ? (String) params.get("lastName") : null);
-    customer.setPhone1(params.containsKey("phone") ? (String) params.get("phone") : null);
-    customer.setEmail(params.containsKey("email") ? (String) params.get("email") : null);
-
-    RicochetLead.Address address = new RicochetLead.Address();
-    address.setZip(params.containsKey("postalCode") ? (String) params.get("postalCode") : null);
-    address.setState(params.containsKey("state") ? (String) params.get("state") : null);
-    address.setAddress1(params.containsKey("street1") ? (String) params.get("street1") : null);
-    address.setCity(params.containsKey("city") ? (String) params.get("city") : null);
-
-    customer.setAddress(address);
-    lead.setCustomer(customer);
-
-    // handles sending lead information to Ricochet
-    hubspotWebhookService.postLeadToRicochet(lead);
   }
 }

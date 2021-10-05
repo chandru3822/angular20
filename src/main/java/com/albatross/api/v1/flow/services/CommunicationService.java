@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.User;
@@ -31,6 +32,7 @@ public class CommunicationService {
   private final UserService userService;
   private final MailService mailService;
   private final SMSService smsService;
+  private final SecurityService securityService;
 
   private final FirebaseMessaging firebaseMessaging;
 
@@ -80,6 +82,8 @@ public class CommunicationService {
 
   @Async
   public void queueTextMessages(String messageGroupId, Optional<User> userIn, String templateContent, List<URI> mediaURLs) {
+      User currentUser = securityService.getCurrentUser();
+
       //dont try to send text if there is no phone number or the user doesnt have access
       if (userIn.isPresent() && userIn.get().getPhoneNumber() != null && userIn.get().getUserStatusType() != null && userIn.get().getHasAccess()) {
         User user = userIn.get();
@@ -88,7 +92,8 @@ public class CommunicationService {
           contextMap.put("user", user);
           renderTemplate(templateContent, output, contextMap);
 
-          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER, user.getId());
+          //make sure the sent by user id is the logged in user, not the user the message is getting sent to
+          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER, currentUser.trueUserId());
         } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
         }
