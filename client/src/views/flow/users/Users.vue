@@ -549,12 +549,7 @@
         return 'check_box_outline_blank'
       },
       usersSelected () {
-          if (this.selectAllUsers) {
-              return this.allUsers.length;
-          }
-          else {
-              return this.selectedUsers.length;
-          }
+        return this.selectedUsers.length;
       },
       disableSendEmail() {
           return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0 && this.usersSelected)
@@ -787,13 +782,8 @@
         });
       },
       toggleSelectAllUsers () {
-        if (this.selectAllUsers) {
-          this.getUsers();
-        }
-        else {
-          this.selectedUsers = []
-          this.selectedUsersDetails = []
-        }
+        this.selectedUsers = []
+        this.selectedUsersDetails = []
 
         this.users.forEach(u => {
           u.selected = this.selectAllUsers
@@ -801,6 +791,7 @@
           // If the user isn't already a selected user, add to list of selected users
           if (this.selectAllUsers && this.selectedUsers.indexOf(u.id) === -1) {
             this.selectedUsers.push(u.id)
+            this.selectedUsersDetails.push(u)
           }
         })
       },
@@ -861,12 +852,14 @@
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
               let userIds;
-              if (this.selectAllUsers) {
-                userIds = this.allUsers.map(u => u.id);
-              }
-              else {
+              // if (this.selectAllUsers) {
+              //   userIds = this.allUsers.map(u => u.id);
+              // }
+              // else {
+              //   userIds = this.selectedUsers;
+              // }
+            //BR is aware that this will not allow them to truly select all users or to select more than 1000 records at a time
                 userIds = this.selectedUsers;
-              }
 
               let params;
 

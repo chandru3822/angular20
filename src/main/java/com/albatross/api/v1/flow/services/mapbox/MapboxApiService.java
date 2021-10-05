@@ -36,6 +36,7 @@ public class MapboxApiService {
       String url = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + urlEncodedAddress + ".json?access_token=" + MAPBOX_ACCESS_TOKEN;
       HttpResponse resp = HttpUtils.call("GET", url);
       if (resp.getResponseCode() != 200) {
+        log.error("MAPBOX: Error response code {}", resp.getResponseCode());
         throw new Exception(resp.getBody());
       }
       JSONObject data = resp.getJSON();

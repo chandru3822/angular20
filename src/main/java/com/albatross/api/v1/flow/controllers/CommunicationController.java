@@ -35,149 +35,153 @@ import java.util.concurrent.Future;
 @RequestMapping(value = "/api/v1/flow/communication")
 public class CommunicationController {
 
-    @Autowired
-    private CommunicationService communicationService;
+  @Autowired
+  private CommunicationService communicationService;
 
-    @Autowired
-    private SMSService smsService;
+  @Autowired
+  private SMSService smsService;
 
-    @Autowired
-    private ContactService contactService;
+  @Autowired
+  private ContactService contactService;
 
-    @Autowired
-    private UserService userService;
+  @Autowired
+  private UserService userService;
 
-    @Autowired
-    private SecurityService securityService;
+  @Autowired
+  private SecurityService securityService;
 
-    @GetMapping(value = "/defaultEmailTemplate", produces = "text/html")
-    public String getDefaultEmailTemplate() throws Exception {
-        return communicationService.getDefaultEmailTemplate();
+  @GetMapping(value = "/defaultEmailTemplate", produces = "text/html")
+  public String getDefaultEmailTemplate() throws Exception {
+    return communicationService.getDefaultEmailTemplate();
+  }
+
+  @PostMapping(value = "/sendTextsForProject")
+  public HashMap<String, Object> sendTextsForProject(@RequestBody SendTextsRequest sendTexts) {
+    User user = securityService.getCurrentUser();
+    String groupId = UUID.randomUUID().toString();
+    Long contactId = sendTexts.getUserIDs().get(0);
+    Contact contact = contactService.getContact(contactId);
+    log.info("TWILIO: attempting text for contact ID: {}", contactId);
+    String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
+    try {
+      String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+      communicationService.queueTextMessagesForProject(groupId, contact, safePhone,
+        sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs(), user.getId());
+
+      return new HashMap<String, Object>() {{
+        put("messageGroup", groupId);
+      }};
+    } catch (NumberParseException ex) {
+      log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+    }
+  }
+
+  @PostMapping(value = "/sendTexts")
+  public HashMap<String, Object> sendTexts(@RequestBody SendTextsRequest sendTexts) {
+    User currentUser = securityService.getCurrentUser();
+
+    String groupId = UUID.randomUUID().toString();
+
+    for (Long userID : sendTexts.getUserIDs()) {
+      Optional<User> user = userService.getUser(userID, false);
+      communicationService.queueTextMessages(groupId, user, sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs(), currentUser.trueUserId());
     }
 
-    @PostMapping(value = "/sendTextsForProject")
-    public HashMap<String, Object> sendTextsForProject(@RequestBody SendTextsRequest sendTexts) {
-        User user = securityService.getCurrentUser();
-        String groupId = UUID.randomUUID().toString();
-        Long contactId = sendTexts.getUserIDs().get(0);
-        Contact contact = contactService.getContact(contactId);
-        log.info("TWILIO: attempting text for contact ID: {}", contactId);
-        String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
-        try {
-          String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
-          communicationService.queueTextMessagesForProject(groupId, contact, safePhone,
-              sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs(), user.getId());
+    return new HashMap<String, Object>() {{
+      put("messageGroup", groupId);
+    }};
+  }
 
-          return new HashMap<String, Object>() {{
-              put("messageGroup", groupId);
-          }};
-        } catch (NumberParseException ex) {
-          log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+  @ResponseStatus(HttpStatus.OK)
+  @PostMapping(value = "/sendEmails")
+  public void sendEmails(
+    @RequestParam String from,
+    @RequestParam String subject,
+    @RequestParam String template,
+    @RequestParam List<Long> userIds,
+    @RequestParam(required = false) List<MultipartFile> attachments,
+    HttpServletRequest request) throws Exception {
+
+    Map<String, File> temporaryFiles = new HashMap<>();
+    try {
+      if (null != attachments) {
+        for (MultipartFile attachment : attachments) {
+          File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
+          try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
+            IOUtils.copy(fileInput, fileOutput);
+          }
+          temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
         }
-    }
+      }
 
-    @PostMapping(value = "/sendTexts")
-    public HashMap<String, Object> sendTexts(@RequestBody SendTextsRequest sendTexts) {
-        String groupId = UUID.randomUUID().toString();
+      try {
+        for (Long userId : userIds) {
+          Optional<User> user = userService.getUser(userId, false);
+          //do not send email if they do not have access to the system
+          if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
+            Future<Void> future = communicationService.sendEmail(subject, user.get().getEmail(), user.get(),
+              template, Maps.transformValues(temporaryFiles, FileDataSource::new),
+              getUnsubscribeURLForEmails(request), from, "Blue Raven Sales Operation");
 
-         for (Long userID : sendTexts.getUserIDs()) {
-            Optional<User> user = userService.getUser(userID, false);
-            communicationService.queueTextMessages(groupId, user, sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
+            future.get();
+          }
         }
-
-        return new HashMap<String, Object>() {{
-            put("messageGroup", groupId);
-        }};
+      } catch (Exception e) {
+        log.error("EMAIL" + e.getMessage());
+      }
+    } finally {
+      // delete temp files
+      for (File tempFile : temporaryFiles.values()) {
+        if (tempFile.exists())
+          tempFile.delete();
+      }
     }
+  }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/sendEmails")
-    public void sendEmails(
-        @RequestParam String from,
-        @RequestParam String subject,
-        @RequestParam String template,
-        @RequestParam List<Long> userIds,
-        @RequestParam(required = false) List<MultipartFile> attachments,
-        HttpServletRequest request) throws Exception {
+  @PostMapping(value = "/sendSingleEmail", produces = "text/html")
+  public void sendEmailTest(
+    @RequestParam(name = "userID") Long userID,
+    @RequestParam(name = "emailAddress") String emailAddress,
+    @RequestParam(name = "subject") String subject,
+    @RequestPart("template") String templateContent,
+    @RequestPart("attachments") List<MultipartFile> attachments,
+    HttpServletRequest request,
+    HttpServletResponse response) throws Exception {
 
-        Map<String, File> temporaryFiles = new HashMap<>();
-        try {
-            for (MultipartFile attachment: attachments) {
-                File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
-                try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
-                    IOUtils.copy(fileInput, fileOutput);
-                }
-                temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
-            }
+    Map<String, File> temporaryFiles = new HashMap<>();
+    try (OutputStream output = response.getOutputStream()) {
 
-            try {
-                for (Long userId: userIds) {
-                    Optional<User> user = userService.getUser(userId, false);
-                    //do not send email if they do not have access to the system
-                    if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
-                        Future<Void> future = communicationService.sendEmail(subject, user.get().getEmail(), user.get(),
-                            template, Maps.transformValues(temporaryFiles, FileDataSource::new),
-                            getUnsubscribeURLForEmails(request), from, "Blue Raven Sales Operation");
-
-                        future.get();
-                    }
-                }
-            } catch (Exception e) {
-                log.error("EMAIL" + e.getMessage());
-            }
-        } finally {
-            // delete temp files
-            for (File tempFile : temporaryFiles.values()) {
-                if (tempFile.exists())
-                    tempFile.delete();
-            }
+      for (MultipartFile attachment : attachments) {
+        File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
+        try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
+          IOUtils.copy(fileInput, fileOutput);
         }
-    }
+        temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
+      }
 
-    @PostMapping(value = "/sendSingleEmail", produces = "text/html")
-    public void sendEmailTest(
-            @RequestParam(name = "userID") Long userID,
-            @RequestParam(name = "emailAddress") String emailAddress,
-            @RequestParam(name = "subject") String subject,
-            @RequestPart("template") String templateContent,
-            @RequestPart("attachments") List<MultipartFile> attachments,
-            HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+      User user = userService.findUserById(userID);
 
-        Map<String, File> temporaryFiles = new HashMap<>();
-        try (OutputStream output = response.getOutputStream()) {
-
-            for (MultipartFile attachment : attachments) {
-                File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
-                try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
-                    IOUtils.copy(fileInput, fileOutput);
-                }
-                temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
-            }
-
-            User user = userService.findUserById(userID);
-
-            communicationService.sendEmail(subject, emailAddress, user, templateContent,
-                    Maps.transformValues(temporaryFiles, FileDataSource::new),
-                    getUnsubscribeURLForEmails(request),
-                    "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
-        } finally {
-            for (File temporaryFile : temporaryFiles.values()) {
-                if (temporaryFile.exists()) {
-                    temporaryFile.delete();
-                }
-            }
+      communicationService.sendEmail(subject, emailAddress, user, templateContent,
+        Maps.transformValues(temporaryFiles, FileDataSource::new),
+        getUnsubscribeURLForEmails(request),
+        "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+    } finally {
+      for (File temporaryFile : temporaryFiles.values()) {
+        if (temporaryFile.exists()) {
+          temporaryFile.delete();
         }
+      }
     }
+  }
 
-    private URL getUnsubscribeURLForEmails(HttpServletRequest request) throws Exception {
-        return new URL(request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath() + "/api/v1/user/emailoptOut");
-    }
+  private URL getUnsubscribeURLForEmails(HttpServletRequest request) throws Exception {
+    return new URL(request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath() + "/api/v1/user/emailoptOut");
+  }
 
-    @ExceptionHandler({ IllegalArgumentException.class })
-    public ResponseEntity handleException(HttpServletRequest req, Exception e) {
-        return ResponseEntity.badRequest()
-                             .body(e.getMessage());
-    }
+  @ExceptionHandler({IllegalArgumentException.class})
+  public ResponseEntity handleException(HttpServletRequest req, Exception e) {
+    return ResponseEntity.badRequest()
+      .body(e.getMessage());
+  }
 }

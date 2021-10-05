@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.HubspotContact;
-import com.albatross.api.v1.flow.model.RicochetLead;
+import com.albatross.api.v1.flow.model.HubspotLead;
 import com.albatross.api.v1.flow.services.HubspotWebhookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ public class HubspotWebhookController {
           contact.toString()
         );
 
-        RicochetLead lead = new RicochetLead();
+        HubspotLead lead = new HubspotLead();
         lead.setHubspot_id(contact.getVid());
         lead.setStatus("New");
         lead.setLeadOwner(null);
@@ -60,13 +60,13 @@ public class HubspotWebhookController {
             lead.setLead_source_detail("DigitalOrganic");
         }
 
-        RicochetLead.Customer customer = new RicochetLead.Customer();
+        HubspotLead.Customer customer = new HubspotLead.Customer();
         customer.setFirstName(contact.getProperties().getFirstname().getValue());
         customer.setLastName(contact.getProperties().getLastname() != null ? contact.getProperties().getLastname().getValue() : "");
         customer.setPhone1(contact.getProperties().getPhone().getValue());
         customer.setEmail(contact.getProperties().getEmail().getValue());
 
-        RicochetLead.Address address = new RicochetLead.Address();
+        HubspotLead.Address address = new HubspotLead.Address();
         address.setZip(contact.getProperties().getZip().getValue());
         address.setAddress1(contact.getProperties().getAddress() != null ? contact.getProperties().getAddress().getValue() : "");
         address.setCity(contact.getProperties().getCity() != null ? contact.getProperties().getCity().getValue() : "");

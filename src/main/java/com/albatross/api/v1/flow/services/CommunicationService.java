@@ -79,16 +79,17 @@ public class CommunicationService {
   }
 
   @Async
-  public void queueTextMessages(String messageGroupId, Optional<User> userIn, String templateContent, List<URI> mediaURLs) {
+  public void queueTextMessages(String messageGroupId, Optional<User> userIn, String templateContent, List<URI> mediaURLs, Long loggedInUserId) {
       //dont try to send text if there is no phone number or the user doesnt have access
-      if (userIn.isPresent() && userIn.get().getPhoneNumber() != null && userIn.get().getUserStatusType() != null && userIn.get().getHasAccess()) {
+      if (null != userIn && userIn.isPresent() && userIn.get().getPhoneNumber() != null && userIn.get().getUserStatusType() != null && userIn.get().getHasAccess()) {
         User user = userIn.get();
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
           Map<String, Object> contextMap = new HashMap<>();
           contextMap.put("user", user);
           renderTemplate(templateContent, output, contextMap);
 
-          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER, user.getId());
+          //make sure the sent by user id is the logged in user, not the user the message is getting sent to
+          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER, loggedInUserId);
         } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
         }

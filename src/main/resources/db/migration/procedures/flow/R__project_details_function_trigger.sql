@@ -584,6 +584,7 @@ declare
     v_sql                    character varying;
     v_value                  character varying;
     v_second_field_to_update character varying;
+    v_count                  integer;
 BEGIN
 
     select pdc.id, field_to_update, data_type_id, second_field_to_update
@@ -653,6 +654,19 @@ BEGIN
            where project_id = $$ || new.project_id;
             execute v_sql;
         end if;
+    end if;
+
+    if (TG_OP = 'UPDATE') THEN
+      select count(1)
+      into v_count
+      from flow.user_position up
+             inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+      where up.user_id = new.modified_by_id
+        and up.end_date is null
+        and wlp.custom_field_group_assignment_id = 17280;
+      if new.custom_field_group_assignment_id = 17280 and old.int_value != new.int_value and v_count < 1 then
+        raise exception 'You do not have rights to update the Lead Source for this Contact.';
+      end if;
     end if;
 
     RETURN NULL;
