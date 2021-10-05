@@ -181,7 +181,7 @@ public class NoteService {
         else {
           String groupId = UUID.randomUUID().toString();
           String textMessage = "You were mentioned in an Albatross note. Click here: " + link + " to open the " + locationOfNote + ".";
-          communicationService.queueTextMessages(groupId, Optional.of(mentionedUser), textMessage, null);
+          communicationService.queueTextMessages(groupId, Optional.of(mentionedUser), textMessage, null, currentUser.trueUserId());
         }
       } catch (IOException e) {
         log.error("NOTE: Error sending user mention email {}", e.getMessage());
