@@ -24,7 +24,7 @@ BEGIN
     when (p_platform_user_id = 2354046) then
       -- if the user is Austin Thompson then use Dane Nielson's user id, yep, that's right
       select 2353912 into v_budget_user_id;
-    when (v_position_ids && '{3,6,10,227,237,238,226,219,73}') then
+    when (v_position_ids && '{3,6,10,227,237,238,226,219,73,517}') then
       -- if the user is a closer regional,setter regional, or recruiter use their own user id
       select p_platform_user_id into v_budget_user_id;
     when (v_position_ids && '{1,2}') then
