@@ -1,15 +1,14 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapLoanStatus;
-import com.google.api.Http;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -26,13 +25,13 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GoodleapService {
 
-  private final SecurityService securityService;
-
   private final SqlCache sqlCache;
 
-  private final String apiKey = "ZWY3NjAwMzktNjczMy00YzVlLTg2YjctNzk5MWNkNjIzYzMyOmFhZjA4NjFmMzFhZGFjNTBkOWIzMjM3MGQyNjIzMjk3M2Y1MzNkMzY5MTEyNDc5M2M0MWIwYmI5ZjQwNWVhYjI=";
+  @Value("${app.goodleap.api.key}")
+  private String apiKey;
 
-  private final String host = "https://sandbox-api.loanpal.com/posfinancing/rest/v2";
+  @Value("${app.goodleap.api.host}")
+  private String host;
 
   private HttpHeaders headers;
 
@@ -168,7 +167,7 @@ public class GoodleapService {
   }
 
   // Statuses used that aren't of type GoodleapLoanStatus are returned from the Sunlight service
-  private String getNormalizedStatus(String status) {
+  public String getNormalizedStatus(String status) {
 
     List<String> approved = List.of(
       GoodleapLoanStatus.APPROVED.toString(),

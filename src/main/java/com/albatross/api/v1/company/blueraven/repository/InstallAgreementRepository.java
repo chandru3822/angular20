@@ -6,7 +6,6 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
-import com.albatross.api.v1.company.blueraven.services.LoanPalService;
 import com.albatross.api.v1.company.blueraven.services.PandaDocService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.flow.model.User;
@@ -38,8 +37,6 @@ public class InstallAgreementRepository {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
-
-  private final LoanPalService loanPalService;
 
   private final SunlightService sunlightService;
 

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
+@Deprecated
 @Service
 @Slf4j
 public class LoanPalService {
