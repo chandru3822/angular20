@@ -79,7 +79,7 @@
               inner JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
                                                                 and up.start_date < now()
                                                                 and (up.end_date is null or up.end_date > now())
-              inner JOIN flow.position pos on pos.id = up.position_id and p.company_id = 3
+              inner JOIN flow.position pos on pos.id = up.position_id and pos.company_id = 3
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
               LEFT JOIN flow."user" a on a.id = e.approved_by_id
@@ -133,7 +133,7 @@
               inner JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
                                             and up.start_date < now()
                                             and (up.end_date is null or up.end_date > now())
-              inner JOIN flow.position pos on pos.id = up.position_id and p.company_id = 3
+              inner JOIN flow.position pos on pos.id = up.position_id pos.company_id = 3
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
               LEFT JOIN flow."user" a on a.id = e.approved_by_id
@@ -187,7 +187,7 @@
               inner JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
                                                           and up.start_date < now()
                                                           and (up.end_date is null or up.end_date > now())
-              inner JOIN flow.position pos on pos.id = up.position_id and p.company_id = 3
+              inner JOIN flow.position pos on pos.id = up.position_id and pos.company_id = 3
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
               LEFT JOIN flow."user" a on a.id = e.approved_by_id
