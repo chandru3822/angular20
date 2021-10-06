@@ -33,6 +33,7 @@
                         :step="1"
                         :key="damnKeyThing"
                         type="number"
+                        class="minute-increment-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Minute Increment">
@@ -323,5 +324,9 @@ export default {
 
 .company-logo-background {
   background-color: #bbbbbb;
+}
+
+.minute-increment-field {
+  width: 200px;
 }
 </style>
