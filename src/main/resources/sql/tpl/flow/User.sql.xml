@@ -67,7 +67,6 @@
       order by last_name, first_name, start_date desc
       limit :limit
       offset :offset;
-
   ]]></user.searchUsers>
 
   <user.searchUserCount><![CDATA[
