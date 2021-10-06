@@ -219,6 +219,7 @@
                   expense_date = :expenseDate,
                   submitted_by_id = :submittedById,
                   gl_code_id = :glCodeId,
+                  user_id = :userId,
                   expense_amount = :expenseAmount,
                   modified_by_id = :updatedByUserId,
                   date_modified = now(),
