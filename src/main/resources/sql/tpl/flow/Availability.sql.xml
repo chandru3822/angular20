@@ -107,7 +107,7 @@
                         rsa.end_time as "endTime",
                         coalesce(rsa.archived, false) as archived
                     from flow.day_of_week dow
-                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id rsa.archived is not true
+                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id and rsa.archived is not true
                     order by dow.id < (select day_of_week_id
                                         from flow.company_week_start
                                         where company_id = :companyId), "dayOfWeekId") d
