@@ -175,7 +175,6 @@ export default {
   },
   methods: {
     forceInteger() {
-      console.log('randaLogger',this.company.minuteIncrement)
       if(this.company.minuteIncrement % 1 !== 0) {
         this.company.minuteIncrement = Math.floor(this.company.minuteIncrement);
         this.damnKeyThing++
