@@ -661,7 +661,7 @@ BEGIN
       into v_count
       from flow.user_position up
              inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
-      where up.user_id = new.modified_by_id
+      where up.user_id = coalesce(new.modified_by_id, new.created_by_id)
         and up.end_date is null
         and wlp.custom_field_group_assignment_id = 17280;
       if new.custom_field_group_assignment_id = 17280 and old.int_value != new.int_value and v_count < 1 then
