@@ -76,10 +76,10 @@
               rr.details reimbursement_request_details
             FROM brs.expense e
               INNER JOIN flow."user" u on u.id = e.user_id
-              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
                                                                 and up.start_date < now()
                                                                 and (up.end_date is null or up.end_date > now())
-              LEFT JOIN flow.position pos on pos.id = up.position_id
+              inner JOIN flow.position pos on pos.id = up.position_id and p.company_id = 3
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
               LEFT JOIN flow."user" a on a.id = e.approved_by_id
@@ -130,10 +130,10 @@
               rr.details reimbursement_request_details
             FROM brs.expense e
               INNER JOIN flow."user" u on u.id = e.user_id
-              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
                                             and up.start_date < now()
                                             and (up.end_date is null or up.end_date > now())
-              LEFT JOIN flow.position pos on pos.id = up.position_id
+              inner JOIN flow.position pos on pos.id = up.position_id and p.company_id = 3
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
               LEFT JOIN flow."user" a on a.id = e.approved_by_id
@@ -184,10 +184,10 @@
               rr.details reimbursement_request_details
             FROM brs.expense e
               INNER JOIN flow."user" u on u.id = e.user_id
-              LEFT JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner JOIN flow.user_position up on up.user_id = u.id and up.primary_flag is true
                                                           and up.start_date < now()
                                                           and (up.end_date is null or up.end_date > now())
-              LEFT JOIN flow.position pos on pos.id = up.position_id
+              inner JOIN flow.position pos on pos.id = up.position_id and p.company_id = 3
               LEFT JOIN flow."user" s on s.id = e.submitted_by_id
               LEFT JOIN brs.gl_code g on g.id = e.gl_code_id
               LEFT JOIN flow."user" a on a.id = e.approved_by_id
@@ -219,6 +219,7 @@
                   expense_date = :expenseDate,
                   submitted_by_id = :submittedById,
                   gl_code_id = :glCodeId,
+                  user_id = :userId,
                   expense_amount = :expenseAmount,
                   modified_by_id = :updatedByUserId,
                   date_modified = now(),
