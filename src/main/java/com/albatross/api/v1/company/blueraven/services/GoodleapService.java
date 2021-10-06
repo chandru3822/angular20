@@ -167,19 +167,58 @@ public class GoodleapService {
     }
   }
 
+  // Statuses used that aren't of type GoodleapLoanStatus are returned from the Sunlight service
   private String getNormalizedStatus(String status) {
-    List<String> approved = List.of(GoodleapLoanStatus.APPROVED.toString(), GoodleapLoanStatus.FUNDED.toString(), GoodleapLoanStatus.SOLD.toString());
-    List<String> pending = List.of(GoodleapLoanStatus.CREATED.toString(), GoodleapLoanStatus.PENDING.toString(), GoodleapLoanStatus.CONDITIONAL.toString(), GoodleapLoanStatus.LOAN_SELECTION_PENDING.toString());
+
+    List<String> approved = List.of(
+      GoodleapLoanStatus.APPROVED.toString(),
+      GoodleapLoanStatus.FUNDED.toString(),
+      GoodleapLoanStatus.SOLD.toString(),
+      "Change Order Pending",
+      "Inspection Approved",
+      "Inspection in Review",
+      "Installation Approved",
+      "Installation in Review",
+      "Kitting in Review",
+      "Loan Agreement Signed",
+      "Notice to Proceed Approved",
+      "Notice to Proceed in Review",
+      "Permission to Operate in Review",
+      "Permit Application Approved",
+      "Permit Application in Review",
+      "Project Completed",
+      "PTO Payment Pending",
+      "Sent",
+      "Loan Agreement Sent"
+    );
+
+    List<String> pending = List.of(
+      GoodleapLoanStatus.CREATED.toString(),
+      GoodleapLoanStatus.PENDING.toString(),
+      GoodleapLoanStatus.CONDITIONAL.toString(),
+      GoodleapLoanStatus.LOAN_SELECTION_PENDING.toString(),
+      "Credit Pending Review",
+      "New"
+    );
+
+    List<String> declined = List.of(
+      GoodleapLoanStatus.DECLINED.toString(),
+      "Credit Declined",
+      "Denied",
+      "Project Withdrawn"
+    );
+
+    List<String> cancelled = List.of(GoodleapLoanStatus.CANCELLED.toString());
 
     String normalizedStatus = null;
 
-    if (approved.contains(status)) {
+    if (approved.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Approved";
-    }  else if (pending.contains(status)) {
+    }  else if (pending.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Pending";
-    } else if(GoodleapLoanStatus.DECLINED.toString().equals(status)) {
+    } else if(declined.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Denied";
-    } else if (GoodleapLoanStatus.CANCELLED.toString().equals(status)) {
+    } else if (cancelled.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Cancelled";
     }
 
