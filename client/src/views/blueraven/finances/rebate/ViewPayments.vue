@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-toolbar color="white" class="elevation-1 mt-3">
-      <v-select attach v-model="status"
+      <v-select v-model="status"
                 class="status-select pt-3 pl-1"
                 :items="statuses"
                 no-data-text="No Status Available"
