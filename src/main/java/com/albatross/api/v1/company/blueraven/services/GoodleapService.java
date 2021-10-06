@@ -135,10 +135,6 @@ public class GoodleapService {
 
   public void updateLoanAmount(String loanId, String amount) {
 
-//    JSONObject newOffer = new JSONObject();
-//    newOffer.put("type", "OFFER");
-//    newOffer.put("value", offerId);
-
     JSONObject newAmountValue = new JSONObject();
     newAmountValue.put("type", "USD");
     newAmountValue.put("value", amount);
@@ -148,7 +144,6 @@ public class GoodleapService {
     newAmount.put("value", newAmountValue);
 
     JSONArray combinedProps = new JSONArray();
-//    combinedProps.put(newOffer);
     combinedProps.put(newAmount);
 
     JSONObject requestBody = new JSONObject();
