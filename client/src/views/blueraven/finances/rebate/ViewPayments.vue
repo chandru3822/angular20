@@ -474,6 +474,7 @@
           this.snackbar = getSnackbar('SUCCESS', 'Recurring Payment Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          await this.fetchPayments();
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Failed to save Recurring Payment')
