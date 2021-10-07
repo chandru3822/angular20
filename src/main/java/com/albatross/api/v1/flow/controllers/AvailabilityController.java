@@ -74,7 +74,7 @@ public class AvailabilityController {
   }
 
   @PostMapping(value = "/appointment", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResourceAppointment saveAppointment(@RequestBody ResourceAppointment resourceAppointment) {
+  public ResourceAppointment saveAppointment(@RequestBody ResourceAppointment resourceAppointment) throws Exception {
     return availabilityService.saveAppointment(resourceAppointment);
   }
 

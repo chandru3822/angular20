@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,8 @@ public class ProjectProcessStepController {
   private final ProjectProcessStepService projectProcessStepService;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+
+  private final SecurityService securityService;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
@@ -57,6 +61,15 @@ public class ProjectProcessStepController {
     }
   }
 
+  @GetMapping(value = "/{ppsId}/history", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStepHistory>> getPpsHistory(@PathVariable Long ppsId) {
+    try {
+      return new ResponseEntity<>(projectProcessStepService.getPpsHistory(ppsId), HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @GetMapping(value = "/{ppsId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStepAction> getActionResult(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
@@ -68,6 +81,7 @@ public class ProjectProcessStepController {
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
   }
+
   @PostMapping(value = "/{ppsId}/action/{actionId}")
   public ResponseEntity<Void> performAction(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
@@ -88,7 +102,7 @@ public class ProjectProcessStepController {
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      projectProcessStepService.performAction(action, pps);
+      projectProcessStepService.performAction(action, pps, new ArrayList<>());
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
       final String errMessage = String.format("PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",  actionId, ppsId, e.getMessage());
@@ -102,7 +116,19 @@ public class ProjectProcessStepController {
   public ResponseEntity<Long> createProjectProcessStep(@PathVariable Long initialCompanyProcessStepStatusTypeId,
                                                        @PathVariable Long existingCompanyProcessStepStatusTypeId,
                                                        @RequestBody ProjectProcessStep projectProcessStep) {
-    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null), HttpStatus.OK);
+
+    Long newPpsId = projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null);
+
+    try {
+      projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
+    } catch (Exception e) {
+      final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
+      log.error(errMessage);
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+    }
+
+    return new ResponseEntity<>(newPpsId, HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -139,7 +165,18 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null);
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null, null, new ArrayList<>());
+
+        // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free time... good one
+        try {
+          projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", projectProcessStepId, e.getMessage());
+          log.error(errMessage);
+          e.printStackTrace();
+          throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+        }
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);

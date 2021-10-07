@@ -5,7 +5,9 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.ObjLongConsumer;
 
 @Slf4j
@@ -60,8 +64,35 @@ public class ProjectService {
 
   private final ObjectMapper om;
 
+  private final MapboxApiService mapboxApiService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
+
+  // @TODO: Project geo coords are nulling out and causing this issue - https://trello.com/c/IUk94IAk
+  // Remove this function and it's associated cron once the actual problem is fixed
+  public void fillGeoCoords() {
+    User cronUser = new User();
+    cronUser.setId(SystemSettings.CRON_USER.getId());
+    securityService.setCurrentUserDetails(new UserAccountDetails(cronUser, Collections.emptyList()));
+
+    List<Long> ids = sqlCache.query("project.getNoGeoCoords", null, new SingleColumnRowMapper<>(Long.class));
+
+    ids.forEach(projectId -> {
+      Optional<Project> project = this.getProject(projectId);
+      project.ifPresent(p -> {
+        try {
+          // Spreading out the http calls so we don't potentially overload the cron. I know it's not
+          // thread safe, but this is just a temporary band aid... ¯\_(ツ)_/¯
+          TimeUnit.MILLISECONDS.sleep(500);
+          getProjectCoordinates(p, p.getId());
+        } catch (InterruptedException ie) {
+          log.info("PROJ: Thread interruption during sleep");
+          Thread.currentThread().interrupt();
+        }
+      });
+    });
+  }
 
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
@@ -87,9 +118,20 @@ public class ProjectService {
       params.put("currentUserId", currentUser.getId());
       params.put("companyProjectStatusTypeIds", search.getCompanyProjectStatusTypeIds());
       //if no search type is sent in then return "all projects" //1 = all project, 2 = my projects, 3 = downline projects
-      params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
-      List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
-      return results;
+      if (null != search.getSearchTypeId() && search.getSearchTypeId() == 3L) {
+        Boolean isParent = currentUser.getCompanyId().equals(currentUser.getHighestParentCompanyId());
+        params.put("isParent", isParent);
+        params.put("companyId", currentUser.getCompanyId());
+        params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
+
+        List<Project> results = sqlCache.query("project.getProjectsInGeoAreaDownline", params, new ProjectMapper<>(Project.class, om));
+        return results;
+      }
+      else {
+        params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
+        List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
+        return results;
+      }
     } else {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
     }
@@ -213,7 +255,7 @@ public class ProjectService {
       Owner.class);
   }
 
-  public void updateProject(Project project) {
+  public void updateProject(Project project) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -226,12 +268,38 @@ public class ProjectService {
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
+    //pre-populate lat/long/tz with the existing project values
+    Double latitude = project.getLatitude();
+    Double longitude = project.getLongitude();
+    String timezone = project.getTimeZone();
+
+    //if the project address changed, reload the coordinates
+    if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
+      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode()));
+      //if we found new coordinates then uses those values
+      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        //1 = lat, 0 = long
+        latitude = coordinates.get(1);
+        longitude = coordinates.get(0);
+
+        if(null != latitude && null != longitude) {
+          //if we have a lat/long then attempt to load the timezone
+          timezone = mapboxApiService.getTimezone(latitude, longitude);
+        }
+      } else {
+        //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+        latitude = null;
+        longitude = null;
+        timezone = null;
+      }
+    }
+
+    params.put("latitude", latitude);
+    params.put("longitude", longitude);
+    params.put("timezone", timezone);
+
     sqlCache.update("project.update", params);
 
-    //load coordinates when new project added
-    if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
-      getProjectCoordinates(project, project.getId());
-    }
   }
 
   public void updateProjectOwner(Long projectId, Owner owner) {
@@ -245,7 +313,7 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) throws Exception {
     User user = securityService.getCurrentUser();
 
     if(null != contactId && null != processId) {
@@ -265,10 +333,37 @@ public class ProjectService {
       params.put("postalCode", contact.getPostalCode());
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
+      //with my most recent changes the contact should already have a valid lat/long if the address was valid
+      params.put("latitude", contact.getLatitude());
+      params.put("longitude", contact.getLongitude());
+      String timezone = null;
+      if(null != contact.getLatitude() && null != contact.getLongitude()) {
+          //if we have a lat/long then attempt to load the timezone
+          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+      }
+      params.put("timezone", timezone);
+
+//      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
+//      Double latitude = null, longitude = null;
+//      String timezone = null;
+//      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+//        //1 = lat, 0 = long
+//        latitude = coordinates.get(1);
+//        longitude = coordinates.get(0);
+//
+//        if(null != latitude && null != longitude) {
+//          //if we have a lat/long then attempt to load the timezone
+//          timezone = mapboxApiService.getTimezone(latitude, longitude);
+//        }
+//      }
+//      params.put("latitude", latitude);
+//      params.put("longitude", longitude);
+//      params.put("timezone", timezone);
+
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
       Optional<Project> project = getProject(id);
       //load coordinates when new project added
-      project.ifPresent(value -> getProjectCoordinates(value, id));
+//      project.ifPresent(value -> getProjectCoordinates(value, id));
       return project;
     } else {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact ID and Process ID are required to add a project.", new Exception());
@@ -279,6 +374,15 @@ public class ProjectService {
     //when the contact is new or the address changes, need to reload/save their lat/long from mapbox
     String projectAddress = getProjectAddress(project);
     locationUtils.getGeocode(projectAddress, id, new CustomGeoFunction());
+  }
+
+  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(street1);
+    sj.add(city);
+    sj.add(state + " " + postalCode);
+
+    return sj.toString();
   }
 
   public String getProjectAddress(Project project) {
@@ -534,10 +638,11 @@ public class ProjectService {
         params.put("latitude", latitude);
         params.put("longitude", longitude);
         params.put("id", id);
-
+        log.info("PROJ: Trying to update geo location for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
         sqlCache.update("project.updateGeoLocation", params);
         locationUtils.getTimezoneByLatLong(id, longitude, latitude, new CustomTimeZoneFunction());
-
+      } else {
+        log.info("PROJ: Null geo location fetched for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
       }
     }
   }
@@ -559,8 +664,9 @@ public class ProjectService {
         params.put("id", id);
 
         sqlCache.update("project.updateTimeZone", params);
+      } else {
+        log.info("PROJ: Null timezone fetched for Project ID: {}", id);
       }
-
     }
   }
 }

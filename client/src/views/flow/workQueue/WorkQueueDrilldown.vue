@@ -9,6 +9,13 @@
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-switch
+              v-if="results.length > 0"
+              v-model="hideFutureFollowUps"
+              class="mx-2 mt-5 wq-follow-up-switch"
+              label="Hide work with a next follow-up date in the future"
+              @change="filterFutureFollowUps()"
+            />
             <v-btn text @click="exportCsv" v-if="results.length > 0">
               <v-icon class="mr-2">mdi-cloud-download</v-icon>
               Export
@@ -40,7 +47,6 @@
                   :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
                 <v-text-field outlined
-                              v-if="header.value !== 'notes'"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
@@ -73,13 +79,20 @@
               <td v-for="c in customColumns">
                 {{ getColumnValue(item, c)}}
               </td>
+              <td class="note-created-at">
+                {{item.firstNoteCreatedAt | formatDate('timestamp')}}
+              </td>
+              <td class="notes-follow-up">
+                  {{item.followUpDate | formatDate('date')}}
+              </td>
               <td class="notes-column">
                 <div class="flex-display align-center" >
-                  <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
-                     {{item.notes[0].note}}
+                  <pre class="app-pre-wrapper">
+                     {{item.firstNoteContent}}
                   </pre>
                   <v-spacer></v-spacer>
-                  <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
+                  {{item.id}}
+                  <v-btn small fab text @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
@@ -98,6 +111,8 @@
                         :primary-id="item.projectProcessStepId"
                         :secondary-id="item.processStepWorkQueueTypeId"
                         type="ProjectProcessStep"
+                        :callback="(item) => updateRowNotes(item)"
+
                       />
                     </v-card-text>
 
@@ -133,6 +148,8 @@
   import {DateTime} from 'luxon'
   import cloneDeep from 'lodash.clonedeep'
   import constants from '@/helpers/constants'
+  import moment from 'moment'
+
   import {
     getRequestWithParams,
     postRequest,
@@ -149,8 +166,10 @@
       return {
         snackbar: {},
         showNotesModal: false,
+        hideFutureFollowUps: false,
         selectedPps: {},
         filters: {},
+        notesPpsIndex: null, //this is used to know which row to update after a note is changed
         cachedFilters: {},
         constants,
         search: '',
@@ -165,6 +184,7 @@
         unassigned: this.$route.query.unassigned,
         installationCrewIds: this.$route.query.installationCrewIds,
         results: [],
+        filteredResults: [],
         masterResults: [],
         customColumns: [],
         totalItems: 0,
@@ -199,9 +219,22 @@
     computed: {},
     async created() {
       this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
+      this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqDrilldownFollowUps')) || false
       await this.getWorkDetails()
     },
     methods: {
+      filterFutureFollowUps() {
+        localStorage.setItem('hideFutureWqDrilldownFollowUps', JSON.stringify(this.hideFutureFollowUps))
+        if(this.hideFutureFollowUps) {
+          this.filteredResults = cloneDeep(this.results)
+          this.results = this.results.filter(r => {
+            let firstNoteFollowUp = r.notes[0]?.followUpDate
+            return firstNoteFollowUp === null || firstNoteFollowUp === undefined || new Date(firstNoteFollowUp) <= new Date()
+          })
+        } else {
+          this.results = cloneDeep(this.filteredResults)
+        }
+      },
       getColumnValue (item, c) {
         if(c.processStepName == null) {
           return item[c.name]
@@ -260,11 +293,19 @@
           this.results.forEach(r => {
             r.showNotesModal = false
             r.notes = JSON.parse(r['Notes'])
+            r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null,
+            r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
+            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('MM/DD/YYYY h:mm a') : null,
+            r.firstNoteContent = r.notes[0]?.note,
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
             r.owningPositions = JSON.parse(r['Owning Positions'])
           })
 
           this.masterResults = cloneDeep(this.results)
+
+          if(this.hideFutureFollowUps) {
+            this.filterFutureFollowUps()
+          }
 
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
@@ -275,17 +316,44 @@
               value: textValue.substring(0,63),
               sort: (a, b) => {
                 //if it is a date, format the string as a date and sort by that value
-                if((null != a && a.match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.match(/^\d{4}-\d{2}-\d{2}/))) {
+                //without the .toString() this fails for numeric values
+                if((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))) {
                   return new Date(a) - new Date(b)
                 } else {
                   //otherwise sort normally
-                  return null != a ? a.localeCompare(b) : a - b
+                  if(typeof a === 'number' || typeof b === 'number') {
+                    return (a === null) - (b === null) || a - b
+                  } else {
+                    return null != a ? a.localeCompare(b) : a - b
+                  }
                 }
               },
               show: true })
           })
           //add the notes column to the end
-          this.headers.push({ text: 'Notes', value: 'notes', show: true, width: 250 })
+          this.headers.push({
+            text: 'Note Created At',
+            value: 'firstNoteCreatedAtFormatted',
+            width: 200,
+            sort: (a,b) => {
+              // return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
+              // return new Date(a) - new Date(b)
+              if(null != a || null != b) {
+                return new Date(a) - new Date(b)
+              } else {
+                return (a === null) - (b === null) || a - b
+              }
+            },
+            show: true })
+          this.headers.push({
+            text: 'Next Follow-up Date',
+            value: 'followUpDate',
+            sort: (a,b) => {
+              // return (a.length === 0 || a[0]?.followUpDate === null) - (b.length === 0 || b[0]?.followUpDate === null) || new Date(a[0]?.followUpDate) - new Date(b[0]?.followUpDate)
+              return new Date(a) - new Date(b)
+            },
+            show: true })
+          this.headers.push({ text: 'Note Content', value: 'firstNoteContent', sortable: false, show: true, width: 250 })
 
           //check for a cached search and filter results accordingly
           if(this.cachedFilters[this.workQueueTypeId]) {
@@ -367,6 +435,12 @@
           localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
           return matchCount === numFiltersUsed
         })
+      },
+      updateRowNotes(item) {
+        this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null
+        this.results[this.notesPpsIndex].firstNoteCreatedAt = item.dateCreated
+        this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('MM/DD/YYYY h:mm a') : null
+        this.results[this.notesPpsIndex].firstNoteContent = item.note
       }
     },
 
@@ -385,6 +459,15 @@
 
   #wq-drilldown-table .v-data-table-header th {
     white-space: nowrap;
+  }
+
+  .wq-follow-up-switch label {
+    font-size: 14px;
+  }
+
+  .wq-follow-up-switch .v-input--selection-controls__input {
+    transform: scale(0.775);
+    transform-origin: center;
   }
 </style>
 

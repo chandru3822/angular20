@@ -97,6 +97,7 @@ public class NoteService {
     params.put("note", note.getNote());
     // parentId is used for a hierarchy of notes - currently we don't use it
     params.put("parentId", note.getParentId());
+    params.put("followUpDate", note.getFollowUpDate());
     params.put("userId", currentUser.trueUserId());
 
     // @randa: Would an upsert be better here? -- i dont think so because there is not a unique constraint i could throw on it.  the same user can add multiple notes to the same project/contact/user/etc
@@ -175,12 +176,12 @@ public class NoteService {
           context.put("noteContents", note.getNote());
           String emailSubject = currentUser.getFirstName() + " " + currentUser.getLastName() +
             " mentioned you in a note on " + noteRefName;
-          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@albatross.myblueraven.com", "Albatross");
+          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@albatross.myblueraven.com", "Albatross", currentUser.trueUserId());
         }
         else {
           String groupId = UUID.randomUUID().toString();
           String textMessage = "You were mentioned in an Albatross note. Click here: " + link + " to open the " + locationOfNote + ".";
-          communicationService.queueTextMessages(groupId, Optional.of(mentionedUser), textMessage, null);
+          communicationService.queueTextMessages(groupId, Optional.of(mentionedUser), textMessage, null, currentUser.trueUserId());
         }
       } catch (IOException e) {
         log.error("NOTE: Error sending user mention email {}", e.getMessage());

@@ -34,6 +34,7 @@ CREATE TRIGGER project_project_details_for_contact_trg
     after update
     ON flow.contact
     FOR EACH ROW
+    when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.project_details_from_contact();
 
 
@@ -317,9 +318,9 @@ BEGIN
         if new.int_value is not null then
             update brs.project_details
             set first_appointment_id = new.int_value,
-                first_appointment_pps_id = new.project_process_step_id
+                first_appointment_id_pps_id = new.project_process_step_id
             where project_id = v_project_id1
-              and (first_appointment_id is null or (first_appointment_pps_id is not null and first_appointment_pps_id = new.project_process_step_id));
+              and (first_appointment_id is null or (first_appointment_id_pps_id is not null and first_appointment_id_pps_id = new.project_process_step_id));
         end if;
 
         if new.int_value in (2, 1139, 1140) then
@@ -583,6 +584,7 @@ declare
     v_sql                    character varying;
     v_value                  character varying;
     v_second_field_to_update character varying;
+    v_count                  integer;
 BEGIN
 
     select pdc.id, field_to_update, data_type_id, second_field_to_update
@@ -652,6 +654,19 @@ BEGIN
            where project_id = $$ || new.project_id;
             execute v_sql;
         end if;
+    end if;
+
+    if (TG_OP = 'UPDATE') THEN
+      select count(1)
+      into v_count
+      from flow.user_position up
+             inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+      where up.user_id = coalesce(new.modified_by_id, new.created_by_id)
+        and up.end_date is null
+        and wlp.custom_field_group_assignment_id = 17280;
+      if new.custom_field_group_assignment_id = 17280 and old.int_value != new.int_value and v_count < 1 then
+        raise exception 'You do not have rights to update the Lead Source for this Contact (A).';
+      end if;
     end if;
 
     RETURN NULL;
@@ -728,7 +743,7 @@ BEGIN
       where up.user_id = new.modified_by_id and
             up.end_date is null and wlp.custom_field_group_assignment_id = 395;
       if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
-        raise exception 'You do not have rights to update the Lead Source for this Contact.';
+        raise exception 'You do not have rights to update the Lead Source for this Contact. (B)';
       end if;
     end if;
 

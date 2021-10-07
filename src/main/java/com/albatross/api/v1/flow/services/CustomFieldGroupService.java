@@ -328,15 +328,16 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public void updateFieldShowOrRequireOnInsert(CustomFieldObjectType customFieldObjectType) {
+  public void updateFieldShowOrRequire(CustomField customField) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", customFieldObjectType.getId());
+    params.put("customFieldGroupAssignmentId", customField.getCustomFieldGroupAssignmentId());
     params.put("modifiedById", user.trueUserId());
-    params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
-    params.put("requireOnInsert", customFieldObjectType.getRequireOnInsert());
+    params.put("showOnInsert", customField.getShowOnInsert());
+    params.put("showOnUserProfile", customField.getShowOnUserProfile());
+    params.put("requireOnInsert", customField.getRequireOnInsert());
 
-    sqlCache.update("customFieldGroup.updateFieldShowOrRequireOnInsert", params);
+    sqlCache.update("customFieldGroup.updateFieldShowOrRequire", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

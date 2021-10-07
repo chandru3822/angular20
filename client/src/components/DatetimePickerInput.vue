@@ -13,6 +13,7 @@
       :class="customClass"
       :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
+      :placeholder="placeholder"
       :rules="getRequiredRule()"
       :prepend-icon="hidePrependIcon ? '' : 'event'"
       :append-icon="showAppendIcon ? 'event' : ''"
@@ -44,7 +45,7 @@
     v-model="localTime"
     v-if="showTime"
     class="qa-time-picker"
-    :allowed-minutes="allowedMinutes"
+    :allowed-minutes="allowedMinutes !== undefined ? allowedMinutes : m => m % minuteIncrement === 0"
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
@@ -68,6 +69,7 @@ export default {
     timezone: String,
     type: String,
     label: String,
+    placeholder: String,
     format: String,
     inputFormat: String,
     minDate: String,
@@ -77,7 +79,7 @@ export default {
     dense: String,
     outlined: String,
     customClass: String,
-    //if this is empty it shows all minutes
+    //if this is empty it uses the company minute increment setting, if that is null then it shows all minutes
     allowedMinutes: Function,
     showAppendIcon: Boolean,
     changeCallback: Function,
@@ -90,19 +92,24 @@ export default {
       default: false
     },
   },
-  data: () => ({
-    date: null,
-    utcDate: null,
-    time: null,
-    menu: false,
-    requiredRules: constants.BASIC_REQUIRED_RULE,
-    showDate: false,
-    showTime: false,
-    //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
-    defaultTimeFormat: 'YYYY-MM-DD HH:mm:ss'
-  }),
+  data () {
+    return {
+      date: null,
+      utcDate: null,
+      time: null,
+      menu: false,
+      //if the company has set a default minute increment, use that. otherwise use 1
+      minuteIncrement: this.$store.state.user.details.minuteIncrement || 1,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      showDate: false,
+      showTime: false,
+      //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
+      defaultTimeFormat: 'YYYY-MM-DD HH:mm:ss'
+    }
+  },
   created() {
     this.init()
+    console.log('randaLogger',this.minuteIncrement)
   },
   watch: {
     '$props.value': function () {

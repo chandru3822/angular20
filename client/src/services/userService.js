@@ -9,6 +9,15 @@ export async function getUserStatusTypes() {
   }
 }
 
+export async function getUserProfileDefaultFields() {
+  try {
+    const {data} = await getRequest(`/defaultField/userProfile`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 
 
 

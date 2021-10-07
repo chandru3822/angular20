@@ -67,7 +67,6 @@
       order by last_name, first_name, start_date desc
       limit :limit
       offset :offset;
-
   ]]></user.searchUsers>
 
   <user.searchUserCount><![CDATA[
@@ -300,80 +299,118 @@
   ]]></user.getSchedulingUsers>
 
   <user.findByUsernameIgnoreCase><![CDATA[
-    select u.id,
-       u.first_name,
-       u.last_name,
-       u.password,
-       u.username,
-       u.email,
-       u.phone_number,
-       u.phone_extension,
-       u.login_attempts,
-       u.username,
-       (select has_access
-          from flow.company_user_status cus
-               inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
-           where user_id = u.id
-           and ust.company_id = uc.company_id
-           ) as has_access,
-       coalesce(u.default_company_id, uc.company_id) as company_id,
-       uc.home_page_company_feature_id,
-       f.feature_path as home_page_path,
-       ( select parent_company_id
-          from flow.company c
-        where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-       ( select case when parent_company_id is null or parent_company_id = 1
-              then coalesce(u.default_company_id, uc.company_id)
-                else parent_company_id end
+    with t1 as (
+        select u.id,
+               u.first_name,
+               u.last_name,
+               u.password,
+               u.username,
+               u.email,
+               c.aws_bucket,
+               c.minute_increment,
+               c.api_path,
+               u.phone_number,
+               u.phone_extension,
+               u.login_attempts,
+               (select has_access
+                from flow.company_user_status cus
+                       inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
+                where user_id = u.id
+                  and ust.company_id = uc.company_id
+               )                                                                                        as has_access,
+               coalesce(u.default_company_id, uc.company_id)                                            as company_id,
+               uc.home_page_company_feature_id,
+               f.feature_path                                                                           as home_page_path,
+               (select parent_company_id
                 from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
-       null as "timezone",
-       concat(u.first_name, ' ', u.last_name) AS full_name,
-       (
-         select c.id from flow.company c
-         inner join flow.user_company uc on uc.company_id = c.id
-         where uc.user_id = u.id
-          and uc.archived is not true
-         order by level
-         limit 1
-       ) as highest_company_id,
-       coalesce((
-                SELECT array_to_json(array_agg(row_to_json(positions)))
-                FROM (
-                         SELECT up.id,
-                                up.user_id as "userId",
-                                p.position,
-                                p.schedulable,
-                                p.scheduler,
-                                up.position_id as "positionId",
-                                up.org_id as "orgId",
-                                o.org_name as "orgName",
-                                up.start_date as "startDate",
-                                up.end_date as "endDate",
-                                up.primary_flag as "primaryFlag",
-                                p.use_slot_schedule as "useSlotSchedule",
-                                up.archived,
-                                (select json_agg(json_build_object(
-                                     'orgId', h.org_id,
-                                     'orgName', h.org_name,
-                                     'positionLevel', h.position_level,
-                                     'orgLevelId', h.org_level_id
-                                 ) order by h.org_level_id)::jsonb
-                                 from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
-                         FROM flow.user_position up
-                            inner join flow.position p on p.id = up.position_id
-                            inner join flow.org o on o.id = up.org_id
-                         WHERE up.user_id = u.id
-                           and up.archived is not true
-                           and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
-    from flow.user u
-         inner join flow.user_company uc on uc.user_id = u.id
-         left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
-         left join flow.feature f on f.id = cf.feature_id
-    where case when :username::text is not null then lower(username) = lower(:username::text)
-               else u.id = :userId::integer end
-      and uc.is_default = true
-    limit 1
+                where c.id = coalesce(u.default_company_id, uc.company_id))                             as parent_company_id,
+               (select case
+                         when parent_company_id is null or parent_company_id = 1
+                           then coalesce(u.default_company_id, uc.company_id)
+                         else parent_company_id end
+                from flow.company c
+                where c.id = coalesce(u.default_company_id, uc.company_id))                             as highest_parent_company_id,
+               null                                                                                     as "timezone",
+               concat(u.first_name, ' ', u.last_name)                                                   AS full_name,
+               (
+                 select c.id
+                 from flow.company c
+                        inner join flow.user_company uc on uc.company_id = c.id
+                 where uc.user_id = u.id
+                   and uc.archived is not true
+                 order by level
+                 limit 1
+               )                                                                                        as highest_company_id,
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(positions)))
+                          FROM (
+                                 SELECT up.id,
+                                        up.user_id                                     as "userId",
+                                        p.position,
+                                        p.schedulable,
+                                        p.scheduler,
+                                        up.position_id                                 as "positionId",
+                                        up.org_id                                      as "orgId",
+                                        o.org_name                                     as "orgName",
+                                        up.start_date                                  as "startDate",
+                                        up.end_date                                    as "endDate",
+                                        up.primary_flag                                as "primaryFlag",
+                                        p.use_slot_schedule                            as "useSlotSchedule",
+                                        up.archived,
+                                        (select json_agg(json_build_object(
+                                                             'orgId', h.org_id,
+                                                             'orgName', h.org_name,
+                                                             'positionLevel', h.position_level,
+                                                             'orgLevelId', h.org_level_id
+                                                           ) order by h.org_level_id)::jsonb
+                                         from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
+                                 FROM flow.user_position up
+                                        inner join flow.position p on p.id = up.position_id
+                                        inner join flow.org o on o.id = up.org_id
+                                 WHERE up.user_id = u.id
+                                   and up.archived is not true
+                                   and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
+        from flow.user u
+               inner join flow.user_company uc on uc.user_id = u.id
+               inner join flow.company c on c.id = uc.company_id
+               left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
+               left join flow.feature f on f.id = cf.feature_id
+        where case
+                when :username::text is not null then lower(username) = lower(:username::text)
+                else u.id = :userId::integer end
+          and uc.is_default = true
+        limit 1
+      )
+      select id,
+             first_name,
+             last_name,
+             password,
+             t1.username,
+             email,
+             case when highest_company_id = 1 and company_id != highest_company_id then
+                    (select minute_increment from flow.company where id = company_id )
+                  else minute_increment end,
+             case when highest_company_id = 1 and company_id != highest_company_id then
+                    (select aws_bucket from flow.company where id = company_id )
+                  else aws_bucket end,
+             case when highest_company_id = 1 and company_id != highest_company_id then
+                    (select api_path from flow.company where id = company_id )
+                  else api_path end,
+             phone_number,
+             phone_extension,
+             login_attempts,
+             has_access,
+             company_id,
+             home_page_company_feature_id,
+             home_page_path,
+             parent_company_id,
+             highest_parent_company_id,
+             timezone,
+             full_name,
+             highest_company_id,
+             "userPositions"
+      from t1
+
   ]]></user.findByUsernameIgnoreCase>
 
   <user.updateLoginAttempts><![CDATA[
@@ -405,46 +442,107 @@
   ]]></user.findByUsernameOrEmailIgnoreCase>
 
   <user.findUserById><![CDATA[
-    select u.id,
-           u.first_name,
-           u.last_name,
-           u.email,
-           u.phone_number,
-           u.phone_extension,
-           concat(u.first_name, ' ', u.last_name) AS full_name,
-           u.password,
-           coalesce(u.default_company_id, uc.company_id) as company_id,
-           c.aws_bucket,
-           (select has_access
-           from flow.company_user_status cus
-                inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
-             where user_id = u.id
-             and ust.company_id = uc.company_id
-           ) as has_access,
-           ( select parent_company_id
-                from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-             ( select case when parent_company_id is null or parent_company_id = 1
-                then coalesce(u.default_company_id, uc.company_id)
-                else parent_company_id end
-                from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
-           (
-             select c.id from flow.company c
-             inner join flow.user_company uc on uc.company_id = c.id
-             where uc.user_id = u.id
-              and uc.archived is not true
-              and c.archived is not true
-             order by level
-             limit 1
-           ) as highest_company_id
-    from flow.user u
-      inner join flow.user_company uc on uc.user_id = u.id
-      inner join flow.company c on c.id = uc.company_id
-    where u.id = :id
-      and uc.is_default is true
-      and uc.archived is not true
-      and c.archived is not true
+    with t1 as (
+      select u.id,
+             u.first_name,
+             u.last_name,
+             u.username,
+             u.email,
+             u.phone_number,
+             u.phone_extension,
+             concat(u.first_name, ' ', u.last_name)                       AS full_name,
+             u.password,
+             coalesce(u.default_company_id, uc.company_id)                as company_id,
+             c.aws_bucket,
+             c.minute_increment,
+             c.api_path,
+             (select has_access
+              from flow.company_user_status cus
+                     inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
+              where user_id = u.id
+                and ust.company_id = uc.company_id
+             )                                                            as has_access,
+             (select parent_company_id
+              from flow.company c
+              where c.id = coalesce(u.default_company_id, uc.company_id)) as parent_company_id,
+             (select case
+                       when parent_company_id is null or parent_company_id = 1
+                         then coalesce(u.default_company_id, uc.company_id)
+                       else parent_company_id end
+              from flow.company c
+              where c.id = coalesce(u.default_company_id, uc.company_id)) as highest_parent_company_id,
+             (
+               select c.id
+               from flow.company c
+                      inner join flow.user_company uc on uc.company_id = c.id
+               where uc.user_id = u.id
+                 and uc.archived is not true
+                 and c.archived is not true
+               order by level
+               limit 1
+             )                                                            as highest_company_id,
+             coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(positions)))
+                          FROM (
+                                 SELECT up.id,
+                                        up.user_id                                     as "userId",
+                                        p.position,
+                                        p.schedulable,
+                                        p.scheduler,
+                                        up.position_id                                 as "positionId",
+                                        up.org_id                                      as "orgId",
+                                        o.org_name                                     as "orgName",
+                                        up.start_date                                  as "startDate",
+                                        up.end_date                                    as "endDate",
+                                        up.primary_flag                                as "primaryFlag",
+                                        p.use_slot_schedule                            as "useSlotSchedule",
+                                        up.archived,
+                                        (select json_agg(json_build_object(
+                                                             'orgId', h.org_id,
+                                                             'orgName', h.org_name,
+                                                             'positionLevel', h.position_level,
+                                                             'orgLevelId', h.org_level_id
+                                                           ) order by h.org_level_id)::jsonb
+                                         from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
+                                 FROM flow.user_position up
+                                        inner join flow.position p on p.id = up.position_id
+                                        inner join flow.org o on o.id = up.org_id
+                                 WHERE up.user_id = u.id
+                                   and up.archived is not true
+                                   and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
+      from flow.user u
+             inner join flow.user_company uc on uc.user_id = u.id
+             inner join flow.company c on c.id = uc.company_id
+      where u.id = :id
+        and uc.is_default is true
+        and uc.archived is not true
+        and c.archived is not true
+    )
+    select id,
+           first_name,
+           last_name,
+           email,
+           username,
+           phone_number,
+           phone_extension,
+           full_name,
+           password,
+           "userPositions",
+           company_id,
+           case when highest_company_id = 1 and company_id != highest_company_id then
+              (select minute_increment from flow.company where id = company_id )
+            else minute_increment end,
+           case when highest_company_id = 1 and company_id != highest_company_id then
+              (select aws_bucket from flow.company where id = company_id )
+             else aws_bucket end,
+           case when highest_company_id = 1 and company_id != highest_company_id then
+                  (select api_path from flow.company where id = company_id )
+                else api_path end,
+           has_access,
+           parent_company_id,
+           highest_parent_company_id,
+           highest_company_id
+    from t1
   ]]></user.findUserById>
 
   <user.getCompanyUserStatuses><![CDATA[

@@ -1,6 +1,7 @@
 import Vue from "vue"
 import Router from 'vue-router'
 import Login from './views/Login.vue'
+import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import store from './store'
 import {UserMutations} from './stores/UserStore'
 import {getRequest} from '@/helpers/helpers'
@@ -25,7 +26,8 @@ const router = new Router({
     {
       path: '/passwordReset/:uuid?',
       name: 'forgotPasswordReset',
-      component: () => import(/* webpackChunkName: "passwordReset" */ './views/ForgotPasswordReset.vue'),
+      component: ForgotPasswordReset,
+      // component: () => import(/* webpackChunkName: "passwordReset" */ './views/ForgotPasswordReset.vue'),
       props: true
     },
     {
@@ -173,6 +175,89 @@ const router = new Router({
             }
           },
           children: []
+        }, {
+          path: '/reimbursement',
+          name: 'reimbursement',
+          meta: {title: 'Albatross - Reimbursement'},
+          component: () => {
+            if (store.getters.userHasFeature('REIMBURSEMENT')) {
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Reimbursement.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+        }, {
+          path: '/expenses',
+          name: 'expenses',
+          meta: {title: 'Albatross - Expenses'},
+          component: () => {
+            if (store.getters.userHasFeature('EXPENSES')) {
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Expenses.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'reimbursementRequests',
+              name: 'reimbursementRequests',
+              meta: {title: 'Albatross - Reimbursement Requests'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/ReimbursementRequests.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
+              path: 'submittedExpenses',
+              name: 'submittedExpenses',
+              meta: {title: 'Albatross - Submitted Expenses'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/SubmittedExpenses.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
+              path: 'glCodes',
+              name: 'glCodes',
+              meta: {title: 'Albatross - GL Codes'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/GlCodes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
+              path: 'monthlyBudgets',
+              name: 'monthlyBudgets',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/MonthlyBudgets.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'budgetTypes',
+              name: 'expenseBudgetTypes',
+              meta: {title: 'Albatross - Budget Types'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/BudgetTypes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }
+          ]
         }, {
           path: '/closerDashboard',
           name: 'closerDashboard',
@@ -347,8 +432,38 @@ const router = new Router({
                   return accessDenied()
                 }
               }
-            },
-            {
+            }, {
+              path: 'companyCustomFields',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/CompanyCustomFields.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'companyObjectTypes',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/companyObjectType/CompanyObjectTypes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'companyObjectTypes/:id',
+              name: 'companyObjectTypes',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/companyObjectType/CompanyObjectType.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'tournaments',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -396,6 +511,10 @@ const router = new Router({
               path: 'userProfile',
               meta: {title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
+            }, {
+              path: 'userProfileAdmin',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfileAdmin.vue'),
             }, {
               path: 'company',
               meta: {title: 'Albatross - Settings'},
@@ -519,7 +638,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue')
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/FlowCustomFields.vue')
                 } else {
                   return accessDenied()
                 }

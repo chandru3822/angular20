@@ -45,11 +45,18 @@ public class ContactController {
     }
 
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Contact updateContact(@RequestBody Contact contact) {
+    public Contact updateContact(@RequestBody Contact contact) throws Exception {
         return contactService.updateContact(contact);
     }
 
-    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    //temporary
+    @PostMapping(value = "/updateLatLong", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void updateContactLatLong(@RequestParam(required = false) Integer limit) throws Exception {
+      contactService.updateContactLatLong(limit);
+    }
+
+
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteContact(@PathVariable Long id) {
         contactService.deleteContact(id);
     }
@@ -84,7 +91,11 @@ public class ContactController {
     public Project convertToContact(@PathVariable Long contactId,
                                   @RequestBody CompanyProcess process) {
         // need to return the project so the frontend can navigate to /project/{id}
-        return contactService.convertToContact(contactId, process);
+        try {
+          return contactService.convertToContact(contactId, process);
+        } catch (Exception e) {
+          throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+        }
     }
 
   @GetMapping(value = "/{contactId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)

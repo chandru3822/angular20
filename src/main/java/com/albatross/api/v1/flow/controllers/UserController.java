@@ -61,7 +61,7 @@ public class UserController {
     if (userService.usernameExists(user.getUsername(), user.getId())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use", new Exception());
     }
-    if (null != user.getNewPassword() && user.getNewPassword().length() < 8) {
+    if (null != user.getNewPassword() && !user.getNewPassword().isEmpty() && user.getNewPassword().length() < 8) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
     }
     if (user.getUsername().length() < 3) {
@@ -166,7 +166,7 @@ public class UserController {
         context.put("from", "Blue Raven Solar Sales HR");
         context.put("mailTo", "saleshr@blueravensolar.com");
 
-        communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+        communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
         log.info("AUTH: Password reset email has been sent to {}", passwordResetRequest.getUsernameOrEmail());
       } else {
         log.info("AUTH: Password reset attempted for unknown user email {}.", passwordResetRequest.getUsernameOrEmail());

@@ -239,6 +239,16 @@
                             :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"
                             :label="payRateText"
                             v-model="override.total"></v-text-field>
+
+              <div v-if="customFieldGroups.length > 0">
+                <CustomValueInput
+                  v-for="item in customFieldGroups[0].customFieldValues"
+                  :callback="(item) => updateDirtyValue(item)"
+                  :readonly="!userCanEdit"
+                  :showFieldName="false"
+                  :field="item"
+                />
+              </div>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
@@ -623,7 +633,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -633,7 +643,7 @@
     name: 'Override',
     mixins: [Vue2Filters.mixin],
     components: {
-
+      CustomValueInput,
       DatetimePickerInput
     },
     created() {
@@ -645,7 +655,6 @@
     },
     computed: {
       visibleReceivingHeaders() {
-        console.log('randaLogger', this.positionId)
         return this.receivingHeaders.filter(header => header.show === true)
       },
     },
@@ -742,14 +751,32 @@
         receivingUserSearch: null,
         errorMessages: [],
         userHistory: [],
+        customFieldGroups: [],
       }
     },
     methods: {
+      updateDirtyValue(item) {
+        item.valueWasChanged = true
+        this.dataWasChanged = true
+      },
+      async getCustomFieldGroups() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {sourceId: this.overrideId, objectTypeId: 9}
+          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          this.customFieldGroups = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
       async getOverrideDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
           this.override = data
+          this.getCustomFieldGroups()
           this.dataLoading = false
           this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -902,7 +929,8 @@
             description: this.override.description,
             positionId: this.override.positionId,
             total: this.override.total,
-            id: this.override.id
+            id: this.override.id,
+            customFieldGroups: this.customFieldGroups
           }
           const {data} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
           if(!this.overrideId) {

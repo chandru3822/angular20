@@ -72,11 +72,12 @@
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
   import constants from "@/helpers/constants";
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Payroll',
-
+    components: {
+    },
     data() {
       return {
         snackbar: {},
@@ -136,7 +137,7 @@
           {text: 'Override Earned', value: 'override_earned', show: true},
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
-        ]
+        ],
       }
     },
     created() {

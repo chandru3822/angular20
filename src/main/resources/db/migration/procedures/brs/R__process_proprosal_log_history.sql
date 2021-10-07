@@ -358,7 +358,7 @@ BEGIN
     new.proposal->>'18+ Payment (ITC Only)',
     new.proposal->>'Month 18 Payment (All Incentives)',
     new.proposal->>'18+ Payment (All Incentives)',
-    new.proposal->>'Date Created',
+    now(),
     new.proposal->>'Promotion 18 Months Free',
     new.proposal->>'Secondary Loan Amount',
     new.proposal->>'(Salal) Primary Loan Monthly Payment',

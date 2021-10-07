@@ -15,7 +15,7 @@ import java.util.List;
 public class Note {
 
   private Long id, parentId, createdById;
-  private String note, createdBy, installDashTile;
+  private String note, createdBy, installDashTile, followUpDate;
   private Boolean archived;
   private UserPosition createdByPrimaryPosition;
 

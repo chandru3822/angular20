@@ -11,6 +11,7 @@ import com.albatross.api.v1.flow.services.HubspotWebhookService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.albatross.api.v1.flow.services.UserPositionService;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,20 +29,24 @@ import java.util.*;
 public class ContactLeadService {
   private final SqlCache sqlCache;
   private final GenesysService genesysService;
-
-  @Autowired
-  private HubspotWebhookService hubspotWebhookService;
-
-  @Value(value = "${app.ricochet.enabled:false}")
-  private Boolean ricochetEnabled;
+  private final MapboxApiService mapboxApiService;
 
   private final SMSService smsService;
   private final SecurityService securityService;
   private final SystemListService systemListService;
   private final UserPositionService userPositionService;
 
+  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(street1);
+    sj.add(city);
+    sj.add(state + " " + postalCode);
+
+    return sj.toString();
+  }
+
   public void saveContactLead(ContactLead cl) {
-    RicochetLead ricochetLead = new RicochetLead();
+    HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
 
     log.info(
@@ -71,28 +76,38 @@ public class ContactLeadService {
     Long contactId;
 
     String state = cl.getState();
-    if (state != null) {
-      // If State abbreviation was entered
-      if (State.valueOfName(state) != State.UNKNOWN) {
-        params.put("state", State.valueOfName(state).toString());
-        // Case for State full name
-        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
+    String stateValue = state == null ? null :
+      State.valueOfName(state) != State.UNKNOWN ? State.valueOfName(state).toString() :
+      State.valueOfAbbreviation(state.toUpperCase()) != State.UNKNOWN ? State.valueOfAbbreviation(state.toUpperCase()).toString() : null;
+
+    Double latitude = null, longitude = null;
+    //even if the state value is null, try to get a valid lat/long if there is at least an address and a city
+    if(cl.getAddress() != null && cl.getCity() != null) {
+      try {
+        List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(cl.getAddress(), cl.getCity(), stateValue, cl.getZip().substring(0, Math.min(cl.getZip().length(), 10))));
+        if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+        }
+      } catch (Exception ex) {
+        log.error("CONTACT: Exception when attempting to get geo location.");
       }
-      else if (State.valueOfAbbreviation(state.toUpperCase()) != State.UNKNOWN) {
-        // Case for State abbreviation
-        params.put("state", State.valueOfAbbreviation(state.toUpperCase()).toString());
-        contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
-      }
-      else {
-        // Case for invalid State
-        contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
-      }
+    }
+
+    //these will just insert as null unless a valid geo location was found from above
+    params.put("latitude", latitude);
+    params.put("longitude", longitude);
+
+    if (stateValue != null) {
+      params.put("state", stateValue);
+      contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
     }
     else {
       // Case for no State
       contactId = sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
     }
-    ricochetLead.setContactId(contactId);
+    hubspotLead.setContactId(contactId);
 
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     // handles saving 'Lead Source' custom field
@@ -100,7 +115,7 @@ public class ContactLeadService {
       String leadSourceId = checkIfCustomFieldDropdownValueExists(520, cl.getLeadSource());
       CustomFieldValue leadSource = new CustomFieldValue();
       leadSource.setFieldName("Lead Source");
-      ricochetLead.setLead_source(cl.getLeadSource());
+      hubspotLead.setLead_source(cl.getLeadSource());
       if (!leadSourceId.equalsIgnoreCase("null")) {
         leadSource.setCustomFieldGroupAssignmentId(395L);
         leadSource.setIntValue(Long.parseLong(leadSourceId));
@@ -114,7 +129,7 @@ public class ContactLeadService {
       String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, cl.getLeadSourceDetail());
       CustomFieldValue leadSourceDetail = new CustomFieldValue();
       leadSourceDetail.setFieldName("Lead Source Detail");
-      ricochetLead.setLead_source_detail(cl.getLeadSourceDetail());
+      hubspotLead.setLead_source_detail(cl.getLeadSourceDetail());
       if (!leadSourceDetailId.equalsIgnoreCase("null")) {
         leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
         leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
@@ -327,20 +342,6 @@ public class ContactLeadService {
       String msg = "GENE: Error adding contact: {}";
       log.error(msg, e.getMessage());
     }
-
-    try {
-      if (ricochetEnabled && (cl.getLeadLevel() == null || (!cl.getLeadLevel().equals(1L) && !cl.getLeadLevel().equals(2L)
-            && !cl.getLeadLevel().equals(3L) && !cl.getLeadLevel().equals(10L)))) {
-        postToRicochet(ricochetLead, params);
-      }
-      else {
-        log.info("RICOCHET: not enabled");
-      }
-
-    } catch (Exception e) {
-      String msg = "RICO: Failed to post Contact Lead information to Ricochet.";
-      log.error(msg, e);
-    }
   }
 
   private void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, Long leadOwnerUserId) {
@@ -365,7 +366,7 @@ public class ContactLeadService {
   }
 
   // Used to process Hubspot contact CustomFieldValues
-  public void processHubspotCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
+  public void processHubspotCustomFieldValues(HubspotLead lead, Long contactId, Long leadOwnerUserId) {
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
@@ -459,38 +460,5 @@ public class ContactLeadService {
       String msg = "GENE: Error adding Hubspot contact";
       log.error(msg, e);
     }
-  }
-
-  private void postToRicochet(RicochetLead lead, HashMap<String, Object> params) throws Exception {
-    // Not needed for non-Ricochet leads
-    lead.setHubspot_id(null);
-    lead.setStatus("New");
-    lead.setLeadOwner(null);
-
-    if (lead.getLead_source() == null) {
-      lead.setLead_source("Organic");
-    }
-
-    if (lead.getLead_source_detail() == null) {
-      lead.setLead_source_detail("DigitalOrganic");
-    }
-
-    RicochetLead.Customer customer = new RicochetLead.Customer();
-    customer.setFirstName(params.containsKey("firstName") ? (String) params.get("firstName") : null);
-    customer.setLastName(params.containsKey("lastName") ? (String) params.get("lastName") : null);
-    customer.setPhone1(params.containsKey("phone") ? (String) params.get("phone") : null);
-    customer.setEmail(params.containsKey("email") ? (String) params.get("email") : null);
-
-    RicochetLead.Address address = new RicochetLead.Address();
-    address.setZip(params.containsKey("postalCode") ? (String) params.get("postalCode") : null);
-    address.setState(params.containsKey("state") ? (String) params.get("state") : null);
-    address.setAddress1(params.containsKey("street1") ? (String) params.get("street1") : null);
-    address.setCity(params.containsKey("city") ? (String) params.get("city") : null);
-
-    customer.setAddress(address);
-    lead.setCustomer(customer);
-
-    // handles sending lead information to Ricochet
-    hubspotWebhookService.postLeadToRicochet(lead);
   }
 }

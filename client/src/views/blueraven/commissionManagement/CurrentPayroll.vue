@@ -80,9 +80,11 @@
               />
               <v-text-field text
                             label="Description"
+                            placeholder=" "
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="currentPayroll.description"></v-text-field>
+
               <div class="text-left">
                 <v-btn color="primaryCustom" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
                 <v-btn color="primaryCustom" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
@@ -169,6 +171,7 @@
                 <td class="text-left">{{item.system_size }}</td>
                 <td class="text-left">{{item.closer }}</td>
                 <td class="text-left">{{item.user_id }}</td>
+                <td class="text-left">{{item.employee_id }}</td>
                 <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
                 <td class="text-left">{{item.source_name }}</td>
                 <td class="text-left">{{item.cancelled_date }}</td>
@@ -381,16 +384,14 @@
   import constants from "@/helpers/constants";
   import sumBy from "lodash.sumby";
   import { saveAs } from 'file-saver'
+  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
     name: 'CurrentPayroll',
     mixins: [Vue2Filters.mixin],
     components: {
-
+      CustomValueInput,
       DatetimePickerInput
-    },
-    created() {
-      this.getCurrentPayroll()
     },
     watch: {
       '$store.state.brs.commissionPositionId': function () {
@@ -466,6 +467,7 @@
           {text: 'System Size (kW)', value: 'system_size', show: true},
           {text: 'Sales Rep', value: 'closer', show: true},
           {text: 'User ID', value: 'user_id', show: true},
+          {text: 'Employee ID', value: 'employee_id', show: true},
           {text: 'Current Pay', value: 'current_pay', show: true},
           {text: 'Source', value: 'source_name', show: true},
           {text: 'Cancelled', value: 'cancelled_date', show: true},
@@ -511,13 +513,16 @@
           {text: 'Override Earned', value: 'override_earned', show: true},
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
-        ]
+        ],
       }
     },
     computed: {
       headers() {
         return this.positionId === 1 ? this.closerHeaders : this.setterHeaders
       }
+    },
+    created() {
+      this.getCurrentPayroll()
     },
     methods: {
       toggleSelectAll () {
@@ -675,6 +680,7 @@
         try {
           const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
           this.currentPayroll = data
+
           this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
           this.getStatusColor()
           this.payrollLoading = false
@@ -788,7 +794,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Accounting Review.csv';
-          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
           csvData += '\n';
 
           this.accountingData.forEach(p => {
@@ -799,6 +805,7 @@
                 p.system_size + ',' +
                 p.closer + ',' +
                 p.user_id + ',' +
+                p.employee_id + ',' +
                 p.current_pay + ',' +
                 p.source_name + ',' +
                 p.cancelled_date + ',' +
