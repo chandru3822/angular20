@@ -4,9 +4,10 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
-import com.albatross.api.v1.company.blueraven.services.LoanPalService;
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.flow.model.Contact;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -25,17 +26,15 @@ import java.util.Optional;
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/company/blueraven/install-agreement")
 public class InstallAgreementController {
 
-  @Autowired
-  InstallAgreementRepository installAgreementRepository;
+  private final InstallAgreementRepository installAgreementRepository;
 
-  @Autowired
-  private LoanPalService loanPalService;
+  private final GoodleapService goodleapService;
 
-  @Autowired
-  private SunlightService sunlightService;
+  private final SunlightService sunlightService;
 
   @Autowired
   private SqlCache sqlCache;
@@ -98,7 +97,7 @@ public class InstallAgreementController {
       if (loanType.isPresent()) {
         String loan = loanType.get().toString();
         if (loan.contains("LoanPal")) {
-          JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
+          JSONObject loanApp = goodleapService.getApplicationByProjectId(Long.parseLong(projectId));
           return ResponseEntity.ok(loanApp.toString());
         }
         else if (loan.contains("Sunlight")) {
@@ -118,10 +117,11 @@ public class InstallAgreementController {
     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
   }
 
+  @Deprecated //  I believe this isn't used anywhere
   @GetMapping(value = "/loanStatus/{projectId}")
   public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId) {
       try {
-        JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
+        JSONObject loanApp = goodleapService.getApplicationByProjectId(Long.parseLong(projectId));
         return ResponseEntity.ok(loanApp.toString());
       } catch (Exception e) {
           log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());

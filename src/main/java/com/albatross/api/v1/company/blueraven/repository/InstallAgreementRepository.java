@@ -5,7 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
-import com.albatross.api.v1.company.blueraven.services.LoanPalService;
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.PandaDocService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.flow.model.User;
@@ -23,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -34,17 +36,13 @@ import java.util.Optional;
 public class InstallAgreementRepository {
   private final SqlCache sqlCache;
 
-  @Autowired
-  private SecurityService securityService;
+  private final SecurityService securityService;
 
-  @Autowired
-  private LoanPalService loanPalService;
+  private final SunlightService sunlightService;
 
-  @Autowired
-  private SunlightService sunlightService;
+  private final PandaDocService pandaDocService;
 
-  @Autowired
-  private PandaDocService pandaDocService;
+  private final GoodleapService goodleapService;
 
   @Value(value = "${loanpal.api.baseUrl}")
   private String loanPalBaseUrl;
@@ -108,26 +106,29 @@ public class InstallAgreementRepository {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", request.getProposalNbr());
-      Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, PropLogDetail.class);
+      Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
 
-      JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProjectId().toString());
+      JSONObject loanApplication = goodleapService.getApplicationByProjectId(request.getProjectId());
       if (loanApplication != null) {
         try {
-          JSONObject outcome = loanApplication.getJSONObject("outcome");
-          String loanStatus = outcome.getString("status");
-          String loanPalId = loanApplication.getString("loanPalId");
+          String loanPalId = loanApplication.getString("id");
 
-          JSONObject loanOptions = outcome.getJSONObject("loanOptions");
-          String selectedLoanOption = null != loanOptions ? loanOptions.getString("id") : null;
+          if (propLogDetail.isPresent()) {
+            final BigDecimal propLogAmount = new BigDecimal(propLogDetail.get().getLoanAmount()).setScale(0, RoundingMode.DOWN);
+            final BigDecimal currentAmount = loanApplication.getJSONObject("amount").getBigDecimal("value").setScale(0, RoundingMode.DOWN);
 
-          if (propLogDetail.isPresent() && null != selectedLoanOption) {
-            loanPalService.saveLoanFields(loanPalId, propLogDetail.get().getLoanAmount(), selectedLoanOption);
+            if (!propLogAmount.equals(currentAmount)) {
+              goodleapService.updateLoanAmount(loanPalId, propLogDetail.get().getLoanAmount());
+            }
           }
 
-          if (loanStatus.equals("Approved")) {
+          if (loanApplication.getString("status").equals("Approved")) {
             log.info("LOANPAL: sending LoanPal Docs");
-            String uri = "/applications/" + loanPalId + "/sendLoanDocs";
-            loanPalService.POST(uri, null);
+            try {
+              goodleapService.sendDocs(loanPalId);
+            } catch (Exception e) {
+              // @TODO: Handle failed send
+            }
           }
         } catch (JSONException ex){
           log.error("IARQ: JSON object not found", ex.getMessage());
@@ -137,17 +138,17 @@ public class InstallAgreementRepository {
 
     Boolean createPandaDoc = true;
     try {
-        if (isLoanPalProject(financier)) {
-          log.info("IARQ: processing loanpal project {}", request);
-          createPandaDoc = loanPalService.processProject(projectId);
-        }
+      if (isLoanPalProject(financier)) {
+        log.info("IARQ: processing loanpal project {}", request);
+        createPandaDoc = goodleapService.shouldCreatePandaDocs(projectId);
+      }
 
-        log.info("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
-        if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
-            pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
-        }
+      log.info("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
+      if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
+        pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
+      }
     } catch (Exception e) {
-        resultMsg = e.getMessage();
+      resultMsg = e.getMessage();
     }
 
     return resultMsg;
@@ -186,26 +187,26 @@ public class InstallAgreementRepository {
     return financier;
   }
 
-    public String getUtilityFromProposalLog(Long projectId, Long proposalNbr) {
-        String utility = null;
+  public String getUtilityFromProposalLog(Long projectId, Long proposalNbr) {
+    String utility = null;
 
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("projectId", projectId);
-        params.put("proposalNbr", proposalNbr);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNbr", proposalNbr);
 
-        Optional<InstallAgreementRequest> req = sqlCache.get(
-            "installAgreement.getUtilityFromProposalLog",
-            params,
-            InstallAgreementRequest.class
-        );
+    Optional<InstallAgreementRequest> req = sqlCache.get(
+      "installAgreement.getUtilityFromProposalLog",
+      params,
+      InstallAgreementRequest.class
+    );
 
-        if (req.isPresent()) {
-            utility = req.get().getUtility_company();
-        }
-
-        log.info("IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
-        return utility;
+    if (req.isPresent()) {
+      utility = req.get().getUtility_company();
     }
+
+    log.info("IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
+    return utility;
+  }
 
   public void setRequestStatus(InstallAgreementRequest request) {
     User user = securityService.getCurrentUser();
@@ -223,7 +224,7 @@ public class InstallAgreementRepository {
 
 
     log.info("IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
-        projectId, proposalNbr, userId, request.getRequest_successful(), request.getIsSpanish());
+      projectId, proposalNbr, userId, request.getRequest_successful(), request.getIsSpanish());
     sqlCache.update(
       "installAgreement.setRequestStatus",
       params
@@ -231,77 +232,77 @@ public class InstallAgreementRepository {
   }
 
   public String generateLoanApplication(Long projectId, Long proposalNbr) throws Exception {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      params.put("proposalNbr", proposalNbr);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNbr", proposalNbr);
 
-      Optional<PandaDocProjectDetails> deets = sqlCache.get(
-          "pandaDoc.getProjectDetails",
-          params,
-          PandaDocProjectDetails.class
-      );
+    Optional<PandaDocProjectDetails> deets = sqlCache.get(
+      "pandaDoc.getProjectDetails",
+      params,
+      PandaDocProjectDetails.class
+    );
 
-      if (deets.isPresent()) {
-          PandaDocProjectDetails pd = deets.get();
-          if (pd.getLoanType().contains("Sunlight")) {
-            Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, PropLogDetail.class);
-            try {
-              return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
-            } catch (Exception e) {
-              return sunlightPortalUrl + "salesdashboard";
-            }
-          } else if (pd.getLoanType().contains("LoanPal")) {
-            // Check if this project has already had a credit check via Sunlight, if so throw error
-            Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
-            if (creditLastCheckedBy.isPresent()) {
-              String creditor = (String) creditLastCheckedBy.get();
-              if (creditor.equals("Sunlight")) {
-                throw new Exception(String.format("Unable to generate LoanPal application due to existing Sunlight application."));
-              }
-            }
-            String bothStreets = "";
-            if (pd.getMailingStreet1() != null) {
-              bothStreets += pd.getMailingStreet1();
-            }
-            if (pd.getMailingStreet2() != null) {
-              bothStreets += " " + pd.getMailingStreet2();
-            }
-
-            bothStreets = bothStreets.trim();
-            String phoneNumber = "";
-            if (pd.getPhone() != null) {
-              phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
-              if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
-                phoneNumber = phoneNumber.substring(1);
-              }
-            }
-
-            try {
-              String financeOption = getFinanceOption(pd.getLoanTerm(), pd.getInterestRate());
-              URIBuilder b = new URIBuilder(loanPalBaseUrl + financeOption + ".html");
-              b.addParameter("fname", s(pd.getCustomerFirstName()));
-              b.addParameter("lname", s(pd.getCustomerLastName()));
-              b.addParameter("street", bothStreets);
-              b.addParameter("city", s(pd.getCity()));
-              b.addParameter("state", s(pd.getMailingState()));
-              b.addParameter("zip", s(pd.getPostalCode()));
-              b.addParameter("email", s(pd.getCustomerEmail()));
-              b.addParameter("phone", phoneNumber);
-              b.addParameter("srfn", s(pd.getCloserFirstName()));
-              b.addParameter("srln", s(pd.getCloserLastName()));
-              b.addParameter("sre", s(pd.getCloserEmail()));
-              b.addParameter("cost", s(pd.getTotalSystemPrice()));
-              b.addParameter("refnum", s(pd.getProjectId()));
-              return b.build().toString().replaceAll("\\+", "%20");
-            } catch (URISyntaxException e) {
-              log.error("IARQ: uri error {}", e.getMessage());
-              e.printStackTrace();
-            }
+    if (deets.isPresent()) {
+      PandaDocProjectDetails pd = deets.get();
+      if (pd.getLoanType().contains("Sunlight")) {
+        Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+        try {
+          return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+        } catch (Exception e) {
+          return sunlightPortalUrl + "salesdashboard";
+        }
+      } else if (pd.getLoanType().contains("LoanPal")) {
+        // Check if this project has already had a credit check via Sunlight, if so throw error
+        Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
+        if (creditLastCheckedBy.isPresent()) {
+          String creditor = (String) creditLastCheckedBy.get();
+          if (creditor.equals("Sunlight")) {
+            throw new Exception(String.format("Unable to generate LoanPal application due to existing Sunlight application."));
           }
-      }
+        }
+        String bothStreets = "";
+        if (pd.getMailingStreet1() != null) {
+          bothStreets += pd.getMailingStreet1();
+        }
+        if (pd.getMailingStreet2() != null) {
+          bothStreets += " " + pd.getMailingStreet2();
+        }
 
-      sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
-      return loanPalBaseUrl;
+        bothStreets = bothStreets.trim();
+        String phoneNumber = "";
+        if (pd.getPhone() != null) {
+          phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
+          if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
+            phoneNumber = phoneNumber.substring(1);
+          }
+        }
+
+        try {
+          String financeOption = getFinanceOption(pd.getLoanTerm(), pd.getInterestRate());
+          URIBuilder b = new URIBuilder(loanPalBaseUrl + financeOption + ".html");
+          b.addParameter("fname", s(pd.getCustomerFirstName()));
+          b.addParameter("lname", s(pd.getCustomerLastName()));
+          b.addParameter("street", bothStreets);
+          b.addParameter("city", s(pd.getCity()));
+          b.addParameter("state", s(pd.getMailingState()));
+          b.addParameter("zip", s(pd.getPostalCode()));
+          b.addParameter("email", s(pd.getCustomerEmail()));
+          b.addParameter("phone", phoneNumber);
+          b.addParameter("srfn", s(pd.getCloserFirstName()));
+          b.addParameter("srln", s(pd.getCloserLastName()));
+          b.addParameter("sre", s(pd.getCloserEmail()));
+          b.addParameter("cost", s(pd.getTotalSystemPrice()));
+          b.addParameter("refnum", s(pd.getProjectId()));
+          return b.build().toString().replaceAll("\\+", "%20");
+        } catch (URISyntaxException e) {
+          log.error("IARQ: uri error {}", e.getMessage());
+          e.printStackTrace();
+        }
+      }
+    }
+
+    sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
+    return loanPalBaseUrl;
   }
 
   private String getFinanceOption(String loanTerm, String interestRate) {
@@ -396,35 +397,35 @@ public class InstallAgreementRepository {
   }
 
   public void updateEmailAddress(Long projectId, String emailAddress) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      params.put("emailAddress", emailAddress);
-      sqlCache.update("installAgreement.updateEmailAddress", params);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("emailAddress", emailAddress);
+    sqlCache.update("installAgreement.updateEmailAddress", params);
   }
 
-    /**
-     * Return the string form of the specified object, or an empty string if the specified
-     * object is null.
-     *
-     * @param in
-     * @return
-     */
-    private String s(Object in) {
-        return in != null ? in.toString() : "";
-    }
+  /**
+   * Return the string form of the specified object, or an empty string if the specified
+   * object is null.
+   *
+   * @param in
+   * @return
+   */
+  private String s(Object in) {
+    return in != null ? in.toString() : "";
+  }
 
   @Data
   public static class ProposalInfo {
-      private Long proposalNbr;
-      private String loanType;
+    private Long proposalNbr;
+    private String loanType;
   }
 
-  public List<ProposalInfo> getProposalNumbers(Long projectId) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
+  public List<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.ProposalInfo> getProposalNumbers(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
 
-      List<ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, ProposalInfo.class);
-      return results;
+    List<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.ProposalInfo.class);
+    return results;
   }
 
 }

@@ -5,6 +5,7 @@ import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.flow.enums.State;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -25,12 +26,12 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SunlightService {
-  @Autowired
-  private SqlCache sqlCache;
 
-  @Autowired
-  private LoanPalService loanPalService;
+  private final SqlCache sqlCache;
+
+  private final GoodleapService goodleapService;
 
   @Value(value = "${sunlight.api.token}")
   private String basicToken;
@@ -200,7 +201,7 @@ public class SunlightService {
     JSONObject returnApplication = new JSONObject();
     returnApplication.put("type", "Sunlight");
     String creditStatus = getCreditStatus(projectId);
-    returnApplication.put("status", loanPalService.getLoanStatusForMobile(creditStatus));
+    returnApplication.put("status", goodleapService.getNormalizedStatus(creditStatus));
     returnApplication.put("message", creditStatus);
     returnApplication.put("loanStatus", new JSONObject());
     return returnApplication;
