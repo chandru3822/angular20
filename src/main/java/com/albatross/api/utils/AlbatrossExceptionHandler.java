@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,7 +21,12 @@ import java.io.IOException;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
 
-  final private SecurityService securityService;
+  private final SecurityService securityService;
+
+  @ExceptionHandler(value = ClientAbortException.class)
+  protected void handleClientAbortException() {
+    // client was impatient or cancelled a request and we don't currently care about it
+  }
 
   @ExceptionHandler(value = MultipartException.class)
   protected void multiExHandler(MultipartException e, WebRequest request) {
@@ -47,12 +53,16 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
     User user = securityService.getCurrentUser();
     if (user != null) {
       info += ", userId=" + user.getId();
-      info += ", companyId=" + user.getCompanyId() ;
+      info += ", companyId=" + user.getCompanyId();
     }
 
     info += ", attachmentTypeId=" + request.getParameter("attachmentTypeId");
     try {
-      info += ", fileName=" + ((StandardMultipartHttpServletRequest) ((ServletWebRequest) request).getRequest()).getFile("file").getOriginalFilename();
+      info +=
+          ", fileName="
+              + ((StandardMultipartHttpServletRequest) ((ServletWebRequest) request).getRequest())
+                  .getFile("file")
+                  .getOriginalFilename();
     } catch (Exception e) {
       // noop
     }

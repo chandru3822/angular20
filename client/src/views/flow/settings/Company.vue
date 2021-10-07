@@ -33,6 +33,7 @@
                         :step="1"
                         :key="damnKeyThing"
                         type="number"
+                        class="minute-increment-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Minute Increment">
@@ -174,7 +175,6 @@ export default {
   },
   methods: {
     forceInteger() {
-      console.log('randaLogger',this.company.minuteIncrement)
       if(this.company.minuteIncrement % 1 !== 0) {
         this.company.minuteIncrement = Math.floor(this.company.minuteIncrement);
         this.damnKeyThing++
@@ -323,5 +323,9 @@ export default {
 
 .company-logo-background {
   background-color: #bbbbbb;
+}
+
+.minute-increment-field {
+  width: 200px;
 }
 </style>
