@@ -19,6 +19,7 @@ import java.util.function.ObjLongConsumer;
 
 @Slf4j
 @Component
+@Deprecated
 public class LocationUtils {
 
   @Value(value = "${mapbox.token}")

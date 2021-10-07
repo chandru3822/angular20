@@ -8,7 +8,6 @@ import com.mapbox.geojson.FeatureCollection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
+import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class MapboxApiService {
 
   @Value(value = "${mapbox.token}")
@@ -33,7 +32,12 @@ public class MapboxApiService {
   public List<Double> getLatLong(String address) throws Exception {
     try {
       String urlEncodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
-      String url = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + urlEncodedAddress + ".json?access_token=" + MAPBOX_ACCESS_TOKEN;
+      String url =
+          "https://api.mapbox.com/geocoding/v5/mapbox.places/"
+              + urlEncodedAddress
+              + ".json?access_token="
+              + MAPBOX_ACCESS_TOKEN;
+      log.debug("MAPBOX: Geocoding API Request: {}", url);
       HttpResponse resp = HttpUtils.call("GET", url);
       if (resp.getResponseCode() != 200) {
         log.error("MAPBOX: Error response code {}", resp.getResponseCode());
@@ -44,10 +48,13 @@ public class MapboxApiService {
       GeocodingResponse formattedData = GeocodingResponse.fromJson(data.toString());
 
       List<Double> coordinates = new ArrayList<>();
-      if(formattedData.features().size() > 0 && null != formattedData.features().get(0) && null != formattedData.features().get(0).center()) {
-         coordinates = Objects.requireNonNull(formattedData.features().get(0).center()).coordinates();
+      if (formattedData.features().size() > 0
+          && null != formattedData.features().get(0)
+          && null != formattedData.features().get(0).center()) {
+        coordinates =
+            Objects.requireNonNull(formattedData.features().get(0).center()).coordinates();
       }
-      //remember that these are reversed as long,lat
+      // remember that these are reversed as long,lat
       return coordinates;
 
     } catch (Exception ex) {
@@ -58,7 +65,16 @@ public class MapboxApiService {
 
   public String getTimezone(Double latitude, Double longitude) throws Exception {
     try {
-      String url = "https://api.mapbox.com/v4/" + MAPBOX_TILESET_ID + "/tilequery/" + longitude + "," + latitude + ".json?radius=25&limit=5&dedupe&access_token=" + MAPBOX_ACCESS_TOKEN;
+      String url =
+          "https://api.mapbox.com/v4/"
+              + MAPBOX_TILESET_ID
+              + "/tilequery/"
+              + longitude
+              + ","
+              + latitude
+              + ".json?radius=25&limit=5&dedupe&access_token="
+              + MAPBOX_ACCESS_TOKEN;
+      log.debug("MAPBOX: Tilequery API Request: {}", url);
       HttpResponse resp = HttpUtils.call("GET", url);
       if (resp.getResponseCode() != 200) {
         throw new Exception(resp.getBody());
@@ -67,9 +83,12 @@ public class MapboxApiService {
 
       FeatureCollection formattedData = FeatureCollection.fromJson(data.toString());
       String timezone = null;
-      if(null != formattedData && null != formattedData.features() && formattedData.features().size() > 0 && null != formattedData.features().get(0)) {
+      if (null != formattedData
+          && null != formattedData.features()
+          && formattedData.features().size() > 0
+          && null != formattedData.features().get(0)) {
         Feature firstFeature = formattedData.features().get(0);
-        if(null != firstFeature.properties() && null != firstFeature.properties().get("tzid")) {
+        if (null != firstFeature.properties() && null != firstFeature.properties().get("tzid")) {
           timezone = firstFeature.properties().get("tzid").getAsString();
         }
       }
@@ -81,4 +100,18 @@ public class MapboxApiService {
     }
   }
 
+  public Optional<MapboxGeoResponse> getLatLongAndTimezone(String address) throws Exception {
+    final List<Double> latLong = getLatLong(address);
+    if (latLong != null && latLong.size() == 2) {
+      final Double lng = latLong.get(0);
+      final Double lat = latLong.get(1);
+
+      String timezone = null;
+      if (lat != null && lng != null) {
+        timezone = getTimezone(lat, lng);
+      }
+      return Optional.of(new MapboxGeoResponse(lng, lat, timezone));
+    }
+    return Optional.empty();
+  }
 }
