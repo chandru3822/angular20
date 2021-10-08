@@ -207,8 +207,8 @@ public class SMSService {
 
         jdbcTemplate.update(queueUpdate, params);
 
-        log.info(
-            "TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
+        //turning off this log for now.  the cron logs get long because of this one
+//        log.info("TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
       } catch (ApiException e) {
 
         Map<String, Object> params = new HashMap<>();

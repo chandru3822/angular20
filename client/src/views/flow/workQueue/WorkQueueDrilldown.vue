@@ -353,7 +353,7 @@
               return new Date(a) - new Date(b)
             },
             show: true })
-          this.headers.push({ text: 'Note Content', value: 'firstNoteContent', sortable: false, show: true, width: 250 })
+          this.headers.push({ text: 'Note Content', value: 'firstNoteContent', sortable: true, show: true, width: 250 })
 
           //check for a cached search and filter results accordingly
           if(this.cachedFilters[this.workQueueTypeId]) {

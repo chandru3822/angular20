@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProjectService;
-import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,17 +22,6 @@ import java.util.Optional;
 public class ProjectController {
 
   private final ProjectService projectService;
-  private final MapboxApiService mapboxApiService;
-
-  @GetMapping(value="/randa", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Double> randaTest() throws Exception {
-    return mapboxApiService.getLatLong("jkalsdjfklj");
-  }
-
-  @GetMapping(value="/randaTz", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String randaTestTz() throws Exception {
-    return mapboxApiService.getTimezone(40.721223, -111.877075);
-  }
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Project>> getProjectsForProcess(@PathVariable Long processId) {
