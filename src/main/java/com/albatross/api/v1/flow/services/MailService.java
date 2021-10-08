@@ -1,12 +1,13 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.activation.DataHandler;
@@ -16,103 +17,199 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class MailService {
 
-    private final PropertiesConfiguration propConfig;
+  private final PropertiesConfiguration propConfig;
+  private final SqlCache sqlCache;
+  private final ThreadPoolTaskExecutor taskExecutor;
 
-    @Autowired
-    public MailService(PropertiesConfiguration propConfig) {
-        this.propConfig = propConfig;
+  public void sendMessage(
+      String to,
+      String subject,
+      String message,
+      String sentByEmail,
+      String sentByName,
+      Long sentByUserId) {
+    sendMessage(to, subject, message, null, sentByEmail, sentByName, sentByUserId);
+  }
+
+  public void sendMessage(
+      String to,
+      String subject,
+      String message,
+      Map<String, DataSource> attachments,
+      String sentByEmail,
+      String sentByName,
+      Long sentByUserId) {
+
+    Session session = getSession();
+
+    if (null == sentByEmail) {
+      sentByEmail = "support@blueravensolar.com";
     }
 
-    @Autowired
-    SecurityService securityService;
+    try {
 
-    @Autowired
-    SqlCache sqlCache;
+      Message msg = new MimeMessage(session);
+      InternetAddress salesOperationsEmail = new InternetAddress(sentByEmail, sentByName);
 
-    public void sendMessage(String to, String subject, String message, String sentByEmail, String sentByName, Long sentByUserId) {
-        sendMessage(to, subject, message, null, sentByEmail, sentByName, sentByUserId);
+      msg.setFrom(salesOperationsEmail);
+      msg.setReplyTo(new Address[] {salesOperationsEmail});
+      msg.addRecipient(
+          Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(to)));
+
+      msg.setSubject(subject);
+
+      Multipart multiPart = new MimeMultipart();
+      MimeBodyPart bodyPart = new MimeBodyPart();
+      bodyPart.setContent(message, "text/html; charset=utf-8");
+      multiPart.addBodyPart(bodyPart);
+      ArrayList<String> attachmentNames = new ArrayList<>();
+      if (attachments != null && attachments.size() > 0) {
+
+        for (String attachmentName : attachments.keySet()) {
+
+          DataSource attachment = attachments.get(attachmentName);
+
+          MimeBodyPart attachmentPart = new MimeBodyPart();
+          attachmentPart.setDataHandler(new DataHandler(attachment));
+          attachmentPart.setFileName(attachmentName);
+          multiPart.addBodyPart(attachmentPart);
+          attachmentNames.add(attachmentName);
+        }
+      }
+      msg.setContent(multiPart);
+      Transport.send(msg);
+
+      insertEmail(sentByEmail, to, subject, message, attachmentNames, sentByUserId);
+      log.debug("EMAIL: MESSAGE SENT");
+    } catch (Exception e) {
+      log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
     }
+  }
 
-    public void sendMessage(String to, String subject, String message, Map<String, DataSource> attachments, String sentByEmail, String sentByName, Long sentByUserId) {
-        // log.info("Sending message to {}: {}\n{}\n\n", to, subject, message);
+  /**
+   * Attempting to process emails at a faster pace
+   * - Reuse the same session
+   * - Spin up some threads
+   * - Fire
+   * @param messages
+   * @param attachments
+   * @throws InterruptedException
+   */
+  public void sendBulkMessages(List<EmailMessage> messages, Map<String, DataSource> attachments)
+      throws InterruptedException {
 
-        // NOTE: if email is for amy or jessica then you should send in SalesOps@blueravensolar.com as the email address
-        HashMap<String, Object> params = new HashMap<>();
+    Session session = getSession();
 
-        if(null == sentByEmail){
-            sentByEmail = "support@blueravensolar.com";
-        }
+    final CountDownLatch latch = new CountDownLatch(messages.size());
 
-        Properties props = new Properties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.host", propConfig.getSmtpServer());
-        props.put("mail.smtp.port", propConfig.getSmtpPort());
-        Session session;
-        if (!StringUtils.isEmpty(propConfig.getSmtpUser()) && !StringUtils.isEmpty(propConfig.getSmtpPassword())) {
-            props.put("mail.smtp.user", propConfig.getSmtpUser());
-            props.put("mail.smtp.auth", "true");
-            session = Session.getInstance(props, new SMTPAuthenticator(propConfig.getSmtpUser(),
-                    propConfig.getSmtpPassword()));
-        } else {
-            session = Session.getDefaultInstance(props, null);
-        }
+    for (EmailMessage message : messages) {
+      taskExecutor.submit(
+          () -> {
+            try (final Transport transport = session.getTransport("smtp")) {
+              transport.connect();
 
-        try {
+              final MimeMessage mimeMessage = new MimeMessage(session);
 
-            // TODO: 4/10/17 move to props file
-            Message msg = new MimeMessage(session);
-            InternetAddress salesOperationsEmail = new InternetAddress(sentByEmail, sentByName);
+              String from = message.from();
+              if (null == from) {
+                from = "support@blueravensolar.com";
+              }
 
-            msg.setFrom(salesOperationsEmail);
-            msg.setReplyTo(new Address[]{salesOperationsEmail});
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(to)));
+              final InternetAddress fromAddress =
+                  new InternetAddress(StringUtils.trimWhitespace(from), message.fromDisplayName());
+              mimeMessage.setFrom(fromAddress);
+              mimeMessage.setReplyTo(new Address[] {fromAddress});
+              mimeMessage.addRecipient(
+                  Message.RecipientType.TO,
+                  new InternetAddress(StringUtils.trimWhitespace(message.to())));
 
-            msg.setSubject(subject);
+              mimeMessage.setSubject(message.subject());
 
-            Multipart multiPart = new MimeMultipart();
+              MimeBodyPart bodyPart = new MimeBodyPart();
+              bodyPart.setContent(message.content(), "text/html; charset=utf-8");
 
-            MimeBodyPart bodyPart = new MimeBodyPart();
-            bodyPart.setContent(message, "text/html; charset=utf-8");
-            multiPart.addBodyPart(bodyPart);
-            ArrayList<String> attachmentNames = new ArrayList<>();
-            if (attachments != null && attachments.size() > 0) {
-
+              Multipart multiPart = new MimeMultipart();
+              multiPart.addBodyPart(bodyPart);
+              ArrayList<String> attachmentNames = new ArrayList<>();
+              if (attachments != null && attachments.size() > 0) {
                 for (String attachmentName : attachments.keySet()) {
+                  DataSource attachment = attachments.get(attachmentName);
 
-                    DataSource attachment = attachments.get(attachmentName);
-
-                    MimeBodyPart attachmentPart = new MimeBodyPart();
-                    attachmentPart.setDataHandler(new DataHandler(attachment));
-                    attachmentPart.setFileName(attachmentName);
-                    multiPart.addBodyPart(attachmentPart);
-                    attachmentNames.add(attachmentName);
+                  MimeBodyPart attachmentPart = new MimeBodyPart();
+                  attachmentPart.setDataHandler(new DataHandler(attachment));
+                  attachmentPart.setFileName(attachmentName);
+                  multiPart.addBodyPart(attachmentPart);
+                  attachmentNames.add(attachmentName);
                 }
+              }
+              mimeMessage.setContent(multiPart);
+              mimeMessage.saveChanges();
+              log.debug("EMAIL: Sending email to {}", message.to());
+              transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+
+              insertEmail(
+                  from,
+                  message.to(),
+                  message.subject(),
+                  message.content(),
+                  attachmentNames,
+                  message.sentByUserId());
+
+              latch.countDown();
+
+            } catch (Exception e) {
+              e.printStackTrace();
             }
-
-            msg.setContent(multiPart);
-
-            Transport.send(msg);
-
-            log.info("EMAIL: MESSAGE SENT");
-
-            params.put("from", sentByEmail);
-            params.put("to", to);
-            params.put("subject", subject);
-            params.put("message", message);
-            params.put("attachments", attachmentNames.isEmpty() ? null : attachmentNames.toString().replace("[", "").replace("]", ""));
-            params.put("userId", sentByUserId);
-            sqlCache.update("email.insert", params);
-        } catch (Exception e) {
-            log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
-        }
+          });
     }
+
+    latch.await();
+  }
+
+  private Session getSession() {
+    Properties props = new Properties();
+    props.put("mail.transport.protocol", "smtp");
+    props.put("mail.smtp.host", propConfig.getSmtpServer());
+    props.put("mail.smtp.port", propConfig.getSmtpPort());
+
+    Session session;
+    if (!ObjectUtils.isEmpty(propConfig.getSmtpUser())
+        && !ObjectUtils.isEmpty(propConfig.getSmtpPassword())) {
+      props.put("mail.smtp.user", propConfig.getSmtpUser());
+      props.put("mail.smtp.auth", "true");
+      session =
+          Session.getInstance(
+              props, new SMTPAuthenticator(propConfig.getSmtpUser(), propConfig.getSmtpPassword()));
+    } else {
+      session = Session.getDefaultInstance(props, null);
+    }
+    return session;
+  }
+
+  private void insertEmail(
+      String from,
+      String to,
+      String subject,
+      String message,
+      List<String> attachments,
+      Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("from", from);
+    params.put("to", to);
+    params.put("subject", subject);
+    params.put("message", message);
+    params.put(
+        "attachments",
+        attachments.isEmpty() ? null : attachments.toString().replace("[", "").replace("]", ""));
+    params.put("userId", userId);
+    sqlCache.update("email.insert", params);
+  }
 }
