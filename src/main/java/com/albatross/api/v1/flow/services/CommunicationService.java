@@ -166,13 +166,13 @@ public class CommunicationService {
 
       log.info("EMAIL: Starting to send out emails. Expected count={}", emailMessages.size());
 
-      mailService.sendBulkMessages(emailMessages, emailAttachments);
+      final int sentMessages = mailService.sendBulkMessages(emailMessages, emailAttachments);
 
       final Instant endTime = Instant.now();
       log.info(
           "EMAIL: Elapsed time={}, Total emails={}",
           Duration.between(startTime, endTime),
-          emailMessages.size());
+          sentMessages);
     } finally {
       for (File tempFile : attachments.values()) {
         log.debug("EMAIL: Deleting Temp File {}", tempFile.getAbsolutePath());
