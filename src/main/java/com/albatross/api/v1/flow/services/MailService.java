@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -19,6 +20,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -26,8 +28,8 @@ import java.util.concurrent.CountDownLatch;
 public class MailService {
 
   private final PropertiesConfiguration propConfig;
-  private final SqlCache sqlCache;
   private final ThreadPoolTaskExecutor taskExecutor;
+  private final SqlCache sqlCache;
 
   public void sendMessage(
       String to,
@@ -102,15 +104,20 @@ public class MailService {
    * @param messages
    * @param attachments
    * @throws InterruptedException
+   * @return
    */
-  public void sendBulkMessages(List<EmailMessage> messages, Map<String, DataSource> attachments)
+  public int sendBulkMessages(List<EmailMessage> messages, Map<String, DataSource> attachments)
       throws InterruptedException {
 
     Session session = getSession();
 
+    final AtomicInteger counter = new AtomicInteger(0);
+    final RateLimiter rateLimiter = RateLimiter.create(propConfig.getSmtpRateLimit());
     final CountDownLatch latch = new CountDownLatch(messages.size());
 
     for (EmailMessage message : messages) {
+      rateLimiter.acquire();
+
       taskExecutor.submit(
           () -> {
             try (final Transport transport = session.getTransport("smtp")) {
@@ -163,15 +170,22 @@ public class MailService {
                   attachmentNames,
                   message.sentByUserId());
 
-              latch.countDown();
+              // count the number of successful emails sent
+              counter.getAndIncrement();
 
             } catch (Exception e) {
-              e.printStackTrace();
+              log.error("EMAIL: {}", e.getMessage());
+            } finally {
+              latch.countDown();
             }
           });
     }
 
+    // wait for everything to complete
     latch.await();
+
+    // return the number of emails actually sent
+    return counter.get();
   }
 
   private Session getSession() {
