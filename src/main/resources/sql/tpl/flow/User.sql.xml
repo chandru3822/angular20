@@ -202,6 +202,61 @@
         and uc.archived is not true
   ]]></user.getOne>
 
+  <user.getByIds><![CDATA[
+      select u.id,
+       u.phone_number,
+       u.phone_extension,
+       u.email,
+       u.notification_type_id,
+       u.username,
+       u.created_by_id,
+       u.first_name,
+       u.last_name,
+       u.login_attempts,
+       ( select p.position
+        from flow.user_position up
+        inner join flow.position p on p.id = up.position_id and p.company_id = uc.company_id
+         where up.user_id = u.id
+           and up.primary_flag is true
+           and up.archived is not true
+           limit 1
+         ) as primary_position,
+       concat(u.first_name, ' ', u.last_name) AS full_name,
+       uc.company_id,
+       u.modified_by_id,
+       u.date_modified,
+       u.default_company_id,
+       ust.user_status_type,
+       uc.home_page_company_feature_id,
+       f.feature_path as home_page_path,
+       ust.id as user_status_type_id,
+       ust.has_access,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(companies)))
+                    FROM (
+                             select c.id,
+                                    c.company_name as "companyName",
+                                    c.parent_company_id as "parentCompanyId",
+                                    c.aws_bucket as "awsBucket",
+                                    c.abbreviation
+                             from flow.user_company uc
+                                      inner join flow.company c on c.id = uc.company_id
+                             where uc.user_id = u.id
+                               and uc.archived is not true
+                               and c.archived is not true
+                             order by c.company_name
+                         ) companies), '[]') as companies
+      from flow."user" u
+               inner join flow.user_company uc on uc.user_id = u.id
+               inner join flow.company_user_status cus on cus.user_id = u.id
+               inner join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
+               left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
+               left join flow.feature f on f.id = cf.feature_id
+      where u.id in (:ids)
+        and uc.company_id = :companyId
+        and uc.archived is not true
+  ]]></user.getByIds>
+
   <user.getAllActiveUsers><![CDATA[
          select distinct upv.user_id::integer as id,
                        concat(upv.first_name,' ',upv.last_name::text) as full_name

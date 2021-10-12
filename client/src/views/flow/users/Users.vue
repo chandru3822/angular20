@@ -451,6 +451,8 @@
   import {quillEditor} from 'vue-quill-editor'
   import { saveAs } from 'file-saver'
 
+  const defaultEmailMessage = '${user.firstName},\n'
+
   export default {
     name: 'Users',
     components: {QuillEditor: quillEditor},
@@ -520,7 +522,7 @@
         fromEmail: '',
         fromEmails: [],
         emailSubject: '',
-        emailMessage: '${user.firstName},\n',
+        emailMessage: defaultEmailMessage,
         textMessage: '',
         emailCharacterCount: 0,
         emailWordCount: 0,
@@ -851,56 +853,64 @@
       async sendMessage(sendEmail, sendText) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              let userIds;
-              // if (this.selectAllUsers) {
-              //   userIds = this.allUsers.map(u => u.id);
-              // }
-              // else {
-              //   userIds = this.selectedUsers;
-              // }
-            //BR is aware that this will not allow them to truly select all users or to select more than 1000 records at a time
-                userIds = this.selectedUsers;
-
-              let params;
-
+              //BR is aware that this will not allow them to truly select all users or to select more than 1000 records at a time
+              const userIds = this.selectedUsers;
+              const requests = []
               if (sendEmail) {
-                  let formData = new FormData()
+                const sendEmailFn = (async ()=> {
+                  const formData = new FormData()
                   formData.append('subject', this.emailSubject);
                   formData.append('from', this.fromEmail);
                   formData.append('userIds', userIds);
                   formData.append('template', this.emailMessage);
 
                   this.emailAttachments.forEach(e => {
-                      formData.append('attachments', e);
+                    formData.append('attachments', e);
                   });
 
-                  await postRequest(`/communication/sendEmails`, formData)
+                  return postRequest(`/communication/sendEmails`, formData)
+                })()
+                requests.push(sendEmailFn)
               }
 
               if (sendText) {
-                  params = {
-                      userIDs: userIds,
-                      message: this.textMessage,
-                      mediaURLs: this.textMediaUrls
-                  }
-                  await postRequest(`/communication/sendTexts`, params)
+                  const sendTextFn = postRequest(`/communication/sendTexts`, {
+                    userIDs: userIds,
+                    message: this.textMessage,
+                    mediaURLs: this.textMediaUrls
+                  })
+                requests.push(sendTextFn)
               }
-              this.snackbar = getSnackbar('SUCCESS', 'Message sent')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              await Promise.all(requests)
+
+              let msg = 'Message sent'
+              if (sendEmail && sendText){
+                msg = 'Both Email and Text messages were sent successfully'
+              } else if (sendEmail) {
+                  msg = 'Email messages were sent successfully'
+              }else{
+                msg = 'Text messages were sent successfully'
+              }
+
+              this.snackbar = getSnackbar('SUCCESS', msg)
+
+              this.msgDialog = false
+              this.emailSubject= ''
+              this.emailMessage= defaultEmailMessage
+              this.fromEmail = ''
+              this.textMessage= ''
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }  catch (e) {
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error sending message')
+              this.snackbar = getSnackbar('ERROR', 'Error sending content')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          return;
       },
       onEmailMessageChange({ quill, html, text }) {
           this.emailCharacterCount = text.trim().length;
-          this.emailWordCount = text.trim().split(' ').filter(function (x) {
-              return x
-          }).length;
+          this.emailWordCount = text.trim().split(' ').length;
       },
       uploadEmailAttachment: function (files) {
         this.emailAttachments = files
