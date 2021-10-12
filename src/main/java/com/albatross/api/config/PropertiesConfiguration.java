@@ -43,7 +43,7 @@ public class PropertiesConfiguration {
   /*
    Number of emails to send out per second
   */
-  @Value("${smtp.rateLimit}")
+  @Value("${app.smtp.rateLimit:300}")
   Integer smtpRateLimit;
 
   @Value("${twilio.phoneNumber:}")
