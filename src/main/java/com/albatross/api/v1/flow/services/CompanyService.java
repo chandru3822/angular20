@@ -71,6 +71,7 @@ public class CompanyService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("companyName", company.getCompanyName());
     params.put("defaultPassword", company.getDefaultPassword());
+    params.put("minuteIncrement", company.getMinuteIncrement());
     sqlCache.update("company.updateCompany", params);
     return getCompany(company.getId());
   }

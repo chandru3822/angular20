@@ -12,7 +12,8 @@ import java.util.UUID;
 @Setter
 public class User {
 
-    private Long id, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId,
+    //probably should have had the company specific stuff in a company request instead of the user request.
+    private Long id, companyId, minuteIncrement, parentCompanyId, highestParentCompanyId, highestCompanyId,
       defaultAppointmentLength, homePageCompanyFeatureId, masqueradingUserId;
     private int loginAttempts;
     //not sure if i should put this here.  there are times when i need a unique list of users so i can coalesce their positions. but other times i need lists of all users so 1 user can show up multiple times with different positions
