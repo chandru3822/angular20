@@ -184,6 +184,7 @@ public class AvailabilityService {
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
     params.put("createdById", user.trueUserId());
+    params.put("daylightSavings", rsa.getDaylightSavings());
 
     Long rsaId = null;
     //if existing and archived, or existing and they send in null start and end time
