@@ -10,49 +10,54 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PropertiesConfiguration {
 
-    @Value("${application.name}")
-    String applicationName;
+  @Value("${application.name}")
+  String applicationName;
 
-    @Value("${application.description}")
-    String applicationDescription;
+  @Value("${application.description}")
+  String applicationDescription;
 
-    @Value("${spring.datasource.url}")
-    String databaseURL;
+  @Value("${spring.datasource.url}")
+  String databaseURL;
 
-    @Value("${spring.datasource.readonly.url}")
-    String databaseReadonlyURL;
+  @Value("${spring.datasource.readonly.url}")
+  String databaseReadonlyURL;
 
-    @Value("${spring.datasource.username}")
-    String databaseUsername;
+  @Value("${spring.datasource.username}")
+  String databaseUsername;
 
-    @Value("${spring.datasource.password}")
-    String databasePassword;
+  @Value("${spring.datasource.password}")
+  String databasePassword;
 
-    @Value("${smtp.server}")
-    String smtpServer;
+  @Value("${smtp.server}")
+  String smtpServer;
 
-    @Value("${smtp.port}")
-    String smtpPort;
+  @Value("${smtp.port}")
+  String smtpPort;
 
-    @Value("${smtp.user}")
-    String smtpUser;
+  @Value("${smtp.user}")
+  String smtpUser;
 
-    @Value("${smtp.password}")
-    String smtpPassword;
+  @Value("${smtp.password}")
+  String smtpPassword;
 
-    @Value("${twilio.phoneNumber:}")
-    String twilioPhoneNumber;
+  /*
+   Number of emails to send out per second
+  */
+  @Value("${smtp.rateLimit:300}")
+  Integer smtpRateLimit;
 
-    @Value("${twilio.accountSID}")
-    String twilioAccountSID;
+  @Value("${twilio.phoneNumber:}")
+  String twilioPhoneNumber;
 
-    @Value("${twilio.authToken}")
-    String twilioAuthToken;
+  @Value("${twilio.accountSID}")
+  String twilioAccountSID;
 
-    @Value("${twilio.messageServiceSID:}")
-    String twilioMessageServiceSID;
+  @Value("${twilio.authToken}")
+  String twilioAuthToken;
 
-    @Value("${twilio.customersMessageServiceSID:}")
-    String twilioCustomersMessageServiceSID;
+  @Value("${twilio.messageServiceSID:}")
+  String twilioMessageServiceSID;
 
+  @Value("${twilio.customersMessageServiceSID:}")
+  String twilioCustomersMessageServiceSID;
 }

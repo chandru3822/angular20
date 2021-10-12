@@ -196,7 +196,7 @@
                               v-model="needsApprovalRequest.notes">
                   </v-textarea>
                   <v-btn color="primaryCustom"
-                         @click="setRequestStatusWithNotes(needsApprovalRequest, 1)"
+                         @click="setRequestStatusWithNotes(needsApprovalRequest, 3)"
                          class="white--text">Approve</v-btn>
                   <v-btn color="red"
                          @click="setRequestStatusWithNotes(needsApprovalRequest, 2)"

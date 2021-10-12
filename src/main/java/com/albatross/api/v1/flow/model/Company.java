@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Company {
 
-  private Long id, parentCompanyId;
+  private Long id, parentCompanyId, minuteIncrement;
   private String companyName, awsBucket, abbreviation, logoPresignedUrl, defaultPassword;
 }

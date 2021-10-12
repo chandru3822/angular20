@@ -116,7 +116,7 @@ public class VerseWebhookService {
       params.put("listOfValueId", listOfValueId);
       params.put("customFieldDropdownValue", customFieldDropdownValue);
 
-      Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("ricochetWebhook.checkIfCustomFieldDropdownValueExists", params, String.class);
+      Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
       return customFieldDropdownValueId.orElse("null");
   }
 }
