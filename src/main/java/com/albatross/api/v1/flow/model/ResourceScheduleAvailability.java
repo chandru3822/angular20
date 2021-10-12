@@ -14,5 +14,5 @@ public class ResourceScheduleAvailability {
   private Long id, resourceScheduleId, resourceSlotScheduleId, dayOfWeekId;
   private String startTime, endTime, dayOfWeek;
   private List<Long> excludedResourceSlotTimeIds;
-  private Boolean archived, useSlotSchedule;
+  private Boolean archived, useSlotSchedule, daylightSavings;
 }
