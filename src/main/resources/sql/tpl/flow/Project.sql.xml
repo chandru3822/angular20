@@ -359,25 +359,25 @@
 
   <project.update>
     update flow.project set
-      project_name = :projectName,
-      street1 = :street1,
-      city = :city,
-      company_state_id = :companyStateId,
-      company_country_id = :companyCountryId,
-      postal_code = :postalCode,
-      modified_by_id = :modifiedById,
-      date_modified = now(),
-      latitude = :latitude,
-      longitude = :longitude,
-      time_zone = :timezone
+    project_name = :projectName,
+    street1 = :street1,
+    city = :city,
+    company_state_id = :companyStateId,
+    company_country_id = :companyCountryId,
+    postal_code = :postalCode,
+    modified_by_id = :modifiedById,
+    date_modified = now(),
+    latitude = :latitude,
+    longitude = :longitude,
+    time_zone = :timezone
     where id = :id
   </project.update>
 
   <project.delete>
     update flow.project set
-      archived = true,
-      modified_by_id = :modifiedById,
-      date_modified = now()
+    archived = true,
+    modified_by_id = :modifiedById,
+    date_modified = now()
     where id = :projectId
   </project.delete>
 
@@ -505,7 +505,7 @@
       and archived is not true
   ]]></project.getDefaultProjectStatusTypeByCompanyId>
 
-<project.getCompanyStatuses><![CDATA[
+  <project.getCompanyStatuses><![CDATA[
     select
         cpst.id,
         cpst.project_status_type,
@@ -579,26 +579,21 @@
     values (:rootProjectStatusTypeId, :projectStatusType, :companyId, :currentUserId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true))
 ]]></project.insertCompanyStatus>
 
-<project.updateStatus><![CDATA[
+  <project.updateStatus><![CDATA[
     update flow.project
     set company_project_status_type_id = :companyProjectStatusTypeId
     where id = :projectId
 ]]></project.updateStatus>
 
   <project.updateGeoLocation><![CDATA[
-    update flow.project set
-           latitude = :latitude,
-           longitude = :longitude
+    update flow.project
+      set latitude = :latitude,
+          longitude = :longitude,
+          time_zone = :timeZone
     where id = :id
   ]]></project.updateGeoLocation>
 
-  <project.updateTimeZone><![CDATA[
-    update flow.project set
-           time_zone = :timeZone
-    where id = :id
-  ]]></project.updateTimeZone>
-
-<project.updateNameByContactId><![CDATA[
+  <project.updateNameByContactId><![CDATA[
 update flow.project
 set project_name = :name,
     modified_by_id = :userId,
@@ -606,7 +601,7 @@ set project_name = :name,
 where contact_id = :contactId
 ]]></project.updateNameByContactId>
 
-<project.getNoGeoCoords><![CDATA[
+  <project.getNoGeoCoords><![CDATA[
 select p.id
 from flow.project p
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -615,5 +610,6 @@ where p.latitude is null and
       cpst.project_status_type_id = 1 and
       p.company_process_id = 1
 order by p.id desc
+limit 10
 ]]></project.getNoGeoCoords>
 </sql>

@@ -197,7 +197,7 @@
                 u.first_name || ' ' || u.last_name as full_name
             from flow.user_positions_vw u
                    INNER JOIN brs.expense_budget eb on eb.user_id = u.user_id
-            where position_id in (3,6,10,227,237,238,226,219,73) and u.archived is false
+            where u.archived is false
               and u.start_date < now()
               and (u.end_date is null or u.end_date > now())
               and eb.archived is not true

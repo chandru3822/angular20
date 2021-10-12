@@ -176,12 +176,12 @@ public class NoteService {
           context.put("noteContents", note.getNote());
           String emailSubject = currentUser.getFirstName() + " " + currentUser.getLastName() +
             " mentioned you in a note on " + noteRefName;
-          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@albatross.myblueraven.com", "Albatross");
+          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@albatross.myblueraven.com", "Albatross", currentUser.trueUserId());
         }
         else {
           String groupId = UUID.randomUUID().toString();
           String textMessage = "You were mentioned in an Albatross note. Click here: " + link + " to open the " + locationOfNote + ".";
-          communicationService.queueTextMessages(groupId, Optional.of(mentionedUser), textMessage, null);
+          communicationService.queueTextMessages(groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
         }
       } catch (IOException e) {
         log.error("NOTE: Error sending user mention email {}", e.getMessage());

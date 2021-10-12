@@ -3,7 +3,6 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
-import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
@@ -20,12 +19,9 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.Point;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -45,16 +41,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.ObjLongConsumer;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
+@RequiredArgsConstructor
 public class ProjectService {
 
   private final SqlCache sqlCache;
-
-  private final LocationUtils locationUtils;
 
   private final SecurityService securityService;
 
@@ -78,20 +71,24 @@ public class ProjectService {
 
     List<Long> ids = sqlCache.query("project.getNoGeoCoords", null, new SingleColumnRowMapper<>(Long.class));
 
-    ids.forEach(projectId -> {
-      Optional<Project> project = this.getProject(projectId);
-      project.ifPresent(p -> {
-        try {
-          // Spreading out the http calls so we don't potentially overload the cron. I know it's not
-          // thread safe, but this is just a temporary band aid... ¯\_(ツ)_/¯
-          TimeUnit.MILLISECONDS.sleep(500);
-          getProjectCoordinates(p, p.getId());
-        } catch (InterruptedException ie) {
-          log.info("PROJ: Thread interruption during sleep");
-          Thread.currentThread().interrupt();
-        }
-      });
-    });
+    ids.forEach(
+        projectId -> {
+          Optional<Project> project = this.getProject(projectId);
+          project.ifPresent(
+              p -> {
+                try {
+                  // Spreading out the http calls so we don't potentially overload the cron. I know it's not
+                  // thread safe, but this is just a temporary band aid... ¯\_(ツ)_/¯
+                  TimeUnit.MILLISECONDS.sleep(500);
+                  getProjectCoordinates(p, p.getId());
+                } catch (InterruptedException ie) {
+                  log.info("PROJ: Thread interruption during sleep");
+                  Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                  log.info("PROJ: Updating Geo Lat/Lng Timezone failed");
+                }
+              });
+        });
   }
 
   public List<Project> getProjectsForProcess(Long processId) {
@@ -160,7 +157,7 @@ public class ProjectService {
     params.put("offset", pageable.getOffset());
 
     String searchSqlKey = "project.searchByOwner";
-    if(viewDownline) {
+    if (viewDownline) {
       searchSqlKey = "project.searchDownline";
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
       searchSqlKey = "project.search";
@@ -195,7 +192,7 @@ public class ProjectService {
 
     List<ProjectStatusCount> results = sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
 
-    for(ProjectStatusCount c : results) {
+    for (ProjectStatusCount c : results) {
       // set the icon for the status
       Attachment a = attachmentService.getOneBySourceIdAndType(c.getCompanyProjectStatusTypeId(), 463L);
       c.setIcon(null != a && null != a.getId() ? a : new Attachment());
@@ -204,7 +201,7 @@ public class ProjectService {
     return results;
   }
 
-  //i tried to genericize this but it is still pretty specific to only brs.
+  // i tried to genericize this but it is still pretty specific to only brs.
   public Boolean projectExistsInHierarchy(Long projectId, Long parentCompanyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
@@ -213,7 +210,7 @@ public class ProjectService {
     return proj.isPresent();
   }
 
-  //i tried to genericize this but it is still pretty specific to only brs.
+  // i tried to genericize this but it is still pretty specific to only brs.
   public Boolean projectExists(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
@@ -268,24 +265,23 @@ public class ProjectService {
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
-    //pre-populate lat/long/tz with the existing project values
+    // pre-populate lat/long/tz with the existing project values
     Double latitude = project.getLatitude();
     Double longitude = project.getLongitude();
     String timezone = project.getTimeZone();
 
-    //if the project address changed, reload the coordinates
-    if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
-      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode()));
-      //if we found new coordinates then uses those values
-      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-        //1 = lat, 0 = long
-        latitude = coordinates.get(1);
-        longitude = coordinates.get(0);
+    // if the project address changed, reload the coordinates
+    if (null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
+      final String address =
+          stringifyAddress(
+              project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode());
 
-        if(null != latitude && null != longitude) {
-          //if we have a lat/long then attempt to load the timezone
-          timezone = mapboxApiService.getTimezone(latitude, longitude);
-        }
+      final var latLongAndTimezone = mapboxApiService.getLatLongAndTimezone(address);
+      if (latLongAndTimezone.isPresent()) {
+        final var mapboxGeoResponse = latLongAndTimezone.get();
+        latitude = mapboxGeoResponse.latitude();
+        longitude = mapboxGeoResponse.longitude();
+        timezone = mapboxGeoResponse.timezone();
       } else {
         //if the address changed but we didn't find valid coordinates for the new address then set these values to null
         latitude = null;
@@ -299,7 +295,6 @@ public class ProjectService {
     params.put("timezone", timezone);
 
     sqlCache.update("project.update", params);
-
   }
 
   public void updateProjectOwner(Long projectId, Owner owner) {
@@ -316,7 +311,7 @@ public class ProjectService {
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) throws Exception {
     User user = securityService.getCurrentUser();
 
-    if(null != contactId && null != processId) {
+    if (null != contactId && null != processId) {
       // Get active company project status type so new projects can have an active status
       CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
       Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
@@ -337,9 +332,9 @@ public class ProjectService {
       params.put("latitude", contact.getLatitude());
       params.put("longitude", contact.getLongitude());
       String timezone = null;
-      if(null != contact.getLatitude() && null != contact.getLongitude()) {
-          //if we have a lat/long then attempt to load the timezone
-          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+      if (null != contact.getLatitude() && null != contact.getLongitude()) {
+        // if we have a lat/long then attempt to load the timezone
+        timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
       }
       params.put("timezone", timezone);
 
@@ -370,10 +365,22 @@ public class ProjectService {
     }
   }
 
-  public void getProjectCoordinates(Project project, Long id) {
-    //when the contact is new or the address changes, need to reload/save their lat/long from mapbox
+  public void getProjectCoordinates(Project project, Long id) throws Exception {
+    // when the contact is new or the address changes,
+    // need to reload/save their lat/long from mapbox
     String projectAddress = getProjectAddress(project);
-    locationUtils.getGeocode(projectAddress, id, new CustomGeoFunction());
+    mapboxApiService
+        .getLatLongAndTimezone(projectAddress)
+        .ifPresent(
+            res -> {
+              HashMap<String, Object> params = new HashMap<>();
+              params.put("latitude", res.latitude());
+              params.put("longitude", res.longitude());
+              params.put("timeZone", res.timezone());
+              params.put("id", id);
+
+              sqlCache.update("project.updateGeoLocation", params);
+            });
   }
 
   public String stringifyAddress(String street1, String city, String state, String postalCode) {
@@ -489,7 +496,7 @@ public class ProjectService {
     List<ProjectStatusType> results = sqlCache.query("project.getCompanyStatuses",
       ImmutableMap.of("companyId", companyId), ProjectStatusType.class);
 
-    for(ProjectStatusType c : results) {
+    for (ProjectStatusType c : results) {
       // set the icon for the status
       Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
       c.setIcon(null != a && null != a.getId() ? a : new Attachment());
@@ -502,7 +509,7 @@ public class ProjectService {
     Optional<ProjectStatusType> result = sqlCache.get("project.getOneCompanyStatus",
       ImmutableMap.of("id", id), ProjectStatusType.class);
 
-    if(result.isPresent()) {
+    if (result.isPresent()) {
       Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
       result.get().setIcon(null != a && null != a.getId() ? a : new Attachment());
     }
@@ -531,7 +538,7 @@ public class ProjectService {
     params.put("companyId", currentUser.getCompanyId());
     Long id;
 
-    if(null != status.getId()) {
+    if (null != status.getId()) {
       id = status.getId();
       params.put("id", id);
       params.put("displayOrder", status.getDisplayOrder());
@@ -540,13 +547,13 @@ public class ProjectService {
       id = sqlCache.updateReturningId("project.insertCompanyStatus", params, "id").longValue();
     }
 
-    //handle attachment
+    // handle attachment
 
     return getOneCompanyProjectStatusType(id);
   }
 
   public void saveCompanyProjectStatuses(List<ProjectStatusType> statuses) {
-    for(ProjectStatusType s : statuses) {
+    for (ProjectStatusType s : statuses) {
       saveCompanyProjectStatus(s);
     }
   }
@@ -570,7 +577,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     List<Map<String, Object>> projects = sqlCache.query("project.generateReport", Map.of("companyId", user.getCompanyId(), "query", query), new ColumnMapRowMapper());
 
-    //write CSV
+    // write CSV
     CsvSchema.Builder builder = CsvSchema.builder();
     builder.addColumn("ID", CsvSchema.ColumnType.NUMBER_OR_STRING);
     builder.addColumn("Name", CsvSchema.ColumnType.NUMBER_OR_STRING);
@@ -615,58 +622,6 @@ public class ProjectService {
       TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "ownerReadOnlyWhiteListedPositions",
         new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
-    }
-  }
-
-  private class CustomGeoFunction implements ObjLongConsumer {
-
-    @Override
-    public void accept(Object geoResult, long id) {
-      // note: the coordinates in the returned object are reversed: Long, Lat
-
-      //get the lat and long from point
-      Point point = (Point)geoResult;
-      Double latitude, longitude;
-      List<Double> coordinates = point.coordinates();
-      latitude = coordinates.get(1);
-      longitude = coordinates.get(0);
-
-      if(null != latitude && null != longitude) {
-        //if lat and long then update contact's location
-        // todo: need to save the contact's timezone here.  not seeing a way to use mapbox and i don't want to import the entire google maps suite
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("latitude", latitude);
-        params.put("longitude", longitude);
-        params.put("id", id);
-        log.info("PROJ: Trying to update geo location for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
-        sqlCache.update("project.updateGeoLocation", params);
-        locationUtils.getTimezoneByLatLong(id, longitude, latitude, new CustomTimeZoneFunction());
-      } else {
-        log.info("PROJ: Null geo location fetched for Project ID: {}, Lat: {}, Long: {}", id, latitude, longitude);
-      }
-    }
-  }
-
-  private class CustomTimeZoneFunction implements ObjLongConsumer {
-
-    @Override
-    public void accept(Object tileQueryFeature, long id) {
-      // note: the coordinates in the returned object are reversed: Long, Lat
-
-      //get the lat and long from point
-      Feature feature = (Feature)tileQueryFeature;
-
-
-      if(null != feature && null != feature.getProperty("TZID")) {
-        //if there is a timezone save it to the project also
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("timeZone", feature.getProperty("TZID").getAsString());
-        params.put("id", id);
-
-        sqlCache.update("project.updateTimeZone", params);
-      } else {
-        log.info("PROJ: Null timezone fetched for Project ID: {}", id);
-      }
     }
   }
 }

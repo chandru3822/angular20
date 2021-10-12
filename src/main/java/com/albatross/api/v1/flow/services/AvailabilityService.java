@@ -319,8 +319,8 @@ public class AvailabilityService {
 
     Long id = null;
     //lat long will be null for new or invalid addresses
-    Double latitude = ra.getLatitude();
-    Double longitude = ra.getLongitude();
+    Double latitude = null == ra.getLocation() ? null : ra.getLatitude();
+    Double longitude = null == ra.getLocation() ? null : ra.getLongitude();
 
     if (null != ra.getId()) {
       id = ra.getId();
@@ -328,7 +328,7 @@ public class AvailabilityService {
       params.put("modifiedById", user.trueUserId());
 
       //reload lat/long if location changed
-      if(null != ra.getReloadCoordinates() && ra.getReloadCoordinates()) {
+      if(null != ra.getReloadCoordinates() && ra.getReloadCoordinates() && null != ra.getLocation()) {
         List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
         //if we found new coordinates then uses those values
         if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
@@ -346,13 +346,15 @@ public class AvailabilityService {
 
       sqlCache.update("availability.updateAppointment", params);
     } else {
-      List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
-      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-        //1 = lat, 0 = long
-        latitude = coordinates.get(1);
-        longitude = coordinates.get(0);
-        ra.setLatitude(latitude);
-        ra.setLongitude(longitude);
+      if(null != ra.getLocation()) {
+        List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+          ra.setLatitude(latitude);
+          ra.setLongitude(longitude);
+        }
       }
 
       if (null == ra.getRepeat() || !ra.getRepeat()) {
@@ -614,7 +616,7 @@ public class AvailabilityService {
             context.put("from", "Blue Raven Solar Sales HR");
             context.put("projectAddress", projectAddress);
 
-            communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+            communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
           }
           //i need these back the same way we get them for normal cfgs on the frontend
           List<CustomFieldGroup> cfgs = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROCESS_STEP.textValue(), request.getProjectProcessStepId());

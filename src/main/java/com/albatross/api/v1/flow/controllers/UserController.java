@@ -166,7 +166,7 @@ public class UserController {
         context.put("from", "Blue Raven Solar Sales HR");
         context.put("mailTo", "saleshr@blueravensolar.com");
 
-        communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+        communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
         log.info("AUTH: Password reset email has been sent to {}", passwordResetRequest.getUsernameOrEmail());
       } else {
         log.info("AUTH: Password reset attempted for unknown user email {}.", passwordResetRequest.getUsernameOrEmail());

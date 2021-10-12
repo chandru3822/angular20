@@ -27,12 +27,12 @@
                       ) AS expenses), '[]') AS expenses
 FROM brs.reimbursement_request rr
        INNER JOIN flow."user" u on u.id = rr.created_by_id
-       LEFT JOIN flow.user_position up on up.user_id = u.id
+       inner JOIN flow.user_position up on up.user_id = u.id
                                    and up.archived is false
                                      and up.primary_flag is true
                       and up.start_date < now()
                       and (up.end_date is null or up.end_date > now())
-       left join flow.position p on p.id = up.position_id
+       inner join flow.position p on p.id = up.position_id and p.company_id = 3
        LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
        LEFT JOIN flow."user" ebu on ebu.id = eb.user_id
        LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
