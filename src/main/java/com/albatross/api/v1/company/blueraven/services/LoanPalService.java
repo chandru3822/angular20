@@ -4,6 +4,7 @@ import com.albatross.api.config.LoanPalConfiguration;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -23,17 +24,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class LoanPalService {
-  @Autowired
-  private LoanPalConfiguration config;
-
-  @Autowired
-  private SqlCache sqlCache;
+  private final LoanPalConfiguration config;
+  private final SqlCache sqlCache;
 
   public Boolean processProject(Long projectId) throws Exception {
-    log.info("LOANPAL: processing project {}", projectId);
+    log.debug("LOANPAL: processing project {}", projectId);
 
     try {
       JSONObject application = getApplicationByProjectId(projectId.toString());
@@ -50,10 +49,10 @@ public class LoanPalService {
       }
 
       if (creditCheck.equals("Fail")) {
-        log.info("LOANPAL: Credit Check failed forprojectId={}", projectId);
+        log.error("LOANPAL: Credit Check failed for projectId={}", projectId);
         throw new Exception("LoanPal Credit Check failed for project " + projectId.toString());
       } else {
-        log.info("LOANPAL: credit check is good for project {}", projectId);
+        log.debug("LOANPAL: credit check is good for project {}", projectId);
       }
     } catch (Exception ex) {
       throw ex;
@@ -252,7 +251,7 @@ public class LoanPalService {
 
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {
     String url = String.format("%s%s%s", config.getApiHost(), config.getUriPrefix(), uri);
-    log.info("LOANPAL: sending to loanpal url: {}", url);
+    log.debug("LOANPAL: sending to loanpal url: {}", url);
     Map<String, String> headers = new HashMap<>();
     headers.put("X-Api-Key", config.getApiKey());
     headers.put("Content-Type", "application/json");

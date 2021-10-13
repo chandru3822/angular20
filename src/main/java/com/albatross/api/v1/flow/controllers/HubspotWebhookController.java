@@ -3,83 +3,81 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.HubspotContact;
 import com.albatross.api.v1.flow.model.HubspotLead;
 import com.albatross.api.v1.flow.services.HubspotWebhookService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/webhook/hubspot")
-@Slf4j
+@RequiredArgsConstructor
 public class HubspotWebhookController {
-    @Autowired
-    private HubspotWebhookService hubspotWebhookService;
 
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    @PostMapping(value = "/contact")
-    public void saveContact(@RequestBody HubspotContact contact) throws Exception {
-        /*log.info(
-            "HUBSPOT: Received new contact information from HubSpot. " +
-                "hubspotId: {}, " +
-                "First Name: {}, " +
-                "Last Name: {}, " +
-                "Phone1: {}, " +
-                "Email: {}, " +
-                "Zip: {}",
-                contact.getVid(),
-                contact.getProperties().getFirstname().getValue(),
-                contact.getProperties().getLastname().getValue(),
-                contact.getProperties().getPhone().getValue(),
-                contact.getProperties().getEmail().getValue(),
-                contact.getProperties().getZip().getValue()
-        );*/
+  private final HubspotWebhookService hubspotWebhookService;
 
-        log.info(
-          "HUBSPOT: Received new contact information from HubSpot. {}" +
-          contact.toString()
-        );
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(value = "/contact")
+  public void saveContact(@RequestBody HubspotContact contact) throws Exception {
+    log.debug("HUBSPOT: Received new contact information from HubSpot. {}", contact);
 
-        HubspotLead lead = new HubspotLead();
-        lead.setHubspot_id(contact.getVid());
-        lead.setStatus("New");
-        lead.setLeadOwner(null);
+    HubspotLead lead = new HubspotLead();
+    lead.setHubspot_id(contact.getVid());
+    lead.setStatus("New");
+    lead.setLeadOwner(null);
 
-        if (contact.getProperties().getLead_source() != null && !contact.getProperties().getLead_source().getValue().equals("")) {
-            log.info("HUBSPOT: (Additional contact information from HubSpot) " +
-                         "lead_source: {}", contact.getProperties().getLead_source().getValue());
-            lead.setLead_source(contact.getProperties().getLead_source().getValue());
-        } else {
-            lead.setLead_source("Organic");
-        }
-
-        if (contact.getProperties().getLead_source_detail() != null && !contact.getProperties().getLead_source_detail().getValue().equals("")) {
-            log.info("HUBSPOT: (Additional contact information from HubSpot) " +
-                         "lead_source_detail: {}", contact.getProperties().getLead_source_detail().getValue());
-            lead.setLead_source_detail(contact.getProperties().getLead_source_detail().getValue());
-        } else {
-            lead.setLead_source_detail("DigitalOrganic");
-        }
-
-        HubspotLead.Customer customer = new HubspotLead.Customer();
-        customer.setFirstName(contact.getProperties().getFirstname().getValue());
-        customer.setLastName(contact.getProperties().getLastname() != null ? contact.getProperties().getLastname().getValue() : "");
-        customer.setPhone1(contact.getProperties().getPhone().getValue());
-        customer.setEmail(contact.getProperties().getEmail().getValue());
-
-        HubspotLead.Address address = new HubspotLead.Address();
-        address.setZip(contact.getProperties().getZip().getValue());
-        address.setAddress1(contact.getProperties().getAddress() != null ? contact.getProperties().getAddress().getValue() : "");
-        address.setCity(contact.getProperties().getCity() != null ? contact.getProperties().getCity().getValue() : "");
-        address.setState(contact.getProperties().getState() != null ? contact.getProperties().getState().getValue() : "");
-
-        customer.setAddress(address);
-        lead.setCustomer(customer);
-
-        // handles saving lead information to database
-        Long contactId = hubspotWebhookService.saveLead(lead);
-
-        if (contactId != null) {
-          lead.setContactId(contactId);
-        }
+    if (contact.getProperties().getLead_source() != null
+        && !contact.getProperties().getLead_source().getValue().equals("")) {
+      log.debug(
+          "HUBSPOT: (Additional contact information from HubSpot) " + "lead_source: {}",
+          contact.getProperties().getLead_source().getValue());
+      lead.setLead_source(contact.getProperties().getLead_source().getValue());
+    } else {
+      lead.setLead_source("Organic");
     }
+
+    if (contact.getProperties().getLead_source_detail() != null
+        && !contact.getProperties().getLead_source_detail().getValue().equals("")) {
+      log.debug(
+          "HUBSPOT: (Additional contact information from HubSpot) " + "lead_source_detail: {}",
+          contact.getProperties().getLead_source_detail().getValue());
+      lead.setLead_source_detail(contact.getProperties().getLead_source_detail().getValue());
+    } else {
+      lead.setLead_source_detail("DigitalOrganic");
+    }
+
+    HubspotLead.Customer customer = new HubspotLead.Customer();
+    customer.setFirstName(contact.getProperties().getFirstname().getValue());
+    customer.setLastName(
+        contact.getProperties().getLastname() != null
+            ? contact.getProperties().getLastname().getValue()
+            : "");
+    customer.setPhone1(contact.getProperties().getPhone().getValue());
+    customer.setEmail(contact.getProperties().getEmail().getValue());
+
+    HubspotLead.Address address = new HubspotLead.Address();
+    address.setZip(contact.getProperties().getZip().getValue());
+    address.setAddress1(
+        contact.getProperties().getAddress() != null
+            ? contact.getProperties().getAddress().getValue()
+            : "");
+    address.setCity(
+        contact.getProperties().getCity() != null
+            ? contact.getProperties().getCity().getValue()
+            : "");
+    address.setState(
+        contact.getProperties().getState() != null
+            ? contact.getProperties().getState().getValue()
+            : "");
+
+    customer.setAddress(address);
+    lead.setCustomer(customer);
+
+    // handles saving lead information to database
+    Long contactId = hubspotWebhookService.saveLead(lead);
+
+    if (contactId != null) {
+      lead.setContactId(contactId);
+    }
+  }
 }

@@ -15,18 +15,14 @@ import java.util.StringJoiner;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class HubspotWebhookService {
     private final MapboxApiService mapboxApiService;
-
-    @Autowired
-    private SqlCache sqlCache;
-
-    @Autowired
-    private ContactLeadService contactLeadService;
+    private final SqlCache sqlCache;
+    private final ContactLeadService contactLeadService;
 
     public Long saveLead(HubspotLead lead) {
-        log.info("HUBSPOT: Saving new HubSpot contact information to database...");
+        log.debug("HUBSPOT: Saving new HubSpot contact information to database...");
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("firstName", lead.getCustomer().getFirstName());
@@ -61,7 +57,7 @@ public class HubspotWebhookService {
         // saves 'Lead Status', 'Lead Source', 'Lead Source Detail', and 'Hubspot ID'
         contactLeadService.processHubspotCustomFieldValues(lead, contactId, 2371412L);
 
-        log.info("HUBSPOT: New HubSpot contact information was successfully saved to database for Contact ID " + contactId + " / Hubspot ID " + lead.getHubspot_id());
+        log.debug("HUBSPOT: New HubSpot contact information was successfully saved to database for Contact ID={} / Hubspot ID={}",  contactId , lead.getHubspot_id());
         return contactId;
     }
 

@@ -55,7 +55,7 @@ public class CommunicationController {
     String groupId = UUID.randomUUID().toString();
     Long contactId = sendTexts.getUserIDs().get(0);
     Contact contact = contactService.getContact(contactId);
-    log.info("TWILIO: attempting text for contact ID: {}", contactId);
+    log.debug("TWILIO: attempting text for contact ID: {}", contactId);
     String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
     try {
       String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
