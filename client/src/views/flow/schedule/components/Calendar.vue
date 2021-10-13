@@ -624,6 +624,24 @@
             d.groupId = `${d.systemListTypeId}${d.resourceId}`
             d.resourceId = `${d.systemListTypeId}${d.resourceId}`
             d.color = 'gray'
+
+            if(!d.isSlotTime && d.rendering === 'inverse-background') {
+              //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
+              //do start time
+              if(d.daylightSavings && !moment(d.start).isDST()) {
+                d.start = moment.utc(d.start).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              } else if (!d.daylightSavings && moment(d.start).isDST()) {
+                //else if the day was NOT saved during DST, but now IS DST, then add an hour
+                d.start = moment.utc(d.start).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              }
+              //do end time
+              if(d.daylightSavings && !moment(d.end).isDST()) {
+                d.end = moment.utc(d.end).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              } else if (!d.daylightSavings && moment(d.end).isDST()) {
+                //else if the day was NOT saved during DST, but now IS DST, then add an hour
+                d.end = moment.utc(d.end).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              }
+            }
           })
 
           //we do this for every resource, regardless of if they already have an availability or not

@@ -50,6 +50,8 @@ BEGIN
                              false                                                     as "allDay",
                              null                                                      as title,
                              'inverse-background'                                      as rendering,
+                             false as "isSlotTime",
+                             rsa.daylight_savings as "daylightSavings",
                              case when rs.org_id is not null then 1 else 2 end         as "systemListTypeId"
                       from dates d
                              inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
@@ -68,6 +70,8 @@ BEGIN
                              ra.all_day                                        as "allDay",
                              ra.title,
                              'background'                                      as rendering,
+                             false as  "isSlotTime",
+                             null  as "daylightSavings", -- personal appts don't need to do adjustments based on DST
                              case when ra.org_id is not null then 1 else 2 end as "systemListTypeId"
                       from flow.resource_appointment ra
                       where (ra.start_time between p_start_time and p_end_time
@@ -85,6 +89,8 @@ BEGIN
                              false                                                                      as "allDay",
                              null                                                                       as title,
                              'inverse-background'                                                       as rendering,
+                             true as  "isSlotTime", --i had no way to tell this apart from a regular schedule on the frontend
+                             null  as "daylightSavings", -- slot schedules don't need to do adjustments based on DST
                              case when rs.org_id is not null then 1 else 2 end                          as "systemListTypeId"
                       from dates d
                              inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
