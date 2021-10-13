@@ -143,9 +143,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
       log.info("*** CRON: end CONTACT geo coords updates ***");
     }
 
-    @Bean(destroyMethod = "shutdown")
+    @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
     public Executor taskExecutor() {
         return Executors.newScheduledThreadPool(10);
     }
-
 }
