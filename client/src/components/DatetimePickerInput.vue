@@ -109,7 +109,6 @@ export default {
   },
   created() {
     this.init()
-    console.log('randaLogger',this.minuteIncrement)
   },
   watch: {
     '$props.value': function () {

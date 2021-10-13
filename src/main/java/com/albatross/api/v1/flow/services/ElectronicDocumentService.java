@@ -71,7 +71,7 @@ public class ElectronicDocumentService {
       }
       else {
           // Get the change order document templates
-          queryStr = sqlCache.get("electronicDocument.getChangeOrderQueryStr", params, new SingleColumnRowMapper<>(String.class));
+          queryStr = Optional.of("Change Order");
       }
 
       if (queryStr.isPresent()) {
@@ -80,18 +80,6 @@ public class ElectronicDocumentService {
           } catch (Exception e) {
               log.error("ELECTRONIC: find templates error {}", e.getMessage());
               e.printStackTrace();
-          }
-      }
-      // If no templates are found, get the templates that have the State abbreviation in the name
-      if (pandaDocs.isEmpty()) {
-          Optional<String> stateQueryStr = sqlCache.get("electronicDocument.getStateQueryStr", params, new SingleColumnRowMapper<>(String.class));
-          if (stateQueryStr.isPresent()) {
-              try {
-                  return pandaDocService.findTemplatesByName(stateQueryStr.get()).toString();
-              } catch (Exception e) {
-                  log.error("ELECTRONIC: find by name error {}", e.getMessage());
-                  e.printStackTrace();
-              }
           }
       }
 
