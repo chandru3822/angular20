@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.VersusLeadEvent;
 import com.albatross.api.v1.flow.services.VerseWebhookService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,12 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/webhook/verse")
-@Slf4j
+@RequiredArgsConstructor
 public class VerseWebhookController {
-    @Autowired
-    private VerseWebhookService verseWebhookService;
+
+    private final VerseWebhookService verseWebhookService;
 
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/contact")
@@ -27,7 +29,7 @@ public class VerseWebhookController {
           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
       }
 
-      log.info(
+      log.debug(
           "VERSE: Received new lead event from Verse. " +
               "externalLeadId: {}, " +
               "event: {}, " +

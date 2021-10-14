@@ -125,12 +125,12 @@ public class InstallAgreementRepository {
           }
 
           if (loanStatus.equals("Approved")) {
-            log.info("LOANPAL: sending LoanPal Docs");
+            log.debug("LOANPAL: sending LoanPal Docs");
             String uri = "/applications/" + loanPalId + "/sendLoanDocs";
             loanPalService.POST(uri, null);
           }
         } catch (JSONException ex){
-          log.error("IARQ: JSON object not found", ex.getMessage());
+          log.error("IARQ: JSON object not found", ex);
         }
       }
     }
@@ -138,11 +138,11 @@ public class InstallAgreementRepository {
     Boolean createPandaDoc = true;
     try {
         if (isLoanPalProject(financier)) {
-          log.info("IARQ: processing loanpal project {}", request);
+          log.debug("IARQ: processing loanpal project {}", request);
           createPandaDoc = loanPalService.processProject(projectId);
         }
 
-        log.info("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
+        log.debug("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
         if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
             pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
         }
@@ -182,7 +182,7 @@ public class InstallAgreementRepository {
       financier = req.get().getFinancier();
     }
 
-    log.info("IARQ: financier from proposal log for project {} #{}: {}", projectId, proposalNbr, financier);
+    log.debug("IARQ: financier from proposal log for project {} #{}: {}", projectId, proposalNbr, financier);
     return financier;
   }
 
@@ -203,7 +203,7 @@ public class InstallAgreementRepository {
             utility = req.get().getUtility_company();
         }
 
-        log.info("IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
+        log.debug("IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
         return utility;
     }
 
@@ -222,7 +222,7 @@ public class InstallAgreementRepository {
     params.put("success", request.getRequest_successful() != null ? request.getRequest_successful() : false);
 
 
-    log.info("IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
+    log.debug("IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
         projectId, proposalNbr, userId, request.getRequest_successful(), request.getIsSpanish());
     sqlCache.update(
       "installAgreement.setRequestStatus",

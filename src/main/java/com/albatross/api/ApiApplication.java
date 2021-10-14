@@ -9,13 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.TimeZone;
 
 @OpenAPIDefinition(
-  info =
-  @Info(
-    title = "Albatross API",
-    version = "1.0",
-    description = "A collection of endpoints for korriej :)"
-  )
-)
+    info =
+        @Info(
+            title = "Albatross API",
+            version = "1.0",
+            description = "A collection of endpoints for korriej :)"))
 @SpringBootApplication
 public class ApiApplication {
 

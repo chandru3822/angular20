@@ -29,15 +29,13 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class WorkQueueService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final ObjectMapper om;
   private final SmartlistService smartlistService;
   private final SqlCacheRO sqlCacheRO;
-
 
   public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned, Boolean filterFutureFollowUps) {
     User user = securityService.getCurrentUser();
@@ -100,7 +98,7 @@ public class WorkQueueService {
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
     final String query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
@@ -137,7 +135,7 @@ public class WorkQueueService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
     String query = smartlistService.buildSql(smartlist, fields);
     return query;
