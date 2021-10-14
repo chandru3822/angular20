@@ -1,15 +1,11 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.VersusLeadEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +18,13 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class VerseWebhookService {
-  @Value(value = "${verse.api.key}")
-  private String apiKey;
 
   private final SqlCache sqlCache;
+
+  @Value(value = "${verse.api.key}")
+  private String apiKey;
 
   public ResponseEntity updateContactLeadStatus(VersusLeadEvent versusLeadEvent) throws Exception {
     String msg = "";
@@ -38,13 +35,11 @@ public class VerseWebhookService {
       // Determine lead status based on Event and Title from Verse
       if (event.equals("lead_created")) {
         leadStatus = "New";
-      }
-      else if (event.equals("lead_activity")) {
+      } else if (event.equals("lead_activity")) {
         String title = versusLeadEvent.getTitle();
         if (title.equals("Qualified Lead")) {
           leadStatus = "Scheduled";
-        }
-        else if (title.equals("Unqualified Lead")) {
+        } else if (title.equals("Unqualified Lead")) {
           leadStatus = "Unqualified";
         }
       }
@@ -64,13 +59,20 @@ public class VerseWebhookService {
         // Sales Dev Lead's user ID
         params.put("userId", 2371412L);
         sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
-        msg = "VERSE: Contact Id " + versusLeadEvent.getExternalLeadId() + " lead status successfully updated";
-      }
-      else {
-        msg = "VERSE: Unable to update Contact Id " + versusLeadEvent.getExternalLeadId() + " lead status due to unknown lead status";
+        msg =
+            "VERSE: Contact Id "
+                + versusLeadEvent.getExternalLeadId()
+                + " lead status successfully updated";
+        log.debug(msg);
+
+      } else {
+        msg =
+            "VERSE: Unable to update Contact Id "
+                + versusLeadEvent.getExternalLeadId()
+                + " lead status due to unknown lead status";
+        log.error(msg);
       }
 
-      log.info(msg);
       return ResponseEntity.status(HttpStatus.ACCEPTED).body(msg);
     } catch (Exception e) {
       msg = "VERSE: Failed to update Lead Status.";
@@ -94,8 +96,7 @@ public class VerseWebhookService {
 
     if (agedLead) {
       params.put("channelWebsite", "Past Leads");
-    }
-    else {
+    } else {
       params.put("channelWebsite", contactMap.get("lead_source_detail"));
     }
 
@@ -104,19 +105,25 @@ public class VerseWebhookService {
     headers.put("Content-Type", "application/json");
     headers.put("Accept", "application/json");
     try {
-      HttpResponse resp = HttpUtils.call("POST", "https://api.verse.io/v1/zapier", headers, new ByteArrayInputStream(params.toString().getBytes()));
+      HttpUtils.call(
+          "POST",
+          "https://api.verse.io/v1/zapier",
+          headers,
+          new ByteArrayInputStream(params.toString().getBytes()));
     } catch (Exception e) {
-      String msg = "VERSE: Failed to post Contact to Verse.";
-      log.error(msg, e);
+      log.error("VERSE: Failed to post Contact to Verse.", e);
     }
   }
 
-  private String checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("listOfValueId", listOfValueId);
-      params.put("customFieldDropdownValue", customFieldDropdownValue);
+  private String checkIfCustomFieldDropdownValueExists(
+      Integer listOfValueId, String customFieldDropdownValue) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("listOfValueId", listOfValueId);
+    params.put("customFieldDropdownValue", customFieldDropdownValue);
 
-      Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
-      return customFieldDropdownValueId.orElse("null");
+    Optional<String> customFieldDropdownValueId =
+        sqlCache.queryForObjectOptional(
+            "contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
+    return customFieldDropdownValueId.orElse("null");
   }
 }

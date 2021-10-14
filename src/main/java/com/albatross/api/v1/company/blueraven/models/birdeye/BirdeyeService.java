@@ -98,7 +98,7 @@ public class BirdeyeService {
             String birdeyeCustomerId = null;
 
             if (sendInvitesFoReals) {
-                log.info("BIRDEYE: Sending review invitation to customer on project {}", invitation.getProjectId());
+                log.debug("BIRDEYE: Sending review invitation to customer on project {}", invitation.getProjectId());
                 birdeyeCustomerId = sendInvitation(invitationId, url, body);
             }
             else {

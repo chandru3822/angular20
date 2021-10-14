@@ -241,7 +241,7 @@ public class AttachmentTypeService {
       if(overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {
-        log.info("ATTACHMENT: No Company ID found for project. {}", projectId);
+        log.error("ATTACHMENT: No Company ID found for project. {}", projectId);
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
       }
     }

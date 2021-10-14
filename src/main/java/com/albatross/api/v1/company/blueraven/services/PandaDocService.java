@@ -34,8 +34,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Service
 @Slf4j
+@Service
 public class PandaDocService {
   @Autowired
   private PandaDocConfiguration pandaDoc;
@@ -91,8 +91,7 @@ public class PandaDocService {
     String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
     String tplId = findTemplateIdByName(name);
 
-    log.info("PANDADOC: Template Name we are looking for: {}", name);
-    log.info("PANDADOC: Template ID we found: {}", tplId);
+    log.debug("PANDADOC: Template Name we are looking for: name={}, found templateId=", name, tplId);
     // attempt to find a generic template for the state and financier
     if (tplId == null) {
       log.warn("PANDADOC: falling back to generic utility company");
@@ -119,7 +118,7 @@ public class PandaDocService {
    * @throws Exception
    */
   private String findTemplateIdByName(String name) throws Exception {
-    log.info("PANDADOC: looking for template name='{}'", name);
+    log.debug("PANDADOC: looking for template name='{}'", name);
     String tplId = null;
     String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
     HttpResponse resp = GET(url);
@@ -134,7 +133,7 @@ public class PandaDocService {
         String version = tpl.getString("version");
         if (name.equals(tplName) && version.equals("1")) {
           tplId = tpl.getString("id");
-          log.info("PANDADOC: selected template named {}", tplName);
+          log.debug("PANDADOC: selected template named {}", tplName);
           break;
         }
       }
@@ -144,7 +143,7 @@ public class PandaDocService {
   }
 
   public JSONArray findTemplatesByName(String name) throws Exception {
-    log.info("PANDADOC: looking for template name='{}'", name);
+    log.debug("PANDADOC: looking for template name='{}'", name);
     String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
     HttpResponse resp = GET(url);
     JSONObject out = resp.getJSON();
@@ -179,11 +178,11 @@ public class PandaDocService {
 
     String templateId = findTemplateId(deets, isSpanish);
     if (!pandaDoc.getEnabled()) {
-      log.info("PANDADOC: not creating document: pandadoc service is disabled");
+      log.warn("PANDADOC: not creating document: pandadoc service is disabled");
       return "";
     }
 
-    log.info("PANDADOC: creating document for project {} using template {}", projectId, templateId);
+    log.debug("PANDADOC: creating document for project {} using template {}", projectId, templateId);
     JSONObject template = getTemplateDetails(templateId);
     log.debug("PANDADOC: template: {}", template);
 
@@ -201,14 +200,14 @@ public class PandaDocService {
     JSONObject body = getDocumentBody(templateId, templateFields, tokens);
     body = setRecipientInfo(body, deets);
 
-    log.info("PANDADOC_BODY: {}", body.toString());
+    log.debug("PANDADOC_BODY: {}", body.toString());
 
     HttpResponse resp = POST("/documents", body.toString());
     JSONObject respBody = resp.getJSON();
 
     // le sigh... takes a bit on PandaDoc's end for the doc to be available for sending
     String documentId = respBody.getString("id");
-    log.info("PANDADOC: created document id={} projectId={} templateId={}",
+    log.debug("PANDADOC: created document id={} projectId={} templateId={}",
       documentId, projectId, templateId);
     delayedSendDocument(projectId, documentId, tokens);
 
@@ -218,7 +217,7 @@ public class PandaDocService {
   }
 
   public String generateElectronicDocument (Long projectId, String templateId) throws Exception {
-    log.info("PANDADOC: creating document for project {} using template {}", projectId, templateId);
+    log.debug("PANDADOC: creating document for project {} using template {}", projectId, templateId);
     JSONObject template = getTemplateDetails(templateId);
     log.debug("PANDADOC: template: {}", template);
 
@@ -261,7 +260,7 @@ public class PandaDocService {
    * @throws Exception
    */
   public void validateCashProject(Long projectId, JSONObject tokens) throws Exception {
-    log.info("PANDADOC: validating cash project {}", projectId);
+    log.debug("PANDADOC: validating cash project {}", projectId);
     validateFields(tokens,
       "Deal.Total Cash Down Payment",
       "Deal.System Size",
@@ -276,7 +275,7 @@ public class PandaDocService {
    * @throws Exception
    */
   public void validateLoanPalProject(Long projectId, JSONObject tokens) throws Exception {
-    log.info("PANDADOC: validating loanpal project {}", projectId);
+    log.debug("PANDADOC: validating loanpal project {}", projectId);
     validateFields(tokens, "Deal.Total System Price");
   }
 
@@ -313,7 +312,7 @@ public class PandaDocService {
 
     try {
       Double value = tokens.getDouble(key);
-      log.info("PANDADOC: field {}: {}", key, value);
+      log.debug("PANDADOC: field {}: {}", key, value);
       if (value == null) {
         errors.add(String.format("%s is undefined", key));
       } else if (value.doubleValue() <= 0) {
@@ -493,7 +492,7 @@ public class PandaDocService {
    */
   public void delayedSendDocument(Long projectId, String documentId, JSONObject tokens) {
     if (!pandaDoc.getNotificationEnabled()) {
-      log.info("PANDADOC: not sending document {}: notification disabled", documentId);
+      log.warn("PANDADOC: not sending document {}: notification disabled", documentId);
       return;
     }
 
@@ -523,13 +522,13 @@ public class PandaDocService {
    * @throws Exception
    */
   public String sendDocument(Long projectId, String documentId, JSONObject tokens) throws Exception {
-    log.info("PANDADOC: sending projectId {} document {}", projectId, documentId);
+    log.debug("PANDADOC: sending projectId {} document {}", projectId, documentId);
     JSONObject body = new JSONObject();
     body.put("message", getNotification(tokens));
 
     HttpResponse resp = POST("/documents/" + documentId + "/send", body.toString());
     String respBody = resp.getBody();
-    log.info("PANDADOC: document sent for projectId {}: {}", projectId, respBody);
+    log.debug("PANDADOC: document sent for projectId {}: {}", projectId, respBody);
 
     return respBody;
   }

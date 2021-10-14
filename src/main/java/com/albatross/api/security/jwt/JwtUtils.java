@@ -45,7 +45,7 @@ public class JwtUtils {
 
     public JwtClaims validateAuthHeader(String s) {
         if (!s.startsWith(JwtUtils.TOKEN_PREFIX)) {
-            log.info("AUTH: Rejecting call that had incorrect 'Authorization' header.");
+            log.error("AUTH: Rejecting call that had incorrect 'Authorization' header.");
             throw new JwtParseException("Invalid Authorization token. Format should be: Bearer [Token]");
         }
 
