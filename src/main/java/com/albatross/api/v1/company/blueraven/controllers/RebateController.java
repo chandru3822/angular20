@@ -59,7 +59,7 @@ public class RebateController {
     try {
       return ResponseEntity.ok(chaseService.generateCsv_Ap6DelimitedSingleLine(batchId));
     } catch (ChaseBankService.BadDataException e) {
-      log.info("REBATE: Failed to generate CSV; encountered {} data validation errors.", e.getFailures().size());
+      log.error("REBATE: Failed to generate CSV; encountered {} data validation errors.", e.getFailures().size());
       return ResponseEntity.badRequest().body(e.toCsv());
     } catch (Exception e) {
       String msg = "REBATE: Encountered an error while exported CSV for batch " + batchId;

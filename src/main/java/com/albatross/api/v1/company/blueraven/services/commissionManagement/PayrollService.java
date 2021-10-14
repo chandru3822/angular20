@@ -238,10 +238,9 @@ public class PayrollService {
             else
                 sqlKey = "payroll.overridesOpen";
 
-            List<OverrideResult> results = sqlCache.query(sqlKey, params, OverrideResult.class);
-            return results;
+          return sqlCache.query(sqlKey, params, OverrideResult.class);
         } else {
-            log.info("Payroll {} requested but no status found.", payrollId);
+            log.error("Payroll {} requested but no status found.", payrollId);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payroll Not Found", new Exception());
         }
     }

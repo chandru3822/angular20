@@ -271,6 +271,6 @@ public class CommunicationService {
     //    FirebaseMessaging.getInstance(app).subscribeToTopic(List.of("123"), "test");
     String response = firebaseMessaging.send(message);
 
-    log.info("SENT MESSAGE: {}", response);
+    log.debug("SENT MESSAGE: {}", response);
   }
 }

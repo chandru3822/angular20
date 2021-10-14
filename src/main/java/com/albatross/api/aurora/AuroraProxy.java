@@ -9,6 +9,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.net.UrlEscapers;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -42,11 +43,12 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.stream.Collectors.groupingBy;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-@Service
 @Slf4j
+@Service
 public class AuroraProxy {
   private final ObjectMapper om = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
+  private final String host = "https://api.aurorasolar.com";
 
   @Value(value = "${aurora.api.tenantId}")
   private String tenantId;
@@ -57,19 +59,40 @@ public class AuroraProxy {
   @Value(value = "${aurora.api.secret}")
   private String apiSecret;
 
-  private final String host = "https://api.aurorasolar.com";
+  private static String useTemplate(String template, Map<String, ? extends Object> vals) {
+    StringSubstitutor subs = new StringSubstitutor(vals);
+    return subs.replace(template);
+  }
+
+  private static String useTemplate(String template, String... vals) {
+    checkArgument(vals.length % 2 == 0, "must provide even number of values");
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+    for (int i = 0; i < vals.length; i += 2) builder.put(vals[i], vals[i + 1]);
+
+    return useTemplate(template, builder.build());
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  // data objects for returning design summary info
+  ///////////////////////////////////////////////////////////////////////////
+  private static Optional<JsonNode> getField(JsonNode root, String... path) {
+    Optional<JsonNode> node = Optional.of(root);
+    for (String field : path) node = node.map(n -> n.get(field));
+    return node;
+  }
 
   public DesignSummary getDesignSummary(String designId) throws IOException {
     checkRequiredFields();
     checkArgument(isNotBlank(designId), "designId cannot be blank");
 
     AuroraRequest req = createGetDesignSummaryRequest(designId);
-    log.info("AURORA: the summary request {}", req.toString());
+    log.debug("AURORA: the summary request {}", req);
     try (CloseableHttpResponse resp = httpClient.execute(req.toHttpRequest())) {
       int statusCode = resp.getStatusLine().getStatusCode();
-      checkArgument(statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
+      checkArgument(
+          statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
       InputStream content = resp.getEntity().getContent();
-      log.info("AURORA: starting build design summary... {}", content);
+      log.debug("AURORA: starting build design summary... {}", content);
       return new DesignSummary(content);
     } catch (Exception e) {
       String msg = "AURORA: Failed to get design summary for design " + designId;
@@ -79,24 +102,26 @@ public class AuroraProxy {
   }
 
   public String getTenantsProjects(int pageNumber) throws IOException {
-    String uri = useTemplate("/v2/tenants/${tenant_id}/projects",
-      "tenant_id", tenantId);
-    AuroraRequest req =  new AuroraRequest(HttpMethod.GET, uri, "page="+pageNumber+"&per_page=250\n");
-    log.info("AURORA: the tenants request {}", req.toString());
-    try (CloseableHttpResponse resp = httpClient.execute(req.toHttpRequestWithParams("?page="+pageNumber+"&per_page=250"))) {
+    String uri = useTemplate("/v2/tenants/${tenant_id}/projects", "tenant_id", tenantId);
+    AuroraRequest req =
+        new AuroraRequest(HttpMethod.GET, uri, "page=" + pageNumber + "&per_page=250\n");
+    log.debug("AURORA: the tenants request {}", req);
+    try (CloseableHttpResponse resp =
+        httpClient.execute(req.toHttpRequestWithParams("?page=" + pageNumber + "&per_page=250"))) {
       int statusCode = resp.getStatusLine().getStatusCode();
-      checkArgument(statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
-      log.info("AURORA: starting project str builder...");
+      checkArgument(
+          statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
+      log.debug("AURORA: starting project str builder...");
       InputStream content = resp.getEntity().getContent();
-      BufferedReader bR = new BufferedReader(  new InputStreamReader(content));
+      BufferedReader bR = new BufferedReader(new InputStreamReader(content));
       String line = "";
       StringBuilder responseStrBuilder = new StringBuilder();
-      while((line =  bR.readLine()) != null){
-        log.info("AURORA: read tenant line - this might go too crazy: {}", line);
+      while ((line = bR.readLine()) != null) {
+        log.debug("AURORA: read tenant line - this might go too crazy: {}", line);
         responseStrBuilder.append(line);
       }
       content.close();
-      log.info("AURORA: closing project str builder...");
+      log.debug("AURORA: closing project str builder...");
       return responseStrBuilder.toString();
     } catch (Exception e) {
       String msg = "AURORA: Failed to get tenants projects";
@@ -110,24 +135,30 @@ public class AuroraProxy {
   }
 
   public String getProjectDesigns(String projectId) throws IOException {
-    String uri = useTemplate("/v2/tenants/${tenant_id}/projects/${project_id}/designs",
-      "tenant_id", tenantId, "project_id",projectId);
-    AuroraRequest req =  new AuroraRequest(HttpMethod.GET, uri, null);
-    log.info("AURORA: the projects request {}", req.toString());
+    String uri =
+        useTemplate(
+            "/v2/tenants/${tenant_id}/projects/${project_id}/designs",
+            "tenant_id",
+            tenantId,
+            "project_id",
+            projectId);
+    AuroraRequest req = new AuroraRequest(HttpMethod.GET, uri, null);
+    log.debug("AURORA: the projects request {}", req);
     try (CloseableHttpResponse resp = httpClient.execute(req.toHttpRequest())) {
       int statusCode = resp.getStatusLine().getStatusCode();
-      checkArgument(statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
-      log.info("AURORA: starting project str builder...");
+      checkArgument(
+          statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
+      log.debug("AURORA: starting project str builder...");
       InputStream content = resp.getEntity().getContent();
-      BufferedReader bR = new BufferedReader(  new InputStreamReader(content));
+      BufferedReader bR = new BufferedReader(new InputStreamReader(content));
       String line = "";
       StringBuilder responseStrBuilder = new StringBuilder();
-      while((line =  bR.readLine()) != null){
-        log.info("AURORA: read project line - this might go too crazy: {}", line);
+      while ((line = bR.readLine()) != null) {
+        log.debug("AURORA: read project line - this might go too crazy: {}", line);
         responseStrBuilder.append(line);
       }
       content.close();
-      log.info("AURORA: closing project str builder...");
+      log.debug("AURORA: closing project str builder...");
       return responseStrBuilder.toString();
     } catch (Exception e) {
       String msg = "AURORA: Failed to get tenants projects";
@@ -137,42 +168,35 @@ public class AuroraProxy {
   }
 
   private void checkRequiredFields() {
-    checkState(isNotBlank(tenantId),  "tenantId cannot be blank; perhaps it didn't inject correctly?");
-    checkState(isNotBlank(apiKey),    "apiKey cannot be blank; perhaps it didn't inject correctly?");
-    checkState(isNotBlank(apiSecret), "apiSecret cannot be blank; perhaps it didn't inject correctly?");
-  }
-
-  private static String useTemplate(String template, Map<String, ? extends Object> vals) {
-      StringSubstitutor subs = new StringSubstitutor(vals);
-      return subs.replace(template);
-  }
-
-  private static String useTemplate(String template, String... vals) {
-    checkArgument(vals.length % 2 == 0, "must provide even number of values");
-    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
-    for (int i = 0; i < vals.length; i += 2)
-      builder.put(vals[i], vals[i + 1]);
-
-    return useTemplate(template, builder.build());
+    checkState(
+        isNotBlank(tenantId), "tenantId cannot be blank; perhaps it didn't inject correctly?");
+    checkState(isNotBlank(apiKey), "apiKey cannot be blank; perhaps it didn't inject correctly?");
+    checkState(
+        isNotBlank(apiSecret), "apiSecret cannot be blank; perhaps it didn't inject correctly?");
   }
 
   private AuroraRequest createGetDesignSummaryRequest(String designId) {
-    String uri = useTemplate("/v2/tenants/${tenant_id}/designs/${design_id}/summary",
-      "tenant_id", tenantId,
-      "design_id", designId);
+    String uri =
+        useTemplate(
+            "/v2/tenants/${tenant_id}/designs/${design_id}/summary",
+            "tenant_id",
+            tenantId,
+            "design_id",
+            designId);
     return new AuroraRequest(HttpMethod.GET, uri, null);
   }
 
   ///////////////////////////////////////////////////////////////////////////
   // class encapsulating making requests to Aurora
   ///////////////////////////////////////////////////////////////////////////
+  @ToString(onlyExplicitlyIncluded = true)
   private class AuroraRequest {
     private final DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final HttpMethod httpMethod;
     private final String endpoint;
     private final ZonedDateTime timestamp;
-    private final String signature;
+    @ToString.Exclude private final String signature;
 
     AuroraRequest(HttpMethod httpMethod, String endpoint, String params) {
       this.httpMethod = httpMethod;
@@ -182,20 +206,32 @@ public class AuroraProxy {
     }
 
     HttpUriRequest toHttpRequest() {
-      String uri = useTemplate("${url}?AuroraKey=${key}&Timestamp=${timestamp}&Signature=${sig}",
-        "url", host + endpoint,
-        "key", apiKey,
-        "timestamp", uriEscape(getFormattedTimestamp()),
-        "sig", signature);
+      String uri =
+          useTemplate(
+              "${url}?AuroraKey=${key}&Timestamp=${timestamp}&Signature=${sig}",
+              "url",
+              host + endpoint,
+              "key",
+              apiKey,
+              "timestamp",
+              uriEscape(getFormattedTimestamp()),
+              "sig",
+              signature);
       return new HttpGet(uri);
     }
 
     HttpUriRequest toHttpRequestWithParams(String params) {
-      String uri = useTemplate("${url}&AuroraKey=${key}&Timestamp=${timestamp}&Signature=${sig}",
-        "url", host + endpoint + params,
-        "key", apiKey,
-        "timestamp", uriEscape(getFormattedTimestamp()),
-        "sig", signature);
+      String uri =
+          useTemplate(
+              "${url}&AuroraKey=${key}&Timestamp=${timestamp}&Signature=${sig}",
+              "url",
+              host + endpoint + params,
+              "key",
+              apiKey,
+              "timestamp",
+              uriEscape(getFormattedTimestamp()),
+              "sig",
+              signature);
       return new HttpGet(uri);
     }
 
@@ -206,19 +242,26 @@ public class AuroraProxy {
       return uriEscape(BaseEncoding.base64().encode(bs));
     }
 
-    /**
-     * Converts this request to the format required by Aurora's authentication.
-     */
+    /** Converts this request to the format required by Aurora's authentication. */
     private String toSignatureString(String params) {
-      log.info("AURORA: sending request to: " + httpMethod + endpoint);
-      log.info("AURORA: request params: " + params);
-      return useTemplate("${httpMethod}\n${endpoint}\nAuroraKey=${apiKey}\nTimestamp=${timestamp}\n"
-          +((params != null) ? (params): ""),
-        "httpMethod", httpMethod.name(),
-        "endpoint", endpoint,
-        "apiKey", apiKey,
-        "timestamp", uriEscape(getFormattedTimestamp()),
-        "sortQueryParams", "");
+      log.debug(
+          "AURORA: sending request to method={}, endpoint={}, params={}",
+          httpMethod,
+          endpoint,
+          params);
+      return useTemplate(
+          "${httpMethod}\n${endpoint}\nAuroraKey=${apiKey}\nTimestamp=${timestamp}\n"
+              + ((params != null) ? (params) : ""),
+          "httpMethod",
+          httpMethod.name(),
+          "endpoint",
+          endpoint,
+          "apiKey",
+          apiKey,
+          "timestamp",
+          uriEscape(getFormattedTimestamp()),
+          "sortQueryParams",
+          "");
     }
 
     private String getFormattedTimestamp() {
@@ -234,82 +277,76 @@ public class AuroraProxy {
     }
   }
 
-
-  ///////////////////////////////////////////////////////////////////////////
-  // data objects for returning design summary info
-  ///////////////////////////////////////////////////////////////////////////
-  private static Optional<JsonNode> getField(JsonNode root, String... path) {
-    Optional<JsonNode> node = Optional.of(root);
-    for (String field : path)
-      node = node.map(n -> n.get(field));
-    return node;
-  }
-
   public class DesignSummary {
-    @Getter
-    private final JsonNode fields;
+    @Getter private final JsonNode fields;
 
-    @Getter
-    private final Map<Integer, Face> faces;
+    @Getter private final Map<Integer, Face> faces;
 
     DesignSummary(InputStream in) throws IOException {
       this.fields = om.readTree(in);
 
-      JsonNode arrays = getField(fields, "design", "arrays")
-        .orElseThrow(() -> new IllegalArgumentException("design missing required field 'arrays'"));
-      Map<Integer, List<SolarArray>> m = StreamSupport.stream(arrays.spliterator(), false)
-        .map(SolarArray::new)
-        .collect(groupingBy(SolarArray::getFaceNumber));
+      JsonNode arrays =
+          getField(fields, "design", "arrays")
+              .orElseThrow(
+                  () -> new IllegalArgumentException("design missing required field 'arrays'"));
+      Map<Integer, List<SolarArray>> m =
+          StreamSupport.stream(arrays.spliterator(), false)
+              .map(SolarArray::new)
+              .collect(groupingBy(SolarArray::getFaceNumber));
       this.faces = Maps.transformValues(m, Face::new);
     }
 
     public Optional<BigDecimal> getAnnualEnergyProduction() {
       return getField(fields, "design", "energy_production", "annual")
-        .map(JsonNode::decimalValue)
-        .map(bigD -> bigD.setScale(0, RoundingMode.HALF_UP)); // i.e., round half-up with zero decimal points (nearest whole number)
+          .map(JsonNode::decimalValue)
+          .map(
+              bigD ->
+                  // i.e., round half-up with zero decimal points (nearest whole number)
+                  bigD.setScale(0, RoundingMode.HALF_UP));
     }
 
     public Optional<String> getProjectId() {
-      return getField(fields, "design", "project_id")
-        .map(JsonNode::textValue);
+      return getField(fields, "design", "project_id").map(JsonNode::textValue);
     }
   }
 
   @RequiredArgsConstructor
   public class Face {
-    @Getter
-    private final List<SolarArray> arrays;
+    @Getter private final List<SolarArray> arrays;
 
     public Integer getFaceNumber() {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       int faceNumber = arrays.get(0).getFaceNumber();
-      checkArgument(Iterables.all(arrays, a -> a.getFaceNumber() == faceNumber),
-        "not all arrays have the same face number");
+      checkArgument(
+          Iterables.all(arrays, a -> a.getFaceNumber() == faceNumber),
+          "not all arrays have the same face number");
       return faceNumber;
     }
 
-    public Optional<Integer> getTotalPanelCount () {
+    public Optional<Integer> getTotalPanelCount() {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       return arrays.stream()
-        .map(SolarArray::getPanelCount)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .reduce(Integer::sum);
+          .map(SolarArray::getPanelCount)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .reduce(Integer::sum);
     }
 
     public Optional<BigDecimal> getAzimuth() {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       Optional<BigDecimal> azimuth = arrays.get(0).getAzimuth();
-      checkArgument(Iterables.all(arrays, a -> a.getAzimuth().equals(azimuth)),
-        "not all arrays have the same azimuth");
+      checkArgument(
+          Iterables.all(arrays, a -> a.getAzimuth().equals(azimuth)),
+          "not all arrays have the same azimuth");
       return azimuth;
     }
 
     public Optional<Integer> getPitch() {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       Optional<Integer> pitch = arrays.get(0).getPitch();
-      checkArgument(Iterables.all(arrays, a -> a.getPitch().equals(pitch)),
-        "not all arrays have the same pitch");
+      checkArgument(
+          Iterables.all(arrays, a -> a.getPitch().equals(pitch)),
+          "not all arrays have the same pitch");
       return pitch;
     }
 
@@ -319,18 +356,19 @@ public class AuroraProxy {
       boolean missingAnyArrayValue = false;
       for (SolarArray array : arrays) {
         Optional<Integer> tsrf = array.getTotalSolarResourceFraction(),
-          panels = array.getPanelCount();
-        if(tsrf.isEmpty() || panels.isEmpty()) {
+            panels = array.getPanelCount();
+        if (tsrf.isEmpty() || panels.isEmpty()) {
           missingAnyArrayValue = true;
-          //checkArgument(tsrf.isPresent(), "array is missing TSRF value");
-          //checkArgument(panels.isPresent(), "array is missing panel count");
+          // checkArgument(tsrf.isPresent(), "array is missing TSRF value");
+          // checkArgument(panels.isPresent(), "array is missing panel count");
           log.error("AURORA: Missing TSRF Value");
         } else {
           weightedSum += panels.get() * tsrf.get();
           numPanels += panels.get();
         }
       }
-      //per judson we should return 0 instead of guessing what the values of panels and total solar resource refraction access might be
+      // per judson we should return 0 instead of guessing what the values of panels and total solar
+      // resource refraction access might be
       return missingAnyArrayValue ? Optional.of(0) : Optional.of(weightedSum / numPanels);
     }
 
@@ -340,18 +378,20 @@ public class AuroraProxy {
       boolean missingAnyArrayValue = false;
       for (SolarArray array : arrays) {
         Optional<Integer> annualSolarAccess = array.getAnnualSolarAccess(),
-          panels = array.getPanelCount();
-        if(annualSolarAccess.isEmpty() || panels.isEmpty()) {
+            panels = array.getPanelCount();
+        if (annualSolarAccess.isEmpty() || panels.isEmpty()) {
           missingAnyArrayValue = true;
-          //checkArgument(annualSolarAccess.isPresent(), "array is missing annual solar access value");
-          //checkArgument(panels.isPresent(), "array is missing panel count");
+          // checkArgument(annualSolarAccess.isPresent(), "array is missing annual solar access
+          // value");
+          // checkArgument(panels.isPresent(), "array is missing panel count");
           log.error("AURORA: Missing Annual Solar Access Value");
         } else {
           weightedSum += panels.get() * annualSolarAccess.get();
           numPanels += panels.get();
         }
       }
-      //per judson we should return 0 instead of guessing what the values of panels and annual solar access might be
+      // per judson we should return 0 instead of guessing what the values of panels and annual
+      // solar access might be
       return missingAnyArrayValue ? Optional.of(0) : Optional.of(weightedSum / numPanels);
     }
   }
@@ -362,33 +402,30 @@ public class AuroraProxy {
 
     public int getFaceNumber() {
       return getField(fields, "face")
-        .map(JsonNode::intValue)
-        .orElseThrow(() -> new IllegalArgumentException("could not retrieve solar array face number"));
+          .map(JsonNode::intValue)
+          .orElseThrow(
+              () -> new IllegalArgumentException("could not retrieve solar array face number"));
     }
 
     public Optional<Integer> getPanelCount() {
-      return getField(fields, "module", "count")
-        .map(JsonNode::intValue);
+      return getField(fields, "module", "count").map(JsonNode::intValue);
     }
 
     public Optional<Integer> getTotalSolarResourceFraction() {
       return getField(fields, "shading", "total_solar_resource_fraction", "annual")
-        .map(JsonNode::intValue);
+          .map(JsonNode::intValue);
     }
 
     public Optional<Integer> getAnnualSolarAccess() {
-      return getField(fields, "shading", "solar_access", "annual")
-        .map(JsonNode::intValue);
+      return getField(fields, "shading", "solar_access", "annual").map(JsonNode::intValue);
     }
 
     public Optional<Integer> getPitch() {
-      return getField(fields, "pitch")
-        .map(JsonNode::intValue);
+      return getField(fields, "pitch").map(JsonNode::intValue);
     }
 
     public Optional<BigDecimal> getAzimuth() {
-      return getField(fields, "azimuth")
-        .map(JsonNode::decimalValue);
+      return getField(fields, "azimuth").map(JsonNode::decimalValue);
     }
   }
 }

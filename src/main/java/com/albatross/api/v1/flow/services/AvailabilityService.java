@@ -411,7 +411,7 @@ public class AvailabilityService {
           boolean alreadyExists = false;
           LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
-          log.info("CRON: recurrence: {}", rra.getRecurrence());
+          log.debug("CRON: recurrence: {}", rra.getRecurrence());
           //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
           if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
             limitReached = true;
