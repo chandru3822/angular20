@@ -56,22 +56,27 @@ public class CommunicationController {
     Long contactId = sendTexts.getUserIDs().get(0);
     Contact contact = contactService.getContact(contactId);
     log.info("TWILIO: attempting text for contact ID: {}", contactId);
-    String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
-    try {
-      String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
-      communicationService.queueTextMessagesForProject(
-          groupId,
-          contact,
-          safePhone,
-          sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
-          sendTexts.getMediaURLs(),
-          user.getId());
+    if(null != contact) {
+      String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
+      try {
+        String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+        communicationService.queueTextMessagesForProject(
+            groupId,
+            contact,
+            safePhone,
+            sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
+            sendTexts.getMediaURLs(),
+            user.getId());
 
-      return Map.of("messageGroup", groupId);
-    } catch (NumberParseException ex) {
-      log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+        return Map.of("messageGroup", groupId);
+      } catch (NumberParseException ex) {
+        log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+      }
+    } else {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+        HttpStatus.BAD_REQUEST, "Could not find contact for contact id: " + contactId, new Exception());
     }
   }
 
