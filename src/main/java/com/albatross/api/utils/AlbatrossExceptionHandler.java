@@ -5,7 +5,6 @@ import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -18,7 +17,7 @@ import java.io.IOException;
 
 @Slf4j
 @ControllerAdvice
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
 
   private final SecurityService securityService;
