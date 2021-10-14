@@ -82,10 +82,10 @@ public class ProjectService {
                   TimeUnit.MILLISECONDS.sleep(500);
                   getProjectCoordinates(p, p.getId());
                 } catch (InterruptedException ie) {
-                  log.info("PROJ: Thread interruption during sleep");
+                  log.error("PROJ: Thread interruption during sleep");
                   Thread.currentThread().interrupt();
                 } catch (Exception e) {
-                  log.info("PROJ: Updating Geo Lat/Lng Timezone failed");
+                  log.error("PROJ: Updating Geo Lat/Lng Timezone failed");
                 }
               });
         });

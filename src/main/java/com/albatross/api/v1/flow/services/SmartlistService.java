@@ -344,7 +344,7 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: {}" , smartlistId);
     List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
     String query;
 
@@ -363,7 +363,7 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
     List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
     String query;
 
@@ -408,7 +408,7 @@ public class SmartlistService {
       }
     }
 
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
     String query;
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
@@ -418,7 +418,6 @@ public class SmartlistService {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
     }
 
-//    log.info("*** {}", query);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     if (results.isEmpty()) {

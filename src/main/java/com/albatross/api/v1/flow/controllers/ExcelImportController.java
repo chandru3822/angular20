@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,14 +37,15 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/excel")
+@RequiredArgsConstructor
 public class ExcelImportController {
 
-  @Autowired ObjectMapper om;
-  @Autowired private AuroraProxy aurora;
-  @Autowired private SqlCache cache;
-  @Autowired private NamedParameterJdbcTemplate jdbc;
-  @Autowired private SecurityService security;
-  @Autowired private ProjectService projectService;
+  private final ObjectMapper om;
+  private final AuroraProxy aurora;
+  private final SqlCache cache;
+  private final NamedParameterJdbcTemplate jdbc;
+  private final SecurityService security;
+  private final ProjectService projectService;
 
   @GetMapping("/excelId")
   public Long getUniqueIdForExcel() {
@@ -64,9 +65,10 @@ public class ExcelImportController {
       return ResponseEntity.ok(result);
     } catch (IncorrectResultSizeDataAccessException e) {
       if (e.getActualSize() < 1) {
-        log.info("EXCEL_IMPORT: Could not find project identified by Project id {}.", projectId);
+        log.error("EXCEL_IMPORT: Could not find project identified by Project id {}.", projectId);
         return ResponseEntity.notFound().build();
       }
+
       log.error(
           "EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
       return ResponseEntity.status(INTERNAL_SERVER_ERROR)
@@ -109,7 +111,7 @@ public class ExcelImportController {
 
   @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> importProposal(HttpServletRequest req, @RequestBody Proposal proposal) {
-    log.info("EXCEL_IMPORT: Attempting Excel Proposal Log");
+    log.debug("EXCEL_IMPORT: Attempting Excel Proposal Log");
 
     Assert.notNull(proposal, "Proposal Required");
     Assert.hasText(proposal.getSource(), "Source is required; must have text");
@@ -134,7 +136,7 @@ public class ExcelImportController {
     params.put("proposalId", propId);
     params.put("projectId", projectId);
 
-    log.info(
+    log.debug(
         "EXCEL_IMPORT: Inserting For: PROP_ID: {} PROJECT_ID: {} SOURCE: {}",
         propId,
         projectId,
@@ -167,7 +169,7 @@ public class ExcelImportController {
         if (created.isEmpty()) {
           throw new IllegalStateException("Did not get back a created proposal_log");
         }
-        log.info("EXCEL_IMPORT: Created Excel Proposal Log ID={}", created.get().getId());
+        log.debug("EXCEL_IMPORT: Created Excel Proposal Log ID={}", created.get().getId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(created.get());
       } else {
@@ -196,7 +198,7 @@ public class ExcelImportController {
 
   @PostMapping(value = "/design/import", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> designImport(HttpServletRequest req, @RequestBody Design design) {
-    log.info("EXCEL_IMPORT: Attempting Excel Design Log");
+    log.debug("EXCEL_IMPORT: Attempting Excel Design Log");
 
     Assert.notNull(design, "Design Required");
     User user = security.getCurrentUser();
@@ -258,11 +260,11 @@ public class ExcelImportController {
         throw new IllegalStateException("EXCEL_IMPORT: Did not get back a created design_log");
       }
 
-      log.info("EXCEL_IMPORT: Created Excel Design Log id={}", designLogId.get().getId());
+      log.debug("EXCEL_IMPORT: Created Excel Design Log id={}", designLogId.get().getId());
 
       return ResponseEntity.status(HttpStatus.CREATED).body(designLogId.get());
     } else {
-      log.info("EXCEL_IMPORT: Received Invalid Project ID: {}", design.getProjectId());
+      log.error("EXCEL_IMPORT: Received Invalid Project ID: {}", design.getProjectId());
       // if no project found within BR corporate hierarchy return 404
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND, "Project ID Not Found.", new Exception());

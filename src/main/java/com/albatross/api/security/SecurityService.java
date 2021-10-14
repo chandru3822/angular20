@@ -233,7 +233,7 @@ public class SecurityService implements UserDetailsService {
 
   public Boolean validatePassword(User user, String password) {
     if (null == user.getPassword() || user.getPassword().isEmpty()) {
-      log.info("AUTH: Attempted login user has no password. {}", user.getEmail());
+      log.warn("AUTH: Attempted login user has no password. {}", user.getEmail());
       return false;
     } else {
       Boolean match = passwordEncoder.matches(password, user.getPassword());

@@ -238,7 +238,7 @@ public class ContactService {
       params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
       if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
         //todo: come back and remove this at some point
-        log.info("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
+        log.warn("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
       }
       params.put("latitude", latitude);
       params.put("longitude", longitude);

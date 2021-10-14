@@ -41,7 +41,7 @@ public class ObjectTypeTabService {
       if(overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {
-        log.info("OTT: No Company ID found for project. {}", projectId);
+        log.error("OTT: No Company ID found for project. {}", projectId);
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
       }
     }

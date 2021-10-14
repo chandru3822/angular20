@@ -62,11 +62,11 @@ public class AuthController {
   public ResponseEntity getJwtToken(@RequestBody Credentials creds) {
     User user = securityService.getUser(creds.getUsername());
     if (user == null) {
-      log.info("AUTH: Login attempted with unknown username. " + creds.getUsername());
+      log.warn("AUTH: Login attempted with unknown username. {}", creds.getUsername());
       return ResponseEntity.badRequest().body("Invalid Username or Password");
     } else if (user.getLoginAttempts() >= 9) {
       String msg = "Too Many Attempts. Account is Locked";
-      log.info("AUTH: Too many attempts; account is locked: " + creds.getUsername());
+      log.warn("AUTH: Too many attempts; account is locked: {}", creds.getUsername());
       return ResponseEntity.badRequest().body(msg);
     }
 
@@ -74,7 +74,7 @@ public class AuthController {
     if (!validPassword) {
       int attempts = user.getLoginAttempts() + 1;
       securityService.updateLoginAttempts(attempts, user.getId());
-      log.info("AUTH: Login attempted with bad password for user: " + creds.getUsername() + ": count: " + attempts);
+      log.warn("AUTH: Login attempted with bad password for user={}, count={}", creds.getUsername(), attempts);
       return ResponseEntity.badRequest().body("Invalid Username or Password");
     } else if (user.getLoginAttempts() > 0) {
       //after successful login, if any previous unsuccessful, reset the count
@@ -82,7 +82,7 @@ public class AuthController {
     }
 
     if (!user.isUnlocked()) {
-      log.info("AUTH: Cannot log in; user does not have access: " + creds.getUsername());
+      log.warn("AUTH: Cannot log in; user does not have access: {}", creds.getUsername());
       return ResponseEntity.badRequest().body("This account does not have access.");
     }
 
@@ -96,7 +96,7 @@ public class AuthController {
         //validate that the user's password is not the same as the company default for any company they have access to
         Boolean passwordIsCompanyDefault = securityService.passwordIsCompanyDefault(user.getId(), creds.getPassword());
         if(passwordIsCompanyDefault) {
-          log.info("AUTH: Login attempted with company default password for user: " + creds.getUsername());
+          log.warn("AUTH: Login attempted with company default password for user={}", creds.getUsername());
           // NOT_ACCEPTABLE = 406
           return ResponseEntity.status(NOT_ACCEPTABLE).body("You must reset your password. Cannot use company default.");
         }

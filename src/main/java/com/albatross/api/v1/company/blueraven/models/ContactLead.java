@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-@EqualsAndHashCode
 @Data
 @NoArgsConstructor
 public class ContactLead {

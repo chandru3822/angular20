@@ -14,7 +14,7 @@ declare
   v_timezone text;
 BEGIN
 
-  select t.timezone
+  select coalesce(t.timezone, p.time_zone)
   into v_timezone
   from flow.project p
          inner join flow.postal_code pc on pc.postal_code = substr(
@@ -25,8 +25,8 @@ BEGIN
                        pczu.archived is false
          inner join flow.user_position up on up.user_id = pczu.user_id and up.primary_flag is true
          inner join flow.org o on o.id = up.org_id
-         inner join flow.company_timezone ct on o.company_timezone_id = ct.id
-         inner join flow.timezone t on ct.timezone_id = t.id
+         left join flow.company_timezone ct on o.company_timezone_id = ct.id
+         left join flow.timezone t on ct.timezone_id = t.id
   where p.id = p_project_id
   limit 1;
 
