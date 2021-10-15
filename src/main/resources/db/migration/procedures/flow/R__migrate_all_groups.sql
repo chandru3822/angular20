@@ -520,7 +520,7 @@ BEGIN
     perform flow.migrate_fields_to_group(v_new_group_id_3362_D, 19591, 4);
 
 
-    perform flow.migrate_fields_to_group(v_new_group_id_3414_OC, 19594, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3362_OC, 19594, 1);
 
   elsif p_process_step_id = 134 then
     select id

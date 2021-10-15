@@ -45,7 +45,7 @@ BEGIN
   if v_verify_structural_upgrade_id is not null then
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
                                                                        null,
-                                                                       p_project_process_step_id,
+                                                                       v_verify_structural_upgrade_id,
                                                                        547);
   end if;
 
