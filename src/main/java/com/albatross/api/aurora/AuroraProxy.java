@@ -92,7 +92,7 @@ public class AuroraProxy {
       checkArgument(
           statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
       InputStream content = resp.getEntity().getContent();
-      log.debug("AURORA: starting build design summary... {}", content);
+      log.debug("AURORA: starting build design summary");
       return new DesignSummary(content);
     } catch (Exception e) {
       String msg = "AURORA: Failed to get design summary for design " + designId;
