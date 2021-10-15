@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class AvailabilityService {
 
   private final SqlCache sqlCache;
@@ -74,8 +74,7 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    List<ResourceSchedule> results = sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
-    return results;
+    return sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
   }
 
   public List<WorkDay> getWorkDays() {
@@ -84,8 +83,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<WorkDay> results = sqlCache.query("availability.getWorkDays", params, WorkDay.class);
-    return results;
+    return sqlCache.query("availability.getWorkDays", params, WorkDay.class);
   }
 
   public ResourceSchedule getOneResourceAvailability(Long id) {
@@ -160,9 +158,12 @@ public class AvailabilityService {
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
     if ((null == rsa.getStartTime() && null != rsa.getEndTime()) || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
-      String msg = "AVAILABILITY: Daily schedule must have start and end time. ID: " + rsa.getId()
-        + ", Day of Week: " + rsa.getDayOfWeekId() + ", Start Time: " + rsa.getStartTime() + ", End Time: " + rsa.getEndTime();
-      log.error(msg);
+      log.error(
+          "AVAILABILITY: Daily schedule must have start and end time. ID={}, Day of Week={}, Start Time={}, End Time={}",
+          rsa.getId(),
+          rsa.getDayOfWeekId(),
+          rsa.getStartTime(),
+          rsa.getEndTime());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Daily schedule must have start and end time.", new Exception());
     }
 
@@ -295,8 +296,7 @@ public class AvailabilityService {
     List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
     Integer count = sqlCache.queryForObject("availability.getAppointmentsForResourceCount", params, Integer.class);
 
-    Page<ResourceAppointment> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public ResourceAppointment saveAppointment(ResourceAppointment ra) throws Exception {
@@ -369,8 +369,7 @@ public class AvailabilityService {
       }
     }
 
-    ResourceAppointment appt = getOneResourceAppointment(id);
-    return appt;
+    return getOneResourceAppointment(id);
   }
 
   public void processFutureRecurringEvents() {
@@ -558,15 +557,25 @@ public class AvailabilityService {
 
   public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("startTime", startTime);
-    params.put("endTime", endTime);
-    params.put("availableDate", availableDate);
-    params.put("remote", null != remote ? remote : false);
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("startTime", startTime);
+      params.put("endTime", endTime);
+      params.put("availableDate", availableDate);
+      params.put("remote", null != remote ? remote : false);
 
-    List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
-    return results;
+      return sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+    } catch (Exception e) {
+      log.error(
+          "AVAILABILITY: Error fetching time slots for projectId={}, startTime={}, endTime={}, availableDate={}, remote={}",
+          projectId,
+          startTime,
+          endTime,
+          availableDate,
+          remote);
+      throw e;
+    }
   }
 
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws Exception {
@@ -580,7 +589,6 @@ public class AvailabilityService {
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
-
 
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
