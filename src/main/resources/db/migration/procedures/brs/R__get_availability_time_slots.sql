@@ -20,15 +20,9 @@ BEGIN
          inner join flow.postal_code pc on pc.postal_code = substr(
     trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
          inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-         inner join flow.postal_code_zone_user pczu
-                    on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
-                       pczu.archived is false
-         inner join flow.user_position up on up.user_id = pczu.user_id and up.primary_flag is true
-         inner join flow.org o on o.id = up.org_id
-         left join flow.company_timezone ct on o.company_timezone_id = ct.id
+         left join flow.company_timezone ct on pcz.company_timezone_id = ct.id
          left join flow.timezone t on ct.timezone_id = t.id
-  where p.id = p_project_id
-  limit 1;
+  where p.id = p_project_id;
 
   if p_remote is false then
     create temp table excluded_appointments as (
