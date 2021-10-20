@@ -35,6 +35,9 @@ declare
   v_in_person_work_order_id           integer;
   v_in_person_work_order2_id          integer;
   v_in_person_work_order3_id          integer;
+  v_add_arti_id             integer;
+  v_add_artwo     integer;
+  v_rarti integer;
 BEGIN
 
   select id
@@ -165,6 +168,21 @@ BEGIN
   into v_in_person_work_order3_id
   from flow.event
   where temp_cfg_id = 5661;
+
+  select id
+  into v_add_arti_id
+  from flow.event
+  where temp_cfg_id = 6163;
+
+  select id
+  into v_add_artwo
+  from flow.event
+  where temp_cfg_id = 6965;
+
+  select id
+  into v_rarti
+  from flow.event
+  where temp_cfg_id = 6840;
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
@@ -526,7 +544,17 @@ BEGIN
 
   perform flow.migrate_events(2841);
 
+  raise notice 'starting schedule add additional resource to install';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_add_arti_id);
+  perform flow.migrate_events(3091);
 
+  raise notice 'starting schedule add additional resource to work order';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_add_artwo);
+  perform flow.migrate_events(3480);
+
+  raise notice 'starting schedule add retrofit additional resource to install';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_rarti);
+  perform flow.migrate_events(3441);
 
   --this updates all project_details
   raise notice 'starting update project details';

@@ -61,6 +61,9 @@ declare
   v_new_group_id_2841_RD integer;
   v_new_group_id_2841_OC integer;
   v_new_group_id_2841_NS integer;
+v_new_group_id_3091_D integer;
+v_new_group_id_3480_D integer;
+  v_new_group_id_3441_D integer;
 
 BEGIN
   /*Schedule closer appointment*/
@@ -779,6 +782,29 @@ BEGIN
     update flow.custom_field_group
     set group_order = 4
     where id = 6890;
+  elsif p_process_step_id = 3091 then
+    select id
+    into v_new_group_id_3091_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+    perform flow.migrate_fields_to_group(v_new_group_id_3091_D,19018 , 1);
+  elsif p_process_step_id = 3480 then
+    select id
+    into v_new_group_id_3480_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+    perform flow.migrate_fields_to_group(v_new_group_id_3480_D,21951 , 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3480_D,21952 , 2);
+
+  elsif p_process_step_id = 3441 then
+    select id
+    into v_new_group_id_3441_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+    perform flow.migrate_fields_to_group(v_new_group_id_3441_D,21607 , 1);
 
 
   end if;

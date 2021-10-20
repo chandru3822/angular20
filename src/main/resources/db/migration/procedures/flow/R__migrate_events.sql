@@ -186,6 +186,15 @@ BEGIN
       elsif x.process_step_id = 2841 then
         perform flow.migrate_schedule_in_person_work_order3_to_events(v_event_id,
                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 3091 then
+        perform flow.migrate_schedule_add_additional_resource_to_install_to_events(v_event_id,
+                                                                      x.project_process_step_id);
+      elsif x.process_step_id = 3480 then
+        perform flow.migrate_schedule_add_additional_resource_to_wo_to_events(v_event_id,
+                                                                                   x.project_process_step_id);
+      elsif x.process_step_id = 3441 then
+        perform flow.migrate_schedule_add_retro_addtln_resource_install_to_events(v_event_id,
+                                                                              x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
