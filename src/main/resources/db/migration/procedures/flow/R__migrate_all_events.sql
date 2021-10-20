@@ -29,6 +29,12 @@ declare
   v_non_standard_visit_id             integer;
   v_meter_pull_id                     integer;
   v_outsource_mpu_id                  integer;
+  v_inhouse_mpu_id                    integer;
+  v_rma_work_order_id                 integer;
+  v_rook_leak_repair_id               integer;
+  v_in_person_work_order_id           integer;
+  v_in_person_work_order2_id          integer;
+  v_in_person_work_order3_id          integer;
 BEGIN
 
   select id
@@ -129,6 +135,36 @@ BEGIN
   into v_outsource_mpu_id
   from flow.event
   where temp_cfg_id = 133;
+
+  select id
+  into v_inhouse_mpu_id
+  from flow.event
+  where temp_cfg_id = 76;
+
+  select id
+  into v_rma_work_order_id
+  from flow.event
+  where temp_cfg_id = 7006;
+
+  select id
+  into v_rook_leak_repair_id
+  from flow.event
+  where temp_cfg_id = 6692;
+
+  select id
+  into v_in_person_work_order_id
+  from flow.event
+  where temp_cfg_id = 64;
+
+  select id
+  into v_in_person_work_order2_id
+  from flow.event
+  where temp_cfg_id = 5656;
+
+  select id
+  into v_in_person_work_order3_id
+  from flow.event
+  where temp_cfg_id = 5661;
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
@@ -444,6 +480,52 @@ BEGIN
 
 
   perform flow.migrate_events(134);
+
+  raise notice 'starting schedule inhouse mpu';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_inhouse_mpu_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_inhouse_mpu_id);
+
+
+  perform flow.migrate_events(28);
+
+  raise notice 'starting schedule rma work order';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_rma_work_order_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_rma_work_order_id);
+
+
+  perform flow.migrate_events(3487);
+
+  raise notice 'starting schedule roof leak repair';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_rook_leak_repair_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_rook_leak_repair_id);
+
+
+  perform flow.migrate_events(3409);
+
+  raise notice 'starting schedule in person work order';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_in_person_work_order_id);
+  perform flow.migrate_insert_new_group('Reschedule Details', 2, null, v_in_person_work_order_id);
+  perform flow.migrate_insert_new_group('Outcome', 3, null, v_in_person_work_order_id);
+  perform flow.migrate_insert_new_group('No-Show', 4, null, v_in_person_work_order_id);
+
+  perform flow.migrate_events(54);
+
+  raise notice 'starting schedule in person work order2';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_in_person_work_order2_id);
+  perform flow.migrate_insert_new_group('Reschedule Details', 2, null, v_in_person_work_order2_id);
+  perform flow.migrate_insert_new_group('Outcome', 3, null, v_in_person_work_order2_id);
+  perform flow.migrate_insert_new_group('No-Show', 4, null, v_in_person_work_order2_id);
+
+  perform flow.migrate_events(2838);
+
+  raise notice 'starting schedule in person work order3';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_in_person_work_order3_id);
+  perform flow.migrate_insert_new_group('Reschedule Details', 2, null, v_in_person_work_order3_id);
+  perform flow.migrate_insert_new_group('Outcome', 3, null, v_in_person_work_order3_id);
+  perform flow.migrate_insert_new_group('No-Show', 4, null, v_in_person_work_order3_id);
+
+  perform flow.migrate_events(2841);
+
 
 
   --this updates all project_details

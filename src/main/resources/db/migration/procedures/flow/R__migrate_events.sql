@@ -168,6 +168,24 @@ BEGIN
       elsif x.process_step_id = 134 then
         perform flow.migrate_schedule_outsource_mpu_to_events(v_event_id,
                                                            x.project_process_step_id);
+      elsif x.process_step_id = 28 then
+        perform flow.migrate_schedule_inhouse_mpu_to_events(v_event_id,
+                                                              x.project_process_step_id);
+      elsif x.process_step_id = 3487 then
+        perform flow.migrate_schedule_rma_work_order_to_events(v_event_id,
+                                                            x.project_process_step_id);
+      elsif x.process_step_id = 3409 then
+        perform flow.migrate_schedule_roof_leak_repair_to_events(v_event_id,
+                                                               x.project_process_step_id);
+      elsif x.process_step_id = 54 then
+        perform flow.migrate_schedule_in_person_work_order_to_events(v_event_id,
+                                                                 x.project_process_step_id);
+      elsif x.process_step_id = 2838 then
+        perform flow.migrate_schedule_in_person_work_order2_to_events(v_event_id,
+                                                                     x.project_process_step_id);
+      elsif x.process_step_id = 2841 then
+        perform flow.migrate_schedule_in_person_work_order3_to_events(v_event_id,
+                                                                      x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
