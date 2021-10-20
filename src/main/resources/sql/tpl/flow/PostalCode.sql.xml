@@ -226,12 +226,16 @@
                 concat(upv.first_name, ' ', upv.last_name) AS full_name,
                 concat(upv.first_name, ' ', upv.last_name) AS title
       from flow.user_positions_vw upv
+        inner join flow.org o on upv.org_id = o.id
       where case when :isParent and :isSchedulingTool
                      then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                  else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :loadSchedulers is true
                      then upv.position_scheduler is true
                  else upv.position_schedulable is true end
+        and case when (select remote from flow.postal_code_zone where id = :zoneId) is false
+          then o.company_timezone_id = (select company_timezone_id from flow.postal_code_zone where id = :zoneId)
+        else 1=1 end
         and upv.user_archived is not true
         and upv.archived is not true
         and upv.has_access = true
