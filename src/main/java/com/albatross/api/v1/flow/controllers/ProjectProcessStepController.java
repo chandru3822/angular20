@@ -117,7 +117,7 @@ public class ProjectProcessStepController {
                                                        @PathVariable Long existingCompanyProcessStepStatusTypeId,
                                                        @RequestBody ProjectProcessStep projectProcessStep) {
 
-    Long newPpsId = projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null);
+    Long newPpsId = projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId);
 
     try {
       projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
@@ -165,7 +165,7 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId(), null, null, new ArrayList<>());
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), status.getCancelledCompanyProcessStepStatusTypeId(), null, null, null, new ArrayList<>());
 
         // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free time... good one
         try {

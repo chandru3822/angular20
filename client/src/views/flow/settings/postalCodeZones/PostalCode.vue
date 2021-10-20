@@ -22,7 +22,7 @@
         <span v-if="zone.schedulableFutureDays">{{ zone.schedulableFutureDays }} days</span>
         <span v-else>N/A</span>
       </div>
-      <div  class="dtf" v-if="zone.remote">{{ zone.timezone }}</div>
+      <div  class="dtf">{{ zone.timezone }}</div>
     </div>
     <div v-else>
       <v-row>
@@ -58,7 +58,6 @@
                 <v-autocomplete v-model="zone.companyTimezoneId"
                                 :items="companyTimezones"
                                 label="Time Zone"
-                                v-if="zone.remote"
                                 style="width: 200px;"
                                 item-text="timezone"
                                 item-value="id"
@@ -66,8 +65,8 @@
                 ></v-autocomplete>
               </td>
               <td class="pl-5 pb-3">
-                <v-btn color="primaryCustom" dark class="white--text" @click="saveZoneInfo()">
-                  <v-icon>save</v-icon>
+                <v-btn color="primaryCustom" :disabled="!zone.zoneName || !zone.companyTimezoneId"
+                       class="white--text" @click="saveZoneInfo()">
                   Save
                 </v-btn>
               </td>
@@ -137,10 +136,8 @@ export default {
     }
   },
   async created() {
+    this.getCompanyTimezones()
     await this.getZoneDetails()
-    if (this.zone?.remote) {
-      this.getCompanyTimezones()
-    }
   },
   methods: {
     async saveZoneInfo() {

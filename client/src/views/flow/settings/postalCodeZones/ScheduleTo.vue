@@ -21,6 +21,8 @@
                           label="Select a User..."
                           :loading="usersLoading"
                           item-text="fullName"
+                          hint="Note: You will no longer be able to add users who do not have the same timezone assigned to their primary position."
+                          :persistent-hint="!zone.remote"
                           item-value="userId"
                           return-object
                           autocomplete="off"
@@ -34,7 +36,7 @@
                           item-value="id"
                           attach
           ></v-autocomplete>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
+          <v-btn color="primaryCustom" class="mr-3 mt-5 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
             Add
           </v-btn>
