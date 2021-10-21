@@ -49,6 +49,7 @@
                                     psea.process_step_event_id as "processStepEventId",
                                     psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                                     psea.company_event_status_type_id as "companyEventStatusTypeId",
+                                    cest.event_status_type_id as "rootEventStatusTypeId",
                                     psea.created_by_id as "createdById",
                                     psea.modified_by_id as "modifiedById",
                                     cpsst.process_step_status_type as "processStepStatusType",
