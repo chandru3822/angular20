@@ -90,9 +90,9 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
-    and  flow.get_difference_of_dates_by_duration(
-    (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-    (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+--     and  flow.get_difference_of_dates_by_duration(
+--     (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+--     (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
@@ -105,9 +105,9 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
-    and  flow.get_difference_of_dates_by_duration(
-           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+--     and  flow.get_difference_of_dates_by_duration(
+--            (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+--            (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
@@ -120,9 +120,9 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
-    and  flow.get_difference_of_dates_by_duration(
-           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+--     and  flow.get_difference_of_dates_by_duration(
+--            (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+--            (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
@@ -135,9 +135,9 @@ BEGIN
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
          inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
   where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
-    and  flow.get_difference_of_dates_by_duration(
-           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
+--     and  flow.get_difference_of_dates_by_duration(
+--            (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+--            (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 0
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
