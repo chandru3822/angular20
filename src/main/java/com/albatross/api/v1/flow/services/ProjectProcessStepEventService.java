@@ -249,7 +249,7 @@ public class ProjectProcessStepEventService {
             //if the new status was a root ACTIVE status then run pps auto triggers
             //only run if the referring project process step is active
             if (pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
-              projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
+              projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails());
             }
           }
 
