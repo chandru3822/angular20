@@ -141,6 +141,60 @@ BEGIN
       elsif x.process_step_id = 129 then
         perform flow.migrate_schedule_eto_rebate_inspection_to_events(v_event_id,
                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 138 then
+        perform flow.migrate_schedule_structural_upgrade_non_standard_to_events(v_event_id,
+                                                                      x.project_process_step_id);
+      elsif x.process_step_id = 146 then
+        perform flow.migrate_schedule_ac_compressor_relocation_to_events(v_event_id,
+                                                                                x.project_process_step_id);
+      elsif x.process_step_id = 140 then
+        perform flow.migrate_schedule_reroof_to_events(v_event_id,
+                                                                         x.project_process_step_id);
+      elsif x.process_step_id = 144 then
+        perform flow.migrate_schedule_tree_trimming_to_events(v_event_id,
+                                                       x.project_process_step_id);
+      elsif x.process_step_id = 142 then
+        perform flow.migrate_schedule_trenching_to_events(v_event_id,
+                                                              x.project_process_step_id);
+      elsif x.process_step_id = 148 then
+        perform flow.migrate_schedule_deadfront_to_events(v_event_id,
+                                                          x.project_process_step_id);
+      elsif x.process_step_id = 3414 then
+        perform flow.migrate_schedule_non_standard_visit_to_events(v_event_id,
+                                                          x.project_process_step_id);
+      elsif x.process_step_id = 3362 then
+        perform flow.migrate_schedule_meter_pull_to_events(v_event_id,
+                                                                   x.project_process_step_id);
+      elsif x.process_step_id = 134 then
+        perform flow.migrate_schedule_outsource_mpu_to_events(v_event_id,
+                                                           x.project_process_step_id);
+      elsif x.process_step_id = 28 then
+        perform flow.migrate_schedule_inhouse_mpu_to_events(v_event_id,
+                                                              x.project_process_step_id);
+      elsif x.process_step_id = 3487 then
+        perform flow.migrate_schedule_rma_work_order_to_events(v_event_id,
+                                                            x.project_process_step_id);
+      elsif x.process_step_id = 3409 then
+        perform flow.migrate_schedule_roof_leak_repair_to_events(v_event_id,
+                                                               x.project_process_step_id);
+      elsif x.process_step_id = 54 then
+        perform flow.migrate_schedule_in_person_work_order_to_events(v_event_id,
+                                                                 x.project_process_step_id);
+      elsif x.process_step_id = 2838 then
+        perform flow.migrate_schedule_in_person_work_order2_to_events(v_event_id,
+                                                                     x.project_process_step_id);
+      elsif x.process_step_id = 2841 then
+        perform flow.migrate_schedule_in_person_work_order3_to_events(v_event_id,
+                                                                      x.project_process_step_id);
+      elsif x.process_step_id = 3091 then
+        perform flow.migrate_schedule_add_additional_resource_to_install_to_events(v_event_id,
+                                                                      x.project_process_step_id);
+      elsif x.process_step_id = 3480 then
+        perform flow.migrate_schedule_add_additional_resource_to_wo_to_events(v_event_id,
+                                                                                   x.project_process_step_id);
+      elsif x.process_step_id = 3441 then
+        perform flow.migrate_schedule_add_retro_addtln_resource_install_to_events(v_event_id,
+                                                                              x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
