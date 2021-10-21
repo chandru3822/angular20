@@ -49,10 +49,10 @@
 -- from flow.list_of_value;
 -- @randa @keller START HERE
 -- EVENTS:
--- INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Permit Signature', 11359, 3, '2021-08-27 22:23:33.933194', null, 2356764, null, false, null);
--- INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Permit Pickup and Delivery', 247, 3, '2021-08-27 22:12:10.910605', '2021-08-27 22:12:23.245748', 2356764, 2356764, false, null);
--- INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Online Permit Submission', 11349, 3, '2021-08-27 22:11:14.516982', null, 2356764, null, false, null);
--- INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - In Person Permit Submission', 11348, 3, '2021-08-27 22:02:32.405101', '2021-08-27 22:02:38.105738', 2356764, 2356764, false, null);
+INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Permit Signature', 11359, 3, '2021-08-27 22:23:33.933194', null, 2356764, null, false, null);
+INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Permit Pickup and Delivery', 247, 3, '2021-08-27 22:12:10.910605', '2021-08-27 22:12:23.245748', 2356764, 2356764, false, null);
+INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - Online Permit Submission', 11349, 3, '2021-08-27 22:11:14.516982', null, 2356764, null, false, null);
+INSERT INTO flow.event (event_name, resource_custom_field_id, company_id, date_created, date_modified, created_by_id, modified_by_id, archived, temp_cfg_id) VALUES ('DO NOT TOUCH - In Person Permit Submission', 11348, 3, '2021-08-27 22:02:32.405101', '2021-08-27 22:02:38.105738', 2356764, 2356764, false, null);
 -- LIST OF VALUES with their custom fields
 -- with parent_lov as (
 --   INSERT INTO flow.list_of_value (name, code, parent_id, display_order, date_created, date_modified, created_by_id, modified_by_id, archived, migrated_original_id, migrated_company_id)
