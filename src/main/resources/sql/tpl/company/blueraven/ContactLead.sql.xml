@@ -1,16 +1,16 @@
 <sql>
   <contactLead.insertContact><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id, latitude, longitude)
     values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId,
             (select cs.id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
                     where s.state = :state and cs.company_id = :companyId),
             (select s.country_id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
-                    where s.state = :state and cs.company_id = :companyId))
+                    where s.state = :state and cs.company_id = :companyId),  :latitude, :longitude)
   ]]></contactLead.insertContact>
 
   <contactLead.insertContactNoState><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId)
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, latitude, longitude)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId, :latitude, :longitude)
   ]]></contactLead.insertContactNoState>
 
   <contactLead.checkIfCustomFieldDropdownValueExists><![CDATA[

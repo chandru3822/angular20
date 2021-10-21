@@ -108,7 +108,6 @@
 <!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
 <!--                    size="20" color="green">mdi-circle-slice-8-->
 <!--            </v-icon>-->
-
             <v-dialog
               v-model="processStep.changeActiveConfirm"
               width="500">
@@ -118,7 +117,7 @@
                   v-on="on"
                   dense
                   v-model="processStep.main"
-                  :disabled="processStep.main || !userCanEdit || availableProcessStepStatuses.length === 0"
+                  :disabled="processStep.main || !userCanManage || availableProcessStepStatuses.length === 0"
                   label="Primary"
                 />
               </template>
@@ -314,6 +313,8 @@
         fieldsSaving: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
+        userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
+        userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
         schedulerCanEdit: false,
         showRemoteSearch: false,
         mostRecentSearchWasRemote: false,

@@ -61,7 +61,7 @@ public class UserController {
     if (userService.usernameExists(user.getUsername(), user.getId())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use", new Exception());
     }
-    if (null != user.getNewPassword() && user.getNewPassword().length() < 8) {
+    if (null != user.getNewPassword() && !user.getNewPassword().isEmpty() && user.getNewPassword().length() < 8) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
     }
     if (user.getUsername().length() < 3) {
@@ -166,10 +166,10 @@ public class UserController {
         context.put("from", "Blue Raven Solar Sales HR");
         context.put("mailTo", "saleshr@blueravensolar.com");
 
-        communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+        communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
         log.info("AUTH: Password reset email has been sent to {}", passwordResetRequest.getUsernameOrEmail());
       } else {
-        log.info("AUTH: Password reset attempted for unknown user email {}.", passwordResetRequest.getUsernameOrEmail());
+        log.warn("AUTH: Password reset attempted for unknown user email {}.", passwordResetRequest.getUsernameOrEmail());
         return ResponseEntity.badRequest().body("{\"message\" : \"No user found for that email or username\"}");
       }
     }
@@ -215,12 +215,12 @@ public class UserController {
       float time = currentTimestamp.getTime() - user.getExpiryDate().getTime();
       float time1 = time / divider;
       if (time1 > 24) {
-        log.info("AUTH: Password reset for user {} attempted with expired link.", userUuid);
+        log.warn("AUTH: Password reset for user {} attempted with expired link.", userUuid);
         ResponseEntity.badRequest().body("{\"message\" : \"This link has expired.  Please retry for a new link by clicking on the login link above.\"}");
       }
 
     } else {
-      log.info("AUTH: Password reset attempted for unknown user {}.", userUuid);
+      log.warn("AUTH: Password reset attempted for unknown user {}.", userUuid);
       ResponseEntity.badRequest().body("{\"message\" : \"Can't find user for this request\"}");
     }
 

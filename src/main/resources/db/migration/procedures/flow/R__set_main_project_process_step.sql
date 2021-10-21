@@ -28,6 +28,7 @@ BEGIN
       project_id = v_project_id and
       process_step_id = v_process_step_id and
       main = true
+      and id != p_project_process_step_id
   returning id, company_process_step_status_type_id into v_previous_main_project_process_step_id, v_previous_main_company_process_step_status_type_id;
 
   -- set main flag

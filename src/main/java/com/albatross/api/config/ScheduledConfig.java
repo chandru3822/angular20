@@ -1,29 +1,23 @@
 package com.albatross.api.config;
 
-import com.albatross.api.v1.company.blueraven.services.GenesysService;
-import com.albatross.api.v1.flow.services.AvailabilityService;
-import com.albatross.api.v1.flow.services.ProjectProcessStepService;
-import com.albatross.api.v1.flow.services.SMSService;
+import com.albatross.api.v1.flow.services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 
 @Slf4j
 @Configuration
-@EnableAsync
 @EnableScheduling
 @RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
@@ -32,9 +26,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
-
-    @Value(value = "${spring.profiles.active}")
-    private String springProfile;
 
     @Value(value = "${app.home_url}")
     private String homeUrl;
@@ -51,21 +42,20 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.cacheAvailability.enabled:false}")
     private boolean runCachedAvailability;
 
-  @Value(value = "${app.cron.processGenesysContacts.enabled:false}")
-  private Boolean updateGenesysContacts;
-
-    @Value(value = "${app.cron.refreshUserPositionOrgs.enabled:false}")
-    private boolean refreshUserPositionOrgs;
+    @Value(value = "${app.cron.fillProjectGeoCoords.enabled:false}")
+    private boolean fillProjectGeoCoords;
 
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
-    private final GenesysService genesysService;
+    private final ProjectService projectService;
+    private final ContactService contactService;
 
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        taskRegistrar.setScheduler(taskExecutor());
+      final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10);
+      taskRegistrar.setScheduler(scheduledExecutorService);
     }
 
     /*
@@ -110,16 +100,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
         }
     }
 
-  //    every  day at 1 am
-  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
-  public void updateGenesysContacts() {
-    if (updateGenesysContacts) {
-      log.info("*** CRON: start processing Genesys contacts ***");
-      genesysService.processGenesysContacts();
-      log.info("*** CRON: end processing Genesys contacts ***");
-    }
-  }
-
     // last day of every month
 //    @Scheduled(cron = "0 0 0 L * ?")
     @Scheduled(cron = "0 0 2 27 * *", zone = "America/Denver")
@@ -140,9 +120,21 @@ public class ScheduledConfig implements SchedulingConfigurer {
       }
     }
 
-    @Bean(destroyMethod = "shutdown")
-    public Executor taskExecutor() {
-        return Executors.newScheduledThreadPool(10);
+    // @TODO: This is temporary - https://trello.com/c/IUk94IAk
+    @Scheduled(cron = "0 30 23 * * *", zone = "America/Denver")
+    public void fillProjectGeoCoords() {
+      if (fillProjectGeoCoords) {
+        log.info("*** CRON: start project geo coords ***");
+        projectService.fillGeoCoords();
+        log.info("*** CRON: end project geo coords ***");
+      }
     }
 
+  // @TODO: This is temporary - randa. updating contact geo-location until all are finished
+    @Scheduled(cron = "0 0 4 * * *", zone = "America/Denver")
+    public void updateContactLatLong() throws Exception {
+      log.info("*** CRON: start CONTACT geo coords updates ***");
+      contactService.updateContactLatLong(50000);
+      log.info("*** CRON: end CONTACT geo coords updates ***");
+    }
 }

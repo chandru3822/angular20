@@ -3,13 +3,12 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mapbox.geojson.Point;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +42,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.ObjLongConsumer;
 import java.util.stream.Collectors;
 
 
@@ -53,11 +51,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class AvailabilityService {
 
   private final SqlCache sqlCache;
-  private final LocationUtils locationUtils;
   private final SecurityService securityService;
   private final DataSource dataSource;
   private final ObjectMapper om;
@@ -66,6 +63,7 @@ public class AvailabilityService {
   private final ProjectProcessStepService projectProcessStepService;
   private final CustomFieldValueService customFieldValueService;
   private final UserPositionService userPositionService;
+  private final MapboxApiService mapboxApiService;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -75,8 +73,7 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    List<ResourceSchedule> results = sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
-    return results;
+    return sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
   }
 
   public List<WorkDay> getWorkDays() {
@@ -85,8 +82,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<WorkDay> results = sqlCache.query("availability.getWorkDays", params, WorkDay.class);
-    return results;
+    return sqlCache.query("availability.getWorkDays", params, WorkDay.class);
   }
 
   public ResourceSchedule getOneResourceAvailability(Long id) {
@@ -161,9 +157,12 @@ public class AvailabilityService {
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
     if ((null == rsa.getStartTime() && null != rsa.getEndTime()) || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
-      String msg = "AVAILABILITY: Daily schedule must have start and end time. ID: " + rsa.getId()
-        + ", Day of Week: " + rsa.getDayOfWeekId() + ", Start Time: " + rsa.getStartTime() + ", End Time: " + rsa.getEndTime();
-      log.error(msg);
+      log.error(
+          "AVAILABILITY: Daily schedule must have start and end time. ID={}, Day of Week={}, Start Time={}, End Time={}",
+          rsa.getId(),
+          rsa.getDayOfWeekId(),
+          rsa.getStartTime(),
+          rsa.getEndTime());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Daily schedule must have start and end time.", new Exception());
     }
 
@@ -185,6 +184,7 @@ public class AvailabilityService {
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
     params.put("createdById", user.trueUserId());
+    params.put("daylightSavings", rsa.getDaylightSavings());
 
     Long rsaId = null;
     //if existing and archived, or existing and they send in null start and end time
@@ -295,11 +295,10 @@ public class AvailabilityService {
     List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
     Integer count = sqlCache.queryForObject("availability.getAppointmentsForResourceCount", params, Integer.class);
 
-    Page<ResourceAppointment> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  public ResourceAppointment saveAppointment(ResourceAppointment ra) {
+  public ResourceAppointment saveAppointment(ResourceAppointment ra) throws Exception {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -319,14 +318,48 @@ public class AvailabilityService {
     params.put("recurringEndTime", ra.getRecurringEndTime());
 
     Long id = null;
+    //lat long will be null for new or invalid addresses
+    Double latitude = null == ra.getLocation() ? null : ra.getLatitude();
+    Double longitude = null == ra.getLocation() ? null : ra.getLongitude();
 
     if (null != ra.getId()) {
       id = ra.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
+
+      //reload lat/long if location changed
+      if(null != ra.getReloadCoordinates() && ra.getReloadCoordinates() && null != ra.getLocation()) {
+        List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        //if we found new coordinates then uses those values
+        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+        } else {
+          //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+          latitude = null;
+          longitude = null;
+        }
+      }
+      params.put("latitude", latitude);
+      params.put("longitude", longitude);
+
       sqlCache.update("availability.updateAppointment", params);
     } else {
+      if(null != ra.getLocation()) {
+        List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          //1 = lat, 0 = long
+          latitude = coordinates.get(1);
+          longitude = coordinates.get(0);
+          ra.setLatitude(latitude);
+          ra.setLongitude(longitude);
+        }
+      }
+
       if (null == ra.getRepeat() || !ra.getRepeat()) {
+        params.put("latitude", latitude);
+        params.put("longitude", longitude);
         params.put("createdById", user.trueUserId());
         params.put("recurringEventId", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
@@ -335,15 +368,7 @@ public class AvailabilityService {
       }
     }
 
-    ResourceAppointment appt = getOneResourceAppointment(id);
-    if (null != ra.getLocation() && (null == ra.getId() || ra.getReloadCoordinates())) {
-      getAppointmentsCoordinates(ra.getLocation(), id);
-    }
-    return appt;
-  }
-
-  public void getAppointmentsCoordinates(String address, Long id) {
-    locationUtils.getGeocode(address, id, new CustomGeoFunction());
+    return getOneResourceAppointment(id);
   }
 
   public void processFutureRecurringEvents() {
@@ -384,7 +409,7 @@ public class AvailabilityService {
           boolean alreadyExists = false;
           LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
-          log.info("CRON: recurrence: {}", rra.getRecurrence());
+          log.debug("CRON: recurrence: {}", rra.getRecurrence());
           //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
           if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
             limitReached = true;
@@ -482,6 +507,8 @@ public class AvailabilityService {
           params.put("title", null != ra.getTitle() ? ra.getTitle() : ra.getDescription());
           params.put("description", ra.getDescription());
           params.put("location", ra.getLocation());
+          params.put("latitude", ra.getLatitude());
+          params.put("longitude", ra.getLongitude());
           params.put("allDay", ra.getAllDay() != null && ra.getAllDay());
           params.put("companyId", user.getCompanyId());
           params.put("createdById", user.trueUserId());
@@ -529,15 +556,25 @@ public class AvailabilityService {
 
   public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("startTime", startTime);
-    params.put("endTime", endTime);
-    params.put("availableDate", availableDate);
-    params.put("remote", null != remote ? remote : false);
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("startTime", startTime);
+      params.put("endTime", endTime);
+      params.put("availableDate", availableDate);
+      params.put("remote", null != remote ? remote : false);
 
-    List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
-    return results;
+      return sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+    } catch (Exception e) {
+      log.error(
+          "AVAILABILITY: Error fetching time slots for projectId={}, startTime={}, endTime={}, availableDate={}, remote={}",
+          projectId,
+          startTime,
+          endTime,
+          availableDate,
+          remote);
+      throw e;
+    }
   }
 
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws Exception {
@@ -553,13 +590,12 @@ public class AvailabilityService {
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
-
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
       if (!results.isEmpty()) {
         if (null != results.get(0) && results.get(0).getSuccess()) {
 
-          projectProcessStepService.performAutoTriggerActions(request.getProjectProcessStepId(), securityService.getCurrentUserDetails(), null);
+          projectProcessStepService.performAutoTriggerActions(request.getProjectProcessStepId(), securityService.getCurrentUserDetails());
 
           //on success send email to the closer
           String closerEmail = results.get(0).getUserEmail();
@@ -589,7 +625,7 @@ public class AvailabilityService {
             context.put("from", "Blue Raven Solar Sales HR");
             context.put("projectAddress", projectAddress);
 
-            communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
+            communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
           }
           return ResponseEntity.ok(results.get(0));
         } else {
@@ -612,7 +648,7 @@ public class AvailabilityService {
 
   public void cacheAvailability() {
 
-    sqlCache.update("availability.cacheAvailability", Collections.emptyMap());
+    sqlCache.query("availability.cacheAvailability", Collections.emptyMap(), String.class);
   }
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {
@@ -734,31 +770,6 @@ public class AvailabilityService {
       };
       bw.registerCustomEditor(List.class, "resourceScheduleAvailability",
         new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
-    }
-  }
-
-  private class CustomGeoFunction implements ObjLongConsumer {
-
-    @Override
-    public void accept(Object geoResult, long id) {
-      // note: the coordinates in the returned object are reversed: Long, Lat
-
-      //get the lat and long from point
-      Point point = (Point) geoResult;
-      Double latitude, longitude;
-      List<Double> coordinates = point.coordinates();
-      latitude = coordinates.get(1);
-      longitude = coordinates.get(0);
-
-      if (null != latitude && null != longitude) {
-        //if lat and long then update appts's location
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("latitude", latitude);
-        params.put("longitude", longitude);
-        params.put("id", id);
-
-        sqlCache.update("availability.updateGeoLocation", params);
-      }
     }
   }
 

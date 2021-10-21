@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-toolbar color="white" class="elevation-1 mt-3">
-      <v-select attach v-model="status"
+      <v-select v-model="status"
                 class="status-select pt-3 pl-1"
                 :items="statuses"
                 no-data-text="No Status Available"
@@ -474,6 +474,7 @@
           this.snackbar = getSnackbar('SUCCESS', 'Recurring Payment Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          await this.fetchPayments();
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Failed to save Recurring Payment')

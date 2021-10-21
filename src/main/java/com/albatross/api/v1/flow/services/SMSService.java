@@ -207,8 +207,8 @@ public class SMSService {
 
         jdbcTemplate.update(queueUpdate, params);
 
-        log.info(
-            "TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
+        //turning off this log for now.  the cron logs get long because of this one
+//        log.info("TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
       } catch (ApiException e) {
 
         Map<String, Object> params = new HashMap<>();
@@ -220,7 +220,7 @@ public class SMSService {
         params.put("created", null);
 
         jdbcTemplate.update(queueUpdate, params);
-        log.info("TWILIO: ERROR: {}", e.toString());
+        log.error("TWILIO: ERROR: {}", e.toString());
       }
     }
   }
@@ -231,7 +231,7 @@ public class SMSService {
    * @param msg
    */
   public void saveTwilioStatusUpdate(TwilioSMSResponse msg) {
-    log.info(
+    log.debug(
         "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | received webhook update",
         msg.getMessageSid(),
         msg.getFrom(),
@@ -284,7 +284,7 @@ public class SMSService {
    */
   public boolean updateMessageBySid(
       String sid, String status, String fromPhone, Date dateReceived) {
-    log.info(
+    log.debug(
         "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | updating", sid, fromPhone, status);
 
     Map<String, Object> params =
@@ -337,7 +337,7 @@ public class SMSService {
    * @param msg
    */
   private void queueTwilioWebhookPayload(TwilioSMSResponse msg) {
-    log.info(
+    log.debug(
         "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | queuing update Attempts: {}",
         msg.getMessageSid(),
         msg.getFrom(),
@@ -407,7 +407,7 @@ public class SMSService {
   }
 
   public void saveReply(TwilioMessageRequest sms) {
-    log.info("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
+    log.debug("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
 
     RecipientType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
 
@@ -433,7 +433,7 @@ public class SMSService {
       throws NumberParseException {
     String phoneE164 = cleanPhoneNumber(phone);
 
-    log.info("TWILIO: input phone: {}; clean phone: {}", phone, phoneE164);
+    log.debug("TWILIO: input phone: {}; clean phone: {}", phone, phoneE164);
     Map<String, Object> params =
         Map.of(
             "phone", phoneE164,

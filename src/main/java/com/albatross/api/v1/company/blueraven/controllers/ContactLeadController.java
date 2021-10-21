@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,8 +50,9 @@ public class ContactLeadController {
   }
 
   @PostMapping(value = "/cleanEnergyAuthority", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactCleanEnergyAuthority(@RequestBody ContactLead contactLead) {
+  public ResponseEntity<Object> updateContactCleanEnergyAuthority(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
+    return ResponseEntity.ok("");
   }
 
   @PostMapping(value = "/blueFireLeads", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -207,4 +209,25 @@ public class ContactLeadController {
   public void updateContactAmplifySolarMarketing(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/leadgenesis", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactLeadGenesis(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/allieddigitalmedia", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAlliedDigitalMedia(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/solarmarketingexperts", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarMarketingExperts(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/consumervoice", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactConsumerVoice(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
 }

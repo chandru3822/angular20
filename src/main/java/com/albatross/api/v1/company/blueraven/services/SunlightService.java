@@ -237,7 +237,7 @@ public class SunlightService {
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {
     String url = apiUrl + uri;
     accessToken = generateToken();
-    log.info("SUNLIGHT: sending to Sunlight url: {}", url);
+    log.debug("SUNLIGHT: sending to Sunlight url: {}", url);
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", String.format("Basic %s", basicToken));
     headers.put("SFAccessToken", String.format("Bearer %s", accessToken));

@@ -29,17 +29,15 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class WorkQueueService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final ObjectMapper om;
   private final SmartlistService smartlistService;
   private final SqlCacheRO sqlCacheRO;
 
-
-  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned) {
+  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned, Boolean filterFutureFollowUps) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
@@ -47,7 +45,8 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
-    params.put("unassigned", null == unassigned ? false : unassigned);
+    params.put("filterFutureFollowUps", null != filterFutureFollowUps && filterFutureFollowUps);
+    params.put("unassigned", null != unassigned && unassigned);
     //currently we only show active process steps. but sending in as a list in case that changes
     params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
 
@@ -99,10 +98,10 @@ public class WorkQueueService {
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
-    final String query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds);
+    final String query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     List<Map<String, Object>> randasResults = new ArrayList<>();
@@ -136,7 +135,7 @@ public class WorkQueueService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
     String query = smartlistService.buildSql(smartlist, fields);
     return query;

@@ -66,7 +66,7 @@ public class ProjectController {
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateProject(@RequestBody Project project) {
+  public ResponseEntity<Void> updateProject(@RequestBody Project project) throws Exception {
 //    currently only saves the address fields
     projectService.updateProject(project);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);

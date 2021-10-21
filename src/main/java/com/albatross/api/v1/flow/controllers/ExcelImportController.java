@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,70 +33,64 @@ import java.util.*;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
-/**
- * Created by John on 6/8/20.
- */
+/** Created by John on 6/8/20. */
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/excel")
+@RequiredArgsConstructor
 public class ExcelImportController {
 
-  @Autowired
-  private AuroraProxy aurora;
-
-  @Autowired
-  private SqlCache cache;
-
-  @Autowired
-  private NamedParameterJdbcTemplate jdbc;
-
-  @Autowired
-  private SecurityService security;
-
-  @Autowired
-  private ProjectService projectService;
-
-  @Autowired
-  ObjectMapper om;
+  private final ObjectMapper om;
+  private final AuroraProxy aurora;
+  private final SqlCache cache;
+  private final NamedParameterJdbcTemplate jdbc;
+  private final SecurityService security;
+  private final ProjectService projectService;
 
   @GetMapping("/excelId")
   public Long getUniqueIdForExcel() {
     String sql = cache.getByKey("excel.import.sqlId");
-    Long id = jdbc.queryForObject(sql, Maps.newHashMap(), Long.class);
-    return id;
+    return jdbc.queryForObject(sql, Maps.newHashMap(), Long.class);
   }
 
   @GetMapping("/baseConfirm/{baseId}")
-  public ResponseEntity getUniqueIdForExcel(@PathVariable("baseId") Long projectId, @RequestHeader Map<String, String> headers) {
+  public ResponseEntity getUniqueIdForExcel(
+      @PathVariable("baseId") Long projectId, @RequestHeader Map<String, String> headers) {
     debugPrintHeaders(headers);
     String sql = cache.getByKey("excel.import.validateProjectId");
     try {
-      Map<String, Object> result = jdbc.queryForObject(sql, new Params("projectId", projectId).buildNullable(), new ColumnMapRowMapper());
+      Map<String, Object> result =
+          jdbc.queryForObject(
+              sql, new Params("projectId", projectId).buildNullable(), new ColumnMapRowMapper());
       return ResponseEntity.ok(result);
     } catch (IncorrectResultSizeDataAccessException e) {
       if (e.getActualSize() < 1) {
-        log.info("EXCEL_IMPORT: Could not find project identified by Project id {}.", projectId);
+        log.error("EXCEL_IMPORT: Could not find project identified by Project id {}.", projectId);
         return ResponseEntity.notFound().build();
       }
-      log.error("EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("Encountered error retrieving project with Project id " + projectId);
+
+      log.error(
+          "EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
+      return ResponseEntity.status(INTERNAL_SERVER_ERROR)
+          .body("Encountered error retrieving project with Project id " + projectId);
     } catch (Exception e) {
-      log.error("EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("Encountered error retrieving project with Project id " + projectId);
+      log.error(
+          "EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
+      return ResponseEntity.status(INTERNAL_SERVER_ERROR)
+          .body("Encountered error retrieving project with Project id " + projectId);
     }
   }
 
   private void debugPrintHeaders(Map<String, String> headers) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     log.debug(headers + "; " + headers);
-    log.debug("Received request for ExcelId:\n{}", baos.toString());
+    log.debug("Received request for ExcelId:\n{}", baos);
   }
 
   @GetMapping("/baseConfirm/{baseId}/proposals/{proposalId}")
-  public ResponseEntity<String> getProposalData(@PathVariable("baseId") Long projectId,
-                                                @PathVariable("proposalId") Long proposalId) {
-    Map<String, Object> params = ImmutableMap.of("projectId", projectId,
-      "proposalId", proposalId);
+  public ResponseEntity<String> getProposalData(
+      @PathVariable("baseId") Long projectId, @PathVariable("proposalId") Long proposalId) {
+    Map<String, Object> params = ImmutableMap.of("projectId", projectId, "proposalId", proposalId);
 
     String sql = cache.getByKey("excel.import.loadProposal");
     List<String> results = jdbc.queryForList(sql, params, String.class);
@@ -106,17 +100,18 @@ public class ExcelImportController {
       log.warn(msg);
       return ResponseEntity.notFound().build();
     } else if (results.size() > 1) {
-      log.warn("EXCEL_IMPORT: Found {} proposals for params {}. Returning the most recent.",
-        results.size(), params);
+      log.warn(
+          "EXCEL_IMPORT: Found {} proposals for params {}. Returning the most recent.",
+          results.size(),
+          params);
     }
 
     return ResponseEntity.ok(results.get(0));
   }
 
   @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> importProposal(HttpServletRequest req,
-                                          @RequestBody Proposal proposal) {
-    log.info("EXCEL_IMPORT: Attempting Excel Proposal Log");
+  public ResponseEntity<?> importProposal(HttpServletRequest req, @RequestBody Proposal proposal) {
+    log.debug("EXCEL_IMPORT: Attempting Excel Proposal Log");
 
     Assert.notNull(proposal, "Proposal Required");
     Assert.hasText(proposal.getSource(), "Source is required; must have text");
@@ -138,76 +133,84 @@ public class ExcelImportController {
     HashMap<String, Object> params = new HashMap<>();
     params.put("proposal", proposal.getProposal());
     params.put("source", proposal.getSource());
-    params.put("proposalDate", new Date());
     params.put("proposalId", propId);
     params.put("projectId", projectId);
 
-    log.info("EXCEL_IMPORT: Inserting For: PROP_ID: {} PROJECT_ID: {} SOURCE: {}", propId, projectId, proposal.getSource());
-    //check if the project id exists
-    if(null != projectId) {
+    log.debug(
+        "EXCEL_IMPORT: Inserting For: PROP_ID: {} PROJECT_ID: {} SOURCE: {}",
+        propId,
+        projectId,
+        proposal.getSource());
+    // check if the project id exists
+    if (null != projectId) {
       Boolean projectExists = projectService.projectExists(projectId.longValue());
 
-      if(projectExists) {
-        Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
-          (rs, rowNum) -> {
-            try {
-              ProposalResponse pr = new ProposalResponse();
-              pr.setId(rs.getLong("id"));
-              pr.setSource(rs.getString("source"));
-              pr.setProjectId(rs.getInt("project_id"));
-              pr.setProposalDate(rs.getDate("proposal_date"));
-              pr.setProposalId(rs.getInt("proposal_nbr"));
-              pr.setProposal(om.readValue(rs.getString("proposal"),
-                new TypeReference<Map<String, Object>>() {
-                }));
-              return pr;
-            } catch (IOException e) {
-              throw new SQLException(e);
-            }
-          });
+      if (projectExists) {
+        Optional<ProposalResponse> created =
+            cache.get(
+                "excel.import.insert",
+                params,
+                (rs, rowNum) -> {
+                  try {
+                    ProposalResponse pr = new ProposalResponse();
+                    pr.setId(rs.getLong("id"));
+                    pr.setSource(rs.getString("source"));
+                    pr.setProjectId(rs.getInt("project_id"));
+                    pr.setProposalDate(rs.getDate("proposal_date"));
+                    pr.setProposalId(rs.getInt("proposal_nbr"));
+                    pr.setProposal(
+                        om.readValue(rs.getString("proposal"), new TypeReference<>() {}));
+                    return pr;
+                  } catch (IOException e) {
+                    throw new SQLException(e);
+                  }
+                });
 
-        if (!created.isPresent()) {
+        if (created.isEmpty()) {
           throw new IllegalStateException("Did not get back a created proposal_log");
         }
-        log.info("EXCEL_IMPORT: Created Excel Proposal Log ID={}", created.get().getId());
+        log.debug("EXCEL_IMPORT: Created Excel Proposal Log ID={}", created.get().getId());
 
-        return ResponseEntity
-          .status(HttpStatus.CREATED)
-          .body(created.get());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created.get());
       } else {
-        log.error("EXCEL_IMPORT: ERROR: Attempted Proposal Log Insert with invalid Project ID: {} for Proposal: {}", projectId, propId);
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Project Found with ID: " + projectId, new Exception());
+        log.error(
+            "EXCEL_IMPORT: ERROR: Attempted Proposal Log Insert with invalid Project ID: {} for Proposal: {}",
+            projectId,
+            propId);
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "No Project Found with ID: " + projectId, new Exception());
       }
     } else {
       log.error("EXCEL_IMPORT: ERROR: No project id included in request");
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No project id included in request", new Exception());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "No project id included in request", new Exception());
     }
-
   }
 
-  //design stuff
+  // design stuff
   @GetMapping(value = "/design/excelId", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Long getUniqueIdForDesignExcel(HttpServletResponse res, @RequestHeader Map<String, String> headers) {
+  public Long getUniqueIdForDesignExcel(
+      HttpServletResponse res, @RequestHeader Map<String, String> headers) {
     debugPrintHeaders(headers);
     String sql = cache.getByKey("excel.import.design.sqlId");
-    Long id = jdbc.queryForObject(sql, Maps.newHashMap(), Long.class);
-    return id;
+    return jdbc.queryForObject(sql, Maps.newHashMap(), Long.class);
   }
 
   @PostMapping(value = "/design/import", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> designImport(HttpServletRequest req,
-                                        @RequestBody Design design) {
-    log.info("EXCEL_IMPORT: Attempting Excel Design Log");
+  public ResponseEntity<?> designImport(HttpServletRequest req, @RequestBody Design design) {
+    log.debug("EXCEL_IMPORT: Attempting Excel Design Log");
 
     Assert.notNull(design, "Design Required");
     User user = security.getCurrentUser();
-//    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//    Optional<String> username = Optional.ofNullable(auth.getPrincipal().toString());
-//    User user = username.map(security::getUser)
-//      .orElseThrow(() -> new IllegalArgumentException("Unknown user passed in: " + username.get()));
+    //    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //    Optional<String> username = Optional.ofNullable(auth.getPrincipal().toString());
+    //    User user = username.map(security::getUser)
+    //      .orElseThrow(() -> new IllegalArgumentException("Unknown user passed in: " +
+    // username.get()));
 
     Assert.hasText(design.getSource(), "Source is required; must have text");
-    String source = String.format("%s – %s – %s", user.getEmail(), design.getSource(), req.getRemoteAddr());
+    String source =
+        String.format("%s – %s – %s", user.getEmail(), design.getSource(), req.getRemoteAddr());
     design.setSource(source);
 
     Map<String, Object> bomJson = design.getBom();
@@ -219,11 +222,13 @@ public class ExcelImportController {
         it.remove();
       }
     }
-    //todo: verify that the project exists and return a pretty error if it doesnt
+    // todo: verify that the project exists and return a pretty error if it doesnt
     Long blueRavenCorporateCompanyId = 3L;
-    Boolean projectExists = projectService.projectExistsInHierarchy(design.getProjectId().longValue(), blueRavenCorporateCompanyId);
+    Boolean projectExists =
+        projectService.projectExistsInHierarchy(
+            design.getProjectId().longValue(), blueRavenCorporateCompanyId);
 
-    if(projectExists) {
+    if (projectExists) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("design", design.getDesign());
       params.put("source", design.getSource());
@@ -231,38 +236,38 @@ public class ExcelImportController {
       params.putIfAbsent("designId", design.getDesignId());
       params.putIfAbsent("projectId", design.getProjectId());
       params.putIfAbsent("bom", bomJson);
-      //this is the id of the design log that got created
-      Optional<DesignResponse> designLogId = cache.get("excel.import.design.insert", params,
-        (rs, rowNum) -> {
-          try {
-            DesignResponse dr = new DesignResponse();
-            dr.setId(rs.getLong("id"));
-            dr.setSource(rs.getString("source"));
-            dr.setProjectId(rs.getInt("project_id"));
-            dr.setDesignDate(rs.getDate("design_date"));
-            dr.setDesignId(rs.getInt("design_nbr"));
-            dr.setBom(om.readValue(rs.getString("bom"),
-              new TypeReference<Map<String, Object>>() {
-              }));
-            return dr;
-          } catch (IOException e) {
-            throw new SQLException(e);
-          }
-        });
+      // this is the id of the design log that got created
+      Optional<DesignResponse> designLogId =
+          cache.get(
+              "excel.import.design.insert",
+              params,
+              (rs, rowNum) -> {
+                try {
+                  DesignResponse dr = new DesignResponse();
+                  dr.setId(rs.getLong("id"));
+                  dr.setSource(rs.getString("source"));
+                  dr.setProjectId(rs.getInt("project_id"));
+                  dr.setDesignDate(rs.getDate("design_date"));
+                  dr.setDesignId(rs.getInt("design_nbr"));
+                  dr.setBom(om.readValue(rs.getString("bom"), new TypeReference<>() {}));
+                  return dr;
+                } catch (IOException e) {
+                  throw new SQLException(e);
+                }
+              });
 
       if (designLogId.isEmpty()) {
         throw new IllegalStateException("EXCEL_IMPORT: Did not get back a created design_log");
       }
 
-      log.info("EXCEL_IMPORT: Created Excel Design Log id={}", designLogId.get().getId());
+      log.debug("EXCEL_IMPORT: Created Excel Design Log id={}", designLogId.get().getId());
 
-      return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(designLogId.get());
+      return ResponseEntity.status(HttpStatus.CREATED).body(designLogId.get());
     } else {
-      log.info("EXCEL_IMPORT: Received Invalid Project ID: {}", design.getProjectId());
-      //if no project found within BR corporate hierarchy return 404
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project ID Not Found.", new Exception());
+      log.error("EXCEL_IMPORT: Received Invalid Project ID: {}", design.getProjectId());
+      // if no project found within BR corporate hierarchy return 404
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Project ID Not Found.", new Exception());
     }
   }
 

@@ -15,8 +15,10 @@
       :required="required"
       :min-date="minDate"
       :max-date="maxDate"
+      :filled="filledStyle"
       :format="'MMMM DD, YYYY'"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :readonly="readonly"
       @input="callback(field)"
     />
@@ -26,9 +28,11 @@
       v-model="field.timestampValue"
       :timezone="this.timezone"
       type="timestamp"
+      :filled="filledStyle"
       :required="required"
       :format="'MMMM DD, YYYY, h:mm A'"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :readonly="readonly"
       @input="callback(field)"
     />
@@ -37,8 +41,10 @@
       v-if="field.dataTypeId === 3"
       v-model="field.booleanValue"
       :required="required"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :rules="getRequiredRule()"
+      :filled="filledStyle"
       :disabled="readonly"
       :ripple="false"
       @change="callback(field)"
@@ -51,7 +57,9 @@
       :readonly="readonly"
       placeholder=" "
       :rules="getRequiredRule()"
-      :label="field.fieldName"
+      :filled="filledStyle"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       type="number"
       v-model.number="field.numericValue"
       @change="callback(field)"
@@ -66,7 +74,9 @@
       :disabled="readonly"
       placeholder=" "
       :rules="getRequiredRule()"
-      :label="field.fieldName"
+      :filled="filledStyle"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       v-model="field.textValue"
       @change="callback(field)"
     />
@@ -76,8 +86,10 @@
       text
       :required="required"
       :readonly="readonly"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       placeholder=" "
+      :filled="filledStyle"
       :rules="getRequiredRule()"
       type="number"
       v-model.number="field.intValue"
@@ -93,9 +105,11 @@
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
+      :filled="filledStyle"
       :rules="getRequiredRule()"
       :items="field.listOfValues"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       item-value="id"
       item-text="name"
       @input="callback(field)"
@@ -107,12 +121,14 @@
       :required="required"
       multiple
       placeholder=" "
+      :filled="filledStyle"
       :items="field.listOfValues"
       :clearable="!readonly"
       :readonly="readonly"
       :disabled="readonly"
       :rules="getRequiredRule()"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       v-model="field.intArrayValue"
       item-value="id"
       item-text="name"
@@ -125,10 +141,12 @@
       text
       :required="required"
       :clearable="!readonly"
+      :filled="filledStyle"
       :readonly="readonly"
       :disabled="readonly"
       :items="field.listOfValues"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :rules="getRequiredRule()"
       placeholder=" "
       item-value="id"
@@ -140,10 +158,12 @@
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
+      :filled="filledStyle"
       :required="required"
       :clearable="!readonly"
       :items="field.listOfValues"
-      :label="field.fieldName"
+      :label="hideLabel ? null : field.fieldName"
+      :hide-details="hideDetails"
       :readonly="readonly"
       :disabled="readonly"
       :rules="getRequiredRule()"
@@ -177,8 +197,18 @@ export default {
       type: Boolean,
       default: true
     },
+    hideLabel: {
+      type: Boolean,
+      default: false
+    },
+    hideDetails: {
+      type: Boolean,
+      default: false
+    },
     minDate: String,
     maxDate: String,
+    //had to add filledStyle to allow the AHJ screens to use the custom value input but keep its same style. that makes me super happy
+    filledStyle: Boolean,
     callback: Function
   },
   components: {

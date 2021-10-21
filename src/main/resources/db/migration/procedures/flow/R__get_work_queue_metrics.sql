@@ -96,7 +96,7 @@ BEGIN
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
-    and wqc2.is_cancelled is false;
+    ;
 
   select count(1)
   into v_short_window_entered
@@ -111,7 +111,7 @@ BEGIN
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
-    and wqc2.is_cancelled is false;
+    ;
 
   select count(1)
   into v_long_window_exited
@@ -126,7 +126,7 @@ BEGIN
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
-    and wqc2.is_cancelled is false;
+    ;
 
   select count(1)
   into v_long_window_entered
@@ -141,7 +141,7 @@ BEGIN
     and pswqt2.work_queue_type_id = p_work_queue_type_id
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
-    and wqc2.is_cancelled is false;
+    ;
 
   select count(1) as short_window_numerator
   into v_short_window_numerator
@@ -160,7 +160,7 @@ BEGIN
          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
          inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
-    and wqc.is_cancelled is false
+
     and case
           when wqc.date_exited_queue is not null then
                 (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
@@ -223,7 +223,7 @@ BEGIN
          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
          inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
-    and wqc.is_cancelled is false
+
     and case
           when wqc.date_exited_queue is not null then
               (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
@@ -254,7 +254,7 @@ BEGIN
          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
          inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
-    and wqc.is_cancelled is false
+
     and case
           when wqc.date_exited_queue is not null then
                 (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
@@ -318,7 +318,7 @@ BEGIN
          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
          inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
   where wqt.id = p_work_queue_type_id
-    and wqc.is_cancelled is false
+
     and case
           when wqc.date_exited_queue is not null then
               (wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
@@ -335,12 +335,18 @@ BEGIN
            v_short_window_denominator,
            v_long_window_numerator,
            v_long_window_denominator,
+           case when v_short_window_numerator = 0 and v_short_window_denominator = 0 then
+             1
+            else
            round((v_short_window_numerator / case
                                                when v_short_window_denominator = 0 then 1
-                                               else v_short_window_denominator::numeric end)::numeric, 2),
+                                               else v_short_window_denominator::numeric end)::numeric, 2) end,
+           case when v_long_window_numerator = 0 and v_long_window_denominator = 0 then
+                  1
+                else
            round((v_long_window_numerator /
                   case when v_long_window_denominator = 0 then 1 else v_long_window_denominator::numeric end)::numeric,
-                 2),
+                 2)end,
            v_short_window_duration_type,
            v_long_window_duration_type,
            v_cycle_duration_type,

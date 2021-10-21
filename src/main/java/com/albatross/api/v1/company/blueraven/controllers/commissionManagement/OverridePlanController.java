@@ -1,7 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
-import com.albatross.api.v1.company.blueraven.services.commissionManagement.CommissionManagementService;
+import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -25,7 +25,7 @@ import java.util.Optional;
 public class OverridePlanController {
 
     private final OverridePlanService overridePlanService;
-    private final CommissionManagementService commissionManagementService;
+    private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
 
     @GetMapping(value = "/plans/{positionId}")
     public String getOverridePlans(@PathVariable Long positionId) {
@@ -49,6 +49,9 @@ public class OverridePlanController {
     @PostMapping(value = "")
     public ResponseEntity<Object> createOverridePlanDetails(@RequestBody OverridePlanService.OverridePlan overridePlan) {
         String detail = overridePlanService.updateOverridePlan(overridePlan);
+
+        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(overridePlan.getCustomFieldGroups(), overridePlan.getId());
+
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 

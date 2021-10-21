@@ -53,15 +53,17 @@
                   <v-form ref="projectEditForm">
                     <v-text-field
                       v-model="project.projectName"
-                      label="ProjectName"
+                      label="Project Name"
                     ></v-text-field>
                     <v-text-field
                       v-model="project.street1"
                       label="Street"
+                      @change="project.reloadCoordinates = true"
                     ></v-text-field>
                     <v-text-field
                       v-model="project.city"
                       label="City"
+                      @change="project.reloadCoordinates = true"
                     ></v-text-field>
                     <v-text-field
                       type="text"
@@ -70,6 +72,7 @@
                       maxlength="10"
                       @keypress="isNumberOrHyphen"
                       :rules="postalCodeRules"
+                      @change="project.reloadCoordinates = true"
                       label="Postal Code"
                     ></v-text-field>
                     <v-select attach v-model="project.companyStateId"
@@ -77,17 +80,19 @@
                               label="State"
                               item-text="state"
                               item-value="id"
+                              @input="project.reloadCoordinates = true"
                     ></v-select>
                     <v-select attach v-model="project.companyCountryId"
                               :items="countries"
                               label="Country"
+                              @input="project.reloadCoordinates = true"
                               item-text="country"
                               item-value="id"
                     ></v-select>
                   </v-form>
                 </div>
                 <v-btn x-small text v-if="userCanEdit"
-                       @click="[editAddress = !editAddress, project.reloadCoordinates = true, getStatesAndCountries()]">
+                       @click="[editAddress = !editAddress, getStatesAndCountries()]">
                   <span v-if="editAddress">Cancel</span>
                   <v-icon v-else>edit</v-icon>
                 </v-btn>

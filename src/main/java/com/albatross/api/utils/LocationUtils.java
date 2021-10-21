@@ -19,6 +19,7 @@ import java.util.function.ObjLongConsumer;
 
 @Slf4j
 @Component
+@Deprecated
 public class LocationUtils {
 
   @Value(value = "${mapbox.token}")
@@ -33,16 +34,19 @@ public class LocationUtils {
         .query(address)
         .build();
 
+
     mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
       @Override
       public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
-        List<CarmenFeature> results = response.body().features();
-        if (results.size() > 0) {
-          Point firstResultPoint = results.get(0).center();
-          callbackFunction.accept(firstResultPoint, id);
-        } else {
-          // No results for your request were found.
-          log.error("GEO_CODE_ERROR: No result found");
+        if (response.body() != null) {
+          List<CarmenFeature> results = response.body().features();
+          if (results.size() > 0) {
+            Point firstResultPoint = results.get(0).center();
+            callbackFunction.accept(firstResultPoint, id);
+          } else {
+            // No results for your request were found.
+            log.error("GEO_CODE_ERROR: No result found");
+          }
         }
       }
 

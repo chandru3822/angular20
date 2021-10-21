@@ -399,7 +399,9 @@ $$
 drop trigger if exists concrete_contact_audit_trg ON flow.contact;
 CREATE TRIGGER concrete_contact_audit_trg
     after INSERT or update ON flow.contact
-    FOR EACH ROW EXECUTE PROCEDURE flow.concrete_contact_audit();
+    FOR EACH ROW
+    when (new.temp_geo_attempted is false)
+    EXECUTE PROCEDURE flow.concrete_contact_audit();
 
 CREATE OR REPLACE FUNCTION flow.concrete_user_audit()
     RETURNS TRIGGER AS $$

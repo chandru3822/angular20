@@ -160,8 +160,8 @@
                 <DatetimePickerInput
                   v-model="schedule.startDate"
                   :timezone="timezone"
-                  :readonly="!userCanAdd"
-                  :disabled="!userCanAdd"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -170,8 +170,8 @@
                 <DatetimePickerInput
                   v-model="schedule.endDate"
                   :timezone="timezone"
-                  :readonly="!userCanAdd"
-                  :disabled="!userCanAdd"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -321,7 +321,7 @@
                 </v-btn>
                 <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="userCanDelete">
                   <template #activator="{ on }">
-                    <v-btn v-on="on" small text>
+                    <v-btn v-on="on" small text :disabled="cannotDeleteSchedule(item)">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </template>
@@ -376,6 +376,7 @@
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'),
         selectedIndex: null,
         newSchedule: {},
         allowedMinutesStep: m => m % 30 === 0,
@@ -389,7 +390,8 @@
         workDays: [],
         slotSchedules: [],
         saveError: false,
-        saveErrorMsg: ''
+        saveErrorMsg: '',
+        currentlyInDST: moment().isDST()
       }
     },
     created() {
@@ -450,6 +452,19 @@
                 userId: this.userId,
                 orgId: this.orgId,
               }})
+            data.forEach(sched => {
+              sched?.resourceScheduleAvailability?.forEach(day => {
+                //if the day was saved during DST, but now is NOT DST, then subtract an hour
+                if(day.daylightSavings && !this.currentlyInDST) {
+                  day.startTime = moment.utc(day.startTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
+                  day.endTime = moment.utc(day.endTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
+                } else if (!day.daylightSavings && this.currentlyInDST) {
+                  //else if the day was NOT saved during DST, but now IS DST, then add an hour
+                  day.startTime = moment.utc(day.startTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
+                  day.endTime = moment.utc(day.endTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
+                }
+              })
+            })
             this.schedules = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -500,7 +515,10 @@
 
 
         // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
-        if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
+        if(moment(s.startDate).isBefore(moment(), 'd')) {
+          this.saveError = true
+          this.saveErrorMsg = '* Start Date cannot be before today.'
+        } else if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
           this.saveError = true
           this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
         }
@@ -512,6 +530,7 @@
           //check that no end times are before start times
           let timeOverlap, invalidStarts, invalidEnds = false
           s.resourceScheduleAvailability.forEach(rsa => {
+            rsa.daylightSavings = this.currentlyInDST
             if(rsa.startTime == null && rsa.endTime != null) {
               //this ensures that no daily schedules have an end time w/o a start time
               invalidStarts = true
@@ -626,6 +645,10 @@
           this.$set(dayToUpdate, 'startTime', day.startTime)
           this.$set(dayToUpdate, 'endTime', day.endTime)
         }
+      },
+      cannotDeleteSchedule(item) {
+        //per judson request - cannot delete schedules that have a start date prior to or equal to today (unless they have admin permission)
+        return !this.userIsAdmin && moment(item.startDate) <= moment()
       },
       async archiveSchedule(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)

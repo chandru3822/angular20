@@ -30,9 +30,10 @@ $$
 
 drop trigger if exists project_project_details_for_contact_trg on flow.contact;
 CREATE TRIGGER project_project_details_for_contact_trg
-  after update
-  ON flow.contact
-  FOR EACH ROW
+    after update
+    ON flow.contact
+    FOR EACH ROW
+    when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.project_details_from_contact();
 
 
@@ -818,12 +819,13 @@ CREATE OR REPLACE FUNCTION flow.update_project_details_project()
 $body$
 
 declare
-  v_field_to_update        character varying;
-  v_data_type_id           integer;
-  v_config_id              integer;
-  v_sql                    character varying;
-  v_value                  character varying;
-  v_second_field_to_update character varying;
+    v_field_to_update        character varying;
+    v_data_type_id           integer;
+    v_config_id              integer;
+    v_sql                    character varying;
+    v_value                  character varying;
+    v_second_field_to_update character varying;
+    v_count                  integer;
 BEGIN
 
   select pdc.id, field_to_update, data_type_id, second_field_to_update
@@ -891,9 +893,22 @@ BEGIN
       end if;
       v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || new.project_id;
-      execute v_sql;
+            execute v_sql;
+        end if;
     end if;
-  end if;
+
+    if (TG_OP = 'UPDATE') THEN
+      select count(1)
+      into v_count
+      from flow.user_position up
+             inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+      where up.user_id = coalesce(new.modified_by_id, new.created_by_id)
+        and up.end_date is null
+        and wlp.custom_field_group_assignment_id = 17280;
+      if new.custom_field_group_assignment_id = 17280 and old.int_value != new.int_value and v_count < 1 then
+        raise exception 'You do not have rights to update the Lead Source for this Contact (A).';
+      end if;
+    end if;
 
   RETURN NULL;
 END
@@ -962,17 +977,16 @@ BEGIN
 
   if (TG_OP = 'UPDATE') THEN
 
-    select count(1)
-    into v_count
-    from flow.user_position up
-           inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
-    where up.user_id = new.modified_by_id
-      and up.end_date is null
-      and wlp.custom_field_group_assignment_id = 395;
-    if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
-      raise exception 'You do not have rights to update the Lead Source for this Contact.';
+      select count(1)
+      into v_count
+      from flow.user_position up
+      inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+      where up.user_id = new.modified_by_id and
+            up.end_date is null and wlp.custom_field_group_assignment_id = 395;
+      if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
+        raise exception 'You do not have rights to update the Lead Source for this Contact. (B)';
+      end if;
     end if;
-  end if;
 
   RETURN NULL;
 END

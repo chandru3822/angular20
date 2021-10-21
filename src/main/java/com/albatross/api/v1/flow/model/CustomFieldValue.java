@@ -24,7 +24,7 @@ public class CustomFieldValue {
 
   private BigDecimal numericValue;
   private Boolean booleanValue, hasListValues, readonly, customFieldGroupAssignmentReadOnly, detailView,
-    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, useParentData;
+    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, showOnUserProfile, useParentData;
 
   private Timestamp dateValue, timestampValue;
 

@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,11 @@ public class CustomFieldValueController {
     return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.USER.toString(), id);
   }
 
+  @GetMapping(value = "/getUserProfileFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldValue> getUserProfileFields () {
+    return customFieldValueService.getUserProfileFields(null, ObjectType.USER.id);
+  }
+
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> getFieldsByProjectId(@PathVariable Long projectId) {
     return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROJECT.toString(), projectId);
@@ -75,16 +81,20 @@ public class CustomFieldValueController {
                                                                @PathVariable Long id) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
 
-    // grab all PPS where the updated fields are ancillary and perform auto triggers there
-    List<Long> cfgaIds = values.stream()
-      .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
-      .collect(Collectors.toList());
-    if (!cfgaIds.isEmpty()) {
-      List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
-      for (Long ppsId : ppsIds) {
-        projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+      try {
+        // grab all PPS where the updated fields are ancillary and perform auto triggers there
+        List<Long> cfgaIds = values.stream()
+          .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+          .collect(Collectors.toList());
+        if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
+          for (Long ppsId : ppsIds) {
+            projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+          }
+        }
+      } catch (Exception e) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
       }
-    }
 
     return groups;
   }
@@ -106,16 +116,20 @@ public class CustomFieldValueController {
                                                                @PathVariable Long projectId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectId, ObjectType.PROJECT.toString());
 
-    // grab all PPS where the updated fields are ancillary and perform auto triggers there
-    List<Long> cfgaIds = values.stream()
-      .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
-      .collect(Collectors.toList());
-    if (!cfgaIds.isEmpty()) {
-      List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
-      for (Long ppsId : ppsIds) {
-        projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+      try {
+        // grab all PPS where the updated fields are ancillary and perform auto triggers there
+        List<Long> cfgaIds = values.stream()
+          .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+          .collect(Collectors.toList());
+        if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+          for (Long ppsId : ppsIds) {
+            projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+          }
+        }
+      } catch (Exception e) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
       }
-    }
 
     return groups;
   }
@@ -126,24 +140,25 @@ public class CustomFieldValueController {
                                                                           @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
-    projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails(), null);
+    try {
+      projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
 
-
-    // grab all PPS where the updated fields are ancillary and perform auto triggers there
-    List<Long> cfgaIds = values.stream()
-      .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
-      .collect(Collectors.toList());
-    if (!cfgaIds.isEmpty()) {
-      List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
-      for (Long ppsId : ppsIds) {
-        // Don't re-check the ppsId we just previously did
-        if (!ppsId.equals(projectProcessStepId)) {
-          projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+      // grab all PPS where the updated fields are ancillary and perform auto triggers there
+      List<Long> cfgaIds = values.stream()
+        .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+        .collect(Collectors.toList());
+      if (!cfgaIds.isEmpty()) {
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+        for (Long ppsId : ppsIds) {
+          // Don't re-check the ppsId we just previously did
+          if (!ppsId.equals(projectProcessStepId)) {
+            projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+          }
         }
       }
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
-
-    // grab all PPS where process step status type is being used
 
     return groups;
   }
@@ -158,15 +173,19 @@ public class CustomFieldValueController {
       if (project.isPresent()) {
         customFieldValueService.updateProjectCustomFieldValue(cfv, projectId, customFieldId);
 
-        // grab all PPS where the updated fields are ancillary and perform auto triggers there
-        ArrayList<Long> cfgaIds = new ArrayList<>();
-        cfgaIds.add(cfv.getCustomFieldGroupAssignmentId());
-        if (!cfgaIds.isEmpty()) {
-          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
-          for (Long ppsId : ppsIds) {
-            projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), null);
+          try {
+            // grab all PPS where the updated fields are ancillary and perform auto triggers there
+            ArrayList<Long> cfgaIds = new ArrayList<>();
+            cfgaIds.add(cfv.getCustomFieldGroupAssignmentId());
+            if (!cfgaIds.isEmpty()) {
+              List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+              for (Long ppsId : ppsIds) {
+                projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+              }
+            }
+          } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
           }
-        }
       } else {
         result.put("message", "User does not have access to this project.");
         return ResponseEntity.badRequest().body(result.toString());

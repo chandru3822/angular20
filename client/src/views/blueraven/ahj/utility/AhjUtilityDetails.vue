@@ -89,16 +89,13 @@
                     </v-col>
                     <v-col cols="6" class="pl-4">
                       <div v-for="item in getCustomFieldsForGroup(7)" :key="item.id">
-                        <v-select attach v-model="item.intValue"
-                                  @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                  :items="item.listOfValues"
-                                  :readonly="!userCanEdit"
-                                  :disabled="!userCanEdit"
-                                  item-text="name"
-                                  item-value="id"
-                                  :label="item.fieldName"
-                                  filled
-                        ></v-select>
+                        <CustomValueInput
+                          :callback="(item) => updateDirtyValue(item)"
+                          :readonly="!userCanEdit"
+                          :showFieldName="false"
+                          :field="item"
+                          :filled-style="true"
+                        />
                         <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                       v-model="item.textValue"
                                       :readonly="!userCanEdit"
@@ -160,16 +157,13 @@
                   <div class="flex-display flex-wrap justify-space-between">
                     <div class="flex-display custom-field"
                          v-for="item in getCustomFieldsForGroup(9)" :key="item.id">
-                      <v-select attach v-model="item.intValue"
-                                @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                :items="item.listOfValues"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
-                                item-text="name"
-                                item-value="id"
-                                :label="item.fieldName"
-                                filled
-                      ></v-select>
+                      <CustomValueInput
+                        :callback="(item) => updateDirtyValue(item)"
+                        :readonly="!userCanEdit"
+                        :showFieldName="false"
+                        :field="item"
+                        :filled-style="true"
+                      />
                       <AhjDocumentsButton v-if="item.customFieldId === 22"
                                           title="Documents"
                                           :user-can-edit="userCanEdit"
@@ -242,16 +236,13 @@
                 </v-card-title>
                 <v-card-text class="mt-4">
                   <div v-for="item in getCustomFieldsForGroup(25)" :key="item.id">
-                    <v-select attach v-model="item.intValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              :items="item.listOfValues"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              item-text="name"
-                              item-value="id"
-                              :label="item.fieldName"
-                              filled
-                    ></v-select>
+                    <CustomValueInput
+                      :callback="(item) => updateDirtyValue(item)"
+                      :readonly="!userCanEdit"
+                      :showFieldName="false"
+                      :field="item"
+                      :filled-style="true"
+                    />
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                   v-model="item.textValue"
                                   :readonly="!userCanEdit"
@@ -281,16 +272,13 @@
                 </v-card-title>
                 <v-card-text class="mt-4">
                   <div v-for="item in getCustomFieldsForGroup(8)" :key="item.id">
-                    <v-select attach v-model="item.intValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              :items="item.listOfValues"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              item-text="name"
-                              item-value="id"
-                              :label="item.fieldName"
-                              filled
-                    ></v-select>
+                    <CustomValueInput
+                      :callback="(item) => updateDirtyValue(item)"
+                      :readonly="!userCanEdit"
+                      :showFieldName="false"
+                      :field="item"
+                      :filled-style="true"
+                    />
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                   v-model="item.textValue"
                                   :readonly="!userCanEdit"
@@ -337,17 +325,14 @@
                               auto-grow
                   ></v-textarea>
                   <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id">
-                    <v-select attach v-if="item.customFieldId === 56"
-                              v-model="item.intValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              :items="item.listOfValues"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              item-text="name"
-                              item-value="id"
-                              :label="item.fieldName"
-                              filled
-                    ></v-select>
+                    <CustomValueInput
+                      v-if="item.customFieldId === 56"
+                      :callback="(item) => updateDirtyValue(item)"
+                      :readonly="!userCanEdit"
+                      :showFieldName="false"
+                      :field="item"
+                      :filled-style="true"
+                    />
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 56"
                                   v-model="item.textValue"
                                   :readonly="!userCanEdit"
@@ -389,17 +374,14 @@
                   <div class="flex-display justify-space-between flex-nowrap">
                     <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id"
                          :class="[{'mr-4': item.customFieldId === 55}, {'ml-4': item.customFieldId === 61}]">
-                      <v-select attach v-if="[55,61].indexOf(item.customFieldId) !== -1"
-                                v-model="item.intValue"
-                                @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                :items="item.listOfValues"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
-                                item-text="name"
-                                item-value="id"
-                                :label="item.fieldName"
-                                filled
-                      ></v-select>
+                      <CustomValueInput
+                        v-if="[55,61].indexOf(item.customFieldId) !== -1"
+                        :callback="(item) => updateDirtyValue(item)"
+                        :readonly="!userCanEdit"
+                        :showFieldName="false"
+                        :field="item"
+                        :filled-style="true"
+                      />
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
                                     v-model="item.textValue"
                                     @change="[item.valueWasChanged = true, dataWasChanged = true]"
@@ -462,16 +444,13 @@
                     </v-card-title>
                     <v-card-text>
                       <div v-for="item in getCustomFieldsForGroup(23)" :key="item.id" class="mt-4">
-                        <v-select attach v-model="item.intValue"
-                                  @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                  :items="item.listOfValues"
-                                  :readonly="!userCanEdit"
-                                  :disabled="!userCanEdit"
-                                  item-text="name"
-                                  item-value="id"
-                                  :label="item.fieldName"
-                                  filled
-                        ></v-select>
+                        <CustomValueInput
+                          :callback="(item) => updateDirtyValue(item)"
+                          :readonly="!userCanEdit"
+                          :showFieldName="false"
+                          :field="item"
+                          :filled-style="true"
+                        />
                         <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                       v-model="item.textValue"
                                       :readonly="!userCanEdit"
@@ -503,17 +482,13 @@
                 <v-card-text class="mt-4">
                     <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id"
                          :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
-                      <v-select
-                                v-model="item.intValue"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
-                                @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                :items="item.listOfValues"
-                                item-text="name"
-                                item-value="id"
-                                :label="item.fieldName"
-                                filled
-                      ></v-select>
+                      <CustomValueInput
+                        :callback="(item) => updateDirtyValue(item)"
+                        :readonly="!userCanEdit"
+                        :showFieldName="false"
+                        :field="item"
+                        :filled-style="true"
+                      />
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
                                     v-model="item.textValue"
                                     :readonly="!userCanEdit"
@@ -545,17 +520,14 @@
                            class="mb-8"
                   ></AhjLink>
                   <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
-                    <v-select attach v-if="item.customFieldId === 60"
-                              v-model="item.intValue"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              :items="item.listOfValues"
-                              item-text="name"
-                              item-value="id"
-                              :label="item.fieldName"
-                              filled
-                    ></v-select>
+                    <CustomValueInput
+                      v-if="item.customFieldId === 60"
+                      :callback="(item) => updateDirtyValue(item)"
+                      :readonly="!userCanEdit"
+                      :showFieldName="false"
+                      :field="item"
+                      :filled-style="true"
+                    />
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 60"
                                   v-model="item.textValue"
                                   :readonly="!userCanEdit"
@@ -582,17 +554,14 @@
                     </v-card-title>
                     <v-card-text class="mt-4">
                       <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
-                        <v-select attach v-if="item.customFieldId === 40"
-                                  v-model="item.intValue"
-                                  :readonly="!userCanEdit"
-                                  :disabled="!userCanEdit"
-                                  @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                  :items="item.listOfValues"
-                                  item-text="name"
-                                  item-value="id"
-                                  :label="item.fieldName"
-                                  filled
-                        ></v-select>
+                        <CustomValueInput
+                          v-if="item.customFieldId === 40"
+                          :callback="(item) => updateDirtyValue(item)"
+                          :readonly="!userCanEdit"
+                          :showFieldName="false"
+                          :field="item"
+                          :filled-style="true"
+                        />
                         <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
                                       v-model="item.textValue"
                                       :readonly="!userCanEdit"
@@ -684,6 +653,7 @@
   import AhjRequirement from "../components/AhjRequirements"
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
     name: 'ahjUtilityDetails',
@@ -694,6 +664,7 @@
       AhjDocumentsButton,
       AhjLink,
       AhjRequirement,
+      CustomValueInput
     },
     computed: {
       userCanEdit() {
@@ -724,6 +695,10 @@
       financiers: []
     }),
     methods: {
+      updateDirtyValue(item) {
+        item.valueWasChanged = true
+        this.dataWasChanged = true
+      },
       async getAhjUtility() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

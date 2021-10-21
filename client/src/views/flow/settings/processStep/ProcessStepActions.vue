@@ -889,6 +889,7 @@ export default {
       addChildFunction: false,
       actionLogicError: false,
       actionLogicErrorMsg: '',
+      actionSearch: '',
       newChildProcessStep: {},
       cancelledCompanyStatuses: [],
       activeStatusesAssignedToStep: [],

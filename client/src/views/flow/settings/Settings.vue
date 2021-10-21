@@ -51,7 +51,6 @@
           <v-list dense color="transparent">
             <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
-
               <v-list-item
                   v-else
                   :key="item.title"
@@ -125,7 +124,7 @@ export default {
       }, {
         path: '/settings/company',
         title: 'Defaults',
-        show: this.hasSettingsAccess
+        show: this.hasSettingsAccess,
       }, {
         path: '/settings/states',
         title: 'States',
@@ -145,6 +144,14 @@ export default {
         title: 'Tournaments',
         pathMatch: '/settings/tournaments',
         show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+      }, {
+        path: '/settings/companyCustomFields',
+        title: 'Company Custom Fields',
+        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
+      }, {
+        path: '/settings/companyObjectTypes',
+        title: 'Company Object Types',
+        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
       },
       {
         header: 'User Management',

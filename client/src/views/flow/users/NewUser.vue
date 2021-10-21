@@ -23,19 +23,6 @@
                             label="Last Name"
                             :rules="requiredRules"
                             v-model="user.lastName"></v-text-field>
-              <v-text-field text
-                            label="Address"
-                            v-model="user.street1"></v-text-field>
-              <v-text-field text
-                            label="City"
-                            v-model="user.city"></v-text-field>
-              <v-autocomplete v-model="user.companyStateId"
-                              :items="states"
-                              autocomplete="off"
-                              label="State"
-                              item-text="state"
-                              item-value="id"
-                              attach/>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select attach v-model="user.userStatusTypeId"
@@ -47,21 +34,12 @@
               ></v-select>
               <v-text-field text
                             label="Phone"
-                            :rules="requiredRules"
+                            :rules="userPhoneRule"
                             v-model="user.phoneNumber"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             :rules="emailRules"
                             v-model="user.email"></v-text-field>
-              <v-text-field text
-                            label="Zip Code"
-                            v-model="user.postalCode"></v-text-field>
-              <v-select attach v-model="user.companyCountryId"
-                        :items="countries"
-                        label="Country"
-                        item-text="country"
-                        item-value="id"
-              ></v-select>
             </v-col>
           </v-row>
         </v-container>
@@ -181,7 +159,12 @@
         filters: [],
         timezone: this.$store.state.user.details.timezone.value,
         newPositionHierarchyPopulated: false,
-        newPosition: {}
+        newPosition: {},
+        userPhoneRule: [
+          () => ((this.user.phoneNumber != null && this.user.phoneNumber !== '')) || "Field is required",
+          v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
+          v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
+        ],
       }
     },
     created() {
