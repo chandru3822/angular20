@@ -191,17 +191,17 @@ BEGIN
               when v_cycle_duration_type = 'Days' then
                   flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
                                                            (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-                                                           1) <
+                                                           1) <=
                   v_expected_cycle
               when v_cycle_duration_type = 'Hours' then
                   flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
                                                            (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-                                                           2) <
+                                                           2) <=
                   v_expected_cycle
               else
                   flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
                                                            (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-                                                           3) <
+                                                           3) <=
                   v_expected_cycle
               end
     end;
@@ -286,17 +286,17 @@ BEGIN
               when v_cycle_duration_type = 'Days' then
                   flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
                                                            (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-                                                           1) <
+                                                           1) <=
                   v_expected_cycle
               when v_cycle_duration_type = 'Hours' then
                   flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
                                                            (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-                                                           2) <
+                                                           2) <=
                   v_expected_cycle
               else
                   flow.get_difference_of_dates_by_duration((now() at time zone 'US/Mountain')::timestamp,
                                                            (wqc.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
-                                                           3) <
+                                                           3) <=
                   v_expected_cycle
               end
     end;
