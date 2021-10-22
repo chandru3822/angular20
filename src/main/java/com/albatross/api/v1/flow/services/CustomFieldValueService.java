@@ -13,6 +13,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -193,6 +195,9 @@ public class CustomFieldValueService {
     return results;
   }
 
+  public List<Long> getIdsByPPSId(Long ppsId) {
+    return sqlCache.query("customFieldGroupAssignment.getIdsByPPSId", Map.of("ppsId", ppsId), new SingleColumnRowMapper<>(Long.class));
+  }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
