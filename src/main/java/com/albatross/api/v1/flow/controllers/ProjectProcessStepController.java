@@ -2,11 +2,11 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/projectProcessStep")
 public class ProjectProcessStepController {
 
@@ -30,6 +30,8 @@ public class ProjectProcessStepController {
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
   private final SecurityService securityService;
+
+  private final CustomFieldValueService customFieldValueService;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
@@ -82,10 +84,10 @@ public class ProjectProcessStepController {
     }
   }
 
-  @PostMapping(value = "/{ppsId}/action/{actionId}")
-  public ResponseEntity<Void> performAction(@PathVariable Long ppsId, @PathVariable Long actionId) {
+  @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
+  public ResponseEntity<Void> performAction(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
-      ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+      ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(projectProcessStepId);
       ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
       if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
@@ -103,9 +105,22 @@ public class ProjectProcessStepController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
       projectProcessStepService.performAction(action, pps, new ArrayList<>());
+
+      // @TODO: This code to run autotriggers for ancillary fields exists in a few places. Consolidate to projectProcessStepService
+      List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(projectProcessStepId);
+      if (!cfgaIds.isEmpty()) {
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
+        for (Long ppsId : ppsIds) {
+          // Don't re-check the ppsId we just previously did
+          if (!ppsId.equals(projectProcessStepId)) {
+            projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+          }
+        }
+      }
+
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
-      final String errMessage = String.format("PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",  actionId, ppsId, e.getMessage());
+      final String errMessage = String.format("PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",  actionId, projectProcessStepId, e.getMessage());
       log.error(errMessage);
       e.printStackTrace();
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
@@ -121,6 +136,18 @@ public class ProjectProcessStepController {
 
     try {
       projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
+
+      // @TODO: This code to run autotriggers for ancillary fields exists in a few places. Consolidate to projectProcessStepService
+      List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(newPpsId);
+      if (!cfgaIds.isEmpty()) {
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectProcessStep.getProjectId(), null, cfgaIds);
+        for (Long ppsId : ppsIds) {
+          // Don't re-check the ppsId we just previously did
+          if (!ppsId.equals(newPpsId)) {
+            projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+          }
+        }
+      }
     } catch (Exception e) {
       final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
       log.error(errMessage);
