@@ -666,7 +666,11 @@ public class PandaDocService {
         tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
         tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
         tokens.put("Deal.System Size", result.get("system_size"));
-        tokens.put("Deal.Total System Price", result.get("total_system_price"));
+
+        Double totalSystemPrice = Double.parseDouble(result.get("total_system_price") == null ? "0" : result.get("total_system_price").toString());
+        Double referralPromotionAmount = Double.parseDouble(result.get("referral_promotion_amount") == null ? "0" : result.get("referral_promotion_amount").toString());
+        tokens.put("Deal.Total System Price", totalSystemPrice - referralPromotionAmount);
+        tokens.put("Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
 
         // include the current date for use in the template
         String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))
