@@ -1,3 +1,4 @@
+-- drop function if exists flow.get_availability_time_slots(integer,timestamp,timestamp,date,boolean);
 CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer,
                                                             p_start_time timestamp,
                                                             p_end_time timestamp,
@@ -5,6 +6,7 @@ CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer
                                                             p_remote boolean default false)
   RETURNS TABLE
           (
+            success                boolean,
             users                integer array,
             scheduled_start_time timestamp
           )
@@ -24,7 +26,7 @@ BEGIN
          left join flow.timezone t on ct.timezone_id = t.id
   where p.id = p_project_id;
 
-  if p_remote is false then
+  if p_remote is false and v_timezone is not null then
     create temp table excluded_appointments as (
       with user_ids as (
         select up.user_id,
@@ -80,7 +82,7 @@ BEGIN
         or ra.end_time between p_start_time and p_end_time)
         or (ra.start_time < p_start_time and ra.end_time > p_end_time))
     );
-  else
+  elsif p_remote is true then
     create temp table excluded_appointments as (
       with user_ids as (
         select up.user_id,
@@ -135,11 +137,11 @@ BEGIN
   end if;
 
 
-  if p_remote is false then
+  if p_remote is false and v_timezone is not null then
     EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';';
 
     return query
-      select array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
+      select true, array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
       from (
              select user_id,
                     foo1.scheduled_start_time,
@@ -210,9 +212,12 @@ BEGIN
         and foo2.scheduled_start_time at time zone 'UTC' at time zone v_timezone > now() + interval '30 minutes'
       group by foo2.scheduled_start_time
       order by foo2.scheduled_start_time;
+  elsif p_remote is false and v_timezone is null then
+    raise notice 'we are here';
+    return query select false::boolean, array[]::int[], null::timestamp;
   else
     return query
-      select array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
+      select true, array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
       from (
              select user_id,
                     foo1.scheduled_start_time,
