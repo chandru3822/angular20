@@ -61,9 +61,26 @@ declare
   v_new_group_id_2841_RD integer;
   v_new_group_id_2841_OC integer;
   v_new_group_id_2841_NS integer;
-v_new_group_id_3091_D integer;
-v_new_group_id_3480_D integer;
-  v_new_group_id_3441_D integer;
+  v_new_group_id_3091_D  integer;
+  v_new_group_id_3480_D  integer;
+  v_new_group_id_3441_D  integer;
+  v_new_group_id_165_D   integer;
+  v_new_group_id_165_RD  integer;
+  v_new_group_id_165_OC  integer;
+  v_new_group_id_66_D    integer;
+  v_new_group_id_66_OC   integer;
+  v_new_group_id_3107_D  integer;
+  v_new_group_id_3107_OC integer;
+  v_new_group_id_192_D   integer;
+  v_new_group_id_192_OC  integer;
+  v_new_group_id_192_R   integer;
+  v_new_group_id_3103_D   integer;
+  v_new_group_id_3103_OC  integer;
+  v_new_group_id_3103_R   integer;
+  v_new_group_id_3099_D   integer;
+  v_new_group_id_3099_OC  integer;
+  v_new_group_id_3099_R   integer;
+
 
 BEGIN
   /*Schedule closer appointment*/
@@ -773,7 +790,7 @@ BEGIN
 
     perform flow.migrate_fields_to_group(v_new_group_id_2841_OC, 17487, 1);
 
-    perform flow.migrate_fields_to_group(v_new_group_id_2841_NS,19188 , 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_2841_NS, 19188, 1);
 
     update flow.custom_field_group
     set process_step_id = 2841,
@@ -788,15 +805,15 @@ BEGIN
     from flow.custom_field_group cfg
     where cfg.group_name = 'Details'
       and cfg.event_id = p_event_type_id;
-    perform flow.migrate_fields_to_group(v_new_group_id_3091_D,19018 , 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3091_D, 19018, 1);
   elsif p_process_step_id = 3480 then
     select id
     into v_new_group_id_3480_D
     from flow.custom_field_group cfg
     where cfg.group_name = 'Details'
       and cfg.event_id = p_event_type_id;
-    perform flow.migrate_fields_to_group(v_new_group_id_3480_D,21951 , 1);
-    perform flow.migrate_fields_to_group(v_new_group_id_3480_D,21952 , 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3480_D, 21951, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3480_D, 21952, 2);
 
   elsif p_process_step_id = 3441 then
     select id
@@ -804,8 +821,185 @@ BEGIN
     from flow.custom_field_group cfg
     where cfg.group_name = 'Details'
       and cfg.event_id = p_event_type_id;
-    perform flow.migrate_fields_to_group(v_new_group_id_3441_D,21607 , 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3441_D, 21607, 1);
 
+  elsif p_process_step_id = 165 then
+    select id
+    into v_new_group_id_165_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+    select id
+    into v_new_group_id_165_RD
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_165_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_165_D, 1197, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_165_D, 1201, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_165_D, 1318, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_165_D, 17330, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_165_OC, 641, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_165_OC, 642, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_165_RD, 1394, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_165_RD, 1395, 2);
+
+  elsif p_process_step_id = 66 then
+    select id
+    into v_new_group_id_66_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_66_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_66_D, 19084, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_66_D, 19104, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_66_D, 1174, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_66_D, 17312, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_66_OC, 134, 1);
+
+
+  elsif p_process_step_id = 3107 then
+    select id
+    into v_new_group_id_3107_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3107_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3107_D, 19275, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3107_D, 19271, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3107_D, 19270, 3);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3107_OC, 19280, 1);
+
+  elsif p_process_step_id = 192 then
+    select id
+    into v_new_group_id_192_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_192_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_192_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 19072, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 1274, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 812, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 811, 4);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 813, 5);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 809, 6);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 810, 7);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_D, 17334, 8);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 826, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 18961, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 1364, 3);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_192_R, 1366, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_R, 1367, 3);
+
+
+  elsif p_process_step_id = 3103 then
+    select id
+    into v_new_group_id_3103_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3103_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3103_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_D, 19243, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_D, 19247, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_D, 19248, 3);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19255, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19256, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19257, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19258, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_R, 19253, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3103_R, 19254, 2);
+
+  elsif p_process_step_id = 3099 then
+    select id
+    into v_new_group_id_3099_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3099_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3099_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19199, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19200, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19201, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19202, 4);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19203, 5);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19204, 6);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 19205, 7);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 22450, 8);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_D, 22451, 9);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19224, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19225, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19226, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 22002, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_R, 19222, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3099_R, 19223, 2);
 
   end if;
 

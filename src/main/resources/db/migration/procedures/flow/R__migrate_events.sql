@@ -195,6 +195,24 @@ BEGIN
       elsif x.process_step_id = 3441 then
         perform flow.migrate_schedule_add_retro_addtln_resource_install_to_events(v_event_id,
                                                                               x.project_process_step_id);
+      elsif x.process_step_id = 165 then
+        perform flow.migrate_schedule_midpoint_inspection_to_events(v_event_id,
+                                                                                  x.project_process_step_id);
+      elsif x.process_step_id = 66 then
+        perform flow.migrate_schedule_permit_signature_to_events(v_event_id,
+                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 3107 then
+        perform flow.migrate_schedule_additional_permit_signature_to_events(v_event_id,
+                                                                 x.project_process_step_id);
+      elsif x.process_step_id = 3107 then
+        perform flow.migrate_schedule_asbuilt_permit_signature_to_events(v_event_id,
+                                                                            x.project_process_step_id);
+      elsif x.process_step_id = 3103 then
+        perform flow.migrate_schedule_addtl_permit_pickup_delivery_to_events(v_event_id,
+                                                                         x.project_process_step_id);
+      elsif x.process_step_id = 3099 then
+        perform flow.migrate_schedule_addtl_permit_pack_submission_to_events(v_event_id,
+                                                                             x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;

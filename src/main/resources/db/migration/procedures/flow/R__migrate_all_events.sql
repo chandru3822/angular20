@@ -35,9 +35,15 @@ declare
   v_in_person_work_order_id           integer;
   v_in_person_work_order2_id          integer;
   v_in_person_work_order3_id          integer;
-  v_add_arti_id             integer;
-  v_add_artwo     integer;
-  v_rarti integer;
+  v_add_arti_id                       integer;
+  v_add_artwo                         integer;
+  v_rarti                             integer;
+  v_mid_point_insepction_id           integer;
+  v_permit_signature_id               integer;
+  v_additional_permit_signature_id    integer;
+  v_asbuilt_permit_signature_id       integer;
+  v_addtl_permit_pickup_delivery_id         integer;
+  v_addtl_permit_pack_submission_id         integer;
 BEGIN
 
   select id
@@ -183,6 +189,37 @@ BEGIN
   into v_rarti
   from flow.event
   where temp_cfg_id = 6840;
+
+  select id
+  into v_mid_point_insepction_id
+  from flow.event
+  where temp_cfg_id = 298;
+
+  select id
+  into v_permit_signature_id
+  from flow.event
+  where temp_cfg_id = 48;
+
+  select id
+  into v_additional_permit_signature_id
+  from flow.event
+  where temp_cfg_id = 6255;
+
+  select id
+  into v_asbuilt_permit_signature_id
+  from flow.event
+  where temp_cfg_id = 232;
+
+  select id
+  into v_addtl_permit_pickup_delivery_id
+  from flow.event
+  where temp_cfg_id = 6243;
+
+  select id
+  into v_addtl_permit_pack_submission_id
+  from flow.event
+  where temp_cfg_id = 6230;
+
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
@@ -555,6 +592,53 @@ BEGIN
   raise notice 'starting schedule add retrofit additional resource to install';
   perform flow.migrate_insert_new_group('Details', 1, null, v_rarti);
   perform flow.migrate_events(3441);
+
+  raise notice 'starting schedule Mid point inspection';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_mid_point_insepction_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_mid_point_insepction_id);
+  perform flow.migrate_insert_new_group('Reschedule Details', 3, null, v_mid_point_insepction_id);
+
+
+  perform flow.migrate_events(165);
+
+  raise notice 'starting permit signature';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_permit_signature_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_permit_signature_id);
+
+
+  perform flow.migrate_events(66);
+
+  raise notice 'starting additional permit signature';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_additional_permit_signature_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_additional_permit_signature_id);
+
+
+  perform flow.migrate_events(3107);
+
+  raise notice 'starting asbuilt permit signature';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_asbuilt_permit_signature_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_asbuilt_permit_signature_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_asbuilt_permit_signature_id);
+
+
+  perform flow.migrate_events(192);
+
+  raise notice 'starting additional permit pickup and delivery';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_addtl_permit_pickup_delivery_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_addtl_permit_pickup_delivery_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_addtl_permit_pickup_delivery_id);
+
+
+  perform flow.migrate_events(3103);
+
+  raise notice 'starting additional permit pickup and delivery';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_addtl_permit_pack_submission_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_addtl_permit_pack_submission_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_addtl_permit_pack_submission_id);
+
+
+  perform flow.migrate_events(3099);
+
 
   --this updates all project_details
   raise notice 'starting update project details';
