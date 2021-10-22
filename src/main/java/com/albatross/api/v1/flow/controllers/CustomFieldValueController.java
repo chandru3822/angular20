@@ -127,6 +127,7 @@ public class CustomFieldValueController {
       }
 
     return groups;
+      
   }
 
   @PostMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
