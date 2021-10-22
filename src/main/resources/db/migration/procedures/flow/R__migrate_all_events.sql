@@ -42,8 +42,11 @@ declare
   v_permit_signature_id               integer;
   v_additional_permit_signature_id    integer;
   v_asbuilt_permit_signature_id       integer;
-  v_addtl_permit_pickup_delivery_id         integer;
-  v_addtl_permit_pack_submission_id         integer;
+  v_addtl_permit_pickup_delivery_id   integer;
+  v_addtl_permit_pack_submission_id   integer;
+  v_asbuilt_permit_pickup_delivery_id integer;
+  v_panel_removal_id integer;
+  v_panel_reinstallation_id integer;
 BEGIN
 
   select id
@@ -219,6 +222,22 @@ BEGIN
   into v_addtl_permit_pack_submission_id
   from flow.event
   where temp_cfg_id = 6230;
+
+  select id
+  into v_asbuilt_permit_pickup_delivery_id
+  from flow.event
+  where temp_cfg_id = 240;
+
+  select id
+  into v_panel_removal_id
+  from flow.event
+  where temp_cfg_id = 6322;
+
+  select id
+  into v_panel_reinstallation_id
+  from flow.event
+  where temp_cfg_id = 6325;
+
 
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
@@ -638,6 +657,30 @@ BEGIN
 
 
   perform flow.migrate_events(3099);
+
+  raise notice 'starting asbuilt permit pickup and delivery';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_asbuilt_permit_pickup_delivery_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_asbuilt_permit_pickup_delivery_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_asbuilt_permit_pickup_delivery_id);
+
+
+  perform flow.migrate_events(196);
+
+  raise notice 'starting panel removal';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_panel_removal_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_panel_removal_id);
+  perform flow.migrate_insert_new_group('No-Show', 3, null, v_panel_removal_id);
+
+
+  perform flow.migrate_events(3359);
+
+  raise notice 'starting panel re-installation ';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_panel_reinstallation_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_panel_reinstallation_id);
+  perform flow.migrate_insert_new_group('No-Show', 3, null, v_panel_reinstallation_id);
+
+
+  perform flow.migrate_events(3360);
 
 
   --this updates all project_details

@@ -213,6 +213,15 @@ BEGIN
       elsif x.process_step_id = 3099 then
         perform flow.migrate_schedule_addtl_permit_pack_submission_to_events(v_event_id,
                                                                              x.project_process_step_id);
+      elsif x.process_step_id = 196 then
+        perform flow.migrate_schedule_asbuilt_permit_pack_delivery_to_events(v_event_id,
+                                                                             x.project_process_step_id);
+      elsif x.process_step_id = 3359 then
+        perform flow.migrate_schedule_panel_removal_to_events(v_event_id,
+                                                                             x.project_process_step_id);
+      elsif x.process_step_id = 3360 then
+        perform flow.migrate_schedule_panel_reinstallation_to_events(v_event_id,
+                                                              x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
