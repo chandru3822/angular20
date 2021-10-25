@@ -75,7 +75,7 @@ public class GoodleapService {
     }
 
     // If not found by deal ID, try project ID
-    if (applications == null) {
+    if (applications == null || applications.isEmpty()) {
       ResponseEntity<String> response = rest.exchange(host + "/loans?referenceNumber=" + projectId, HttpMethod.GET, request, String.class);
 
       if (response.getStatusCode() != HttpStatus.OK) {
