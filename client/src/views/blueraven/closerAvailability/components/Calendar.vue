@@ -473,7 +473,7 @@
               let params = {
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
+                userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.userId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
