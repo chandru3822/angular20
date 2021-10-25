@@ -38,7 +38,7 @@
           <v-autocomplete ref="pczuSelect"
                           v-model="selectedPostalCodeZoneUsers"
                           :items="postalCodeZoneUsers"
-                          label="Closers"
+                          label="Users"
                           multiple
                           class="mr-3"
                           :loading="postalCodeZoneUsersLoading"
@@ -51,6 +51,9 @@
                           item-value="id"
                           attach
           >
+            <template slot="item" slot-scope="data">
+              {{ data.item.fullName }} - {{ data.item.zoneName }}
+            </template>
             <template
               slot="selection"
               slot-scope="{ item, index }"
@@ -58,7 +61,7 @@
               <div v-if="index === 0 && selectedPostalCodeZoneUsers.length < 3">
                 <v-chip small close @click:close="[selectedPostalCodeZoneUsers.splice(idx, 1), limiter()]"
                         v-for="(sr, idx) in selectedPostalCodeZoneUsers">
-                  <span>{{ sr.fullName }}</span>
+                  <span>{{ sr.fullName }} - {{sr.zoneName}}</span>
                 </v-chip>
               </div>
               <span
@@ -387,7 +390,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Closers')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -395,11 +398,11 @@
       async getAvailability() {
         try {
           let params = {
-            userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
+            postalCodeZoneUserIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime
           }
-          const {data} = await postRequest(`/schedule/availability`, params)
+          const {data} = await postRequest(`/schedule/closerAvailability`, params)
           data.forEach(d => {
             //this is really stupid.  in full calendar an all day appt strips off the time. and just uses the date.
             //so an end time of '2020-12-31 23:59:59' will strip off the time and not include it in the all day range

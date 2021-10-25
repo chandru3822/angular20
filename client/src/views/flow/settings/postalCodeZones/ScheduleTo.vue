@@ -21,8 +21,6 @@
                           label="Select a User..."
                           :loading="usersLoading"
                           item-text="fullName"
-                          hint="Note: You will no longer be able to add users who do not have the same timezone assigned to their primary position."
-                          :persistent-hint="!zone.remote"
                           item-value="userId"
                           return-object
                           autocomplete="off"
