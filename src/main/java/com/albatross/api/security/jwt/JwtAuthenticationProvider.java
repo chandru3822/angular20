@@ -88,7 +88,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     public void logFailedAuthAttempt(HttpServletRequest request, HttpServletResponse response,
                                      AuthenticationException e) throws IOException, ServletException {
-        log.info("AUTH: Failed to authenticate request; exception: " + e.getMessage());
+        log.error("AUTH: Failed to authenticate request; exception: {}", e.getMessage());
     }
 
     @SneakyThrows

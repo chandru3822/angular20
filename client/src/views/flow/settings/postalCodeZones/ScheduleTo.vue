@@ -34,7 +34,7 @@
                           item-value="id"
                           attach
           ></v-autocomplete>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
+          <v-btn color="primaryCustom" class="mr-3 mt-5 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
             Add
           </v-btn>

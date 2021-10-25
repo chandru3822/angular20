@@ -134,8 +134,9 @@ public class PostalCodeController {
     private List<Integer> zoneIds;
   }
 
+  //this is currently only used by the BRS - Closer Availability feature, if it needs to be used elsewhere it will probably need to change
   @PostMapping(value = "/zone/users", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<User> getAllZoneUsers(@RequestBody ZoneUserRequest request) throws SQLException {
+  public List<PostalCodeZoneUser> getAllZoneUsers(@RequestBody ZoneUserRequest request) throws SQLException {
     return postalCodeService.getAllZoneUsers(request.getZoneIds());
   }
 }

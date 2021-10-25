@@ -806,7 +806,8 @@
           logError(e)
           this.remoteSearchLoading = false
           this.inPersonSearchLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
+          let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
+          this.snackbar = getSnackbar('ERROR', errorMsg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },

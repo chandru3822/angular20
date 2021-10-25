@@ -20,7 +20,6 @@ import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
 import org.dmfs.rfc5545.recur.RecurrenceRule;
 import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -52,7 +51,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class AvailabilityService {
 
   private final SqlCache sqlCache;
@@ -74,8 +73,7 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    List<ResourceSchedule> results = sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
-    return results;
+    return sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
   }
 
   public List<WorkDay> getWorkDays() {
@@ -84,8 +82,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<WorkDay> results = sqlCache.query("availability.getWorkDays", params, WorkDay.class);
-    return results;
+    return sqlCache.query("availability.getWorkDays", params, WorkDay.class);
   }
 
   public ResourceSchedule getOneResourceAvailability(Long id) {
@@ -160,9 +157,12 @@ public class AvailabilityService {
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
     if ((null == rsa.getStartTime() && null != rsa.getEndTime()) || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
-      String msg = "AVAILABILITY: Daily schedule must have start and end time. ID: " + rsa.getId()
-        + ", Day of Week: " + rsa.getDayOfWeekId() + ", Start Time: " + rsa.getStartTime() + ", End Time: " + rsa.getEndTime();
-      log.error(msg);
+      log.error(
+          "AVAILABILITY: Daily schedule must have start and end time. ID={}, Day of Week={}, Start Time={}, End Time={}",
+          rsa.getId(),
+          rsa.getDayOfWeekId(),
+          rsa.getStartTime(),
+          rsa.getEndTime());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Daily schedule must have start and end time.", new Exception());
     }
 
@@ -184,6 +184,7 @@ public class AvailabilityService {
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
     params.put("createdById", user.trueUserId());
+    params.put("daylightSavings", null != rsa.getDaylightSavings() ? rsa.getDaylightSavings() : false);
 
     Long rsaId = null;
     //if existing and archived, or existing and they send in null start and end time
@@ -294,8 +295,7 @@ public class AvailabilityService {
     List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
     Integer count = sqlCache.queryForObject("availability.getAppointmentsForResourceCount", params, Integer.class);
 
-    Page<ResourceAppointment> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public ResourceAppointment saveAppointment(ResourceAppointment ra) throws Exception {
@@ -368,8 +368,7 @@ public class AvailabilityService {
       }
     }
 
-    ResourceAppointment appt = getOneResourceAppointment(id);
-    return appt;
+    return getOneResourceAppointment(id);
   }
 
   public void processFutureRecurringEvents() {
@@ -410,7 +409,7 @@ public class AvailabilityService {
           boolean alreadyExists = false;
           LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
-          log.info("CRON: recurrence: {}", rra.getRecurrence());
+          log.debug("CRON: recurrence: {}", rra.getRecurrence());
           //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
           if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
             limitReached = true;
@@ -557,15 +556,29 @@ public class AvailabilityService {
 
   public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("startTime", startTime);
-    params.put("endTime", endTime);
-    params.put("availableDate", availableDate);
-    params.put("remote", null != remote ? remote : false);
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("startTime", startTime);
+      params.put("endTime", endTime);
+      params.put("availableDate", availableDate);
+      params.put("remote", null != remote ? remote : false);
 
-    List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
-    return results;
+      List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+      if(!results.isEmpty() && results.get(0) != null && !results.get(0).getSuccess()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Postal Code is not associated with a Round Robin. Contact Admin.", new Exception());
+      }
+      return results;
+    } catch (Exception e) {
+      log.error(
+          "AVAILABILITY: Error fetching time slots for projectId={}, startTime={}, endTime={}, availableDate={}, remote={}",
+          projectId,
+          startTime,
+          endTime,
+          availableDate,
+          remote);
+      throw e;
+    }
   }
 
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws Exception {
@@ -579,7 +592,6 @@ public class AvailabilityService {
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
-
 
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
