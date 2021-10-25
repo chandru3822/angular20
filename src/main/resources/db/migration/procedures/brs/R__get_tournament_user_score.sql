@@ -27,7 +27,8 @@ BEGIN
                               from brs.project_details pd
                               where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                 and pd.closer_user_id = p_user_id
-                                and pd.cancelled_date is null) +
+                                and pd.cancelled_date is null
+                                AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= p_start_date - 10) +
                              ((select count(1)
                                from brs.project_details pd
                                         inner join flow.project p on p.id = pd.project_id
@@ -38,7 +39,8 @@ BEGIN
                                  and pd.cancelled_date is null
                                  and pd.final_design_complete_date between p_start_date and p_end_date
                                  and (ccfv.boolean_value is null or ccfv.boolean_value is false)
-                                 and pd.source != 523) * 4) +
+                                 and pd.source != 523
+                                 AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= p_start_date - 10) * 4) +
                              ((select count(1)
                                from brs.project_details pd
                                         inner join flow.project p on p.id = pd.project_id
@@ -50,7 +52,8 @@ BEGIN
                                  and pd.closer_user_id = p_user_id
                                  and pd.final_design_complete_date between p_start_date and p_end_date
                                  and (ccfv.boolean_value is true
-                                   or pd.source = 523)) * 5))) as cnt;
+                                   or pd.source = 523)
+                                 AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= p_start_date - 10) * 5))) as cnt;
             when p_tournament_formula_id = 2 then
                 select *
                 into v_score

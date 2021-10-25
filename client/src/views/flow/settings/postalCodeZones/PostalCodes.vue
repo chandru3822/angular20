@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newZone = {}]" v-if="userCanAdd">
+            <v-btn text @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -23,7 +23,15 @@
                 tabindex=1
                 v-model="newZone.distributionTimeFrameDays"
             ></v-text-field>
-            <v-btn :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
+            <v-autocomplete v-model="newZone.companyTimezoneId"
+                            :items="companyTimezones"
+                            label="Time Zone"
+                            style="width: 200px;"
+                            item-text="timezone"
+                            item-value="id"
+                            attach
+            ></v-autocomplete>
+            <v-btn :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -152,12 +160,26 @@
           {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
           {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
           {text: '', value: 'icons', show: true},
-        ]
+        ],
+        companyTimezones: []
       }
     },
     computed: {
     },
     methods: {
+      async getCompanyTimezones() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequestWithParams(`/timezone`)
+          this.companyTimezones = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       debounceSearch: debounce( function () {
         //don't allow search to be null - causes issues
         // this.search = this.search || ''

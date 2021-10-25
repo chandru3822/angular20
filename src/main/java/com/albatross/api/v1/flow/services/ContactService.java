@@ -238,7 +238,7 @@ public class ContactService {
       params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
       if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
         //todo: come back and remove this at some point
-        log.info("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
+        log.warn("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
       }
       params.put("latitude", latitude);
       params.put("longitude", longitude);
@@ -318,7 +318,7 @@ public class ContactService {
       //create all initial project_process_steps - these wont have a userPositionId
       for (ProcessStepProcess step : initialProcessSteps) {
         //the last companyProcessStepStatusTypeId can be null because an initial process step shouldn't need to cancel any pre-existing steps of the same type
-        Long newPpsId = projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null, null);
+        Long newPpsId = projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null);
 
         try {
           projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());

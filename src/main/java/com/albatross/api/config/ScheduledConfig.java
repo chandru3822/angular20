@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
@@ -16,11 +15,11 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 
 @Slf4j
 @Configuration
-@EnableAsync
 @EnableScheduling
 @RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
@@ -29,9 +28,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
-
-    @Value(value = "${spring.profiles.active}")
-    private String springProfile;
 
     @Value(value = "${app.home_url}")
     private String homeUrl;
@@ -60,7 +56,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        taskRegistrar.setScheduler(taskExecutor());
+      final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10);
+      taskRegistrar.setScheduler(scheduledExecutorService);
     }
 
     /*
@@ -145,6 +142,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
     public Executor taskExecutor() {
-        return Executors.newScheduledThreadPool(10);
+      return Executors.newScheduledThreadPool(10);
     }
 }

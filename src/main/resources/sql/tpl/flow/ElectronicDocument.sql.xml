@@ -23,17 +23,6 @@
         ]]>
     </electronicDocument.getUtilityQueryStr>
 
-    <electronicDocument.getChangeOrderQueryStr>
-        <![CDATA[
-            select s.state || '_Change Order_Generic'
-                from brs.project_details pd
-                inner join flow.project p on p.id = pd.project_id
-                left outer join flow.company_state cs on cs.id = p.company_state_id
-                left outer join flow.state s on s.id = cs.state_id
-            where pd.project_id = :projectId
-        ]]>
-    </electronicDocument.getChangeOrderQueryStr>
-
     <electronicDocument.getStateQueryStr>
         <![CDATA[
             select s.abbreviation
@@ -66,7 +55,7 @@
             SELECT p.id, p.project_name, p.street1, p.street2, p.city,
                    s.state, s.abbreviation, p.postal_code, c.first_name,
                    c.last_name, c.email, c.phone, pd.system_size, pd.total_system_price, pd.referral_promotion_amount,
-                   pd.total_cash_down_payment,
+                   pd.total_cash_down_payment, pd.installation_agreement_signed_date,
                    (select int_value
                    from flow.project p
                             inner join flow.project_process_step pps

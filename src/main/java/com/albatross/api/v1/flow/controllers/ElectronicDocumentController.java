@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.flow.services.ElectronicDocumentService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,13 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
-@RestController
 @Slf4j
+@RestController
 @RequestMapping(value = "/api/v1/flow/electronicDocument")
+@RequiredArgsConstructor
 public class ElectronicDocumentController {
 
-  @Autowired
-  ElectronicDocumentService electronicDocumentService;
+  private final ElectronicDocumentService electronicDocumentService;
 
   @GetMapping(value = "/projects")
   public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable) {

@@ -268,7 +268,7 @@ public class PostalCodeService {
       if(overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {
-        log.info("PCS: No Company ID found for project. {}", projectId);
+        log.error("PCS: No Company ID found for project. {}", projectId);
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
       }
     }
@@ -303,7 +303,7 @@ public class PostalCodeService {
     return results.size() > 0;
   }
 
-  public List<User> getAllZoneUsers(List<Integer> zoneIds) throws SQLException {
+  public List<PostalCodeZoneUser> getAllZoneUsers(List<Integer> zoneIds) throws SQLException {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -311,7 +311,7 @@ public class PostalCodeService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("zoneIds", createSqlArrayOfType("int", zoneIds));
 
-    List<User> results = sqlCache.query("postalCode.getAllZoneUsers", params, new UserService.UserMapper<>(User.class, om));
+    List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getAllZoneUsers", params, new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
     return results;
   }
 
@@ -354,6 +354,22 @@ public class PostalCodeService {
       bw.registerCustomEditor(List.class, "scheduleByUsers",
         new JsonCollectionDeserializer(scheduleByUsersRef, objectMapper));
 
+    }
+  }
+
+  public static class PostalCodeZoneUserMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public PostalCodeZoneUserMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "userPositions",
+        new JsonCollectionDeserializer(userPositionsRef, objectMapper));
     }
   }
 
