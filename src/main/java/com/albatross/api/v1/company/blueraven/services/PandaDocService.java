@@ -583,7 +583,10 @@ public class PandaDocService {
         tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
         tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
         tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
-        tokens.put("Deal.Total System Price", result.get("custom_fields.Total System Price"));
+
+        Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
+        Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());
+        tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
     } catch (EmptyResultDataAccessException e) {
         log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
         e.printStackTrace();

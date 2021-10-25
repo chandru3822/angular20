@@ -87,6 +87,8 @@ begin
                           case when (hidden_conduit_adder)::text = 'Yes' then true else false end,
                           'custom_fields.Pre-Solar Cost per kWh ($)',
                           (cost_per_kwh_before_solar)::text,
+                          'custom_fields.Total Cost',
+                          case when (total_cost)::numeric is null then '0.00'::text else round((total_cost)::numeric,2)::text end,
                           'custom_fields.Total System Price',
                           round((coalesce((loan_amount)::NUMERIC,0.00::NUMERIC) +
                            coalesce((secondary_loan_amount)::NUMERIC,0.00::NUMERIC) +
