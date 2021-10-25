@@ -233,11 +233,6 @@
         and case when :loadSchedulers is true
                      then upv.position_scheduler is true
                  else upv.position_schedulable is true end
-        and case when (select remote from flow.postal_code_zone where id = :zoneId) is false
-             then (select o.company_timezone_id
-              from flow.user_position up
-              inner join flow.org o on o.id = up.org_id
-              where up.id = upv.user_position_id) = (select company_timezone_id from flow.postal_code_zone where id = :zoneId) else 1=1 end
         and upv.user_archived is not true
         and upv.archived is not true
         and upv.has_access = true
@@ -256,12 +251,16 @@
   ]]></postalCode.getAvailableZoneUsers>
 
   <postalCode.getAllZoneUsers><![CDATA[
-    select pczu.user_id                                as id,
+    select pczu.id,
            pczu.user_id,
            u.first_name,
            u.last_name,
+           pcz.zone_name,
+           pczu.archived,
+           pcz.id as postal_code_zone_id,
+           pczu.postal_code_zone_user_type_id,
            concat(u.first_name, ' ', u.last_name) AS full_name,
-           concat(u.first_name, ' ', u.last_name) AS title,
+           concat(u.first_name, ' ', u.last_name, ' - ', pcz.zone_name) AS title,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(positions)))
                         FROM (
