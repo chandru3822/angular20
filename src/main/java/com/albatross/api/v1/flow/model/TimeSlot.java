@@ -14,4 +14,5 @@ public class TimeSlot {
 
   private Date scheduledStartTime;
   private List<Integer> users;
+  private Boolean success; //used to validate returned data
 }

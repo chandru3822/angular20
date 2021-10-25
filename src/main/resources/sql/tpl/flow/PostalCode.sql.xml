@@ -234,8 +234,10 @@
                      then upv.position_scheduler is true
                  else upv.position_schedulable is true end
         and case when (select remote from flow.postal_code_zone where id = :zoneId) is false
-          then o.company_timezone_id = (select company_timezone_id from flow.postal_code_zone where id = :zoneId)
-        else 1=1 end
+             then (select o.company_timezone_id
+              from flow.user_position up
+              inner join flow.org o on o.id = up.org_id
+              where up.id = upv.user_position_id) = (select company_timezone_id from flow.postal_code_zone where id = :zoneId) else 1=1 end
         and upv.user_archived is not true
         and upv.archived is not true
         and upv.has_access = true
