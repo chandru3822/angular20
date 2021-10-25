@@ -163,8 +163,8 @@
   ]]></availability.updateAppointment>
 
   <availability.insertAppointment><![CDATA[
-    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location,  latitude, longitude)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location,  :latitude, :longitude)
+    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location,  latitude, longitude, origin_timezone, origin_timezone_offset)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location,  :latitude, :longitude, :originTimezone, :originTimezoneOffset)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
@@ -303,7 +303,9 @@
                         ra.recurring_event_end_type,
                         ra.recurring_start_time,
                         ra.description, ra.all_day,
-                        EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration
+                        EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration,
+                        ra.origin_timezone,
+                        ra.origin_timezone_offset
         from flow.resource_appointment ra
                  inner join flow."user" u on u.id = ra.user_id
                  inner join flow.company_user_status cus on cus.user_id = u.id
@@ -321,7 +323,9 @@
                         ra.recurring_event_end_type,
                         ra.recurring_start_time,
                         ra.description, ra.all_day,
-                        EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration
+                        EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration,
+                        ra.origin_timezone,
+                        ra.origin_timezone_offset
         from flow.resource_appointment ra
                  inner join flow."org" o on o.id = ra.org_id
         where ra.recurring_event_end_type is null
@@ -340,6 +344,8 @@
            company_id,
            all_day,
            duration,
+           origin_timezone,
+           origin_timezone_offset,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(appointments)))
                         FROM (
