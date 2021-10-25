@@ -293,6 +293,7 @@
              inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
         inner join flow."user" u on u.id = pczu.user_id
     where pczu.archived is not true
+      and pcz.archived is not true
       and pcz.company_id = :companyId
       and pczu.postal_code_zone_user_type_id = 1
       and ((cast(:zoneIds as int[]) is null) OR pczu.postal_code_zone_id = any (:zoneIds))
