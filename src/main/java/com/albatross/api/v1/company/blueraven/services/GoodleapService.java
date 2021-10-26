@@ -168,6 +168,7 @@ public class GoodleapService {
       GoodleapLoanStatus.APPROVED.toString(),
       GoodleapLoanStatus.FUNDED.toString(),
       GoodleapLoanStatus.SOLD.toString(),
+      GoodleapLoanStatus.CONDITIONAL.toString(),
       "Change Order Pending",
       "Inspection Approved",
       "Inspection in Review",
@@ -189,7 +190,6 @@ public class GoodleapService {
     List<String> pending = List.of(
       GoodleapLoanStatus.CREATED.toString(),
       GoodleapLoanStatus.PENDING.toString(),
-      GoodleapLoanStatus.CONDITIONAL.toString(),
       GoodleapLoanStatus.LOAN_SELECTION_PENDING.toString(),
       "Credit Pending Review",
       "New"
