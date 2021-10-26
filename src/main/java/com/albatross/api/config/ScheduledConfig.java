@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -136,5 +138,10 @@ public class ScheduledConfig implements SchedulingConfigurer {
       log.info("*** CRON: start CONTACT geo coords updates ***");
       contactService.updateContactLatLong(50000);
       log.info("*** CRON: end CONTACT geo coords updates ***");
+    }
+
+    @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
+    public Executor taskExecutor() {
+      return Executors.newScheduledThreadPool(10);
     }
 }

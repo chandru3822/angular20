@@ -98,6 +98,7 @@
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
               <v-card flat color="transparent" class="px-3">
                 <!-- no edits allowed to recurring events for now -->
+                <!-- NOTE: THERE WOULD BE A BIG ISSUE IF WE ALLOWED EDITING RECURRING EVENTS AND THEY WERE EDITED FROM 2 DIFFERENT TIMEZONES! YIKES! -->
                 <v-text-field
                   v-model="appt.title"
                   counter="50"
@@ -353,7 +354,11 @@
           this.saveError = true
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
-          if(!appt.repeat) {
+          if(appt.repeat) {
+            //if it is a repeating appt, then save the current users timezone and offset (required for adjusting DST later)
+            appt.originTimezone = this.timezone
+            appt.originTimezoneOffset = moment.tz(moment.utc(appt.startTime), this.timezone).utcOffset() * 60
+          } else {
             //clear out recurrence fields if not repeat when saved
             appt.recurrence = null
             appt.recurringEventType = null
@@ -372,7 +377,7 @@
               orgId: this.orgId,
               userId: this.userId,
               ...appt,
-              startTimeOffsetDay: !localAndUtcSame
+              startTimeOffsetDay: !localAndUtcSame,
             }
             const {data} = await postRequest(`/availability/appointment`, params)
             this.addNew = false
