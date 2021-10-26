@@ -43,6 +43,10 @@ declare
   v_end_date                        date;
   v_short_start_date                date;
   v_long_start_date                 date;
+  v_short_window_entered_wip            bigint;
+  v_short_window_exited_wip             bigint;
+  v_long_window_entered_wip             bigint;
+  v_long_window_exited_wip              bigint;
   v_short_window_entered            bigint;
   v_short_window_exited             bigint;
   v_long_window_entered             bigint;
@@ -84,7 +88,7 @@ BEGIN
   into v_end_date,v_short_start_date,v_long_start_date;
 
   select count(1)
-  into v_short_window_exited
+  into v_short_window_exited_wip
   from flow.work_queue_cycle wqc2
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
@@ -99,7 +103,7 @@ BEGIN
     ;
 
   select count(1)
-  into v_short_window_entered
+  into v_short_window_entered_wip
   from flow.work_queue_cycle wqc2
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
@@ -114,7 +118,7 @@ BEGIN
     ;
 
   select count(1)
-  into v_long_window_exited
+  into v_long_window_exited_wip
   from flow.work_queue_cycle wqc2
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
@@ -129,7 +133,7 @@ BEGIN
     ;
 
   select count(1)
-  into v_long_window_entered
+  into v_long_window_entered_wip
   from flow.work_queue_cycle wqc2
          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
                     on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
@@ -142,6 +146,67 @@ BEGIN
     and pswqtpsst2.archived is false
     and pswqt2.archived is false
     ;
+
+
+  select count(1)
+  into v_short_window_exited
+  from flow.work_queue_cycle wqc2
+         inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
+                    on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
+         inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
+  where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
+    and  flow.get_difference_of_dates_by_duration(
+    (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+    (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 10
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+  ;
+
+  select count(1)
+  into v_short_window_entered
+  from flow.work_queue_cycle wqc2
+         inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
+                    on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
+         inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
+  where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date
+    and  flow.get_difference_of_dates_by_duration(
+           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 10
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+  ;
+
+  select count(1)
+  into v_long_window_exited
+  from flow.work_queue_cycle wqc2
+         inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
+                    on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
+         inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
+  where (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
+    and  flow.get_difference_of_dates_by_duration(
+           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 10
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+  ;
+
+  select count(1)
+  into v_long_window_entered
+  from flow.work_queue_cycle wqc2
+         inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
+                    on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
+         inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
+  where (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date
+    and  flow.get_difference_of_dates_by_duration(
+           (wqc2.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp,
+           (wqc2.date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp, 4) > 10
+    and pswqt2.work_queue_type_id = p_work_queue_type_id
+    and pswqtpsst2.archived is false
+    and pswqt2.archived is false
+  ;
 
   select count(1) as short_window_numerator
   into v_short_window_numerator
@@ -356,8 +421,8 @@ BEGIN
            v_short_window_exited,
            v_long_window_entered,
            v_long_window_exited,
-           v_short_window_entered - v_short_window_exited,
-           v_long_window_entered - v_long_window_exited;
+           v_short_window_entered_wip - v_short_window_exited_wip,
+           v_long_window_entered_wip - v_long_window_exited_wip;
 END
 $$
   LANGUAGE plpgsql VOLATILE
