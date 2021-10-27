@@ -2,93 +2,122 @@ CREATE OR REPLACE function flow.migrate_all_groups(p_event_type_id integer, p_pr
   returns void as
 $$
 declare
-  v_new_group_id_5       integer;
-  v_new_group_id_98_RSS  integer;
-  v_new_group_id_98_NS   integer;
-  v_new_group_id_168_RI  integer;
-  v_new_group_id_168_NS  integer;
-  v_new_group_id_168_IO  integer;
-  v_new_group_id_153_RI  integer;
-  v_new_group_id_3365_SD integer;
-  v_new_group_id_3365_IO integer;
-  v_new_group_id_3365_NS integer;
-  v_new_group_id_16_SC   integer;
-  v_new_group_id_16_RPPD integer;
-  v_new_group_id_13_D    integer;
-  v_new_group_id_13_OC   integer;
-  v_new_group_id_13_RS   integer;
-  v_new_group_id_85_D    integer;
-  v_new_group_id_85_OC   integer;
-  v_new_group_id_85_RS   integer;
-  v_new_group_id_3431_D  integer;
-  v_new_group_id_3431_OC integer;
-  v_new_group_id_3431_RS integer;
-  v_new_group_id_129_OC  integer;
-  v_new_group_id_129_D   integer;
-  v_new_group_id_138_OC  integer;
-  v_new_group_id_138_D   integer;
-  v_new_group_id_146_OC  integer;
-  v_new_group_id_146_D   integer;
-  v_new_group_id_140_OC  integer;
-  v_new_group_id_140_D   integer;
-  v_new_group_id_144_OC  integer;
-  v_new_group_id_144_D   integer;
-  v_new_group_id_142_OC  integer;
-  v_new_group_id_142_D   integer;
-  v_new_group_id_148_OC  integer;
-  v_new_group_id_148_D   integer;
-  v_new_group_id_3414_OC integer;
-  v_new_group_id_3414_D  integer;
-  v_new_group_id_3362_OC integer;
-  v_new_group_id_3362_D  integer;
-  v_new_group_id_134_OC  integer;
-  v_new_group_id_134_D   integer;
-  v_new_group_id_28_OC   integer;
-  v_new_group_id_28_D    integer;
-  v_new_group_id_3487_OC integer;
-  v_new_group_id_3487_D  integer;
-  v_new_group_id_3409_OC integer;
-  v_new_group_id_3409_D  integer;
-  v_new_group_id_54_D    integer;
-  v_new_group_id_54_RD   integer;
-  v_new_group_id_54_OC   integer;
-  v_new_group_id_54_NS   integer;
-  v_new_group_id_2838_D  integer;
-  v_new_group_id_2838_RD integer;
-  v_new_group_id_2838_OC integer;
-  v_new_group_id_2838_NS integer;
-  v_new_group_id_2841_D  integer;
-  v_new_group_id_2841_RD integer;
-  v_new_group_id_2841_OC integer;
-  v_new_group_id_2841_NS integer;
-  v_new_group_id_3091_D  integer;
-  v_new_group_id_3480_D  integer;
-  v_new_group_id_3441_D  integer;
-  v_new_group_id_165_D   integer;
-  v_new_group_id_165_RD  integer;
-  v_new_group_id_165_OC  integer;
-  v_new_group_id_66_D    integer;
-  v_new_group_id_66_OC   integer;
-  v_new_group_id_3107_D  integer;
-  v_new_group_id_3107_OC integer;
-  v_new_group_id_192_D   integer;
-  v_new_group_id_192_OC  integer;
-  v_new_group_id_192_R   integer;
-  v_new_group_id_3103_D   integer;
-  v_new_group_id_3103_OC  integer;
-  v_new_group_id_3103_R   integer;
-  v_new_group_id_3099_D   integer;
-  v_new_group_id_3099_OC  integer;
-  v_new_group_id_3099_R   integer;
-  v_new_group_id_196_D   integer;
-  v_new_group_id_196_OC  integer;
-  v_new_group_id_196_R   integer;
-  v_new_group_id_3359_D   integer;
-  v_new_group_id_3359_OC  integer;
+  v_new_group_id_5         integer;
+  v_new_group_id_98_RSS    integer;
+  v_new_group_id_98_NS     integer;
+  v_new_group_id_168_RI    integer;
+  v_new_group_id_168_NS    integer;
+  v_new_group_id_168_IO    integer;
+  v_new_group_id_153_RI    integer;
+  v_new_group_id_3365_SD   integer;
+  v_new_group_id_3365_IO   integer;
+  v_new_group_id_3365_NS   integer;
+  v_new_group_id_16_SC     integer;
+  v_new_group_id_16_RPPD   integer;
+  v_new_group_id_13_D      integer;
+  v_new_group_id_13_OC     integer;
+  v_new_group_id_13_RS     integer;
+  v_new_group_id_85_D      integer;
+  v_new_group_id_85_OC     integer;
+  v_new_group_id_85_RS     integer;
+  v_new_group_id_3431_D    integer;
+  v_new_group_id_3431_OC   integer;
+  v_new_group_id_3431_RS   integer;
+  v_new_group_id_129_OC    integer;
+  v_new_group_id_129_D     integer;
+  v_new_group_id_138_OC    integer;
+  v_new_group_id_138_D     integer;
+  v_new_group_id_146_OC    integer;
+  v_new_group_id_146_D     integer;
+  v_new_group_id_140_OC    integer;
+  v_new_group_id_140_D     integer;
+  v_new_group_id_144_OC    integer;
+  v_new_group_id_144_D     integer;
+  v_new_group_id_142_OC    integer;
+  v_new_group_id_142_D     integer;
+  v_new_group_id_148_OC    integer;
+  v_new_group_id_148_D     integer;
+  v_new_group_id_3414_OC   integer;
+  v_new_group_id_3414_D    integer;
+  v_new_group_id_3362_OC   integer;
+  v_new_group_id_3362_D    integer;
+  v_new_group_id_134_OC    integer;
+  v_new_group_id_134_D     integer;
+  v_new_group_id_28_OC     integer;
+  v_new_group_id_28_D      integer;
+  v_new_group_id_3487_OC   integer;
+  v_new_group_id_3487_D    integer;
+  v_new_group_id_3409_OC   integer;
+  v_new_group_id_3409_D    integer;
+  v_new_group_id_54_D      integer;
+  v_new_group_id_54_RD     integer;
+  v_new_group_id_54_OC     integer;
+  v_new_group_id_54_NS     integer;
+  v_new_group_id_2838_D    integer;
+  v_new_group_id_2838_RD   integer;
+  v_new_group_id_2838_OC   integer;
+  v_new_group_id_2838_NS   integer;
+  v_new_group_id_2841_D    integer;
+  v_new_group_id_2841_RD   integer;
+  v_new_group_id_2841_OC   integer;
+  v_new_group_id_2841_NS   integer;
+  v_new_group_id_3091_D    integer;
+  v_new_group_id_3480_D    integer;
+  v_new_group_id_3441_D    integer;
+  v_new_group_id_165_D     integer;
+  v_new_group_id_165_RD    integer;
+  v_new_group_id_165_OC    integer;
+  v_new_group_id_66_D      integer;
+  v_new_group_id_66_OC     integer;
+  v_new_group_id_3107_D    integer;
+  v_new_group_id_3107_OC   integer;
+  v_new_group_id_192_D     integer;
+  v_new_group_id_192_OC    integer;
+  v_new_group_id_192_R     integer;
+  v_new_group_id_3103_D    integer;
+  v_new_group_id_3103_OC   integer;
+  v_new_group_id_3103_R    integer;
+  v_new_group_id_3099_D    integer;
+  v_new_group_id_3099_OC   integer;
+  v_new_group_id_3099_R    integer;
+  v_new_group_id_196_D     integer;
+  v_new_group_id_196_OC    integer;
+  v_new_group_id_196_R     integer;
+  v_new_group_id_3359_D    integer;
+  v_new_group_id_3359_OC   integer;
   v_new_group_id_3359_NS   integer;
-  v_new_group_id_3360_D   integer;
-  v_new_group_id_3360_OC  integer;
+  v_new_group_id_3360_D    integer;
+  v_new_group_id_3360_OC   integer;
   v_new_group_id_3360_NS   integer;
+  v_new_group_id_44_D      integer;
+  v_new_group_id_44_OC     integer;
+  v_new_group_id_44_NS     integer;
+  v_new_group_id_44_R      integer;
+  v_new_group_id_3479_D    integer;
+  v_new_group_id_3479_OC   integer;
+  v_new_group_id_3479_NS   integer;
+  v_new_group_id_3479_R    integer;
+  v_new_group_id_222_D     integer;
+  v_new_group_id_222_OC    integer;
+  v_new_group_id_172_D     integer;
+  v_new_group_id_172_OC    integer;
+  v_new_group_id_172_R     integer;
+  v_new_group_id_3427_D    integer;
+  v_new_group_id_3427_SAHJ integer;
+  v_new_group_id_3427_OC   integer;
+  v_new_group_id_3427_NS   integer;
+  v_new_group_id_3427_R    integer;
+  v_new_group_id_3427_ID   integer;
+  v_new_group_id_3428_D    integer;
+  v_new_group_id_3428_OC   integer;
+  v_new_group_id_3428_NS   integer;
+  v_new_group_id_3428_R    integer;
+  v_new_group_id_3397_D    integer;
+  v_new_group_id_3397_MDM  integer;
+  v_new_group_id_3397_IF   integer;
+  v_new_group_id_3397_OC   integer;
+  v_new_group_id_3478_CWO  integer;
+  v_new_group_id_3478_CWD  integer;
 
 
 BEGIN
@@ -1098,6 +1127,296 @@ BEGIN
 
     perform flow.migrate_fields_to_group(v_new_group_id_3360_NS, 19575, 1);
 
+
+  elsif p_process_step_id = 44 then
+    select id
+    into v_new_group_id_44_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_44_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_44_NS
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'No-Show'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_44_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_44_D, 19071, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_44_D, 1325, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_44_D, 17318, 3);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_44_OC, 1000, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_44_OC, 17536, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_44_R, 1413, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_44_R, 1414, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_44_NS, 1001, 1);
+
+  elsif p_process_step_id = 3479 then
+    select id
+    into v_new_group_id_3479_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3479_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3479_NS
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'No-Show'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3479_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_D, 21933, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_D, 21934, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_D, 21935, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_D, 21936, 1);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_OC, 21937, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_NS, 21938, 1);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_R, 21939, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3479_R, 21940, 1);
+
+
+  elsif p_process_step_id = 222 then
+    select id
+    into v_new_group_id_222_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_222_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_222_D, 19077, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_222_D, 19078, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_222_D, 17336, 3);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_222_OC, 1045, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_222_OC, 1046, 2);
+
+
+  elsif p_process_step_id = 172 then
+    select id
+    into v_new_group_id_172_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_172_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_172_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_172_D, 19079, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_D, 17333, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_D, 18970, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_D, 1311, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 666, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 667, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 1376, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 18968, 4);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_172_R, 1374, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_172_R, 1375, 2);
+
+  elsif p_process_step_id = 3427 then
+    select id
+    into v_new_group_id_3427_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3427_SAHJ
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Schedule with AHJ'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3427_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3427_NS
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'No-Show'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3427_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3427_ID
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Inspection Disposition'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_D, 21401, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_D, 21402, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_D, 21400, 3);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_SAHJ, 21406, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_OC, 21410, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_NS, 21404, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_R, 21545, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_R, 21403, 2);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_ID, 21412, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3427_ID, 21414, 4);
+
+  elsif p_process_step_id = 3428 then
+    select id
+    into v_new_group_id_3428_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+
+    select id
+    into v_new_group_id_3428_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3428_NS
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'No-Show'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3428_R
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Reschedule'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3428_D, 21438, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3428_D, 21437, 1);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3428_OC, 21442, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3428_NS, 21443, 4);
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3428_R, 21507, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3428_R, 21508, 2);
+
+  elsif p_process_step_id = 3397 then
+    select id
+    into v_new_group_id_3397_D
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Details'
+      and cfg.event_id = p_event_type_id;
+
+
+    select id
+    into v_new_group_id_3397_MDM
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Material Delivery Materials'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3397_IF
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Installer Feedback'
+      and cfg.event_id = p_event_type_id;
+
+    select id
+    into v_new_group_id_3397_OC
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Outcome'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_D, 20926, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_D, 20927, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_D, 20925, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_D, 20928, 4);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, 20931, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, 20932, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, 20933, 3);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, 20934, 4);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, 20935, 5);
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, 20936, 6);
+    -- perform flow.migrate_fields_to_group(v_new_group_id_3397_MDM, , 7);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_IF, 20937, 1);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3397_OC, 20940, 1);
+
+  elsif p_process_step_id = 3478 then
+    select id
+    into v_new_group_id_3478_CWD
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Closeout Work Details'
+      and cfg.event_id = p_event_type_id;
+
+
+    select id
+    into v_new_group_id_3478_CWO
+    from flow.custom_field_group cfg
+    where cfg.group_name = 'Closeout Work Outcome'
+      and cfg.event_id = p_event_type_id;
+
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3478_CWD, 21901, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_3478_CWD, 21902, 2);
+
+    perform flow.migrate_fields_to_group(v_new_group_id_3478_CWO, 21908, 1);
   end if;
 
 END

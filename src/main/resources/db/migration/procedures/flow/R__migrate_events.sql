@@ -222,6 +222,31 @@ BEGIN
       elsif x.process_step_id = 3360 then
         perform flow.migrate_schedule_panel_reinstallation_to_events(v_event_id,
                                                               x.project_process_step_id);
+      elsif x.process_step_id = 44 then
+        perform flow.migrate_schedule_ahj_inspection_work_to_events(v_event_id,
+                                                                     x.project_process_step_id);
+      elsif x.process_step_id = 3479 then
+        perform flow.migrate_schedule_critter_guard_to_events(v_event_id,
+                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 222 then
+        perform flow.migrate_schedule_inhouse_mpu_inspection_to_events(v_event_id,
+                                                              x.project_process_step_id);
+      elsif x.process_step_id = 172 then
+        perform flow.migrate_schedule_inhouse_mpu_permit_pickup_to_events(v_event_id,
+                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 3427 then
+        perform flow.migrate_schedule_retrofit_inspection_to_events(v_event_id,
+                                                                          x.project_process_step_id);
+      elsif x.process_step_id = 3428 then
+        perform flow.migrate_schedule_retrofit_inspection_correction_work_to_events(v_event_id,
+                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 3397 then
+        perform flow.migrate_schedule_retrofit_installation_to_events(v_event_id,
+                                                                                    x.project_process_step_id);
+
+      elsif x.process_step_id = 3478 then
+        perform flow.migrate_schedule_retrofit_installation_closeout_work_to_events(v_event_id,
+                                                                      x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;
