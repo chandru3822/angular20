@@ -379,6 +379,8 @@ public class PandaDocService {
         }
     }
 
+    /*
+    **  Support role is no longer used, leaving here in case needed in the future **
     JSONObject brs = new JSONObject();
     User user = securityService.getCurrentUser();
     brs.put("first_name", user.getFirstName());
@@ -388,6 +390,7 @@ public class PandaDocService {
         brs.put("role", pandaDoc.getSupportRole());
     }
     body.append("recipients", brs);
+    * */
 
     JSONObject customer = new JSONObject();
     customer.put("first_name", tokens.get("Deal.Contact.FirstName"));
