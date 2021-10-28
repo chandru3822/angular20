@@ -11,8 +11,8 @@ import java.util.Date;
 @NoArgsConstructor
 public class ResourceAppointment {
 
-  private Long id, companyId, userId, orgId, duration;
-  private String title, description, location, recurrence, recurringEventId, recurringEventEndType;
+  private Long id, companyId, userId, orgId, duration, originTimezoneOffset;
+  private String title, description, location, recurrence, recurringEventId, recurringEventEndType, originTimezone;
   private Double latitude, longitude;
   private Date startTime, endTime, recurringStartTime, recurringEndTime;
   private Boolean archived, allDay, repeat, startTimeOffsetDay;

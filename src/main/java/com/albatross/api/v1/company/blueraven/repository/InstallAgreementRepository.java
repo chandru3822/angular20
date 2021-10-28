@@ -311,6 +311,7 @@ public class InstallAgreementRepository {
     final String SEVEN_YEAR_TERM_V2 = "7";
     final String SEVEN_YEAR_TERM_V3 = " 7";
     final String TEN_YEAR_TERM = "10";
+    final String TWELVE_YEAR_TERM = "12";
     final String FIFTEEN_YEAR_TERM = "15";
     final String TWENTY_YEAR_TERM = "20";
     final String TWENTY_FIVE_YEAR_TERM = "25";
@@ -326,6 +327,11 @@ public class InstallAgreementRepository {
       }
       else if (interestRate.equals("0.0499")) {
         financeOption = "br";
+      }
+    }
+    else if (loanTerm.equals(TWELVE_YEAR_TERM)) {
+      if (interestRate.equals("0.0299")) {
+        financeOption = "12299";
       }
     }
     else if (loanTerm.equals(FIFTEEN_YEAR_TERM)) {

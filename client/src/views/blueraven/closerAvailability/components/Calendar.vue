@@ -473,20 +473,42 @@
               let params = {
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
+                userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.userId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
               const {data} = await postRequest(`/schedule`, params)
+              let additionalRecords = []
               data.forEach(d => {
-                // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-                d.resourceId = d.userId
-                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
-                let matchingResource = this.selectedPostalCodeZoneUsers.find(r => r.id === d.resourceId)
-                d.colorForBorder = matchingResource?.color
+                //get all selected users who match the appt user_id
+                let matchingUsers = this.selectedPostalCodeZoneUsers.filter(r => r.userId === d.userId)
+
+                // if there is more than one selected user with that user ID then add another record for the additional user
+                if(matchingUsers?.length > 1) {
+                  matchingUsers.forEach((mu, idx) => {
+                    //if it is the first matching user then just update the existing data record
+                    if(idx === 0) {
+                      d.resourceId = mu.id
+                      d.title = `<b>${d.projectName ?? ''}</b> <br/> ${d.groupName}`
+                      d.colorForBorder = mu.color
+                    } else {
+                      //otherwise need to add a record to data
+                      let newRecord = cloneDeep(d)
+                      newRecord.resourceId = mu.id
+                      newRecord.title = `<b>${newRecord.projectName ?? ''}</b> <br/> ${newRecord.groupName}`
+                      newRecord.colorForBorder = mu.color
+                      additionalRecords.push(newRecord)
+                    }
+                  })
+                } else if (matchingUsers.length === 1) {
+                  d.resourceId = matchingUsers[0].id
+                  d.title = `<b>${d.projectName ?? ''}</b> <br/> ${d.groupName}`
+                  d.colorForBorder = matchingUsers[0].color
+                }
+                //it shouldn't be possible to not have a matching user, but if it doesn't match we just wont do anything and see what happens
+
               })
-              this.eventSources[0].events = cloneDeep(data)
+              this.eventSources[0].events = data.concat(additionalRecords)
 
               this.calendarLoading = false
             } catch (e) {
