@@ -136,11 +136,21 @@
                   :field="availabilityDateField"
                 />
                 <div class="text-right" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primaryCustom" dark class="white--text"
-                         :loading="searchLoading"
+                  <v-btn color="primaryCustom" class="white--text"
+                         :loading="remoteSearchLoading"
+                         :disabled="inPersonSearchLoading"
+                         v-if="showRemoteSearch || userIsAdmin"
+                         id="qa-round-robin-search-remote"
+                         @click="getAvailableTimeSlots(true)">
+                    Search Remote Appt. Slots
+                  </v-btn>
+                  <v-btn color="primaryCustom" class="white--text ml-3"
+                         :loading="inPersonSearchLoading"
+                         v-if="schedulerCanEdit || userIsAdmin"
+                         :disabled="remoteSearchLoading"
                          id="qa-round-robin-search"
-                         @click="getAvailableTimeSlots">
-                    Search
+                         @click="getAvailableTimeSlots(false)">
+                    Search In-person Appt. Slots
                   </v-btn>
                 </div>
                 <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
@@ -294,18 +304,25 @@ export default {
       roundRobinNumberOfDays: 7,
       timeSlots: [],
       selectedTimeSlot: {},
+      schedulerCanEdit: false,
+      showRemoteSearch: false,
+      inPersonSearchLoading: false,
+      remoteSearchLoading: false,
+      mostRecentSearchWasRemote: false,
+      schedulerLoading: true,
       closerApptOverride: false,
       minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
       closerApptSaved: false,
       searchedTimeSlots: false,
       showRoundRobin: false,
-      searchLoading: false,
       uniqueAlreadyHasValue: false,
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
     }
   },
   async created() {
     this.getCompanyEventStatusTypes()
+    this.userCanScheduleLeadAllocation()
+    this.userCanScheduleRemoteLeadAllocation()
     await this.getProcessStepEvents()
   },
   watch: {
@@ -395,6 +412,42 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async userCanScheduleLeadAllocation() {
+      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+      if (this.userIsScheduler) {
+        this.schedulerLoading = true
+        try {
+          const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
+            params: {
+              postalCode: this.project.postalCode
+            }
+          })
+          this.schedulerCanEdit = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.schedulerLoading = false
+        }
+      }
+    },
+    async userCanScheduleRemoteLeadAllocation() {
+      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+      if (this.userIsScheduler) {
+        this.schedulerLoading = true
+        try {
+          const {data} = await getRequest(`/postalCode/zone/userCanScheduleRemote`)
+          this.showRemoteSearch = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.schedulerLoading = false
+        }
       }
     },
     doEventAction: async function (action) {
@@ -549,9 +602,11 @@ export default {
         }
       }
     },
-    async getAvailableTimeSlots() {
+    async getAvailableTimeSlots(remote) {
+      this.mostRecentSearchWasRemote = remote
       try {
-        this.searchLoading = true
+        this.remoteSearchLoading = remote
+        this.inPersonSearchLoading = !remote
         this.selectedTimeSlot = {}
         this.searchedTimeSlots = false
 
@@ -559,16 +614,20 @@ export default {
           projectId: this.projectId,
           startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          availableDate: this.availabilityDateField.dateValue
+          availableDate: this.availabilityDateField.dateValue,
+          remote: remote
         }
         const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
         this.searchedTimeSlots = true
         this.timeSlots = data
-        this.searchLoading = false
+        this.remoteSearchLoading = false
+        this.inPersonSearchLoading = false
       } catch (e) {
         logError(e)
-        this.searchLoading = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
+        this.remoteSearchLoading = false
+        this.inPersonSearchLoading = false
+        let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
+        this.snackbar = getSnackbar('ERROR', errorMsg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
