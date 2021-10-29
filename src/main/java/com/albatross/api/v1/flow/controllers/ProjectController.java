@@ -108,6 +108,11 @@ public class ProjectController {
       return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/statusesForWqt", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<WorkQueueTypeProjectStatus>> getStatusesForWqt() {
+    return new ResponseEntity<>(projectService.getStatusesForWqt(), HttpStatus.OK);
+  }
+
   @PutMapping(value = "/companyStatus/initial/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveInitialProjectStatusType(@PathVariable Long id) {
     projectService.saveInitialProjectStatusType(id);

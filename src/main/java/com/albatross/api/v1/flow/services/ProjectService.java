@@ -486,6 +486,15 @@ public class ProjectService {
       ImmutableMap.of("projectId", projectId), ProjectEvent.class);
   }
 
+  public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<WorkQueueTypeProjectStatus> results = sqlCache.query("project.getStatusesForWqt", params, WorkQueueTypeProjectStatus.class);
+    return results;
+  }
+
   public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();

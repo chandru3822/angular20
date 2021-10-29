@@ -543,6 +543,67 @@
       and archived is not true
   ]]></project.getDefaultProjectStatusTypeByCompanyId>
 
+  <project.getStatusesForWqt><![CDATA[
+      select
+        null::int as id,
+        'Category' as header,
+        null::int as "projectStatusTypeId",
+        null::int as "companyProjectStatusTypeId",
+        false as archived,
+        null::text as "uniqueText",
+        null::text as "group",
+        false as is_root,
+        null::text as project_status_type,
+        null::text as root_project_status_type,
+        0 as display_sort
+      union all
+      select
+        null::int as id,
+        null::text as header,
+        pst.id as "projectStatusTypeId",
+        null::int as "companyProjectStatusTypeId",
+        pst.archived,
+        concat(pst.project_status_type, 'PST')::text as "uniqueText",
+        'Category' as "group",
+        true as is_root,
+        pst.project_status_type,
+        pst.project_status_type as root_project_status_type,
+        1 as display_sort
+      from flow.project_status_type pst
+      where pst.archived is not true
+      union all
+      select
+        null::int as id,
+        'Project Status' as header,
+        null::int as "projectStatusTypeId",
+        null::int as "companyProjectStatusTypeId",
+        false as archived,
+        null::text as "uniqueText",
+        null::text as "group",
+        false as is_root,
+        null::text as project_status_type,
+        null::text as root_project_status_type,
+        2 as display_sort
+      union all
+      select
+        null::int as id,
+        null::text as header,
+        pst.id as "projectStatusTypeId",
+        cpst.id as "companyProjectStatusTypeId",
+        cpst.archived,
+        concat(cpst.project_status_type, 'CPST')::text as "uniqueText",
+        'Process Step' as "group",
+        false as is_root,
+        cpst.project_status_type,
+        pst.project_status_type as root_project_status_type,
+        3 as display_sort
+      from flow.company_project_status_type cpst
+             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+      where cpst.company_id = :companyId
+        and cpst.archived is not true
+      order by display_sort, root_project_status_type, project_status_type
+]]></project.getStatusesForWqt>
+
   <project.getCompanyStatuses><![CDATA[
     select
         cpst.id,
