@@ -165,14 +165,23 @@ public class WorkQueueTypeService {
         params.put("archived", ps.getArchived());
         params.put("id", ps.getId());
         sqlCache.update("workQueueType.updateProjectStatusType", params);
-      } else if (null == ps.getId()) {
+      } else if (null == ps.getId() && !ps.getArchived()) {
         params.put("companyProjectStatusTypeId", ps.getCompanyProjectStatusTypeId());
-        params.put("projectStatusTypeId", ps.getProjectStatusTypeId());
+        params.put("projectStatusTypeId", ps.getIsRoot() ? ps.getProjectStatusTypeId() : null);
         sqlCache.update("workQueueType.insertProjectStatusType", params);
       }
     }
 
     return getProjectStatusTypesForWorkQueueType(processStepWorkQueueType.getId());
+  }
+
+  public void callConfigChangeFunction(Long psWqtId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("createdById", currentUser.trueUserId());
+    params.put("psWqtId", psWqtId);
+
+    sqlCache.queryForObject("workQueueType.callConfigChangeFunction", params, String.class);
   }
 
   public List<WorkQueueTypeProcessStepStatus> saveProcessStepStatusTypesToWorkQueueType(ProcessStepWorkQueueType processStepWorkQueueType) {
@@ -186,9 +195,9 @@ public class WorkQueueTypeService {
         params.put("archived", ps.getArchived());
         params.put("id", ps.getId());
         sqlCache.update("workQueueType.updateProcessStepStatusType", params);
-      } else if (null == ps.getId()) {
+      } else if (null == ps.getId() && !ps.getArchived()) {
         params.put("companyProcessStepStatusTypeId", ps.getCompanyProcessStepStatusTypeId());
-        params.put("processStepStatusTypeId", ps.getProcessStepStatusTypeId());
+        params.put("processStepStatusTypeId", ps.getIsRoot() ? ps.getProcessStepStatusTypeId() : null);
         sqlCache.update("workQueueType.insertProcessStepStatusType", params);
       }
     }

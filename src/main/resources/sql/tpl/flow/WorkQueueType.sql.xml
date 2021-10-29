@@ -130,10 +130,13 @@
           FROM (
                    SELECT pswqtpst.id,
                           pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
-                          coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType",
                           pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
-                          pswqtpst.project_status_type_id as "projectStatusTypeId",
-                          pswqtpst.archived
+                          coalesce(pswqtpst.project_status_type_id, cpst.project_status_type_id) as "projectStatusTypeId",
+                          case when pswqtpst.project_status_type_id is not null then true else false end as "isRoot",
+                          case when pswqtpst.project_status_type_id is not null then 'Category' else 'Project Status' end as "group",
+                          case when pswqtpst.project_status_type_id is not null then concat(coalesce(cpst.project_status_type, pst.project_status_type), 'PST') else concat(coalesce(cpst.project_status_type, pst.project_status_type), 'CPST') end as "uniqueText",
+                          pswqtpst.archived,
+                          coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType"
                    FROM flow.process_step_work_queue_type_project_status_type pswqtpst
                    left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
                    left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
@@ -146,8 +149,11 @@
                              SELECT pswqtpsst.id,
                                     pswqtpsst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
                                     pswqtpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
-                                    pswqtpsst.process_step_status_type_id as "processStepStatusTypeId",
+                                    coalesce(pswqtpsst.process_step_status_type_id, cpsst.process_step_status_type_id) as "processStepStatusTypeId",
                                     pswqtpsst.archived,
+                                    case when pswqtpsst.process_step_status_type_id is not null then true else false end as "isRoot",
+                                    case when pswqtpsst.process_step_status_type_id is not null then 'Category' else 'Process Step Status' end as "group",
+                                    case when pswqtpsst.process_step_status_type_id is not null then concat(coalesce(cpsst.process_step_status_type, psst.process_step_status_type), 'PSST') else concat(coalesce(cpsst.process_step_status_type, psst.process_step_status_type), 'CPSST') end as "uniqueText",
                                     coalesce(cpsst.process_step_status_type, psst.process_step_status_type) as "processStepStatusType"
                              FROM flow.process_step_work_queue_type_process_step_status_type pswqtpsst
                                       left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id
@@ -178,6 +184,10 @@
     ]]>
   </workQueueType.deleteProcessStepWorkQueueType>
 
+  <workQueueType.callConfigChangeFunction><![CDATA[
+        select * from flow.ps_wqt_configuration_change(:psWqtId::integer, :createdById::integer)
+  ]]></workQueueType.callConfigChangeFunction>
+
   <workQueueType.insertProjectStatusType>
     <![CDATA[
       insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, project_status_type_id, process_step_work_queue_type_id, created_by_id)
@@ -199,18 +209,21 @@
 
   <workQueueType.getProjectStatusesForWorkQueueType>
     <![CDATA[
-      SELECT pswqtpst.id,
-       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
-       pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
-       pswqtpst.project_status_type_id as "projectStatusTypeId",
-       pswqtpst.archived,
-       coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType"
-      FROM flow.process_step_work_queue_type_project_status_type pswqtpst
-        left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
-        left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
-      WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
-        AND pswqtpst.archived is not true
-      order by pst.project_status_type, cpst.project_status_type
+        SELECT pswqtpst.id,
+               pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+               pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
+               coalesce(pswqtpst.project_status_type_id, cpst.project_status_type_id) as "projectStatusTypeId",
+               case when pswqtpst.project_status_type_id is not null then true else false end as "isRoot",
+               case when pswqtpst.project_status_type_id is not null then 'Category' else 'Project Status' end as "group",
+               case when pswqtpst.project_status_type_id is not null then concat(coalesce(cpst.project_status_type, pst.project_status_type), 'PST') else concat(coalesce(cpst.project_status_type, pst.project_status_type), 'CPST') end as "uniqueText",
+               pswqtpst.archived,
+               coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType"
+        FROM flow.process_step_work_queue_type_project_status_type pswqtpst
+               left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
+               left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
+        WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
+          AND pswqtpst.archived is not true
+        order by pst.project_status_type, cpst.project_status_type
     ]]>
   </workQueueType.getProjectStatusesForWorkQueueType>
 
@@ -235,18 +248,21 @@
 
   <workQueueType.getProcessStepStatusesForWorkQueueType>
     <![CDATA[
-      SELECT pswqtpst.id,
-       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
-       pswqtpst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
-       pswqtpst.process_step_status_type_id as "processStepStatusTypeId",
-       pswqtpst.archived,
-       coalesce(cpst.process_step_status_type, pst.process_step_status_type) as "processStepStatusType"
-      FROM flow.process_step_work_queue_type_process_step_status_type pswqtpst
-        left join flow.company_process_step_status_type cpst on pswqtpst.company_process_step_status_type_id = cpst.id
-        left join flow.process_step_status_type pst on pswqtpst.process_step_status_type_id = pst.id
-      WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
-        AND pswqtpst.archived is not true
-      order by pst.process_step_status_type, cpst.process_step_status_type
+      SELECT pswqtpsst.id,
+             pswqtpsst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+             pswqtpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+             coalesce(pswqtpsst.process_step_status_type_id, cpsst.process_step_status_type_id) as "processStepStatusTypeId",
+             pswqtpsst.archived,
+             case when pswqtpsst.process_step_status_type_id is not null then true else false end as "isRoot",
+             case when pswqtpsst.process_step_status_type_id is not null then 'Category' else 'Process Step Status' end as "group",
+             case when pswqtpsst.process_step_status_type_id is not null then concat(coalesce(cpsst.process_step_status_type, psst.process_step_status_type), 'PSST') else concat(coalesce(cpsst.process_step_status_type, psst.process_step_status_type), 'CPSST') end as "uniqueText",
+             coalesce(cpsst.process_step_status_type, psst.process_step_status_type) as "processStepStatusType"
+      FROM flow.process_step_work_queue_type_process_step_status_type pswqtpsst
+             left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id
+             left join flow.process_step_status_type psst on pswqtpsst.process_step_status_type_id = psst.id
+      WHERE pswqtpsst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
+        AND pswqtpsst.archived is not true
+      order by psst.process_step_status_type, cpsst.process_step_status_type
     ]]>
   </workQueueType.getProcessStepStatusesForWorkQueueType>
 </sql>

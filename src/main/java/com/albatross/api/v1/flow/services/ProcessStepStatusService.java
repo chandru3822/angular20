@@ -33,6 +33,16 @@ public class ProcessStepStatusService {
     return results;
   }
 
+  public List<WorkQueueTypeProcessStepStatus> getStatusesForWqt(Long processStepId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("processStepId", processStepId);
+    List<WorkQueueTypeProcessStepStatus> results = sqlCache.query("processStepStatus.getStatusesForWqt", params, WorkQueueTypeProcessStepStatus.class);
+    return results;
+  }
+
   public List<CompanyProcessStepStatusType> getStatusTypesForCompany(Long projectId, Long projectProcessStepId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
