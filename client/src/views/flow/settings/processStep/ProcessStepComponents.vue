@@ -301,14 +301,10 @@
                         label="Project Status Types"
                         item-text="uniqueText"
                         return-object>
-                        <template #selection="{ item, index }" v-if="showShit">
-                          <span :class="{'bold': item.isRoot}">
-                            <span v-if="index !== 0 && !item.archived" class="grey--text">
-                              ,
-                            </span>
-                            <span class="grey--text" v-if="!item.archived">
-                              {{ item.projectStatusType }}
-                            </span>
+                        <template #selection="{ item: status, index }" v-if="showShit">
+                          <span :class="{'bold': status.isRoot}">
+                            <span class="grey--text" v-if="!status.archived">{{ status.projectStatusType }}</span>
+                            <span v-if="!status.archived && index !== item.projectStatuses.length - 1" class="grey--text mr-1">,</span>
                           </span>
                         </template>
                         <template #item="data" v-if="showShit">
@@ -340,14 +336,10 @@
                         label="Process Step Status Types"
                         item-text="uniqueText"
                         return-object>
-                        <template #selection="{ item, index }" v-if="showPsShit">
-                          <span :class="{'bold': item.isRoot}">
-                            <span v-if="index !== 0 && !item.archived" class="grey--text">
-                              ,
-                            </span>
-                            <span class="grey--text" v-if="!item.archived">
-                              {{ item.processStepStatusType }}
-                            </span>
+                        <template #selection="{ item: status, index }" v-if="showPsShit">
+                          <span :class="{'bold': status.isRoot}">
+                            <span class="grey--text" v-if="!status.archived">{{ status.processStepStatusType }}</span>
+                            <span v-if="!status.archived && index !== item.processStepStatuses.length - 1" class="grey--text mr-1">,</span>
                           </span>
                         </template>
                         <template #item="data" v-if="showPsShit">
@@ -391,9 +383,7 @@
                       <td class="text-left">
                         <span v-for="(pss, idx) in filterBy(item.processStepStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
-                          <span :class="{'bold': pss.isRoot}">
-                            {{pss.processStepStatusType }}
-                          </span>
+                          <span :class="{'bold': pss.isRoot}">{{pss.processStepStatusType }}</span>
                         </span>
                       </td>
                       <td class="text-right">
@@ -719,6 +709,11 @@ export default {
     await this.getProcessStepDetails()
   },
   methods: {
+    getListSize(list) {
+      let val = list.filter(i => !i.archived).length
+      console.log('randaLogger', val)
+      return val
+    },
     addValueToNew(selectedItem) {
       if (selectedItem.selected) {
         if (selectedItem.isRoot) {
