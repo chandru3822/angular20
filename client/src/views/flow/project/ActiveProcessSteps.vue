@@ -101,7 +101,7 @@
 
     <v-col  class="pt-0 px-0">
       <v-row class="pt-0">
-        <UpcomingEvents :projectId="projectId"/>
+        <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
       </v-row>
     </v-col>
 
@@ -146,6 +146,7 @@ export default {
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
+      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       isProcessStepsLoading: false,
       snackbar: {},
       stepsSearch: '',

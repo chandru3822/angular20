@@ -12,6 +12,24 @@ insert into flow.object_type(object_type, object_code, flow_type_id, archived)
   (select 'Event', 'EVENT', 4, false where not exists(select id from flow.object_type where object_code = 'EVENT'))
 ;
 
+insert into flow.feature(feature_name, feature_code)
+  (select 'Events', 'EVENTS'  where not exists(select id from flow.feature where feature_code = 'EVENTS'));
+
+insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
+  (select 'Events', 3, (select id from flow.feature where feature_code = 'EVENTS'), false
+   where not exists(select id from flow.company_feature where feature_name = 'Events' and company_id = 3));
+
+insert into flow.feature_access_control(feature_id, access_control_id, created_by_id)
+  (select (select id from flow.feature where feature_code = 'EVENTS'), ac.id, 2350555
+   from flow.access_control ac
+   where not exists (
+       select fac.id
+       from flow.feature_access_control fac
+       where feature_id = (select id from flow.feature where feature_code = 'EVENTS')
+         and access_control_id = ac.id
+     )
+  );
+
 insert into flow.company_object_type(object_type_id, company_id, created_by_id)
   (select (select id from flow.object_type where object_code = 'EVENT'), 3, 2350555
    where not exists(select id

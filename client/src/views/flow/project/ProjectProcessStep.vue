@@ -170,6 +170,7 @@
             :project-process-step-events="processStep.projectProcessStepEvents"
             :events-loading="processStepLoading"
             :project="project"
+            v-if="userHasEventsFeature"
           ></ProjectProcessStepEvents>
         </v-col>
         <!--    process field groups-->
@@ -315,6 +316,7 @@
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
         userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
+        userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
         schedulerCanEdit: false,
         showRemoteSearch: false,
         mostRecentSearchWasRemote: false,

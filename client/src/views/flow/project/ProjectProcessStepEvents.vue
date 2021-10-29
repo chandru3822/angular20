@@ -10,7 +10,7 @@
     </v-toolbar>
     <v-card class="pa-4 square-card">
       <div v-if="!selectedEvent.id">
-        <div v-for="pse in processStepEvents" class="mb-2" v-if="!eventsLoading">
+        <div v-for="pse in processStepEvents" class="mb-2" v-if="!eventsLoading && userCanAdd">
           <v-btn color="primaryCustom" class="white--text pl-2" @click="addEvent(pse)">
             <v-icon color="white" class="mr-2">add</v-icon>
             {{ pse.eventName }}
@@ -59,6 +59,7 @@
               v-model="eventDetails.companyEventStatusTypeId"
               :items="companyEventStatuses"
               label="Event Status"
+              :disabled="!userCanEdit"
               item-text="eventStatusType"
               item-value="id"
             ></v-autocomplete>
@@ -85,7 +86,8 @@
           <DatetimePickerInput
             v-model="eventDetails.startTime"
             :timezone="this.timezone"
-            :readonly="uniqueAlreadyHasValue"
+            :disabled="uniqueAlreadyHasValue || !userCanEdit"
+            :readonly="uniqueAlreadyHasValue || !userCanEdit"
             :required="actionRequiresStart && !eventDetails.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -94,7 +96,8 @@
           <DatetimePickerInput
             v-model="eventDetails.endTime"
             :timezone="this.timezone"
-            :readonly="uniqueAlreadyHasValue"
+            :disabled="uniqueAlreadyHasValue || !userCanEdit"
+            :readonly="uniqueAlreadyHasValue || !userCanEdit"
             :required="actionRequiresEnd && !eventDetails.endTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -103,7 +106,8 @@
           <v-autocomplete
             v-model="eventDetails.resourceId"
             :items="eventDetails.availableResources"
-            :disabled="uniqueAlreadyHasValue"
+            :disabled="uniqueAlreadyHasValue || !userCanEdit"
+            :readonly="uniqueAlreadyHasValue || !userCanEdit"
             :rules="getResourceRequirement()"
             label="Resource"
             item-text="name"
@@ -202,6 +206,7 @@
 
         <v-btn class="white--text mr-2 mb-2 save-btn"
                @click="checkFieldsForUnique()"
+               :disabled="!userCanEdit"
                color="primaryButton"
         >Save Event
         </v-btn>
@@ -235,7 +240,7 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getCustomFieldReadOnly} from "@/services/customFieldService";
+import {getEventCustomFieldReadOnly} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import Attachments from '@/views/flow/components/Attachments'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -268,8 +273,9 @@ export default {
       requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details.timezone.value,
       projectId: this.$route.params.projectId,
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
       projectProcessStepId: parseInt(this.$route.params.processStepId),
       processStepId: this.$route.query.processStepId,
@@ -457,9 +463,8 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      // if process_step admin then they can edit any process step fields, otherwise idk???
-      return (!this.userIsAdmin)
-        || getCustomFieldReadOnly(this.$store, field)
+      // if events admin then they can edit any event fields, otherwise idk???
+      return getEventCustomFieldReadOnly(this.$store, field)
         || !this.userCanEdit
     },
     populateDirtyCfvs(field) {
@@ -621,26 +626,6 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.populateDirtyCfvs(this.availabilityDateField)
-        }
-      }
-    },
-    async userCanScheduleLeadAllocation() {
-      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-      if (this.userIsScheduler) {
-        this.schedulerLoading = true
-        try {
-          const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
-            params: {
-              postalCode: this.project.postalCode
-            }
-          })
-          this.schedulerCanEdit = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.schedulerLoading = false
         }
       }
     },
