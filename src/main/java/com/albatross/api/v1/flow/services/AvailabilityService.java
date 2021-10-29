@@ -19,7 +19,6 @@ import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
 import org.dmfs.rfc5545.recur.RecurrenceRule;
 import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -564,7 +563,11 @@ public class AvailabilityService {
       params.put("availableDate", availableDate);
       params.put("remote", null != remote ? remote : false);
 
-      return sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+      List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+      if(!results.isEmpty() && results.get(0) != null && !results.get(0).getSuccess()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Postal Code is not associated with a Round Robin. Contact Admin.", new Exception());
+      }
+      return results;
     } catch (Exception e) {
       log.error(
           "AVAILABILITY: Error fetching time slots for projectId={}, startTime={}, endTime={}, availableDate={}, remote={}",

@@ -1,6 +1,7 @@
 -- run these functions
 --get_pps_with_actions_and_requirements
 --get_project_process_step_event_requirements_with_values
+--get_availability_time_slots
 
 --add company event statuses
 insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
