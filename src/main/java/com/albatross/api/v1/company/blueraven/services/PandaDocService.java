@@ -379,6 +379,8 @@ public class PandaDocService {
         }
     }
 
+    /*
+    **  Support role is no longer used, leaving here in case needed in the future **
     JSONObject brs = new JSONObject();
     User user = securityService.getCurrentUser();
     brs.put("first_name", user.getFirstName());
@@ -388,6 +390,7 @@ public class PandaDocService {
         brs.put("role", pandaDoc.getSupportRole());
     }
     body.append("recipients", brs);
+    * */
 
     JSONObject customer = new JSONObject();
     customer.put("first_name", tokens.get("Deal.Contact.FirstName"));
@@ -583,7 +586,10 @@ public class PandaDocService {
         tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
         tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
         tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
-        tokens.put("Deal.Total System Price", result.get("custom_fields.Total System Price"));
+
+        Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
+        Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());
+        tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
     } catch (EmptyResultDataAccessException e) {
         log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
         e.printStackTrace();
@@ -666,7 +672,11 @@ public class PandaDocService {
         tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
         tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
         tokens.put("Deal.System Size", result.get("system_size"));
-        tokens.put("Deal.Total System Price", result.get("total_system_price"));
+
+        Double totalSystemPrice = Double.parseDouble(result.get("total_system_price") == null ? "0" : result.get("total_system_price").toString());
+        Double referralPromotionAmount = Double.parseDouble(result.get("referral_promotion_amount") == null ? "0" : result.get("referral_promotion_amount").toString());
+        tokens.put("Deal.Total System Price", totalSystemPrice - referralPromotionAmount);
+        tokens.put("Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
 
         // include the current date for use in the template
         String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))

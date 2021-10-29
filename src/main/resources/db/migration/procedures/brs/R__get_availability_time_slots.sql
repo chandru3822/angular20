@@ -1,4 +1,4 @@
---drop function if exists flow.get_availability_time_slots(int, timestamp, timestamp, date, boolean);
+-- drop function if exists flow.get_availability_time_slots(integer,timestamp,timestamp,date,boolean);
 CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer,
                                                             p_start_time timestamp,
                                                             p_end_time timestamp,

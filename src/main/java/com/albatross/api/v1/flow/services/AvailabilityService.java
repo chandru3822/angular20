@@ -36,9 +36,7 @@ import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -183,7 +181,7 @@ public class AvailabilityService {
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
     params.put("createdById", user.trueUserId());
-    params.put("daylightSavings", rsa.getDaylightSavings());
+    params.put("daylightSavings", null != rsa.getDaylightSavings() ? rsa.getDaylightSavings() : false);
 
     Long rsaId = null;
     //if existing and archived, or existing and they send in null start and end time
@@ -361,9 +359,15 @@ public class AvailabilityService {
         params.put("longitude", longitude);
         params.put("createdById", user.trueUserId());
         params.put("recurringEventId", null);
+        params.put("originTimezone", null);
+        params.put("originTimezoneOffset", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
       } else {
-        createRecurringEvents(ra);
+        if(null != ra.getOriginTimezoneOffset() && null != ra.getOriginTimezone()) {
+          createRecurringEvents(ra);
+        } else {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error Saving Recurring Event. Timezone data required.", new Exception());
+        }
       }
     }
 
@@ -403,10 +407,20 @@ public class AvailabilityService {
 
         // Arbitrary limit for recurring events that never end.
         boolean limitReached = false;
+        String timezone = rra.getOriginTimezone();
 
         while (it.hasNext() && !limitReached) {
           boolean alreadyExists = false;
           LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+
+          //this determines the offset of the new event and compares it to the offset used when it was saved, then adjusts accordingly
+          ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of(timezone));
+          if(zonedStartTime.getOffset().getTotalSeconds() != rra.getOriginTimezoneOffset()) {
+            long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - rra.getOriginTimezoneOffset();
+            //depending on DST status offset could be negative or positive
+            currentEventStart = currentEventStart.minusSeconds(offsetDifference);
+          }
+
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
           log.debug("CRON: recurrence: {}", rra.getRecurrence());
           //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
@@ -416,7 +430,10 @@ public class AvailabilityService {
 //            check if the appointment trying to be created already exists.
             //i am sick of working on this!!  the startTimeString and endTimeString will both have :00 as the seconds, the currentEventStart and End fields do not
             //i could reformat the dates, do a substring or do contains.  contains seems easier so i am doing that for now
-            ResourceAppointment appt = rra.getAppointments().stream().filter(a -> a.getStartTimeString().contains(currentEventStart.toString()) && a.getEndTimeString().contains(currentEventEnd.toString())).findFirst().orElse(null);
+
+            //this is dumb, the lamda needed a "final" or "effectively final" value Todo: ask kaleb about this. will it update on rnd 2?
+            LocalDateTime finalCurrentEventStart = currentEventStart;
+            ResourceAppointment appt = rra.getAppointments().stream().filter(a -> a.getStartTimeString().contains(finalCurrentEventStart.toString()) && a.getEndTimeString().contains(currentEventEnd.toString())).findFirst().orElse(null);
             if (null != appt) {
               alreadyExists = true;
             }
@@ -486,14 +503,25 @@ public class AvailabilityService {
       // Arbitrary limit for recurring events that never end.
       boolean limitReached = false;
 
+      String timezone = ra.getOriginTimezone();
       final long duration = ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
       //todo: get list of events for the event id
       while (it.hasNext() && !limitReached) {
         LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+
         if(doDayOffset) {
           //if doDayOffset, add one to the start date of the event because the event knows to repeat on a specific day of week but the utc date is a different day of week
           currentEventStart = currentEventStart.plusDays(1);
         }
+
+        //this determines the offset of the new event and compares it to the offset used when it was saved, then adjusts accordingly
+        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of(timezone));
+        if(zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
+          long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
+          //depending on DST status offset could be negative or positive
+          currentEventStart = currentEventStart.minusSeconds(offsetDifference);
+        }
+
         LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
         //if the recurring event start time is greater than 1 year from now, stop adding appointments
         if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
@@ -518,6 +546,8 @@ public class AvailabilityService {
           params.put("recurringStartTime", ra.getRecurringStartTime());
           params.put("recurringEndTime", ra.getRecurringEndTime());
           params.put("recurringEventId", newRecurringEventId);
+          params.put("originTimezone", ra.getOriginTimezone());
+          params.put("originTimezoneOffset", ra.getOriginTimezoneOffset());
 
           insertEvent(params);
         }

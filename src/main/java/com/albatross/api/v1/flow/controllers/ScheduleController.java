@@ -41,6 +41,11 @@ public class ScheduleController {
     return scheduleService.getAvailabilityForCompanyByOrgAndUser(params);
   }
 
+  @PostMapping(value = "/closerAvailability", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getBrsCloserAvailability(@RequestBody EventSearchParams params) {
+    return scheduleService.getBrsCloserAvailability(params);
+  }
+
   //this endpoint should be /events but changing it would require backwards comp on mobile so i left it
   @PostMapping(value = "/projects", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getScheduleProjects(@RequestBody EventSearchParams params) {
@@ -71,7 +76,7 @@ public class ScheduleController {
 
   @Data
   public static class EventSearchParams {
-    private List<Long> userIds, orgIds, eventIds, userPositionIds;
+    private List<Long> userIds, orgIds, eventIds, userPositionIds, postalCodeZoneUserIds;
     private String startTime, endTime, search;
     private Long companyStateId, projectId, eventId, processStepStatusTypeId, eventStatusTypeId, projectProcessStepId;
   }

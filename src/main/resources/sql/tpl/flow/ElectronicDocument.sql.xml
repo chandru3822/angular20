@@ -55,7 +55,7 @@
             SELECT p.id, p.project_name, p.street1, p.street2, p.city,
                    s.state, s.abbreviation, p.postal_code, c.first_name,
                    c.last_name, c.email, c.phone, pd.system_size, pd.total_system_price, pd.referral_promotion_amount,
-                   pd.total_cash_down_payment,
+                   pd.total_cash_down_payment, pd.installation_agreement_signed_date,
                    (select int_value
                    from flow.project p
                             inner join flow.project_process_step pps

@@ -122,6 +122,11 @@
     from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::int[], array[ :userIds ]::int[]);
  ]]></schedule.getAvailability>
 
+  <schedule.getCloserAvailability><![CDATA[
+    select *
+    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :postalCodeZoneUserIds ]::int[]);
+ ]]></schedule.getCloserAvailability>
+
   <schedule.getProjects><![CDATA[
         select
           pps.process_step_id,

@@ -405,8 +405,8 @@ public class ProjectProcessStepService {
       }
     }
 
-    log.debug("TRIGGERS: PPS created by time based auto triggers: " + createdPpsIds.size());
-    log.debug("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
+    log.info("TRIGGERS: PPS created by time based auto triggers: " + createdPpsIds.size());
+    log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
   @Transactional
