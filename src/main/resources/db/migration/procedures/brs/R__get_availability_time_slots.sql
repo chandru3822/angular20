@@ -213,7 +213,6 @@ BEGIN
       group by foo2.scheduled_start_time
       order by foo2.scheduled_start_time;
   elsif p_remote is false and v_timezone is null then
-    raise notice 'we are here';
     return query select false::boolean, array[]::int[], null::timestamp;
   else
     return query
