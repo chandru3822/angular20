@@ -31,6 +31,7 @@ insert into flow.feature_access_control(feature_id, access_control_id, created_b
        where feature_id = (select id from flow.feature where feature_code = 'EVENTS')
          and access_control_id = ac.id
      )
+    and ac.id not in (6, 4, 7, 5)
   );
 
 insert into flow.company_object_type(object_type_id, company_id, created_by_id)

@@ -59,7 +59,7 @@
               v-model="eventDetails.companyEventStatusTypeId"
               :items="companyEventStatuses"
               label="Event Status"
-              :disabled="!userCanEdit"
+              :disabled="!userCanManage"
               item-text="eventStatusType"
               item-value="id"
             ></v-autocomplete>
@@ -285,6 +285,7 @@ export default {
       projectId: this.$route.params.projectId,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
       projectProcessStepId: parseInt(this.$route.params.processStepId),
