@@ -709,10 +709,21 @@ export default {
     await this.getProcessStepDetails()
   },
   methods: {
-    getListSize(list) {
-      let val = list.filter(i => !i.archived).length
-      console.log('randaLogger', val)
-      return val
+    async getCompanyProcessStepStatusTypes() {
+      if(this.addNewProcessStepStatusType) {
+        this.companyStatusesLoading = true
+        try {
+          const {data} = await getAvailableForProcessStep(this.processStepId)
+          this.availableCompanyProcessStepStatusTypes = data
+          this.companyStatusesLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.companyStatusesLoading = false
+        }
+      }
+
     },
     addValueToNew(selectedItem) {
       if (selectedItem.selected) {
