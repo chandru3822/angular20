@@ -80,6 +80,7 @@ public class WorkQueueTypeController {
     workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType);
     workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(processStepWorkQueueType);
 
+    workQueueTypeService.callConfigChangeFunction(processStepWorkQueueType.getId());
     return workQueueTypeService.getProcessStepWorkQueueType(processStepWorkQueueType.getId());
   }
 

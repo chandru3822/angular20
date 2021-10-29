@@ -36,6 +36,11 @@ public class ProcessStepStatusController {
     return processStepStatusService.getStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
+  @GetMapping(value = "/forWqt", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueTypeProcessStepStatus> getStatusesForWqt (@RequestParam Long processStepId) {
+    return processStepStatusService.getStatusesForWqt(processStepId);
+  }
+
   @GetMapping(value = "/company/availableForProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyProcessStepStatusType> getAvailableForProcessStep (@PathVariable Long id) {
     return processStepStatusService.getAvailableForProcessStep(id);
