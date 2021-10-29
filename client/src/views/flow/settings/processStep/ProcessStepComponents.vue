@@ -391,9 +391,7 @@
                       <td class="text-left">
                         <span v-for="(pss, idx) in filterBy(item.processStepStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
-                          <span :class="{'bold': pss.isRoot}">
-                            {{pss.processStepStatusType }}
-                          </span>
+                          <span :class="{'bold': pss.isRoot}">{{pss.processStepStatusType }}</span>
                         </span>
                       </td>
                       <td class="text-right">
