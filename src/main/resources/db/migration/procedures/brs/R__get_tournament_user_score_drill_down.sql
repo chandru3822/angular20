@@ -6,10 +6,11 @@ $BODY$
 declare
     v_timezone              varchar;
     v_tournament_formula_id integer;
+    v_tournament_start_date date;
 BEGIN
 
-    select tf.id
-    into v_tournament_formula_id
+    select tf.id,t.start_date
+    into v_tournament_formula_id,v_tournament_start_date
     from brs.tournament t
              inner join brs.tournament_formula tf on t.tournament_formula_id = tf.id
     where t.id = p_tournament_id;
@@ -39,7 +40,7 @@ BEGIN
                                           where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                             and pd.closer_user_id = p_user_id
                                             and pd.cancelled_date is null
-                                            AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= p_start_date - 10
+                                            AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= v_tournament_start_date - 10
                                           group by 1, 2, 3, 4
                                           union
                                           select project_id,
@@ -57,7 +58,7 @@ BEGIN
                                             and pd.final_design_complete_date between p_start_date and p_end_date
                                             and (ccfv.boolean_value is null or ccfv.boolean_value is false)
                                             and pd.source != 523
-                                            AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= p_start_date - 10
+                                            AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= v_tournament_start_date - 10
                                           group by 1, 2, 3, 4
                                           union
                                           select project_id,
@@ -76,7 +77,7 @@ BEGIN
                                             and pd.final_design_complete_date between p_start_date and p_end_date
                                             and (ccfv.boolean_value is true
                                               or pd.source = 523)
-                                            AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= p_start_date - 10
+                                            AND ((pd.first_appointment  at time zone 'UTC') at time zone v_timezone)::date >= v_tournament_start_date - 10
                                           group by 1, 2, 3, 4
                                           ) as drilldown) as drilldown;
             when v_tournament_formula_id = 2 then
