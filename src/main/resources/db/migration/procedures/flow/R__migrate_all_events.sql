@@ -839,6 +839,18 @@ BEGIN
   from brs.project_details_config
   where field_to_update = 'closer_appointment_start';
 
+  /*This updates all custom fields for Events to be a part of the event company_object_type*/
+  with update_data as(
+    select cf.id
+    from flow.custom_field_group_assignment cfga
+           inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
+           inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
+    where cfg.event_id is not null
+      and cfga.archived is false)
+  insert into flow.custom_field_object_type ( custom_field_id, company_object_type_id,
+                                              date_created, created_by_id)
+  values ()on conflict  do nothing;
+
 END
 $$
   LANGUAGE plpgsql VOLATILE
