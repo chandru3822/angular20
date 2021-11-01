@@ -238,10 +238,10 @@ public class ProjectProcessStepService {
   }
 
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
-    return this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, performAutoTrigger, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null, null);
+    return this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, performAutoTrigger, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null, null, new ArrayList<>());
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId, Long callingProcessStepActionId, Long callingProjectProcessStepId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId, Long callingProcessStepActionId, Long callingProjectProcessStepId, List<Long> performedActions) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -274,7 +274,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring PPS is active and we're in autotriggers and the referring PPS isn't the same one which called this function
       if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null && !Objects.equals(callingProjectProcessStepId, step.getProjectProcessStepId())) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId, new ArrayList<>());
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId, performedActions);
       }
     }
 
@@ -498,7 +498,7 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId(), pps.getProjectProcessStepId());
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId(), pps.getProjectProcessStepId(), performedActions);
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions);
