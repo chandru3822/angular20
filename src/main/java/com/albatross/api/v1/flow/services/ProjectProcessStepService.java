@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -48,7 +47,7 @@ import java.util.stream.Collectors;
 // I don't like it and would rather have them be private. Change back if/when possible
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @Service
 public class ProjectProcessStepService {
 
@@ -67,6 +66,8 @@ public class ProjectProcessStepService {
   private final ObjectMapper om;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+
+  private final CustomFieldValueService customFieldValueService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -240,10 +241,10 @@ public class ProjectProcessStepService {
   }
 
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
-    return this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, performAutoTrigger, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null, null);
+    return this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, performAutoTrigger, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId, null, null, new ArrayList<>());
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId, Long callingProcessStepActionId, Long callingProjectProcessStepId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId, Long callingProcessStepActionId, Long callingProjectProcessStepId, List<Long> performedActions) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -276,7 +277,7 @@ public class ProjectProcessStepService {
     for(ProjectProcessStep step : steps) {
       //only run if the referring PPS is active and we're in autotriggers and the referring PPS isn't the same one which called this function
       if(step.getProcessStepStatusTypeId() == 1 && callingProcessStepActionId != null && !Objects.equals(callingProjectProcessStepId, step.getProjectProcessStepId())) {
-        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId, new ArrayList<>());
+        performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), callingProcessStepActionId, processStepId, performedActions);
       }
     }
 
@@ -422,8 +423,10 @@ public class ProjectProcessStepService {
 
       ArrayList<Long> createdPpsIds = new ArrayList<>();
 
+      boolean actionsWerePerformed = false;
+
       if (pps.getProcessStepStatusTypeId() == 1) {
-          pps.getActions().forEach(action -> {
+          for(ProjectProcessStepAction action: pps.getActions()) {
               final boolean isSameAction = (callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId()));
               final boolean isSameProcessStep = (callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId()));
               if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && !isSameProcessStep && !performedActions.contains(action.getId())) {
@@ -447,6 +450,7 @@ public class ProjectProcessStepService {
                           if (!newPpsIds.isEmpty()) {
                             createdPpsIds.addAll(newPpsIds);
                           }
+                          actionsWerePerformed = true;
                       }
                   } catch (StackOverflowError e) {
                     final String errMessage = String.format("PPS: INFINITE LOOP DETECTED - Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
@@ -459,7 +463,20 @@ public class ProjectProcessStepService {
                     throw new RuntimeException(errMessage);
                   }
               }
-          });
+          }
+
+          if (actionsWerePerformed) {
+            List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(ppsId);
+            if (!cfgaIds.isEmpty()) {
+              List<Long> ppsIds = getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
+              for (Long checkingPpsId : ppsIds) {
+                // Don't re-check the ppsId we are in currently
+                if (!checkingPpsId.equals(ppsId))  {
+                  performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), performedActions);
+                }
+              }
+            }
+          }
       }
 
       return createdPpsIds;
@@ -500,7 +517,7 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId(), pps.getProjectProcessStepId());
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId(), action.getId(), pps.getProjectProcessStepId(), performedActions);
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions);

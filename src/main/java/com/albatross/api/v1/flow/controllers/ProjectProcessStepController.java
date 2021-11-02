@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +34,8 @@ public class ProjectProcessStepController {
   private final SecurityService securityService;
 
   private final CustomFieldValueService customFieldValueService;
+
+  private final SqlCache sqlCache;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
@@ -106,7 +110,11 @@ public class ProjectProcessStepController {
       }
       projectProcessStepService.performAction(action, pps, new ArrayList<>());
 
+      // Since something on the PPS might have changed, run autotriggers for it
+      projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places. Consolidate to projectProcessStepService
+      // run autotriggers for ancillary fields
       List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(projectProcessStepId);
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
@@ -115,6 +123,16 @@ public class ProjectProcessStepController {
           if (!ppsId.equals(projectProcessStepId)) {
             projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
+        }
+      }
+
+      //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
+      //run auto triggers for those actions
+      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStep.class);
+      for(ProjectProcessStep step : steps) {
+        //only run if the referring PPS is active
+        if(step.getProcessStepStatusTypeId() == 1) {
+          projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
         }
       }
 
@@ -146,6 +164,16 @@ public class ProjectProcessStepController {
           if (!ppsId.equals(newPpsId)) {
             projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
+        }
+      }
+
+      //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
+      //run auto triggers for those actions
+      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", Map.of("projectProcessStepId", newPpsId), ProjectProcessStep.class);
+      for(ProjectProcessStep step : steps) {
+        //only run if the referring PPS is active
+        if(step.getProcessStepStatusTypeId() == 1) {
+          projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
         }
       }
     } catch (Exception e) {
