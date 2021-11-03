@@ -247,6 +247,39 @@ BEGIN
       elsif x.process_step_id = 3478 then
         perform flow.migrate_schedule_retrofit_installation_closeout_work_to_events(v_event_id,
                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 3395 then
+        perform flow.migrate_schedule_retrofit_permit_submission_to_events(v_event_id,
+                                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 3399 then
+        perform flow.migrate_schedule_retrofit_permit_pickup_delivery_to_events(v_event_id,
+                                                                               x.project_process_step_id);
+      elsif x.process_step_id = 3471 then
+        perform flow.migrate_schedule_retrofit_meter_pull_to_events(v_event_id,
+                                                                                x.project_process_step_id);
+      elsif x.process_step_id = 3459 then
+        perform flow.migrate_schedule_retrofit_inhouse_mpu_to_events(v_event_id,
+                                                                    x.project_process_step_id);
+      elsif x.process_step_id = 3470 then
+        perform flow.migrate_schedule_retrofit_outsource_mpu_to_events(v_event_id,
+                                                                     x.project_process_step_id);
+      elsif x.process_step_id = 3473 then
+        perform flow.migrate_schedule_retrofit_trenching_to_events(v_event_id,
+                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 3472 then
+        perform flow.migrate_schedule_retrofit_tree_trimming_to_events(v_event_id,
+                                                                   x.project_process_step_id);
+      elsif x.process_step_id = 3474 then
+        perform flow.migrate_schedule_retrofit_structural_upgrade_to_events(v_event_id,
+                                                                       x.project_process_step_id);
+      elsif x.process_step_id = 3391 then
+        perform flow.migrate_schedule_retrofit_site_survey_to_events(v_event_id,
+                                                                            x.project_process_step_id);
+      elsif x.process_step_id = 170 then
+        perform flow.migrate_schedule_additional_inspection_customer_to_events(v_event_id,
+                                                                     x.project_process_step_id);
+      elsif x.process_step_id = 25 then
+        perform flow.migrate_schedule_inhouse_mpu_permit_submission_to_events(v_event_id,
+                                                                               x.project_process_step_id);
       end if;
 
       v_event_type_id = x.event_type_id;

@@ -7200,3 +7200,748 @@ $$
   LANGUAGE plpgsql VOLATILE
                    COST 100;
 
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_permit_submission_to_events(p_event_id integer,
+                                                                                      p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20917);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20918);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20919);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_permit_pickup_delivery_to_events(p_event_id integer,
+                                                                                           p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20946);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21928);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21927);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_meter_pull_to_events(p_event_id integer,
+                                                                               p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21787);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21788);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21792);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21789);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21790);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_inhouse_mpu_to_events(p_event_id integer,
+                                                                                p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21721);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21722);
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21729);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21730);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21731);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21732);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21733);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21725);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21726);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21727);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_outsource_mpu_to_events(p_event_id integer,
+                                                                                  p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21772);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21773);
+
+
+
+
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21774);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21775);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21777);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21778);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21776);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21779);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21780);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21781);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_trenching_to_events(p_event_id integer,
+                                                                              p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21854);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21855);
+
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21856);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21857);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21858);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_tree_trimming_to_events(p_event_id integer,
+                                                                                  p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21838);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21839);
+
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21840);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21841);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21842);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_structural_upgrade_to_events(p_event_id integer,
+                                                                                       p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21871);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21872);
+
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21870);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21868);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21869);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+CREATE OR REPLACE function flow.migrate_schedule_retrofit_site_survey_to_events(p_event_id integer,
+                                                                                p_project_process_step_id integer)
+  returns void as
+$$
+
+BEGIN
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20900);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20901);
+
+
+
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20902);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     20903);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     21165);
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_additional_inspection_customer_to_events(p_event_id integer,
+                                                                                          p_project_process_step_id integer)
+  returns void as
+$$
+
+declare
+  v_schedule_add_inspection_ahj_pps_id integer;
+  v_pending_add_inspection_pps_id integer;
+  v_verify_add_inpsection_outcome_pps_id  integer;
+  v_pending_permit_pack_needed            timestamp;
+  v_verify_permit_pack_needed             timestamp;
+  v_verify_id                             integer;
+  v_date_created_pending                  timestamp;
+  v_date_modified_pending                 timestamp;
+  v_created_by_id_pending                 integer;
+  v_modified_by_id_pending                integer;
+  v_date_created_verify                   timestamp;
+  v_date_modified_verify                  timestamp;
+  v_created_by_id_verify                  integer;
+  v_modified_by_id_verify                 integer;
+BEGIN
+
+
+  select id
+  into v_schedule_add_inspection_ahj_pps_id
+  from flow.project_process_step
+  where process_step_id = 206
+    and parent_project_process_step_id = p_project_process_step_id
+  order by project_process_step.date_created desc
+  limit 1;
+
+  if v_schedule_add_inspection_ahj_pps_id is not null then
+    select id
+    into v_pending_add_inspection_pps_id
+    from flow.project_process_step
+    where process_step_id = 207
+      and parent_project_process_step_id = v_schedule_add_inspection_ahj_pps_id
+    order by project_process_step.date_created desc
+    limit 1;
+  end if;
+
+
+  if v_pending_add_inspection_pps_id is not null then
+    select id
+    into v_verify_add_inpsection_outcome_pps_id
+    from flow.project_process_step
+    where process_step_id = 171
+      and parent_project_process_step_id = v_pending_add_inspection_pps_id
+    order by project_process_step.date_created desc
+    limit 1;
+  end if;
+
+  if v_schedule_add_inspection_ahj_pps_id is not null then
+    select timestamp_value, date_created, date_modified, created_by_id, modified_by_id
+    into v_pending_permit_pack_needed,v_date_created_pending,v_date_modified_pending,v_created_by_id_pending,v_modified_by_id_pending
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 19092
+      and project_process_step_id = v_schedule_add_inspection_ahj_pps_id;
+  end if;
+
+  if v_pending_add_inspection_pps_id is not null then
+    select timestamp_value, id, date_created, date_modified, created_by_id, modified_by_id
+    into v_verify_permit_pack_needed,v_verify_id,v_date_created_verify,v_date_modified_verify,v_created_by_id_verify,v_modified_by_id_verify
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 1402
+      and project_process_step_id = v_pending_add_inspection_pps_id;
+  end if;
+
+
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     1196);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     1320);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     17332);
+
+
+
+  if v_schedule_add_inspection_ahj_pps_id is not null then
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_schedule_add_inspection_ahj_pps_id,
+                                                                       19091);
+  end if;
+  if v_pending_add_inspection_pps_id is not null then
+
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_pending_add_inspection_pps_id,
+                                                                       19157);
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_pending_add_inspection_pps_id,
+                                                                       1403);
+  end if;
+
+
+
+
+  if v_verify_add_inpsection_outcome_pps_id is not null then
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_verify_add_inpsection_outcome_pps_id,
+                                                                       962);
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_verify_add_inpsection_outcome_pps_id,
+                                                                       965);
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_verify_add_inpsection_outcome_pps_id,
+                                                                       1405);
+
+  end if;
+
+
+  if v_verify_permit_pack_needed is not null or v_pending_permit_pack_needed is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         1402,
+                                                         coalesce(v_verify_permit_pack_needed, v_pending_permit_pack_needed)::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         coalesce(v_date_created_verify, v_date_created_pending),
+                                                         coalesce(v_date_modified_verify, v_date_modified_pending),
+                                                         coalesce(v_created_by_id_verify, v_created_by_id_pending),
+                                                         coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
+  end if;
+
+
+--this update parent to the appropriate parent
+  if v_schedule_add_inspection_ahj_pps_id is not null then
+    update flow.project_process_step
+    set parent_project_process_step_id = p_project_process_step_id
+    where parent_project_process_step_id = v_schedule_add_inspection_ahj_pps_id
+      and case
+            when v_pending_add_inspection_pps_id is not null then
+                id != v_pending_add_inspection_pps_id
+            else 1 = 1 end;
+
+    ---archives site_survey
+    update flow.project_process_step
+    set archived = true
+    where id = v_schedule_add_inspection_ahj_pps_id;
+  end if;
+
+  if v_pending_add_inspection_pps_id is not null then
+    update flow.project_process_step
+    set parent_project_process_step_id = p_project_process_step_id
+    where parent_project_process_step_id = v_pending_add_inspection_pps_id
+      and case
+            when v_verify_add_inpsection_outcome_pps_id is not null then
+                id != v_verify_add_inpsection_outcome_pps_id
+            else 1 = 1 end;
+
+    ---archives site_survey
+    update flow.project_process_step
+    set archived = true
+    where id = v_pending_add_inspection_pps_id;
+  end if;
+
+  if v_verify_add_inpsection_outcome_pps_id is not null then
+    update flow.project_process_step
+    set parent_project_process_step_id = p_project_process_step_id
+    where parent_project_process_step_id = v_verify_add_inpsection_outcome_pps_id;
+
+    ---archives site_survey_verification
+    update flow.project_process_step
+    set archived = true
+    where id = v_verify_add_inpsection_outcome_pps_id;
+  end if;
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+
+
+CREATE OR REPLACE function flow.migrate_schedule_inhouse_mpu_permit_submission_to_events(p_event_id integer,
+                                                                                         p_project_process_step_id integer)
+  returns void as
+$$
+
+declare
+  v_pending_pps_id integer;
+  v_verify_pps_id integer;
+  v_pending_permit_pack_needed            timestamp;
+  v_verify_permit_pack_needed             timestamp;
+  v_verify_id                             integer;
+  v_date_created_pending                  timestamp;
+  v_date_modified_pending                 timestamp;
+  v_created_by_id_pending                 integer;
+  v_modified_by_id_pending                integer;
+  v_date_created_verify                   timestamp;
+  v_date_modified_verify                  timestamp;
+  v_created_by_id_verify                  integer;
+  v_modified_by_id_verify                 integer;
+BEGIN
+
+
+  select id
+  into v_pending_pps_id
+  from flow.project_process_step
+  where process_step_id = 235
+    and parent_project_process_step_id = p_project_process_step_id
+  order by project_process_step.date_created desc
+  limit 1;
+
+  if v_pending_pps_id is not null then
+    select id
+    into v_verify_pps_id
+    from flow.project_process_step
+    where process_step_id = 26
+      and parent_project_process_step_id = v_pending_pps_id
+    order by project_process_step.date_created desc
+    limit 1;
+  end if;
+
+
+  if v_pending_pps_id is not null then
+    select timestamp_value, date_created, date_modified, created_by_id, modified_by_id
+    into v_pending_permit_pack_needed,v_date_created_pending,v_date_modified_pending,v_created_by_id_pending,v_modified_by_id_pending
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 1359
+      and project_process_step_id = v_pending_pps_id;
+  end if;
+
+  if v_verify_pps_id is not null then
+    select timestamp_value, id, date_created, date_modified, created_by_id, modified_by_id
+    into v_verify_permit_pack_needed,v_verify_id,v_date_created_verify,v_date_modified_verify,v_created_by_id_verify,v_modified_by_id_verify
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 21985
+      and project_process_step_id = v_verify_pps_id;
+  end if;
+
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     19080);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     657);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     22452);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     22453);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     17310);
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     null,
+                                                                     p_project_process_step_id,
+                                                                     1306);
+
+
+
+  if v_pending_pps_id is not null then
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_pending_pps_id,
+                                                                       1360);
+  end if;
+  if v_verify_pps_id is not null then
+
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_verify_pps_id,
+                                                                       18969);
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_verify_pps_id,
+                                                                       124);
+    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                       null,
+                                                                       v_verify_pps_id,
+                                                                       1363);
+  end if;
+
+
+  if v_verify_permit_pack_needed is not null or v_pending_permit_pack_needed is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         1359,
+                                                         coalesce(v_verify_permit_pack_needed, v_pending_permit_pack_needed)::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         coalesce(v_date_created_verify, v_date_created_pending),
+                                                         coalesce(v_date_modified_verify, v_date_modified_pending),
+                                                         coalesce(v_created_by_id_verify, v_created_by_id_pending),
+                                                         coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
+  end if;
+
+
+--this update parent to the appropriate parent
+  if v_pending_pps_id is not null then
+    update flow.project_process_step
+    set parent_project_process_step_id = p_project_process_step_id
+    where parent_project_process_step_id = v_pending_pps_id
+      and case
+            when v_verify_pps_id is not null then
+                id != v_verify_pps_id
+            else 1 = 1 end;
+
+    ---archives site_survey
+    update flow.project_process_step
+    set archived = true
+    where id = v_pending_pps_id;
+  end if;
+
+
+  if v_verify_pps_id is not null then
+    update flow.project_process_step
+    set parent_project_process_step_id = p_project_process_step_id
+    where parent_project_process_step_id = v_verify_pps_id;
+
+    ---archives site_survey_verification
+    update flow.project_process_step
+    set archived = true
+    where id = v_verify_pps_id;
+  end if;
+
+
+END
+$$
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
+

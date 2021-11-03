@@ -55,6 +55,17 @@ declare
   v_retrofit_inspection_correction_work_id integer;
   v_retrofit_installation_id               integer;
   v_retrofit_installation_closeout_work_id integer;
+  v_retrofit_permit_submission_id          integer;
+  v_retrofit_permit_pickup_delivery        integer;
+  v_retrofit_meter_pull_id                 integer;
+  v_retrofit_inhouse_mpu_id                integer;
+  v_retrofit_outsource_mpu_id              integer;
+  v_retrofit_trenching_id                  integer;
+  v_retrofit_tree_trimming_id              integer;
+  v_retrofit_structural_upgrade_id         integer;
+  v_retrofit_site_survey_id                integer;
+  v_additional_inspection_customer_id      integer;
+  v_inhouse_mpu_permit_submission_id       integer;
 BEGIN
 
   select id
@@ -285,6 +296,61 @@ BEGIN
   into v_retrofit_installation_id
   from flow.event
   where temp_cfg_id = 6949;
+
+  select id
+  into v_retrofit_permit_submission_id
+  from flow.event
+  where temp_cfg_id = 6630;
+
+  select id
+  into v_retrofit_permit_pickup_delivery
+  from flow.event
+  where temp_cfg_id = 6642;
+
+  select id
+  into v_retrofit_meter_pull_id
+  from flow.event
+  where temp_cfg_id = 6915;
+
+  select id
+  into v_retrofit_inhouse_mpu_id
+  from flow.event
+  where temp_cfg_id = 6875;
+
+  select id
+  into v_retrofit_outsource_mpu_id
+  from flow.event
+  where temp_cfg_id = 6906;
+
+  select id
+  into v_retrofit_trenching_id
+  from flow.event
+  where temp_cfg_id = 6931;
+
+  select id
+  into v_retrofit_tree_trimming_id
+  from flow.event
+  where temp_cfg_id = 6925;
+
+  select id
+  into v_retrofit_structural_upgrade_id
+  from flow.event
+  where temp_cfg_id = 6937;
+
+  select id
+  into v_retrofit_site_survey_id
+  from flow.event
+  where temp_cfg_id = 6616;
+
+  select id
+  into v_additional_inspection_customer_id
+  from flow.event
+  where temp_cfg_id = 279;
+
+  select id
+  into v_inhouse_mpu_permit_submission_id
+  from flow.event
+  where temp_cfg_id = 42;
 
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
@@ -795,6 +861,97 @@ BEGIN
 
   perform flow.migrate_events(3478);
 
+  raise notice 'starting retrofit permit submission';
+  perform flow.migrate_insert_new_group('Online Submission', 1, null, v_retrofit_permit_submission_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_permit_submission_id);
+
+
+  perform flow.migrate_events(3395);
+
+  raise notice 'starting retrofit permit pickup and delivery';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_permit_submission_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_permit_submission_id);
+
+
+  perform flow.migrate_events(3399);
+
+  raise notice 'starting retrofit meter pull';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_meter_pull_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_meter_pull_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_retrofit_meter_pull_id);
+
+
+  perform flow.migrate_events(3471);
+
+  raise notice 'starting retrofit inhouse mpu';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_inhouse_mpu_id);
+  perform flow.migrate_insert_new_group('Audit', 2, null, v_retrofit_inhouse_mpu_id);
+  perform flow.migrate_insert_new_group('Outcome', 3, null, v_retrofit_inhouse_mpu_id);
+  perform flow.migrate_insert_new_group('Reschedule', 4, null, v_retrofit_inhouse_mpu_id);
+
+
+  perform flow.migrate_events(3459);
+
+  raise notice 'starting retrofit outsource mpu';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_outsource_mpu_id);
+  perform flow.migrate_insert_new_group('Audit', 2, null, v_retrofit_outsource_mpu_id);
+  perform flow.migrate_insert_new_group('Outcome', 3, null, v_retrofit_outsource_mpu_id);
+  perform flow.migrate_insert_new_group('Reschedule', 4, null, v_retrofit_outsource_mpu_id);
+
+
+  perform flow.migrate_events(3470);
+
+  raise notice 'starting retrofit trenching';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_trenching_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_trenching_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_retrofit_trenching_id);
+
+
+  perform flow.migrate_events(3473);
+
+  raise notice 'starting retrofit tree trimming';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_tree_trimming_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_tree_trimming_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_retrofit_tree_trimming_id);
+
+
+  perform flow.migrate_events(3472);
+
+  raise notice 'starting retrofit structural upgrade';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_structural_upgrade_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_structural_upgrade_id);
+  perform flow.migrate_insert_new_group('Reschedule', 3, null, v_retrofit_structural_upgrade_id);
+
+
+  perform flow.migrate_events(3474);
+
+  raise notice 'starting retrofit site survey';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_site_survey_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_site_survey_id);
+
+
+  perform flow.migrate_events(3391);
+
+  raise notice 'starting additional inspection with customer';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_additional_inspection_customer_id);
+  perform flow.migrate_insert_new_group('Schedule with AHJ', 2, null, v_additional_inspection_customer_id);
+  perform flow.migrate_insert_new_group('Outcome', 3, null, v_additional_inspection_customer_id);
+  perform flow.migrate_insert_new_group('Reschedule', 4, null, v_additional_inspection_customer_id);
+  perform flow.migrate_insert_new_group('No-Show', 5, null, v_additional_inspection_customer_id);
+
+
+  perform flow.migrate_events(170);
+
+  raise notice 'starting in house mpu permit submission';
+  perform flow.migrate_insert_new_group('Details', 1, null, v_inhouse_mpu_permit_submission_id);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_inhouse_mpu_permit_submission_id);
+  perform flow.migrate_insert_new_group('No-Show', 3, null, v_inhouse_mpu_permit_submission_id);
+  perform flow.migrate_insert_new_group('Reschedule', 4, null, v_inhouse_mpu_permit_submission_id);
+
+
+
+  perform flow.migrate_events(25);
+
 
   --this updates all project_details
   raise notice 'starting update project details';
@@ -840,16 +997,18 @@ BEGIN
   where field_to_update = 'closer_appointment_start';
 
   /*This updates all custom fields for Events to be a part of the event company_object_type*/
-  with update_data as(
+  with update_data as (
     select cf.id
     from flow.custom_field_group_assignment cfga
            inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
            inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
     where cfg.event_id is not null
       and cfga.archived is false)
-  insert into flow.custom_field_object_type ( custom_field_id, company_object_type_id,
-                                              date_created, created_by_id)
-  values ()on conflict  do nothing;
+  insert
+  into flow.custom_field_object_type (custom_field_id, company_object_type_id,
+                                      date_created, created_by_id)
+  values ()
+  on conflict do nothing;
 
 END
 $$

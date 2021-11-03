@@ -781,7 +781,8 @@ where update_first_value_only_id = 'first_appointment_not_pitched_or_missed_ppsc
 
 update brs.project_details_config
 set update_first_value_only_id = 'site_survey_verified_date_ppsecfv_id'
-where update_first_value_only_id = 'site_survey_verified_date_ppscfv_id';
+where update_first_value_only_id = 'site_survey_verified_date_ppscfv_id'
+and custom_field_group_assignment_id = 21122;
 
 update brs.project_details_config
 set update_first_value_only_id = 'appointment_check_in_ppsecfv_id'
