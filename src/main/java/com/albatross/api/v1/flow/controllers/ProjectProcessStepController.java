@@ -225,6 +225,16 @@ public class ProjectProcessStepController {
         // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free time... good one
         try {
           projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+
+          //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
+          //run auto triggers for those actions
+          List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStep.class);
+          for(ProjectProcessStep step : steps) {
+            //only run if the referring PPS is active
+            if(step.getProcessStepStatusTypeId() == 1) {
+              projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+            }
+          }
         } catch (Exception e) {
           final String errMessage = String.format("PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", projectProcessStepId, e.getMessage());
           log.error(errMessage);
