@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -80,7 +77,7 @@ public class DbFunctionService {
     params.put("displayName", dbFunction.getDisplayName());
 
     // Allow running java functions with only action type functions
-    if (dbFunction.getDbFunctionTypeId() != 2) {
+    if (!Objects.equals(dbFunction.getDbFunctionTypeId(), 2L)) {
       dbFunction.setRunInBackend(false);
     }
     params.put("runInBackend", dbFunction.getRunInBackend() != null && dbFunction.getRunInBackend());

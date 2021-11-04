@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
@@ -68,6 +69,8 @@ public class ProjectProcessStepService {
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
   private final CustomFieldValueService customFieldValueService;
+
+  private final GoodleapService goodleapService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -992,7 +995,7 @@ public class ProjectProcessStepService {
                   final String originalFuncName = childFunction.getFunctionName();
                   final int dot = originalFuncName.indexOf('.');
                   final String functionAbbreviation = originalFuncName.substring(0, dot);
-                  final String functionName = originalFuncName.substring(dot + 1);
+                  final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
 
                   Map<String, Object> systemValues = new HashMap<>();
                   systemValues.put("processStepId", processStepId);
@@ -1001,8 +1004,9 @@ public class ProjectProcessStepService {
                   systemValues.put("userId", user.getId());
 
                   if (functionAbbreviation.equals("brs")) {
+                    var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService);
                     Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
-                    method.invoke(null, childFunction, systemValues);
+                    method.invoke(functionClass, childFunction, systemValues);
                   } else {
                     // @TODO: Add company IDs here during onboarding
                   }
