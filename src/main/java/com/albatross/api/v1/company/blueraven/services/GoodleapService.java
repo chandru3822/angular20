@@ -127,7 +127,8 @@ public class GoodleapService {
 
       try {
         JSONObject status = new JSONObject(response.getBody());
-        application.put("docsSentAt", status.getString("docsSentAt"));
+        application.put("docsSentAt", status.get("docsSentAt"));
+        application.put("docsSignedAt", status.get("docsSignedByPrimaryAt"));
       } catch (JSONException e) {
         throw new RuntimeException("Unable to read loan application status for project ID: " + projectId);
       }

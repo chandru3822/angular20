@@ -21,7 +21,7 @@ public class BrsProcessStepActionFunctionService {
 
   private final GoodleapService goodleapService;
 
-  public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) throws Exception {
+  public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
     try {
       JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
@@ -31,9 +31,13 @@ public class BrsProcessStepActionFunctionService {
       params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
       params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
 
-      LocalDate sendAt = LocalDate.parse(application.getString("docsSentAt"), DateTimeFormatter.ISO_DATE_TIME);
+      LocalDate sentAt = null;
 
-      params.put("dateValue", sendAt.toString());
+      if (!application.isNull("docsSentAt")) {
+        sentAt = LocalDate.parse(application.getString("docsSentAt"), DateTimeFormatter.ISO_DATE_TIME);
+      }
+
+      params.put("dateValue", sentAt);
 
       //default values
       params.put("textValue", null);
@@ -47,5 +51,32 @@ public class BrsProcessStepActionFunctionService {
     } catch (Exception e) {
       throw e;
     }
+  }
+
+  public void getLoanDocsSignedDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+    params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+    params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+
+    LocalDate signedAt = null;
+
+    if (!application.isNull("docsSignedAt")) {
+      signedAt = LocalDate.parse(application.getString("docsSignedAt"), DateTimeFormatter.ISO_DATE_TIME);
+    }
+
+    params.put("dateValue", signedAt);
+
+    //default values
+    params.put("textValue", null);
+    params.put("timestampValue", null);
+    params.put("booleanValue", false);
+    params.put("numericValue", null);
+    params.put("intValue", null);
+    params.put("intArrayValue", null);
+
+    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
   }
 }
