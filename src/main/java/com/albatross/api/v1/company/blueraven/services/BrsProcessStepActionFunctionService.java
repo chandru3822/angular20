@@ -79,4 +79,25 @@ public class BrsProcessStepActionFunctionService {
 
     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
   }
+
+  public void getLoanApprovalStatus(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()));
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+    params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+    params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+
+    params.put("textValue", application.getString("status"));
+
+    //default values
+    params.put("dateValue", null);
+    params.put("timestampValue", null);
+    params.put("booleanValue", false);
+    params.put("numericValue", null);
+    params.put("intValue", null);
+    params.put("intArrayValue", null);
+
+    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+  }
 }
