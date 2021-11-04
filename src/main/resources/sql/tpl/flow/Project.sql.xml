@@ -22,19 +22,13 @@
   <project.getProjectsInGeoArea><![CDATA[
     SELECT p.id,
            p.project_name,
-           p.company_project_status_type_id,
            cpst.project_status_type,
-           cpst.project_status_type_id,
-           cpst.color as company_project_status_type_color,
            p.latitude,
            p.longitude,
-           p.street1,
            p.city,
-           p.company_state_id,
-           s.abbreviation as state_abbreviation,
-           s.state,
-           p.postal_code
+           s.abbreviation as state
     FROM   flow.project p
+          inner join flow.company_process cp on cp.id = p.company_process_id
           inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
           inner join flow.company_state cs on p.company_state_id = cs.id
           inner join flow.state s on cs.state_id = s.id
@@ -44,32 +38,23 @@
                :upperBoundLongitude, :upperBoundLatitude,
                :lowerBoundLongitude, :lowerBoundLatitude,
                4326)
+     and case
+             when :isParent then cp.company_id = any
+                                 (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+             else cp.company_id = :companyId
+      end
      and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::INTEGER[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::integer[] ) else 1=1 end
      and case when :searchTypeId::int = 2 then up.user_id = :currentUserId::int else 1=1 end
   ]]></project.getProjectsInGeoArea>
 
   <project.getProjectsInGeoAreaDownline><![CDATA[
     SELECT limited_projects.id,
-               limited_projects.project_name,
-               limited_projects.contact_id,
-               limited_projects.date_created,
-               limited_projects.street1,
-               limited_projects.street2,
-               limited_projects.city,
-               limited_projects.state,
-               limited_projects.state_abbreviation,
-               limited_projects."postalCode",
-               limited_projects.status_type_id,
-               limited_projects.company_project_status_type_id,
-               limited_projects.status_type,
-               limited_projects.project_status_type,
-               limited_projects.process_name,
-               limited_projects.contact,
-               limited_projects.project_status_type_id,
-               limited_projects.company_project_status_type_color,
-               limited_projects.latitude,
-               limited_projects.longitude,
-               limited_projects.company_state_id
+           limited_projects.project_name,
+           limited_projects.city,
+           limited_projects.state_abbreviation as state,
+           limited_projects.project_status_type,
+           limited_projects.latitude,
+           limited_projects.longitude
         FROM (
                with project_ids as (
                    with positions as (
