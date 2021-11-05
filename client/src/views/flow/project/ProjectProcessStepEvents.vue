@@ -11,7 +11,9 @@
     <v-card class="pa-4 square-card">
       <div v-if="!selectedEvent.id">
         <div v-for="pse in processStepEvents" class="mb-2" v-if="!eventsLoading && userCanAdd">
-          <v-btn color="primaryCustom" class="white--text pl-2" @click="addEvent(pse)">
+          <v-btn color="primaryCustom" class="white--text pl-2 event-button"
+                 height="50px"
+                 @click="addEvent(pse)">
             <v-icon color="white" class="mr-2">add</v-icon>
             {{ pse.eventName }}
           </v-btn>
@@ -724,10 +726,14 @@ export default {
 </script>
 
 <style lang="scss">
-
+.event-button .v-btn__content {
+  //max-width: 100%;
+  width: 100%; white-space: normal;
+}
 </style>
 <style lang="scss" scoped>
 .events-container {
 
 }
+
 </style>
