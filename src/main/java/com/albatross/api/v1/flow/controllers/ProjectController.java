@@ -39,7 +39,7 @@ public class ProjectController {
   }
 
   @PostMapping(value= "/search/density", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Project> getProjectsInGeoArea(@RequestBody DensitySearch search) {
+  public List<ProjectDensityResult> getProjectsInGeoArea(@RequestBody DensitySearch search) {
     return projectService.getProjectsInGeoArea(search);
   }
 

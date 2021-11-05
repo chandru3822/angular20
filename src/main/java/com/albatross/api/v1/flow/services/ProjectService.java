@@ -103,7 +103,7 @@ public class ProjectService {
     return projectId;
   }
 
-  public List<Project> getProjectsInGeoArea(DensitySearch search) {
+  public List<ProjectDensityResult> getProjectsInGeoArea(DensitySearch search) {
     User currentUser = securityService.getCurrentUser();
 
     if(null != search.getUpperBoundLatitude() && null != search.getUpperBoundLongitude() && null != search.getLowerBoundLatitude() && null != search.getLowerBoundLongitude()) {
@@ -114,19 +114,18 @@ public class ProjectService {
       params.put("lowerBoundLongitude", search.getLowerBoundLongitude());
       params.put("currentUserId", currentUser.getId());
       params.put("companyProjectStatusTypeIds", search.getCompanyProjectStatusTypeIds());
+      Boolean isParent = currentUser.getCompanyId().equals(currentUser.getHighestParentCompanyId());
+      params.put("isParent", isParent);
+      params.put("companyId", currentUser.getCompanyId());
+      params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
+
       //if no search type is sent in then return "all projects" //1 = all project, 2 = my projects, 3 = downline projects
       if (null != search.getSearchTypeId() && search.getSearchTypeId() == 3L) {
-        Boolean isParent = currentUser.getCompanyId().equals(currentUser.getHighestParentCompanyId());
-        params.put("isParent", isParent);
-        params.put("companyId", currentUser.getCompanyId());
-        params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
-
-        List<Project> results = sqlCache.query("project.getProjectsInGeoAreaDownline", params, new ProjectMapper<>(Project.class, om));
+        List<ProjectDensityResult> results = sqlCache.query("project.getProjectsInGeoAreaDownline", params, ProjectDensityResult.class);
         return results;
-      }
-      else {
+      } else {
         params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
-        List<Project> results = sqlCache.query("project.getProjectsInGeoArea", params, new ProjectMapper<>(Project.class, om));
+        List<ProjectDensityResult> results = sqlCache.query("project.getProjectsInGeoArea", params, ProjectDensityResult.class);
         return results;
       }
     } else {
