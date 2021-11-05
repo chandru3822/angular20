@@ -18,13 +18,13 @@
         </v-toolbar>
         <v-row v-if="addNewEvent">
           <v-col cols="12">
-            <v-select v-model="newEvent"
+            <v-autocomplete v-model="newEvent"
                       :items="availableEvents"
                       label="Select Event"
                       item-value="id"
                       item-text="eventName"
                       return-object
-            ></v-select>
+            ></v-autocomplete>
             <v-select v-if="newEvent.id"
                       v-model="newEvent.initialCompanyEventStatusTypeId"
                       :items="newEvent.companyEventStatusTypes"

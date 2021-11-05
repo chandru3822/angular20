@@ -40,7 +40,8 @@
                      dark
                      @click="saveResourceField"
                      color="primaryButton"
-              >Save Resource Field</v-btn>
+              >Save Resource Field
+              </v-btn>
             </v-col>
 
           </v-row>
@@ -118,10 +119,10 @@
                         </template>
                       </v-text-field>
                       <a style="text-decoration: underline;" v-else @click="item.edit = true">
-                        {{item.groupName}}
+                        {{ item.groupName }}
                       </a>
                     </div>
-                    <span v-else>{{item.groupName}}</span>
+                    <span v-else>{{ item.groupName }}</span>
                   </td>
                   <td>
                     <div class="item-icons">
@@ -155,7 +156,8 @@
                             <span class="error--text">WARNING:</span>
                             By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
 
-                            Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName
+                            Are you sure you want to delete this Custom Field Group: <strong>{{
+                              item.groupName
                             }}</strong>?
                           </v-card-text>
 
@@ -185,13 +187,13 @@
                 <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
-<!--                    <v-radio-group v-model="newFieldType"-->
-<!--                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">-->
-<!--                      <v-radio label="Native Field"-->
-<!--                               value="native"></v-radio>-->
-<!--                      <v-radio label="Reference Field: viewed only from process steps or other object types"-->
-<!--                               value="ancillary"></v-radio>-->
-<!--                    </v-radio-group>-->
+                    <!--                    <v-radio-group v-model="newFieldType"-->
+                    <!--                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">-->
+                    <!--                      <v-radio label="Native Field"-->
+                    <!--                               value="native"></v-radio>-->
+                    <!--                      <v-radio label="Reference Field: viewed only from process steps or other object types"-->
+                    <!--                               value="ancillary"></v-radio>-->
+                    <!--                    </v-radio-group>-->
 
                     <v-autocomplete v-model="newField"
                                     :items="availableCustomFields"
@@ -224,13 +226,80 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            {{cf.fieldName}}
+                            {{ cf.fieldName }} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
                             <div>
                               Detail View:
                               <input type="checkbox" class="ml-2" v-model="cf.detailView"
                                      @input="saveDetailView(cf)">
                             </div>
+                            <div class="text-left mt-3" v-if="cf.edit">
+                              <v-row>
+                                <v-col cols="6">
+                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'rowShadeCustom'"
+                                          class="square-card">
+                                    <v-card-title style="height: 40px" class="py-0">
+                                      Read Only
+                                      <v-checkbox type="checkbox" class="ml-3"
+                                                  v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>
+                                    </v-card-title>
+                                    <v-card-text>
+                                      <v-autocomplete
+                                        v-if="cf.customFieldGroupAssignmentReadOnly"
+                                        v-model="cf.whiteListedPositions"
+                                        :items="positions"
+                                        :loading="positionsLoading"
+                                        multiple
+                                        clearable
+                                        label="White Listed Positions"
+                                        item-text="position"
+                                        item-value="positionId"
+                                        return-object
+                                        height="35px"
+                                        class="d-inline-block mr-3"
+                                        @change="cf.positionsChanged = true">
+                                        <v-list-item
+                                          slot="prepend-item"
+                                          ripple
+                                          @click="toggleSelectAllPositions(cf)"
+                                        >
+                                          <v-list-item-action>
+                                            <v-icon>{{ icon(cf) }}</v-icon>
+                                          </v-list-item-action>
+                                          <v-list-item-title>Select All</v-list-item-title>
+                                        </v-list-item>
+                                        <v-divider
+                                          slot="prepend-item"
+                                          class="mt-2"
+                                        ></v-divider>
+                                        <template
+                                          slot="selection"
+                                          slot-scope="{ item, index }"
+                                        >
+                                          <v-chip small
+                                                  v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
+                                            <span>{{ item.position }}</span>
+                                          </v-chip>
+                                          <span
+                                            v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
+                                            class="primary--text caption"
+                                          >{{ cf.whiteListedPositions.length }} selected</span>
+                                        </template>
+                                      </v-autocomplete>
+                                      <br/>
+                                      <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                                             @click="saveReadOnlyAndWhiteList(cf)">
+                                        <v-icon class="mr-2">save</v-icon>
+                                        Save Read Only
+                                      </v-btn>
+                                    </v-card-text>
+                                  </v-card>
+                                </v-col>
+                              </v-row>
+                            </div>
                           </v-list-item-content>
+                          <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                            <v-icon>edit</v-icon>
+                          </v-btn>
                           <v-menu offset-y
                                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
@@ -275,7 +344,8 @@
                                 "move" the field to another group please cancel and move the field. <br/><br/>
 
                                 Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
-                                  item.groupName }}</strong>?
+                                  item.groupName
+                                }}</strong>?
                               </v-card-text>
 
                               <v-divider></v-divider>
@@ -420,12 +490,12 @@ export default {
     },
 
   },
-  async created () {
+  async created() {
     this.getSchedulingFields()
     await this.getEvent()
   },
   methods: {
-    async getEvent () {
+    async getEvent() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/event/${this.eventId}`)

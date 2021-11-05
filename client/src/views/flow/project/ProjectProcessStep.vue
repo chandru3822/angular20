@@ -170,7 +170,7 @@
             :project-process-step-events="processStep.projectProcessStepEvents"
             :events-loading="processStepLoading"
             :project="project"
-            v-if="userHasEventsFeature"
+            v-if="userHasEventsFeature && !projectLoading"
           ></ProjectProcessStepEvents>
         </v-col>
         <!--    process field groups-->
@@ -333,6 +333,7 @@
         navigationOverride: false,
         notes: [],
         project: {},
+        projectLoading: true,
         displayChangeOwner: false,
         availableOwners: [],
         availableProcessStepStatuses: [],
@@ -438,11 +439,14 @@
       },
       getProject: async function () {
         try {
+          this.projectLoading = true
           const {data} = await getRequest(`/project/${this.projectId}`)
+          this.projectLoading = false
           this.project = data
           window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.project.projectName}`
         } catch (e) {
+          this.projectLoading = false
           logError(e)
         }
       },
