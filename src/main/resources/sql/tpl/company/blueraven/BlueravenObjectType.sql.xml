@@ -16,5 +16,4 @@
     where cot.id = :objectTypeId
       and cot.archived is not true
   ]]></objectType.getCompanyObjectTypeDetail>
-
 </sql>

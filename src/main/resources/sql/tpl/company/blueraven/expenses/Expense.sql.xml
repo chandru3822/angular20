@@ -21,8 +21,8 @@
   ]]></expense.glCodes.getOne>
 
   <expense.glCodes.insertGlCode><![CDATA[
-    INSERT INTO brs.gl_code(code, description, created_by_id)
-    values(:code, :description, :userId)
+    INSERT INTO brs.gl_code(code, description, created_by_id, date_created, modified_by_id, date_modified)
+    values(:code, :description, :userId, now(), :userId, now())
   ]]></expense.glCodes.insertGlCode>
 
   <expense.glCodes.updateGlCode><![CDATA[
@@ -304,7 +304,7 @@
   <expense.updateLineItemsToNewBudgetId>
     <![CDATA[
             UPDATE brs.expense
-              SET expense_budget_id = :newBudgetId
+              SET expense_budget_id = :newBudgetId, date_modified = now()
             WHERE expense_budget_id = :oldBudgetId;
         ]]>
   </expense.updateLineItemsToNewBudgetId>
@@ -332,7 +332,7 @@
   <expense.deleteExpense>
     <![CDATA[
             UPDATE brs.expense
-                SET archived = TRUE
+                SET archived = TRUE, date_modified = now()
             where id = :id
         ]]>
   </expense.deleteExpense>
@@ -340,7 +340,7 @@
   <expense.rejectExpensesWhenRequestIsRejected>
     <![CDATA[
             UPDATE brs.expense
-                SET rejected_date = now()
+                SET rejected_date = now(), date_modified = now()
             where reimbursement_request_id = :id
         ]]>
   </expense.rejectExpensesWhenRequestIsRejected>

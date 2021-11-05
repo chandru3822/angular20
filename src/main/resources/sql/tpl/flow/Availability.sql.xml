@@ -84,8 +84,8 @@
   ]]></availability.deleteSchedule>
 
   <availability.insertSchedule><![CDATA[
-    insert into flow.resource_schedule(company_id, user_id, org_id, start_date, end_date, created_by_id)
-    values (:companyId, :userId, :orgId, :startDate, :endDate, :createdById)
+    insert into flow.resource_schedule(company_id, user_id, org_id, start_date, end_date, created_by_id, date_created, modified_by_id, date_modified)
+    values (:companyId, :userId, :orgId, :startDate, :endDate, :createdById, now(), :createdById, now())
   ]]></availability.insertSchedule>
 
   <availability.getOne><![CDATA[
@@ -139,8 +139,8 @@
   ]]></availability.archiveHours>
 
   <availability.insertHours><![CDATA[
-    insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, created_by_id, resource_slot_schedule_id, daylight_savings)
-    values (:resourceScheduleId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :dayOfWeekId, :createdById, :resourceSlotScheduleId, :daylightSavings)
+    insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, resource_slot_schedule_id, daylight_savings, created_by_id, date_created, modified_by_id, date_modified)
+    values (:resourceScheduleId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :dayOfWeekId, :resourceSlotScheduleId, :daylightSavings, :createdById, now(), :createdById, now())
   ]]></availability.insertHours>
 
 
@@ -163,8 +163,8 @@
   ]]></availability.updateAppointment>
 
   <availability.insertAppointment><![CDATA[
-    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location,  latitude, longitude, origin_timezone, origin_timezone_offset)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location,  :latitude, :longitude, :originTimezone, :originTimezoneOffset)
+    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location,  latitude, longitude, origin_timezone, origin_timezone_offset, created_by_id, date_created, modified_by_id, date_modified)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location,  :latitude, :longitude, :originTimezone, :originTimezoneOffset, :createdById, now(), :createdById, now())
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
@@ -276,7 +276,8 @@
 
   <availability.saveOrgAppointmentLength><![CDATA[
     update flow.org
-      set default_appointment_length = :appointmentLength
+      set default_appointment_length = :appointmentLength,
+           date_modified = now()
     where id = :orgId
   ]]></availability.saveOrgAppointmentLength>
 
@@ -386,8 +387,8 @@
   ]]></availability.updateSlotSchedule>
 
   <availability.insertSlotSchedule><![CDATA[
-    insert into flow.resource_slot_schedule(company_id, schedule_name, created_by_id)
-    values (:companyId, :scheduleName, :userId)
+    insert into flow.resource_slot_schedule(company_id, schedule_name, created_by_id, date_created, modified_by_id, date_modified)
+    values (:companyId, :scheduleName, :userId, now(), :userId, now())
   ]]></availability.insertSlotSchedule>
 
   <availability.deleteSlotSchedule><![CDATA[
@@ -460,9 +461,9 @@
   ]]></availability.archiveUnusedExcludedSlots>
 
   <availability.addExcludedSlots><![CDATA[
-    insert into flow.excluded_resource_slot_time(resource_slot_time_id, resource_schedule_availability_id, date_created, created_by_id)
-    select time_slot_id, :resourceScheduleAvailabilityId, now(), :userId from unnest(ARRAY[ :excludedResourceSlotTimeIds ]) as time_slot_id
-    on conflict (resource_slot_time_id, resource_schedule_availability_id) do update set archived = false
+    insert into flow.excluded_resource_slot_time(resource_slot_time_id, resource_schedule_availability_id, date_created, created_by_id, date_modified, modified_by_id)
+    select time_slot_id, :resourceScheduleAvailabilityId, now(), :userId, now(), :userId from unnest(ARRAY[ :excludedResourceSlotTimeIds ]) as time_slot_id
+    on conflict (resource_slot_time_id, resource_schedule_availability_id) do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
   ]]></availability.addExcludedSlots>
 
 </sql>

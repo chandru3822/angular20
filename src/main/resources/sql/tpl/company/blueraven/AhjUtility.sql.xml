@@ -62,12 +62,10 @@
     ]]>
   </ahj.utility.update>
 
-  <ahj.utility.insert>
-    <![CDATA[
-      INSERT INTO brs.ahj_utility(name, archived, date_created, created_by_id, metro_area_id, company_state_id)
-        VALUES (:utilityName, false, now(), :currentUser, :metroAreaId, :companyStateId)
-    ]]>
-  </ahj.utility.insert>
+  <ahj.utility.insert><![CDATA[
+      INSERT INTO brs.ahj_utility(name, archived,  metro_area_id, company_state_id, date_created, created_by_id,date_modified, modified_by_id)
+      VALUES (:utilityName, false, :metroAreaId, :companyStateId,now(), :currentUser, now(), :currentUser)
+  ]]></ahj.utility.insert>
 
   <ahj.utility.detailById>
     <![CDATA[

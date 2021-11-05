@@ -280,8 +280,8 @@
   ]]></processStep.update>
 
   <processStep.insert><![CDATA[
-      insert into flow.process_step (company_id, process_step_name, created_by_id, non_admin_add)
-        values (:companyId, :name, :createdById, :nonAdminAdd)
+      insert into flow.process_step (company_id, process_step_name, non_admin_add, created_by_id, date_created, modified_by_id, date_modified)
+        values (:companyId, :name, :nonAdminAdd, :createdById, now(), :createdById, now())
   ]]></processStep.insert>
 
   <processStep.getParentObjects><![CDATA[

@@ -85,7 +85,8 @@
   <ahj.delete>
     <![CDATA[
       UPDATE brs.ahj
-      SET archived = TRUE
+      SET archived = TRUE,
+        date_modified = now()
       WHERE id = :id
     ]]>
   </ahj.delete>

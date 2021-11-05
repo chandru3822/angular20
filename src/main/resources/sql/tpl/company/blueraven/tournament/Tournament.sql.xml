@@ -60,9 +60,9 @@
   ]]></tournament.update>
 
   <tournament.insert><![CDATA[
-    with tourney as (insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, created_by_id, tournament_formula_id)
-    values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :userId, :tournamentFormulaId)
-    returning id),
+    with tourney as (insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, tournament_formula_id, created_by_id, date_created, modified_by_id, date_modified)
+        values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :tournamentFormulaId, :userId, now(), :userId, now())
+        returning id),
          pools as (
              insert into brs.tournament_pool (tournament_id, tournament_pool_type_id, start_date, end_date, created_by_id)
                  values ((select id from tourney), 1, :startDate, :endDate, :userId),
@@ -210,8 +210,8 @@
   ]]></tournament.deleteBracket>
 
   <tournament.addBracket><![CDATA[
-    insert into brs.tournament_bracket(tournament_id, number_of_users, created_by_id)
-    values (:tournamentId, :numberOfUsers, :createdById)
+    insert into brs.tournament_bracket(tournament_id, number_of_users, created_by_id, date_created, modified_by_id, date_modified)
+    values (:tournamentId, :numberOfUsers, :createdById, now(), :createdById, now())
   ]]></tournament.addBracket>
 
   <tournament.deleteRound><![CDATA[
@@ -223,8 +223,8 @@
   ]]></tournament.deleteRound>
 
   <tournament.addRound><![CDATA[
-    insert into brs.tournament_round(start_date, end_date, created_by_id, tournament_bracket_id)
-    values(:startDate, :endDate, :userId, :bracketId)
+    insert into brs.tournament_round(start_date, end_date, tournament_bracket_id, created_by_id, date_created, modified_by_id, date_modified)
+    values(:startDate, :endDate, :bracketId, :userId, now(), :userId, now())
   ]]></tournament.addRound>
 
   <tournament.updateRound><![CDATA[
@@ -254,10 +254,12 @@
           modified_by_id = :userId,
           advanced = true
     where id = :roundId;
-    insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
-      select user_1_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId from brs.tournament_match tm where id = :matchId;
-    insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
-      select user_2_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId from brs.tournament_match tm where id = :matchId;
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id, date_modified, modified_by_id)
+    select user_1_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId, now(), :userId
+    from brs.tournament_match tm where id = :matchId;
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id, date_modified, modified_by_id)
+    select user_2_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId, now(), :userId
+    from brs.tournament_match tm where id = :matchId;
   ]]></tournament.advanceWinners>
 
   <tournament.advanceMatch><![CDATA[
@@ -288,8 +290,8 @@
   ]]></tournament.advanceMatch>
 
   <tournament.insertLoserToLastChance><![CDATA[
-    insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id)
-    values (:loserUserId, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 2), :userId)
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:loserUserId, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 2), :userId, now(), :userId, now())
   ]]></tournament.insertLoserToLastChance>
 
   <tournament.overrideMatchUser1><![CDATA[
