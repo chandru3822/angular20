@@ -24,8 +24,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
+@Deprecated
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LoanPalService {
   private final LoanPalConfiguration config;

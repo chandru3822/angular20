@@ -9,7 +9,7 @@ BEGIN
                                            select u.first_name || ' ' || u.last_name                        as "fullName",
                                                   u.id                                                      as "userId",
                                                   tpu.qualified,
-                                                  brs.get_tournament_user_score(t.tournament_formula_id, tp.start_date,
+                                                  brs.get_tournament_user_score(p_tournament_id,t.tournament_formula_id, tp.start_date,
                                                                                 tp.end_date, u.id::integer) as score
                                            from brs.tournament_pool tp
                                                     inner join brs.tournament t on tp.tournament_id = t.id
@@ -29,7 +29,7 @@ BEGIN
                                                      and (tm.user_1_id = u.id or tm.user_2_id = u.id)
                                                    limit 1
                                                   )                                                         as "qualified",
-                                                  brs.get_tournament_user_score(t.tournament_formula_id, tp.start_date,
+                                                  brs.get_tournament_user_score(p_tournament_id,t.tournament_formula_id, tp.start_date,
                                                                                 tp.end_date, u.id::integer) as score
                                            from brs.tournament_pool tp
                                                     inner join brs.tournament t on tp.tournament_id = t.id
@@ -44,7 +44,7 @@ BEGIN
                                            where tp.tournament_id = p_tournament_id
                                              and tpu.archived is not true
                                              and tp.tournament_pool_type_id = p_tournament_pool_type_id
-                                           group by 1, 2, 3, t.tournament_formula_id, tp.start_date, tp.end_date
+                                          --group by 1, 2, 3, t.tournament_formula_id, tp.start_date, tp.end_date
                                            order by 4 desc nulls last, 1) as pools), '[]') as pools;
 END
 $BODY$

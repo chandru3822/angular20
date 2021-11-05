@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 // I don't like it and would rather have them be private. Change back if/when possible
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @Service
 public class ProjectProcessStepService {
 
@@ -65,6 +64,8 @@ public class ProjectProcessStepService {
   private final ObjectMapper om;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+
+  private final CustomFieldValueService customFieldValueService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -402,8 +403,8 @@ public class ProjectProcessStepService {
       }
     }
 
-    log.debug("TRIGGERS: PPS created by time based auto triggers: " + createdPpsIds.size());
-    log.debug("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
+    log.info("TRIGGERS: PPS created by time based auto triggers: " + createdPpsIds.size());
+    log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
   @Transactional
@@ -420,8 +421,10 @@ public class ProjectProcessStepService {
 
       ArrayList<Long> createdPpsIds = new ArrayList<>();
 
+      boolean actionsWerePerformed = false;
+
       if (pps.getProcessStepStatusTypeId() == 1) {
-          pps.getActions().forEach(action -> {
+          for(ProjectProcessStepAction action: pps.getActions()) {
               final boolean isSameAction = (callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId()));
               final boolean isSameProcessStep = (callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId()));
               if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && !isSameProcessStep && !performedActions.contains(action.getId())) {
@@ -445,6 +448,7 @@ public class ProjectProcessStepService {
                           if (!newPpsIds.isEmpty()) {
                             createdPpsIds.addAll(newPpsIds);
                           }
+                          actionsWerePerformed = true;
                       }
                   } catch (StackOverflowError e) {
                     final String errMessage = String.format("PPS: INFINITE LOOP DETECTED - Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
@@ -457,7 +461,20 @@ public class ProjectProcessStepService {
                     throw new RuntimeException(errMessage);
                   }
               }
-          });
+          }
+
+          if (actionsWerePerformed) {
+            List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(ppsId);
+            if (!cfgaIds.isEmpty()) {
+              List<Long> ppsIds = getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
+              for (Long checkingPpsId : ppsIds) {
+                // Don't re-check the ppsId we are in currently
+                if (!checkingPpsId.equals(ppsId))  {
+                  performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), performedActions);
+                }
+              }
+            }
+          }
       }
 
       return createdPpsIds;

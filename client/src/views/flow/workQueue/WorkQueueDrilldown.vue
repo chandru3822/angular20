@@ -293,9 +293,9 @@
           this.results.forEach(r => {
             r.showNotesModal = false
             r.notes = JSON.parse(r['Notes'])
-            r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null,
+            r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
             r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
-            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('MM/DD/YYYY h:mm a') : null,
+            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
             r.firstNoteContent = r.notes[0]?.note,
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
             r.owningPositions = JSON.parse(r['Owning Positions'])
@@ -437,9 +437,9 @@
         })
       },
       updateRowNotes(item) {
-        this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('MM/DD/YYYY') : null
+        this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null
         this.results[this.notesPpsIndex].firstNoteCreatedAt = item.dateCreated
-        this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('MM/DD/YYYY h:mm a') : null
+        this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null
         this.results[this.notesPpsIndex].firstNoteContent = item.note
       }
     },

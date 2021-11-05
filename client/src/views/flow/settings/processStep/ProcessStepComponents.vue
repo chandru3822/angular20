@@ -1,54 +1,55 @@
 <template>
   <v-container class="custom-field-group-container py-0">
     <div class="text-center">
-    <v-dialog width="700"
-      v-model="deleteError"
-    >
-      <v-card>
-        <v-card-title class="headline grey lighten-2 error--text">
-          Error Deleting Status from Process Step
-        </v-card-title>
+      <v-dialog width="700"
+                v-model="deleteError"
+      >
+        <v-card>
+          <v-card-title class="headline grey lighten-2 error--text">
+            Error Deleting Status from Process Step
+          </v-card-title>
 
-        <v-card-text class="pt-5">
-          <div v-if="cannotDeleteReasons.inUseByWqt" class="mb-5">
-            * This status is in use by Work Queue Types. <br/>
-            <span class="ml-5">You must delete those before you can delete this status.</span>
-          </div>
-
-          <div v-if="cannotDeleteReasons.inUseByInitialStep" class="mb-5">
-            * This step is set as an Initial Step in a process and is using this status.  <br/>
-            <span class="ml-5">You must remove it there before you can delete this status.</span>
-          </div>
-
-          <div v-if="cannotDeleteReasons.actions && cannotDeleteReasons.actions.length > 0" class="mb-5">
-            * This status is being used as the Parent Status in the following actions on this step:
-            <div v-for="a in cannotDeleteReasons.actions" :key="a.id" class="ml-5">
-              <strong>{{a.actionName}}</strong>
+          <v-card-text class="pt-5">
+            <div v-if="cannotDeleteReasons.inUseByWqt" class="mb-5">
+              * This status is in use by Work Queue Types. <br/>
+              <span class="ml-5">You must delete those before you can delete this status.</span>
             </div>
-          </div>
 
-          <div v-if="cannotDeleteReasons.childProcesses && cannotDeleteReasons.childProcesses.length > 0" class="mb-5">
-            * This status is being used when creating a Child Process Step in the following step and actions:
-            <div v-for="a in cannotDeleteReasons.childProcesses" :key="a.id" class="ml-5">
-              <strong>{{a.processStepName}} - {{a.actionName}}</strong>
+            <div v-if="cannotDeleteReasons.inUseByInitialStep" class="mb-5">
+              * This step is set as an Initial Step in a process and is using this status. <br/>
+              <span class="ml-5">You must remove it there before you can delete this status.</span>
             </div>
-          </div>
-        </v-card-text>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
+            <div v-if="cannotDeleteReasons.actions && cannotDeleteReasons.actions.length > 0" class="mb-5">
+              * This status is being used as the Parent Status in the following actions on this step:
+              <div v-for="a in cannotDeleteReasons.actions" :key="a.id" class="ml-5">
+                <strong>{{ a.actionName }}</strong>
+              </div>
+            </div>
 
-          <v-btn
-            color="primaryCustom"
-            dark
-            class="white--text"
-            @click="deleteError = false"
-          >
-            OK
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+            <div v-if="cannotDeleteReasons.childProcesses && cannotDeleteReasons.childProcesses.length > 0"
+                 class="mb-5">
+              * This status is being used when creating a Child Process Step in the following step and actions:
+              <div v-for="a in cannotDeleteReasons.childProcesses" :key="a.id" class="ml-5">
+                <strong>{{ a.processStepName }} - {{ a.actionName }}</strong>
+              </div>
+            </div>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+
+            <v-btn
+              color="primaryCustom"
+              dark
+              class="white--text"
+              @click="deleteError = false"
+            >
+              OK
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </div>
     <v-row>
       <v-col cols="12" class="py-0">
@@ -58,7 +59,9 @@
               <v-toolbar-title class="app-title">Process Step Status Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], addNewWorkQueueType = false, getCompanyProcessStepStatusTypes()]" v-if="userCanAdd">
+                <v-btn text
+                       @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], addNewWorkQueueType = false, getCompanyProcessStepStatusTypes()]"
+                       v-if="userCanAdd">
                   <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
                   {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
                 </v-btn>
@@ -154,12 +157,14 @@
                 </template>
               </v-data-table>
             </div>
-<!--            work queue types -->
+            <!--            work queue types -->
             <v-toolbar flat class="wqt-header-bar">
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }, getWorkQueueTypesForStep(), prepTempStatuses(newWorkQueueType), prepTempProcessStepStatuses(newWorkQueueType)]" v-if="userCanAdd">
+                <v-btn text
+                       @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }, getWorkQueueTypesForStep(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false)]"
+                       v-if="userCanAdd">
                   <v-icon v-if="!addNewWorkQueueType">add</v-icon>
                   {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}
                 </v-btn>
@@ -190,10 +195,10 @@
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="Project Status Types"
-                  item-text="fakeText"
+                  item-text="uniqueText"
                   return-object>
                   <template #selection="{ item, index }">
-                    <span :class="{'bold': item.projectStatusTypeId == null}">
+                    <span :class="{'bold': item.isRoot}">
                       <span v-if="index !== 0" class="grey--text">
                         ,
                       </span>
@@ -203,17 +208,18 @@
                     </span>
                   </template>
                   <template #item="data">
-                    <template v-if="typeof data.item !== 'object'">
-                      <v-list-item-content v-text="data.item"></v-list-item-content>
+                    <template v-if="data.item.header !== null">
+                      <v-list-item-content v-text="data.item.header"></v-list-item-content>
                     </template>
                     <template v-else>
                       <v-list-item dense class="combined-statuses">
                         <v-list-item-action>
-                          <input type="checkbox" v-model="data.item.selected" @change="addValueToNew(data.item)">
+                          <input type="checkbox" :disabled="data.item.disabled" v-model="data.item.selected"
+                                 @change="addValueToNew(data.item)">
                         </v-list-item-action>
                         <v-list-item-title>
                           {{ data.item.projectStatusType }}
-                          {{ data.item.rootProjectStatusType ? `(${data.item.rootProjectStatusType})` : '' }}
+                          {{ !data.item.isRoot ? `(${data.item.rootProjectStatusType})` : '' }}
                         </v-list-item-title>
                       </v-list-item>
                     </template>
@@ -226,10 +232,10 @@
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="Process Step Status Types"
-                  item-text="fakeText"
+                  item-text="uniqueText"
                   return-object>
                   <template #selection="{ item, index }">
-                    <span :class="{'bold': item.processStepStatusTypeId == null}">
+                    <span :class="{'bold': item.isRoot}">
                       <span v-if="index !== 0" class="grey--text">
                         ,
                       </span>
@@ -239,24 +245,26 @@
                     </span>
                   </template>
                   <template #item="data">
-                    <template v-if="typeof data.item !== 'object'">
+                    <template v-if="data.item.header !== null">
                       <v-list-item-content v-text="data.item"></v-list-item-content>
                     </template>
                     <template v-else>
                       <v-list-item dense class="combined-statuses">
                         <v-list-item-action>
-                          <input type="checkbox" v-model="data.item.selected" @change="addProcessStepValueToNew(data.item)">
+                          <input type="checkbox" :disabled="data.item.disabled" v-model="data.item.selected"
+                                 @change="addProcessStepValueToNew(data.item)">
                         </v-list-item-action>
                         <v-list-item-title>
                           {{ data.item.processStepStatusType }}
-                          {{ data.item.rootProcessStepStatusType ? `(${data.item.rootProcessStepStatusType})` : '' }}
+                          {{ data.item.isRoot ? `(${data.item.rootProcessStepStatusType})` : '' }}
                         </v-list-item-title>
                       </v-list-item>
                     </template>
                   </template>
                 </v-autocomplete>
-                <v-btn :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0) || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0) "
-                       @click="assignNewWorkQueueType">
+                <v-btn
+                  :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0) || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0) "
+                  @click="assignNewWorkQueueType">
                   Save
                 </v-btn>
               </v-card>
@@ -291,33 +299,30 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Project Status Types"
-                        item-text="fakeText"
+                        item-text="uniqueText"
                         return-object>
-                        <template #selection="{ item, index }">
-                          <span :class="{'bold': item.projectStatusTypeId == null}">
-                            <span v-if="index !== 0 && !item.archived" class="grey--text">
-                              ,
-                            </span>
-                            <span class="grey--text" v-if="!item.archived">
-                              {{ item.projectStatusType }}
-                            </span>
+                        <template #selection="{ item: status, index }" v-if="showShit">
+                          <span :class="{'bold': status.isRoot}">
+                            <span class="grey--text" v-if="!status.archived">{{ status.projectStatusType }}</span>
+                            <span v-if="!status.archived && index !== item.projectStatuses.length - 1" class="grey--text mr-1">,</span>
                           </span>
                         </template>
-                        <template #item="data">
-                          <template v-if="typeof data.item !== 'object'">
-                            <v-list-item-content v-text="data.item"></v-list-item-content>
-                          </template>
-                          <template v-else>
-                            <v-list-item dense class="combined-statuses">
-                              <v-list-item-action>
-                                <v-checkbox :input-value="getExistingValue(item.projectStatuses, data.item)" @change="[data.item.selected = !data.item.selected, addValueToExisting(item, data.item)]"/>
-                              </v-list-item-action>
-                              <v-list-item-title>
-                                {{ data.item.projectStatusType }}
-                                {{ data.item.rootProjectStatusType ? `(${data.item.rootProjectStatusType})` : '' }}
-                              </v-list-item-title>
-                            </v-list-item>
-                          </template>
+                        <template #item="data" v-if="showShit">
+                            <template v-if="data.item.header !== null">
+                              <v-list-item-content v-text="data.item"></v-list-item-content>
+                            </template>
+                            <template v-else>
+                              <v-list-item dense class="combined-statuses">
+                                <v-list-item-action>
+                                  <v-checkbox :disabled="data.item.disabled" :input-value="getExistingValue(item.projectStatuses, data.item)"
+                                              @change="[data.item.selected = !data.item.selected, addValueToExisting($event, item, data.item)]"/>
+                                </v-list-item-action>
+                                <v-list-item-title>
+                                  {{ data.item.projectStatusType }}
+                                  {{ !data.item.isRoot ? `(${data.item.rootProjectStatusType})` : '' }}
+                                </v-list-item-title>
+                              </v-list-item>
+                            </template>
                         </template>
                       </v-autocomplete>
 
@@ -329,30 +334,27 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Process Step Status Types"
-                        item-text="fakeText"
+                        item-text="uniqueText"
                         return-object>
-                        <template #selection="{ item, index }">
-                          <span :class="{'bold': item.processStepStatusTypeId == null}">
-                            <span v-if="index !== 0 && !item.archived" class="grey--text">
-                              ,
-                            </span>
-                            <span class="grey--text" v-if="!item.archived">
-                              {{ item.processStepStatusType }}
-                            </span>
+                        <template #selection="{ item: status, index }" v-if="showPsShit">
+                          <span :class="{'bold': status.isRoot}">
+                            <span class="grey--text" v-if="!status.archived">{{ status.processStepStatusType }}</span>
+                            <span v-if="!status.archived && index !== item.processStepStatuses.length - 1" class="grey--text mr-1">,</span>
                           </span>
                         </template>
-                        <template #item="data">
-                          <template v-if="typeof data.item !== 'object'">
+                        <template #item="data" v-if="showPsShit">
+                          <template v-if="data.item.header !== null">
                             <v-list-item-content v-text="data.item"></v-list-item-content>
                           </template>
                           <template v-else>
                             <v-list-item dense class="combined-statuses">
                               <v-list-item-action>
-                                <v-checkbox :input-value="getProcessStepExistingValue(item.processStepStatuses, data.item)" @change="[data.item.selected = !data.item.selected, addProcessStepValueToExisting(item, data.item)]"/>
+                                <v-checkbox :disabled="data.item.disabled" :input-value="getProcessStepExistingValue(item.processStepStatuses, data.item)"
+                                  @change="[data.item.selected = !data.item.selected, addProcessStepValueToExisting($event, item, data.item)]"/>
                               </v-list-item-action>
                               <v-list-item-title>
                                 {{ data.item.processStepStatusType }}
-                                {{ data.item.rootProcessStepStatusType ? `(${data.item.rootProcessStepStatusType})` : '' }}
+                                {{ !data.item.isRoot ? `(${data.item.rootProcessStepStatusType})` : '' }}
                               </v-list-item-title>
                             </v-list-item>
                           </template>
@@ -360,7 +362,8 @@
                       </v-autocomplete>
 
                       <v-btn class="mt-3" v-if="userCanEdit"
-                             :disabled="(!item.projectStatuses || item.projectStatuses.length === 0) || (!item.processStepStatuses || item.processStepStatuses.length === 0)"
+                             :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0)
+                                          || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0)"
                              @click="saveStatusesToWorkQueueType(item)">
                         Save
                       </v-btn>
@@ -372,20 +375,22 @@
                       <td class="text-left">{{ item.workQueueCategory }}</td>
                       <td class="text-left">{{ item.workQueueType }}</td>
                       <td class="text-left">
-                        <span v-for="(ps, idx) in item.projectStatuses">
+                        <span v-for="(ps, idx) in filterBy(item.projectStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
-                          <span :class="{'bold': ps.projectStatusTypeId != null}">{{ ps.projectStatusType }}</span>
+                          <span :class="{'bold': ps.isRoot}">{{ ps.projectStatusType }}</span>
                         </span>
                       </td>
                       <td class="text-left">
-                        <span v-for="(pss, idx) in item.processStepStatuses">
+                        <span v-for="(pss, idx) in filterBy(item.processStepStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
-                          <span :class="{'bold': pss.processStepStatusTypeId != null}">{{ pss.processStepStatusType }}</span>
+                          <span :class="{'bold': pss.isRoot}">{{pss.processStepStatusType }}</span>
                         </span>
                       </td>
                       <td class="text-right">
                         <div class="flex-display">
-                          <v-btn text @click="[expanded = [item], prepTempStatuses(item), prepTempProcessStepStatuses(item)]" v-if="!expanded.includes(item)">
+                          <v-btn text
+                                 @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true)]"
+                                 v-if="!expanded.includes(item)">
                             <v-icon>edit</v-icon>
                           </v-btn>
                           <v-btn text @click="expanded = []" v-else>cancel
@@ -548,7 +553,8 @@
                               attach
               ></v-autocomplete>
             </v-card>
-            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0 && expandAttachmentTypes">
+            <v-card flat
+                    v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0 && expandAttachmentTypes">
               <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
                          :disabled="!userCanEdit"
                          id="attachment-draggable"
@@ -581,7 +587,7 @@
 
                         <v-card-text>
                           Are you sure you want to delete this attachment type: <strong>{{
-                          a.attachmentType
+                            a.attachmentType
                           }}</strong>?
                         </v-card-text>
 
@@ -618,13 +624,12 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
-import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {getStatusTypes, getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
 export default {
   name: 'ProcessStepComponents',
@@ -647,10 +652,10 @@ export default {
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       companyProjectStatusTypes: [],
       projectStatusTypes: [],
-      combinedStatuses: [ {header: 'Category'} ],
+      combinedStatuses: [],
       companyProcessStepStatusTypes: [],
       processStepStatusTypes: [],
-      // combinedProcessStepStatuses: [ {header: 'Category'} ],
+      combinedProcessStepStatuses: [],
       headers: [
         {text: 'Category', value: 'workQueueCategory', show: true},
         {text: 'Type', value: 'workQueueType', show: true},
@@ -692,217 +697,257 @@ export default {
           exact: true,
           to: `/settings/processSteps`
         },
-      ]
+      ],
+      showShit: true,
+      showPsShit: true
     }
   },
-  computed: {
-    combinedProcessStepStatuses() {
-      //sometimes i am amazed this shit works
-      let tempAssignedStatusTypes = cloneDeep(this.processStep?.companyProcessStepStatusTypes)
-      tempAssignedStatusTypes.forEach(st => {
-        st.id = st.companyProcessStepStatusTypeId
-        st.group = 'Process Step Status'
-        st.fakeText = st.processStepStatusType + 'CPSST'
-        st.selected = false
-      })
-      return [ {header: 'Category'} ].concat(this.processStepStatusTypes,
-        [{divider: true}, {header: 'Process Step Status'}],
-        orderBy(tempAssignedStatusTypes.filter(t => !t.archived), [f => f.processStepStatusType]))
-
-    }
-  },
+  computed: {},
   async created() {
-    this.getProjectStatusTypes()
-    this.getProcessStepStatusTypes()
+    this.getProjectStatusTypesForWorkQueue()
+    this.getProcessStepStatusTypesForWorkQueue()
     await this.getProcessStepDetails()
   },
   methods: {
-    addValueToNew(selectedItem) {
-      if(selectedItem.selected) {
-        let tempObj = { id: null, projectStatusType: selectedItem.projectStatusType, fakeText: selectedItem.fakeText }
-        if(selectedItem.projectStatusTypeId === null) {
-          tempObj.companyProjectStatusTypeId = null
-          tempObj.projectStatusTypeId = selectedItem.id;
-        } else {
-          tempObj.projectStatusTypeId = null
-          tempObj.companyProjectStatusTypeId = selectedItem.id;
+    async getCompanyProcessStepStatusTypes() {
+      if(this.addNewProcessStepStatusType) {
+        this.companyStatusesLoading = true
+        try {
+          const {data} = await getAvailableForProcessStep(this.processStepId)
+          this.availableCompanyProcessStepStatusTypes = data
+          this.companyStatusesLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.companyStatusesLoading = false
         }
-        this.newWorkQueueType.projectStatuses.push(tempObj)
+      }
+
+    },
+    addValueToNew(selectedItem) {
+      if (selectedItem.selected) {
+        if (selectedItem.isRoot) {
+          //if it is a root item, then remove any company level ones that were already selected that share the root status
+          this.newWorkQueueType.projectStatuses = this.newWorkQueueType.projectStatuses.filter(ps => {
+            return ps.companyProjectStatusTypeId === null || (ps.projectStatusTypeId !== selectedItem.projectStatusTypeId)
+          })
+          //disable any of the options in the dropdown that share the same root
+          this.newWorkQueueType.tempStatuses = this.newWorkQueueType.tempStatuses.map(ps => ({
+            ...ps,
+            disabled: ps.companyProjectStatusTypeId !== null && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? true : ps.disabled,
+            selected: ps.companyProjectStatusTypeId !== null && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? false : ps.selected
+          }))
+        }
+        this.newWorkQueueType.projectStatuses.push(selectedItem)
       } else {
         //remove it if it has already been added
         this.newWorkQueueType.projectStatuses = this.newWorkQueueType.projectStatuses.filter(ps => {
-          if(selectedItem.projectStatusTypeId === null) {
-            return ps.projectStatusTypeId !== selectedItem.id
+          if (selectedItem.companyProjectStatusTypeId === null) {
+            return ps.projectStatusTypeId !== selectedItem.projectStatusTypeId
           } else {
-            return ps.companyProjectStatusTypeId !== selectedItem.id
+            return ps.companyProjectStatusTypeId !== selectedItem.companyProjectStatusTypeId
+          }
+        })
+        //if the item is de-selected and isRoot then enable the child options again
+        if (selectedItem.isRoot) {
+          this.newWorkQueueType.tempStatuses.forEach(ps => {
+            if (ps.companyProjectStatusTypeId !== null && ps.projectStatusTypeId === selectedItem.projectStatusTypeId) {
+              ps.disabled = false
+            }
+          })
+        }
+      }
+    },
+    addValueToExisting(e, wqtItem, selectedItem) {
+      //check if already in existing - if it is, set archived as needed
+      //note: the selectedItem.selected value hasn't changed yet, but "e" should be the accurate event value
+      let match = selectedItem.isRoot
+                        ? wqtItem.projectStatuses?.find(ps => ps.isRoot && ps.projectStatusTypeId === selectedItem.projectStatusTypeId)
+                        : wqtItem.projectStatuses?.find(ps => !ps.isRoot && ps.companyProjectStatusTypeId === selectedItem.companyProjectStatusTypeId)
+
+      if (match !== undefined) {
+        match.archived = !e
+        selectedItem.archived = !e
+
+        //if the selectedItem isRoot then enable/disable the child options as required
+        if(selectedItem.isRoot) {
+          this.handleTogglingParentStatus(e, wqtItem, selectedItem)
+        }
+      } else if (selectedItem.selected) {
+        //if not already exists then if selected - add to existingProjectStatuses
+        //then filter/disable as needed
+        selectedItem.archived = false //this un-does some crap we do elsewhere
+        wqtItem.projectStatuses.push(selectedItem)
+        if(selectedItem.isRoot) {
+          this.handleTogglingParentStatus(e, wqtItem, selectedItem)
+        }
+      }
+
+    },
+    handleTogglingParentStatus(e, wqtItem, selectedItem) {
+      this.showShit = false
+
+      wqtItem.tempStatuses = wqtItem.tempStatuses.map(ts => ({
+        ...ts,
+        selected: !ts.isRoot && ts.projectStatusTypeId === selectedItem.projectStatusTypeId && !e ? false : ts.selected,
+        disabled: !ts.isRoot && ts.projectStatusTypeId === selectedItem.projectStatusTypeId ? e : ts.disabled,
+        archived: !ts.isRoot && ts.projectStatusTypeId === selectedItem.projectStatusTypeId ? true : ts.archived
+      }))
+
+      wqtItem.projectStatuses = wqtItem.projectStatuses.map(ps => ({
+        ...ps,
+        archived: !ps.isRoot && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? true : ps.archived,
+        selected: !ps.isRoot && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? false : ps.archived
+      }))
+      this.showShit = true
+    },
+    handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem) {
+      this.showPsShit = false
+
+      wqtItem.tempProcessStepStatuses = wqtItem.tempProcessStepStatuses.map(ts => ({
+        ...ts,
+        selected: !ts.isRoot && ts.processStepStatusTypeId === selectedItem.processStepStatusTypeId && !e ? false : ts.selected,
+        disabled: !ts.isRoot && ts.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? e : ts.disabled,
+        archived: !ts.isRoot && ts.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? true : ts.archived
+      }))
+
+      wqtItem.processStepStatuses = wqtItem.processStepStatuses.map(ps => ({
+        ...ps,
+        archived: !ps.isRoot && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? true : ps.archived,
+        selected: !ps.isRoot && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? false : ps.archived
+      }))
+      this.showPsShit = true
+    },
+    getExistingValue(existingProjectStatuses, item) {
+      //if ps contains item then return true
+      if (item.isRoot) {
+        let match = existingProjectStatuses?.find(ps => ps.projectStatusTypeId === item.projectStatusTypeId && ps.isRoot && !ps.archived)
+        return match !== undefined
+      } else {
+        //company status
+        let match = existingProjectStatuses?.find(ps => ps.companyProjectStatusTypeId === item.companyProjectStatusTypeId && !ps.isRoot && !ps.archived)
+        return match !== undefined
+      }
+    },
+    prepTempStatuses(item, existingItem) {
+      //this is required so that selections made on one wqt are not auto-selected in other wqt's
+      item.tempStatuses = cloneDeep(this.combinedStatuses)
+
+      if(existingItem) {
+        //if an existing item, then get a list of all the used root statuses and disable the ui as needed
+        let rootStatusesIdsUsed = []
+        item.projectStatuses.forEach(ps => {
+          if(ps.isRoot) {
+            rootStatusesIdsUsed.push(ps.projectStatusTypeId)
+          }
+        })
+        //if there are root statuses being used then handle that shit
+        if(rootStatusesIdsUsed.length > 0) {
+          item.tempStatuses = item.tempStatuses.map(ts => ({
+            ...ts,
+            disabled: !ts.isRoot && rootStatusesIdsUsed.includes(ts.projectStatusTypeId)
+          }))
+        }
+      }
+    },
+    async getProjectStatusTypesForWorkQueue() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await getRequest(`/project/statusesForWqt`)
+        this.combinedStatuses = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    // process step status repeat of all the project status stuff
+    addProcessStepValueToNew(selectedItem) {
+      if (selectedItem.selected) {
+        if (selectedItem.isRoot) {
+          //if it is a root item, then remove any company level ones that were already selected that share the root status
+          this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
+            return ps.companyProcessStepStatusTypeId === null || (ps.processStepStatusTypeId !== selectedItem.processStepStatusTypeId)
+          })
+          //disable any of the options in the dropdown that share the same root
+          this.newWorkQueueType.tempProcessStepStatuses = this.newWorkQueueType.tempProcessStepStatuses.map(ps => ({
+            ...ps,
+            disabled: ps.companyProcessStepStatusTypeId !== null && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? true : ps.disabled,
+            selected: ps.companyProcessStepStatusTypeId !== null && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? false : ps.selected
+          }))
+        }
+
+        this.newWorkQueueType.processStepStatuses.push(selectedItem)
+      } else {
+        //remove it if it has already been added
+        this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
+          if (selectedItem.companyProcessStepStatusTypeId === null) {
+            return ps.processStepStatusTypeId !== selectedItem.processStepStatusTypeId
+          } else {
+            return ps.companyProcessStepStatusTypeId !== selectedItem.companyProcessStepStatusTypeId
           }
         })
       }
     },
-    addValueToExisting(wqtItem, selectedItem) {
-      //check if already in existing - if it is, set archived to opposite of selected
-      let exists = false
-      let match = selectedItem.projectStatusTypeId === null ? wqtItem.projectStatuses?.find(ps => ps.id !== null && ps.projectStatusTypeId === selectedItem.id) : wqtItem.projectStatuses?.find(ps => ps.id !== null && ps.companyProjectStatusTypeId === selectedItem.id)
-      if(match) {
-        match.archived = selectedItem.selected
-        exists = true
-      }
+    addProcessStepValueToExisting(e, wqtItem, selectedItem) {
+      //check if already in existing - if it is, set archived as needed
+      //note: the selectedItem.selected value hasn't changed yet, but "e" should be the accurate event value
+      let match = selectedItem.isRoot
+        ? wqtItem.processStepStatuses?.find(ps => ps.isRoot && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId)
+        : wqtItem.processStepStatuses?.find(ps => !ps.isRoot && ps.companyProcessStepStatusTypeId === selectedItem.companyProcessStepStatusTypeId)
 
+      if (match !== undefined) {
+        match.archived = !e
+        selectedItem.archived = !e
+
+        //if the selectedItem isRoot then enable/disable the child options as required
+        if(selectedItem.isRoot) {
+          this.handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem)
+        }
+      } else if (selectedItem.selected) {
         //if not already exists then if selected - add to existingProjectStatuses
-        if(!exists && selectedItem.selected) {
-          let tempObj = { id: null, projectStatusType: selectedItem.projectStatusType, fakeText: selectedItem.fakeText }
-          if(selectedItem.projectStatusTypeId === null) {
-            tempObj.companyProjectStatusTypeId = null
-            tempObj.projectStatusTypeId = selectedItem.id;
-          } else {
-            tempObj.projectStatusTypeId = null
-            tempObj.companyProjectStatusTypeId = selectedItem.id;
-          }
-          wqtItem.projectStatuses.push(tempObj)
-        } else if(!exists) {
-          //remove it if it has already been added
-          wqtItem.projectStatuses = wqtItem.projectStatuses.filter(ps => {
-            if(selectedItem.projectStatusTypeId === null) {
-              return ps.projectStatusTypeId !== selectedItem.id
-            } else {
-              return ps.companyProjectStatusTypeId !== selectedItem.id
-            }
-          })
+        //then filter/disable as needed
+        selectedItem.archived = false //this un-does some crap we do elsewhere
+        wqtItem.processStepStatuses.push(selectedItem)
+        if(selectedItem.isRoot) {
+          this.handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem)
         }
-
-      },
-      getExistingValue(existingProjectStatuses, item) {
-        //if ps contains item then return true
-        if(item.projectStatusTypeId === null) {
-          let match = existingProjectStatuses?.find(ps => ps.projectStatusTypeId === item.id)
-          // console.log('metdjlks',match && match.projectStatusType !== null)
-          // item.selected = !!(match && match.projectStatusType !== null)
-          return match && match.projectStatusType !== null
-        } else {
-          let match = existingProjectStatuses?.find(ps => ps.companyProjectStatusTypeId === item.id)
-          // item.selected = !!(match && match.projectStatusType !== null)
-          return match && match.projectStatusType !== null
-        }
-      },
-      prepTempStatuses(item) {
-        //this is required so that selections made on one wqt are not auto-selected in other wqt's
-        item.tempStatuses = cloneDeep(this.combinedStatuses)
-        item.projectStatuses.forEach(ps => {
-          ps.fakeText = ps.companyProjectStatusTypeId !== null ? ps.projectStatusType + 'CPST' : ps.projectStatusType + 'PST'
-        })
-      },
-      async getCompanyProjectStatusTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getCompanyProjectStatusTypes()
-          this.companyProjectStatusTypes = orderBy(data, ['rootProjectStatusType', 'projectStatusType'])
-          this.combinedStatuses.push({divider: true})
-          this.combinedStatuses.push({header: 'Project Status'})
-          this.companyProjectStatusTypes.forEach(ps => {
-            ps.group = 'Project Status'
-            ps.fakeText = ps.projectStatusType + 'CPST'
-            ps.selected = false
-            this.combinedStatuses.push(ps)
-          })
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getProjectStatusTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getProjectStatusTypes()
-          this.projectStatusTypes = data
-          this.projectStatusTypes.forEach(ps => {
-            ps.group = 'Category'
-            ps.fakeText = ps.projectStatusType + 'PST'
-            ps.selected = false
-            this.combinedStatuses.push(ps)
-          })
-          this.getCompanyProjectStatusTypes()
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      // process step status repeat of all the project status stuff
-      addProcessStepValueToNew(selectedItem) {
-        if(selectedItem.selected) {
-          let tempObj = { id: null, processStepStatusType: selectedItem.processStepStatusType, fakeText: selectedItem.fakeText }
-          if(selectedItem.processStepStatusTypeId === null) {
-            tempObj.companyProcessStepStatusTypeId = null
-            tempObj.processStepStatusTypeId = selectedItem.id;
-          } else {
-            tempObj.processStepStatusTypeId = null
-            tempObj.companyProcessStepStatusTypeId = selectedItem.id;
-          }
-          this.newWorkQueueType.processStepStatuses.push(tempObj)
-        } else {
-          //remove it if it has already been added
-          this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
-            if(selectedItem.processStepStatusTypeId === null) {
-              return ps.processStepStatusTypeId !== selectedItem.id
-            } else {
-              return ps.companyProcessStepStatusTypeId !== selectedItem.id
-            }
-          })
-        }
-      },
-      addProcessStepValueToExisting(wqtItem, selectedItem) {
-        //check if already in existing - if it is, set archived to opposite of selected
-        let exists = false
-        let match = selectedItem.processStepStatusTypeId === null ? wqtItem.processStepStatuses?.find(ps => ps.id !== null && ps.processStepStatusTypeId === selectedItem.id) : wqtItem.processStepStatuses?.find(ps => ps.id !== null && ps.companyProcessStepStatusTypeId === selectedItem.id)
-        if(match) {
-          match.archived = selectedItem.selected
-          exists = true
-        }
-
-      //if not already exists then if selected - add to existingProjectStatuses
-      if(!exists && selectedItem.selected) {
-        let tempObj = { id: null, processStepStatusType: selectedItem.processStepStatusType, fakeText: selectedItem.fakeText }
-        if(selectedItem.processStepStatusTypeId === null) {
-          tempObj.companyProcessStepStatusTypeId = null
-          tempObj.processStepStatusTypeId = selectedItem.id;
-        } else {
-          tempObj.processStepStatusTypeId = null
-          tempObj.companyProcessStepStatusTypeId = selectedItem.id;
-        }
-        wqtItem.processStepStatuses.push(tempObj)
-      } else if(!exists) {
-        //remove it if it has already been added
-        wqtItem.processStepStatuses = wqtItem.processStepStatuses.filter(ps => {
-          if(selectedItem.processStepStatusTypeId === null) {
-            return ps.processStepStatusTypeId !== selectedItem.id
-          } else {
-            return ps.companyProcessStepStatusTypeId !== selectedItem.id
-          }
-        })
       }
     },
     getProcessStepExistingValue(existingProcessStepStatuses, item) {
       //if ps contains item then return true
-      if(item.processStepStatusTypeId === null) {
-        let match = existingProcessStepStatuses?.find(ps => ps.processStepStatusTypeId === item.id)
-        return match && match.processStepStatusType !== null
+      if (item.isRoot) {
+        let match = existingProcessStepStatuses?.find(ps => ps.processStepStatusTypeId === item.processStepStatusTypeId && ps.isRoot && !ps.archived)
+        return match !== undefined
       } else {
-        let match = existingProcessStepStatuses?.find(ps => ps.companyProcessStepStatusTypeId === item.id)
-        return match && match.processStepStatusType !== null
+        //company status
+        let match = existingProcessStepStatuses?.find(ps => ps.companyProcessStepStatusTypeId === item.companyProcessStepStatusTypeId && !ps.isRoot && !ps.archived)
+        return match !== undefined
       }
     },
-    prepTempProcessStepStatuses(item) {
+    prepTempProcessStepStatuses(item, existingItem) {
       //this is required so that selections made on one wqt are not auto-selected in other wqt's
       item.tempProcessStepStatuses = cloneDeep(this.combinedProcessStepStatuses)
-      item.processStepStatuses?.forEach(ps => {
-        ps.fakeText = ps.companyProcessStepStatusTypeId !== null ? ps.processStepStatusType + 'CPSST' : ps.processStepStatusType + 'PSST'
-      })
+
+      if(existingItem) {
+        //if an existing item, then get a list of all the used root statuses and disable the ui as needed
+        let rootStatusesIdsUsed = []
+        item.processStepStatuses.forEach(ps => {
+          if(ps.isRoot) {
+            rootStatusesIdsUsed.push(ps.processStepStatusTypeId)
+          }
+        })
+        //if there are root statuses being used then handle that shit
+        if(rootStatusesIdsUsed.length > 0) {
+          item.tempProcessStepStatuses = item.tempProcessStepStatuses.map(ts => ({
+            ...ts,
+            disabled: !ts.isRoot && rootStatusesIdsUsed.includes(ts.processStepStatusTypeId)
+          }))
+        }
+      }
     },
     async deleteStatusTypeFromStep(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -918,7 +963,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
 
-        if(e.status === 400) {
+        if (e.status === 400) {
           item.deleteConfirm = false
           this.deleteError = true
           this.cannotDeleteReasons = e.data
@@ -928,7 +973,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async assignStatusTypeToProcessStep () {
+    async assignStatusTypeToProcessStep() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newType.processStepId = this.$route.params.id
@@ -947,46 +992,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getCompanyProcessStepStatusTypes() {
-      if(this.addNewProcessStepStatusType) {
-        this.companyStatusesLoading = true
-        try {
-          const {data} = await getAvailableForProcessStep(this.processStepId)
-          this.availableCompanyProcessStepStatusTypes = data
-
-          //this one is used for assigning types to a work queue type - will likely be changing soon
-          // this.companyProcessStepStatusTypes = orderBy(data, ['rootProcessStepStatusType', 'processStepStatusType'])
-          // this.combinedProcessStepStatuses.push({divider: true})
-          // this.combinedProcessStepStatuses.push({header: 'Process Step Status'})
-          // this.companyProcessStepStatusTypes.forEach(ps => {
-          //   ps.group = 'Process Step Status'
-          //   ps.fakeText = ps.processStepStatusType + 'CPSST'
-          //   ps.selected = false
-          //   this.combinedProcessStepStatuses.push(ps)
-          // })
-          this.companyStatusesLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.companyStatusesLoading = false
-        }
-      }
-
-    },
-    async getProcessStepStatusTypes() {
+    async getProcessStepStatusTypesForWorkQueue() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getStatusTypes()
-        this.processStepStatusTypes = data
-        this.processStepStatusTypes.forEach(ps => {
-          ps.group = 'Category'
-          ps.fakeText = ps.processStepStatusType + 'PSST'
-          ps.selected = false
-          // this.combinedProcessStepStatuses.push(ps)
+        const {data} = await getRequestWithParams(`/processStep/status/forWqt`,  {
+          params: { processStepId: this.processStepId }
         })
-        // this.getCompanyProcessStepStatusTypes()
+        this.combinedProcessStepStatuses = data
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
@@ -1135,7 +1148,7 @@ export default {
         this.processStep.workQueueTypes.push(data)
         // reset fields
         this.addNewWorkQueueType = false
-        this.newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }
+        this.newWorkQueueType = {projectStatuses: [], processStepStatuses: []}
         this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1246,19 +1259,19 @@ export default {
     }
   }
 
-  }
+}
 </script>
 
 <style scoped lang="scss">
-  .name-container {
-    background-color: var(--v-rowShadeCustom-base) !important;
-    border-radius: 5px;
-  }
+.name-container {
+  background-color: var(--v-rowShadeCustom-base) !important;
+  border-radius: 5px;
+}
 
-  #attachment-draggable .v-list, #link-draggable .v-list {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
+#attachment-draggable .v-list, #link-draggable .v-list {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
 .combined-statuses > div.v-list-item__action {
   min-width: 10px !important;
@@ -1267,17 +1280,18 @@ export default {
   margin-right: 20px !important;
 }
 
-  .wqt-header-bar {
-    border-bottom: 1px solid #E6E6E6;
-    border-top: 1px solid #E6E6E6;
-  }
+.wqt-header-bar {
+  border-bottom: 1px solid #E6E6E6;
+  border-top: 1px solid #E6E6E6;
+}
 
-  .link-header-bar {
-    border-top: 1px solid #E6E6E6;
-    border-bottom: 1px solid #E6E6E6;
-  }
-  .attach-header-bar {
-    border-top: 1px solid #E6E6E6;
-    border-bottom: 1px solid #E6E6E6;
-  }
+.link-header-bar {
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+}
+
+.attach-header-bar {
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+}
 </style>

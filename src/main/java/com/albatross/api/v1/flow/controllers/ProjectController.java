@@ -39,7 +39,7 @@ public class ProjectController {
   }
 
   @PostMapping(value= "/search/density", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Project> getProjectsInGeoArea(@RequestBody DensitySearch search) {
+  public List<ProjectDensityResult> getProjectsInGeoArea(@RequestBody DensitySearch search) {
     return projectService.getProjectsInGeoArea(search);
   }
 
@@ -101,6 +101,11 @@ public class ProjectController {
   @GetMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(@RequestParam(required = false) Long projectId) {
       return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/statusesForWqt", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<WorkQueueTypeProjectStatus>> getStatusesForWqt() {
+    return new ResponseEntity<>(projectService.getStatusesForWqt(), HttpStatus.OK);
   }
 
   @PutMapping(value = "/companyStatus/initial/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

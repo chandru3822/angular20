@@ -30,6 +30,7 @@ BEGIN
                                                                        when tm.user_1_id is not null then
                                                                            (coalesce(tm.user_1_score,
                                                                                      brs.get_tournament_user_score(
+                                                                                       p_tournament_id,
                                                                                              t.tournament_formula_id,
                                                                                              tr.start_date, tr.end_date,
                                                                                              tm.user_1_id::int))) end as "user1Score",
@@ -39,6 +40,7 @@ BEGIN
                                                                        when tm.user_1_id is not null then
                                                                            (coalesce(tm.user_2_score,
                                                                                      brs.get_tournament_user_score(
+                                                                                       p_tournament_id,
                                                                                              t.tournament_formula_id,
                                                                                              tr.start_date, tr.end_date,
                                                                                              tm.user_2_id::int))) end as "user2Score"
