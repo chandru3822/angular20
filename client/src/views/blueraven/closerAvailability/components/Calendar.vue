@@ -482,7 +482,6 @@
               data.forEach(d => {
                 //get all selected users who match the appt user_id
                 let matchingUsers = this.selectedPostalCodeZoneUsers.filter(r => r.userId === d.userId)
-                console.log('matchingUsers',matchingUsers)
 
                 // if there is more than one selected user with that user ID then add another record for the additional user
                 if(matchingUsers?.length > 1) {
@@ -504,7 +503,6 @@
                 } else if (matchingUsers.length === 1) {
                   d.resourceId = matchingUsers[0].id
                   d.title = `<b>${d.projectName ?? ''}</b> <br/> ${d.groupName}`
-                  // let matchingResource = this.selectedPostalCodeZoneUsers.find(r => r.userId === d.userId)
                   d.colorForBorder = matchingUsers[0].color
                 }
                 //it shouldn't be possible to not have a matching user, but if it doesn't match we just wont do anything and see what happens

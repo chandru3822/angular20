@@ -18,6 +18,71 @@
     order by cpsst.process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
 
+  <processStepStatus.getStatusesForWqt><![CDATA[
+    select
+      null::int as id,
+      'Category' as header,
+      null::int as "processStepStatusTypeId",
+      null::int as "companyProcessStepStatusTypeId",
+      false as archived,
+      null::text as "uniqueText",
+      null::text as "group",
+      false as is_root,
+      null::text as process_step_status_type,
+      null::text as root_process_step_status_type,
+      0 as display_sort
+    union all
+    select
+      null::int as id,
+      null::text as header,
+      psst.id as "processStepStatusTypeId",
+      null::int as "companyProcessStepStatusTypeId",
+      psst.archived,
+      concat(psst.process_step_status_type, 'PSST')::text as "uniqueText",
+      'Category' as "group",
+      true as is_root,
+      psst.process_step_status_type,
+      psst.process_step_status_type as root_process_step_status_type,
+      1 as display_sort
+    from flow.process_step_status_type psst
+    where psst.archived is not true
+    union all
+    select
+      null::int as id,
+      'Project Status' as header,
+      null::int as "processStepStatusTypeId",
+      null::int as "companyProcessStepStatusTypeId",
+      false as archived,
+      null::text as "uniqueText",
+      null::text as "group",
+      false as is_root,
+      null::text as process_step_status_type,
+      null::text as root_process_step_status_type,
+      2 as display_sort
+    union all
+    select
+      null::int as id,
+      null::text as header,
+      psst.id as "processStepStatusTypeId",
+      cpsst.id as "companyProcessStepStatusTypeId",
+      cpsst.archived,
+      concat(cpsst.process_step_status_type, 'CPSST')::text as "uniqueText",
+      'Process Step' as "group",
+      false as is_root,
+      cpsst.process_step_status_type,
+      psst.process_step_status_type as root_process_step_status_type,
+      3 as display_sort
+    from flow.process_step_company_process_step_status_type pscpsst
+         inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+           inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+    where cpsst.company_id = :companyId
+      and cpsst.archived is not true
+      and pscpsst.archived is not true
+      and pscpsst.process_step_id = :processStepId
+    order by display_sort, root_process_step_status_type, process_step_status_type
+
+]]></processStepStatus.getStatusesForWqt>
+
   <processStepStatus.availableForProcessStep><![CDATA[
     select cpsst.*,
        psst.process_step_status_type as root_process_step_status_type
