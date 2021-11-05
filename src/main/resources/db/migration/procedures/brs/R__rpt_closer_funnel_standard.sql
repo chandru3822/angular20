@@ -2615,6 +2615,7 @@ BEGIN
                                                  and pd.company_id = v_company_id
 
                                                  and pd.final_design_complete_date is not null
+                                                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                                                  and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as custom_date_range_count
