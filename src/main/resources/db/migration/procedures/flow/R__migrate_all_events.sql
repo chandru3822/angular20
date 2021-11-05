@@ -280,7 +280,7 @@ BEGIN
   select id
   into v_retrofit_inspection_id
   from flow.event
-  where temp_cfg_id = 187;
+  where temp_cfg_id = 6763;
 
   select id
   into v_retrofit_inspection_correction_work_id
@@ -293,7 +293,7 @@ BEGIN
   where temp_cfg_id = 6633;
 
   select id
-  into v_retrofit_installation_id
+  into v_retrofit_installation_closeout_work_id
   from flow.event
   where temp_cfg_id = 6949;
 
@@ -869,8 +869,8 @@ BEGIN
   perform flow.migrate_events(3395);
 
   raise notice 'starting retrofit permit pickup and delivery';
-  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_permit_submission_id);
-  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_permit_submission_id);
+  perform flow.migrate_insert_new_group('Details', 1, null, v_retrofit_permit_pickup_delivery);
+  perform flow.migrate_insert_new_group('Outcome', 2, null, v_retrofit_permit_pickup_delivery);
 
 
   perform flow.migrate_events(3399);
@@ -1004,10 +1004,12 @@ BEGIN
            inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
     where cfg.event_id is not null
       and cfga.archived is false)
-  insert
-  into flow.custom_field_object_type (custom_field_id, company_object_type_id,
+  insert into flow.custom_field_object_type (custom_field_id, company_object_type_id,
                                       date_created, created_by_id)
-  values ()
+   (select ud.id,(select cot.id from flow.company_object_type cot
+                                       inner join flow.object_type ot on ot.id = cot.object_type_id where company_id = 3
+                                                                                                      and ot.object_code = 'EVENT'),now(),2350555
+     from update_data ud)
   on conflict do nothing;
 
 END

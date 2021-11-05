@@ -151,7 +151,7 @@ INSERT INTO flow.event_attachment_type (attachment_type_id, event_id, read_only,
 -- COMPANY EVENT STATUSES
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Ready to Schedule', 3, false, '2021-08-25 20:02:40.888231', null, 2350555, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Scheduled', 3, false, '2021-08-25 20:07:03.577890', null, 2350555, null);
-INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Complete', 3, false, '2021-08-25 20:07:16.107215', '2021-08-31 17:40:55.050209', 2350555, 2356764);
+--INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Complete', 3, false, '2021-08-25 20:07:16.107215', '2021-08-31 17:40:55.050209', 2350555, 2356764);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Passed', 3, false, '2021-08-26 20:29:14.379818', null, 2350555, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Failed', 3, false, '2021-08-26 20:29:25.976499', null, 2350555, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Rescheduled', 3, false, '2021-08-26 20:29:38.806659', null, 2350555, null);
@@ -163,7 +163,7 @@ INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_t
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Pending Approval', 3, false, '2021-08-31 17:09:57.846660', null, 2356764, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Approved', 3, false, '2021-08-31 17:10:03.479894', null, 2356764, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Rejected', 3, false, '2021-08-31 17:10:09.500698', null, 2356764, null);
-INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Cancelled', 3, false, '2021-08-31 17:10:52.005565', null, 2356764, null);
+--INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Cancelled', 3, false, '2021-08-31 17:10:52.005565', null, 2356764, null);
 -- event company event statuses
 select *
 from flow.event

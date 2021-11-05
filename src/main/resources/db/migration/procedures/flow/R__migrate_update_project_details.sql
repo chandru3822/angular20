@@ -141,6 +141,54 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+  with update_data as (
+    select ppsecfv.id as project_process_step_event_custom_field_value_id,
+           pd.id as project_details_id
+    from brs.project_details pd
+           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.ahj_inspection_start_time_ppsecfv_id
+    where pd.ahj_inspection_start_time is not null and ahj_inspection_start_time_ppsecfv_id is not null
+  )
+  update brs.project_details pd2
+  set ahj_inspection_start_time_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+  from update_data ud
+  where ud.project_details_id = pd2.id;
+
+  with update_data as (
+    select ppsecfv.id as project_process_step_event_custom_field_value_id,
+           pd.id as project_details_id
+    from brs.project_details pd
+           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.permit_pack_submittal_end_time_ppsecfv_id
+    where pd.permit_pack_submittal_end_time is not null and permit_pack_submittal_end_time_ppsecfv_id is not null
+  )
+  update brs.project_details pd2
+  set permit_pack_submittal_end_time_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+  from update_data ud
+  where ud.project_details_id = pd2.id;
+
+  with update_data as (
+    select ppsecfv.id as project_process_step_event_custom_field_value_id,
+           pd.id as project_details_id
+    from brs.project_details pd
+           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.substantial_completion_date_ppsecfv_id
+    where pd.substantial_completion_date is not null and substantial_completion_date_ppsecfv_id is not null
+  )
+  update brs.project_details pd2
+  set substantial_completion_date_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+  from update_data ud
+  where ud.project_details_id = pd2.id;
+
+
+  with update_data as (
+    select ppse.id as project_process_step_event_id,pd.id as project_details_id
+    from flow.project_process_step_event ppse
+    inner join brs.project_details pd on pd.first_appointment_ppse_id = ppse.project_process_step_id
+    and first_appointment is not null
+  )
+  update brs.project_details pd3
+        set first_appointment_ppse_id = ud2.project_process_step_event_id
+  from update_data ud2
+        where pd3.id = ud2.project_details_id;
+
 
 END
 $$

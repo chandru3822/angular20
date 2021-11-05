@@ -9,6 +9,7 @@ declare
   v_resource_id   integer;
   v_event_id      integer;
   v_event_type_id integer;
+  v_event_status_type_id integer;
 BEGIN
 
   for x in select pps.id    project_process_step_id,
@@ -84,6 +85,485 @@ BEGIN
 --                 raise notice 'this is the end time = %',v_end_date;
 --                 raise notice 'this is the resource id = %',v_resource_id;
 
+
+      if x.process_step_id = 1 then
+       select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                  v_end_date,
+                                  1,  0,
+                                   0,
+                                   0);
+
+      elsif x.process_step_id = 5 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       5,  60,
+                                       3346,
+                                       0);
+      elsif x.process_step_id = 98 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       98,  99,
+                                       3346,
+                                       0);
+      elsif x.process_step_id = 168 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       168,  204,
+                                       152,
+                                       46);
+      elsif x.process_step_id = 40 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       40,  204,
+                                       152,
+                                       46);
+      elsif x.process_step_id = 153 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       153,  205,
+                                       154,
+                                       46);
+      elsif x.process_step_id = 3365 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3365,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3383 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3383,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 16 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       16,  233,
+                                       17,
+                                       0);
+      elsif x.process_step_id = 13 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       13,  94,
+                                       67,
+                                       0);
+      elsif x.process_step_id = 85 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       85,  96,
+                                       97,
+                                       0);
+      elsif x.process_step_id = 3431 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3431,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 129 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       129,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 138 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       138,  210,
+                                       139,
+                                       0);
+      elsif x.process_step_id = 146 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       146,  214,
+                                       147,
+                                       0);
+      elsif x.process_step_id = 140 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       140,  211,
+                                       141,
+                                       0);
+      elsif x.process_step_id = 144 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       144,  213,
+                                       145,
+                                       0);
+      elsif x.process_step_id = 142 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       142,  212,
+                                       143,
+                                       0);
+      elsif x.process_step_id = 148 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       148,  149,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3414 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3414,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3362 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3362,  3363,
+                                       3364,
+                                       0);
+      elsif x.process_step_id = 134 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       134,  208,
+                                       135,
+                                       0);
+      elsif x.process_step_id = 28 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       28,  239,
+                                       134,
+                                       0);
+      elsif x.process_step_id = 3487 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3487,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3409 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3409,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 54 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       54,  104,
+                                       55,
+                                       0);
+      elsif x.process_step_id = 2838 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       2838,  2839,
+                                       2840,
+                                       0);
+      elsif x.process_step_id = 2841 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       2841,  2842,
+                                       2843,
+                                       0);
+      elsif x.process_step_id = 3091 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3091,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3480 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3480,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3441 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3441,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 165 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       165,  166,
+                                       167,
+                                       0);
+      elsif x.process_step_id = 66 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       66,  228,
+                                       71,
+                                       0);
+      elsif x.process_step_id = 3107 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3107,  3108,
+                                       3109,
+                                       0);
+      elsif x.process_step_id = 192 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       192,  193,
+                                       194,
+                                       0);
+      elsif x.process_step_id = 3103 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3103,  3104,
+                                       3105,
+                                       0);
+      elsif x.process_step_id = 3099 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3099,  3100,
+                                       3101,
+                                       0);
+      elsif x.process_step_id = 196 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       196,  234,
+                                       197,
+                                       0);
+      elsif x.process_step_id = 3359 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3359,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3360 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3360,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 44 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       44,  156,
+                                       157,
+                                       0);
+      elsif x.process_step_id = 3479 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3479,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 222 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       222,  223,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 172 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       172,  236,
+                                       173,
+                                       0);
+      elsif x.process_step_id = 3427 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3427,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3428 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3428,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3397 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3397,  3398,
+                                       0,
+                                       0);
+
+      elsif x.process_step_id = 3478 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3478,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3395 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3395,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3399 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3399,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3471 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3471,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3459 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3459,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3470 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3470,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3473 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3473,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3472 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3472,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3474 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3474,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 3391 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       3391,  0,
+                                       0,
+                                       0);
+      elsif x.process_step_id = 170 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       170,  206,
+                                       207,
+                                       171);
+      elsif x.process_step_id = 25 then
+        select *
+        into v_event_status_type_id
+        from flow.migrate_event_status(x.project_process_step_id,x.project_id, v_start_date,
+                                       v_end_date,
+                                       25,  235,
+                                       26,
+                                       0);
+      end if;
+
+
+
       insert into flow.project_process_step_event(project_process_step_id, process_step_event_id,
                                                   resource_id, company_event_status_type_id,
                                                   start_time, end_time, created_by_id)
@@ -92,16 +572,11 @@ BEGIN
                                                  inner join flow.event e on pse.event_id = e.id
                                           where pse.process_step_id = x.process_step_id
                                             and e.temp_cfg_id = x.custom_field_group_id),
-              v_resource_id, 1, v_start_date, v_end_date, 2350555)
+              v_resource_id, coalesce(v_event_status_type_id,5), v_start_date, v_end_date, 2350555)
       returning id into v_event_id;
---TODO ask what company_event_status_type_id should be
+
 
       if x.process_step_id = 1 then
---         update brs.project_details
---         set first_appointment_ppse_id = v_event_id
---         where first_appointment is not null
---           and first_appointment_ppse_id is null
---           and first_appointment_ppse_id = x.project_process_step_id;
         perform flow.migrate_schedule_closer_appointment_to_events(v_event_id,
                                                                    x.project_process_step_id);
 
@@ -204,7 +679,7 @@ BEGIN
       elsif x.process_step_id = 3107 then
         perform flow.migrate_schedule_additional_permit_signature_to_events(v_event_id,
                                                                  x.project_process_step_id);
-      elsif x.process_step_id = 3107 then
+      elsif x.process_step_id = 192 then
         perform flow.migrate_schedule_asbuilt_permit_signature_to_events(v_event_id,
                                                                             x.project_process_step_id);
       elsif x.process_step_id = 3103 then

@@ -6,10 +6,16 @@
 --add company event statuses
 insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
 values ((select id from flow.event_status_type where event_status_type = 'ACTIVE'), 'Active', 3, 2417170);
--- insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
--- values (2, 'Complete', 3, 2417170);
--- insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
--- values (3, 'Cancelled', 3, 2417170);
+insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
+values ((select id from flow.event_status_type where event_status_type = 'ACTIVE'), 'Needs Verification', 3, 2417170);
+insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
+values (2, 'Complete', 3, 2417170);
+insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
+values (3, 'Cancelled', 3, 2417170);
+insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
+values ((select id from flow.event_status_type where event_status_type = 'ACTIVE'), 'Ready to Schedule', 3, 2417170);
+insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
+values ((select id from flow.event_status_type where event_status_type = 'CANCELLED'), 'Not Complete - Other', 3, 2417170);
 
 -- add the current resource custom fields to be available to events
 INSERT INTO flow.custom_field_object_type (custom_field_id, company_object_type_id, created_by_id)
