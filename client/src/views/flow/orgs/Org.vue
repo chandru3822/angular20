@@ -43,7 +43,7 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text :disabled="fieldsSaving"
+              <v-btn text :disabled="fieldsSaving || (org.schedulable && !org.companyTimezoneId)"
                      @click="[fieldsSaving = true, saveOrg()]" v-if="userCanEdit">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
@@ -88,11 +88,13 @@
                       @change="dirtySystemFields = true"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
+                      hide-details
                       item-text="timezone"
                       item-value="id"
                             attach
             ></v-autocomplete>
-            <div class="mb-3">
+            <h6 class="mt-1 red-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
+            <div class="mb-3 mt-3">
               <label>Active:</label>
               <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2" v-model="org.activeFlag" @change="dirtySystemFields = true">
             </div>
