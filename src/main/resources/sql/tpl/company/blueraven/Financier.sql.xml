@@ -15,13 +15,11 @@
     ]]>
   </financier.getActive>
 
-  <financier.add>
-    <![CDATA[
-      INSERT INTO brs.financier (name, submission_method, archived, date_created, created_by_id)
-      VALUES (:name, :submissionMethod, FALSE, now(), :currentUser)
-      RETURNING id;
-    ]]>
-  </financier.add>
+  <financier.add><![CDATA[
+    INSERT INTO brs.financier (name, submission_method, archived, date_created, created_by_id, date_modified, modified_by_id)
+    VALUES (:name, :submissionMethod, FALSE, now(), :currentUser, now(), :currentUser)
+    RETURNING id;
+  ]]></financier.add>
 
   <financier.update>
     <![CDATA[

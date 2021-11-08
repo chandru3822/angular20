@@ -64,8 +64,8 @@
   ]]></tournamentPool.getPosition>
 
   <tournamentPool.addPosition><![CDATA[
-    insert into brs.tournament_pool_position(position_id, tournament_pool_id, created_by_id)
-    values (:positionId, :poolId, :createdById)
+    insert into brs.tournament_pool_position(position_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:positionId, :poolId, :createdById,now(),:createdById, now())
   ]]></tournamentPool.addPosition>
 
   <tournamentPool.deletePosition><![CDATA[
@@ -86,8 +86,8 @@
   ]]></tournamentPool.getUser>
 
   <tournamentPool.addUser><![CDATA[
-    insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id)
-    values (:userId, :poolId, :createdById)
+    insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:userId, :poolId, :createdById, now(), :createdById, now())
   ]]></tournamentPool.addUser>
 
   <tournamentPool.deleteUser><![CDATA[
@@ -104,12 +104,13 @@
 
   <tournamentPool.advanceUsersToWinnerPool><![CDATA[
       update brs.tournament_pool_user
-          set qualified = true
+          set qualified = true,
+              date_modified = now()
       where tournament_pool_id = :tournamentPoolId
       and user_id in ( :userIds );
 
-      insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id)
-        select tpu.user_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId
+      insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id, date_modified, modified_by_id)
+        select tpu.user_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId, now(), :userId
       from brs.tournament_pool_user tpu
       where tpu.tournament_pool_id = :tournamentPoolId
         and tpu.user_id  in ( :userIds );

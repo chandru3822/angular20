@@ -1,16 +1,16 @@
 <sql>
   <contactLead.insertContact><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id, latitude, longitude)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId,
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, company_id, owner_user_position_id, company_state_id, company_country_id, latitude, longitude, created_by_id,date_created, modified_by_id, date_modified)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :companyId, :ownerUserPositionId,
             (select cs.id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
-                    where s.state = :state and cs.company_id = :companyId),
+             where s.state = :state and cs.company_id = :companyId),
             (select s.country_id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
-                    where s.state = :state and cs.company_id = :companyId),  :latitude, :longitude)
+             where s.state = :state and cs.company_id = :companyId),  :latitude, :longitude, :createdById, now(), :createdById, now())
   ]]></contactLead.insertContact>
 
   <contactLead.insertContactNoState><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, created_by_id, company_id, owner_user_position_id, latitude, longitude)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :createdById, :companyId, :ownerUserPositionId, :latitude, :longitude)
+insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, company_id, owner_user_position_id, latitude, longitude, created_by_id, date_created, modified_by_id, date_modified)
+values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :companyId, :ownerUserPositionId, :latitude, :longitude, :createdById, now(), :createdById, now())
   ]]></contactLead.insertContactNoState>
 
   <contactLead.checkIfCustomFieldDropdownValueExists><![CDATA[
@@ -21,8 +21,8 @@
   ]]></contactLead.checkIfCustomFieldDropdownValueExists>
 
   <contactLead.upsertCustomFieldValue><![CDATA[
-    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, numeric_value, created_by_id)
-    values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, :numericValue, :leadOwnerUserId)
+    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, numeric_value, created_by_id, date_created, modified_by_id, date_modified)
+    values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, :numericValue, :leadOwnerUserId, now(), :leadOwnerUserId, now())
     on conflict (contact_id, custom_field_group_assignment_id)
     do update
         set text_value = :textValue,
@@ -38,8 +38,8 @@
       from flow.list_of_value
       where parent_id = :listOfValueId
     )
-    insert into flow.list_of_value (name, parent_id, display_order, created_by_id)
-    (select :customFieldDropdownValue, :listOfValueId, ((select value from display_order) + 1), :leadOwnerUserId)
+    insert into flow.list_of_value (name, parent_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+    (select :customFieldDropdownValue, :listOfValueId, ((select value from display_order) + 1), :leadOwnerUserId, now(), :leadOwnerUserId, now())
     returning id
   ]]></contactLead.insertCustomFieldDropdownValue>
 </sql>

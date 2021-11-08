@@ -333,7 +333,8 @@
           update flow.sms_queue
           set priority = :priority,
               owner_user_position_id = :ownerUserPositionId,
-              message_read = :messageRead
+              message_read = :messageRead,
+              updated = now()
             where id = :smsId
           ]]>
     </sms.update>

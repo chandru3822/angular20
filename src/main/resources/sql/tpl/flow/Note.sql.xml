@@ -49,8 +49,8 @@
   ]]></note.getProjectProcessStepWorkQueueNotes>
 
   <note.insertNote><![CDATA[
-    insert into flow.note(parent_id, created_by_id, note, follow_up_date)
-    values (:parentId, :userId, :note, :followUpDate::date)
+    insert into flow.note(parent_id, note, follow_up_date, created_by_id, date_created, modified_by_id, date_modified)
+    values (:parentId, :note, :followUpDate::date, :userId, , now(), :userId, now())
   ]]></note.insertNote>
 
   <note.getNote><![CDATA[

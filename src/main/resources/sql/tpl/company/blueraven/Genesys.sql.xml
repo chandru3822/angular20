@@ -19,7 +19,8 @@
 
   <genesys.updateGenesysContactIdByContactId><![CDATA[
     update flow.contact_custom_field_value
-    set text_value = :genesysContactId
+    set text_value = :genesysContactId,
+        date_modified = now()
     where contact_id = :contactId
       and custom_field_group_assignment_id = 19357
       and archived is false
@@ -52,8 +53,8 @@
     ]]></genesys.getContactAppointments>
 
   <genesys.upsertCustomFieldValue><![CDATA[
-    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
-    values (:contactId, :customFieldGroupAssignmentId, :textValue, :leadOwnerUserId)
+    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id, date_created, modified_by_id, date_modified)
+    values (:contactId, :customFieldGroupAssignmentId, :textValue, :leadOwnerUserId, now(), :leadOwnerUserId, now())
     on conflict (contact_id, custom_field_group_assignment_id)
     do update
         set text_value = :textValue,

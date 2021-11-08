@@ -114,6 +114,4 @@
         set archived = true
     where id = :companyStateId
   ]]></state.deleteCompanyState>
-
-
 </sql>

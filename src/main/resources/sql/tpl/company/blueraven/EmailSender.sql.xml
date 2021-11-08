@@ -26,17 +26,12 @@
         ]]>
     </emailSender.updateEmailSender>
 
-    <emailSender.insertEmailSender>
-        <![CDATA[
-            insert into brs.email_sender(email_address, date_created, created_by_id, archived)
-             values (:emailAddress, now(), :createdById, false)
-        ]]>
-    </emailSender.insertEmailSender>
+    <emailSender.insertEmailSender><![CDATA[
+    insert into brs.email_sender(email_address, archived, date_created, created_by_id, date_modified, modified_by_id )
+    values (:emailAddress, false, now(), :createdById, now(), :createdById)
+    ]]></emailSender.insertEmailSender>
 
-    <emailSender.deleteEmailSender>
-        <![CDATA[
-            update brs.email_sender set archived = true
-            where id = :id
-        ]]>
-    </emailSender.deleteEmailSender>
+    <emailSender.deleteEmailSender><![CDATA[
+        update brs.email_sender set archived = true, date_modified = now() where id = :id
+    ]]></emailSender.deleteEmailSender>
 </sql>

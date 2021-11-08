@@ -9,8 +9,9 @@
   <rebate.updateTotalPromotionAmount>
     <![CDATA[
             update flow.project_process_step_custom_field_value
-            set numeric_value = :newTotal where id =
-            (select pscfv.id
+            set numeric_value = :newTotal ,
+                date_modified = now()
+            where id = (select pscfv.id
             from flow.project p
                      inner join flow.project_process_step pps
                                 on pps.project_id = p.id and pps.process_step_id = 4
@@ -50,7 +51,9 @@
             update brs.project_rebate_payment
             set approved_by_user_id = :userId,
                 approved_date = (now() at time zone 'US/Mountain')::date,
-                project_rebate_payment_state_id = 2
+                project_rebate_payment_state_id = 2,
+                updated_by_user_id = :userId,
+                updated_date = now()
             where id in (:paymentIds);
         ]]>
   </rebate.approvePayments>
@@ -66,11 +69,9 @@
         ]]>
   </rebate.assignPaymentsToBatch>
 
-  <rebate.createBatch>
-    <![CDATA[
-            insert into brs.project_rebate_batch(project_rebate_payment_ids, updated_by_user_id) VALUES (array[ :paymentIds ]::integer[], :userId);
-        ]]>
-  </rebate.createBatch>
+  <rebate.createBatch><![CDATA[
+    insert into brs.project_rebate_batch(project_rebate_payment_ids, updated_by_user_id) VALUES (array[ :paymentIds ]::integer[], :userId);
+  ]]></rebate.createBatch>
 
   <rebate.getBatchDetails>
     <![CDATA[

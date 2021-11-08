@@ -62,10 +62,10 @@
   ]]></workQueueType.getType>
 
   <workQueueType.addSmartlist><![CDATA[
-    insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details, work_queue_type_id)
+    insert into flow.smartlist (name, company_object_type_id, shared, owner_id, view_object_type_id, main_process_steps, project_details, work_queue_type_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:workQueueType,
             (select id from flow.company_object_type cot where cot.company_id = :companyId and cot.object_type_id = 4),
-            true, 99999999, :createdById, 1, true, false, :workQueueTypeId)
+            true, 99999999,  1, true, false, :workQueueTypeId, :createdById, now(), :createdById, now())
 ]]></workQueueType.addSmartlist>
 
   <workQueueType.deleteType><![CDATA[
@@ -95,8 +95,8 @@
   ]]></workQueueType.updateType>
 
   <workQueueType.insertType><![CDATA[
-    insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id, display_order)
-    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true))
+  insert into flow.work_queue_type(company_id, work_queue_type, work_queue_category_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+  values (:companyId, :workQueueType, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true), :createdById, now(),  :createdById, now())
   ]]></workQueueType.insertType>
 
   <workQueueType.getAvailableWorkQueueTypesForStep><![CDATA[
@@ -168,10 +168,10 @@
   ]]></workQueueType.getProcessStepWorkQueueType>
 
   <workQueueType.insertProcessStepWorkQueueType><![CDATA[
-      insert into flow.process_step_work_queue_type (process_step_id, work_queue_type_id, created_by_id)
-      values (:processStepId, :workQueueTypeId, :createdById)
+      insert into flow.process_step_work_queue_type (process_step_id, work_queue_type_id, created_by_id, modified_by_id, date_created, date_modified)
+      values (:processStepId, :workQueueTypeId, :createdById, :createdById, now(), now())
       on conflict (process_step_id,work_queue_type_id)
-        do update set archived = false
+        do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
   ]]></workQueueType.insertProcessStepWorkQueueType>
 
   <workQueueType.deleteProcessStepWorkQueueType>
@@ -190,10 +190,10 @@
 
   <workQueueType.insertProjectStatusType>
     <![CDATA[
-      insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, project_status_type_id, process_step_work_queue_type_id, created_by_id)
-      values (:companyProjectStatusTypeId, :projectStatusTypeId, :processStepWorkQueueTypeId, :userId)
+      insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, project_status_type_id, process_step_work_queue_type_id, created_by_id, date_created, modified_by_id, date_modified)
+      values (:companyProjectStatusTypeId, :projectStatusTypeId, :processStepWorkQueueTypeId, :userId, now(), :userId, now())
       on conflict (coalesce(company_project_status_type_id, -1), coalesce(project_status_type_id, -1), process_step_work_queue_type_id)
-      do update set archived = false
+          do update set archived = false, modified_by_id = excluded.modified_by_id, date_modified = now()
     ]]>
   </workQueueType.insertProjectStatusType>
 
@@ -229,10 +229,10 @@
 
   <workQueueType.insertProcessStepStatusType>
     <![CDATA[
-      insert into flow.process_step_work_queue_type_process_step_status_type(company_process_step_status_type_id, process_step_status_type_id, process_step_work_queue_type_id, created_by_id)
-      values (:companyProcessStepStatusTypeId, :processStepStatusTypeId, :processStepWorkQueueTypeId, :userId)
+      insert into flow.process_step_work_queue_type_process_step_status_type(company_process_step_status_type_id, process_step_status_type_id, process_step_work_queue_type_id, created_by_id, modified_by_id, date_created, date_modified)
+      values (:companyProcessStepStatusTypeId, :processStepStatusTypeId, :processStepWorkQueueTypeId, :userId, :userId, now(), now())
       on conflict (coalesce(company_process_step_status_type_id, -1), coalesce(process_step_status_type_id, -1), process_step_work_queue_type_id)
-      do update set archived = false
+      do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
     ]]>
   </workQueueType.insertProcessStepStatusType>
 

@@ -1,17 +1,15 @@
 <sql>
-    <email.insert>
-        <![CDATA[
-        INSERT INTO flow.emails_sent (
-            user_id, subject, message,
-            attachments, from_email, to_email
-        ) VALUES (
-            :userId,
-            :subject,
-            :message,
-            :attachments,
-            :from,
-            :to
-        )
-        ]]>
-    </email.insert>
+  <email.insert><![CDATA[
+    INSERT INTO flow.emails_sent (
+        user_id, subject, message,
+        attachments, from_email, to_email
+    ) VALUES (
+        :userId,
+        :subject,
+        :message,
+        :attachments,
+        :from,
+        :to
+    )
+  ]]></email.insert>
 </sql>
