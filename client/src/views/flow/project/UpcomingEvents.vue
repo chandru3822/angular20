@@ -4,7 +4,7 @@
     <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-row>
         <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Upcoming Events</v-toolbar-title>
+          <v-toolbar-title>Upcoming & Past Due Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
           </v-toolbar-items>
@@ -134,7 +134,7 @@ export default {
   methods: {
     getUpcomingEvents(events) {
       return events.filter(event => {
-        return event.eventStatusTypeId === 1 && (moment(event.start).isAfter(moment()) || moment(event.end).isAfter(moment()))
+        return event.eventStatusTypeId === 1
       })
     },
     filteredEvents () {

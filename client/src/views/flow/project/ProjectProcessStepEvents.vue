@@ -6,25 +6,35 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
+        <v-menu data-app left
+                offset-y
+                v-if="!eventsLoading && userCanAdd && !selectedEvent.id"
+                v-model="menuOpen"
+                class="account-menu">
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on" color="primaryCustom">
+              <v-icon>add</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item v-for="(item, index) in processStepEvents" :key="index"
+                         @click="[menuOpen = false, addEvent(item)]">
+              <v-list-item-title>{{item.eventName}}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-toolbar-items>
     </v-toolbar>
     <v-card class="pa-4 square-card">
       <div v-if="!selectedEvent.id">
-        <div v-for="pse in processStepEvents" class="mb-2" v-if="!eventsLoading && userCanAdd">
-          <v-btn color="primaryCustom" class="white--text pl-2 event-button"
-                 height="50px"
-                 @click="addEvent(pse)">
-            <v-icon color="white" class="mr-2">add</v-icon>
-            {{ pse.eventName }}
-          </v-btn>
-        </div>
         <v-data-table
           :headers="headers"
           :items="projectProcessStepEvents"
           :items-per-page="-1"
           :mobile-breakpoint="0"
+          :sort-desc="[false]"
+          :sort-by="['startTime']"
           hide-default-footer
-          disable-sort
           :loading="eventsLoading"
           class="elevation-0"
         >
@@ -280,6 +290,7 @@ export default {
       companyEventStatuses: [],
       eventActionMissingRequirements: false,
       eventDetails: {},
+      menuOpen: false,
       dirtyCfvs: [],
       contactId: this.$route.query.contactId,
       requiredRules: constants.BASIC_REQUIRED_RULE,
@@ -504,6 +515,8 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      } finally {
+        this.chosenEvent = {}
       }
     },
     getProcessStepEvents: async function () {
