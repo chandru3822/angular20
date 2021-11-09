@@ -92,13 +92,14 @@
   ]]></userPosition.updateUserPosition>
 
   <userPosition.insertUserPosition><![CDATA[
-    insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, created_by_id, primary_flag)
-    values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :createdById, :primaryFlag)
+  insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, primary_flag, created_by_id, date_created, modified_by_id, date_modified)
+  values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :primaryFlag, :createdById, now(), :createdById, now())
   ]]></userPosition.insertUserPosition>
 
   <userPosition.resetPrimaryFlags><![CDATA[
     update flow.user_position
-        set primary_flag = false
+        set primary_flag = false,
+        date_modified = now()
     where id in (select up.id
                  from flow.user_position up
                           inner join flow.position p on p.id = up.position_id

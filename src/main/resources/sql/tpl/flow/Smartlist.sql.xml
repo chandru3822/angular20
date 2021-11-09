@@ -80,8 +80,8 @@ order by s.name
 ]]></smartlist.getSharedByObjectType>
 
 <smartlist.add><![CDATA[
-insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details, primary_user_position)
-values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps, :projectDetails, :primaryUserPosition)
+insert into flow.smartlist (name, company_object_type_id, shared, owner_id, view_object_type_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
+values (:name, :companyObjectTypeId, :shared, :ownerId,  :viewObjectTypeId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
 returning id;
 ]]></smartlist.add>
 
@@ -495,8 +495,8 @@ where
 ]]></smartlist.getAssignedFieldById>
 
 <smartlist.addField><![CDATA[
-insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order, process_step_id, project_details_column)
-values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :createdById, :displayOrder, :processStepId, :projectDetailsColumn)
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified)
+values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :createdById, now(), :createdById, now())
 returning id;
 ]]></smartlist.addField>
 
@@ -823,8 +823,8 @@ order by sr.display_order;
 ]]></smartlist.getRequirements>
 
 <smartlist.addRequirement><![CDATA[
-insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, created_by_id, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column)
-values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :userId, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn)
+insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified)
+values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :userId, now(), :userId, now())
 returning id;
 ]]></smartlist.addRequirement>
 
@@ -887,8 +887,8 @@ where smartlist_id = :smartlistId;
 ]]></smartlist.archiveLogic>
 
 <smartlist.updateLogic><![CDATA[
-insert into flow.smartlist_logic (smartlist_id, smartlist_requirement_id, operation_type_id, sql_order, created_by_id)
-values (:smartlistId, :smartlistRequirementId, :operationTypeId, :sqlOrder, :userId);
+insert into flow.smartlist_logic (smartlist_id, smartlist_requirement_id, operation_type_id, sql_order, created_by_id, date_created, modified_by_id, date_modified)
+values (:smartlistId, :smartlistRequirementId, :operationTypeId, :sqlOrder, :userId, now(), :userId, now());
 ]]></smartlist.updateLogic>
 
 <smartlist.clearFieldsAndRequirements><![CDATA[
@@ -917,14 +917,15 @@ where lower(s.name) = lower(:name::text) and
 ]]></smartlist.isNameUnique>
 
 <smartlist.copyAssignedFields><![CDATA[
-insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order, process_step_id, project_details_column)
-select :newId, smartlist_field_id, custom_field_group_assignment_id, :userId, display_order, process_step_id, project_details_column from flow.smartlist_field_assignment
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified)
+select :newId, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, :userId, now(),  :userId, now()
+from flow.smartlist_field_assignment
 where smartlist_id = :oldId and archived is not true
 ]]></smartlist.copyAssignedFields>
 
 <smartlist.copyRequirements><![CDATA[
-insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, created_by_id, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column)
-select :newId, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, :userId, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column
+insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified)
+select :newId, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, :userId, now(), :userId, now()
 from flow.smartlist_requirement
 where smartlist_id = :oldId and archived is not true
 ]]></smartlist.copyRequirements>

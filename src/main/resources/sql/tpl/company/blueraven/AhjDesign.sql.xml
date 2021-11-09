@@ -177,26 +177,21 @@
     ]]>
   </ahj.design.detailByAhj>
 
-  <ahj.design.createBlank>
-    <![CDATA[
-      INSERT INTO brs.ahj_design
-        (ahj_id, codes, note, archived, date_created, created_by_id)
-      VALUES
-        (:ahjId, null, null, false, now(), :currentUser)
-      RETURNING id
-    ]]>
-  </ahj.design.createBlank>
+  <ahj.design.createBlank><![CDATA[
+    INSERT INTO brs.ahj_design
+    (ahj_id, codes, note, archived, date_created, created_by_id, date_modified, modified_by_id)
+    VALUES (:ahjId, null, null, false, now(), :currentUser, now(), :currentUser)
+    RETURNING id
+  ]]></ahj.design.createBlank>
 
-  <ahj.design.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_design
-        (ahj_id, codes, note, reference_standards, ground_snow_load, wind_speed, roof_snow_load, archived,
-         date_created, created_by_id)
-      VALUES
+  <ahj.design.create><![CDATA[
+    INSERT INTO brs.ahj_design
+    (ahj_id, codes, note, reference_standards, ground_snow_load, wind_speed, roof_snow_load, archived,
+     date_created, created_by_id, date_modified, modified_by_id)
+    VALUES
         (:ahjId, :codes, :note, :referenceStandards, :groundSnowLoad, :windSpeed, :roofSnowLoad, false,
-         now(), :currentUser)
-    ]]>
-  </ahj.design.create>
+         now(), :currentUser, now(), :currentUser)
+  ]]></ahj.design.create>
 
   <ahj.design.update>
     <![CDATA[

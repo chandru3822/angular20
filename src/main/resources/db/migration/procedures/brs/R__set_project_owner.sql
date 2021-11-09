@@ -6,7 +6,8 @@ BEGIN
 
     -- update the project owner to match the schedule closer appt resource
     update flow.project p set
-        user_position_id = ppscfv.int_value
+        user_position_id = ppscfv.int_value,
+        date_modified =  now()
     from (
              select pps.project_id, int_value
              from flow.project_process_step_custom_field_value cfv

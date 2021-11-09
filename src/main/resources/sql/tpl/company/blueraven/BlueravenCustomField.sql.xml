@@ -102,14 +102,14 @@
   ]]></blueravenCustomField.saveField>
 
   <blueravenCustomField.insertField><![CDATA[
-    insert into brs.custom_field(list_of_value_id, field_name, date_created, created_by_id, company_data_type_id)
-    values (:listOfValueId, :fieldName, now(), :createdById, :companyDataTypeId)
+    insert into brs.custom_field(list_of_value_id, field_name, company_data_type_id, date_created, created_by_id, date_modified, modified_by_id)
+    values (:listOfValueId, :fieldName, :companyDataTypeId, now(), :createdById, now(), :createdById)
     returning id
   ]]></blueravenCustomField.insertField>
 
   <blueravenCustomField.insertListOfValue><![CDATA[
-    insert into brs.list_of_value(name, parent_id, date_created, created_by_id, display_order)
-    values (:name, :parentId, now(), :createdById, (select coalesce(max(display_order) + 1, 0) from brs.list_of_value where parent_id = :parentId and archived is not true))
+    insert into brs.list_of_value(name, parent_id,  display_order, date_created, created_by_id, date_modified, modified_by_id)
+    values (:name, :parentId, (select coalesce(max(display_order) + 1, 0) from brs.list_of_value where parent_id = :parentId and archived is not true), now(), :createdById, now(), :createdById)
   ]]></blueravenCustomField.insertListOfValue>
 
   <blueravenCustomField.updateListOfValue><![CDATA[
