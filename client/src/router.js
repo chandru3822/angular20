@@ -1342,52 +1342,41 @@ const router = new Router({
           }
           ]
         }, {
-          path: '/proposal',
+          path: '/proposals',
+          name: 'proposals',
+          meta: {title: 'Albatross - Proposals'},
+          component: () => {
+            if (store.getters.userHasFeature('PROPOSALS')) {
+              return import (/* webpackChunkName: "admin" */ './views/blueraven/proposals/Proposals.vue')
+            } else {
+              return accessDenied()
+            }
+          }
+        }, {
+          path: '/proposalDesigns/:projectId',
+          name: 'proposalDesigns',
+          meta: {title: 'Albatross - Proposals'},
+          component: () => {
+            if (store.getters.userHasFeature('PROPOSALS')) {
+              return import (/* webpackChunkName: "admin" */ './views/blueraven/proposals/ProposalDesigns.vue')
+            } else {
+              return accessDenied()
+            }
+          }
+        }, {
+          path: '/proposal/:proposalId',
           name: 'proposal',
           meta: {title: 'Albatross - Proposals'},
           component: () => {
             if (store.getters.userHasFeature('PROPOSALS')) {
-              return import (/* webpackChunkName: "admin" */ './views/flow/proposal/Menu.vue')
+              return import (/* webpackChunkName: "admin" */ './views/blueraven/proposals/Proposal.vue')
             } else {
               return accessDenied()
             }
-          },
-          children: [
-            {
-              path: 'create',
-              name: 'create',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('PROPOSALS', 'CREATE')) {
-                  return import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue')
-                } else {
-                  return accessDenied()
-                }
-              }
-            },
-            {
-              path: 'search',
-              name: 'search',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
-            }, {
-              path: 'export',
-              name: 'export',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Export.vue'),
-            }, {
-              path: 'recreate',
-              name: 'recreate',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
-            }, {
-              path: ':proposalId',
-              name: 'modify',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
-            }
-          ]
+          }
         }
+
+
       ]
     }
   ]

@@ -51,6 +51,26 @@ export function getFileIcon(file) {
   }
 }
 
+export function followLink(url, projectId) {
+  //currently project_id is the only param this would work for
+  let adjustedUrl = getUrlForLink(url, projectId)
+
+  //the date stringify guarantees a new tab opens every time
+  window.open(adjustedUrl, JSON.stringify(new Date()))
+}
+
+export function getUrlForLink(url, projectId) {
+  //currently project_id is the only param this would work for
+  if(url.includes("ALB_PROJECT_ID") && null !== projectId && undefined !== projectId) {
+    //this part would not work globally but I am just trying to hack up a POC
+    url = url.replace("ALB_PROJECT_ID", projectId)
+  }
+  if(url.includes("ALB_HOST")) {
+    url = url.replace("ALB_HOST", (constants.VUE_APP_ENV === 'local' ? 'http://' : 'https://') + location.host)
+  }
+  return url
+}
+
 export function isNumberOrHyphen(val) {
   if (val.key !== '-' && isNaN(Number(val.key))) {
     return val.preventDefault();
