@@ -309,6 +309,12 @@
             :handleOnComplete="handleActionCompleted"
             :handleOnCompleteError="handleOnCompleteError"
           />
+          <v-btn
+            v-else-if="action.actionTypeId === 1 && !action.hideFromWeb"
+            @click="followMultipleLinks(action)"
+          >
+            {{action.actionName}}
+          </v-btn>
         </v-col>
         <!--    <NotesAndActivity-->
         <!--      :showNotes="true"-->
@@ -322,7 +328,9 @@
         </v-row>
 
         <v-row>
-          <Links :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+          <Links :projectProcessStepId="parseInt(projectProcessStepId)"
+                 :project-id="parseInt(projectId)"
+                 :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
 
@@ -345,7 +353,7 @@
 
 <script>
 
-  import {getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
+  import {followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
@@ -773,6 +781,11 @@
         return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
           || getCustomFieldReadOnly(this.$store, field)
           || !this.userCanEdit
+      },
+      followMultipleLinks(action) {
+        action?.processStepActionLinks?.forEach(link => {
+          followLink(link.url, this.projectId)
+        })
       },
       handleActionCompleted() {
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
