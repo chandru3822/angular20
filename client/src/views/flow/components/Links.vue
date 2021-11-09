@@ -7,7 +7,7 @@
       </v-toolbar>
       <v-list class="pa-0">
         <v-list-item v-for="(l, index) in links" :key="l.id" :class="{'shaded-row': index % 2}">
-          <v-btn text target="_blank" :href="l.url">{{l.link}}</v-btn>
+          <v-btn text target="_blank" :href="getAdjustedUrl(l.url)">{{l.link}}</v-btn>
         </v-list-item>
       </v-list>
     </v-col>
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import {getRequest} from '@/helpers/helpers'
+import {getUrlForLink, getRequest} from '@/helpers/helpers'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
@@ -44,6 +44,9 @@ export default {
       const {data} = await getRequest(this.linkPath)
       this.links = data
     },
+    getAdjustedUrl(url) {
+      return null !== this.projectId && undefined !== this.projectId ? getUrlForLink(url, this.projectId) : url
+    }
   }
 }
 </script>

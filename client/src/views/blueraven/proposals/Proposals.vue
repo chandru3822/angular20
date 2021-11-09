@@ -12,9 +12,9 @@
                 class="mt-5"
                 prepend-inner-icon="search"
                 text
-                label="Search proposals..."
+                label="Search projects..."
                 v-model="searchQuery"
-                @input="searchProposals"
+                @input="searchProjects"
               />
             </v-col>
           </v-row>
@@ -25,29 +25,28 @@
         <v-data-table
           class="elevation-1 fix-column-width-bug"
           :headers="headers"
-          :items="proposals"
+          :items="projects"
           fixed-header
           :options.sync="options"
           disable-sort
           :footer-props="footerProps"
-          :server-items-length="totalProposals"
-          :loading="isProposalsLoading"
+          :server-items-length="totalProjects"
+          :loading="isProjectsLoading"
         >
 
           <template #no-data>
-            No available proposals
+            No available projects
           </template>
 
           <template #no-results>
-            No available proposals
+            No available projects
           </template>
 
-          <template #item="{item: proposal}">
+          <template #item="{item}">
             <tr class="clickable"
-                @click="$router.push({name: 'modify', params: {proposalId: proposal.id}})">
-              <td class="text-left">{{proposal.projectId}}</td>
-              <td class="text-left">{{proposal.customerName}}</td>
-              <td class="text-left">{{proposal.dateCreated | formatDate('date')}}</td>
+                @click="$router.push({name: 'proposalDesigns', params: {projectId: item.projectId}})">
+              <td class="text-left">{{item.projectId}}</td>
+              <td class="text-left">{{item.projectName}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -63,7 +62,7 @@
   import debounce from 'lodash.debounce'
 
   export default {
-    name: "Search",
+    name: "Proposals",
     data () {
       return {
         options: {
@@ -71,55 +70,53 @@
         },
         headers: [
           {text: 'ID', value: 'projectId', show: true},
-          {text: 'Name', value: 'customerName', show: true},
-          {text: 'Date Created', value: 'dateCreated', show: true}
+          {text: 'Name', value: 'projectName', show: true},
         ],
         footerProps: {
           'items-per-page-options': [25, 50, 100],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
-        proposals:[],
+        projects:[],
         searchQuery: '',
-        totalProposals: 0,
-        isProposalsLoading: false,
+        totalProjects: 0,
+        isProjectsLoading: false,
       }
     },
     watch: {
       options: {
         handler () {
-          this.getProposals()
+          this.getProposalProjects()
         }
       }
     },
     methods: {
-      async getProposals () {
+      async getProposalProjects () {
         const {page, itemsPerPage} = this.options
         try {
-          this.isProposalsLoading = true
-          const {data} = await getRequestWithParams(`/propTool/proposal/search`, {
+          this.isProjectsLoading = true
+          const {data} = await getRequestWithParams(`/proposals/projects`, {
             params: {
               query: this.searchQuery,
               page: page - 1,
               size: itemsPerPage
             }
-          })
-          this.proposals = data.content
-          this.totalProposals = data.totalElements
+          }, 'blueraven')
+          this.projects = data.content
+          this.totalProjects = data.totalElements
         } catch (e) {
           logError(e)
         } finally {
-          this.isProposalsLoading = false
+          this.isProjectsLoading = false
         }
       },
-      searchProposals: debounce(function () {
-        this.getProposals()
+      searchProjects: debounce(function () {
+        this.getProposalProjects()
       }, 500)
     }
   }
 </script>
 
 <style scoped lang="scss">
-
   @import "@/styles/main.scss";
 
   ::v-deep {
