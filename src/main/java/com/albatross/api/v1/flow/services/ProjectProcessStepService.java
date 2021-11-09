@@ -1010,7 +1010,6 @@ public class ProjectProcessStepService {
                   } else {
                     // @TODO: Add company IDs here during onboarding
                   }
-
                 } else {
                   String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
                   String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
