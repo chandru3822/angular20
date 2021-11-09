@@ -181,7 +181,7 @@ const router = new Router({
           meta: {title: 'Albatross - Reimbursement'},
           component: () => {
             if (store.getters.userHasFeature('REIMBURSEMENT')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Reimbursement.vue')
+              return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/Reimbursement.vue')
             } else {
               return accessDenied()
             }
@@ -192,7 +192,7 @@ const router = new Router({
           meta: {title: 'Albatross - Expenses'},
           component: () => {
             if (store.getters.userHasFeature('EXPENSES')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Expenses.vue')
+              return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/Expenses.vue')
             } else {
               return accessDenied()
             }
@@ -204,7 +204,7 @@ const router = new Router({
               meta: {title: 'Albatross - Reimbursement Requests'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/ReimbursementRequests.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/ReimbursementRequests.vue')
                 } else {
                   return accessDenied()
                 }
@@ -216,7 +216,7 @@ const router = new Router({
               meta: {title: 'Albatross - Submitted Expenses'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/SubmittedExpenses.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/SubmittedExpenses.vue')
                 } else {
                   return accessDenied()
                 }
@@ -228,7 +228,7 @@ const router = new Router({
               meta: {title: 'Albatross - GL Codes'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/GlCodes.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/GlCodes.vue')
                 } else {
                   return accessDenied()
                 }
@@ -240,7 +240,7 @@ const router = new Router({
               meta: {title: 'Albatross - Expense Budgets'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/MonthlyBudgets.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/MonthlyBudgets.vue')
                 } else {
                   return accessDenied()
                 }
@@ -251,7 +251,7 @@ const router = new Router({
               meta: {title: 'Albatross - Budget Types'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/BudgetTypes.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/BudgetTypes.vue')
                 } else {
                   return accessDenied()
                 }
@@ -259,16 +259,35 @@ const router = new Router({
             }
           ]
         }, {
-          path: '/closerDashboard',
-          name: 'closerDashboard',
+          path: '/closer',
+          name: 'closer',
           meta: {title: 'Albatross - Closer Dashboard'},
           component: () => {
             if (store.getters.userHasFeature('CLOSER_DASHBOARD')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserDashboard.vue')
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/Closer.vue')
             } else {
               return accessDenied()
             }
-          }
+          },
+          children: [
+            {
+              path: 'dashboard',
+              name: 'closerDashboard',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/closerDashboard/CloserDashboard.vue')
+            }, {
+              path: 'funnel',
+              alias: '/closerDashboard',
+              name: 'closerFunnel',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/closerDashboard/CloserFunnel.vue')
+            }, {
+              path: 'incentive',
+              name: 'closerIncentive',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/closerDashboard/CloserIncentive.vue')
+            }
+          ]
         }, {
           path: 'setterDashboard',
           name: 'setterDashboard',
