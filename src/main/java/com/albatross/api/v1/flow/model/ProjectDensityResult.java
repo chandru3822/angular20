@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 public class ProjectDensityResult {
 
   private Long id;
-  private String projectName, projectStatusType, city, state;
+  private String projectName, projectStatusType, city, state, street1, postalCode;
   private Double latitude, longitude;
 }
