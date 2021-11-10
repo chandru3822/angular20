@@ -6,16 +6,14 @@
       </v-toolbar-title>
       <v-spacer v-if="userCanEdit"></v-spacer>
       <div v-if="userCanEdit">
-        <v-text-field
-          label="Min Required Version"
-          type="number"
-          :readonly="!editMinVersion"
-          :disabled="!editMinVersion"
-          hide-details
-          style="width: 125px;"
-          class="d-inline-block"
-          v-model.number="minVersion"
-        ></v-text-field>
+        <v-autocomplete v-model="minVersion"
+                        class="d-inline-block"
+                        :items="buildNumbers"
+                        :readonly="!editMinVersion"
+                        :disabled="!editMinVersion"
+                        hide-details
+                        label="Min Required Build Number"
+        ></v-autocomplete>
         <v-btn text x-small @click="editMinVersion = !editMinVersion" class="d-inline-block">
           <v-icon v-if="!editMinVersion">edit</v-icon>
           <v-icon v-else>close</v-icon>
@@ -169,6 +167,7 @@ export default {
       constants,
       showIos: true,
       minVersion: null,
+      buildNumbers: [],
       editMinVersion: false,
       appTypeId: this.isIos ? 1 : 3,
       showAndroid: true,
@@ -184,6 +183,7 @@ export default {
   },
   created () {
     this.getMinVersion()
+    this.getAvailableBuildNumbers()
     let userAgent = window.navigator.userAgent
     if(userAgent && userAgent.includes('Android')){
       this.showIos = false
@@ -205,7 +205,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Min Version')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Min Build Number')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getAvailableBuildNumbers () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequestWithParams(`/app/${this.appTypeId}/buildNumbers`)
+        this.buildNumbers = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Build Numbers')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -218,7 +231,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Min Version')
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Min Build Number')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
