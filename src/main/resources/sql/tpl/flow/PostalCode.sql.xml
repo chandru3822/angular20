@@ -51,19 +51,22 @@
 
   <postalCode.getScheduleByUsers><![CDATA[
     select pczu.id,
-             pczu.user_id as "userId",
-             u.first_name as "firstName",
-             u.last_name as "lastName",
-             concat(u.first_name, ' ', u.last_name) AS "fullName",
-             pczu.postal_code_zone_id as "postalCodeZoneId",
-             pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
-             pczu.archived
-      from flow.postal_code_zone_user pczu
-        inner join flow.user u on u.id = pczu.user_id
-      where pczu.postal_code_zone_id = :zoneId
-        and pczu.archived is not true
-        and pczu.postal_code_zone_user_type_id = 2
-      order by u.first_name, u.last_name
+           pczu.user_id as "userId",
+           u.first_name as "firstName",
+           u.last_name as "lastName",
+           concat(u.first_name, ' ', u.last_name) AS "fullName",
+           pczu.postal_code_zone_id as "postalCodeZoneId",
+           pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
+           pczu.archived
+    from flow.postal_code_zone_user pczu
+           inner join flow.user u on u.id = pczu.user_id
+           inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+           inner join flow.user_status_type ust
+                      on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
+    where pczu.postal_code_zone_id = :zoneId
+      and pczu.archived is not true
+      and pczu.postal_code_zone_user_type_id = 2
+    order by u.first_name, u.last_name
   ]]></postalCode.getScheduleByUsers>
 
   <postalCode.getCodesForZone><![CDATA[
