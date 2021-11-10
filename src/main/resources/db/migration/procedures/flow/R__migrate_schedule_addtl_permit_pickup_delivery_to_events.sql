@@ -6,6 +6,16 @@ $$
 declare
   v_pending_addtl_ppd_pps_id integer;
   v_verify_addtl_ppd_pps_id  integer;
+  v_permit_fee_main                         numeric;
+  v_verify_permit_fee                       numeric;
+  v_date_created_fee_main                   timestamp;
+  v_date_modified_fee_main                  timestamp;
+  v_created_by_id_fee_main                  integer;
+  v_modified_by_id_fee_main                 integer;
+  v_date_created_verify_permit_fee          timestamp;
+  v_date_modified_verify_permit_fee         timestamp;
+  v_created_by_id_verify_permit_fee         integer;
+  v_modified_by_id_verify_permit_fee        integer;
 BEGIN
 
 
@@ -27,7 +37,19 @@ BEGIN
     limit 1;
   end if;
 
+  select numeric_value, date_created, date_modified, created_by_id, modified_by_id
+  into v_permit_fee_main,v_date_created_fee_main,v_date_modified_fee_main,v_created_by_id_fee_main,v_modified_by_id_fee_main
+  from flow.project_process_step_custom_field_value
+  where custom_field_group_assignment_id = 19248
+    and project_process_step_id = p_project_process_step_id;
 
+  if v_verify_addtl_ppd_pps_id is not null then
+    select numeric_value, date_created, date_modified, created_by_id, modified_by_id
+    into v_verify_permit_fee,v_date_created_verify_permit_fee,v_date_modified_verify_permit_fee,v_created_by_id_verify_permit_fee,v_modified_by_id_verify_permit_fee
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 19257
+      and project_process_step_id = v_verify_addtl_ppd_pps_id;
+  end if;
 
 
   perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
@@ -38,10 +60,7 @@ BEGIN
                                                                      null,
                                                                      p_project_process_step_id,
                                                                      19247);
-  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
-                                                                     null,
-                                                                     p_project_process_step_id,
-                                                                     19248);
+
 
 
   if v_pending_addtl_ppd_pps_id is not null then
@@ -64,16 +83,29 @@ BEGIN
                                                                        null,
                                                                        v_verify_addtl_ppd_pps_id,
                                                                        19256);
-    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
-                                                                       null,
-                                                                       v_verify_addtl_ppd_pps_id,
-                                                                       19257);
+
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
                                                                        null,
                                                                        v_verify_addtl_ppd_pps_id,
                                                                        19258);
 
 
+  end if;
+
+  if v_permit_fee_main is not null or v_verify_permit_fee is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         19248,
+                                                         null::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         coalesce(v_verify_permit_fee, v_permit_fee_main)::numeric,
+                                                         coalesce(v_date_created_verify_permit_fee, v_date_created_fee_main),
+                                                         coalesce(v_date_modified_verify_permit_fee,
+                                                                  v_date_modified_fee_main),
+                                                         coalesce(v_created_by_id_verify_permit_fee,
+                                                                  v_created_by_id_fee_main),
+                                                         coalesce(v_modified_by_id_verify_permit_fee,
+                                                                  v_modified_by_id_fee_main));
   end if;
 
 

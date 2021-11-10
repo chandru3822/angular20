@@ -1,5 +1,5 @@
 CREATE OR REPLACE function flow.migrate_schedule_ahj_inspection_work_to_events(p_event_id integer,
-                                                                                        p_project_process_step_id integer)
+                                                                               p_project_process_step_id integer)
   returns void as
 $$
 
@@ -22,13 +22,10 @@ BEGIN
     into v_verify_ahj_inspection_work_pps_id
     from flow.project_process_step
     where process_step_id = 157
-      and parent_project_process_step_id = v_verify_ahj_inspection_work_pps_id
+      and parent_project_process_step_id = v_pending_ahj_inspection_work_pps_id
     order by project_process_step.date_created desc
     limit 1;
   end if;
-
-
-
 
 
   perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
@@ -43,9 +40,6 @@ BEGIN
                                                                      null,
                                                                      p_project_process_step_id,
                                                                      17318);
-
-
-
 
 
   if v_pending_ahj_inspection_work_pps_id is not null then

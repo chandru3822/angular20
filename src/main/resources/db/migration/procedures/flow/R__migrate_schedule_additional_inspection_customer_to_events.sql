@@ -128,6 +128,7 @@ BEGIN
                                                          coalesce(v_verify_permit_pack_needed, v_pending_permit_pack_needed)::timestamp,
                                                          null::text,
                                                          null::integer[],
+                                                         null::numeric,
                                                          coalesce(v_date_created_verify, v_date_created_pending),
                                                          coalesce(v_date_modified_verify, v_date_modified_pending),
                                                          coalesce(v_created_by_id_verify, v_created_by_id_pending),

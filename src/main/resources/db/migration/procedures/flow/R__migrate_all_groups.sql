@@ -996,8 +996,8 @@ BEGIN
 
 
     perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 826, 1);
-    perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 18961, 2);
-    perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 1364, 3);
+   -- perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 18961, 2);
+    perform flow.migrate_fields_to_group(v_new_group_id_192_OC, 1364, 2);
 
     perform flow.migrate_fields_to_group(v_new_group_id_192_R, 1366, 2);
     perform flow.migrate_fields_to_group(v_new_group_id_192_R, 1367, 3);
@@ -1029,7 +1029,7 @@ BEGIN
 
     perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19255, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19256, 2);
-    perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19257, 3);
+   -- perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19257, 3);
     perform flow.migrate_fields_to_group(v_new_group_id_3103_OC, 19258, 4);
 
     perform flow.migrate_fields_to_group(v_new_group_id_3103_R, 19253, 1);
@@ -1066,7 +1066,7 @@ BEGIN
 
 
     perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19224, 1);
-    perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19225, 2);
+   -- perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19225, 2);
     perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 19226, 3);
     perform flow.migrate_fields_to_group(v_new_group_id_3099_OC, 22002, 4);
 
@@ -1100,7 +1100,7 @@ BEGIN
     perform flow.migrate_fields_to_group(v_new_group_id_196_OC, 838, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_196_OC, 839, 2);
     perform flow.migrate_fields_to_group(v_new_group_id_196_OC, 1383, 3);
-    perform flow.migrate_fields_to_group(v_new_group_id_196_OC, 18959, 4);
+   -- perform flow.migrate_fields_to_group(v_new_group_id_196_OC, 18959, 4);
 
     perform flow.migrate_fields_to_group(v_new_group_id_196_R, 1381, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_196_R, 1382, 2);
@@ -1289,7 +1289,7 @@ BEGIN
     perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 666, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 667, 2);
     perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 1376, 3);
-    perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 18968, 4);
+   -- perform flow.migrate_fields_to_group(v_new_group_id_172_OC, 18968, 4);
 
 
     perform flow.migrate_fields_to_group(v_new_group_id_172_R, 1374, 1);

@@ -2,7 +2,7 @@ CREATE OR REPLACE function flow.migrate_update_project_details()
   returns void as
 $$
 BEGIN
-
+raise notice '1';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -15,7 +15,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
-
+raise notice '2';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -28,6 +28,8 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+
+raise notice '3';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -40,7 +42,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
-
+raise notice '4';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -53,7 +55,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
-
+raise notice '5';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -66,6 +68,8 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+
+raise notice '6';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -79,7 +83,7 @@ BEGIN
   where ud.project_details_id = pd2.id;
 
 
-
+raise notice '7';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -92,6 +96,8 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+
+raise notice '8';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -104,7 +110,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
-
+raise notice '9';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -117,6 +123,8 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+
+raise notice '10';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -129,6 +137,8 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+
+raise notice '11';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -141,6 +151,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+raise notice '12';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -153,6 +164,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+raise notice '13';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -165,6 +177,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
+raise notice '14';
   with update_data as (
     select ppsecfv.id as project_process_step_event_custom_field_value_id,
            pd.id as project_details_id
@@ -177,7 +190,7 @@ BEGIN
   from update_data ud
   where ud.project_details_id = pd2.id;
 
-
+raise notice '15';
   with update_data as (
     select ppse.id as project_process_step_event_id,pd.id as project_details_id
     from flow.project_process_step_event ppse

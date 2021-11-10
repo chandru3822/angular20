@@ -3,6 +3,7 @@ CREATE OR REPLACE function flow.migrate_insert_event_custom_field_value(p_event_
                                                                         p_timestamp timestamp,
                                                                         p_text text,
                                                                         p_int_array integer[],
+                                                                        p_numeric numeric,
                                                                         p_date_created timestamp,
                                                                         p_date_modified timestamp,
                                                                         p_created_by_id integer,
@@ -19,6 +20,7 @@ BEGIN
                                                                  timestamp_value,
                                                                  text_value,
                                                                  int_array_value,
+                                                                 numeric_value,
                                                                  date_created,
                                                                  date_modified, created_by_id, modified_by_id)
   values (p_event_id,
@@ -33,6 +35,7 @@ BEGIN
           p_timestamp,
           p_text,
           p_int_array,
+          p_numeric,
           p_date_created,
           p_date_modified,
           p_created_by_id,

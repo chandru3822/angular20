@@ -93,7 +93,7 @@ BEGIN
 --   raise notice 'third child=%',v_company_status_id3;
 --   raise notice 'fourth child=%',v_company_status_id4;
 
-  if p_start_time is null and p_end_time is null and v_company_status_id1 = 3 then
+  if  v_company_status_id1 = 3 then
     v_process_event_status_id = v_company_event_status_type_id_NCO;
   elsif p_start_time is null and p_end_time is null then
     v_process_event_status_id = v_company_event_status_type_id_RTS;

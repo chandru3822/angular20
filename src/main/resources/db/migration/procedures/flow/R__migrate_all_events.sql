@@ -955,7 +955,7 @@ BEGIN
 
   --this updates all project_details
   raise notice 'starting update project details';
---   perform flow.migrate_update_project_details();
+   perform flow.migrate_update_project_details();
 
   CREATE TRIGGER project_process_step_event_custom_field_value_audit_trg
     after INSERT or update or delete
