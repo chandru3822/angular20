@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -78,6 +75,12 @@ public class DbFunctionService {
     params.put("returnDataTypeId", dbFunction.getReturnDataTypeId());
     params.put("dbFunctionTypeId", dbFunction.getDbFunctionTypeId());
     params.put("displayName", dbFunction.getDisplayName());
+
+    // Allow running java functions with only action type functions
+    if (!Objects.equals(dbFunction.getDbFunctionTypeId(), 2L)) {
+      dbFunction.setRunInBackend(false);
+    }
+    params.put("runInBackend", dbFunction.getRunInBackend() != null && dbFunction.getRunInBackend());
 
     Long id = sqlCache.updateReturningId("dbFunction.insertFunction", params, "id").longValue();
     return getDbFunction(id);

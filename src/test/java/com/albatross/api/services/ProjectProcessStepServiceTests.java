@@ -1,5 +1,6 @@
 package com.albatross.api.services;
 
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -56,6 +57,8 @@ public class ProjectProcessStepServiceTests {
 
   CustomFieldValueService customFieldValueService = mock(CustomFieldValueService.class);
 
+  GoodleapService goodleapService = mock(GoodleapService.class);
+
   private ProjectProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
@@ -65,7 +68,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

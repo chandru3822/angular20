@@ -24,8 +24,11 @@
             <v-list-item-title>Function Type: <strong>{{dbFunction.functionType}}</strong></v-list-item-title>
           </v-list-item>
 <!--          only need to show return type for requirement functions -->
-          <v-list-item v-if="dbFunction.functionTypeId === 1">
+          <v-list-item v-if="dbFunction.dbFunctionTypeId === 1">
             <v-list-item-title>Function Return Data Type: <strong>{{dbFunction.returnDataType}}</strong></v-list-item-title>
+          </v-list-item>
+          <v-list-item v-if="dbFunction.dbFunctionTypeId === 2">
+            <v-list-item-title>Run in Backend: <strong>{{dbFunction.runInBackend}}</strong></v-list-item-title>
           </v-list-item>
         </v-list>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
