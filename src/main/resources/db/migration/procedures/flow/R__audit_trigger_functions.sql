@@ -436,14 +436,14 @@ BEGIN
                                               user_position_id, company_process_step_status_type_id,
                                               process_step_complete_date, date_created, date_modified,
                                               created_by_id, modified_by_id, archived, main,
-                                              process_step_cancelled_date,
+                                              cancelled_date,
                                               migrated_created_date,
                                               migrated_work_type_id, migrated_org_id, migrated_start_time,
                                               migrated_end_time)
   values (new.id, new.project_id, new.process_step_id,
           new.user_position_id, new.company_process_step_status_type_id,
           new.process_step_complete_date, new.date_created, new.date_modified,
-          new.created_by_id, new.modified_by_id, new.archived, new.main, new.process_step_cancelled_date,
+          new.created_by_id, new.modified_by_id, new.archived, new.main, new.cancelled_date,
           new.migrated_created_date,
           new.migrated_work_type_id, new.migrated_org_id, new.migrated_start_time, new.migrated_end_time);
   RETURN NULL;

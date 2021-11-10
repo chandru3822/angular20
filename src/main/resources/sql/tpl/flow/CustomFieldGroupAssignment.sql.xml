@@ -1,7 +1,7 @@
 <sql>
   <customFieldGroupAssignment.archiveRows><![CDATA[
     update flow.custom_field_group_assignment
-      set archived = true
+      set archived = true, date_modified = now()
     where custom_field_id = :fieldId
   ]]></customFieldGroupAssignment.archiveRows>
 
@@ -297,8 +297,8 @@
   ]]></customFieldGroupAssignment.getCustomField>
 
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
-    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, schedule_field_type_id)
-    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, :scheduleFieldTypeId)
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, schedule_field_type_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :scheduleFieldTypeId, :createdById, now(), :createdById, now())
   ]]></customFieldGroupAssignment.addFieldToGroup>
 
   <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[
@@ -373,8 +373,8 @@
   ]]></customFieldGroupAssignment.archiveAllWhiteListedPositions>
 
   <customFieldGroupAssignment.insertWhiteListPosition><![CDATA[
-    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, created_by_id, white_list_type_id, company_id)
-    select :positionId, :cfgaId, :userId, :whiteListTypeId, :companyId
+    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+    select :positionId, :cfgaId, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
     where not exists (  select id
                         from flow.white_listed_position
                         where custom_field_group_assignment_id = :cfgaId

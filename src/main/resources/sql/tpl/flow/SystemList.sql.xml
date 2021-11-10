@@ -15,5 +15,4 @@
   <systemList.getSystemListOptionsForCompany><![CDATA[
       select * from flow.get_system_list_options(:companyId::integer, :systemListId::integer, :subOptions::boolean, array[ :systemListOptionIds ]::integer[], :intValue::int);
   ]]></systemList.getSystemListOptionsForCompany>
-
 </sql>

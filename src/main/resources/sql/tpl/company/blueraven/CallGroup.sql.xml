@@ -86,8 +86,8 @@
   ]]></callGroup.getGroup>
 
   <callGroup.insertGroup><![CDATA[
-    insert into brs.call_group(company_id, call_group_name, max_call_count, days_per_period, date_created, created_by_id)
-    values (:companyId, :callGroupName, :maxCallCount, :daysPerPeriod, now(), :createdById)
+    insert into brs.call_group(company_id, call_group_name, max_call_count, days_per_period, date_created, created_by_id, date_modified, modified_by_id)
+    values (:companyId, :callGroupName, :maxCallCount, :daysPerPeriod, now(), :createdById, now(), :createdById)
   ]]></callGroup.insertGroup>
 
   <callGroup.updateGroup><![CDATA[
@@ -116,13 +116,13 @@
   ]]></callGroup.deleteGroup>
 
   <callGroup.addPostalCode><![CDATA[
-    insert into brs.call_group_postal_code(call_group_id, postal_code, date_created, created_by_id)
-    values (:callGroupId, trim(:postalCode), now(), :createdById)
+    insert into brs.call_group_postal_code(call_group_id, postal_code, date_created, created_by_id, date_modified, modified_by_id)
+    values (:callGroupId, trim(:postalCode), now(), :createdById, now(), :createdById)
   ]]></callGroup.addPostalCode>
 
   <callGroup.addPhoneNumber><![CDATA[
-    insert into brs.call_group_phone_number(call_group_id, phone_number, active, date_created, created_by_id)
-    values (:callGroupId, :phoneNumber, :active, now(), :createdById)
+insert into brs.call_group_phone_number(call_group_id, phone_number, active, date_created, created_by_id, date_modified, modified_by_id)
+values (:callGroupId, :phoneNumber, :active, now(), :createdById, now(), :createdById)
   ]]></callGroup.addPhoneNumber>
 
   <callGroup.deletePostalCode><![CDATA[
@@ -210,7 +210,7 @@
   <callGroup.updatePhoneNumberCallCount><![CDATA[
     update brs.call_group_phone_number
     set call_count = call_count+1
-    where id = :currentlyUsedId
+    where id = :currentlyUsedId, date_modified = now()
   ]]></callGroup.updatePhoneNumberCallCount>
 
   <callGroup.addPhoneLog><![CDATA[
@@ -219,7 +219,7 @@
   ]]></callGroup.addPhoneLog>
 
   <callGroup.updatePhoneCallCount><![CDATA[
-    update brs.call_group_phone_number cgpn set call_count  =
+    update brs.call_group_phone_number cgpn set date_modified = now(), call_count  =
       (select count(*) from brs.call_group_phone_log cgpl
       inner join brs.call_group cg on cgpl.call_group_id = cg.id
       where cg.id = :callGroupId and phone_number = :phoneNumber

@@ -143,8 +143,8 @@
   ]]></attachment.getAttachmentBySourceAndTypeForUserList>
 
   <attachment.create><![CDATA[
-    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, attachment_type_id, company_id, uuid)
-    VALUES(:filename, :contentType, :key, :size, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4())
+    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid)
+    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4())
   ]]></attachment.create>
 
   <attachment.addToJoinTable><![CDATA[

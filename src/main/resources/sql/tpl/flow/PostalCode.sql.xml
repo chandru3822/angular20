@@ -103,8 +103,8 @@
 
 
   <postalCode.insertZone><![CDATA[
-    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id, distribution_time_frame_days, schedulable_future_days, company_timezone_id)
-    values (:companyId, :zoneName, now(), :createdById, :distributionTimeFrameDays, :schedulableFutureDays, :companyTimezoneId)
+    insert into flow.postal_code_zone(company_id, zone_name, distribution_time_frame_days, schedulable_future_days, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:companyId, :zoneName, :distributionTimeFrameDays, :schedulableFutureDays, :companyTimezoneId, :createdById, now(), :createdById, now())
   ]]></postalCode.insertZone>
 
   <postalCode.updateZone><![CDATA[
@@ -127,8 +127,8 @@
   ]]></postalCode.deleteZone>
 
   <postalCode.insertZoneUser><![CDATA[
-    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_id, postal_code_zone_user_type_id, company_timezone_id)
-    values (:postalCodeZoneId, now(), :createdById, :userId, :postalCodeZoneUserTypeId, :companyTimezoneId)
+    insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, postal_code_zone_user_type_id, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:postalCodeZoneId, :userId, :postalCodeZoneUserTypeId, :companyTimezoneId, :createdById, now(), :createdById, now())
   ]]></postalCode.insertZoneUser>
 
   <postalCode.updateZoneUser><![CDATA[
@@ -175,8 +175,8 @@
   ]]></postalCode.updateZoneCode>
 
   <postalCode.addZoneCode><![CDATA[
-    insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id)
-    values (:postalCodeZoneId, trim(:postalCode), now(), :createdById)
+    insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id, date_modified, modified_by_id)
+    values (:postalCodeZoneId, trim(:postalCode), now(), :createdById, now(), :createdById)
   ]]></postalCode.addZoneCode>
 
   <postalCode.deleteZoneCode><![CDATA[

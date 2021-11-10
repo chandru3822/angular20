@@ -222,7 +222,8 @@ WHERE rr.reimbursement_request_status_id = 3
   <reimbursement.deleteRequest>
     <![CDATA[
            UPDATE brs.reimbursement_request
-                SET archived = TRUE
+                SET archived = TRUE,
+                date_modified = now()
             where id = :id
         ]]>
   </reimbursement.deleteRequest>
@@ -230,7 +231,8 @@ WHERE rr.reimbursement_request_status_id = 3
   <reimbursement.deleteExpensesForRequest>
     <![CDATA[
            UPDATE brs.expense
-                SET archived = TRUE
+                SET archived = TRUE,
+                    date_modified = now()
             where reimbursement_request_id = :id
         ]]>
   </reimbursement.deleteExpensesForRequest>

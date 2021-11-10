@@ -38,7 +38,8 @@
     <installAgreement.setAgreementSent>
         <![CDATA[
             UPDATE flow.project_process_step_custom_field_value
-                SET timestamp_value = now()
+                SET timestamp_value = now(),
+                    date_modified = now()
             WHERE project_process_step_id = (select id from flow.project_process_step where
                 project_id = :projectId and process_step_id = 4 and custom_field_group_assignment_id = 482)
         ]]>
@@ -107,7 +108,7 @@
     <installAgreement.updateEmailAddress>
         <![CDATA[
             UPDATE flow.contact
-            SET email = :emailAddress
+            SET email = :emailAddress, date_modified = now()
             WHERE id = (select contact_id from flow.project where id = :projectId)
         ]]>
     </installAgreement.updateEmailAddress>
@@ -129,23 +130,19 @@
     <installAgreement.setSunlightHashId>
       <![CDATA[
             UPDATE brs.proposal_log_history
-            SET sunlight_hash_id = :sunlightHashId
+            SET sunlight_hash_id = :sunlightHashId, date_modified = now()
             WHERE project_id = :projectId and proposal_nbr = :proposalNbr
               ]]>
     </installAgreement.setSunlightHashId>
 
-    <installAgreement.getCreditLastCheckedBy>
-      <![CDATA[
-                select pd.credit_last_checked_by from brs.project_details pd
-                WHERE pd.project_id = :projectId;
-                ]]>
-    </installAgreement.getCreditLastCheckedBy>
+    <installAgreement.getCreditLastCheckedBy><![CDATA[
+        select pd.credit_last_checked_by from brs.project_details pd
+        WHERE pd.project_id = :projectId;
+    ]]></installAgreement.getCreditLastCheckedBy>
 
-    <installAgreement.setCreditLastCheckedBy>
-      <![CDATA[
-              UPDATE brs.project_details
-              SET credit_last_checked_by = :creditLastCheckedBy
-              WHERE project_id = :projectId
-                ]]>
-    </installAgreement.setCreditLastCheckedBy>
+    <installAgreement.setCreditLastCheckedBy><![CDATA[
+        UPDATE brs.project_details
+        SET credit_last_checked_by = :creditLastCheckedBy, date_modified = now()
+        WHERE project_id = :projectId
+    ]]></installAgreement.setCreditLastCheckedBy>
 </sql>

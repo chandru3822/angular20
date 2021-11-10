@@ -17,7 +17,7 @@ BEGIN
     where id = p_payment_id;
 
     update flow.project_process_step_custom_field_value
-        set numeric_value = numeric_value-1 where id =
+        set numeric_value = numeric_value-1, date_modified = now() where id =
     (select pscfv.id
     from flow.project p
              inner join flow.project_process_step pps
