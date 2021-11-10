@@ -29,7 +29,7 @@
       <div v-if="!selectedEvent.id">
         <v-data-table
           :headers="headers"
-          :items="projectProcessStepEvents"
+          :items="filterProjectProcessStepEvents()"
           :items-per-page="-1"
           :mobile-breakpoint="0"
           :sort-desc="[false]"
@@ -68,7 +68,7 @@
           <v-spacer></v-spacer>
           <div>
             <v-autocomplete
-              v-model="eventDetails.companyEventStatusTypeId"
+              v-model="selectedEvent.companyEventStatusTypeId"
               :items="companyEventStatuses"
               label="Event Status"
               :disabled="!userCanManage"
@@ -78,8 +78,45 @@
           </div>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-dialog
+              v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+              v-model="selectedEvent.deleteConfirm"
+              width="500">
+              <template v-slot:activator="{ on }">
+                <v-list-item-action class="clickable" v-on="on">
+                  <v-icon>delete</v-icon>
+                </v-list-item-action>
+              </template>
+              <v-card>
+                <v-card-title
+                  class="headline grey lighten-2"
+                  primary-title
+                >
+                  Confirm
+                </v-card-title>
 
-            <v-btn text class="pl-1 pr-2 mb-2" @click="closeEventWindow()">
+                <v-card-text>
+                  Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    @click="selectedEvent.deleteConfirm = false">
+                    No
+                  </v-btn>
+                  <v-btn
+                    color="primaryCustom"
+                    text
+                    @click="[selectedEvent.archived = true, deleteEvent(selectedEvent.id)]">
+                    Yes
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <v-btn text x-small class="pl-1 pr-2 mb-2" @click="closeEventWindow()">
               <v-icon>close</v-icon>
             </v-btn>
           </v-toolbar-items>
@@ -89,35 +126,36 @@
         </div>
 
         <v-card class="pa-4 square-card mb-2"
-                v-if="eventDetails.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
+                v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
           A state and postal code are required on the project to continue with scheduling. Please return to the
           project screen and update.
         </v-card>
 
         <v-form ref="eventFieldForm" v-else>
           <DatetimePickerInput
-            v-model="eventDetails.startTime"
+            v-model="selectedEvent.startTime"
             :timezone="this.timezone"
             :disabled="uniqueAlreadyHasValue || !userCanEdit"
             :readonly="uniqueAlreadyHasValue || !userCanEdit"
-            :required="actionRequiresStart && !eventDetails.startTime && !eventSaveOverrideRequired"
+            :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
           />
           <DatetimePickerInput
-            v-model="eventDetails.endTime"
+            v-model="selectedEvent.endTime"
             :timezone="this.timezone"
             :disabled="uniqueAlreadyHasValue || !userCanEdit"
             :readonly="uniqueAlreadyHasValue || !userCanEdit"
-            :required="actionRequiresEnd && !eventDetails.endTime && !eventSaveOverrideRequired"
+            :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
           />
           <v-autocomplete
-            v-model="eventDetails.resourceId"
-            :items="eventDetails.availableResources"
+            v-if="selectedEvent && selectedEvent.availableResources"
+            v-model="selectedEvent.resourceId"
+            :items="selectedEvent.availableResources"
             :disabled="uniqueAlreadyHasValue || !userCanEdit"
             :readonly="uniqueAlreadyHasValue || !userCanEdit"
             :rules="getResourceRequirement()"
@@ -126,13 +164,13 @@
             item-value="id"
           ></v-autocomplete>
 
-          <v-btn color="primaryCustom" v-if="eventDetails.uniqueBehaviorTypeId === 1"
+          <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
                  class="white--text mb-4"
                  :disabled="uniqueAlreadyHasValue"
                  id="qa-round-robin-button"
                  @click="showRoundRobin = !showRoundRobin">Round Robin
           </v-btn>
-          <div v-if="eventDetails.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
+          <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
             <v-toolbar flat color="transparent">
               <v-toolbar-title>Lead Allocation</v-toolbar-title>
             </v-toolbar>
@@ -236,7 +274,7 @@
                color="primaryButton"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]"
-               v-for="(action, i) in eventDetails.eventActions"
+               v-for="(action, i) in selectedEvent.eventActions"
                :key="i">
           {{ action.actionName }}
         </v-btn>
@@ -258,7 +296,7 @@ import {
   getRequestWithParams,
   putRequest,
   postRequest,
-  postRequestWithRequestParams
+  postRequestWithRequestParams, deleteRequest
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
@@ -289,7 +327,6 @@ export default {
       attemptedAction: {},
       companyEventStatuses: [],
       eventActionMissingRequirements: false,
-      eventDetails: {},
       menuOpen: false,
       dirtyCfvs: [],
       contactId: this.$route.query.contactId,
@@ -352,8 +389,8 @@ export default {
       //  then it means that the user saved data and we need to reload the selected event (if there is one)
       //  in order to determine which actions should be enabled/disabled
       */
-      if(!oldValue && newValue && this.eventDetails?.id) {
-        this.getEventDetails(this.eventDetails)
+      if(!oldValue && newValue && this.selectedEvent?.id) {
+        this.getEventDetails(this.selectedEvent)
       }
     },
   },
@@ -361,10 +398,9 @@ export default {
   methods: {
     closeEventWindow() {
       this.selectedEvent = {}
-      this.eventDetails = {}
     },
     getResourceRequirement() {
-      if (this.actionRequiresResource && !this.eventDetails.resourceId && !this.eventSaveOverrideRequired) {
+      if (this.actionRequiresResource && !this.selectedEvent.resourceId && !this.eventSaveOverrideRequired) {
         return this.requiredRules
       }
     },
@@ -468,15 +504,15 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
-          startTime: this.eventDetails.startTime,
-          endTime: this.eventDetails.endTime,
-          resourceId: this.eventDetails.resourceId,
-          companyEventStatusTypeId: this.eventDetails.companyEventStatusTypeId
+          startTime: this.selectedEvent.startTime,
+          endTime: this.selectedEvent.endTime,
+          resourceId: this.selectedEvent.resourceId,
+          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId
         }
 
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
         //we dont need to update the data now that the page is reloading
-        // this.eventDetails = data
+        // this.selectedEvent = data
         // this.selectedEvent = data
         //reload the page so we get the updated pps status stuff
         this.$router.go(this.$router.currentRoute)
@@ -503,9 +539,8 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
         //i have no idea why i am using 2 data objects for the same value but dont have time to figure it out atm
         this.selectedEvent = data
-        this.eventDetails = data
         if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
+          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()
         }
         this.projectProcessStepEvents.push(data)
@@ -557,9 +592,9 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppsEvent.id}`)
-        this.eventDetails = data
+        this.selectedEvent = data
         if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
+          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -570,24 +605,40 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    deleteEvent: async function (ppseId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
+        //archive it in the parent list so it goes away
+        let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === ppseId)
+        this.projectProcessStepEvents[index].archived = true
+        this.selectedEvent = {}
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async saveEventDetails() {
       this.eventSaveOverrideRequired = true
       this.eventActionMissingRequirements = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventDetails.id}`, this.eventDetails)
-        this.eventDetails = data
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
+        this.selectedEvent = data
 
         if(this.selectedEvent?.id != null) {
           //populate the event into the previous list so that it will be right if they click the X
           //get selected event index
-          let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.eventDetails.id)
+          let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.selectedEvent.id)
           console.log('randaLogger INDEX FACE: ', index)
-          this.projectProcessStepEvents[index] = this.eventDetails
+          this.projectProcessStepEvents[index] = this.selectedEvent
         }
 
         if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.eventDetails.startTime || null != this.eventDetails.endTime || null != this.eventDetails.resourceId
+          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()
         }
       } catch (e) {
@@ -652,7 +703,7 @@ export default {
         let body = {
           projectId: this.projectId,
           projectProcessStepId: this.projectProcessStepId,
-          projectProcessStepEventId: this.eventDetails.id, // i think?
+          projectProcessStepEventId: this.selectedEvent.id, // i think?
           // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
@@ -669,10 +720,10 @@ export default {
           this.timeSlots = []
           this.selectedTimeSlot = {}
           //set the start time, end time and resource on the event
-          this.eventDetails.startTime = data.appointmentStartTime
-          this.eventDetails.endTime = data.appointmentEndTime
-          this.eventDetails.resourceId = data.userPositionId
-          this.eventDetails.resource = data.userFullName
+          this.selectedEvent.startTime = data.appointmentStartTime
+          this.selectedEvent.endTime = data.appointmentEndTime
+          this.selectedEvent.resourceId = data.userPositionId
+          this.selectedEvent.resource = data.userFullName
           this.uniqueAlreadyHasValue = true
 
         }
@@ -707,10 +758,10 @@ export default {
     async checkFieldsForUnique() {
       let validSave = true
       let resource = null
-      if (this.eventDetails.uniqueBehaviorTypeId === 1) {
-        let startTime = this.eventDetails.startTime
-        let endTime = this.eventDetails.endTime
-        resource = this.eventDetails.resourceId
+      if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
+        let startTime = this.selectedEvent.startTime
+        let endTime = this.selectedEvent.endTime
+        resource = this.selectedEvent.resourceId
         if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
           this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -733,7 +784,10 @@ export default {
         this.saveEventDetails()
         this.updateFieldGroups()
       }
-    }
+    },
+    filterProjectProcessStepEvents () {
+      return this.projectProcessStepEvents ? this.projectProcessStepEvents.filter(ppse => { return !ppse.archived}) : []
+    },
   }
 }
 </script>

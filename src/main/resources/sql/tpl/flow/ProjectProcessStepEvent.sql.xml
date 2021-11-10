@@ -4,6 +4,14 @@
     values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById)
   ]]></projectProcessStepEvent.insertEvent>
 
+  <projectProcessStepEvent.delete><![CDATA[
+    update flow.project_process_step_event
+    set archived = true,
+        modified_by_id = :userId,
+        date_modified = now()
+    where id = :ppseId
+  ]]></projectProcessStepEvent.delete>
+
   <projectProcessStepEvent.getBasic><![CDATA[
       select ppse.*,
              cest.event_status_type,

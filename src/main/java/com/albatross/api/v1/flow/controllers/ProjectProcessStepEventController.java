@@ -35,6 +35,11 @@ public class ProjectProcessStepEventController {
     return projectProcessStepEventService.getPpsEvent(eventId);
   }
 
+  @DeleteMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletePpsEvent(@PathVariable Long eventId) {
+    projectProcessStepEventService.deletePpsEvent(eventId);
+  }
+
   @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long eventId,
                                                                @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {

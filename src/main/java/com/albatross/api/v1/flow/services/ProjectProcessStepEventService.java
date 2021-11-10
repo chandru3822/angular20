@@ -66,6 +66,16 @@ public class ProjectProcessStepEventService {
     return getPpsEvent(id);
   }
 
+  public void deletePpsEvent(Long ppseId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ppseId", ppseId);
+    params.put("userId", user.getId());
+
+    sqlCache.update("projectProcessStepEvent.delete", params, "id");
+  }
+
+
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long id) throws Exception {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
