@@ -59,7 +59,7 @@
            limited_projects.latitude,
            limited_projects.longitude,
            limited_projects.postal_code,
-           limited_projects.street1,
+           limited_projects.street1
 
         FROM (
                with project_ids as (
@@ -117,7 +117,7 @@
                       p.city,
                       s.state,
                       s.abbreviation           as state_abbreviation,
-                      p.postal_code            as "postalCode",
+                      p.postal_code            as postal_code,
                       cp.status_type_id,
                       st.status_type,
                       p.company_project_status_type_id,
