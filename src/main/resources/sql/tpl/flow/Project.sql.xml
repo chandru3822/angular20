@@ -455,6 +455,7 @@
       where p.id = :projectId
         and pps.archived is not true
         and ppse.archived is not true
+        and ppse.start_time is not null
         and p.archived is not true
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
 

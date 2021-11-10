@@ -60,7 +60,7 @@
         </v-data-table>
       </div>
       <div v-else>
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
           <v-toolbar-title>
             {{ selectedEvent.eventName }}
 
@@ -122,7 +122,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <div class="error-text" v-if="eventActionMissingRequirements">
-          The following fields are required to perform the selected action.
+          {{this.saveErrorMsg}}
         </div>
 
         <v-card class="pa-4 square-card mb-2"
@@ -137,7 +137,7 @@
             :timezone="this.timezone"
             :disabled="uniqueAlreadyHasValue || !userCanEdit"
             :readonly="uniqueAlreadyHasValue || !userCanEdit"
-            :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
+            :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -268,7 +268,7 @@
                @click="checkFieldsForUnique()"
                :disabled="!userCanEdit"
                color="primaryButton"
-        >Save Event
+        >Save Event Fields
         </v-btn>
         <v-btn class="white--text save-btn mb-2 mr-2"
                color="primaryButton"
@@ -296,6 +296,7 @@ import {
   getRequestWithParams,
   putRequest,
   postRequest,
+  scrollToTop,
   postRequestWithRequestParams, deleteRequest
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
@@ -326,6 +327,7 @@ export default {
       selectedEvent: {},
       attemptedAction: {},
       companyEventStatuses: [],
+      saveErrorMsg: '',
       eventActionMissingRequirements: false,
       menuOpen: false,
       dirtyCfvs: [],
@@ -407,12 +409,17 @@ export default {
     validateActionRequirements: async function (action) {
       this.eventActionMissingRequirements = false
       this.eventSaveOverrideRequired = false
-      this.actionRequiresStart = action?.requireStartTime
+      this.actionRequiresStart = true //action?.requireStartTime
       this.actionRequiresEnd = action?.requireEndTime
       this.actionRequiresResource = action?.requireResource
+      //will only be used if there is an error shown here
+      this.saveErrorMsg = 'The following fields are required to perform the selected action.'
 
       let requiredFields = action?.customFields?.filter(cf => cf.required) || []
-      if (requiredFields.length > 0) {
+      if((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
+        this.eventActionMissingRequirements = true
+        document.getElementById('event-header').scrollIntoView()
+      } else if (requiredFields.length > 0) {
         let fieldValueMissing = false
         this.selectedEvent?.customFieldGroups?.forEach(cfg => {
           cfg?.customFieldValues?.forEach(cf => {
@@ -432,6 +439,7 @@ export default {
                 cf.required = true
                 fieldValueMissing = true
                 this.eventActionMissingRequirements = true
+                document.getElementById('event-header').scrollIntoView()
               }
             } else {
               cf.required = false
@@ -539,11 +547,11 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
         //i have no idea why i am using 2 data objects for the same value but dont have time to figure it out atm
         this.selectedEvent = data
+        this.selectedEvent.isNew = true
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()
         }
-        this.projectProcessStepEvents.push(data)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -622,6 +630,7 @@ export default {
       }
     },
     async saveEventDetails() {
+      let isNewEvent = this.selectedEvent.isNew
       this.eventSaveOverrideRequired = true
       this.eventActionMissingRequirements = false
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -629,7 +638,9 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
         this.selectedEvent = data
 
-        if(this.selectedEvent?.id != null) {
+        if(isNewEvent) {
+          this.projectProcessStepEvents.push(data)
+        } else if(this.selectedEvent?.id != null) {
           //populate the event into the previous list so that it will be right if they click the X
           //get selected event index
           let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.selectedEvent.id)
@@ -756,33 +767,42 @@ export default {
       }
     },
     async checkFieldsForUnique() {
-      let validSave = true
-      let resource = null
-      if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
-        let startTime = this.selectedEvent.startTime
-        let endTime = this.selectedEvent.endTime
-        resource = this.selectedEvent.resourceId
-        if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
-          this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          validSave = false
-        } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-          this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          validSave = false
-        } else if (startTime && endTime && !resource) {
-          //resource required if times are saving
-          this.snackbar = getSnackbar('ERROR', 'Resource is required')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          validSave = false
+      if(null != this.selectedEvent.startTime) {
+        let validSave = true
+        let resource = null
+        if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
+          let startTime = this.selectedEvent.startTime
+          let endTime = this.selectedEvent.endTime
+          resource = this.selectedEvent.resourceId
+          if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
+            this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            validSave = false
+          } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+            this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            validSave = false
+          } else if (startTime && endTime && !resource) {
+            //resource required if times are saving
+            this.snackbar = getSnackbar('ERROR', 'Resource is required')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            validSave = false
+          }
         }
-      }
-      if (validSave) {
-        this.saveEventDetails()
-        this.updateFieldGroups()
+        if (validSave) {
+          this.saveEventDetails()
+          this.updateFieldGroups()
+        }
+      } else {
+        //only startTime is required to save fields
+        this.actionRequiresEnd = false
+        this.actionRequiresResource = false
+        this.eventActionMissingRequirements = true
+        this.saveErrorMsg = 'Start Time is required to save the event fields'
+        document.getElementById('event-header').scrollIntoView()
       }
     },
     filterProjectProcessStepEvents () {

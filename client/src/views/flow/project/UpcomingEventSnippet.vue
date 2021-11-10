@@ -13,11 +13,11 @@
         class="elevation-0"
       >
         <template #no-data>
-          No upcoming events
+          No upcoming or past due events
         </template>
 
         <template #no-results>
-          No upcoming events
+          No upcoming or past due events
         </template>
 
         <template #item="{ item, index }">
