@@ -137,6 +137,24 @@ public class GoodleapService {
     return application;
   }
 
+  public JSONArray getApplicationStipulations(Long projectId) {
+    JSONObject application = getApplicationByProjectId(projectId);
+
+    try {
+      HttpEntity<String> request = new HttpEntity<>(null, headers);
+      ResponseEntity<String> response = rest.exchange(host + "/loans/" + application.getString("id") + "/stipulations", HttpMethod.GET, request, String.class);
+
+      if (response.getStatusCode() != HttpStatus.OK) {
+        throw new RuntimeException("Unable to fetch loan stipulations for project ID: " + projectId);
+      }
+
+      return new JSONArray(response.getBody());
+
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to read loan stipulations for project ID: " + projectId);
+    }
+  }
+
   public void sendDocs(String loanId) {
     HttpEntity<String> request = new HttpEntity<>(null, headers);
     ResponseEntity<Void> response = rest.exchange(host + "/loans/" + loanId + "/documents", HttpMethod.POST, request, Void.class);
