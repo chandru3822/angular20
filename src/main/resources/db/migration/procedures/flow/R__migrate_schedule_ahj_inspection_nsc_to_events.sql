@@ -195,6 +195,7 @@ BEGIN
                                                          null::timestamp,
                                                          null::text,
                                                          coalesce(v_inspection_need_category, v_inspection_pending_category)::integer[],
+                                                            null::numeric,
                                                          coalesce(v_date_created_need_cat, v_date_created_pending_cat),
                                                          coalesce(v_date_modified_need_cat, v_date_modified_pending_cat),
                                                          coalesce(v_created_by_id_need_cat, v_created_by_id_pending_cat),
