@@ -26,7 +26,9 @@
            p.latitude,
            p.longitude,
            p.city,
-           s.abbreviation as state
+           s.abbreviation as state,
+           p.street1,
+           p.postal_code
     FROM   flow.project p
           inner join flow.company_process cp on cp.id = p.company_process_id
           inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
@@ -55,7 +57,10 @@
            limited_projects.state_abbreviation as state,
            limited_projects.project_status_type,
            limited_projects.latitude,
-           limited_projects.longitude
+           limited_projects.longitude,
+           limited_projects.postal_code,
+           limited_projects.street1
+
         FROM (
                with project_ids as (
                    with positions as (
@@ -112,7 +117,7 @@
                       p.city,
                       s.state,
                       s.abbreviation           as state_abbreviation,
-                      p.postal_code            as "postalCode",
+                      p.postal_code            as postal_code,
                       cp.status_type_id,
                       st.status_type,
                       p.company_project_status_type_id,
