@@ -1,5 +1,7 @@
 package com.albatross.api.utils;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by randa on 12/11/2020.
  */
@@ -32,5 +34,11 @@ public class CleanString {
       return null;
     }
     return cleanPhoneNumber;
+  }
+
+  public static String snakeToCamel(String snakeCase) {
+    return Pattern.compile("_([a-z])")
+      .matcher(snakeCase)
+      .replaceAll(match -> match.group(1).toUpperCase());
   }
 }

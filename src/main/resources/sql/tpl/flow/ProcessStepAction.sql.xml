@@ -361,6 +361,7 @@ select
   psacf.modified_by_id as "modifiedById",
   cf.company_function_name as "companyFunctionName",
   df.function_name as "functionName",
+  df.run_in_backend as "runInBackend",
   p.id as "projectId",
   coalesce((
     SELECT array_to_json(array_agg(row_to_json(params)))

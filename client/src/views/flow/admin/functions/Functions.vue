@@ -36,6 +36,13 @@
               item-text="dataType"
               item-value="id"
             ></v-select>
+
+            <v-checkbox
+              v-if="newFunction.dbFunctionTypeId === 2"
+              type="checkbox"
+              v-model="newFunction.runInBackend"
+              label="Run in backend"
+            />
           </div>
           <v-btn :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
                  color="primaryCustom" class="white--text mr-2"
