@@ -28,7 +28,13 @@ public class AppController {
 
   @GetMapping(value="/{appTypeId}/minVersion", produces = MediaType.APPLICATION_JSON_VALUE)
   public Long getMinVersionForType(@PathVariable Long appTypeId) {
+    //this endpoint actually returns the minimumRequiredBuildNumber, but the endpoint was named poorly (yes, by me)
     return appService.getMinVersionForType(appTypeId);
+  }
+
+  @GetMapping(value="/{appTypeId}/buildNumbers", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Long> getBuildNumbersForType(@PathVariable Long appTypeId) {
+    return appService.getBuildNumbersForType(appTypeId);
   }
 
   @PutMapping(value="/{appTypeId}/minVersion", produces = MediaType.APPLICATION_JSON_VALUE)

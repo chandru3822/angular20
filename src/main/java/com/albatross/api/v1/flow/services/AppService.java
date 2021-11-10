@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -142,6 +143,15 @@ public class AppService {
     Long minVersion = sqlCache.queryForObject("app.getMinVersionForType", params, Long.class);
 
     return minVersion;
+  }
+
+  public List<Long> getBuildNumbersForType(Long appTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("appTypeId", appTypeId);
+
+    List<Long> results = sqlCache.query("app.getBuildNumbersForType", params, new SingleColumnRowMapper<>(Long.class));
+
+    return results;
   }
 
   public void saveMinVersionForType(Long appTypeId, Long minBuildNumber) {
