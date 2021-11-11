@@ -149,7 +149,7 @@ INSERT INTO flow.event_attachment_type (attachment_type_id, event_id, read_only,
 INSERT INTO flow.event_attachment_type (attachment_type_id, event_id, read_only, date_created, date_modified, display_order, created_by_id, modified_by_id, archived) VALUES ((select id from flow.attachment_type where company_id = 3 and attachment_type = 'Permit Pack'), (select id from flow.event where event_name = 'DO NOT TOUCH - Permit Pickup and Delivery' and company_id = 3), false, '2021-08-31 17:19:13.935105', null, 0, 2356764, null, false);
 INSERT INTO flow.event_attachment_type (attachment_type_id, event_id, read_only, date_created, date_modified, display_order, created_by_id, modified_by_id, archived) VALUES ((select id from flow.attachment_type where company_id = 3 and attachment_type = 'Permit Pack'), (select id from flow.event where event_name = 'DO NOT TOUCH - Permit Signature' and company_id = 3), false, '2021-08-31 17:28:38.887847', null, 0, 2356764, null, false);
 -- COMPANY EVENT STATUSES
-INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Ready to Schedule', 3, false, '2021-08-25 20:02:40.888231', null, 2350555, null);
+--INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Ready to Schedule', 3, false, '2021-08-25 20:02:40.888231', null, 2350555, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Scheduled', 3, false, '2021-08-25 20:07:03.577890', null, 2350555, null);
 --INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Complete', 3, false, '2021-08-25 20:07:16.107215', '2021-08-31 17:40:55.050209', 2350555, 2356764);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Passed', 3, false, '2021-08-26 20:29:14.379818', null, 2350555, null);
@@ -159,16 +159,13 @@ INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_t
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Pending', 3, false, '2021-08-31 16:18:54.736091', null, 2356764, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Ready to Verify', 3, false, '2021-08-31 17:04:30.407423', '2021-08-31 17:15:11.701436', 2356764, 2356764);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Not Complete - No Show', 3, false, '2021-08-31 17:05:07.165588', '2021-08-31 17:05:41.603564', 2356764, 2356764);
-INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Not Complete - Other', 3, false, '2021-08-31 17:05:33.167514', null, 2356764, null);
+--INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Not Complete - Other', 3, false, '2021-08-31 17:05:33.167514', null, 2356764, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (1, 'Pending Approval', 3, false, '2021-08-31 17:09:57.846660', null, 2356764, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Approved', 3, false, '2021-08-31 17:10:03.479894', null, 2356764, null);
 INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (2, 'Rejected', 3, false, '2021-08-31 17:10:09.500698', null, 2356764, null);
 --INSERT INTO flow.company_event_status_type (event_status_type_id, event_status_type, company_id, archived, date_created, date_modified, created_by_id, modified_by_id) VALUES (3, 'Cancelled', 3, false, '2021-08-31 17:10:52.005565', null, 2356764, null);
 -- event company event statuses
-select *
-from flow.event
-  where id in (66,67,68,69)
-order by id;
+
 INSERT INTO flow.event_company_event_status_type (event_id, company_event_status_type_id, date_created, date_modified, created_by_id, modified_by_id, archived)
   VALUES ((select id from flow.event where company_id = 3 and event_name = 'DO NOT TOUCH - In Person Permit Submission'), (select id from flow.company_event_status_type where company_id = 3 and event_status_type = 'Ready to Schedule'), '2021-08-31 16:18:40.043524', null, 2356764, null, false);
 INSERT INTO flow.event_company_event_status_type (event_id, company_event_status_type_id, date_created, date_modified, created_by_id, modified_by_id, archived)
