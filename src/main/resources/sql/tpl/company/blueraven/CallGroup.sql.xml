@@ -209,8 +209,8 @@ values (:callGroupId, :phoneNumber, :active, now(), :createdById, now(), :create
 
   <callGroup.updatePhoneNumberCallCount><![CDATA[
     update brs.call_group_phone_number
-    set call_count = call_count+1
-    where id = :currentlyUsedId, date_modified = now()
+    set call_count = call_count+1, date_modified = now()
+    where id = :currentlyUsedId
   ]]></callGroup.updatePhoneNumberCallCount>
 
   <callGroup.addPhoneLog><![CDATA[
