@@ -148,7 +148,7 @@ BEGIN
                                                                   v_created_by_id_fee_main),
                                                          coalesce(v_modified_by_id_verify_permit_fee,
                                                                   v_modified_by_id_fee_main));
-
+end if;
 
 --this update parent to the appropriate parent
   if v_pending_inhouse_mpu_permit_pickup_pps_id is not null then
