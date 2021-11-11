@@ -29,6 +29,14 @@
     where id = :appTypeId
   ]]></app.getMinVersionForType>
 
+  <app.getBuildNumbersForType><![CDATA[
+    select build_number
+    from flow.app_attachment
+    where app_type_id = :appTypeId
+    order by build_number desc
+  ]]></app.getBuildNumbersForType>
+
+
   <app.saveMinVersionForType><![CDATA[
     update flow.app_type
      set minimum_required_build_number = :minBuildNumber

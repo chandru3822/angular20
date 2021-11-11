@@ -43,16 +43,11 @@ public class GoodleapService {
     headers.setBasicAuth(apiKey);
   }
 
-//  public JSONObject getApplicationByLoanId(String loanId) {
-//    HttpEntity<String> request = new HttpEntity<>(null, headers);
-//    ResponseEntity<String> response = rest.exchange(host + "/loans/" + loanId, HttpMethod.GET, request, String.class);
-//    if (response.getStatusCode() != HttpStatus.OK) {
-//      throw new RuntimeException(String.format("Unable to fetch loan application for loan ID: %s", loanId));
-//    }
-//    return new JSONObject(response.getBody());
-//  }
-
   public JSONObject getApplicationByProjectId(Long projectId) {
+    return getApplicationByProjectId(projectId, false);
+  }
+
+  public JSONObject getApplicationByProjectId(Long projectId, boolean withDates) {
     Assert.notNull(projectId, "Project ID can't be null");
 
     // First try to find an application for the Deal ID, if none is found - then try the Project ID
@@ -121,7 +116,43 @@ public class GoodleapService {
     application.put("status", getNormalizedStatus(application.getString("status")));
     application.put("message", application.getString("status"));
 
+    if (withDates) {
+      final String loanId = application.getString("id");
+
+      ResponseEntity<String> response = rest.exchange(host + "/loans/" + loanId + "/status", HttpMethod.GET, request, String.class);
+
+      if (response.getStatusCode() != HttpStatus.OK) {
+        throw new RuntimeException("Unable to fetch loan application status for project ID: " + projectId);
+      }
+
+      try {
+        JSONObject status = new JSONObject(response.getBody());
+        application.put("docsSentAt", status.get("docsSentAt"));
+        application.put("docsSignedAt", status.get("docsSignedByPrimaryAt"));
+      } catch (JSONException e) {
+        throw new RuntimeException("Unable to read loan application status for project ID: " + projectId);
+      }
+    }
+
     return application;
+  }
+
+  public JSONArray getApplicationStipulations(Long projectId) {
+    JSONObject application = getApplicationByProjectId(projectId);
+
+    try {
+      HttpEntity<String> request = new HttpEntity<>(null, headers);
+      ResponseEntity<String> response = rest.exchange(host + "/loans/" + application.getString("id") + "/stipulations", HttpMethod.GET, request, String.class);
+
+      if (response.getStatusCode() != HttpStatus.OK) {
+        throw new RuntimeException("Unable to fetch loan stipulations for project ID: " + projectId);
+      }
+
+      return new JSONArray(response.getBody());
+
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to read loan stipulations for project ID: " + projectId);
+    }
   }
 
   public void sendDocs(String loanId) {

@@ -4,6 +4,8 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
@@ -32,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -66,6 +69,8 @@ public class ProjectProcessStepService {
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
   private final CustomFieldValueService customFieldValueService;
+
+  private final GoodleapService goodleapService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -513,7 +518,7 @@ public class ProjectProcessStepService {
       this.setProjectStatus(pps.getProjectId(), action.getCompanyProjectStatusTypeId(), false);
     }
 
-    performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), performedActions);
+    performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId(), performedActions);
 
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
@@ -983,13 +988,36 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-    public void performChildFunctions(Long actionId, Long ppsId, Long processStepId, List<Long> performedActions) {
+    public void performChildFunctions(Long actionId, Long ppsId, Long processStepId, Long projectId, List<Long> performedActions) {
         List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
         childFunctions.forEach(childFunction -> {
             try {
-                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
-                String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
-                sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+                if (childFunction.getRunInBackend()) {
+                  User user = securityService.getCurrentUser();
+
+                  final String originalFuncName = childFunction.getFunctionName();
+                  final int dot = originalFuncName.indexOf('.');
+                  final String functionAbbreviation = originalFuncName.substring(0, dot);
+                  final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+
+                  Map<String, Object> systemValues = new HashMap<>();
+                  systemValues.put("processStepId", processStepId);
+                  systemValues.put("ppsId", ppsId);
+                  systemValues.put("projectId", projectId);
+                  systemValues.put("userId", user.getId());
+
+                  if (functionAbbreviation.equals("brs")) {
+                    var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService);
+                    Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
+                    method.invoke(functionClass, childFunction, systemValues);
+                  } else {
+                    // @TODO: Add company IDs here during onboarding
+                  }
+                } else {
+                  String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
+                  String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
+                  sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+                }
             } catch (Exception e) {
               throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getMessage()));
             }
