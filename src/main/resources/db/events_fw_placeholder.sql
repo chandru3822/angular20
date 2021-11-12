@@ -766,7 +766,7 @@ $$
   BEGIN
 
     ALTER TABLE brs.project_details
-      RENAME COLUMN ahj_inspection_start_time_ppscfv_id TO ahj_inspection_start_time_ppsecfv_id;
+      RENAME COLUMN ahj_inspection_start_time_ppscfv_id TO ahj_inspection_start_time_ppse_id;
   EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'ahj_inspection_start_time_ppscfv_id does not exists';
   END;
@@ -777,7 +777,7 @@ $$
   BEGIN
 
     ALTER TABLE brs.project_details
-      RENAME COLUMN permit_pack_submittal_end_time_ppscfv_id TO permit_pack_submittal_end_time_ppsecfv_id;
+      RENAME COLUMN permit_pack_submittal_end_time_ppscfv_id TO permit_pack_submittal_end_time_ppse_id;
   EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'permit_pack_submittal_end_time_ppscfv_id does not exists';
   END;
@@ -840,13 +840,13 @@ set update_first_value_only_id = 'online_submission_time_ppsecfv_id'
 where update_first_value_only_id = 'online_submission_time_ppscfv_id';
 
 
-update brs.project_details_config
-set update_first_value_only_id = 'ahj_inspection_start_time_ppsecfv_id'
-where update_first_value_only_id = 'ahj_inspection_start_time_ppscfv_id';
+-- update brs.project_details_configpermit_pack_submittal_end_time
+-- set update_first_value_only_id = 'ahj_inspection_start_time_ppsecfv_id'
+-- where update_first_value_only_id = 'ahj_inspection_start_time_ppscfv_id';
 
-update brs.project_details_config
-set update_first_value_only_id = 'permit_pack_submittal_end_time_ppsecfv_id'
-where update_first_value_only_id = 'permit_pack_submittal_end_time_ppscfv_id';
+-- update brs.project_details_config
+-- set update_first_value_only_id = 'permit_pack_submittal_end_time_ppsecfv_id'
+-- where update_first_value_only_id = 'permit_pack_submittal_end_time_ppscfv_id';
 
 update brs.project_details_config
 set update_first_value_only_id = 'substantial_completion_date_ppsecfv_id'
@@ -863,4 +863,31 @@ alter table brs.project_details drop column if exists first_appointment_id_pps_i
 
 alter table flow.custom_field_group_assignment add column  if not exists  migrated_cfga_id integer;
 alter table brs.set_closer_appointment_audit add column if not exists project_process_step_event_id integer;
+
+
+create table brs.project_detail_events_config
+(
+  id                               serial
+    constraint project_detail_events_config_pk
+      primary key,
+  company_id                       integer               not null
+    constraint pdec_company_id_fk
+      references flow.company,
+  process_step_event_id    integer               not null
+    constraint pdec_process_step_event_id_fk
+      references flow.process_step_event,
+  field_to_update                  varchar(100)          not null,
+  field_to_use                     varchar(100)                not null,
+  display_name                     varchar(100),
+  second_field_to_update           varchar(100),
+  update_first_value_only          boolean default false not null,
+  update_first_value_only_id       varchar
+);
+
+create index pdec_process_step_event_id_idx
+  on brs.project_detail_events_config (process_step_event_id);
+
+create index pdec_company_id_idx
+  on brs.project_detail_events_config (company_id);
+
 

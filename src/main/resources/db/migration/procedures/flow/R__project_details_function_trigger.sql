@@ -732,36 +732,128 @@ CREATE OR REPLACE FUNCTION flow.update_events()
 $body$
 
 declare
-  v_project_id integer;
-  v_closer_name varchar;
-  v_user_id integer;
+  v_project_id       integer;
+  v_closer_name      varchar;
+  v_user_id          integer;
   v_user_position_id integer;
+  x                  record;
+  v_config_id        integer;
+  v_sql              text;
+  v_sql1             text;
+  v_resource_name    text;
+  v_count            bigint;
 BEGIN
 
-    select pps.project_id
-    into v_project_id
-    from flow.project_process_step_event ppse
-    inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
-    where ppse.id = new.id;
+  select count(1)
+  into v_count
+  from flow.project_process_step_event ppse2
+         inner join flow.process_step_event pse2 on ppse2.process_step_event_id = pse2.id and
+                                                    pse2.unique_behavior_type_id = 1 and pse2.archived is false
+         inner join flow.event e on pse2.event_id = e.id and e.archived is false
+  where ppse2.id = new.id;
 
-    select u.id,u.first_name ||' '||u.last_name,up.id
+  select pps.project_id
+  into v_project_id
+  from flow.project_process_step_event ppse
+         inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+  where ppse.id = new.id;
+
+  select id
+  into v_config_id
+  from brs.project_detail_events_config
+  where process_step_event_id = new.process_step_event_id;
+
+  if new.resource_id is not null then
+    select case
+             when sl.system_list_type_id = 1 then quote_literal(o.org_name)
+             else quote_literal(concat(u.first_name, ' ', u.last_name)) end-- 1 = orgs, 2 = users
+    into v_resource_name
+    from flow.project_process_step_event ppse
+           inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id and pse.archived is false
+           inner join flow.event e on pse.event_id = e.id and e.archived is false
+           inner join flow.custom_field cf on e.resource_custom_field_id = cf.id and cf.archived is false
+           inner join flow.company_system_list csl on cf.company_system_list_id = csl.id and csl.archived is false
+           inner join flow.system_list sl on csl.system_list_id = sl.id and sl.archived is false
+           left join flow.user u on u.id = new.resource_id
+           left join flow.org o on o.id = new.resource_id
+    where ppse.id = new.id;
+  end if;
+
+  IF v_config_id is not null THEN
+    for x in select field_to_update,
+                    field_to_use,
+                    update_first_value_only,
+                    update_first_value_only_id,
+                    second_field_to_update
+             from brs.project_detail_events_config
+             where process_step_event_id = new.process_step_event_id
+      loop
+        -- raise notice 'I am here';
+        case when x.update_first_value_only is false then
+          v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
+                  $$ where project_id = $$ || v_project_id;
+          else
+            v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
+                    $$ where project_id = $$ || v_project_id || $$ and ($$ || x.field_to_update ||
+                    $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
+          end case;
+        --raise notice 'v_sql % ',v_sql;
+        if x.second_field_to_update is not null then
+          case when x.update_first_value_only is false then
+            --  raise notice 'am I in the first case %',v_resource_name;
+            v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
+                     v_resource_name ||
+                     $$ where project_id = $$ || v_project_id;
+            else
+              v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
+                       v_resource_name ||
+                       $$ where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
+                       $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
+            end case;
+          -- raise notice 'v_sql1 % ',v_sql1;
+        end if;
+        if v_sql is not null then
+          begin
+            execute v_sql using new ;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_custom_value_id, error)
+              values (new.id, SQLERRM);
+          end;
+        end if;
+        if v_sql1 is not null then
+          begin
+            execute v_sql1 using new;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_custom_value_id, error)
+              values (new.id, SQLERRM);
+          end;
+        end if;
+      end loop;
+
+
+  end if;
+
+  if v_count > 0 then
+    select u.id, u.first_name || ' ' || u.last_name, up.id
     into v_user_id,v_closer_name,v_user_position_id
     from flow.user u
-    inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
+           inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
     where up.id = new.resource_id;
 
     update brs.project_details
-    set first_appointment        = new.start_time,
+    set first_appointment         = new.start_time,
         first_appointment_ppse_id = new.id
     where project_id = v_project_id
       and (first_appointment is null or
            (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
     update brs.project_details
-      set closer_user_id = v_user_id,
-          closer_name = v_closer_name,
-          closer_user_position_id = v_user_position_id
+    set closer_user_id          = v_user_id,
+        closer_name             = v_closer_name,
+        closer_user_position_id = v_user_position_id
     where project_id = v_project_id;
-
+  end if;
 
 
   RETURN NULL;

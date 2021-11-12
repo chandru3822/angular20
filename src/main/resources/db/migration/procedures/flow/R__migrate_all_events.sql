@@ -984,6 +984,31 @@ BEGIN
     FOR EACH ROW
   EXECUTE PROCEDURE flow.update_events();
 
+  --TODO  insert into brs.project_detail_events_config
+insert into brs.project_detail_events_config(company_id, process_step_event_id, field_to_update, field_to_use, display_name, second_field_to_update, update_first_value_only, update_first_value_only_id)
+(
+  select 3,pse.id,pdc.field_to_update,
+         case when cfga.schedule_field_type_id = 1 then
+           'start_time' when cfga.schedule_field_type_id = 2 then 'end_time'
+             when cfga.schedule_field_type_id = 3 then 'resource_id' end,
+           pdc.display_name,pdc.second_field_to_update,pdc.update_first_value_only,pdc.update_first_value_only_id
+  from brs.project_details_config pdc
+         inner join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.process_step ps on ps.id = cfg.process_step_id
+         inner join flow.event e on e.temp_cfg_id = cfg.id
+         inner join flow.process_step_event pse on pse.event_id = e.id and pse.process_step_id = ps.id
+  where pdc.company_id = 3 and cfga.schedule_field_type_id in (1,2,3) and cfga.archived is false);
+
+update brs.project_detail_events_config
+  set update_first_value_only_id = 'permit_pack_submittal_end_time_ppse_id'
+  where update_first_value_only_id = 'permit_pack_submittal_end_time_ppsecfv_id';
+  update brs.project_detail_events_config
+  set update_first_value_only_id = 'ahj_inspection_start_time_ppse_id'
+  where update_first_value_only_id = 'ahj_inspection_start_time_ppsecfv_id';
+
+
+
   delete
   from brs.project_details_config
   where field_to_update = 'closer_user_position_id';
@@ -995,6 +1020,25 @@ BEGIN
   delete
   from brs.project_details_config
   where field_to_update = 'closer_appointment_start';
+
+  delete
+  from brs.project_details_config
+  where field_to_update in ('ahj_inspection_end_time','ahj_inspection_end_time','in_house_mpu_end_time',
+                            'in_house_mpu_start_time','installation_closeout_resource','in_house_mpu_permit_submittal_end_date',
+                            'in_house_mpu_permit_submittal_start_date','installation_closeout_start_time','installation_closeout_end_time',
+                            'non_standard_installation_work_end_time','non_standard_installation_work_start_time','non_standard_installation_resource',
+                            'permit_pack_submittal_start_time','permit_pickup_end_time','permit_pickup_start_time','in_house_mpu_resource',
+                            'in_house_mpu_resource','structural_upgrade_resource','work_order_resource','site_survey_start_time','work_order_end_time',
+                            'work_order_start_time','in_house_mpu_end_time','outsource_mpu_end_time','reroof_end_time','structural_upgrade_end_time',
+                            'tree_trimming_end_time','trenching_end_time','ac_compressor_relocation_resource','ac_compressor_relocation_end_time',
+                            'in_house_mpu_start_time','outsource_mpu_start_time','reroof_start_time','structural_upgrade_start_time',
+                            'outsource_mpu_resource','reroof_resource','tree_trimming_resource','trenching_resource','as_built_permit_pickup_resource',
+                            'as_built_permit_submission_resource','in_house_mpu_permit_pickup_resource','ac_compressor_relocation_start_time',
+                            'tree_trimming_start_time','trenching_start_time','in_house_mpu_permit_pickup_end_time','in_house_mpu_permit_pickup_start_time',
+                            'installation_start_time','installation_end_time','ahj_reinspection_start_time','ahj_inspection_start_time',
+                            'site_survey_completed_date','additional_ahj_inspection_date','ahj_inspection_work_date','energization_visit_date',
+                            'resurvey_date','as_built_permit_pickup_date','installation_resource','permit_pack_submittal_resource',
+                            'in_house_mpu_permit_submittal_resource','permit_pickup_resource','permit_pack_submittal_end_time','ahj_inspection_start_time');
 
   /*This updates all custom fields for Events to be a part of the event company_object_type*/
   with update_data as (

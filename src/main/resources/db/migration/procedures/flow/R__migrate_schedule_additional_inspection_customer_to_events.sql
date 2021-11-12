@@ -1,23 +1,33 @@
 CREATE OR REPLACE function flow.migrate_schedule_additional_inspection_customer_to_events(p_event_id integer,
-                                                                             p_project_process_step_id integer)
+                                                                                          p_project_process_step_id integer)
   returns void as
 $$
 
 declare
-  v_schedule_add_inspection_ahj_pps_id integer;
-  v_pending_add_inspection_pps_id integer;
-  v_verify_add_inpsection_outcome_pps_id  integer;
-  v_pending_permit_pack_needed            timestamp;
-  v_verify_permit_pack_needed             timestamp;
-  v_verify_id                             integer;
-  v_date_created_pending                  timestamp;
-  v_date_modified_pending                 timestamp;
-  v_created_by_id_pending                 integer;
-  v_modified_by_id_pending                integer;
-  v_date_created_verify                   timestamp;
-  v_date_modified_verify                  timestamp;
-  v_created_by_id_verify                  integer;
-  v_modified_by_id_verify                 integer;
+  v_schedule_add_inspection_ahj_pps_id   integer;
+  v_pending_add_inspection_pps_id        integer;
+  v_verify_add_inpsection_outcome_pps_id integer;
+  v_pending_permit_pack_needed           timestamp;
+  v_verify_permit_pack_needed            timestamp;
+  v_verify_id                            integer;
+  v_date_created_pending                 timestamp;
+  v_date_modified_pending                timestamp;
+  v_created_by_id_pending                integer;
+  v_modified_by_id_pending               integer;
+  v_date_created_verify                  timestamp;
+  v_date_modified_verify                 timestamp;
+  v_created_by_id_verify                 integer;
+  v_modified_by_id_verify                integer;
+  v_pending_brs_no_show                  timestamp;
+  v_verify_brs_no_show                   timestamp;
+  v_date_created_pending_brs             timestamp;
+  v_date_modified_pending_brs            timestamp;
+  v_created_by_id_pending_brs            integer;
+  v_modified_by_id_pending_brs           integer;
+  v_date_created_verify_brs              timestamp;
+  v_date_modified_verify_brs             timestamp;
+  v_created_by_id_verify_brs             integer;
+  v_modified_by_id_verify_brs            integer;
 BEGIN
 
 
@@ -67,6 +77,21 @@ BEGIN
   end if;
 
 
+  if v_pending_add_inspection_pps_id is not null then
+    select timestamp_value, date_created, date_modified, created_by_id, modified_by_id
+    into v_pending_brs_no_show,v_date_created_pending_brs,v_date_modified_pending_brs,v_created_by_id_pending_brs,v_modified_by_id_pending_brs
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 19157
+      and project_process_step_id = v_verify_add_inpsection_outcome_pps_id;
+  end if;
+
+  if v_verify_add_inpsection_outcome_pps_id is not null then
+    select timestamp_value, date_created, date_modified, created_by_id, modified_by_id
+    into v_verify_brs_no_show,v_date_created_verify_brs,v_date_modified_verify_brs,v_created_by_id_verify_brs,v_modified_by_id_verify_brs
+    from flow.project_process_step_custom_field_value
+    where custom_field_group_assignment_id = 1405
+      and project_process_step_id = v_verify_add_inpsection_outcome_pps_id;
+  end if;
 
 
   perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
@@ -83,7 +108,6 @@ BEGIN
                                                                      17332);
 
 
-
   if v_schedule_add_inspection_ahj_pps_id is not null then
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
                                                                        null,
@@ -92,17 +116,12 @@ BEGIN
   end if;
   if v_pending_add_inspection_pps_id is not null then
 
-    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
-                                                                       null,
-                                                                       v_pending_add_inspection_pps_id,
-                                                                       19157);
+
     perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
                                                                        null,
                                                                        v_pending_add_inspection_pps_id,
                                                                        1403);
   end if;
-
-
 
 
   if v_verify_add_inpsection_outcome_pps_id is not null then
@@ -114,10 +133,7 @@ BEGIN
                                                                        null,
                                                                        v_verify_add_inpsection_outcome_pps_id,
                                                                        965);
-    perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
-                                                                       null,
-                                                                       v_verify_add_inpsection_outcome_pps_id,
-                                                                       1405);
+
 
   end if;
 
@@ -135,6 +151,19 @@ BEGIN
                                                          coalesce(v_modified_by_id_verify, v_modified_by_id_pending));
   end if;
 
+  if v_verify_brs_no_show is not null or v_pending_brs_no_show is not null then
+    perform flow.migrate_insert_event_custom_field_value(p_event_id,
+                                                         19157,
+                                                         coalesce(v_verify_brs_no_show, v_pending_brs_no_show)::timestamp,
+                                                         null::text,
+                                                         null::integer[],
+                                                         null::numeric,
+                                                         coalesce(v_date_created_verify_brs, v_date_created_pending_brs),
+                                                         coalesce(v_date_modified_verify_brs, v_date_modified_pending_brs),
+                                                         coalesce(v_created_by_id_verify_brs, v_created_by_id_pending_brs),
+                                                         coalesce(v_modified_by_id_verify_brs, v_modified_by_id_pending_brs));
+  end if;
+
 
 --this update parent to the appropriate parent
   if v_schedule_add_inspection_ahj_pps_id is not null then
@@ -143,7 +172,7 @@ BEGIN
     where parent_project_process_step_id = v_schedule_add_inspection_ahj_pps_id
       and case
             when v_pending_add_inspection_pps_id is not null then
-                id != v_pending_add_inspection_pps_id
+              id != v_pending_add_inspection_pps_id
             else 1 = 1 end;
 
     ---archives site_survey

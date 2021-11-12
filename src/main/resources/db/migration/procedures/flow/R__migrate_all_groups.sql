@@ -1753,7 +1753,7 @@ BEGIN
 
     perform flow.migrate_fields_to_group(v_new_group_id_170_O, 962, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_170_O, 965, 2);
-    perform flow.migrate_fields_to_group(v_new_group_id_170_O, 1405, 3);
+   -- perform flow.migrate_fields_to_group(v_new_group_id_170_O, 1405, 3);
 
     perform flow.migrate_fields_to_group(v_new_group_id_170_R, 1402, 2);
     perform flow.migrate_fields_to_group(v_new_group_id_170_R, 1403, 3);
@@ -1782,7 +1782,7 @@ BEGIN
       and cfg.event_id = p_event_type_id;
 
     select id
-    into v_new_group_id_25_O
+    into v_new_group_id_25_NS
     from flow.custom_field_group cfg
     where cfg.group_name = 'No-Show'
       and cfg.event_id = p_event_type_id;
@@ -1798,11 +1798,24 @@ BEGIN
 
     perform flow.migrate_fields_to_group(v_new_group_id_25_O, 124, 1);
 
-    perform flow.migrate_fields_to_group(v_new_group_id_25_O, 1363, 1);
+    perform flow.migrate_fields_to_group(v_new_group_id_25_NS, 1363, 1);
 
     perform flow.migrate_fields_to_group(v_new_group_id_25_R, 1359, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_25_R, 1360, 2);
 
+
+    update flow.custom_field_group_assignment set custom_field_id = 9919
+    where id = 657;
+
+    with update_data as (
+      select date_value,id
+      from flow.project_process_step_event_custom_field_value
+      where custom_field_group_assignment_id = 657
+        and date_value is not null)
+    update flow.project_process_step_event_custom_field_value ppsecfv
+    set timestamp_value = (ud.date_value::timestamp at time zone 'US/Mountain')::timestamp
+    from update_data ud
+    where ud.id = ppsecfv.id;
   end if;
 
 END
