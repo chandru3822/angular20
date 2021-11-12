@@ -295,12 +295,12 @@ BEGIN
                                    date_created, date_modified, created_by_id, modified_by_id,
                                    company_project_status_type_id, user_position_id, street1, street2,
                                    city, postal_code, time_zone, latitude, longitude, company_state_id,
-                                   company_country_id)
+                                   company_country_id, cancelled_date)
     values(new.id, new.contact_id, new.company_process_id, new.project_name,
            new.date_created, new.date_modified, new.created_by_id, new.modified_by_id,
            new.company_project_status_type_id, new.user_position_id, new.street1, new.street2,
            new.city, new.postal_code, new.time_zone, new.latitude, new.longitude, new.company_state_id,
-           new.company_country_id);
+           new.company_country_id, new.cancelled_date);
 
     RETURN NULL;
 END
