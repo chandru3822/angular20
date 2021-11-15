@@ -157,7 +157,7 @@ raise notice '12';
            pd.id as project_details_id
     from brs.project_details pd
            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.id = pd.ahj_inspection_start_time_ppse_id
-           inner join flow.project_process_step_event ppse2  on ppse2.process_step_event_id = ppscfv.project_process_step_id
+           inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = ppscfv.project_process_step_id
     where pd.ahj_inspection_start_time is not null and ahj_inspection_start_time_ppse_id is not null
   )
   update brs.project_details pd2
@@ -170,8 +170,8 @@ raise notice '13';
     select ppse2.id as project_process_step_event_id,
            pd.id as project_details_id
     from brs.project_details pd
-           inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pd.permit_pack_submittal_end_time_ppse_id
-           inner join flow.project_process_step_event ppse2  on ppse2.process_step_event_id = ppscfv.project_process_step_id
+           inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.id = pd.permit_pack_submittal_end_time_ppse_id
+           inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = ppscfv.project_process_step_id
     where pd.permit_pack_submittal_end_time is not null and permit_pack_submittal_end_time_ppse_id is not null
   )
   update brs.project_details pd2

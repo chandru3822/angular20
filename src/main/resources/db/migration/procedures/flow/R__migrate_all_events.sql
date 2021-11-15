@@ -357,6 +357,7 @@ BEGIN
   drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
   drop trigger if exists project_process_step_event_custom_field_value_audit_trg ON flow.project_process_step_event_custom_field_value;
   drop trigger if exists concrete_project_process_step_event_audit_trg ON flow.project_process_step_event;
+  drop trigger if exists project_process_step_audit_trg ON flow.project_process_step_custom_field_value;
   raise notice 'starting Schedule closer appointment';
   perform flow.migrate_events(1);
   raise notice 'starting Site Survey Scheduling';
@@ -983,6 +984,10 @@ BEGIN
     ON flow.project_process_step_event
     FOR EACH ROW
   EXECUTE PROCEDURE flow.update_events();
+
+  CREATE TRIGGER project_process_step_audit_trg
+    after INSERT or update or delete ON flow.project_process_step_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.project_process_step_audit();
 
   --TODO  insert into brs.project_detail_events_config
 insert into brs.project_detail_events_config(company_id, process_step_event_id, field_to_update, field_to_use, display_name, second_field_to_update, update_first_value_only, update_first_value_only_id)
