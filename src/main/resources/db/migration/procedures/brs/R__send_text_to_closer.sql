@@ -99,6 +99,12 @@ BEGIN
           values(v_closer_user_id,
                  concat('Hi ', v_closer_first_name, ', Your project ', v_contact_name, ' at ', v_contact_street, ', ', v_contact_city, ', ', v_contact_state, ' has been dispositioned as a No-Go or Low TSRF project.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 9 then
+          -- do the message for id 9 = Project has been DQ'd
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('Hi ', v_closer_first_name, ', This is a notification letting you know Project ', p_project_id ,' has been disqualified by the proposals team.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
 
