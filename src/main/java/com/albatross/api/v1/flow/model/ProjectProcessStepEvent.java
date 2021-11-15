@@ -22,6 +22,7 @@ public class ProjectProcessStepEvent {
   private List<ProcessStepEventAction> eventActions;
   private Boolean archived;
 
+  
   @Data
   public static class Resource {
     private Long id;
