@@ -88,6 +88,27 @@
     where id = :pczuId
   ]]></postalCode.saveManualUserAllocation>
 
+  <postalCode.archiveInactiveUsers><![CDATA[
+    with updates as (
+      select pczu.id
+      from flow.postal_code_zone_user pczu
+             inner join flow.postal_code_zone pcz on pczu.postal_code_zone_id = pcz.id
+             inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+             inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.company_id = pcz.company_id
+      where ust.has_access is false
+        and pczu.archived is false
+        and pczu.postal_code_zone_user_type_id = 1
+        and pcz.id = :zoneId
+      order by postal_code_zone_id
+    )
+    update flow.postal_code_zone_user pczu
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    from updates u
+    where u.id = pczu.id
+  ]]></postalCode.archiveInactiveUsers>
+
   <postalCode.getZone><![CDATA[
    select pcz.id,
            pcz.company_id,
