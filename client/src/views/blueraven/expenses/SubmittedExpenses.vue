@@ -552,7 +552,7 @@ export default {
               `${r.skipApproval ? 'Not Required' : r.approvedBy}` + ',' +
               paidDate + ',' +
               `${r.skipApproval ? 'Not Required' : r.paidBy}` + ',' +
-              r.reimbursementRequestDetails
+              '"' + r.reimbursementRequestDetails + '"'
 
           csvData += '\n'
 
