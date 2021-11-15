@@ -200,6 +200,9 @@ public class PostalCodeService {
   public List<PostalCodeAllocationUser> deleteAllocationUser(Long zoneId, Long postalCodeZoneUserId) {
     //delete the user like normal but return the adjusted allocation values
     deleteUser(postalCodeZoneUserId);
+    //if users get terminated then they are still in zones. archiving them here ensures that if an allocation user is deleted it will also archive any terminated users
+    archiveInactiveUsers(zoneId);
+
     return getScheduleToUsers(zoneId);
   }
 
