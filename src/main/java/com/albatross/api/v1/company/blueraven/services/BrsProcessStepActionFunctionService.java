@@ -202,7 +202,9 @@ public class BrsProcessStepActionFunctionService {
       }
 
       // Remove the last comma and space
-      formattedStipulations.delete(formattedStipulations.length() - 1, formattedStipulations.length());
+      if (!formattedStipulations.isEmpty()) {
+        formattedStipulations.delete(formattedStipulations.length() - 1, formattedStipulations.length());
+      }
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
