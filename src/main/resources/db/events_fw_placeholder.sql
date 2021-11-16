@@ -15,8 +15,8 @@ insert into flow.object_type(object_type, object_code, flow_type_id, archived)
 -- have to drop this because more has to be returned in the table
 drop function if exists flow.get_availability_time_slots(int, timestamp, timestamp, date, boolean);
 
-insert into flow.feature(feature_name, feature_code)
-  (select 'Events', 'EVENTS'  where not exists(select id from flow.feature where feature_code = 'EVENTS'));
+insert into flow.feature(feature_name, feature_code, is_system)
+  (select 'Events', 'EVENTS', true  where not exists(select id from flow.feature where feature_code = 'EVENTS'));
 
 insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
   (select 'Events', 3, (select id from flow.feature where feature_code = 'EVENTS'), false
