@@ -110,7 +110,9 @@ public class GoodleapService {
         }
       }
     } else if (applications.isEmpty()) {
-      throw new RuntimeException(String.format("Unable to locate application for project ID: %s", projectId));
+      final String message = String.format("GOODLEAP: Unable to locate application for project ID: %s", projectId);
+      log.info(message);
+      throw new NotFoundException(message);
     } else {
       application = applications.getJSONObject(0);
     }
@@ -253,12 +255,22 @@ public class GoodleapService {
   }
 
   public Boolean shouldCreatePandaDocs(Long projectId) {
-    JSONObject application = getApplicationByProjectId(projectId);
+    try {
+      JSONObject application = getApplicationByProjectId(projectId);
 
-    if (application == null) {
+      if (application == null) {
+        return false;
+      }
+
+      return !application.getString("status").equals("Denied") && !application.getString("status").equals("Cancelled");
+    } catch (NotFoundException e) {
       return false;
     }
+  }
 
-    return !application.getString("status").equals("Denied") && !application.getString("status").equals("Cancelled");
+  public static class NotFoundException extends RuntimeException {
+    public NotFoundException(String message) {
+      super(message);
+    }
   }
 }

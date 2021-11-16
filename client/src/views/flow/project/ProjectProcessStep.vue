@@ -790,9 +790,22 @@
       handleActionCompleted() {
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       },
-      handleOnCompleteError(actionId) {
+      handleOnCompleteError(actionId, errorMessage) {
         logError(`Failed to complete action with actionId: ${actionId}`)
-        this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
+
+        let message = 'Unable to Complete Action'
+
+        // See if this is a java function failure and display a more specific error message
+        if (errorMessage && typeof errorMessage === 'string') {
+          let lastClause = errorMessage.substring(errorMessage.lastIndexOf('*** '))
+
+          // This is specific to BR to display if a loan wasn't found. Genericize when we get "free time"
+          if (lastClause.includes('Unable to locate application')) {
+            message = 'Unable to locate loan application'
+          }
+        }
+
+        this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
       async getAvailableTimeSlots(remote) {

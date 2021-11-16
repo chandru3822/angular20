@@ -43,7 +43,7 @@ export default {
           this.handleOnCompleteError(this.actionResult.id)
         }
       } catch (e) {
-        this.handleOnCompleteError(this.actionResult.id)
+        this.handleOnCompleteError(this.actionResult.id, e.data.message)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
