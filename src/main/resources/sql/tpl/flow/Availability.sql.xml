@@ -65,7 +65,8 @@
     update flow.resource_schedule
     set end_date = :startDate::date - interval '1 day',
         date_modified = now(),
-        modified_by_id = :modifiedById
+        modified_by_id = :modifiedById,
+        archived = case when :startDate::date = start_date::date then true else archived end
     where case when user_id::int is not null then user_id::int = :userId else org_id::int = :orgId end
       and company_id = :companyId
       and archived is not true
