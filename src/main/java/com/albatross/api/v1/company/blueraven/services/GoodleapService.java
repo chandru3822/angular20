@@ -114,8 +114,6 @@ public class GoodleapService {
           application = applications.getJSONObject(applications.length() - 1);
         }
       }
-    } else if (applications.isEmpty()) {
-      throw new RuntimeException(String.format("Unable to locate application for project ID: %s", projectId));
     } else {
       application = applications.getJSONObject(0);
     }

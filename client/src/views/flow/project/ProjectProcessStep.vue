@@ -309,6 +309,12 @@
             :handleOnComplete="handleActionCompleted"
             :handleOnCompleteError="handleOnCompleteError"
           />
+          <v-btn
+            v-else-if="action.actionTypeId === 1 && !action.hideFromWeb"
+            @click="followMultipleLinks(action)"
+          >
+            {{action.actionName}}
+          </v-btn>
         </v-col>
         <!--    <NotesAndActivity-->
         <!--      :showNotes="true"-->
@@ -322,7 +328,9 @@
         </v-row>
 
         <v-row>
-          <Links :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+          <Links :projectProcessStepId="parseInt(projectProcessStepId)"
+                 :project-id="parseInt(projectId)"
+                 :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
 
@@ -345,7 +353,7 @@
 
 <script>
 
-  import {getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
+  import {followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
@@ -774,12 +782,30 @@
           || getCustomFieldReadOnly(this.$store, field)
           || !this.userCanEdit
       },
+      followMultipleLinks(action) {
+        action?.processStepActionLinks?.forEach(link => {
+          followLink(link.url, this.projectId)
+        })
+      },
       handleActionCompleted() {
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       },
-      handleOnCompleteError(actionId) {
+      handleOnCompleteError(actionId, errorMessage) {
         logError(`Failed to complete action with actionId: ${actionId}`)
-        this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
+
+        let message = 'Unable to Complete Action'
+
+        // See if this is a java function failure and display a more specific error message
+        if (errorMessage && typeof errorMessage === 'string') {
+          let lastClause = errorMessage.substring(errorMessage.lastIndexOf('*** '))
+
+          // This is specific to BR to display if a loan wasn't found. Genericize when we get "free time"
+          if (lastClause.includes('Unable to locate application')) {
+            message = 'Unable to locate loan application'
+          }
+        }
+
+        this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
       async getAvailableTimeSlots(remote) {

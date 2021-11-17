@@ -557,7 +557,7 @@
           return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0 && this.usersSelected)
       },
       disableSendText() {
-          return !(this.textMessage.trim().length > 0)
+          return !(this.textMessage.trim().length > 0 && this.usersSelected)
       }
     },
     beforeRouteEnter(to, from, next) {

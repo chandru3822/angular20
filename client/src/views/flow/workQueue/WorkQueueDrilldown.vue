@@ -6,11 +6,11 @@
           <v-btn text small :to="`/workQueue`" class="mr-3" color="primaryCustom">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
+          <v-toolbar-title class="app-title" v-if="masterResults.length > 0">{{masterResults[0].workQueueType}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-switch
-              v-if="results.length > 0"
+              v-if="masterResults.length > 0"
               v-model="hideFutureFollowUps"
               class="mx-2 mt-5 wq-follow-up-switch"
               label="Hide work with a next follow-up date in the future"

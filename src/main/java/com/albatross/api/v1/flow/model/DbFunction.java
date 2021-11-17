@@ -15,7 +15,7 @@ public class DbFunction {
 
   private Long id, returnDataTypeId, dbFunctionTypeId;
   private String functionName, functionType, returnDataType, displayName;
-  private Boolean archived;
+  private Boolean archived, runInBackend;
   private List<DbFunctionParam> dbFunctionParams;
   private List<CompanyFunction> companyFunctions;
 }

@@ -346,7 +346,7 @@
 
   <processStepRequirement.setImmutable><![CDATA[
     update flow.process_step_requirement
-    set immutable = true
+    set immutable = true, date_modified = now()
     where id = :id
   ]]></processStepRequirement.setImmutable>
 

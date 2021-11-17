@@ -141,7 +141,7 @@
     ]]></payroll.getCommissionAdjustments>
 
     <payroll.setStatus><![CDATA[
-    UPDATE brs.payroll SET payroll_status_id = :payrollStatusId WHERE id = :payrollId
+    UPDATE brs.payroll SET payroll_status_id = :payrollStatusId, updated = now() WHERE id = :payrollId
     ]]></payroll.setStatus>
 
     <payroll.status><![CDATA[

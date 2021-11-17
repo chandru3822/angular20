@@ -5,6 +5,7 @@ import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import store from './store'
 import {UserMutations} from './stores/UserStore'
 import {getRequest} from '@/helpers/helpers'
+import {AppMutations} from "@/stores/AppStore";
 
 Vue.use(Router)
 
@@ -181,7 +182,7 @@ const router = new Router({
           meta: {title: 'Albatross - Reimbursement'},
           component: () => {
             if (store.getters.userHasFeature('REIMBURSEMENT')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Reimbursement.vue')
+              return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/Reimbursement.vue')
             } else {
               return accessDenied()
             }
@@ -192,7 +193,7 @@ const router = new Router({
           meta: {title: 'Albatross - Expenses'},
           component: () => {
             if (store.getters.userHasFeature('EXPENSES')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/Expenses.vue')
+              return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/Expenses.vue')
             } else {
               return accessDenied()
             }
@@ -204,7 +205,7 @@ const router = new Router({
               meta: {title: 'Albatross - Reimbursement Requests'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/ReimbursementRequests.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/ReimbursementRequests.vue')
                 } else {
                   return accessDenied()
                 }
@@ -216,7 +217,7 @@ const router = new Router({
               meta: {title: 'Albatross - Submitted Expenses'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/SubmittedExpenses.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/SubmittedExpenses.vue')
                 } else {
                   return accessDenied()
                 }
@@ -228,7 +229,7 @@ const router = new Router({
               meta: {title: 'Albatross - GL Codes'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/GlCodes.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/GlCodes.vue')
                 } else {
                   return accessDenied()
                 }
@@ -240,7 +241,7 @@ const router = new Router({
               meta: {title: 'Albatross - Expense Budgets'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/MonthlyBudgets.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/MonthlyBudgets.vue')
                 } else {
                   return accessDenied()
                 }
@@ -251,7 +252,7 @@ const router = new Router({
               meta: {title: 'Albatross - Budget Types'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/expenses/BudgetTypes.vue')
+                  return import (/* webpackChunkName: "expenses" */ './views/blueraven/expenses/BudgetTypes.vue')
                 } else {
                   return accessDenied()
                 }
@@ -259,16 +260,35 @@ const router = new Router({
             }
           ]
         }, {
-          path: '/closerDashboard',
-          name: 'closerDashboard',
+          path: '/closer',
+          name: 'closer',
           meta: {title: 'Albatross - Closer Dashboard'},
           component: () => {
             if (store.getters.userHasFeature('CLOSER_DASHBOARD')) {
-              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserDashboard.vue')
+              return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/Closer.vue')
             } else {
               return accessDenied()
             }
-          }
+          },
+          children: [
+            {
+              path: 'dashboard',
+              name: 'closerDashboard',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/closerDashboard/CloserDashboard.vue')
+            }, {
+              path: 'funnel',
+              alias: '/closerDashboard',
+              name: 'closerFunnel',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/closerDashboard/CloserFunnel.vue')
+            }, {
+              path: 'incentive',
+              name: 'closerIncentive',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/closerDashboard/CloserIncentive.vue')
+            }
+          ]
         }, {
           path: 'setterDashboard',
           name: 'setterDashboard',
@@ -1115,48 +1135,6 @@ const router = new Router({
               component: () => import (/* webpackChunkName: "dbFunctions" */ './views/flow/admin/functions/Function.vue'),
             }
           ]
-        },
-        {
-          path: '/propToolAdmin',
-          name: 'propToolAdmin',
-          component: () => {
-            if (store.getters.userHasFeature('PROP_TOOL')) {
-              return import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/PropToolAdmin.vue')
-            } else {
-              return accessDenied()
-            }
-          },
-          children: [
-            {
-              path: 'utilities',
-              component: () => import (/* webpackChunkName: "propToolAdminUtilites" */ './views/flow/propToolAdmin/Utilities.vue'),
-            }, {
-              path: 'financiers',
-              component: () => import (/* webpackChunkName: "propToolAdminFinanciers" */ './views/flow/propToolAdmin/Financiers.vue'),
-            }, {
-              path: 'products',
-              component: () => import (/* webpackChunkName: "propToolAdminProducts" */ './views/flow/propToolAdmin/Products.vue'),
-            }, {
-              path: 'pricing',
-              component: () => import (/* webpackChunkName: "propToolAdminPricing" */ './views/flow/propToolAdmin/Pricing.vue'),
-            }, {
-              path: 'panels',
-              component: () => import (/* webpackChunkName: "propToolAdminPanels" */ './views/flow/propToolAdmin/Panels.vue'),
-            }, {
-              path: 'inverters',
-              component: () => import (/* webpackChunkName: "propToolAdminInverters" */ './views/flow/propToolAdmin/Inverters.vue'),
-            }, {
-              path: 'adders',
-              component: () => import (/* webpackChunkName: "propToolAdminAdders" */ './views/flow/propToolAdmin/Adders.vue'),
-            }, {
-              path: 'incentives',
-              component: () => import (/* webpackChunkName: "propToolAdminIncentives" */ './views/flow/propToolAdmin/Incentives.vue'),
-            }, {
-              path: 'zipCodes',
-              component: () => import (/* webpackChunkName: "propToolAdminZipCodes" */ './views/flow/propToolAdmin/ZipCodes.vue'),
-            },
-
-          ]
         }, {
           path: '/commissionManagement',
           name: 'commissionManagement',
@@ -1342,55 +1320,51 @@ const router = new Router({
           }
           ]
         }, {
-          path: '/proposal',
+          path: '/proposals',
+          name: 'proposals',
+          meta: {title: 'Albatross - Proposals'},
+          component: () => {
+            if (store.getters.userHasFeature('PROPOSALS')) {
+              return import (/* webpackChunkName: "admin" */ './views/blueraven/proposals/Proposals.vue')
+            } else {
+              return accessDenied()
+            }
+          }
+        }, {
+          path: '/proposalDesigns/:projectId',
+          name: 'proposalDesigns',
+          meta: {title: 'Albatross - Proposals'},
+          component: () => {
+            if (store.getters.userHasFeature('PROPOSALS')) {
+              return import (/* webpackChunkName: "admin" */ './views/blueraven/proposals/ProposalDesigns.vue')
+            } else {
+              return accessDenied()
+            }
+          }
+        }, {
+          path: '/proposal/:proposalId',
           name: 'proposal',
           meta: {title: 'Albatross - Proposals'},
           component: () => {
             if (store.getters.userHasFeature('PROPOSALS')) {
-              return import (/* webpackChunkName: "admin" */ './views/flow/proposal/Menu.vue')
+              return import (/* webpackChunkName: "admin" */ './views/blueraven/proposals/Proposal.vue')
             } else {
               return accessDenied()
             }
-          },
-          children: [
-            {
-              path: 'create',
-              name: 'create',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('PROPOSALS', 'CREATE')) {
-                  return import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue')
-                } else {
-                  return accessDenied()
-                }
-              }
-            },
-            {
-              path: 'search',
-              name: 'search',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
-            }, {
-              path: 'export',
-              name: 'export',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Export.vue'),
-            }, {
-              path: 'recreate',
-              name: 'recreate',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
-            }, {
-              path: ':proposalId',
-              name: 'modify',
-              meta: {title: 'Albatross - Proposals'},
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
-            }
-          ]
+          }
         }
+
+
       ]
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  //if the global spinner is on and the request takes a while, then you move to a different page that doesn't toggle the global
+  //spinner then it stays on the screen until the previous request finishes.  this fixes that.
+  store.commit(AppMutations.SET_LOADING, false)
+  next()
 })
 
 export default router

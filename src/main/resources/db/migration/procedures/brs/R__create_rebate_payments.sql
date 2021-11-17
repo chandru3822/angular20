@@ -10,7 +10,8 @@ v_payment_nbr integer;
 BEGIN
 
     update flow.project_process_step_custom_field_value
-    set numeric_value = p_total_promotion_amount where id =
+    set numeric_value = p_total_promotion_amount, date_modified = now()
+    where id =
     (select pscfv.id
     from flow.project p
              inner join flow.project_process_step pps
@@ -28,7 +29,7 @@ BEGIN
       and p.id = p_project_id and pps.main = true);
 
     update flow.project_process_step_custom_field_value
-    set numeric_value = p_total_promotion_amount where id =
+    set numeric_value = p_total_promotion_amount, date_modified = now() where id =
     (select pscfv.id
     from flow.project p
              inner join flow.project_process_step pps
