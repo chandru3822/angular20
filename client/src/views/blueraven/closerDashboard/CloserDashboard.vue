@@ -39,7 +39,7 @@
             <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
             <span>Round Robin Lead Allocation Rank</span>
           </div>
-          <v-select class="table-header-dropdown"
+          <v-autocomplete class="table-header-dropdown"
                     label="Round Robin"
                     v-model="selectedRoundRobin"
                     :items="roundRobins"
@@ -50,7 +50,7 @@
                     dense
                     hide-details
                     @input="loadRoundRobinLeadAllocationRankData"
-          ></v-select>
+          ></v-autocomplete>
         </div>
 
         <table v-if="leadAllocationRankingData.length > 0">
@@ -103,7 +103,7 @@
             <v-icon class="ranking-table-icon mr-2">mdi-chevron-double-down</v-icon>
             <span>Office FDC Rank</span>
           </div>
-          <v-select class="table-header-dropdown"
+          <v-autocomplete class="table-header-dropdown"
                     label="Closer Office"
                     v-model="selectedCloserOffice"
                     :items="closerOffices"
@@ -114,7 +114,7 @@
                     dense
                     hide-details
                     @input="loadOfficeFdcRankData"
-          ></v-select>
+          ></v-autocomplete>
         </div>
 
         <table v-if="officeFdcRankingData.length > 0">
