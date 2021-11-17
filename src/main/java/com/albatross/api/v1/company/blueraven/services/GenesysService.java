@@ -241,6 +241,8 @@ public class GenesysService {
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
     contactMap.put("date_created", formatter.format(calendar.getTime()));
 
+    addTextelParameters(contactMap, false);
+
     getCfvValues(contactMap, values);
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
 
@@ -351,6 +353,8 @@ public class GenesysService {
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
     contactMap.put("date_created", formatter.format(calendar.getTime()));
+
+    addTextelParameters(contactMap, true);
 
     List<CustomFieldGroup> customFieldGroups =
         customFieldValueService.getCustomFieldGroupsAndValues(
@@ -678,6 +682,9 @@ public class GenesysService {
     contacts = sqlCache.query("genesys.getContactIdsAgedLevel1", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_aged");
 
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level1Textel", null, Contact.class);
+    addContactsToGenesys(contacts, "Level1SMS");
+
     /*
      Lead Level 2
     */
@@ -689,6 +696,9 @@ public class GenesysService {
 
     contacts = sqlCache.query("genesys.getContactIdsAgedLevel2", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel2_aged");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level2Textel", null, Contact.class);
+    addContactsToGenesys(contacts, "Level2SMS");
 
     /*
      Lead Level 3
@@ -702,6 +712,9 @@ public class GenesysService {
     contacts = sqlCache.query("genesys.getContactIdsAgedLevel3", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel3_aged");
 
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level3Textel", null, Contact.class);
+    addContactsToGenesys(contacts, "Level3SMS");
+
     /*
      Lead Level 10
     */
@@ -713,6 +726,9 @@ public class GenesysService {
 
     contacts = sqlCache.query("genesys.getContactIdsAgedLevel10", null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel10_aged");
+
+    contacts = sqlCache.query("genesys.getContactIdsWeek1Level10Textel", null, Contact.class);
+    addContactsToGenesys(contacts, "Level10SMS");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
@@ -762,5 +778,34 @@ public class GenesysService {
         log.error("GENESYS: Error updating contactId={}, msg={}", contactId, e.getMessage());
       }
     }
+  }
+
+  private void addTextelParameters(HashMap<String, Object> contactMap, boolean isUpdate) {
+    contactMap.put("messageBody1", "Hello " + contactMap.get("first_name") + ", this is Blue Raven Solar. We are just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
+    contactMap.put("messageBody2", "Hey " + contactMap.get("first_name") + ", I'd love to share some incentives that are available right now to help you save money on your electric bill! Is now a good time to talk?");
+    contactMap.put("messageBody3", "Hello " + contactMap.get("first_name") + ", are you still interested in learning more about how you can save money on your electric bill by going solar? I'd be happy to answer any questions you have!");
+    contactMap.put("messageBody4", "Hi " + contactMap.get("first_name") + ", if you would prefer to see if you qualify without talking to us, click the link below to see if you qualify. https://blueravensolar.aidaform.com/qualify_now");
+    contactMap.put("messageBody5", "Just wanted to check in. We would be more than happy to assist you.");
+    contactMap.put("messageBody6", "Hey " + contactMap.get("first_name") +", we don't want to bother you, but we do want to be here to help with your request. Is there anything questions we can assist with about going solar?");
+    contactMap.put("messageBody7", "Hi " + contactMap.get("first_name") +", are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
+    contactMap.put("messageBodyAfterHours", "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");
+    contactMap.put("messageBodyStop", "We have removed you from our messaging campaign. No more messages will be sent. Questions? Send them to sales@blueravensolar.com or call 385-233-0858");
+
+    Long contactId = (Long) contactMap.get("id");
+    if (isUpdate) {
+      contactMap.put("line_id", "");
+    } else {
+      saveTextelPhoneKey(contactId, contactMap);
+    }
+  }
+
+  private void saveTextelPhoneKey(Long contactId, HashMap<String, Object> contactMap) {
+    ArrayList<String> textelPhoneKeys = new ArrayList<>(Arrays.asList("8CEB0154-A24A-4158-B791-3CD1B6EF40CF", "EE67684C-8096-4990-8FA1-5C902AD45CBC",
+      "0B631987-84D0-4DB2-9629-A0D6E22E95B4", "6C2E00EC-CEFD-4BBE-920B-528D19BA7263", "D62840D5-A25A-41BD-9FFE-E89BEDDE70FD"));
+
+    Random random = new Random();
+    String textelPhoneKey = textelPhoneKeys.get(random.nextInt(textelPhoneKeys.size()));
+    updateGenesysCfv(contactId, textelPhoneKey, 22530L);
+    contactMap.put("line_id", textelPhoneKey);
   }
 }
