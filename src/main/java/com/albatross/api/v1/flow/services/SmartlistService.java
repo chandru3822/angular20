@@ -445,13 +445,13 @@ public class SmartlistService {
 
     for (SmartlistFieldAssignment f: fields) {
       if (f.getDataTypeId() == 1) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if (f.getCustomFieldSqlKey() != null) {
-        query.append(String.format("  \"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
+        query.append(String.format(" \"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
       } else {
-        query.append(String.format("  %s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format(" brs.project_details.%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       }
     }
 
