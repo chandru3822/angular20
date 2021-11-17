@@ -341,25 +341,23 @@
   <ahj.inspection.createBlank>
     INSERT INTO brs.ahj_inspection
       (ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep,
-       portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method,
-       obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password,
-       business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id,
-       ladder_required, time_window, time_window_call_time, time_window_phone)
+      portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method,
+      obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password,
+      business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id,
+      ladder_required, time_window, time_window_call_time, time_window_phone)
     VALUES
       (:ahjId, null, null, null, null, null,
-       null, null, null, null, null,
-       null, null, null,
-       null, null, false, now(), :currentUser, null, null,
-       null, null, null, null)
+      null, null, null, null, null,
+      null, null, null,
+      null, null, false, now(), :currentUser, now(), :currentUser,
+      null, null, null, null)
     RETURNING id
   </ahj.inspection.createBlank>
 
-  <ahj.inspection.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_inspection (ahj_id, date_created, created_by_id)
-      VALUES (:ahjId, now(), :currentUser)
-    ]]>
-  </ahj.inspection.create>
+  <ahj.inspection.create><![CDATA[
+    INSERT INTO brs.ahj_inspection (ahj_id, date_created, created_by_id, date_modified, modified_by_id)
+    VALUES (:ahjId, now(), :currentUser, now(), :currentUser)
+  ]]></ahj.inspection.create>
 
   <ahj.inspection.update>
     <![CDATA[
@@ -368,7 +366,6 @@
           inspection_fee = :inspectionFee,
           re_inspection_fee = :reInspectionFee,
           payment_method = :paymentMethod,
-
           scheduling_note = :schedulingNote,
           technician_instruction_note = :technicianInstructionNote,
           scheduling_with_customer_note = :schedulingWithCustomerNote,
@@ -376,7 +373,6 @@
           reinspection_note = :reinspectionNote,
           documentation_note = :documentationNote,
           mpu_inspection_note = :mpuInspectionNote,
-
           required_inspection_types = :requiredInspectionTypes,
           inspection_time_window = :inspectionTimeWindow,
           brs_inspection_rep = :brsInspectionRep,
@@ -406,7 +402,6 @@
       SET inspection_fee = :inspectionFee,
           re_inspection_fee = :reInspectionFee,
           payment_method = :paymentMethod,
-
           scheduling_note = :schedulingNote,
           technician_instruction_note = :technicianInstructionNote,
           scheduling_with_customer_note = :schedulingWithCustomerNote,
@@ -414,7 +409,6 @@
           reinspection_note = :reinspectionNote,
           documentation_note = :documentationNote,
           mpu_inspection_note = :mpuInspectionNote,
-
           required_inspection_types = :requiredInspectionTypes,
           inspection_time_window = :inspectionTimeWindow,
           brs_inspection_rep = :brsInspectionRep,
@@ -474,14 +468,10 @@
     ]]>
   </ahj.inspection.link.findById>
 
-  <ahj.inspection.link.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_inspection_link
-        (ahj_inspection_id, name, link, username, password, notes, date_created, created_by_id, link_type_id)
-      VALUES
-        (:ahjInspectionId, :name, :link, :username, :password, :notes, now(), :currentUser, :linkTypeId)
-    ]]>
-  </ahj.inspection.link.create>
+  <ahj.inspection.link.create><![CDATA[
+    INSERT INTO brs.ahj_inspection_link (ahj_inspection_id, name, link, username, password, notes, link_type_id,  date_created, created_by_id,date_modified, modified_by_id)
+    VALUES (:ahjInspectionId, :name, :link, :username, :password, :notes, :linkTypeId, now(), :currentUser, now(), :currentUser)
+  ]]></ahj.inspection.link.create>
 
   <ahj.inspection.link.update>
     <![CDATA[
@@ -537,7 +527,8 @@
     <![CDATA[
       UPDATE brs.ahj_base_note_template
       SET title = :title,
-          note = :note
+          note = :note,
+          date_modified = now()
       WHERE id = :id
     ]]>
   </ahj.inspection.note.template.update>
@@ -545,7 +536,8 @@
   <ahj.inspection.note.template.delete>
     <![CDATA[
       UPDATE brs.ahj_base_note_template
-      SET archived = TRUE
+      SET archived = TRUE,
+          date_modified = now()
       WHERE id = :id
     ]]>
   </ahj.inspection.note.template.delete>

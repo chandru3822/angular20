@@ -5,7 +5,7 @@
         Add Organization
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/orgs">Cancel</v-btn>
-        <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields"
+        <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
                @click="validate">Save</v-btn>
       </v-card-title>
 
@@ -34,11 +34,28 @@
                         item-value="id"
                               attach
               ></v-autocomplete>
+              <v-select attach v-model="org.companyStateId"
+                        :items="states"
+                        label="State"
+                        item-text="state"
+                        item-value="id"
+              ></v-select>
               <div class="mb-3">
                 <label>Show in Scheduling Tool:</label>
-                <input type="checkbox" class="ml-2" v-model="org.schedulable">
+                <input type="checkbox" class="ml-2" v-model="org.schedulable" @change="getCompanyTimezones(org.schedulable)">
               </div>
-              <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+              <div v-if="org.schedulable">
+                <v-autocomplete v-model="org.companyTimezoneId"
+                                :items="companyTimezones"
+                                label="Timezone"
+                                hide-details
+                                item-text="timezone"
+                                item-value="id"
+                                attach
+                ></v-autocomplete>
+                <h6 class="mt-3 red-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
+              </div>
+              <div class="mb-3 mt-3" v-if="$store.getters.isParent(parentId)">
                 <label>Make available in children:</label>
                 <input type="checkbox" class="ml-3" v-model="org.availableToChildren">
               </div>
@@ -65,12 +82,13 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, putRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import SpinnerInline from '@/components/SpinnerInline'
+  import {getCompanyStates} from "@/services/stateService";
 
   export default {
     name: 'NewLead',
@@ -86,6 +104,8 @@
         orgTypes: [],
         loadingInsertFields: true,
         parents: [],
+        companyTimezones: [],
+        states: [],
         dirtyCfvs: [],
         customFieldGroups: [],
         parentId: this.$store.state.user.details.parentCompanyId,
@@ -94,6 +114,7 @@
       }
     },
     created () {
+      this.getCompanyStates()
       this.getCustomFieldGroups()
       this.getOrgTypes()
     },
@@ -101,6 +122,21 @@
       validate () {
         if (this.$refs.orgForm.validate()) {
           this.saveOrg()
+        }
+      },
+      async getCompanyTimezones(schedulable) {
+        if(schedulable) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequestWithParams(`/timezone`)
+            this.companyTimezones = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       async getCustomFieldGroups () {
@@ -173,7 +209,20 @@
       },
       getReadOnly: function (field) {
         return getCustomFieldReadOnly(this.$store, field)
-      }
+      },
+      async getCompanyStates () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getCompanyStates()
+          this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
 
   }

@@ -148,7 +148,12 @@ public class InstallAgreementRepository {
         pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
       }
     } catch (Exception e) {
-      resultMsg = e.getMessage();
+      if (e.getMessage().contains("locate")) {
+        log.warn(String.format("IARQ: Unable to locate goodleap application for project ID: %s", projectId));
+        throw new RuntimeException(e);
+      } else {
+        resultMsg = e.getMessage();
+      }
     }
 
     return resultMsg;

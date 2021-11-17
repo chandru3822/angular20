@@ -84,7 +84,7 @@
   <link.deleteLink>
     <![CDATA[
         update flow.link
-        set archived = true
+        set archived = true, date_modified = now()
         where id = :id
     ]]>
   </link.deleteLink>
@@ -92,7 +92,8 @@
     <![CDATA[
       update flow.link
         set link = :link,
-            url = :url
+            url = :url,
+            date_modified = now()
       where id = :id
     ]]>
   </link.updateLink>

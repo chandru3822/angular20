@@ -26,7 +26,9 @@
            p.latitude,
            p.longitude,
            p.city,
-           s.abbreviation as state
+           s.abbreviation as state,
+           p.street1,
+           p.postal_code
     FROM   flow.project p
           inner join flow.company_process cp on cp.id = p.company_process_id
           inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
@@ -55,7 +57,10 @@
            limited_projects.state_abbreviation as state,
            limited_projects.project_status_type,
            limited_projects.latitude,
-           limited_projects.longitude
+           limited_projects.longitude,
+           limited_projects.postal_code,
+           limited_projects.street1
+
         FROM (
                with project_ids as (
                    with positions as (
@@ -112,7 +117,7 @@
                       p.city,
                       s.state,
                       s.abbreviation           as state_abbreviation,
-                      p.postal_code            as "postalCode",
+                      p.postal_code            as postal_code,
                       cp.status_type_id,
                       st.status_type,
                       p.company_project_status_type_id,
@@ -369,8 +374,8 @@
 
   <project.insert>
     <![CDATA[
-      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone)
-      values (:contactId, :processId, trim(:projectName), :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone)
+      insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified)
+      values (:contactId, :processId, trim(:projectName), :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone, :createdById, now(), :createdById, now())
     ]]>
   </project.insert>
 
@@ -458,8 +463,8 @@
   ]]></project.getAttachmentById>
 
   <project.addAttachment><![CDATA[
-    insert into flow.project_attachment(attachment_id, project_id, created_by_id)
-    values (:attachmentId, :projectId, :createdById)
+    insert into flow.project_attachment(attachment_id, project_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:attachmentId, :projectId, :createdById, now(), :createdById, now())
   ]]></project.addAttachment>
 
   <project.updateOwner><![CDATA[
@@ -613,22 +618,23 @@
   <project.saveInitialProjectStatusType>
     <![CDATA[
       update flow.company_project_status_type
-      set is_default = false
+      set is_default = false, date_modified = now()
       where company_id = :companyId;
       update flow.company_project_status_type
-      set is_default = true
+      set is_default = true, date_modified = now()
       where id = :id;
     ]]>
   </project.saveInitialProjectStatusType>
 
   <project.insertCompanyStatus><![CDATA[
-    insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, created_by_id, display_order)
-    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, :currentUserId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true))
+    insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true), :currentUserId, now(), :currentUserId, now())
 ]]></project.insertCompanyStatus>
 
   <project.updateStatus><![CDATA[
     update flow.project
-    set company_project_status_type_id = :companyProjectStatusTypeId
+    set company_project_status_type_id = :companyProjectStatusTypeId,
+        date_modified = now()
     where id = :projectId
 ]]></project.updateStatus>
 
@@ -636,7 +642,8 @@
     update flow.project
       set latitude = :latitude,
           longitude = :longitude,
-          time_zone = :timeZone
+          time_zone = :timeZone,
+          date_modified = now()
     where id = :id
   ]]></project.updateGeoLocation>
 

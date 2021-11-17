@@ -68,8 +68,10 @@ BEGIN
                 insert into flow.project_custom_field_value(project_id, custom_field_group_assignment_id,
                                                             int_value,
                                                             date_created,
-                                                            created_by_id)
-                values (p_project_id, v_custom_field_group_assignment_id, v_int_value_id, now(), p_current_user_id);
+                                                            created_by_id,
+                                                            date_modified,
+                                                            modified_by_id)
+                values (p_project_id, v_custom_field_group_assignment_id, v_int_value_id, now(), p_current_user_id, now(), p_current_user_id);
             end if;
         else
             select cf.id
@@ -79,9 +81,9 @@ BEGIN
             where f.feature_code = 'PROJECTS'
               and cf.company_id = v_company_id;
             insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
-                                               date_created, created_by_id)
+                                               date_created, created_by_id, date_modified, modified_by_id)
             values (v_company_feature_id, 'Unable to assign Lead Source to Project ' || p_project_id || '.', 1, now(),
-                    p_current_user_id);
+                    p_current_user_id, now(), p_current_user_id);
         end if;
     else
         select cf.id
@@ -91,9 +93,9 @@ BEGIN
         where f.feature_code = 'PROJECTS'
           and cf.company_id = v_company_id;
         insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
-                                           date_created, created_by_id)
+                                           date_created, created_by_id, date_modified , modified_by_id)
         values (v_company_feature_id, 'Unable to assign Lead Source to Project ' || p_project_id || '.', 1, now(),
-                p_current_user_id);
+                p_current_user_id, now(), p_current_user_id);
 
     end if;
 

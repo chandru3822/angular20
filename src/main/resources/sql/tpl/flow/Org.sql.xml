@@ -104,13 +104,14 @@
          available_to_children = :availableToChildren,
          company_timezone_id = :companyTimezoneId,
          company_state_id = :companyStateId,
-         active_flag = :active
+         active_flag = :active,
+         date_modified = now()
     where id = :id
   ]]></org.updateOrg>
 
   <org.insertOrg><![CDATA[
-    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id)
-    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId)
+    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id, date_created, date_modified)
+    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId, now(), now())
   ]]></org.insertOrg>
 
   <org.getOne><![CDATA[
@@ -228,8 +229,8 @@
   ]]></org.getOneOrgCalendarAccess>
 
   <org.saveOrgCalendarToUser><![CDATA[
-      insert into flow.user_org_access(org_id, user_id, created_by_id)
-      values (:orgId, :userId, :createdById)
+      insert into flow.user_org_access(org_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
+      values (:orgId, :userId, :createdById, now(), :createdById, now())
   ]]></org.saveOrgCalendarToUser>
 
 
@@ -265,8 +266,8 @@
   ]]></org.getOrgAttachments>
 
   <org.addAttachment><![CDATA[
-    insert into flow.org_attachment(attachment_id, org_id, created_by_id)
-    values (:attachmentId, :orgId, :createdById)
+    insert into flow.org_attachment(attachment_id, org_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:attachmentId, :orgId, :createdById, now(), :createdById, now())
   ]]></org.addAttachment>
 
 </sql>

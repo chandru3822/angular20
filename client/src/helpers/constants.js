@@ -1,4 +1,4 @@
-const { VUE_APP_BASE_API, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = process.env
 
 let constants = {}
 
@@ -7,6 +7,7 @@ constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
 constants.PROD_COLOR = 'primaryCustom' //this is the dark blue prod color
+constants.VUE_APP_ENV = VUE_APP_ENV
 constants.VUE_APP_BASE_API = VUE_APP_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
 constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'

@@ -32,6 +32,9 @@ BEGIN
              inner join flow.postal_code_zone_user pczu
                         on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
                            pczu.archived is false
+             inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+             inner join flow.user_status_type ust
+                        on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
       where pcz.id = p_postal_code_zone_id and pcz.remote is false);
     create index round_robin_users_user_id on round_robin_users(user_id);
     create index round_robin_users_distribution_time_frame_days on round_robin_users(distribution_time_frame_days);
@@ -43,6 +46,9 @@ BEGIN
              inner join flow.postal_code_zone_user pczu
                         on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
                            pczu.archived is false
+             inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+             inner join flow.user_status_type ust
+                        on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
       where pcz.archived is false and pcz.remote is true
     );
     create index round_robin_users_user_id on round_robin_users(user_id);
@@ -240,6 +246,9 @@ BEGIN
                                                    coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
                                                    pczu.manual_allocation
                                             from flow.postal_code_zone_user pczu
+                                                   inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+                                                   inner join flow.user_status_type ust
+                                                              on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
                                                      left join lead_gen_num lgn on lgn.user_id = pczu.user_id
                                                      left join lead_gen_den lgd on lgd.user_id = pczu.user_id
                                                      left join self_gen sg on sg.user_id = pczu.user_id
