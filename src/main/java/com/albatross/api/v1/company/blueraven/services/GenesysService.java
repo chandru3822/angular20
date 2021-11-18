@@ -259,6 +259,8 @@ public class GenesysService {
       return;
     }
 
+    contactMap.put("QueueName", getQueueName(leadLevel));
+
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
     String contactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, false);
@@ -375,6 +377,8 @@ public class GenesysService {
     if (leadLevel == null || leadLevel.isEmpty()) {
       return;
     }
+
+    contactMap.put("QueueName", getQueueName(leadLevel));
 
     if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
@@ -604,6 +608,20 @@ public class GenesysService {
     }
 
     return new HashSet<>();
+  }
+
+  private String getQueueName(String leadLevel) {
+    if (leadLevel.equals("1")) {
+      return "SMS Level 1";
+    } else if (leadLevel.equals("2")) {
+      return "SMS Level 2";
+    } else if (leadLevel.equals("3")) {
+      return "SMS Level 3";
+    } else if (leadLevel.equals("10")) {
+      return "SMS Level 10";
+    }
+
+    return null;
   }
 
   // Get the Genesys id of the Contact List from Genesys
