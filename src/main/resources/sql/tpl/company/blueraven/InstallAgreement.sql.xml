@@ -142,7 +142,7 @@
 
     <installAgreement.setCreditLastCheckedBy><![CDATA[
         UPDATE brs.project_details
-        SET credit_last_checked_by = :creditLastCheckedBy, date_modified = now()
+        SET credit_last_checked_by = :creditLastCheckedBy
         WHERE project_id = :projectId
     ]]></installAgreement.setCreditLastCheckedBy>
 </sql>
