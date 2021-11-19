@@ -95,6 +95,7 @@
   import constants from "@/helpers/constants";
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
+    handleHidingGlobalLoader,
     postRequest,
     getSnackbar,
     getRequestWithParams
@@ -154,10 +155,10 @@
         try {
           let params = this.payrollSearch
           this.payrollSearch.positionId = this.positionId
-          const {data} = await postRequest(`/payroll/search`, params, 'blueraven')
+          const {data, status} = await postRequest(`/payroll/search`, params, 'blueraven')
           this.payrollData = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Payroll Data')

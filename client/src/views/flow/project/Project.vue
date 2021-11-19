@@ -236,7 +236,7 @@
 </template>
 
 <script>
-  import {getRequest, putRequest, postRequest, isNumberOrHyphen, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, isNumberOrHyphen, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import ProjectDetails from '@/views/flow/project/ProjectDetails'
@@ -370,11 +370,11 @@
       getProject: async function () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/project/${this.projectId}`)
+          const {data, status} = await getRequest(`/project/${this.projectId}`)
           this.project = data
           window.document.title = `${this.project.projectName} - Project Details`
           this.projectLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.projectLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -385,12 +385,12 @@
         this.displayChangeOwner = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
+          const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -406,12 +406,12 @@
       updateStatus: async function () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await postRequest(`/project/${this.projectId}/status`, this.project)
+          const {status} = await postRequest(`/project/${this.projectId}/status`, this.project)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error updating project status')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -419,12 +419,12 @@
         this.editAddress = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/project`, this.project)
+          const {status} = await putRequest(`/project`, this.project)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -438,9 +438,9 @@
       getCompanyStates: async function () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStates()
+          const {data, status} = await getCompanyStates()
           this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
@@ -451,9 +451,9 @@
       getCountries: async function () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCountries()
+          const {data, status} = await getCountries()
           this.countries = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
@@ -464,9 +464,9 @@
       getOwners: async function () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/project/owners`)
+          const {data, status} = await getRequest(`/project/owners`)
           this.availableOwners = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')

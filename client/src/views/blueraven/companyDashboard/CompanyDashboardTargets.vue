@@ -67,7 +67,7 @@
   import constants from '@/helpers/constants'
   import Snackbar from '@/components/Snackbar.vue'
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'companyDashboardTargets',
@@ -101,10 +101,10 @@
       async getTargets () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest('/companyDashboard/targets', 'blueraven')
+          const {data, status} = await getRequest('/companyDashboard/targets', 'blueraven')
           this.targets = cloneDeep(data)
           this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving targets')
@@ -116,11 +116,11 @@
       async updateTargets () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await postRequest('/companyDashboard/updateTargets', this.targets, 'blueraven')
+          const {status} = await postRequest('/companyDashboard/updateTargets', this.targets, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Targets have been updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving company targets')

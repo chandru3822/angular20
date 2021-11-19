@@ -652,7 +652,7 @@
   import AhjLink from "../components/AhjLinks"
   import AhjRequirement from "../components/AhjRequirements"
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
@@ -702,7 +702,7 @@
       async getAhjUtility() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
+          const {data, status} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
           this.ahjUtility = cloneDeep(data)
           window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
           this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name?.toLowerCase())
@@ -710,38 +710,41 @@
           this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name?.toLowerCase())
           this.ahjUtility.submissionLinks = orderBy(this.ahjUtility.submissionLinks, link => link.name?.toLowerCase())
           this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name?.toLowerCase())
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Utility')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getFinancierList() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest('/financier/active', 'blueraven')
+          const {data, status} = await getRequest('/financier/active', 'blueraven')
           this.financiers = cloneDeep(data)
           this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : {submissionMethod: null}
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving list of financiers')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getCustomFieldGroupAssignmentsForScreen() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: this.ahjUtility.id, objectTypeId: 2}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroupAssignments = cloneDeep(data)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -772,17 +775,18 @@
 
         try {
           this.ahjUtility.customFieldGroups = this.customFieldGroupAssignments
-          const {data} = await putRequest('/ahjUtility', this.ahjUtility, 'blueraven')
+          const {data, status} = await putRequest('/ahjUtility', this.ahjUtility, 'blueraven')
           this.ahjUtility = cloneDeep(data)
           this.dataWasChanged = false
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Utility saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Utility')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created () {

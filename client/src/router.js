@@ -1383,6 +1383,8 @@ router.beforeEach((to, from, next) => {
   //if the global spinner is on and the request takes a while, then you move to a different page that doesn't toggle the global
   //spinner then it stays on the screen until the previous request finishes.  this fixes that.
   store.commit(AppMutations.SET_LOADING, false)
+  //cancel all pending axios requests when route change
+  store.dispatch('CANCEL_PENDING_REQUESTS');
   next()
 })
 

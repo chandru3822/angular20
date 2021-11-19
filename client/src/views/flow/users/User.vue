@@ -111,7 +111,7 @@
   import axios from 'axios'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {UserActions, UserMutations} from "@/stores/UserStore";
 
@@ -167,7 +167,7 @@
       }
 
       if(typeof this.$refs.userRouterViewContainer?.hasDirtyNotes === 'function') {
-        this.hasDirtyNotes = this.$refs.userRouterViewContainer.hasDirtyNotes()
+        this.hasDirtyNotes = this.$refs.userRouterViewContainer?.hasDirtyNotes()
       }
 
       if (this.navigationOverride || (!this.hasDirtyFields && !this.hasDirtyNotes)) {
@@ -211,10 +211,10 @@
       async getUser () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/${this.userId}`)
+          const {data, status} = await getRequest(`/user/${this.userId}`)
           this.user = data
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')

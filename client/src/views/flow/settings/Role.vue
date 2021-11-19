@@ -58,7 +58,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Role',
@@ -87,14 +87,15 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(this.roleId) {
-            const {data} = await putRequest(`/role/`, this.role)
+            const {data, status} = await putRequest(`/role/`, this.role)
             this.$router.push({name: 'role', params: {id: this.roleId}})
+            handleHidingGlobalLoader(this, status)
           } else {
-            const {data} = await postRequest(`/role/`, this.role)
+            const {data, status} = await postRequest(`/role/`, this.role)
             this.roleId = data.id
             this.$router.push({name: 'role', params: {id: this.roleId}})
+            handleHidingGlobalLoader(this, status)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Role')
@@ -116,10 +117,10 @@
       async getFeatures() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/feature/withAccess`)
+          const {data, status} = await getRequest(`/feature/withAccess`)
           this.role.companyFeatures = data
           this.populateHeaders()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
@@ -130,10 +131,10 @@
       async getRole() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/role/${this.roleId}`)
+          const {data, status} = await getRequest(`/role/${this.roleId}`)
           this.role = data
           this.populateHeaders()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Role')

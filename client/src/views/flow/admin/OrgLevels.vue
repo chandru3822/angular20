@@ -126,7 +126,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getOrgLevels} from '@/services/orgService'
-  import {deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -158,7 +158,7 @@
       async saveOrgLevel(ol, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/orgType/level`, ol)
+          const {data, status} = await putRequest(`/orgType/level`, ol)
           if(isNew){
             this.orgLevels.push(data)
             this.addNew = false
@@ -170,7 +170,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'Org Level Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
@@ -181,9 +181,9 @@
       async getOrgLevels() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgLevels()
+          const {data, status} = await getOrgLevels()
           this.orgLevels = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
@@ -194,13 +194,13 @@
       async deleteOrgLevel(level) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/orgType/level/${level.id}`)
+          const {status} = await deleteRequest(`/orgType/level/${level.id}`)
           this.orgLevels = this.orgLevels.filter(ol => {
             return ol.id !== level.id
           })
           this.snackbar = getSnackbar('SUCCESS', 'Org Level Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Level')

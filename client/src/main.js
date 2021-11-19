@@ -64,6 +64,14 @@ axios.interceptors.request.use(config => {
   if (store && store.state && store.state.user && config.url.indexOf(VUE_APP_BASE_API) > -1) {
     config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
   }
+  //  Generate cancel token source
+  let source = axios.CancelToken.source();
+
+  // Set cancel token on this request
+  config.cancelToken = source.token;
+
+  // Add to vuex to make cancellation available from anywhere
+  store.commit('ADD_CANCEL_TOKEN', source);
   return config
 })
 

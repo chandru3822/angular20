@@ -199,7 +199,7 @@
 
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-  import {getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import cloneDeep from 'lodash.clonedeep'
   import Attachments from '@/views/flow/components/Attachments'
@@ -257,7 +257,7 @@
         return this.dirtyCfvs.length > 0 || this.dirtySystemFields
       },
       hasDirtyNotes() {
-        return this.$refs.notes.hasUnsavedNotes()
+        return this.$refs.notes?.hasUnsavedNotes()
       },
       async saveUser() {
         let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
@@ -276,13 +276,13 @@
             //save user
             await putRequest(`/user`, this.user)
             // save dirty custom field values
-            const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
+            const {data, status} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
             this.dirtyCfvs = []
             this.dirtySystemFields = false
             this.user.newPassword = null
             this.customFieldGroups = data
             this.fieldsSaving = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
@@ -306,9 +306,9 @@
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/customFieldValues/user/${this.userId}`)
+          const {data, status} = await getRequestWithParams(`/customFieldValues/user/${this.userId}`)
           this.customFieldGroups = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
@@ -319,9 +319,9 @@
       async getUser () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/${this.userId}`)
+          const {data, status} = await getRequest(`/user/${this.userId}`)
           this.user = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
@@ -332,10 +332,10 @@
       async getCompanies () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/companies/availableForUser`)
+          const {data, status} = await getRequestWithParams(`/companies/availableForUser`)
           this.companies = data
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Companies')
@@ -346,11 +346,11 @@
       async getNotes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/note/getUserNotes`, { params: {
+          const {data, status} = await getRequestWithParams(`/note/getUserNotes`, { params: {
               primaryId: this.userId
-            }})
+            }}, null, [])
           this.notes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
@@ -364,7 +364,7 @@
           let params = {
             companyId: companyId
           }
-          const {data} = await getRequestWithParams(`/user/statuses`, {params})
+          const {data, status} = await getRequestWithParams(`/user/statuses`, {params})
           if(companyId) {
             //the user status types for adding a user to a user_company
             this.companyUserStatusTypes = cloneDeep(data)
@@ -373,7 +373,7 @@
             this.userStatusTypes = cloneDeep(data)
           }
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
@@ -388,12 +388,12 @@
             companyId: uc.id,
             userId: this.userId
           }
-          const {data} = await postRequest(`/user/removeFromCompany`, params)
+          const {data, status} = await postRequest(`/user/removeFromCompany`, params)
           this.user.companies = data
           if(this.companyId === uc.id) {
             this.$router.push({name: 'users'})
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing User Company')
@@ -409,11 +409,11 @@
             companyUserStatusTypeId: this.newCompany.companyUserStatusTypeId,
             userId: this.userId
           }
-          const {data} = await postRequest(`/user/addToCompany`, params)
+          const {data, status} = await postRequest(`/user/addToCompany`, params)
           this.user.companies = data
           this.newCompany = {}
           this.addUserCompany = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Company')
@@ -424,8 +424,8 @@
       async saveUserStatus () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/user/${this.userId}/status/${this.user.userStatusTypeId}`)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await postRequest(`/user/${this.userId}/status/${this.user.userStatusTypeId}`)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
@@ -436,11 +436,11 @@
       async unlockUserAccount () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/user/${this.userId}/unlock`)
+          const {status} = await putRequest(`/user/${this.userId}/unlock`)
           this.user.loginAttempts = 0
           this.snackbar = getSnackbar('SUCCESS', 'User Unlocked')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Unlocking User')

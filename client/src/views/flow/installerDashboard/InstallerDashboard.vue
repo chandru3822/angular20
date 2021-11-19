@@ -461,7 +461,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import constants from '@/helpers/constants'
   import ProductionStatsDrilldown from "./ProductionStatsDrilldown"
@@ -621,12 +621,12 @@
             endDate: this.endDate
           }
 
-          const {data} = await getRequestWithParams('/installerDashboard/dashboardValues/' + this.installationCrewIds, {params})
+          const {data, status} = await getRequestWithParams('/installerDashboard/dashboardValues/' + this.installationCrewIds, {params})
           this.dashValues = data
 
           this.getWipValues();
           this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
@@ -637,11 +637,11 @@
       async getWipValues() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest('/installerDashboard/wipValues/' + this.installationCrewIds)
+          const {data, status} = await getRequest('/installerDashboard/wipValues/' + this.installationCrewIds)
           this.workQueues = data
 
           this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving WIP data')
@@ -658,10 +658,10 @@
             endDate: this.metricsEndDate
           }
 
-          const {data} = await getRequestWithParams('/installerDashboard/performanceMetrics', {params})
+          const {data, status} = await getRequestWithParams('/installerDashboard/performanceMetrics', {params}, null, [])
           this.performanceMetrics = data
           this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving data')

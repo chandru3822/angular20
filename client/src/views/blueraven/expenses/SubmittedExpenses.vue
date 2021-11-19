@@ -326,7 +326,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
@@ -476,10 +476,10 @@ export default {
         let date2 = moment(this.endDate).format('MM/DD/YYYY')
         let url = this.showAll ? `/expenses/list` : `/expenses/unpaid`
         this.showButtonText = this.showAll ? 'Show Unpaid' : 'Show All'
-        const {data} = await getRequestWithParams(url, {params: {startDate: date1, endDate: date2}}, 'blueraven')
+        const {data, status} = await getRequestWithParams(url, {params: {startDate: date1, endDate: date2}}, 'blueraven')
         this.submittedExpenses = data
         this.masterExpenses = cloneDeep(data)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -490,9 +490,9 @@ export default {
     async deleteSubmittedExpense(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/expenses/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/expenses/${item.id}`, 'blueraven')
         item.archived = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Submitted Expense')
@@ -664,9 +664,9 @@ export default {
             userId: item.expenseBudgetUserId,
             expenseDate: expenseDate
           }
-          const {data} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
           this.budgetTypesForUser = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -678,9 +678,9 @@ export default {
     async getGlCodes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getGlCodes()
+        const {data, status} = await getGlCodes()
         this.glCodes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -691,9 +691,9 @@ export default {
     async getUsersWithBudget() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getUsersWithBudget()
+        const {data, status} = await getUsersWithBudget()
         this.usersWithBudget = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -705,11 +705,11 @@ export default {
       this.renderRequestImage = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getReimbursementRequestImage(item.reimbursementRequestId)
+        const {data, status} = await getReimbursementRequestImage(item.reimbursementRequestId)
         item.presignedUrl = data
         //this forces the dom to re-render the presignedUrl and i hate myself
         this.renderRequestImage = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')

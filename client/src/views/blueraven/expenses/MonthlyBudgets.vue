@@ -156,7 +156,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {getBudgetTypes} from './expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
@@ -211,9 +211,9 @@ export default {
     async getBudgets() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/expenseBudgets/list`, 'blueraven')
+        const {data, status} = await getRequest(`/expenseBudgets/list`, 'blueraven')
         this.budgets = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -225,9 +225,9 @@ export default {
       if(this.createNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/expenseBudgets/availableUsers`, 'blueraven')
+          const {data, status} = await getRequest(`/expenseBudgets/availableUsers`, 'blueraven')
           this.availableUsers = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -239,9 +239,9 @@ export default {
     async getBudgetTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getBudgetTypes()
+        const {data, status} = await getBudgetTypes()
         this.budgetTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -252,7 +252,7 @@ export default {
     async saveBudget(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/expenseBudgets`, item, 'blueraven')
+        const {data, status} = await postRequest(`/expenseBudgets`, item, 'blueraven')
         if(isNew) {
           this.budgets.push(data)
           this.newBudget = {}
@@ -260,7 +260,7 @@ export default {
         } else {
           this.expanded = []
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', e?.data?.message || 'Error Saving Budget')

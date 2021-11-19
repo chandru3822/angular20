@@ -82,7 +82,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 
-import { getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -111,9 +111,9 @@ export default {
     async getProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processes`)
+        const {data, status} = await getRequest(`/processes`)
         this.processes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -124,10 +124,10 @@ export default {
     async deleteProcess (processId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/processes/${processId}`)
+        const {status} = await deleteRequest(`/processes/${processId}`)
         this.snackbar = getSnackbar('SUCCESS', 'Process Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Process')
@@ -142,9 +142,9 @@ export default {
         this.newProcess.parentCompanyId = this.parentCompanyId ? this.parentCompanyId : this.companyId
         this.newProcess.createdById = this.userId
 
-        const {data} = await postRequest(`/processes`, this.newProcess)
+        const {data, status} = await postRequest(`/processes`, this.newProcess)
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
         this.$router.push({name: 'process', params: {id: data.id}})
       } catch (e) {
         console.error('*** ERROR ***', e)

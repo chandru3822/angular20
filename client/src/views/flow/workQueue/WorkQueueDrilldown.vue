@@ -151,6 +151,7 @@
   import moment from 'moment'
 
   import {
+    handleHidingGlobalLoader,
     getRequestWithParams,
     postRequest,
     getSnackbar,
@@ -246,18 +247,18 @@
       async exportCsv () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequestWithParams(`/smartlist/${this.smartlistId}/csv`, { params: {
+          const {data, status} = await getRequestWithParams(`/smartlist/${this.smartlistId}/csv`, { params: {
               timezone: this.timezone
             }})
           let blob = new Blob([data], {
             type: 'text/csv;charset=utf-8'
           });
           saveAs(blob, `${this.results[0].workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.snackbar = getSnackbar('ERROR', e.message)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           logError(e)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -277,7 +278,7 @@
             path = `/workQueue/${this.workQueueTypeId}`;
           }
 
-          const {data} = await getRequestWithParams(path, { params: {
+          const {data, status} = await getRequestWithParams(path, { params: {
               smartlistId: this.smartlistId,
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
@@ -287,7 +288,7 @@
             }})
           // this.results = data.content
           // this.totalItems = data.totalElements
-          this.results = data.data
+          this.results = data?.data || []
 
           //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
           this.results.forEach(r => {
@@ -303,7 +304,7 @@
 
           this.masterResults = cloneDeep(this.results)
 
-          this.customColumns = data.headers
+          this.customColumns = data?.headers || []
           this.customColumns.forEach(c => {
             let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
             this.headers.push( {
@@ -364,7 +365,7 @@
           }
 
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -376,12 +377,12 @@
       async assignToUser(item) {
         try {
           let userPosition = this.userPositions.find(up => up.canAssign)
-          await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
+          const {status} = await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
           item['Owner'] = this.userFullName
           this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           item.owner = this.$store.state.user.details.fullName
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let alreadyAssigned = e.data.includes('already assigned')

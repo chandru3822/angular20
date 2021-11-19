@@ -125,7 +125,7 @@
 
 <script>
 
-  import {logError, getRequestWithParams} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, logError, getRequestWithParams} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
@@ -216,8 +216,8 @@
               page: page - 1,
               size: itemsPerPage
             }
-          })
-          this.projects = data.content
+          }, null, [])
+          this.projects = data.content || []
           this.totalProjects = data.totalElements
           this.initialLoad = false
         } catch (e) {
@@ -228,7 +228,7 @@
       },
       async getSharedSmartlists() {
         try {
-          const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 1}})
+          const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 1}}, null, [])
           this.smartlists = [...this.smartlists, ...data]
         } catch (e) {
           logError(e)
@@ -243,12 +243,12 @@
       async generateReport() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequestWithParams(`/project/generate`, {params: {query: this.searchQuery}})
+          const {data, status} = await getRequestWithParams(`/project/generate`, {params: {query: this.searchQuery}})
           let report = new Blob([data], {type: constants.CSV_BLOB_TYPE})
           saveAs(report, 'projects.csv')
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

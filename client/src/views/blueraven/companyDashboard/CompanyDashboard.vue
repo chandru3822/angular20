@@ -147,7 +147,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import CompanyDashboardDrilldown from './CompanyDashboardDrilldown.vue'
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'companyDashboard',
@@ -241,11 +241,11 @@
             loadPartners: this.loadPartners
           }
 
-          const {data} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven', [])
           this.drilldownData = data
 
           this.drilldownIsLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
@@ -335,11 +335,11 @@
             targetTypeId: this.targetTypeId
           }
 
-          const {data} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven', [])
           this.dashValues = data
 
           this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving data')

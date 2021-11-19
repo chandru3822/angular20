@@ -110,7 +110,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { putRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
@@ -141,9 +141,9 @@
       async getOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgTypes()
+          const {data, status} = await getOrgTypes()
           this.orgTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
@@ -154,9 +154,9 @@
       async getOrgLevels() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgLevels()
+          const {data, status} = await getOrgLevels()
           this.levels = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
@@ -168,7 +168,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           ot.level = ot.level === 'n/a' ? null : ot.level
-          const {data} = await putRequest(`/orgType`, ot)
+          const {data, status} = await putRequest(`/orgType`, ot)
           if(isNew){
             this.orgTypes.push(data)
             this.addType = false
@@ -182,7 +182,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'Org Type Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')

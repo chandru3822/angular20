@@ -279,7 +279,7 @@ import orderBy from 'lodash.orderby'
 import Vue2Filters from 'vue2-filters'
 import {getWorkQueueCategories} from '@/services/workQueueService'
 import {
-  getRequest, logError, deleteRequest, getMinMaxRule,
+  handleHidingGlobalLoader, getRequest, logError, deleteRequest, getMinMaxRule,
   putRequest, postRequest, getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -362,9 +362,9 @@ export default {
     async getWorkQueueType() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
+        const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueueType = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -375,9 +375,9 @@ export default {
     async getWorkQueueCategories() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getWorkQueueCategories()
+        const {data, status} = await getWorkQueueCategories()
         this.workQueueCategories = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -389,12 +389,12 @@ export default {
       if (this.$refs.wqtForm.validate()) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/workQueueType/type`, this.workQueueType)
+          const {data, status} = await putRequest(`/workQueueType/type`, this.workQueueType)
           this.workQueueType = data
           this.editType = false
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Type')
@@ -441,7 +441,7 @@ export default {
     async addNewField() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/smartlist/${this.workQueueType.smartlistId}/field`, {
+        const {data, status} = await postRequest(`/smartlist/${this.workQueueType.smartlistId}/field`, {
           ...this.newField.selectedField,
           smartlistId: this.workQueueType.smartlistId,
           displayOrder: this.assignedFields.length + 1,
@@ -449,11 +449,11 @@ export default {
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -477,12 +477,12 @@ export default {
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await putRequest(`/smartlist/${this.workQueueType.smartlistId}/order`, this.assignedFields)
+        const {status} = await putRequest(`/smartlist/${this.workQueueType.smartlistId}/order`, this.assignedFields)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating field order')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -493,12 +493,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await deleteRequest(`/smartlist/${this.workQueueType.smartlistId}/field/${fieldToDelete.id}`)
         this.assignedFields.splice(fieldIndex, 1)
-        await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
+        const {status} = await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

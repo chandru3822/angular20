@@ -222,7 +222,7 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 
-import { getRequest, putRequest, postRequest, deleteRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, deleteRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -289,13 +289,13 @@ export default {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+        const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
             companyObjectTypeId: this.$route.params.id
           }
         }, 'blueraven')
         this.customFieldGroups = cloneDeep(data)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -307,7 +307,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         if(this.addField) {
-          const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+          const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
               objectTypeId: parseInt(this.$route.params.id),
               groupId
@@ -315,7 +315,7 @@ export default {
           }, 'blueraven')
           this.availableCustomFields = data
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -327,14 +327,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newGroup.objectTypeId = parseInt(this.$route.params.id)
-        const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup, 'blueraven')
+        const {data, status} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup, 'blueraven')
         this.newGroup = {}
         this.addNew = false
         // add the new type to the list
         this.customFieldGroups.push(data)
         this.snackbar = getSnackbar('SUCCESS', 'Group Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
@@ -347,12 +347,12 @@ export default {
       try {
         this.addField = false
         this.newField.customFieldGroupId = item.id
-        const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField, 'blueraven')
+        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField, 'blueraven')
         item.customFields.push(data)
         this.newField = {}
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
@@ -363,10 +363,10 @@ export default {
     async saveGroupChanges (groups) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
+        const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Group Changes')
@@ -377,12 +377,12 @@ export default {
     async saveGroup (group) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group, 'blueraven')
+        const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group, 'blueraven')
         group.tabName = data.tabName
         group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
         this.snackbar = getSnackbar('SUCCESS', 'Custom Field Group Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
@@ -393,11 +393,11 @@ export default {
     async deleteGroup(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
+        const {data, status} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
@@ -408,12 +408,12 @@ export default {
     async deleteFieldFromGroup(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
+        const {data, status} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting')
@@ -424,12 +424,12 @@ export default {
     async deleteField(item, customFieldGroupId, customFieldGroupAssignmentId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
+        const {data, status} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting')
@@ -438,7 +438,6 @@ export default {
       }
     },
     async saveFieldChanges (fields) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -452,11 +451,12 @@ export default {
         })
         // save them here
         if(fieldsToSave.length > 0) {
-          await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave, 'blueraven')
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
         }
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')

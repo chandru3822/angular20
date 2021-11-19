@@ -129,6 +129,7 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import {
+  handleHidingGlobalLoader,
   getRequestWithParams,
   getSnackbar,
   logError,
@@ -205,7 +206,7 @@ export default {
   methods: {
     async getSharedSmartlists() {
       try {
-        const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 2}})
+        const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 2}}, null, [])
         this.smartlists = [...this.smartlists, ...data]
       } catch (e) {
         logError(e)
@@ -224,16 +225,16 @@ export default {
     async getContacts () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
       try {
-        const {data} = await getRequestWithParams(`/contact/search`, { params: {
+        const {data, status} = await getRequestWithParams(`/contact/search`, { params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
-        }})
-        this.contacts = data.content
+        }}, null, [])
+        this.contacts = data.content || []
         this.totalContacts = data.totalElements
         this.dataLoading = false
         this.initialLoad = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contacts')
@@ -245,14 +246,14 @@ export default {
       this.dialog = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/contact/exportContacts`, { params: {
+        const {data, status} = await getRequestWithParams(`/contact/exportContacts`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
         saveAs(blob, "contacts.csv");
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')

@@ -338,7 +338,7 @@
 </template>
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
 
@@ -400,7 +400,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await this.getStates();
-          const {data} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
+          const {data, status} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
           this.rebateDetails = data[0];
           this.rebateDetails.sc = moment(this.rebateDetails.sc).format('MM/DD/YYYY')
 
@@ -421,7 +421,7 @@
           this.maxPayment = this.rebateDetails.payment_history.reduce((a,b) => Number(a.payment_nbr) > Number(b.payment_nbr) ? a : b)
           this.maxPaymentNumber = this.maxPayment && this.maxPayment.payment_nbr ? this.maxPayment.payment_nbr + 1 : 1
           this.getTotals();
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving rebate details')
@@ -663,13 +663,14 @@
       },
       async getStates () {
           try {
-            const {data} = await getCompanyStates()
+            const {data, status} = await getCompanyStates()
             this.states = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
       }
     }

@@ -102,7 +102,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Positions',
@@ -132,10 +132,10 @@
       },
       async getPositions() {
         try {
-          const {data} = await getRequest(`/position`)
+          const {data, status} = await getRequest(`/position`)
           this.positions = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
@@ -146,11 +146,11 @@
       async deletePosition(p) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/position/${p.id}`)
+          const {status} = await deleteRequest(`/position/${p.id}`)
           p.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Position Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')

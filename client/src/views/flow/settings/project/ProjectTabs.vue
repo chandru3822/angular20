@@ -114,7 +114,7 @@
   import Vue2Filters from 'vue2-filters'
 
   import orderBy from 'lodash.orderby'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
@@ -175,10 +175,10 @@
       async getTabs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/objectTypeTab/project`)
+          const {data, status} = await getRequest(`/objectTypeTab/project`)
           this.tabs = data
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
@@ -189,10 +189,10 @@
       async deleteTab(tabId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/objectTypeTab/${tabId}`)
+          const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Tab')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Tab')
@@ -203,7 +203,7 @@
       async saveTab(tab) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/objectTypeTab/project`, tab)
+          const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
           this.snackbar = getSnackbar('SUCCESS', 'Tab Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           if(!tab.id) {
@@ -215,7 +215,7 @@
           this.addNew = false
           this.newTab = {}
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Tab')
@@ -227,10 +227,10 @@
         if(rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await putRequest(`/objectTypeTab/order`, rows)
+            const {data, status} = await putRequest(`/objectTypeTab/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Tab Order Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Tab Order')

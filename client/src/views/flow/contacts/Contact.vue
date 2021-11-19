@@ -335,7 +335,7 @@ import {AppMutations} from '@/stores/AppStore'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-import {getRequest, deleteRequest, isNumberOrHyphen, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, isNumberOrHyphen, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
 import {getCountries} from '@/services/countryService'
@@ -423,7 +423,7 @@ export default {
     // called when the route that renders this component is about to
     // be navigated away from.
     // has access to `this` component instance.
-    this.hasDirtyNotes = this.$refs.notes.hasUnsavedNotes()
+    this.hasDirtyNotes = this.$refs.notes?.hasUnsavedNotes()
     if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields && !this.hasDirtyNotes)) {
       //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
       next()
@@ -460,7 +460,7 @@ export default {
         try {
         // save contact - tell server if address changed or not so we know whether to reload lat/long
           this.contact.reloadCoordinates = this.addressChanged
-          const {data} = await postRequest(`/contact`, this.contact)
+          const {data, status} = await postRequest(`/contact`, this.contact)
           this.addressChanged = false
           this.contact.reloadCoordinates = false
           this.contact.projects = data.projects
@@ -486,12 +486,12 @@ export default {
     async saveCustomFieldValues () {
       try {
         // save dirty custom field values
-        const {data} = await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
+        const {data, status} = await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.addressChanged = false
         this.customFieldGroups = data
         this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
@@ -509,9 +509,9 @@ export default {
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customFieldValues/contact/${this.contactId}`)
+        const {data, status} = await getRequestWithParams(`/customFieldValues/contact/${this.contactId}`)
         this.customFieldGroups = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
@@ -522,11 +522,11 @@ export default {
     async getContact () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/contact/${this.contactId}`)
+        const {data, status} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
         this.contactLoading = false
         window.document.title = `Contact - ${this.contact.fullName}`
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.contactLoading = false
@@ -541,10 +541,10 @@ export default {
         let params = {
           contactId: parseInt(this.contactId)
         }
-        const {data} = await getRequestWithParams(`/contact/owners`, { params })
+        const {data, status} = await getRequestWithParams(`/contact/owners`, { params })
         this.owners = data
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
@@ -555,11 +555,11 @@ export default {
     async getNotes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/note/getContactNotes`, { params: {
+        const {data, status} = await getRequestWithParams(`/note/getContactNotes`, { params: {
             primaryId: this.contactId
-          }})
+          }}, null, [])
         this.notes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
@@ -571,8 +571,8 @@ export default {
       this.changeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data, status} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.contact.owner = {}
         console.error('*** ERROR ***', e)
@@ -587,11 +587,11 @@ export default {
         let params = {
           contactId: parseInt(this.contactId)
         }
-        const {data} = await getRequestWithParams(`/processes`, {params})
+        const {data, status} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
         this.selectedProcess = data?.length === 1 ? data[0] : {}
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
@@ -602,11 +602,11 @@ export default {
     async convertToCustomer() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
+        const {data, status} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$router.push({name: 'projectDetails', params: {projectId: data.id}})
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Converting Contact')
@@ -617,9 +617,9 @@ export default {
     async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCompanyStates()
+        const {data, status} = await getCompanyStates()
         this.states = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
@@ -630,9 +630,9 @@ export default {
     async getCountries () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCountries(parseInt(this.companyId))
+        const {data, status} = await getCountries(parseInt(this.companyId))
         this.countries = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
@@ -654,7 +654,6 @@ export default {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

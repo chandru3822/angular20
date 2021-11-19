@@ -146,7 +146,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
@@ -215,7 +215,7 @@
           })
           if(!this.saveError) {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await putRequest(`/availability/slotSchedule`, schedule)
+            const {data, status} = await putRequest(`/availability/slotSchedule`, schedule)
             if(!schedule.id) {
               this.newSchedule = {}
               this.addNew = false
@@ -223,7 +223,7 @@
             }
             this.snackbar = getSnackbar('SUCCESS', 'Schedule Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -235,9 +235,9 @@
       async getSchedules() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/availability/slotSchedules`)
+          const {data, status} = await getRequest(`/availability/slotSchedules`, null, [])
           this.slotSchedules = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Slot Schedules')
@@ -248,11 +248,11 @@
       async deleteSchedule(schedule) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
+          const {status} = await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
           schedule.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Schedule')

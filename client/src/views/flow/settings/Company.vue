@@ -138,7 +138,7 @@
 <script>
 import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -190,10 +190,10 @@ export default {
     async loadCompany () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/companies/${this.companyId}`)
+        const {data, status} = await getRequest(`/companies/${this.companyId}`)
         this.company = data
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Company')
@@ -205,8 +205,8 @@ export default {
       if (this.$refs.companyForm.validate()) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/companies`, this.company)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await putRequest(`/companies`, this.company)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Company')

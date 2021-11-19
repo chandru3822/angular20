@@ -281,7 +281,7 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
 
-  import {getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -353,8 +353,8 @@
       async getCustomFields() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getAll`, this.apiPath)
-          data.forEach(d => {
+          const {data, status} = await getRequest(`/customField/getAll`, this.apiPath, null, [])
+          data?.forEach(d => {
             d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
           })
           this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
@@ -362,7 +362,7 @@
           if(this.userCanEdit) {
             this.customFields.unshift(cloneDeep(this.blankNewObject))
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -373,9 +373,9 @@
       async getSystemLists() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/systemList`)
+          const {data, status} = await getRequest(`/systemList`)
           this.systemLists = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -389,14 +389,14 @@
 
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequestWithParams(`/systemList/${listId}/options`, {params: {
+            const {data, status} = await getRequestWithParams(`/systemList/${listId}/options`, {params: {
                 //well i named these poorly...
                 //  if a list itself has sub options it means they can select suboptions
                 // this parameter means whether to get the subOptions or not
               subOptions: false
             }})
             this.systemListOptions = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -408,13 +408,13 @@
       async getCustomFieldObjectTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath)
-          data.forEach(d => d.archived = true)
+          const {data, status} = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath, null, [])
+          data?.forEach(d => d.archived = true)
           this.customFieldObjectTypes = cloneDeep(data)
           this.objectFilters = data
           this.objectFilters.unshift({id: -2, objectType: 'Unassigned'})
           this.objectFilters.unshift({id: -1, objectType: 'All'},)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -425,9 +425,9 @@
       async getCompanyDataTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/dataType/getCompanyDataTypes`)
+          const {data, status} = await getRequest(`/dataType/getCompanyDataTypes`)
           this.dataTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -439,7 +439,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           item.archived = true
-          const {data} = await putRequest(`/customField/delete/${item.id}`, this.apiPath)
+          const {data, status} = await putRequest(`/customField/delete/${item.id}`, this.apiPath, null, [])
           if (data?.length > 0) {
             this.deleteError = true
             this.fieldsInUse = data
@@ -453,7 +453,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Field')
@@ -504,7 +504,7 @@
           }
 
           object.fieldName = object.newFieldName ?? object.fieldName
-          const {data} = await postRequest(`/customField`, object, this.apiPath)
+          const {data, status} = await postRequest(`/customField`, object, this.apiPath)
           data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
           this.$set(object, 'listOfValues', data.listOfValues)
 
@@ -526,7 +526,7 @@
           this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
           this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')

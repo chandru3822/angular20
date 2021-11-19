@@ -82,7 +82,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, putRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
@@ -128,9 +128,9 @@
         if(schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequestWithParams(`/timezone`)
+            const {data, status} = await getRequestWithParams(`/timezone`)
             this.companyTimezones = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
@@ -143,10 +143,10 @@
         this.loadingInsertFields = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldGroup/getOrgInsertFields`)
+          const {data, status} = await getRequest(`/customFieldGroup/getOrgInsertFields`)
           this.customFieldGroups = data
           this.loadingInsertFields = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.loadingInsertFields = false
@@ -160,9 +160,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.org.customFieldGroups = this.customFieldGroups
         try {
-          const {data} = await putRequest(`/org`, this.org)
+          const {data, status} = await putRequest(`/org`, this.org)
           this.$router.push({name: 'org', params: {id: data.id}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Org')
@@ -173,9 +173,9 @@
       async getOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgTypes()
+          const {data, status} = await getOrgTypes()
           this.orgTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
@@ -188,9 +188,9 @@
         if(this.selectedOrgType?.orgParentTypeId) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getOrgsByType(this.selectedOrgType?.orgParentTypeId)
+            const {data, status} = await getOrgsByType(this.selectedOrgType?.orgParentTypeId)
             this.parents = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
@@ -213,9 +213,9 @@
       async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStates()
+          const {data, status} = await getCompanyStates()
           this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')

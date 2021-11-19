@@ -141,7 +141,7 @@
 
   import orderBy from 'lodash.orderby'
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
-  import {deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -185,9 +185,9 @@
       async getCompanyStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStatusTypes()
+          const {data, status} = await getCompanyStatusTypes()
           this.statusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -198,9 +198,9 @@
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStatusTypes()
+          const {data, status} = await getStatusTypes()
           this.rootStatusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -211,10 +211,10 @@
       async deleteType (type) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/status/${type.id}`)
+          const {status} = await deleteRequest(`/processStep/status/${type.id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
@@ -226,7 +226,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newType.companyId = this.companyId
-          const {data} = await postRequest(`/processStep/status`, this.newType)
+          const {data, status} = await postRequest(`/processStep/status`, this.newType)
 
           // add it to the records already on the screen
           this.statusTypes.push(data)
@@ -237,7 +237,7 @@
           this.newType = {}
           this.snackbar = getSnackbar('SUCCESS', 'Status Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Status')
@@ -248,12 +248,12 @@
       async saveType (s) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/processStep/status`, s)
+          const {status} = await putRequest(`/processStep/status`, s)
           this.selectedStatusTypeId = null
           this.expanded = []
           this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Status')

@@ -621,7 +621,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
   export default {
     name: 'ResidualPlan',
@@ -714,7 +714,7 @@
       async getResidualPlanDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
           this.residualPlan = data
           if([2,3].includes(this.residualPlan.statusId)) {
             this.residualPlan.approved = true
@@ -723,7 +723,7 @@
           this.residualPlan.positionType = 'closers'
           this.checkErrorMessages()
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Residual Plan Details')
@@ -809,13 +809,13 @@
             description: this.residualPlan.description,
             positionId: this.residualPlan.positionId
           }
-          const {data} = await postRequest(`/commissionManagement/residuals/plan`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/residuals/plan`, params, 'blueraven')
           if(!this.planId) {
             //need to reload some stuff if this was a new plan
             this.$router.push({name: 'residualPlan', params: {id: data.id}})
           }
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Residual Plan')
@@ -826,10 +826,10 @@
       async approvePlan () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/approve`, {}, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/approve`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Approved')
           this.residualPlan = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Approving Residual Plan')
@@ -876,7 +876,6 @@
           const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/clone`, params, 'blueraven')
           this.$router.push({name: 'residualPlan', params: {id: data.id}})
           // temporarily only allowing closers
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Cloning ResidualPlan')
@@ -887,12 +886,12 @@
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/updateUser`, item, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/residuals/${this.planId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
@@ -935,13 +934,13 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/users`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/residuals/${this.planId}/users`, params, 'blueraven')
           this.residualPlan.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.addUser = false
           this.newUser = {}
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Residual Plan User')
@@ -952,11 +951,11 @@
       async deleteUserFromPlan(residualPlanUser) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/residuals/${this.planId}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/residuals/${this.planId}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           residualPlanUser.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan User')
@@ -978,9 +977,9 @@
         this.errorLoadingUserHistory = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/residuals/residualPlanUser/${userId}/history`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/residuals/residualPlanUser/${userId}/history`, 'blueraven')
           this.userHistory = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.errorLoadingUserHistory = true
           console.error('*** ERROR ***', e)
@@ -1008,13 +1007,13 @@
       async deleteLevel (residualPlanAllocationId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation/${residualPlanAllocationId}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation/${residualPlanAllocationId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Level Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.residualPlan.residualPlanAllocations = this.residualPlan.residualPlanAllocations.filter(rpa => {
             return rpa.id !== residualPlanAllocationId
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Level')
@@ -1025,8 +1024,8 @@
       async updateLevel(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, item, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data, status} = await putRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, item, 'blueraven')
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Level')

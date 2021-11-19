@@ -58,7 +58,7 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import cloneDeep from 'lodash.clonedeep'
-import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'AccessControl',
@@ -100,11 +100,11 @@ export default {
     async loadSecondary() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/feature/access/allUserPositions`, { params: {
+        const {data, status} = await getRequestWithParams(`/feature/access/allUserPositions`, { params: {
             userId: this.userId
           }})
         this.secondaryFeatureAccess = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
@@ -223,11 +223,11 @@ export default {
       if(this.companyFeatureList?.length === 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/feature/withAccess`)
+          const {data, status} = await getRequest(`/feature/withAccess`)
           this.companyFeatureList = data
           this.populateHeaders()
           this.populateSelectedRows()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')

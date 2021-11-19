@@ -55,7 +55,7 @@ import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import {getUserProfileDefaultFields} from '@/services/userService'
 
-import {getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -82,9 +82,9 @@ export default {
     async getUserProfileDefaultFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getUserProfileDefaultFields()
+        const {data, status} = await getUserProfileDefaultFields()
         this.userProfileDefaultFields = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Default Fields')
@@ -96,10 +96,10 @@ export default {
     async updateShowOnUserProfile(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/defaultField`, item)
+        const {status} = await putRequest(`/defaultField`, item)
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
