@@ -73,21 +73,24 @@ public class SetterDashboardController {
     return setterDashboardService.officeRanking(limit, days);
   }
 
-  @GetMapping(value = "/getDistricts")
-  public String getDistricts(@RequestParam int userId) {
-    return setterDashboardService.getDistricts(userId);
+  @PostMapping(value = "/getAreas")
+  public String getAreas(@RequestBody DashboardUserRequest request) {
+    return setterDashboardService.getAreas(request);
   }
 
-  @GetMapping(value = "/getRegions")
-  public String getRegions(@RequestParam int userId,
-                           @RequestParam String districts) {
-    return setterDashboardService.getRegions(userId, districts);
+  @PostMapping(value = "/getRegions")
+  public String getRegions(@RequestBody DashboardUserRequest request) {
+    return setterDashboardService.getRegions(request);
   }
 
-  @GetMapping(value = "/getOffices")
-  public String getOffices(@RequestParam int userId,
-                           @RequestParam String regions) {
-    return setterDashboardService.getOffices(userId, regions);
+  @PostMapping(value = "/getDistricts")
+  public String getDistricts(@RequestBody DashboardUserRequest request) {
+    return setterDashboardService.getDistricts(request);
+  }
+
+  @PostMapping(value = "/getOffices")
+  public String getOffices(@RequestBody DashboardUserRequest request) {
+    return setterDashboardService.getOffices(request);
   }
 
   @PostMapping(value = "/getReps")
