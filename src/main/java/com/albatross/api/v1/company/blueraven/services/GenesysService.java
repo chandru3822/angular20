@@ -813,7 +813,19 @@ public class GenesysService {
     if (isUpdate) {
       contactMap.put("line_id", "");
     } else {
-      saveTextelPhoneKey(contactId, contactMap);
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("contactId", contactId);
+      Optional<String> textelPhoneKey =
+        sqlCache.get(
+          "genesys.getTextelPhoneKeyByContactId",
+          params,
+          new SingleColumnRowMapper<>(String.class));
+      if (textelPhoneKey.isPresent()) {
+        contactMap.put("line_id", textelPhoneKey.get());
+      }
+      else {
+        saveTextelPhoneKey(contactId, contactMap);
+      }
     }
   }
 

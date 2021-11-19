@@ -8,6 +8,15 @@
     limit 1
   ]]></genesys.getAgentIdByContactId>
 
+  <genesys.getTextelPhoneKeyByContactId><![CDATA[
+    select text_value
+    from flow.contact_custom_field_value
+    where contact_id = :contactId
+      and custom_field_group_assignment_id = 22530
+      and archived is false
+    limit 1
+  ]]></genesys.getTextelPhoneKeyByContactId>
+
   <genesys.getGenesysContactIdByContactId><![CDATA[
     select text_value
     from flow.contact_custom_field_value
