@@ -138,6 +138,7 @@ import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 import SmartlistTable from '@/components/SmartlistTable'
+import axios from 'axios'
 
 export default {
   name: 'Contacts',
@@ -174,7 +175,8 @@ export default {
       ],
       search: '',
       selectedSmartlistId: 0,
-      smartlists: [{id: 0, name: 'Default View'}]
+      smartlists: [{id: 0, name: 'Default View'}],
+      source: null
     }
   },
   watch: {
@@ -224,8 +226,18 @@ export default {
     }, 500),
     async getContacts () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
+
+      if(this.source){
+        this.source.cancel();
+      }
+      const CancelToken = axios.CancelToken;
+      this.source = CancelToken.source();
+
       try {
-        const {data, status} = await getRequestWithParams(`/contact/search`, { params: {
+        const {data, status} = await getRequestWithParams(`/contact/search`, {
+          source: this.source,
+          cancelToken: this.source.token,
+          params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
