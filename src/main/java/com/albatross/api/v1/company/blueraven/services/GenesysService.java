@@ -308,7 +308,11 @@ public class GenesysService {
       params.put("userId", SystemSettings.CRON_USER.getId());
     }
 
-    sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+    try {
+      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+    } catch (Exception e) {
+      log.error("GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}", contactId, textValue, cfgaId, e.getMessage());
+    }
   }
 
   private String checkIfCustomFieldDropdownValueExists(
@@ -621,7 +625,7 @@ public class GenesysService {
       return "SMS Level 10";
     }
 
-    return null;
+    return "";
   }
 
   // Get the Genesys id of the Contact List from Genesys
@@ -764,7 +768,8 @@ public class GenesysService {
       try {
         addContact(contact.getId(), values, false);
       } catch (Exception e) {
-        log.error("GENESYS: Error updating contact list: {}", e.getMessage());
+        log.error("GENESYS: Error updating contact list", e);
+        e.printStackTrace();
       }
     }
   }
