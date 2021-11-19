@@ -85,7 +85,7 @@
   import orderBy from 'lodash.orderby'
   import {getEventTypes} from '@/services/scheduleService'
 
-  import {deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -113,10 +113,10 @@
       async getEventTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getEventTypes()
+          const {data, status} = await getEventTypes()
           this.eventTypes = orderBy(data, [st => st.eventType.toLowerCase()])
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
@@ -127,10 +127,10 @@
       async deleteType(typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/eventType/type/${typeId}`)
+          const {status} = await deleteRequest(`/eventType/type/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Event Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Event Type')
@@ -142,7 +142,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newType.companyId = this.companyId
-          const {data} = await postRequest(`/eventType/type`, this.newType)
+          const {data, status} = await postRequest(`/eventType/type`, this.newType)
 
           this.snackbar = getSnackbar('SUCCESS', 'Event Type Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -155,7 +155,7 @@
           this.addNew = false
           this.newType = {}
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Event Type')
@@ -168,10 +168,10 @@
         try {
           this.selectedEventTypeId = null
           st.modifiedById = this.userId
-          await putRequest(`/eventType/type`, st)
+          const {status} = await putRequest(`/eventType/type`, st)
           this.snackbar = getSnackbar('SUCCESS', 'Event Type Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Event Type')

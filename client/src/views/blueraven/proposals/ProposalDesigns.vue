@@ -25,7 +25,7 @@
 
 <script>
 
-  import {logError, getRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, logError, getRequest} from '@/helpers/helpers'
   import {AppMutations} from "@/stores/AppStore";
 
   export default {
@@ -43,9 +43,9 @@
       async getProposalDesigns () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/proposals/designs/${this.projectId}`, 'blueraven')
+          const {data, status} = await getRequest(`/proposals/designs/${this.projectId}`, 'blueraven')
           this.designs = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.$store.commit(AppMutations.SET_LOADING, false)

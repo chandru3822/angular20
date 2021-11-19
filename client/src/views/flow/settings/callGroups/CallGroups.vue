@@ -138,7 +138,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
-  import { getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'CallGroups',
@@ -191,12 +191,12 @@
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/callGroup`, { params: { searchQuery: this.search}}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/callGroup`, { params: { searchQuery: this.search}}, 'blueraven')
           this.CallGroups = data
           this.daysPerPeriod = data[0].daysPerPeriod
           this.maxCallCount = data[0].maxCallCount
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -208,10 +208,10 @@
       async deleteCallGroup (groupId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
+          const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Call Group Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Call Group')
@@ -224,11 +224,11 @@
         try {
           this.newCallGroup.maxCallCount = this.maxCallCount
           this.newCallGroup.daysPerPeriod = this.daysPerPeriod
-          const {data} = await postRequest(`/callGroup/`, this.newCallGroup, 'blueraven')
+          const {data, status} = await postRequest(`/callGroup/`, this.newCallGroup, 'blueraven')
           this.$router.push({path: `/settings/callGroup/${data.id}/codes`})
           this.snackbar = getSnackbar('SUCCESS', 'Call Group Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Call Group')
@@ -241,8 +241,8 @@
         this.errorMsg = ''
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/callGroup/`, item, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data, status} = await postRequest(`/callGroup/`, item, 'blueraven')
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = 'Error updating Call Group'
@@ -258,11 +258,11 @@
             maxCallCount: this.maxCallCount,
             daysPerPeriod: this.daysPerPeriod
           }
-          await postRequest(`/callGroup/config`, params, 'blueraven')
+          const {status} = await postRequest(`/callGroup/config`, params, 'blueraven')
           this.editGroup = false
           this.snackbar = getSnackbar('SUCCESS', 'Call Group settings saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group')

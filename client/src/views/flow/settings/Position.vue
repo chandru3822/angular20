@@ -84,7 +84,7 @@
 
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
-  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Position',
@@ -134,9 +134,9 @@
       async getOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgTypes()
+          const {data, status} = await getOrgTypes()
           this.orgTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
@@ -154,17 +154,18 @@
             //removing for now since we dont know how to handle the data if we allow them to change this in the UI
             //if the position isn't schedulable, dont allow them to save a true value for useSlotSchedule
             // this.position.useSlotSchedule = this.position.schedulable ? this.position.useSlotSchedule : false
-            const {data} = await putRequest(`/position/`, this.position)
+            const {data, status} = await putRequest(`/position/`, this.position)
             this.position = data
             this.accessControlKey++
             // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
             // this.$router.push({name: 'position', params: {id: this.positionId}})
+            handleHidingGlobalLoader(this, status)
           } else {
-            const {data} = await postRequest(`/position/`, this.position)
+            const {data, status} = await postRequest(`/position/`, this.position)
             this.positionId = data.id
             this.$router.push({name: 'position', params: {id: this.positionId}})
+            handleHidingGlobalLoader(this, status)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Position')
@@ -176,10 +177,10 @@
       async getPosition() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/position/${this.positionId}`)
+          const {data, status} = await getRequest(`/position/${this.positionId}`)
           this.position = data
           this.positionLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')

@@ -629,7 +629,7 @@ import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
 
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
 export default {
   name: 'ProcessStepComponents',
@@ -955,11 +955,11 @@ export default {
         //have to close the work queue editor to for the component to refresh available values
         this.addNewWorkQueueType = false
         this.expanded = []
-        await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${this.processStepId}`)
+        const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${this.processStepId}`)
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Status Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
 
@@ -977,14 +977,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newType.processStepId = this.$route.params.id
-        const {data} = await postRequest(`/processStep/status/assignCompanyStatus/${this.newProcessStepStatusTypeId}/toProcessStep/${this.processStepId}`)
+        const {data, status} = await postRequest(`/processStep/status/assignCompanyStatus/${this.newProcessStepStatusTypeId}/toProcessStep/${this.processStepId}`)
         this.processStep.companyProcessStepStatusTypes.push(data)
         // reset fields
         this.addNewProcessStepStatusType = false
         this.newProcessStepStatusTypeId = null
         this.snackbar = getSnackbar('SUCCESS', 'Status Type Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
@@ -1011,10 +1011,9 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/processStep/${this.processStepId}`)
+        const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
         this.processStep = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1028,10 +1027,10 @@ export default {
       try {
         this.addNewType = !this.addNewType
         if (this.addNewType) {
-          const {data} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
+          const {data, status} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
           this.availableAttachmentTypes = data
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1043,14 +1042,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newType.processStepId = this.$route.params.id
-        const {data} = await postRequest(`/attachmentType/processStepType`, this.newType)
+        const {data, status} = await postRequest(`/attachmentType/processStepType`, this.newType)
         this.processStep.attachmentTypes.push(data)
         // reset fields
         this.addNewType = false
         this.newType = {}
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
@@ -1062,10 +1061,10 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
-        await deleteRequest(`/attachmentType/processStepType/${id}`)
+        const {status} = await deleteRequest(`/attachmentType/processStepType/${id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
@@ -1074,14 +1073,14 @@ export default {
       }
     },
     async getLinksForProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewLink = !this.addNewLink
         if (this.addNewLink) {
-          const {data} = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data, status} = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
           this.availableLinks = data
+          handleHidingGlobalLoader(this, status)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1093,14 +1092,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newLink.processStepId = this.$route.params.id
-        const {data} = await postRequest(`/links/processStep`, this.newLink)
+        const {data, status} = await postRequest(`/links/processStep`, this.newLink)
         this.processStep.links.push(data)
         // reset fields
         this.addNewLink = false
         this.newLink = {}
         this.snackbar = getSnackbar('SUCCESS', 'Link Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
@@ -1112,10 +1111,10 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewLink = false
-        await deleteRequest(`/links/processStep/${id}`)
+        const {status} = await deleteRequest(`/links/processStep/${id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
@@ -1128,10 +1127,10 @@ export default {
         this.addNewWorkQueueType = !this.addNewWorkQueueType
         if (this.addNewWorkQueueType) {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
+          const {data, status} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
           this.workQueueTypes = data
+          handleHidingGlobalLoader(this, status)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -1144,14 +1143,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newWorkQueueType.processStepId = this.$route.params.id
-        const {data} = await postRequest(`/workQueueType/processStep`, this.newWorkQueueType)
+        const {data, status} = await postRequest(`/workQueueType/processStep`, this.newWorkQueueType)
         this.processStep.workQueueTypes.push(data)
         // reset fields
         this.addNewWorkQueueType = false
         this.newWorkQueueType = {projectStatuses: [], processStepStatuses: []}
         this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
@@ -1163,13 +1162,13 @@ export default {
       //todo: fix this to save both things
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/workQueueType/saveStatusTypesToWorkQueueType`, item)
+        const {data, status} = await putRequest(`/workQueueType/saveStatusTypesToWorkQueueType`, item)
         item.projectStatuses = data.projectStatuses
         item.processStepStatuses = data.processStepStatuses
         this.expanded = []
         this.snackbar = getSnackbar('SUCCESS', 'Status Types Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Status Types')
@@ -1181,11 +1180,11 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewWorkQueueType = false
-        await deleteRequest(`/workQueueType/processStep/${item.id}`)
+        const {status} = await deleteRequest(`/workQueueType/processStep/${item.id}`)
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
@@ -1204,7 +1203,6 @@ export default {
       }), [f => f.processStepStatusType])
     },
     async saveAttachmentTypeOrder(attachmentTypes) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -1218,11 +1216,12 @@ export default {
         })
         // save them here
         if (typesToSave.length > 0) {
-          await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {status} = await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
+          handleHidingGlobalLoader(this, status)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
@@ -1231,7 +1230,6 @@ export default {
       }
     },
     async saveLinkOrder(links) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -1245,11 +1243,12 @@ export default {
         })
         // save them here
         if (linksToSave.length > 0) {
-          await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {status} = await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
+          handleHidingGlobalLoader(this, status)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Links')

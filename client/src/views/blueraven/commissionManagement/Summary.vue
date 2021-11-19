@@ -49,7 +49,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import constants from "@/helpers/constants";
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import { saveAs } from 'file-saver'
 
   export default {
@@ -90,9 +90,9 @@
       async getCurrentPayroll () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
           this.currentPayroll = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
@@ -104,10 +104,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/payroll/current/summary/${this.positionId}`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/current/summary/${this.positionId}`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')

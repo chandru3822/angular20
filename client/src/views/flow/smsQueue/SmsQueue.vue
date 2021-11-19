@@ -88,7 +88,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, getRequestWithParams, getSnackbar, postRequest, putRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar, postRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -140,7 +140,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {page, itemsPerPage} = this.options
-        const {data} = await getRequestWithParams(`/sms/queue`, {
+        const {data, status} = await getRequestWithParams(`/sms/queue`, {
           params: {
             page: page,
             size: itemsPerPage
@@ -149,7 +149,7 @@ export default {
 
         this.projects = data.content
         this.displayedProjects = data.content
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error retrieving Projects')
@@ -170,9 +170,9 @@ export default {
     async updateOwner(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/sms/updateOwner`, item)
+        const {status} = await putRequest(`/sms/updateOwner`, item)
         this.snackbar = getSnackbar('SUCCESS', 'Message updated')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         item.owner = 'Unassigned'
         console.error('*** ERROR ***', e)
@@ -184,8 +184,8 @@ export default {
     async updateMessage(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await postRequest(`/sms/updateSms`, item)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {status} = await postRequest(`/sms/updateSms`, item)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         item.owner = 'Unassigned'
         console.error('*** ERROR ***', e)

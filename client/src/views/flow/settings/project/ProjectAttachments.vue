@@ -86,7 +86,7 @@
 <script>
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
-import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
+import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters";
 
 export default {
@@ -114,9 +114,9 @@ export default {
       //this one loads attachment types already assigned to a project
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data } = await getRequest(`/attachmentType/projectTypes`)
+        const { data, status } = await getRequest(`/attachmentType/projectTypes`)
         this.projectAttachmentTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -130,10 +130,10 @@ export default {
       try {
         this.addNewType = !this.addNewType
         if(this.addNewType){
-          const { data } = await getRequest(`/attachmentType/typesForProjects`)
+          const { data, status } = await getRequest(`/attachmentType/typesForProjects`)
           this.availableAttachmentTypes = data
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -145,14 +145,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newType.processStepId = this.$route.params.id
-        const { data } = await postRequest(`/attachmentType/projectType`, this.newType)
+        const { data, status } = await postRequest(`/attachmentType/projectType`, this.newType)
         this.projectAttachmentTypes.push(data)
         // reset fields
         this.addNewType = false
         this.newType = {}
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
@@ -164,11 +164,11 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
-        await deleteRequest(`/attachmentType/projectType/${id}`)
+        const {status} = await deleteRequest(`/attachmentType/projectType/${id}`)
         // this.availableAttachmentTypes = data
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
@@ -177,7 +177,6 @@ export default {
       }
     },
     async saveAttachmentTypeOrder (attachmentTypes) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -191,11 +190,12 @@ export default {
         })
         // save them here
         if(typesToSave.length > 0) {
-          await putRequest(`/attachmentType/updateOrderInProject`, typesToSave)
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {status} = await putRequest(`/attachmentType/updateOrderInProject`, typesToSave)
+          handleHidingGlobalLoader(this, status)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
@@ -206,10 +206,10 @@ export default {
     async updateReadOnly(attachmentType) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/attachmentType/updateReadOnly/`, attachmentType)
+        const {status} = await putRequest(`/attachmentType/updateReadOnly/`, attachmentType)
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error updating Attachment Type')

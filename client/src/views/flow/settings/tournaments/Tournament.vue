@@ -27,6 +27,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {
+    handleHidingGlobalLoader,
     getRequest,
     getSnackbar
   } from '@/helpers/helpers'
@@ -69,9 +70,9 @@
       async getTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
           this.tournament = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')

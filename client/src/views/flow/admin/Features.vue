@@ -143,7 +143,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
 
@@ -186,7 +186,7 @@
               featureId: this.selectedFeature.id,
               featureName: this.selectedFeature.featureName,
             } : feature
-          const {data} = await putRequest(`${this.apiUrl}`, feature)
+          const {data, status} = await putRequest(`${this.apiUrl}`, feature)
           if(isNew){
             this.companyFeatures.push(data)
             this.addNew = false
@@ -198,7 +198,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'Feature Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
@@ -209,9 +209,9 @@
       async getCompanyFeatures() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`${this.apiUrl}`)
+          const {data, status} = await getRequest(`${this.apiUrl}`)
           this.companyFeatures = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
@@ -222,9 +222,9 @@
       async getFeatures() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/feature`)
+          const {data, status} = await getRequest(`/feature`)
           this.features = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
@@ -235,11 +235,11 @@
       async deleteFeature(feature) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`${this.apiUrl}/${feature.id}`)
+          const {status} = await deleteRequest(`${this.apiUrl}/${feature.id}`)
           feature.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Feature Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Feature')

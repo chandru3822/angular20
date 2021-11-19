@@ -81,7 +81,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ScoreDrilldown from "./component/ScoreDrilldown"
 
@@ -129,10 +129,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.dataLoading = false
           this.pool = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching pool details')
@@ -143,11 +143,11 @@
       async moveUsersToWinnersPool () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/advanceUsersToWinnerPool`, this.selectedUsers, 'blueraven')
+          const {status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/advanceUsersToWinnerPool`, this.selectedUsers, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Selected Users Advanced')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$router.push({name: 'tournamentWinners', params: { id: this.tournamentId }})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')

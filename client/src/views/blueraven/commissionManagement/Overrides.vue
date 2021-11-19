@@ -68,7 +68,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Overrides',
@@ -102,10 +102,10 @@
       async getOverridePlans () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}`, 'blueraven', [])
           this.overridePlans = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Override Plans')

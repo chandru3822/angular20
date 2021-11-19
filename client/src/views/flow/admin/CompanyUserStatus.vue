@@ -62,7 +62,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {getUserStatusTypes} from '@/services/userService'
 
@@ -91,9 +91,9 @@
       async getCompanyUserStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getUserStatusTypes()
+          const {data, status} = await getUserStatusTypes()
           this.statusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Company User Status Types')
@@ -104,11 +104,11 @@
       async saveCompanyUserStatusType(type) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/user/statusType`, type)
+          const {data, status} = await putRequest(`/user/statusType`, type)
           this.expanded = []
           this.snackbar = getSnackbar('SUCCESS', 'User Status Type Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating User Status')

@@ -73,7 +73,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import moment from 'moment'
   import { saveAs } from 'file-saver'
@@ -148,14 +148,14 @@
       async getAllBatches () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest('/rebate/getBatches/', 'blueraven')
+          const {data, status} = await getRequest('/rebate/getBatches/', 'blueraven')
           this.batches = data
 
           this.batches.forEach(b => {
             b.displayName  = b.id + ' - ' + this.formatDate(b.batchDate) + ' - ' + b.updatedByUser;
           });
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Batches')
@@ -166,12 +166,12 @@
       async getBatchDetails(batchId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest('/rebate/getBatchDetails/' + batchId, 'blueraven')
+          const {data, status} = await getRequest('/rebate/getBatchDetails/' + batchId, 'blueraven')
           this.payments = data.rebatePayments;
           this.filteredPayments = data.rebatePayments;
           this.batchDisplayName = data.id + ' - ' + this.formatDate(data.batchDate) + ' - ' + data.updatedByUser;
           this.batchLoaded = true;
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Batch Details')
@@ -202,12 +202,12 @@
       async exportChase () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest('/rebate/getBatchDetails/' + this.batchId + '/chase-csv', 'blueraven')
+          const {data, status} = await getRequest('/rebate/getBatchDetails/' + this.batchId + '/chase-csv', 'blueraven')
           let blob = new Blob([data], {
             type: 'text/csv;charset=utf-8'
           });
           saveAs(blob, 'ChaseCSV_Batch_'+this.batchId+".csv");
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Exporting Chase CSV')

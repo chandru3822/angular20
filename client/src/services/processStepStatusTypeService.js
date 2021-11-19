@@ -69,7 +69,7 @@ export async function getStatusTypes(projectId, projectProcessStepId) {
       projectId,
       projectProcessStepId
     }
-    const {data} = await getRequestWithParams(`/processStep/status`, { params })
+    const {data} = await getRequestWithParams(`/processStep/status`, { params }, null, [])
     return {data, status}
   } catch (e) {
     throw e

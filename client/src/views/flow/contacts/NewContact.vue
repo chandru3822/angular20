@@ -97,7 +97,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
-import { getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getCompanyStates} from '@/services/stateService'
@@ -173,14 +173,14 @@ export default {
       this.loadingInsertFields = true
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
+        const {data, status} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
           params: {
             companyId: this.companyId
           }
         })
         this.customFieldGroups = data
         this.loadingInsertFields = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.loadingInsertFields = false
@@ -192,9 +192,9 @@ export default {
     async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCompanyStates(parseInt(this.companyId))
+        const {data, status} = await getCompanyStates(parseInt(this.companyId))
         this.states = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
@@ -205,12 +205,12 @@ export default {
     async getCountries () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCountries(parseInt(this.companyId))
+        const {data, status} = await getCountries(parseInt(this.companyId))
         this.countries = data
         if(this.countries?.length === 1) {
           this.contact.companyCountryId = this.countries[0].id
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
@@ -223,7 +223,7 @@ export default {
       this.contact.customFieldGroups = this.customFieldGroups
       try {
         this.contact.companyId = this.companyId
-        const {data} = await postRequest(`/contact`, this.contact)
+        const {data, status} = await postRequest(`/contact`, this.contact)
         if(data && data.id && this.dirtyCfvs?.length > 0) {
           await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)
           // Save BlueRaven Solar Contacts to Genesys
@@ -232,10 +232,10 @@ export default {
           }
 
           this.$router.push({name: 'contact', params: {id: data.id}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } else {
           this.$router.push({name: 'contact', params: {id: data.id}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)

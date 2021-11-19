@@ -802,7 +802,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
 
   export default {
     name: 'Commission',
@@ -950,7 +950,7 @@
       async getCommissionDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/plan/${this.planId}`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/plan/${this.planId}`, 'blueraven')
           this.commission = data
           if([2,3].includes(this.commission.statusId)) {
             this.commission.approved = true
@@ -959,7 +959,7 @@
           this.commission.positionType = 'closers'
           this.checkErrorMessages()
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Details')
@@ -1056,13 +1056,13 @@
             positionId: this.commission.positionId,
             total: this.commission.total
           }
-          const {data} = await postRequest(`/commissionManagement`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement`, params, 'blueraven')
           if(!this.planId) {
             //need to reload some stuff if this was a new plan
             this.$router.push({name: 'commission', params: {id: data.id}})
           }
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Commission Plan')
@@ -1073,11 +1073,11 @@
       async approvePlan () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/approve`, {}, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/${this.planId}/approve`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Approved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Approving Commission Plan')
@@ -1121,10 +1121,10 @@
             startDate: startDate ?? null,
             backdateApprovalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/clone`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/${this.planId}/clone`, params, 'blueraven')
           this.$router.push({name: 'commission', params: {id: data.id}})
           // temporarily only allowing closers
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Cloning Commission')
@@ -1135,12 +1135,12 @@
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
@@ -1184,13 +1184,13 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequestWithRequestParams(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, { addUserToPlan: true }, 'blueraven')
+          const {data, status} = await postRequestWithRequestParams(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, { addUserToPlan: true }, 'blueraven')
           this.commission.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.addUser = false
           this.newUser = {}
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Commission Plan User')
@@ -1201,11 +1201,11 @@
       async deleteUserFromPlan(commissionPlanUser) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           commissionPlanUser.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan User')
@@ -1235,9 +1235,9 @@
       async updateMilestone(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
+          const {data, status} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
@@ -1268,14 +1268,14 @@
       async deleteMilestone (commissionPlanAllocationId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', `${levelText} Deleted`)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission.milestones = this.commission.milestones.filter(m => {
             return m.commissionPlanAllocationId !== commissionPlanAllocationId
           })
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', `Error Deleting ${levelText}`)
@@ -1310,10 +1310,10 @@
       async updateSource(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/commissionManagement/${this.planId}/source`, item, 'blueraven')
+          const {data, status} = await putRequest(`/commissionManagement/${this.planId}/source`, item, 'blueraven')
           item.milestoneType = data.milestoneType
           item.feeType = data.feeType
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
@@ -1332,9 +1332,9 @@
         this.errorLoadingUserHistory = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')
           this.userHistory = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.errorLoadingUserHistory = true
           console.error('*** ERROR ***', e)
@@ -1365,13 +1365,13 @@
       async deleteSource (id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Source Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission.sources = this.commission.sources.filter(s => {
             return s.id !== id
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Source')

@@ -48,7 +48,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from "@/helpers/constants";
 
   export default {
@@ -90,10 +90,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/payroll/${this.payrollId}/summary/`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/${this.payrollId}/summary/`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')

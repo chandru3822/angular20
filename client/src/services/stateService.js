@@ -41,7 +41,7 @@ export async function getActiveStates() {
 
 export async function getActiveStatesByHierarchy() {
   try {
-    const {data, status} = await getRequest(`/state/activeByHierarchy`)
+    const {data, status} = await getRequest(`/state/activeByHierarchy`, null, [])
     return {data, status}
   } catch (e) {
     throw e

@@ -154,6 +154,7 @@ import {AppMutations} from '@/stores/AppStore'
 import orderBy from 'lodash.orderby'
 import {getWorkQueueCategories} from '@/services/workQueueService'
 import {
+  handleHidingGlobalLoader,
   getRequest,
   isLightColor,
   getRequestWithParams,
@@ -229,7 +230,7 @@ export default {
       if (this.selectedWorkQueueCategory?.id || this.showAll) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/workQueue`, {
+          const {data, status} = await getRequestWithParams(`/workQueue`, {
             params: {
               workQueueCategoryId: this.selectedWorkQueueCategory.id,
               userId: this.selectedUserPosition.userId,
@@ -238,7 +239,7 @@ export default {
             }
           })
           this.workQueues = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')

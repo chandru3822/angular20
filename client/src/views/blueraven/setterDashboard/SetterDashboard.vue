@@ -221,7 +221,7 @@
 <script>
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
 
@@ -386,7 +386,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: repToBeatId, attachmentTypeId: 9}
-          const {data} = await getRequestWithParams('/attachment/getOne', {params})
+          const {data, status} = await getRequestWithParams('/attachment/getOne', {params})
 
           if (data?.presignedUrl) {
             this.rankBoxData.imageUrl = data.presignedUrl
@@ -397,7 +397,7 @@
               this.rankBoxData.imageAltText = 'User photo placeholder'
             }
 
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -413,7 +413,7 @@
         try {
           this.topRepsLoading = true
           const params = {limit: 5, days: this.timeInterval}
-          const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
           if (this.reps.length > 0) {
@@ -462,13 +462,13 @@
       async getTopOffices () {
         try {
           this.topOfficesLoading = true
-          const {data} = await getRequestWithParams('/setterDashboard/topOffices',
+          const {data, status} = await getRequestWithParams('/setterDashboard/topOffices',
             {
               params: {
                 limit: 5,
                 days: this.timeInterval
               }
-            }, 'blueraven')
+            }, 'blueraven', [])
           this.offices = data || []
 
           // removes empty parentheses from missing metro areas
@@ -494,7 +494,7 @@
                 limit: 13,
                 days: this.timeInterval
               }
-            }, 'blueraven')
+            }, 'blueraven', [])
           this.officeRankingData = data || []
 
           this.officeRankingData?.forEach(office => {

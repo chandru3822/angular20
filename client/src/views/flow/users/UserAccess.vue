@@ -120,6 +120,7 @@
 
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {
+    handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
     putRequest,
@@ -169,10 +170,10 @@
       async getUserCompanyFeatures() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/feature/user/${this.userId}`)
+          const {data, status} = await getRequest(`/feature/user/${this.userId}`)
           this.userCompanyFeatures = data.filter(d => !d.hidden)
           this.userAccessLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Access Details')
@@ -183,9 +184,9 @@
       async getUserOrgCalendars() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/org/user/${this.userId}/calendars`)
+          const {data, status} = await getRequest(`/org/user/${this.userId}/calendars`)
           this.userOrgCalendars = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Calendars')
@@ -200,11 +201,11 @@
             userId: this.userId,
             orgId: this.selectedCalendar.id
           }
-          const {data} = await postRequest(`/org/user/calendar`, params)
+          const {data, status} = await postRequest(`/org/user/calendar`, params)
           this.userOrgCalendars.push(data)
           this.selectedCalendar = {}
           this.addCalendar = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Org Calendar to User')
@@ -215,9 +216,9 @@
       async deleteOrgCalendarFromUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/org/user/calendar/${item.id}`)
+          const {status} = await deleteRequest(`/org/user/calendar/${item.id}`)
           item.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Calendar from User')
@@ -228,13 +229,13 @@
       async getAllOrgCalendars() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
+          const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
               isSchedulingTool: true
             }
           })
           this.orgCalendars = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Calendars')
@@ -246,10 +247,10 @@
         try {
           //we do this temp so that we only send up the values that need to be saved
           let tempCompanyFeatures = this.userCompanyFeatures?.filter(cf => cf.dirty)
-          const {data} = await putRequest(`/feature/user/${this.userId}`, tempCompanyFeatures)
+          const {data, status} = await putRequest(`/feature/user/${this.userId}`, tempCompanyFeatures)
           this.userCompanyFeatures = data
           this.accessControlKey++
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Access Details')

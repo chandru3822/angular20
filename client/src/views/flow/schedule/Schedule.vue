@@ -294,7 +294,7 @@
   import Calendar from './components/Calendar'
   import {getEventTypes} from '@/services/scheduleService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import { handleHidingGlobalLoader, getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
   import constants from "@/helpers/constants";
 
@@ -425,10 +425,10 @@
         this.selectedProject.resourceName = this.selectedProject.resource.name
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
+          const {data, status} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
           this.$refs.calendar.getEvents(false, true)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
           this.fieldsSaving = false
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -442,11 +442,11 @@
       },
       async cancelProjectProcessStep() {
         try {
-          await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/status`, this.selectedProject.cancelledCompanyStatusType)
+          const {status} = await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/status`, this.selectedProject.cancelledCompanyStatusType)
           // this.selectedProject.unscheduleConfirm = false
           this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)
           this.selectedProject.processStepStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
@@ -471,11 +471,9 @@
         this.endTime = endTime
       },
       async getActiveStatesByHierarchy() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getActiveStatesByHierarchy()
+          const {data, status} = await getActiveStatesByHierarchy()
           this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
@@ -484,15 +482,15 @@
         }
       },
       async getEventTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           // 'event types' is just schedulable process steps
           const {data} = await getEventTypes()
           this.eventTypes = data
-          this.selectedEventTypes = this.selectedEventTypes.filter(set => {
-            return this.eventTypes.some(et => et.id === set.id)
-          })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          if(this.eventTypes) {
+            this.selectedEventTypes = this.selectedEventTypes.filter(set => {
+              return this.eventTypes.some(et => et.id === set.id)
+            })
+          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
@@ -501,7 +499,6 @@
         }
       },
       async getStatusTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           //the old way
           // const {data} = await getCompanyStatusTypes()
@@ -509,11 +506,9 @@
           // this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
 
           //the new way - use root statuses
-          const {data} = await getStatusTypes()
+          const {data, status} = await getStatusTypes()
           //only show active and complete
-          this.processStepStatusTypes = data.filter(d => d.id !== 3)
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.processStepStatusTypes = data?.filter(d => d.id !== 3)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
@@ -532,9 +527,9 @@
             systemListOptionIds: item.systemListOptionIds,
             resourceId: item.resourceId
           }
-          const {data} = await postRequest(`/schedule/projectResources`, params)
+          const {data, status} = await postRequest(`/schedule/projectResources`, params)
           item.resources = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')

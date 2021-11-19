@@ -19,7 +19,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {deleteRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, deleteRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
@@ -51,9 +51,9 @@ export default {
     async getApps() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/app`)
+        const {data, status} = await getRequestWithParams(`/app`)
         this.apps = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Apps')
@@ -64,9 +64,9 @@ export default {
     async deleteApp(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/app/${item.id}`)
+        const {status} = await deleteRequest(`/app/${item.id}`)
         item.archived = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Apps')

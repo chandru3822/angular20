@@ -147,7 +147,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
 
-  import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
 
   export default {
@@ -196,9 +196,9 @@
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep`)
+          const {data, status} = await getRequest(`/processStep`)
           this.processSteps = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -209,7 +209,7 @@
       async deleteProcessStep (processStep) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processStep/delete/${processStep.id}`)
+          const {data, status} = await putRequest(`/processStep/delete/${processStep.id}`, null, null, [])
           if (data?.length > 0) {
             this.deleteError = true
             processStep.deleteConfirm = false
@@ -221,9 +221,8 @@
             processStep.archived = true
             this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Process Step')
@@ -234,11 +233,11 @@
       async addProcessStep () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/processStep`, this.newStep)
+          const {data, status} = await postRequest(`/processStep`, this.newStep)
           this.$router.push({path: `/settings/processStep/${data.id}/components`})
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Process Step')

@@ -441,7 +441,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
 
-  import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
@@ -613,7 +613,7 @@
                 this.allUsers = data.content;
             }
 
-            const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
+            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
             this.users = data.content
             this.totalUsers = data.totalElements
 
@@ -625,7 +625,7 @@
             })
             this.dataLoading = false
             this.initialLoad = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
@@ -650,7 +650,7 @@
             const params = {
               orgs: this.getOrgIds()
             }
-            const {data} = await postRequest(`/org/orgHierarchyFilter`, params)
+            const {data, status} = await postRequest(`/org/orgHierarchyFilter`, params, null, [])
             data.forEach(d => {
               //get index of the each header
               let index = this.headers.findIndex(h => h.level === d.orgLevelId)
@@ -675,7 +675,7 @@
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
             this.resetHeaderOrgs()
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
@@ -705,7 +705,7 @@
       },
       async getStatuses (useSavedSearch) {
         try {
-          const {data} = await getRequest(`/user/statuses`)
+          const {data} = await getRequest(`/user/statuses`, null, [])
           this.statuses = data
           if(!useSavedSearch) {
             this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
@@ -721,9 +721,9 @@
       },
       async getPositions () {
         try {
-          const {data} = await getRequest(`/position`)
+          const {data, status} = await getRequest(`/position`)
           this.positions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
