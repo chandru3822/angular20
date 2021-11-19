@@ -290,16 +290,35 @@ const router = new Router({
             }
           ]
         }, {
-          path: 'setterDashboard',
-          name: 'setterDashboard',
+          path: 'setter',
+          name: 'setter',
           meta: {title: 'Albatross - Setter Dashboard'},
           component: () => {
             if (store.getters.userHasFeature('SETTER_DASHBOARD')) {
-              return import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/SetterDashboard.vue')
+              return import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/Setter.vue')
             } else {
               return accessDenied()
             }
-          }
+          },
+          children: [
+            {
+              path: 'dashboard',
+              name: 'setterDashboard',
+              meta: {title: 'Albatross - Setter Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/setterDashboard/SetterDashboard.vue')
+            }, {
+              path: 'funnel',
+              alias: '/setterDashboard',
+              name: 'setterFunnel',
+              meta: {title: 'Albatross - Setter Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/setterDashboard/SetterFunnel.vue')
+            }, {
+              path: 'incentive',
+              name: 'setterIncentive',
+              meta: {title: 'Albatross - Setter Dashboard'},
+              component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/setterDashboard/SetterIncentive.vue')
+            }
+          ]
         }, {
           path: '/companyDashboard',
           name: 'companyDashboard',

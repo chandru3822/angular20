@@ -303,10 +303,6 @@
 
           this.masterResults = cloneDeep(this.results)
 
-          if(this.hideFutureFollowUps) {
-            this.filterFutureFollowUps()
-          }
-
           this.customColumns = data.headers
           this.customColumns.forEach(c => {
             let textValue = c.processStepName == null ? c.name : c.processStepName + ' - ' + c.name
@@ -361,6 +357,10 @@
               this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
             })
             this.filterResults()
+          }
+
+          if(this.hideFutureFollowUps) {
+            this.filterFutureFollowUps()
           }
 
           this.dataLoading = false

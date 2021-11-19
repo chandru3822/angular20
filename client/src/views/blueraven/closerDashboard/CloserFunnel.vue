@@ -156,7 +156,7 @@
     <!-- APPOINTMENTS CREATED PIPELINE END -->
 
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
-    <div class="randa-test">
+    <div class="funnel-relative">
       <div v-if="dropdownValuesLoading || apptsToFdcPipelineDataLoading" class="funnel-spinner">
         <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
       </div>
@@ -2219,7 +2219,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.randa-test {
+.funnel-relative {
   position: relative;
 }
 
