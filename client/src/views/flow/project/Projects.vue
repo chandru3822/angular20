@@ -210,6 +210,7 @@
         try {
           this.isProjectsLoading = true
           const {data} = await getRequestWithParams(`/project/search`, {
+            source: this.source,
             cancelToken: this.source.token,
             params: {
               query: this.searchQuery,
