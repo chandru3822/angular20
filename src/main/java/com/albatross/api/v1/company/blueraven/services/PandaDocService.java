@@ -683,6 +683,7 @@ public class PandaDocService {
         tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
         tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
         tokens.put("Deal.System Size", result.get("system_size"));
+        tokens.put("Deal.Estimated ITC", result.get("estimated_itc"));
 
         Double totalSystemPrice = Double.parseDouble(result.get("total_system_price") == null ? "0" : result.get("total_system_price").toString());
         Double referralPromotionAmount = Double.parseDouble(result.get("referral_promotion_amount") == null ? "0" : result.get("referral_promotion_amount").toString());
