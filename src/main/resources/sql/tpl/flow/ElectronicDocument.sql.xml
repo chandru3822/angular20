@@ -72,7 +72,13 @@
                          (select id from flow.custom_field where field_name='1st Year Production Estimate (kWh)'
                                                                  and company_id = (select company_id from brs.project_details where project_id = :projectId)
                      and p.id = :projectId
-                     and main = true)) as year_1_kwh_output
+                     and main = true)) as year_1_kwh_output,
+                   (case when pd.primary_financier_name = 'Cash' then least(1000, 0.10 * (pd.total_system_price - pd.referral_promotion_amount))
+                        else least(pd.total_cash_down_payment, 1000, 0.10 * (pd.total_system_price - pd.referral_promotion_amount))
+                        end) as cash_down_payment,
+                    (case when pd.primary_financier_name = 'Cash' then (pd.total_system_price - pd.referral_promotion_amount) / 2
+                        else pd.total_cash_down_payment
+                        end) as progress_payment
             FROM flow.project p INNER JOIN brs.project_details pd on p.id = pd.project_id
                                 INNER JOIN flow.company_state cs on p.company_state_id = cs.id
                                 INNER JOIN flow.state s on cs.state_id = s.id

@@ -590,6 +590,17 @@ public class PandaDocService {
         Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
         Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());
         tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
+
+        Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
+        if (deets.getFinancier().equals("Cash")) {
+          tokens.put("Deal.NV Cash Down Payment", cashDownPayment);
+          tokens.put("Deal.NV Progress Payment", ((totalCost - referralPromotionAmount) / 2));
+        }
+        else {
+          cashDownPayment = Double.min(cashDownPayment, Double.parseDouble(result.get("custom_fields.Total Cash Down Payment").toString()));
+          tokens.put("Deal.NV Cash Down Payment", cashDownPayment);
+          tokens.put("Deal.NV Progress Payment", result.get("custom_fields.Total Cash Down Payment"));
+        }
     } catch (EmptyResultDataAccessException e) {
         log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
         e.printStackTrace();
@@ -677,6 +688,13 @@ public class PandaDocService {
         Double referralPromotionAmount = Double.parseDouble(result.get("referral_promotion_amount") == null ? "0" : result.get("referral_promotion_amount").toString());
         tokens.put("Deal.Total System Price", totalSystemPrice - referralPromotionAmount);
         tokens.put("Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
+
+        Double cashDownPayment = Double.parseDouble(result.get("cash_down_payment") == null ? "0" : result.get("cash_down_payment").toString());
+        tokens.put("Deal.NV Cash Down Payment", cashDownPayment);
+
+        Double progressPayment = Double.parseDouble(result.get("progress_payment") == null ? "0" : result.get("progress_payment").toString());
+        progressPayment -= cashDownPayment;
+        tokens.put("Deal.NV Progress Payment", progressPayment);
 
         // include the current date for use in the template
         String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))
