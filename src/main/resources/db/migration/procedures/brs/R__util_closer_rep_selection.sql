@@ -87,7 +87,7 @@ BEGIN
                                                                  and up.archived is not true and up.id = upv.user_position_id
                                    inner join flow.org o on o.id = up.org_id
                                    inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-                            where ust.user_status_type != 'Expired'
+                            where ust.user_status_type == 'Active'
                       ) as sub_rows  order by active desc, name) as sub_rows;
         else
             case when (v_org_level_id < 7) OR (326 = any (v_current_position_ids)) OR
