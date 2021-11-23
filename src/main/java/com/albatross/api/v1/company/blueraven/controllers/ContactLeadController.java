@@ -230,14 +230,4 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
-  @PostMapping(value = "/leadcactus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactLeadCactus(@RequestBody ContactLead contactLead) {
-    contactLeadService.saveContactLead(contactLead);
-  }
-
-  @PostMapping(value = "/threeships", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactThreeShips(@RequestBody ContactLead contactLead) {
-    contactLeadService.saveContactLead(contactLead);
-  }
-
 }
