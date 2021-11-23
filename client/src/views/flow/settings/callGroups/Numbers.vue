@@ -115,7 +115,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Numbers',
@@ -157,10 +157,10 @@
       async getNumbersForGroup () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/callGroup/${this.callGroupId}/numbers`, 'blueraven')
+          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}/numbers`, 'blueraven')
           this.phoneNumbers = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -171,9 +171,9 @@
       async deleteNumber (number) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/callGroup/number/${number.id}`, 'blueraven')
+          const {status} = await deleteRequest(`/callGroup/number/${number.id}`, 'blueraven')
           number.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing Phone Number')
@@ -198,11 +198,11 @@
             callGroupId: this.callGroupId,
             phoneNumber: this.newNumber
           }
-          const {data} = await postRequest(`/callGroup/addNumber`, params, 'blueraven')
+          const {data, status} = await postRequest(`/callGroup/addNumber`, params, 'blueraven')
           this.phoneNumbers.push(data)
           this.addNumber = false
           this.newNumber = {}
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = e.data?.message?.includes('Phone Number Already In Use') ? e.data.message : 'Error Adding Phone Number'
@@ -220,8 +220,8 @@
             id: item.id,
             active: item.active
           }
-          const {data} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data, status} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = 'Error updating Phone Number'

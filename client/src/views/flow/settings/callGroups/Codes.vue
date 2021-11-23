@@ -106,7 +106,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Codes',
@@ -141,10 +141,10 @@
       async getCodesForZone () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/callGroup/${this.callGroupId}/codes`, 'blueraven')
+          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}/codes`, 'blueraven')
           this.postalCodes = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -155,9 +155,9 @@
       async deleteGroupFromZone (code) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
+          const {status} = await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
           code.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing Postal Code')
@@ -175,11 +175,11 @@
               callGroupId: this.callGroupId,
               postalCode: this.newCode
             }
-            const {data} = await postRequest(`/callGroup/addCode`, params, 'blueraven')
+            const {data, status} = await postRequest(`/callGroup/addCode`, params, 'blueraven')
             this.postalCodes.push(data)
             this.addCode = false
             this.newCode = {}
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'

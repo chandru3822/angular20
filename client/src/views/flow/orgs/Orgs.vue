@@ -85,7 +85,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {  getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import {  handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { saveAs } from 'file-saver'
 
@@ -193,11 +193,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequestWithParams(`/org`)
+          const {data, status} = await getRequestWithParams(`/org`)
           this.orgs = data
           this.initialLoad = false
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')

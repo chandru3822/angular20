@@ -210,7 +210,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import sumBy from "lodash.sumby"
 
 export default {
@@ -273,9 +273,9 @@ export default {
     async getCompanyTimezones() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/timezone`)
+        const {data, status} = await getRequestWithParams(`/timezone`)
         this.companyTimezones = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
@@ -304,14 +304,14 @@ export default {
     async getScheduleToUsers() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleTo`)
+        const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleTo`)
         this.scheduleToUsers = data
         this.dataLoading = false
         this.getTotalManualAllocation()
         if (this.is7oaksAdmin) {
           this.getOtherTotals()
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -327,14 +327,14 @@ export default {
           r.manualAllocation = r.manualAllocationWhole ? r.manualAllocationWhole / 100 : null
         })
         if (updatedRows?.length > 0) {
-          const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
+          const {data, status} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
           this.scheduleToUsers = data
           this.getTotalManualAllocation()
           if (this.is7oaksAdmin) {
             this.getOtherTotals()
           }
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Allocation Changes')
@@ -345,13 +345,13 @@ export default {
     async deleteUserFromZone(user) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/user/${user.postalCodeZoneUserId}/delete`)
+        const {data, status} = await putRequest(`/postalCode/zone/${this.zoneId}/user/${user.postalCodeZoneUserId}/delete`)
         this.scheduleToUsers = data
         this.getTotalManualAllocation()
         if (this.is7oaksAdmin) {
           this.getOtherTotals()
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Removing User')
@@ -367,7 +367,7 @@ export default {
           userId: selected.id,
           companyTimezoneId: this.newUserCompanyTimezoneId
         }
-        const {data} = await postRequest(`/postalCode/zone/${this.zoneId}/saveScheduleToUser`, params)
+        const {data, status} = await postRequest(`/postalCode/zone/${this.zoneId}/saveScheduleToUser`, params)
         this.scheduleToUsers = data
         this.newUserCompanyTimezoneId = null
         this.getTotalManualAllocation()
@@ -376,7 +376,7 @@ export default {
         }
         this.addUser = false
         this.selectedUser = {}
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding User')
@@ -401,10 +401,10 @@ export default {
     async getZoneDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/postalCode/zone/${this.zoneId}`)
+        const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}`)
         this.zone = data
         this.dataLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -415,11 +415,11 @@ export default {
     async saveUserTimezone(user) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/postalCode/zone/user/${user.postalCodeZoneUserId}`, user)
+        const {data, status} = await putRequest(`/postalCode/zone/user/${user.postalCodeZoneUserId}`, user)
         user.timezone = data.timezone
         user.edit = false
         this.snackbar = getSnackbar('SUCCESS', 'User Updated')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating User')

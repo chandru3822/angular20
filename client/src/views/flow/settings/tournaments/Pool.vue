@@ -288,6 +288,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import constants from '@/helpers/constants'
   import {
+    handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
     putRequest,
@@ -353,11 +354,11 @@
     methods: {
       async savePoolDates() {
         try {
-          await putRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}`, this.pool, 'blueraven')
+          const {status} = await putRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}`, this.pool, 'blueraven')
           this.editPool = false
           this.snackbar = getSnackbar('SUCCESS', 'Pool Changes Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Pool')
@@ -367,9 +368,9 @@
       },
       async getPositions() {
         try {
-          const {data} = await getRequest(`/position`)
+          const {data, status} = await getRequest(`/position`)
           this.positions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
@@ -379,9 +380,9 @@
       },
       async getUsers() {
         try {
-          const {data} = await getRequest(`/user/active`)
+          const {data, status} = await getRequest(`/user/active`)
           this.users = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
@@ -393,10 +394,10 @@
         this.poolLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
           this.pool = data
           this.poolLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
@@ -407,11 +408,11 @@
       async addPositionToPool() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addPosition/${this.positionId}`, {}, 'blueraven')
+          const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addPosition/${this.positionId}`, {}, 'blueraven')
           this.pool.positions.push(data)
           this.positionId = null
           this.addPosition = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Position')
@@ -422,9 +423,9 @@
       async deletePositionFromPool(position) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deletePosition/${position.id}`, 'blueraven')
+          const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deletePosition/${position.id}`, 'blueraven')
           position.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
@@ -438,11 +439,11 @@
       async addUserToPool() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addUser/${this.userId}`, {}, 'blueraven')
+          const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addUser/${this.userId}`, {}, 'blueraven')
           this.pool.users.push(data)
           this.userId = null
           this.addUser = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding User')
@@ -453,9 +454,9 @@
       async deleteUserFromPool(user) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deleteUser/${user.id}`, 'blueraven')
+          const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deleteUser/${user.id}`, 'blueraven')
           user.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting User')

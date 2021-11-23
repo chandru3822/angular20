@@ -13,7 +13,7 @@
 
 <script>
 
-import {postRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 
 export default {
@@ -42,9 +42,9 @@ export default {
         } else {
           this.handleOnCompleteError(this.actionResult.id)
         }
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.handleOnCompleteError(this.actionResult.id, e.data.message)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

@@ -518,7 +518,7 @@ export default {
     },
     getUsers: async function () {
       try {
-        const {data} = await getRequest('/user/mentionableUsers')
+        const {data} = await getRequest('/user/mentionableUsers', null, [])
         this.users = data;
         this.users.forEach(u => {
           u.value = u.fullName

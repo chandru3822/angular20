@@ -282,7 +282,7 @@
   import orderBy from 'lodash.orderby'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
 
@@ -343,11 +343,11 @@
       assignCloserRanks (rankingData, fieldName) {
         let currentRank = 1
         let tiedRowNums = []
-        rankingData.forEach(row => row[fieldName] = row[fieldName] ? row[fieldName] : 0)
+        rankingData?.forEach(row => row[fieldName] = row[fieldName] ? row[fieldName] : 0)
         rankingData = orderBy(rankingData, fieldName, 'desc')
 
         // handles ties & assigns rank #'s
-        rankingData.forEach((row, index) => {
+        rankingData?.forEach((row, index) => {
           if ((index < rankingData.length - 1) && (rankingData[index][fieldName] === rankingData[index + 1][fieldName])) { // makes sure we're not out of bounds & checks if current row is tied with next row
             tiedRowNums.push(index) // adds current row # to list of tied row #'s
           } else {
@@ -374,7 +374,7 @@
       async loadRoundRobins () {
         this.roundRobinRanksLoading = true
         try {
-          const {data} = await getRequest('/closerDashboard/getRoundRobins', 'blueraven')
+          const {data, status} = await getRequest('/closerDashboard/getRoundRobins', 'blueraven')
           this.roundRobins = data
 
           // if there's only one Round Robin for the current user, this auto-selects it
@@ -384,7 +384,7 @@
           }
           this.roundRobinRanksLoading = false
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving list of round robins')
@@ -490,10 +490,10 @@
             timeInterval: this.timeInterval,
             officeFdcRank: false
           }
-          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven', [])
 
-          if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
-            this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
+          if (data?.companyRankingValues?.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
+            this.userOffice = data?.companyRankingValues?.filter(row => row.userId === this.currentUserId)[0].officeName
           }
 
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')

@@ -108,7 +108,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ScheduleBy',
@@ -143,10 +143,10 @@
       async getScheduleByUsers () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleBy`)
+          const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleBy`)
           this.scheduleByUsers = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -157,9 +157,9 @@
       async deleteUserFromZone (user) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/postalCode/zone/user/${user.id}`)
+          const {status} = await deleteRequest(`/postalCode/zone/user/${user.id}`)
           user.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing User')
@@ -174,11 +174,11 @@
             postalCodeZoneId: this.zoneId,
             userId: selected.id,
           }
-          const {data} = await postRequest(`/postalCode/zone/saveScheduleByUser`, params)
+          const {data, status} = await postRequest(`/postalCode/zone/saveScheduleByUser`, params)
           this.scheduleByUsers.push(data)
           this.addScheduler = false
           this.selectedScheduler = {}
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding User')

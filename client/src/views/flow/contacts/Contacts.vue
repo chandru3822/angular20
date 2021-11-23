@@ -129,6 +129,7 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import {
+  handleHidingGlobalLoader,
   getRequestWithParams,
   getSnackbar,
   logError,
@@ -137,6 +138,7 @@ import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 import SmartlistTable from '@/components/SmartlistTable'
+import axios from 'axios'
 
 export default {
   name: 'Contacts',
@@ -173,7 +175,8 @@ export default {
       ],
       search: '',
       selectedSmartlistId: 0,
-      smartlists: [{id: 0, name: 'Default View'}]
+      smartlists: [{id: 0, name: 'Default View'}],
+      source: null
     }
   },
   watch: {
@@ -205,7 +208,7 @@ export default {
   methods: {
     async getSharedSmartlists() {
       try {
-        const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 2}})
+        const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 2}}, null, [])
         this.smartlists = [...this.smartlists, ...data]
       } catch (e) {
         logError(e)
@@ -223,17 +226,27 @@ export default {
     }, 500),
     async getContacts () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
+
+      if(this.source){
+        this.source.cancel();
+      }
+      const CancelToken = axios.CancelToken;
+      this.source = CancelToken.source();
+
       try {
-        const {data} = await getRequestWithParams(`/contact/search`, { params: {
+        const {data, status} = await getRequestWithParams(`/contact/search`, {
+          source: this.source,
+          cancelToken: this.source.token,
+          params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
-        }})
-        this.contacts = data.content
+        }}, null, [])
+        this.contacts = data.content || []
         this.totalContacts = data.totalElements
         this.dataLoading = false
         this.initialLoad = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contacts')
@@ -245,14 +258,14 @@ export default {
       this.dialog = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/contact/exportContacts`, { params: {
+        const {data, status} = await getRequestWithParams(`/contact/exportContacts`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
         saveAs(blob, "contacts.csv");
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')

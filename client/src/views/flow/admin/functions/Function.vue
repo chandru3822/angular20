@@ -161,7 +161,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -205,9 +205,9 @@
       async getFunction() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/dbFunction/${this.functionId}`)
+          const {data, status} = await getRequest(`/dbFunction/${this.functionId}`)
           this.dbFunction = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Function')
@@ -218,9 +218,9 @@
       async getCompanies() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/dbFunction/${this.functionId}/availableCompanies`)
+          const {data, status} = await getRequest(`/dbFunction/${this.functionId}/availableCompanies`)
           this.companies = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Function')
@@ -232,9 +232,9 @@
         if(this.dataTypes.length === 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/dataType/getSystem`)
+            const {data, status} = await getRequest(`/dataType/getSystem`)
             this.dataTypes = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Data Types')
@@ -247,9 +247,9 @@
         if(this.dataTypes.length === 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/dbFunction/parameterTypes`)
+            const {data, status} = await getRequest(`/dbFunction/parameterTypes`)
             this.parameterTypes = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Parameter Types')
@@ -262,10 +262,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newParam.dbFunctionId = this.functionId
-          const {data} = await postRequest(`/dbFunction/param`, this.newParam)
+          const {data, status} = await postRequest(`/dbFunction/param`, this.newParam)
           this.dbFunction = data
           this.newParam = {}
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Function Param')
@@ -280,14 +280,14 @@
             ...this.dbFunction,
             selectedCompanyIds: this.selectedCompanies.map(sc => sc.id),
           }
-          const {data} = await postRequest(`/dbFunction/${this.functionId}/addToCompany`, params)
+          const {data, status} = await postRequest(`/dbFunction/${this.functionId}/addToCompany`, params)
           this.dbFunction = data
           this.companies = this.companies.filter(c => {
             let match = this.selectedCompanies.find(sc => sc.id === c.id)
             return !match
           })
           this.selectedCompanies = []
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Function Param')
@@ -299,9 +299,9 @@
         if(this.systemValues.length === 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/dbFunction/systemValues`)
+            const {data, status} = await getRequest(`/dbFunction/systemValues`)
             this.systemValues = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

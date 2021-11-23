@@ -221,7 +221,7 @@
 
   import orderBy from 'lodash.orderby'
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import { deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -289,10 +289,10 @@
       async saveOrderChanges (types) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/project/companyStatuses`, types)
+          const {status} = await putRequest(`/project/companyStatuses`, types)
           this.snackbar = getSnackbar('SUCCESS', 'Status Types Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Status Type Changes')
@@ -352,9 +352,9 @@
       async getCompanyStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyProjectStatusTypes()
+          const {data, status} = await getCompanyProjectStatusTypes()
           this.statusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -365,9 +365,9 @@
       async getProjectStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getProjectStatusTypes()
+          const {data, status} = await getProjectStatusTypes()
           this.rootStatusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -378,10 +378,10 @@
       async deleteType (item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/project/companyStatus/${item.id}`)
+          const {status} = await deleteRequest(`/project/companyStatus/${item.id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
@@ -392,7 +392,7 @@
       async saveType (type, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/project/companyStatus`, type)
+          const {data, status} = await putRequest(`/project/companyStatus`, type)
 
           if(isNew) {
             // add it to the records already on the screen
@@ -407,7 +407,7 @@
           this.selectedStatusTypeId = null
           this.snackbar = getSnackbar('SUCCESS', 'Project Status Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Project Status')
@@ -421,7 +421,7 @@
       async setAsInitial (item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/project/companyStatus/initial/${item.id}`, )
+          const {status} = await putRequest(`/project/companyStatus/initial/${item.id}`, )
           this.statusTypes.forEach(st => {
             st.isDefault = false
           })
@@ -429,7 +429,7 @@
           this.expanded = []
           this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Status')

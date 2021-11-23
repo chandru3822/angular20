@@ -217,7 +217,7 @@
 
 <script>
 
-  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
@@ -332,7 +332,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.status === 'approval') {
-            const {data} = await getRequest('/rebate/needsApproval', 'blueraven')
+            const {data, status} = await getRequest('/rebate/needsApproval', 'blueraven')
             this.showSelect = true;
             // # Of Payments
             this.headers[6].show = true;
@@ -350,9 +350,9 @@
 
             let userData = await getRequest('/user/current')
             this.userName = userData.data.fullName;
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } else if (this.status === 'pending') {
-            const {data} = await getRequest('/rebate/pending', 'blueraven')
+            const {data, status} = await getRequest('/rebate/pending', 'blueraven')
             this.payments = data;
             this.filteredPayments = data;
 
@@ -368,9 +368,9 @@
             // Balance Owed
             this.headers[10].show = false;
 
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } else if (this.status === 'invalid') {
-            const {data} = await getRequest('/rebate/unbalancedPayments', 'blueraven')
+            const {data, status} = await getRequest('/rebate/unbalancedPayments', 'blueraven')
             this.payments = data;
             this.filteredPayments = data;
 
@@ -387,7 +387,7 @@
             this.headers[10].show = false;
             // Balance Owed
             this.headers[10].show = true;
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -470,10 +470,10 @@
       },
       async submitPay () {
         try {
-          await postRequest('/rebate/recurringPayment', this.newPayItem, 'blueraven')
+          const {status} = await postRequest('/rebate/recurringPayment', this.newPayItem, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Recurring Payment Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
           await this.fetchPayments();
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -507,13 +507,13 @@
 
           if (status === 200) {
             let param = {paymentIds: this.paymentIdsToApprove}
-            await postRequest('/rebate/approve', param, 'blueraven')
+            const {status} = await postRequest('/rebate/approve', param, 'blueraven')
             window.location.reload()
           }
 
           this.passwordDialog = false;
           this.approveDialog = false;
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Failed to approve payment')

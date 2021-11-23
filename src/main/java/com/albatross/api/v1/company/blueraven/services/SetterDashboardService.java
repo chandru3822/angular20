@@ -132,48 +132,64 @@ public class SetterDashboardService {
     return result;
   }
 
-  public String getDistricts(int userId) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_district_selection(:userId)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
-  }
-
-  public String getRegions(int userId, String districts) {
-    districts = districts.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
-
-    String sqlQuery = "SELECT * FROM brs.util_setter_region_selection(:userId, :districts::JSON)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("districts", districts);
-
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
-  }
-
-  public String getOffices(int userId, String regions) {
-    regions = regions.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
-
-    String sqlQuery = "SELECT * FROM brs.util_setter_office_selection(:userId, :regions::JSON)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("regions", regions);
-
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
-  }
-
-  public String getReps(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_rep_selection(:userId::int, :regions::JSON, :offices::JSON)";
+  public String getAreas(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_setter_area_selection(:userId::int)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
+
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
+  }
+
+  public String getRegions(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_setter_region_selection(:userId::int, :areas::JSON)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
+
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
+  }
+
+  public String getDistricts(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_setter_district_selection(:userId::int, :areas::JSON, :regions::JSON)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
+
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
+  }
+
+  public String getOffices(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_setter_office_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
+    parameters.addValue("regions", req.getRegions());
+    parameters.addValue("districts", req.getDistricts());
+
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
+  }
+
+  public String getReps(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM brs.util_setter_rep_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("areas", req.getAreas());
+    parameters.addValue("regions", req.getRegions());
+    parameters.addValue("districts", req.getDistricts());
     parameters.addValue("offices", req.getOffices());
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
   }
 
   public String funnelStandard(FunnelRequest funnelRequest) {

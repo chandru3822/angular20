@@ -159,7 +159,7 @@ import moment from 'moment'
 import {getUserProfileDefaultFields} from '@/services/userService'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import {getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -248,10 +248,10 @@ export default {
       this.loadingUserProfileCustomFields = true
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldValues/getUserProfileFields`)
+        const {data, status} = await getRequest(`/customFieldValues/getUserProfileFields`)
         this.userProfileCustomFields = data
         this.loadingUserProfileCustomFields = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
@@ -263,9 +263,9 @@ export default {
     async getUserProfileDefaultFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getUserProfileDefaultFields()
+        const {data, status} = await getUserProfileDefaultFields()
         this.userProfileDefaultFields = data.filter(d => d.showOnUserProfile)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Default Fields')
@@ -277,11 +277,11 @@ export default {
     async getHomePages () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/feature/homePages`)
+        const {data, status} = await getRequest(`/feature/homePages`, null, [])
         this.homePages = data.filter(d => {
           return this.$store.getters.userHasFeature(d.featureCode)
         })
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Home Pages')
@@ -292,9 +292,9 @@ export default {
     async getUser (userIsAlbatross) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/user/${this.userId}?userIsAlbatross=${userIsAlbatross}`)
+        const {data, status} = await getRequest(`/user/${this.userId}?userIsAlbatross=${userIsAlbatross}`)
         this.user = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
@@ -305,7 +305,7 @@ export default {
     async saveUser () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, this.user)
+        const {data, status} = await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, this.user)
         if(data && data.id && this.dirtyCfvs?.length > 0) {
           await postRequest(`/customFieldValues/user/${data.id}`, this.dirtyCfvs)
         }
@@ -313,7 +313,7 @@ export default {
         this.user.newPasswordConfirm = null
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let errorMsg = e?.message ? 'Error Saving User: ' + e.message : e?.data?.message ? 'Error Saving User: ' + e.data.message :'Error Saving User'

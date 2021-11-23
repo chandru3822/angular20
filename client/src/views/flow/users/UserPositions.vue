@@ -223,7 +223,7 @@
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from "@/helpers/constants";
 
   export default {
@@ -273,9 +273,9 @@
       },
       async getPositions() {
         try {
-          const {data} = await getRequest(`/position`)
+          const {data, status} = await getRequest(`/position`)
           this.positions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
@@ -302,10 +302,10 @@
       async getFilters () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgFilters()
+          const {data, status} = await getOrgFilters()
           this.filters = data
           this.populateHeaders()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Levels')
@@ -340,12 +340,12 @@
       async getUserPositions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/userPosition/${this.userId}`)
+          const {data, status} = await getRequest(`/userPosition/${this.userId}`)
           this.userPositions = data
           this.userPositions.forEach((p) => {
             p.keyedHierarchy = keyBy(p.hierarchy, 'orgLevelId')
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -381,7 +381,7 @@
             userId: this.userId
           }
 
-          const {data} = await postRequest(`/userPosition`, params)
+          const {data, status} = await postRequest(`/userPosition`, params)
           item = data
           this.$set(item, 'hierarchy', data.hierarchy)
           if (item && item.hierarchy) {
@@ -403,7 +403,7 @@
           this.newPosition = {}
           this.addNew = false
           this.expanded = []
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Position')

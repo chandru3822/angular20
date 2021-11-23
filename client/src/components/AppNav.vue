@@ -218,7 +218,7 @@ export default {
           // get the company tools then filter the ones the user has access to
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-              const {data} = await getRequest(`/feature/companyTools`)
+              const {data} = await getRequest(`/feature/companyTools`, null, [])
               this.companyTools = data.filter(d => {
                 return this.$store.getters.userHasFeature(d.featureCode)
               })

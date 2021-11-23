@@ -77,7 +77,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import { getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Availability',
@@ -161,11 +161,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.usersLoading = true
         try {
-          const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
+          const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
             isSchedulingTool: false
           }})
           this.users = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
           this.usersLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)

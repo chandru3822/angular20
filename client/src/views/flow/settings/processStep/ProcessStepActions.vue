@@ -1266,6 +1266,7 @@
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import {getActiveAssignedToProcessStep, getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import {
+    handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
     putRequest,
@@ -1432,9 +1433,9 @@
       async getRequirements() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/requirement`)
+          const {data, status} = await getRequest(`/processStep/${this.processStepId}/requirement`)
           this.requirements = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1452,9 +1453,9 @@
         if (this.addNewRequirement) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
+            const {data, status} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
             this.availableRequirementTypes = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1476,10 +1477,10 @@
             //get contact custom fields
             this.loadCustomFieldsByObjectType(2)
           } else {
-            const {data} = await getRequest(`/function/requirement`)
+            const {data, status} = await getRequest(`/function/requirement`)
             this.availableFunctions = data
+            handleHidingGlobalLoader(this, status)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1490,9 +1491,9 @@
       async loadChildFunctions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function/action`)
+          const {data, status} = await getRequest(`/function/action`)
           this.childFunctions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
@@ -1503,9 +1504,9 @@
       async loadParentObjects() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
+          const {data, status} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
           this.parentObjects = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1526,10 +1527,10 @@
       async getStatusesAssignedToProcessStep(parent) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getAssignedToProcessStep(parent.id)
+          const {data, status} = await getAssignedToProcessStep(parent.id)
           //if the selected process step is the same as the active process step being viewed, only allow active process step status types
           this.processStepStatuses = parent.id === parseInt(this.processStepId) ? data.filter(d => d.processStepStatusTypeId === 1) : data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1540,9 +1541,9 @@
       async loadFieldsByParent(parent) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
           this.customFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1553,9 +1554,9 @@
       async loadCustomFieldsByObjectType(objectTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
+          const {data, status} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
           this.customFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1566,13 +1567,13 @@
       async loadFunctionParams(dbFunctionId, isRequirement) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+          const {data, status} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
           if (isRequirement) {
             this.newRequirement.requirementParamDynamicValues = data
           } else {
             this.selectedChildRequirementParamDynamicValues = data
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1583,13 +1584,13 @@
       async loadOperatorTypes(dataTypeId, processStepRequirementTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/operator/${dataTypeId}`)
+          const {data, status} = await getRequest(`/operator/${dataTypeId}`)
           if(processStepRequirementTypeId === 7) {
             this.operatorTypes = data.filter(d => d.id === 5)
           } else {
             this.operatorTypes = data
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1600,9 +1601,9 @@
       async loadDataTypeRequirements(dataTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
+          const {data, status} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
           this.dataTypeRequirements = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1698,7 +1699,7 @@
             this.newRequirement.requirementValue = null
           }
 
-          const {data} = await postRequest(`/processStep/${this.processStepId}/requirement`, this.newRequirement)
+          const {data, status} = await postRequest(`/processStep/${this.processStepId}/requirement`, this.newRequirement)
           this.requirements.push(data)
           this.selectedCustomField = {}
           this.selectedListOfValues = []
@@ -1711,7 +1712,7 @@
           this.parent = {}
           this.availableFunctions = []
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Added')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Requirement')
@@ -1743,13 +1744,13 @@
             requirement.requirementValue = null
           }
 
-          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
+          const {data, status} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
           this.expanded = []
           // this forces the list to update the operator displayed ... using requirement = data did not work
           requirement.operatorType = data.operatorType
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Requirement')
@@ -1760,7 +1761,7 @@
       async deleteRequirement(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`)
+          const {data, status} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`, null, [])
           if (data?.length > 0) {
             this.deleteError = true
             item.deleteConfirm = false
@@ -1773,7 +1774,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
@@ -1816,9 +1817,9 @@
       async getActions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/action`)
+          const {data, status} = await getRequest(`/processStep/${this.processStepId}/action`)
           this.actions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1839,13 +1840,13 @@
             this.newAction.timeBasedTrigger = false
           }
           this.newAction.processStepId = this.processStepId
-          const {data} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
+          const {data, status} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
           this.actions.push(data)
           this.addNewAction = false
           this.newAction = {}
           this.snackbar = getSnackbar('SUCCESS', 'Action Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
@@ -1869,7 +1870,7 @@
             return l.processStepRequirementId && !l.processStepRequirementImmutable
           })
 
-          const {data} = await putRequest(`/processStep/${this.processStepId}/action`, action)
+          const {data, status} = await putRequest(`/processStep/${this.processStepId}/action`, action)
           // this forces the list to update the values displayed ... using action = data did not work
           action.actionType = data.actionType
           action.processStepStatusType = data.processStepStatusType
@@ -1889,7 +1890,7 @@
 
           this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Action')
@@ -1900,9 +1901,9 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getAssignedToProcessStep(this.processStepId)
+          const {data, status} = await getAssignedToProcessStep(this.processStepId)
           this.statusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1913,9 +1914,9 @@
       async getCompanyProjectStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyProjectStatusTypes()
+          const {data, status} = await getCompanyProjectStatusTypes()
           this.companyProjectStatusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1926,9 +1927,9 @@
       async getOperationTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/operation`)
+          const {data, status} = await getRequest(`/operation`)
           this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1939,11 +1940,11 @@
       async deleteAction(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
+          const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Action')
@@ -1959,7 +1960,7 @@
       async saveChildProcessCancelledStatus(action, cp) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
+          const {data, status} = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
             existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
             initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
           })
@@ -1968,7 +1969,7 @@
           cp.initialProcessStepStatusType = data.initialProcessStepStatusType
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Status Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Child Process Status')
@@ -1979,7 +1980,7 @@
       async saveProcessStepToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
+          const {data, status} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
             processStepId: this.newChildProcessStep.processStepId,
             existingCompanyProcessStepStatusTypeId: this.newChildProcessStep.existingCompanyProcessStepStatusTypeId,
             initialCompanyProcessStepStatusTypeId: this.newChildProcessStep.initialCompanyProcessStepStatusTypeId,
@@ -1990,7 +1991,7 @@
           this.addChildProcess = false
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Added To Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Child Process Action')
@@ -2001,10 +2002,10 @@
       async deleteChildProcessFromAction(actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
+          const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Deleted From Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Process From Action')
@@ -2029,7 +2030,7 @@
       async saveFunctionToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
+          const {data, status} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
             companyFunctionId: this.selectedChildFunction.id,
             displayOrder: 0,
             actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
@@ -2040,7 +2041,7 @@
           this.addChildFunction = false
           this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
@@ -2051,10 +2052,10 @@
       async deleteChildFunctionFromAction(actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
+          const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
@@ -2065,10 +2066,10 @@
       async updateChildFunction(actionId, childFunction) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)
+          const {status} = await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
@@ -2080,9 +2081,9 @@
       async loadLinks(actionId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/links/action/${actionId}`)
+          const {data, status} = await getRequest(`/links/action/${actionId}`)
           this.availableLinks = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -2093,7 +2094,7 @@
       async saveLinkToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
+          const {data, status} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
             linkId: this.selectedLink.id
           })
           action.processStepActionLinks.push(data)
@@ -2101,7 +2102,7 @@
           this.addChildLink = false
           this.snackbar = getSnackbar('SUCCESS', 'Link Added to Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Link to Action')
@@ -2112,10 +2113,10 @@
       async deleteLinkFromAction(actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
+          const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted From Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link From Action')
@@ -2133,10 +2134,10 @@
         if (rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)
+            const {data, status} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')

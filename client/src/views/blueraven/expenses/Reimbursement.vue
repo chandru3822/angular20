@@ -276,7 +276,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
 import {Actions} from "@/store"
@@ -355,12 +355,12 @@ export default {
         let selectedBudget = this.newReimbursement.expenseBudgetId ? this.availableBudgets.find(ab => ab.id === this.newReimbursement.expenseBudgetId) : null
         this.newReimbursement.expenseBudgetUserId = selectedBudget ? selectedBudget.userId : null
 
-        const {data} = await postRequest(`/reimbursement/request`, this.newReimbursement, 'blueraven')
+        const {data, status} = await postRequest(`/reimbursement/request`, this.newReimbursement, 'blueraven')
         this.newReimbursement = {}
         this.receiptLogo = {}
         this.snackbar = getSnackbar('SUCCESS', 'Reimbursement Request Submitted.')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = 'Error Submitting Reimbursement Request.'
@@ -376,11 +376,11 @@ export default {
       this.renderApprovalRequestImage = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getReimbursementRequestImage(this.needsApprovalRequest.id)
+        const {data, status} = await getReimbursementRequestImage(this.needsApprovalRequest.id)
         this.needsApprovalRequest.presignedUrl = data
         //this forces the dom to re-render the presignedUrl and i hate myself
         this.renderApprovalRequestImage = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')
@@ -494,18 +494,17 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         request.reimbursementRequestStatusId = statusId
-        const {data} = postRequest(`/reimbursement/request/updateStatus`, request, 'blueraven')
+        const {data, status} = postRequest(`/reimbursement/request/updateStatus`, request, 'blueraven')
         this.needsApprovalRequest = {}
         //dont show the one that just got approved/rejected
         this.requestsNeedingApproval = this.requestsNeedingApproval.filter((r) => r.id !== request.id)
-        let status = statusId === 2 ? 'Rejected' : 'Approved'
-        let msg = 'Reimbursement Request ' + status
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        let reqStatus = statusId === 2 ? 'Rejected' : 'Approved'
+        let msg = 'Reimbursement Request ' + reqStatus
         this.snackbar = getSnackbar('SUCCESS', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Status')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)

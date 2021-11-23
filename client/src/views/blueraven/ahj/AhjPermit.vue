@@ -692,7 +692,7 @@
   import AhjServicingFot from './components/AhjServicingFots'
 
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
   export default {
@@ -761,7 +761,7 @@
       async getAhjPermit() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
+          const {data, status} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
 
           if (data.servicingFots && data.servicingFots.length > 0) {
             data.servicingFots.forEach(servicingFot => {
@@ -787,23 +787,25 @@
           this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
           this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
           this.ahjPermit.updateAllInState = false
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getCustomFieldGroupAssignmentsForScreen() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: this.ahjPermit.id, objectTypeId: 4}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroupAssignments = cloneDeep(data)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -832,25 +834,27 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 462}
-          const {data} = await getRequestWithParams('/attachment', {params})
+          const {data, status} = await getRequestWithParams('/attachment', {params})
           this.cancellationDocuments = cloneDeep(data)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
-          const {data} = await getRequestWithParams('/attachment', {params})
+          const {data, status} = await getRequestWithParams('/attachment', {params})
           this.documents = cloneDeep(data)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async updateAhjPermit() {
         this.saveDialog = false
@@ -877,7 +881,7 @@
           }
 
           this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
-          const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
+          const {data, status} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
 
           if (data.servicingFots && data.servicingFots.length > 0) {
             data.servicingFots.forEach(servicingFot => {
@@ -902,13 +906,14 @@
           this.reformatDates()
           let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.stateName : 'Failed to update permit'
           this.snackbar = getSnackbar('ERROR', errorMessage)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created() {

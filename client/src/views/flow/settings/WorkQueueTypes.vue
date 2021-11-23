@@ -139,7 +139,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
 
-  import { deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
 
@@ -207,12 +207,12 @@
       async getWorkQueueTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getWorkQueueTypes()
+          const {data, status} = await getWorkQueueTypes()
           this.workQueueTypes = data
           //make copy so filtering works later
           this.masterWorkQueueTypes = cloneDeep(this.workQueueTypes)
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -223,11 +223,11 @@
       async getWorkQueueCategories() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getWorkQueueCategories()
+          const {data, status} = await getWorkQueueCategories()
           this.workQueueCategories = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
           this.filteredCategories = cloneDeep(this.workQueueCategories)
           this.filteredCategories.unshift({id: -1, workQueueCategory: 'All'})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -241,10 +241,10 @@
       async deleteType(typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/workQueueType/type/${typeId}`)
+          const {status} = await deleteRequest(`/workQueueType/type/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Type')
@@ -255,7 +255,7 @@
       async addNewType() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/workQueueType/type`, this.newType)
+          const {data, status} = await postRequest(`/workQueueType/type`, this.newType)
 
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -268,7 +268,7 @@
           this.addNew = false
           this.newType = {}
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
@@ -283,10 +283,10 @@
         if(rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            await putRequest(`/workQueueType/order`, rows)
+            const {status} = await putRequest(`/workQueueType/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')

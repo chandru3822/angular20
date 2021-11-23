@@ -78,7 +78,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Users',
@@ -116,10 +116,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let url = this.positionId === 1 ? '/commissionManagement/closers' : '/commissionManagement/setters'
-          const {data} = await getRequest(url, 'blueraven')
+          const {data, status} = await getRequest(url, 'blueraven', [])
           this.users = data.filter(d => d.isActiveUser)
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Users')

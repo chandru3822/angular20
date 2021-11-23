@@ -376,7 +376,7 @@
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment'
-  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Commission',
@@ -443,10 +443,10 @@
       async getCloserDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/closerDetails/${this.userId}`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/closerDetails/${this.userId}`, 'blueraven')
           this.closer = data ? data[0] : []
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading User Details')
@@ -458,9 +458,9 @@
         if(this.addNewCommissionPlan) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
+            const {data, status} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
             this.commissionPlans = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Plans')
@@ -473,9 +473,9 @@
         if(this.addNewOverridePlan || this.addNewReceivingPlan) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}/active`, 'blueraven')
+            const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}/active`, 'blueraven')
             this.overridePlans = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Override Plans')
@@ -549,7 +549,7 @@
             url = `/commissionManagement/overrides/${item.id}/receivingUser`
         }
         try {
-          const {data} = await postRequest(url, params, 'blueraven')
+          const {data, status} = await postRequest(url, params, 'blueraven')
           //reset fields as needed
           if(type === 1) {
             this.overrideExpanded = []
@@ -571,7 +571,7 @@
           }
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let errorMsg = e?.msg ?? 'Error Saving Plan'
@@ -589,9 +589,9 @@
           backdateApprovalCreds: null,
         }
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.cloneOverridePlan.id}/clone`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.cloneOverridePlan.id}/clone`, params, 'blueraven')
           this.$router.push({name: 'override', params: {id: data.id}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Plan to User')
@@ -617,9 +617,9 @@
           m2Allocation: 0,
         }
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
           this.$router.push({name: 'override', params: {id: overridePlanId}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding User to Plan')

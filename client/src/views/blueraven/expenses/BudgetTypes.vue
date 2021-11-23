@@ -116,7 +116,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'ExpenseBudgetTypes',
@@ -145,9 +145,9 @@ export default {
     async getBudgetTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
+        const {data, status} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
         this.budgetTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -158,9 +158,9 @@ export default {
     async deleteBudgetType(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/expenseBudgets/budgetType/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/expenseBudgets/budgetType/${item.id}`, 'blueraven')
         item.archived = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Budget Type')
@@ -171,7 +171,7 @@ export default {
     async saveBudgetType(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/expenseBudgets/budgetType`, item, 'blueraven')
+        const {data, status} = await postRequest(`/expenseBudgets/budgetType`, item, 'blueraven')
         if(isNew) {
           this.budgetTypes.push(data)
           this.newBudgetType = {}
@@ -179,7 +179,7 @@ export default {
         } else {
           this.editIndex = null
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Budget Type')
