@@ -44,6 +44,7 @@
                            label="Change in WIP"
                            :value="2"
                            :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
+                  <span @click="showMetricsDialog = true" class="learn-span">Learn more about work queue metrics</span>
                 </v-radio-group>
               </div>
             </v-col>
@@ -144,6 +145,22 @@
       </v-col>
     </v-row>
 
+    <v-dialog v-model="showMetricsDialog" max-width="330" class="wq-metrics-dialog">
+      <v-card>
+        <span align="left" class="flex-display wq-metrics-dialog-text pl-4">
+          Thank you for your interest! More<br>
+          information about work queue metrics,<br>
+          what they mean, and when they are<br>
+          tracked will be coming up soon!
+        </span>
+        <v-card-actions class="flex-display justify-end">
+          <v-btn
+            @click="showMetricsDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -180,7 +197,8 @@ export default {
       selectedUserPosition: {},
       workQueueOwners: [],
       anyOwner: {id: -1, fullName: 'Anyone', userId: null, unassigned: false},
-      noOwner: {id: -99, fullName: 'Unassigned', userId: null, unassigned: true}
+      noOwner: {id: -99, fullName: 'Unassigned', userId: null, unassigned: true},
+      showMetricsDialog: false
     }
   },
   computed: {},
@@ -506,5 +524,17 @@ export default {
 
 .expectation-missed {
   color: #DA3434;
+}
+
+.learn-span {
+  color: var(--v-primaryCustom-base);
+  font-weight: bold;
+}
+
+.wq-metrics-dialog {
+  font-family: Lato;
+  font-size: 12px;
+  max-width: 253px;
+  height: 88px;
 }
 </style>

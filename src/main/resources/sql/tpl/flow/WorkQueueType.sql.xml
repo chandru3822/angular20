@@ -54,7 +54,8 @@
            wqt.expected_cycle_duration_type_id,
            (select duration_type from flow.duration_type dt where dt.id = wqt.short_window_duration_type_id) as expected_cycle_duration_type,
            expected_target,
-           inverse_expectation
+           inverse_expectation,
+           json(wqt.schedule) as schedule
     from flow.work_queue_type wqt
            inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
            inner join flow.smartlist s on s.work_queue_type_id = wqt.id
@@ -90,7 +91,8 @@
           expected_cycle = :expectedCycle,
           expected_cycle_duration_type_id = :expectedCycleDurationTypeId,
           inverse_expectation = :inverseExpectation,
-          expected_target = :expectedTarget
+          expected_target = :expectedTarget,
+          schedule = :schedule
       where id = :id
   ]]></workQueueType.updateType>
 

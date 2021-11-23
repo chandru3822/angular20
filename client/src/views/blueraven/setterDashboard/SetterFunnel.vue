@@ -1238,12 +1238,20 @@
         return moment(date, 'M/D/YY').format('YYYY-MM-DD')
       },
 
-      loadFunnel () {
+      async loadFunnel () {
         if (this.funnelStats?.length === 0) {
           if (this.isSetter) {
-            this.areaLoad(true)
+            await this.areaLoad(true)
+            await this.regionLoad(true)
+            await this.districtLoad(true)
+            await this.officeLoad(true)
+            this.repLoad(true)
           } else {
-            this.areaLoad(false)
+            await this.areaLoad(false)
+            await this.regionLoad(false)
+            await this.districtLoad(false)
+            await this.officeLoad(false)
+            this.repLoad(false)
           }
         }
       },
