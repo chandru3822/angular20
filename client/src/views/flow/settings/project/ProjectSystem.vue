@@ -121,7 +121,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ProjectSystem',
@@ -189,10 +189,10 @@
         if(this.positions?.length === 0) {
           try {
             this.positionsLoading = true
-            const {data} = await getRequest(`/position/withParent`)
+            const {data, status} = await getRequest(`/position/withParent`)
             this.positions = data
             this.positionsLoading = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             this.positionsLoading = false
             console.error('*** ERROR ***', e)
@@ -205,14 +205,14 @@
       async saveReadOnlyAndWhiteList () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${this.statusReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
+          const {data, status} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${this.statusReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
           this.statusReadOnlyPositionsChanged = false
           if(!this.projectObjectType.statusReadOnly) {
             this.statusReadOnlyWhiteListedPositions = []
           }
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -221,14 +221,14 @@
       async saveOwnerReadOnlyAndWhiteList () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
+          const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
           this.ownerReadOnlyPositionsChanged = false
           if(!this.projectObjectType.ownerReadOnly) {
             this.ownerReadOnlyWhiteListedPositions = []
           }
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -237,9 +237,9 @@
       async getObjectTypeDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/objectType/getByType/1`)
+          const {data, status} = await getRequest(`/objectType/getByType/1`)
           this.projectObjectType = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')

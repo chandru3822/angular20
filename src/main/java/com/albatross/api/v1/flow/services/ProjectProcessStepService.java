@@ -34,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1018,6 +1019,8 @@ public class ProjectProcessStepService {
                   String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                   sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
                 }
+            } catch (InvocationTargetException e) {
+              throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getCause().getMessage()));
             } catch (Exception e) {
               throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getMessage()));
             }

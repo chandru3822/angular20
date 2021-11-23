@@ -52,7 +52,7 @@
   import Vue2Filters from 'vue2-filters'
 
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -113,9 +113,9 @@
       async getProcessStepDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}`)
+          const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -126,11 +126,11 @@
       async saveProcessStep(closeEditor) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/processStep`, this.processStep)
+          const {status} = await putRequest(`/processStep`, this.processStep)
           this.editName = !closeEditor
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')

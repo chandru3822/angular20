@@ -249,7 +249,7 @@
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -526,14 +526,14 @@
       async getSchedulingOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
+          const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
               stateId: this.state?.id ?? null,
               isSchedulingTool: true
             }
-          })
+          }, null, [])
           //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
-          data.forEach(d => {
+          data?.forEach(d => {
             d.masterId = d.id
             d.id = `${1}${d.id}`
           })
@@ -543,7 +543,7 @@
           this.selectedOrgs = this.selectedOrgs.filter(so => {
             return this.orgs.some(o => o.id === so.id)
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
@@ -554,10 +554,10 @@
       async getSchedulingOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getSchedulingOrgTypes()
+          const {data, status} = await getSchedulingOrgTypes()
           this.orgTypes = data
           this.orgTypesLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
@@ -568,10 +568,10 @@
       async getPositions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/position/schedulable`)
+          const {data, status} = await getRequest(`/position/schedulable`, null, [])
           this.positions = data
           this.positionsLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
@@ -582,12 +582,12 @@
       async getSchedulingUsers() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, {
+          const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, {
             params: {
               stateId: this.state?.id ?? null,
               isSchedulingTool: true
             }
-          })
+          }, null, [])
           //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
           data.forEach(d => {
             d.masterId = d.id
@@ -599,7 +599,7 @@
           this.selectedUsers = this.selectedUsers.filter(su => {
             return this.users.some(u => u.id === su.id)
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')

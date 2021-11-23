@@ -156,7 +156,7 @@
     <!-- APPOINTMENTS CREATED PIPELINE END -->
 
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
-    <div class="randa-test">
+    <div class="funnel-relative">
       <div v-if="dropdownValuesLoading || apptsToFdcPipelineDataLoading" class="funnel-spinner">
         <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
       </div>
@@ -759,7 +759,7 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {
@@ -1252,11 +1252,11 @@ export default {
 
     loadSources() {
       try {
-        getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven').then(res => {
+        getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven', []).then(res => {
           this.brsProvidedSourceData = res.data
           this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
 
-          getRequest('/closerDashboard/getSelfGenSources', 'blueraven').then(res => {
+          getRequest('/closerDashboard/getSelfGenSources', 'blueraven', []).then(res => {
             this.selfGenSourceData = res.data
             this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
             this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -1274,7 +1274,7 @@ export default {
       let brsProvidedSources = []
       let selfGenSources = []
 
-      this.brsProvidedSourceModel.forEach(brsProvidedSource => {
+      this.brsProvidedSourceModel?.forEach(brsProvidedSource => {
         if (brsProvidedSource.sourceId) {
           brsProvidedSources.push(brsProvidedSource.sourceId)
         }
@@ -1295,7 +1295,7 @@ export default {
 
       this.apptsCreatedPipelineDataLoading = true
       try {
-        await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven').then(res => {
+        await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven', []).then(res => {
           this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
         })
 
@@ -1367,7 +1367,7 @@ export default {
       }
 
       try {
-        await postRequest('/closerDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(res => {
+        await postRequest('/closerDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven', []).then(res => {
           this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
 
           let todayUpperNumerator = 0
@@ -1876,7 +1876,7 @@ export default {
 
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven').then(({data}) => {
+        const {status} = await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven', []).then(({data}) => {
           this.funnelDrilldownData = data?.length > 0 ? data : []
 
           if (this.funnelDrilldownData?.length > 0) {
@@ -1888,7 +1888,7 @@ export default {
           }
 
           this.funnelDrilldownDialog = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -2219,7 +2219,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.randa-test {
+.funnel-relative {
   position: relative;
 }
 

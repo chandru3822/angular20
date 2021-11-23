@@ -132,7 +132,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {getGlCodes} from './expenseService'
 
 export default {
@@ -163,9 +163,9 @@ export default {
     async getGlCodes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getGlCodes()
+        const {data, status} = await getGlCodes()
         this.glCodes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -176,9 +176,9 @@ export default {
     async deleteGlCode(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/expenses/glCode/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/expenses/glCode/${item.id}`, 'blueraven')
         item.archived = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting GL Code')
@@ -189,7 +189,7 @@ export default {
     async saveGlCode(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/expenses/glCode`, item, 'blueraven')
+        const {data, status} = await postRequest(`/expenses/glCode`, item, 'blueraven')
         if(isNew) {
           this.glCodes.push(data)
           this.newGlCode = {}
@@ -197,7 +197,7 @@ export default {
         } else {
           this.editIndex = null
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving GL Code')

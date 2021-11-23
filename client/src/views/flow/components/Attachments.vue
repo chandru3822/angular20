@@ -172,7 +172,7 @@
 <script>
 import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
 import {deleteAttachment} from '@/services/attachmentService'
 import orderBy from 'lodash.orderby'
 
@@ -263,13 +263,13 @@ export default {
           newFileName += '.' + item.fileExtension
         }
         item.filename = newFileName
-        const {data} = await putRequest(`/attachment/${item.id}`, item)
+        const {data, status} = await putRequest(`/attachment/${item.id}`, item)
         item.presignedUrl = data.presignedUrl
         item.edit = false
         this.renderTicker++
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
@@ -288,7 +288,7 @@ export default {
       await deleteAttachment(id)
     },
     fetchAttachments: async function () {
-      const {data} = await getRequest(this.attachmentPath)
+      const {data} = await getRequest(this.attachmentPath, null, [])
       data.forEach(d => {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename

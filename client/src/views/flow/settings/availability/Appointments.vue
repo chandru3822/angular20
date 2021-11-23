@@ -233,7 +233,7 @@
 
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { deleteRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
   import constants from "@/helpers/constants"
@@ -332,7 +332,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           const { sortBy, sortDesc, page, itemsPerPage } = this.options
           try {
-            const {data} = await getRequestWithParams(`/availability/appointments`, { params: {
+            const {data, status} = await getRequestWithParams(`/availability/appointments`, { params: {
                 userId: this.userId,
                 orgId: this.orgId,
                 page: page - 1 || 0,
@@ -340,7 +340,7 @@
               }})
             this.appointments = data.content
             this.dataLoading = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -379,7 +379,7 @@
               ...appt,
               startTimeOffsetDay: !localAndUtcSame,
             }
-            const {data} = await postRequest(`/availability/appointment`, params)
+            const {data, status} = await postRequest(`/availability/appointment`, params)
             this.addNew = false
             this.expanded = []
             //if repeating appointment - reload appointments to get full list
@@ -391,7 +391,7 @@
               this.appointments.push(data)
               this.appointments = orderBy(this.appointments, [s => s.startDate])
             }
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -409,7 +409,7 @@
         try {
           let url = deleteAllRecurring ? `/availability/appointment/recurrence/${item.recurringEventId}` : `/availability/appointment/${item.id}`
 
-          await deleteRequest(url)
+          const {status} = await deleteRequest(url)
           item.archived = true
           if(deleteAllRecurring) {
             //reload appointments if we deleted more than one
@@ -417,7 +417,7 @@
           }
           this.snackbar = getSnackbar('SUCCESS', 'Appointment Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting appointment')
@@ -429,11 +429,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          await deleteRequest(`/availability/appointment/${item.id}`)
+          const {status} = await deleteRequest(`/availability/appointment/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Appointment Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting appointment')

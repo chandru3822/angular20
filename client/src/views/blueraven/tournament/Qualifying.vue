@@ -95,7 +95,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby"
   import ScoreDrilldown from "./component/ScoreDrilldown";
@@ -196,9 +196,9 @@
         if(this.seededUserIds?.length > 0 && this.finalMatches.length === this.tournamentUserCount / 2) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.finalMatches, 'blueraven')
+            const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.finalMatches, 'blueraven')
             this.pool.advanced = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
@@ -314,10 +314,10 @@
       async getPoolUsers() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
           this.poolUsers = data
           this.lastQualifiedUserScore = this.poolUsers[this.tournamentUserCount - 1].score
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')

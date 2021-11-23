@@ -637,7 +637,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
   export default {
     name: 'Override',
@@ -763,23 +763,24 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: this.overrideId, objectTypeId: 9}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroups = data
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getOverrideDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
           this.override = data
           this.getCustomFieldGroups()
           this.dataLoading = false
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Override Details')
@@ -838,7 +839,6 @@
           }
           const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/clone`, params, 'blueraven')
           this.$router.push({name: 'override', params: {id: data.id}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Cloning Override Plan')
@@ -857,9 +857,9 @@
         this.errorLoadingUserHistory = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/overrides/assignedUsers/${userId}/history`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/overrides/assignedUsers/${userId}/history`, 'blueraven')
           this.userHistory = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.errorLoadingUserHistory = true
           console.error('*** ERROR ***', e)
@@ -932,13 +932,13 @@
             id: this.override.id,
             customFieldGroups: this.customFieldGroups
           }
-          const {data} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
           if(!this.overrideId) {
             //need to reload some stuff if this was a new plan
             this.$router.push({name: 'override', params: {id: data.id}})
           }
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Override Plan')
@@ -949,11 +949,11 @@
       async approveOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/approve`, {}, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/approve`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Override Plan Approved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.override = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Approving Override Plan')
@@ -978,12 +978,12 @@
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/updateUser`, item, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
@@ -1042,13 +1042,13 @@
       async deleteAssignedUser (assignedUserId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/assignedUsers/${assignedUserId}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/assignedUsers/${assignedUserId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.override.assignedUsers = this.override.assignedUsers.filter(au => {
             return au.id !== assignedUserId
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Assigned User')
@@ -1086,9 +1086,9 @@
       async updateReceivingUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
+          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Receiving User')
@@ -1124,14 +1124,14 @@
       async deleteReceivingUser (receivingUserId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/receivingUsers/${receivingUserId}`, 'blueraven')
+          const {status} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/receivingUsers/${receivingUserId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Receiving User Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.override.receivingUsers = this.override.receivingUsers.filter(au => {
             return au.userId !== receivingUserId
           })
           this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Receiving User')

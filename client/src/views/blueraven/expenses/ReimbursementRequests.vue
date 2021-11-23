@@ -350,7 +350,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
@@ -436,9 +436,9 @@ export default {
     async getReimbursementRequests() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/reimbursement/requests/pending`, 'blueraven')
+        const {data, status} = await getRequest(`/reimbursement/requests/pending`, 'blueraven')
         this.reimbursementRequests = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -449,9 +449,9 @@ export default {
     async deleteReimbursementRequest(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/reimbursement/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/reimbursement/${item.id}`, 'blueraven')
         item.archived = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Reimbursement Request')
@@ -466,7 +466,7 @@ export default {
         // item.skipApproval = self.skipApproval;
         //there is already an endpoint for lists of these so just sending up as a list
         let listOfItem = [item]
-        const {data} = await postRequest(`/expenses/addExpenseItems`, listOfItem, 'blueraven')
+        const {data, status} = await postRequest(`/expenses/addExpenseItems`, listOfItem, 'blueraven')
         if (isNew) {
           //do not add the new one to the list cuz it already got approved
           this.newReimbursementRequest = {}
@@ -474,7 +474,7 @@ export default {
         } else {
           this.editIndex = null
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Reimbursement Request')
@@ -544,12 +544,12 @@ export default {
 
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/expenses/markExpensesRejected`, this.selectedRequest.expenses, 'blueraven')
+        const {data, status} = await postRequest(`/expenses/markExpensesRejected`, this.selectedRequest.expenses, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Expenses Rejected.')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
         await this.resetPage()
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Rejecting Reimbursement Request')
@@ -570,9 +570,9 @@ export default {
             userId: item.expenseBudgetUserId,
             expenseDate: expenseDate
           }
-          const {data} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
           this.budgetTypesForUser = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -606,9 +606,9 @@ export default {
     async getGlCodes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getGlCodes()
+        const {data, status} = await getGlCodes()
         this.glCodes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -619,9 +619,9 @@ export default {
     async getUsersWithBudget() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getUsersWithBudget()
+        const {data, status} = await getUsersWithBudget()
         this.usersWithBudget = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -633,11 +633,11 @@ export default {
       this.renderRequestImage = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getReimbursementRequestImage(item.id)
+        const {data, status} = await getReimbursementRequestImage(item.id)
         item.presignedUrl = data
         //this forces the dom to re-render the presignedUrl and i hate myself
         this.renderRequestImage = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')

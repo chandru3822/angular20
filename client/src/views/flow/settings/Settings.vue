@@ -89,7 +89,7 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -241,10 +241,10 @@ export default {
       if(this.hasSettingsAccess) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
+          const {data, status} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
           this.companyObjectTypes = data
           this.setTitle()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

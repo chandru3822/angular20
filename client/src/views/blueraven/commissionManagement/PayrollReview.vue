@@ -72,7 +72,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
   import constants from "@/helpers/constants";
-  import {getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Payroll',
@@ -160,10 +160,10 @@
       async getPayroll() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/${this.payrollId}`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/${this.payrollId}`, 'blueraven')
           this.payroll = data
           this.populateStatusDetails()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Details')
@@ -175,11 +175,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest(`/payroll/${this.payrollId}/snapshot/${this.positionId}`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/${this.payrollId}/snapshot/${this.positionId}`, 'blueraven')
           this.dataLoading = false
           this.payrollSnapshot = data
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Snapshot')
@@ -190,9 +190,9 @@
       async viewSummary() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/${this.payrollId}/summary`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/${this.payrollId}/summary`, 'blueraven')
           this.payrollSummary = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')

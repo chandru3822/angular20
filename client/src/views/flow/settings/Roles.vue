@@ -87,7 +87,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Roles',
@@ -115,10 +115,10 @@
       },
       async getRoles() {
         try {
-          const {data} = await getRequest(`/role`)
+          const {data, status} = await getRequest(`/role`)
           this.roles = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Roles')
@@ -129,8 +129,8 @@
       async deleteRole(id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/role/${id}`)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await deleteRequest(`/role/${id}`)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Role')

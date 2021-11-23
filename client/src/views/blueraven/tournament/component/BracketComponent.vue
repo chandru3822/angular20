@@ -146,7 +146,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, putRequest, putRequestWithRequestParams, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, putRequestWithRequestParams, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ScoreDrilldown from "./ScoreDrilldown"
 
@@ -193,9 +193,9 @@
     methods: {
       async getOverrideUsers() {
         try {
-          const {data} = await getRequest(`/user/active`)
+          const {data, status} = await getRequest(`/user/active`)
           this.overrideUsers = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
@@ -264,10 +264,10 @@
         round.advanceConfirm = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/tournament/${this.bracket.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
+          const {status} = await putRequest(`/tournament/${this.bracket.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Finalists Advanced')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false

@@ -307,6 +307,7 @@
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
+    handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
     putRequest,
@@ -375,11 +376,11 @@
       async replicateBracket(b) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/tournament/bracket/replicate`, b, 'blueraven')
+          const {data, status} = await postRequest(`/tournament/bracket/replicate`, b, 'blueraven')
           // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
           data.maxRounds = false
           this.tournament.brackets.push(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Bracket')
@@ -390,9 +391,9 @@
       async getTournamentOwnerTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
           this.ownerTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -404,13 +405,13 @@
       async getTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
           // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
           data?.brackets?.forEach(b => {
             b.maxRounds = false
           })
           this.tournament = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
@@ -421,10 +422,10 @@
       async updateTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/tournament`, this.tournament, 'blueraven')
+          const {data, status} = await putRequest(`/tournament`, this.tournament, 'blueraven')
           this.tournament = data
           this.edit = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Tournament')
@@ -442,13 +443,13 @@
               numberOfUsers: this.newBracket.numberOfUsers,
               tournamentId: this.tournament.id
             }
-            const {data} = await postRequest(`/tournament/bracket`, param, 'blueraven')
+            const {data, status} = await postRequest(`/tournament/bracket`, param, 'blueraven')
             // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
             data.maxRounds = false
             this.tournament.brackets.push(data)
             this.addBracket = false
             this.newBracket = {}
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Bracket')
@@ -463,10 +464,10 @@
       async deleteBracket(id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/tournament/bracket/${id}`, 'blueraven')
+          const {status} = await deleteRequest(`/tournament/bracket/${id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Bracket Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Bracket')
@@ -483,7 +484,7 @@
             startDate: round.startDate,
             endDate: round.endDate
           }
-          const {data} = await putRequest(`/tournament/round`, param, 'blueraven')
+          const {data, status} = await putRequest(`/tournament/round`, param, 'blueraven')
           bracket.rounds = data.rounds
           if (round.id) {
             round.edit = false
@@ -491,7 +492,7 @@
             bracket.addRound = false
             this.newRound = {}
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Round')
@@ -506,13 +507,13 @@
             id: roundId,
             tournamentBracketId: bracket.id
           }
-          const {data} = await putRequest(`/tournament/round/${roundId}/delete`, param, 'blueraven')
+          const {data, status} = await putRequest(`/tournament/round/${roundId}/delete`, param, 'blueraven')
           bracket.rounds = data.rounds
           // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
           bracket.maxRounds = false
           this.snackbar = getSnackbar('SUCCESS', 'Round Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Round')
@@ -523,12 +524,12 @@
       async generateMatches(bracket) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')
+          const {status} = await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')
           //disable the button
           bracket.matchesGenerated = true
           this.snackbar = getSnackbar('SUCCESS', 'Matches Generated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Generating Matches')

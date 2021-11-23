@@ -133,7 +133,7 @@
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
-  import {  getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'PostalCodes',
@@ -170,9 +170,9 @@
       async getCompanyTimezones() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/timezone`)
+          const {data, status} = await getRequestWithParams(`/timezone`)
           this.companyTimezones = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
@@ -195,11 +195,11 @@
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/postalCode/zones`, { params: { searchQuery: this.search}})
+          const {data, status} = await getRequestWithParams(`/postalCode/zones`, { params: { searchQuery: this.search}})
           this.postalCodeZones = data
           this.masterPostalCodeZones = cloneDeep(data)
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -211,10 +211,10 @@
       async deletePostalCodeZone (zoneId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/postalCode/zone/${zoneId}`)
+          const {status} = await deleteRequest(`/postalCode/zone/${zoneId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Zone Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Zone')
@@ -225,11 +225,11 @@
       async addPostalCodeZone () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/postalCode/zone`, this.newZone)
+          const {data, status} = await postRequest(`/postalCode/zone`, this.newZone)
           this.$router.push({path: `/settings/postalCode/${data.id}/scheduleTo`})
           this.snackbar = getSnackbar('SUCCESS', 'Zone Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Zone')

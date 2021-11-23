@@ -39,7 +39,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -92,12 +92,12 @@
             return;
           }
 
-          const {data} = await postRequest(`/callGroup/`, this.group, 'blueraven')
+          const {data, status} = await postRequest(`/callGroup/`, this.group, 'blueraven')
           this.group = data
           this.editGroup = false
           this.snackbar = getSnackbar('SUCCESS', 'Call Group saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group')
@@ -108,10 +108,10 @@
       async getCallGroupDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/callGroup/${this.callGroupId}`, 'blueraven')
+          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}`, 'blueraven')
           this.group = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

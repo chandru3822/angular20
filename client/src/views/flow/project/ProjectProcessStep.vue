@@ -288,7 +288,7 @@
 
 <script>
 
-  import {followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
@@ -393,14 +393,16 @@
         return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
       },
       async getAvailableStatuses() {
-        try {
-          const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
-          // const {data} = await getRequest(`/processStep/status`)
-          this.availableProcessStepStatuses = data
-        } catch (e) {
-          this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          logError(e)
+        if(this.processStep?.processStepId) {
+          try {
+            const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
+            // const {data} = await getRequest(`/processStep/status`)
+            this.availableProcessStepStatuses = data
+          } catch (e) {
+            this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            logError(e)
+          }
         }
       },
       getProcessStep: async function () {
@@ -422,7 +424,7 @@
         //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
         //this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
+          const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
           this.customFieldGroups = data
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -460,16 +462,18 @@
       },
       async getAvailableOwners() {
         // this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
-          this.availableOwners = data
+        if(this.processStep?.processStepProcessId) {
+          try {
+            const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
+            this.availableOwners = data
 
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          // this.$store.commit(AppMutations.SET_LOADING, false)
+            // this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            logError(e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            // this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       // async updateProjectFieldGroups() {
@@ -538,9 +542,9 @@
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } finally {
           this.fieldsSaving = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       populateDirtyCfvs(field) {
@@ -557,10 +561,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.processStep.owner = {}
-          await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+          const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
           this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
@@ -572,8 +576,8 @@
         this.displayChangeOwner = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
@@ -586,13 +590,13 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
-          await this.getProcessStep()
+          const {status} = await this.getProcessStep()
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.processStep.main = false
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -610,9 +614,22 @@
       handleActionCompleted() {
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       },
-      handleOnCompleteError(actionId) {
+      handleOnCompleteError(actionId, errorMessage) {
         logError(`Failed to complete action with actionId: ${actionId}`)
-        this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
+
+        let message = 'Unable to Complete Action'
+
+        // See if this is a java function failure and display a more specific error message
+        if (errorMessage && typeof errorMessage === 'string') {
+          let lastClause = errorMessage.substring(errorMessage.lastIndexOf('*** '))
+
+          // This is specific to BR to display if a loan wasn't found. Genericize when we get "free time"
+          if (lastClause.includes('Unable to locate application')) {
+            message = 'Unable to locate loan application'
+          }
+        }
+
+        this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
 

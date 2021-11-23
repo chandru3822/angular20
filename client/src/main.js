@@ -64,6 +64,18 @@ axios.interceptors.request.use(config => {
   if (store && store.state && store.state.user && config.url.indexOf(VUE_APP_BASE_API) > -1) {
     config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
   }
+
+  // if config.source passed in then use that
+  let source = config.source
+
+  if(!source) {
+    // if no source passed in, Generate cancel token source
+    source = axios.CancelToken.source();
+    config.cancelToken = source.token
+  }
+
+  // Add to vuex to make cancellation available from anywhere
+  store.commit('ADD_CANCEL_TOKEN', source);
   return config
 })
 

@@ -90,7 +90,21 @@ public class PostalCodeService {
 
       sqlCache.update("postalCode.saveManualUserAllocation", params);
     }
+    //if users get terminated then they are still in zones. archiving them here ensures that if an allocation change is made it will also archive any terminated users
+    archiveInactiveUsers(zoneId);
+
     return getScheduleToUsers(zoneId);
+  }
+
+  public void archiveInactiveUsers(Long zoneId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.trueUserId());
+    params.put("zoneId", zoneId);
+
+    sqlCache.update("postalCode.archiveInactiveUsers", params);
+
   }
 
   public PostalCodeZone saveZone(PostalCodeZone zone) {
@@ -153,6 +167,9 @@ public class PostalCodeService {
 
     sqlCache.update("postalCode.insertZoneUser", params);
 
+    //if users get terminated then they are still in zones. archiving them here ensures that if a new allocation user is added it will also archive any terminated users
+    archiveInactiveUsers(zoneId);
+
     //adding an allocation user requires sending back the full allocation list instead of just the one user
     return getScheduleToUsers(zoneId);
   }
@@ -183,6 +200,9 @@ public class PostalCodeService {
   public List<PostalCodeAllocationUser> deleteAllocationUser(Long zoneId, Long postalCodeZoneUserId) {
     //delete the user like normal but return the adjusted allocation values
     deleteUser(postalCodeZoneUserId);
+    //if users get terminated then they are still in zones. archiving them here ensures that if an allocation user is deleted it will also archive any terminated users
+    archiveInactiveUsers(zoneId);
+
     return getScheduleToUsers(zoneId);
   }
 

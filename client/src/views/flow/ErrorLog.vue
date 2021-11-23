@@ -79,7 +79,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ErrorLog',
@@ -120,8 +120,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          await deleteRequest(`/errorLog/${id}`)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await deleteRequest(`/errorLog/${id}`)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Error Deleting Log')

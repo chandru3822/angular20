@@ -62,7 +62,7 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   import {AppMutations} from '@/stores/AppStore'
 
@@ -101,11 +101,11 @@
       async validateResetRequest () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/forgotPassword/reset/${this.uuid}`)
+          const {data, status} = await getRequest(`/user/forgotPassword/reset/${this.uuid}`)
           this.user = data
           this.requestValidating = false
           this.requestValid = this.user?.id
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.requestValidating = false
           this.requestValid = false
@@ -125,8 +125,8 @@
               newPasswordAgain: this.newPasswordAgain,
               userId: this.user.id
             }
-            await postRequest(`/user/forgotPassword/change/password`, params)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            const {status} = await postRequest(`/user/forgotPassword/change/password`, params)
+            handleHidingGlobalLoader(this, status)
             this.snackbar = getSnackbar('SUCCESS', 'Your password has been changed.')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$router.push('/login')

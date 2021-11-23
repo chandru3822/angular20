@@ -198,7 +198,7 @@ import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 
 import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'Process',
@@ -259,9 +259,9 @@ export default {
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processes/${this.processId}`)
+        const {data, status} = await getRequest(`/processes/${this.processId}`)
         this.process = cloneDeep(data)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -273,11 +273,11 @@ export default {
       if(rows?.length > 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
+          const {data, status} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
           // this.$set(this.process, 'processStepProcesses', data.processStepProcesses)
           this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
@@ -290,14 +290,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         item.companyProcessStepStatusTypeId = item.initialStep ? item.companyProcessStepStatusTypeId : null
-        const {data} = await putRequest(`/processes/${this.processId}/processStepProcess`, item)
+        const {data, status} = await putRequest(`/processes/${this.processId}/processStepProcess`, item)
         item.initialStep = data.initialStep
         item.companyProcessStepStatusTypeId = data.companyProcessStepStatusTypeId
         item.processStepStatusType = data.processStepStatusType
         this.expanded = []
         this.snackbar = getSnackbar('SUCCESS', 'Process Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Process')
@@ -309,10 +309,10 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.editName = false
-        await putRequest(`/processes`, this.process)
+        const {status} = await putRequest(`/processes`, this.process)
         this.snackbar = getSnackbar('SUCCESS', 'Process Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Process')
@@ -325,10 +325,10 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNew = false
-        await deleteRequest(`/processes/processStepProcess/${id}`)
+        const {status} = await deleteRequest(`/processes/processStepProcess/${id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Step Deleted from Process')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Step From Process')
@@ -338,9 +338,9 @@ export default {
     },
     async getPositions() {
       try {
-        const {data} = await getRequest(`/position/withParent`)
+        const {data, status} = await getRequest(`/position/withParent`)
         this.owningPositions = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
@@ -349,16 +349,16 @@ export default {
       }
     },
     async getAvailableProcessSteps () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         //reset field in case they hit cancel
         this.newProcessStep = {}
         this.addNew = !this.addNew
         if(this.addNew) {
-          const {data} = await getRequest(`/processes/${this.processId}/availableProcessSteps`)
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data, status} = await getRequest(`/processes/${this.processId}/availableProcessSteps`)
           this.availableProcessSteps = data
+          handleHidingGlobalLoader(this, status)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -369,7 +369,7 @@ export default {
     async assignProcessStep () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/processes/${this.processId}/processStep`, this.newProcessStep)
+        const {data, status} = await postRequest(`/processes/${this.processId}/processStep`, this.newProcessStep)
         this.process.processStepProcesses.push(data)
         this.process.processStepProcesses = orderBy(this.process.processStepProcesses, 'processStepName')
 
@@ -377,7 +377,7 @@ export default {
         this.newProcessStep = {}
         this.snackbar = getSnackbar('SUCCESS', 'Process Step Assigned')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Assigning Process Step')

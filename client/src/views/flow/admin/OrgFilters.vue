@@ -152,7 +152,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getOrgFilters, getOrgLevels} from '@/services/orgService'
-  import { deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -186,9 +186,9 @@
       async getOrgFilters () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgFilters()
+          const {data, status} = await getOrgFilters()
           this.orgFilters = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
@@ -199,7 +199,7 @@
       async saveOrgFilter(of, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/org/filters`, of)
+          const {data, status} = await putRequest(`/org/filters`, of)
           if(isNew){
             this.orgFilters.push(data)
             this.addNew = false
@@ -211,7 +211,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'Org Filter Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
@@ -222,9 +222,9 @@
       async getOrgLevels() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgLevels()
+          const {data, status} = await getOrgLevels()
           this.levels = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
@@ -235,13 +235,13 @@
       async deleteOrgFilter(filter) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/org/filters/${filter.id}`)
+          const {status} = await deleteRequest(`/org/filters/${filter.id}`)
           this.orgFilters = this.orgFilters.filter(ol => {
             return ol.id !== filter.id
           })
           this.snackbar = getSnackbar('SUCCESS', 'Org Filter Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Filter')

@@ -137,7 +137,7 @@
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
 
-  import { deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
@@ -212,10 +212,10 @@
       async getWorkQueueCategories() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getWorkQueueCategories()
+          const {data, status} = await getWorkQueueCategories()
           this.workQueueCategories = data
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
@@ -226,10 +226,10 @@
       async deleteCategory(typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/workQueueCategory/${typeId}`)
+          const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Category')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Category')
@@ -240,7 +240,7 @@
       async addNewCategory() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/workQueueCategory`, this.newCategory)
+          const {data, status} = await postRequest(`/workQueueCategory`, this.newCategory)
 
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -253,7 +253,7 @@
           this.addNew = false
           this.newCategory = { color: null }
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Category')
@@ -265,11 +265,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.selectedWorkQueueCategoryId = null
-          await putRequest(`/workQueueCategory`, wqc)
+          const {status} = await putRequest(`/workQueueCategory`, wqc)
           wqc.showColor = false
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Category')
@@ -281,11 +281,11 @@
         if(rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            await putRequest(`/workQueueCategory/order`, rows)
+            const {status} = await putRequest(`/workQueueCategory/order`, rows)
             // this.$set(this, 'workQueueCategories', data)
             this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Order Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Order')

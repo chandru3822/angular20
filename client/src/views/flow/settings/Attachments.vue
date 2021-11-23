@@ -84,7 +84,7 @@
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -108,10 +108,10 @@
       async getAttachmentTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/attachmentType/types`)
+          const {data, status} = await getRequest(`/attachmentType/types`)
           this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attachment Types')
@@ -122,10 +122,10 @@
       async deleteType(typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/attachmentType/type/${typeId}`)
+          const {status} = await deleteRequest(`/attachmentType/type/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Attachment Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
@@ -137,7 +137,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newType.companyId = this.companyId
-          const {data} = await postRequest(`/attachmentType/type`, this.newType)
+          const {data, status} = await postRequest(`/attachmentType/type`, this.newType, null, [])
 
           this.snackbar = getSnackbar('SUCCESS', 'Action Type Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -150,7 +150,7 @@
           this.addNew = false
           this.newType = {}
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
@@ -163,10 +163,10 @@
         try {
           this.selectedAttachmentTypeId = null
           a.modifiedById = this.userId
-          await putRequest(`/attachmentType/type`, a)
+          const {status} = await putRequest(`/attachmentType/type`, a)
           this.snackbar = getSnackbar('SUCCESS')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')

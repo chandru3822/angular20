@@ -148,7 +148,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import { deleteRequest, putRequest, putRequestWithRequestParams, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import { handleHidingGlobalLoader, deleteRequest, putRequest, putRequestWithRequestParams, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 
@@ -200,9 +200,9 @@ export default {
     async saveMinVersion () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequestWithRequestParams(`/app/${this.appTypeId}/minVersion`, null, { minVersion: this.minVersion})
+        const {status} = await putRequestWithRequestParams(`/app/${this.appTypeId}/minVersion`, null, { minVersion: this.minVersion})
         this.editMinVersion = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Min Build Number')
@@ -213,9 +213,9 @@ export default {
     async getAvailableBuildNumbers () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/app/${this.appTypeId}/buildNumbers`)
+        const {data, status} = await getRequestWithParams(`/app/${this.appTypeId}/buildNumbers`)
         this.buildNumbers = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Build Numbers')
@@ -226,9 +226,9 @@ export default {
     async getMinVersion () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/app/${this.appTypeId}/minVersion`)
+        const {data, status} = await getRequestWithParams(`/app/${this.appTypeId}/minVersion`)
         this.minVersion = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Min Build Number')
@@ -239,9 +239,9 @@ export default {
     async deleteApp(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/app/${item.id}`)
+        const {status} = await deleteRequest(`/app/${item.id}`)
         item.archived = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Apps')
@@ -253,9 +253,9 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         app.show = !app.show
-        await putRequest(`/app/show`, app)
+        const {status} = await putRequest(`/app/show`, app)
         app.showConfirm = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating App')

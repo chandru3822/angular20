@@ -226,7 +226,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, getRequestWithParams, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import {getAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
@@ -376,12 +376,12 @@ export default {
       this.displayChangeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await postRequest(`/project/${this.projectId}/owner`, this.project.owner)
+        const {status} = await postRequest(`/project/${this.projectId}/owner`, this.project.owner)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -391,7 +391,8 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/status`, selectedStep.newStatusToUse)
-        await this.getProjectProcessSteps()
+        const {status} = await this.getProjectProcessSteps()
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
@@ -405,20 +406,19 @@ export default {
           }
           return step
         })
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     deleteProjectProcessStep: async function (projectProcessStepId) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/projectProcessStep/${projectProcessStepId}`)
+        const {status} = await deleteRequest(`/projectProcessStep/${projectProcessStepId}`)
         this.projectProcessSteps = this.projectProcessSteps.filter(step => step.projectProcessStepId !== projectProcessStepId)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting process step')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -428,7 +428,8 @@ export default {
         try {
             this.$store.commit(AppMutations.SET_LOADING, true)
             await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, selectedStep.newStatusToUse)
-            await this.getProjectProcessSteps()
+          const {status} = await this.getProjectProcessSteps()
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
             logError(e)
             this.snackbar = getSnackbar('ERROR', 'Unable to update the primary process step')
@@ -436,7 +437,6 @@ export default {
             if (selectedStep) {
                 selectedStep.main = false
             }
-        } finally {
             this.$store.commit(AppMutations.SET_LOADING, false)
         }
     },

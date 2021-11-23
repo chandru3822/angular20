@@ -250,6 +250,7 @@
       WHERE up.org_id = :selectedOrgId
         AND ust.has_access is true
         AND pd.company_id = 3
+        and (up.end_date is null or up.end_date >= (now() at time zone 'US/Mountain')::date - :timeInterval)
       GROUP BY u.id, officeName, region, metroArea, ust.user_status_type
     ]]>
   </closerDashboard.getCloserTableScoresOffice>

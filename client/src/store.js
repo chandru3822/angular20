@@ -32,12 +32,26 @@ const store = new Vuex.Store({
       })
     }
   ],
+  state: {
+    cancelTokens: [],
+  },
+  getters: {
+    cancelTokens(state) {
+      return state.cancelTokens;
+    }
+  },
   modules: {
     user: UserStore,
     brs: BrsStore,
     app: AppStore
   },
   mutations: {
+    ADD_CANCEL_TOKEN(state, token) {
+      state.cancelTokens.push(token);
+    },
+    CLEAR_CANCEL_TOKENS(state) {
+      state.cancelTokens = [];
+    },
     [Mutations.INIT] (state) {
       if (localStorage.getItem('store')) {
         const hydratedState = JSON.parse(localStorage.getItem('store'))
@@ -46,6 +60,18 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    CANCEL_PENDING_REQUESTS(context) {
+
+      // Cancel all request where a token exists
+      context.state.cancelTokens.forEach((request, i) => {
+        if(request.cancel){
+          request.cancel();
+        }
+      });
+
+      // Reset the cancelTokens store
+      context.commit('CLEAR_CANCEL_TOKENS');
+    },
     [Actions.FILE_DELETE]: async (context, { id, callback }) => {
       //todo: need to handle errors in these functions
       const {status} = await deleteRequest(`/attachment/${id}`)

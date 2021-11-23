@@ -445,13 +445,13 @@ public class SmartlistService {
 
     for (SmartlistFieldAssignment f: fields) {
       if (f.getDataTypeId() == 1) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if (f.getCustomFieldSqlKey() != null) {
-        query.append(String.format("  \"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
+        query.append(String.format(" \"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
       } else {
-        query.append(String.format("  %s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format(" brs.project_details.%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       }
     }
 
@@ -498,17 +498,17 @@ public class SmartlistService {
 
       if (r.getDataTypeId() == 7) {
         if (r.getDataTypeRequirementId() != null) {
-          query.append(String.format(" %s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-        query.append(String.format(" %s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
       } else {
         if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
-          query.append(String.format(" %s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format(" %s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" brs.project_details.%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       }
     }

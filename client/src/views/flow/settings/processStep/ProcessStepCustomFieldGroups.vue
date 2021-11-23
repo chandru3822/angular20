@@ -471,6 +471,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {
+    handleHidingGlobalLoader,
     getRequest,
     putRequest,
     postRequest,
@@ -601,7 +602,7 @@
           this.createNew = false
           this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
@@ -615,7 +616,7 @@
           let params = {
             customFieldGroupId, customFieldGroupAssignmentId
           }
-          const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+          const {data, status} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params, null, [])
           if (data?.length > 0) {
             this.deleteError = true
             item.deleteConfirm = false
@@ -630,14 +631,14 @@
             }
             this.snackbar = getSnackbar('ERROR', errorMsg)
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            handleHidingGlobalLoader(this, status)
           } else {
             this.fieldsInUse = []
             item.archived = true
             this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting')
@@ -648,10 +649,10 @@
       async saveGroupName(group) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+          const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
           this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
@@ -678,7 +679,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.addField && this.newFieldType === 'native') {
-            const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+            const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
               params: {
                 companyObjectTypeId: objectTypeId,
                 groupId,
@@ -688,13 +689,14 @@
             this.availableCustomFields = data
             this.parentObjects = []
             this.ancillaryCustomFields = []
+            handleHidingGlobalLoader(this, status)
           } else if (this.addField && this.newFieldType === 'ancillary') {
             this.availableCustomFields = []
-            const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
+            const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
+            handleHidingGlobalLoader(this, status)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -706,13 +708,14 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.parent.isProcessStep) {
-            const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+            const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
             this.ancillaryCustomFields = data
+            handleHidingGlobalLoader(this, status)
           } else {
-            const {data} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
+            const {data, status} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
             this.ancillaryCustomFields = data
+            handleHidingGlobalLoader(this, status)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -723,8 +726,8 @@
       async saveUseParentData(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/customFieldGroup/saveUseParentData`, field)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await putRequest(`/customFieldGroup/saveUseParentData`, field)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
@@ -735,12 +738,12 @@
       async saveReadOnlyAndWhiteList(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+          const {data, status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
           field.positionsChanged = false
           if (!field.customFieldGroupAssignmentReadOnly) {
             this.$set(field, 'whiteListedPositions', [])
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
@@ -751,12 +754,12 @@
       async saveHiddenAndWhiteList(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
+          const {data, status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
           field.hiddenPositionsChanged = false
           if (!field.customFieldGroupAssignmentHidden) {
             this.$set(field, 'hiddenWhiteListedPositions', [])
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
@@ -765,7 +768,6 @@
         }
       },
       async saveFieldChanges(fields) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
           // pull those needing to be saved out of list
@@ -779,11 +781,12 @@
           })
           // save them here
           if (fieldsToSave.length > 0) {
-            await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
+            handleHidingGlobalLoader(this, status)
           }
           this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
@@ -800,12 +803,12 @@
           //this line makes pushing it to the list work
           this.newField.archived = false
 
-          const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+          const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
           cfg.customFields.push(data)
           this.newField = {}
           this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
@@ -822,14 +825,14 @@
             ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
             fieldOrder: 0
           }
-          const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
+          const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
           cfg.customFields.push(data)
           this.selectedAncillaryField = {}
           this.addField = false
           this.parent = {}
           this.snackbar = getSnackbar('SUCCESS', 'Reference Field Assigned')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Assigning Reference Field')
@@ -846,13 +849,13 @@
         if (rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
+            const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
             this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
             this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             // this componentKey forces the data-table component to re-render
             this.componentKey += 1
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Group Order')
@@ -865,10 +868,10 @@
         if (this.positions?.length === 0) {
           try {
             this.positionsLoading = true
-            const {data} = await getRequest(`/position/withParent`)
+            const {data, status} = await getRequest(`/position/withParent`)
             this.positions = data
             this.positionsLoading = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             this.positionsLoading = false
             console.error('*** ERROR ***', e)

@@ -1,11 +1,8 @@
 <template>
-  <v-container id="setter-dash-container" :class="{'incentive-tab-override': showIncentive}">
+  <v-container id="setter-dash-container">
     <v-row id="setter-dash-toolbar-container">
       <v-col cols="12" id="setter-dash-toolbar" class="pt-0 pb-2">
-        <v-toolbar id="setter-dash-title-container" class="elevation-1">
-          <v-toolbar-title>Setter Dashboard</v-toolbar-title>
-        </v-toolbar>
-        <v-app-bar v-if="showDashboard" id="date-range-btns-toolbar" class="elevation-1">
+        <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
               <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
@@ -17,480 +14,15 @@
         </v-app-bar>
       </v-col>
     </v-row>
-
-    <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters :class="{'incentive-tab-overrides': showIncentive}">
-      <v-col cols="12">
-        <span class="clickable" :class="{'font-weight-bold': showFunnel}" @click="switchTabs(1)">
-          Funnel
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(2)">
-          Dashboard
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': showIncentive}" @click="switchTabs(3)">
-          Incentive
-        </span>
-      </v-col>
-    </v-row>
-
-    <!---------------------------------- FUNNEL TAB START ---------------------------------->
-    <!-- FUNNEL -->
-    <div v-show="showFunnel" id="pipeline-container"
-         :class="{'mb-8': funnelStats.length > 0}">
-      <div class="pipeline-header-container">
-        <div id="pipeline-header-top">
-          <v-icon class="pipeline-icon">mdi-poll</v-icon>
-          <div class="pipeline-title">Pipeline</div>
-        </div>
-
-        <!-- PIPELINE CONTROLS -->
-        <div id="pipeline-header-controls">
-          <!-- VIEW BUTTONS -->
-          <div id="pipeline-header-left-side">
-            <v-radio-group v-model="viewSelect">
-              <v-radio label="Standard View" value="standard" class="funnel-radio-btn"
-                       @change="viewSelected('standard')"
-                       :class="{'white--text': viewSelect === 'standard'}"
-                       :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
-              </v-radio>
-              <v-radio label="Cohort View" value="cohort" class="funnel-radio-btn"
-                       @change="viewSelected('cohort')"
-                       :class="{'white--text': viewSelect === 'cohort'}"
-                       :color="viewSelect === 'cohort' ? 'primaryCustom' : 'secondaryCustom'">
-              </v-radio>
-            </v-radio-group>
-          </div>
-
-          <!-- DROPDOWNS -->
-          <div id="pipeline-header-right-side">
-            <v-autocomplete class="pipeline-dropdown"
-                            v-model="districtModel"
-                            :items="districtData"
-                            item-text="org_name"
-                            item-value="org_id"
-                            label="District"
-                            no-data-text="No districts available"
-                            outlined
-                            multiple
-                            dense
-                            return-object
-                            @input="regionLoad(false)">
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
-                  {{ districtModel.length }} Checked
-                </span>
-              </template>
-              <template v-if="districtData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllDistricts">
-                  <v-list-item-action>
-                    <v-icon>{{ districtSelectIcon }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action>
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
-
-            <v-autocomplete class="pipeline-dropdown"
-                            v-model="regionModel"
-                            :items="regionData"
-                            item-text="org_name"
-                            item-value="org_id"
-                            label="Region"
-                            no-data-text="No regions available"
-                            outlined
-                            multiple
-                            dense
-                            return-object
-                            @input="officeLoad(false)">
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
-                  {{ regionModel.length }} Checked
-                </span>
-              </template>
-              <template v-if="regionData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllRegions">
-                  <v-list-item-action>
-                    <v-icon>{{ regionSelectIcon }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action>
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
-
-            <v-autocomplete class="pipeline-dropdown"
-                            v-model="officeModel"
-                            :items="officeData"
-                            item-text="org_name"
-                            item-value="org_id"
-                            label="Office"
-                            no-data-text="No offices available"
-                            outlined
-                            multiple
-                            dense
-                            return-object
-                            @input="repLoad(false)">
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
-                  {{ officeModel.length }} Checked
-                </span>
-              </template>
-              <template v-if="officeData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllOffices">
-                  <v-list-item-action>
-                    <v-icon>{{ officeSelectIcon }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action>
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
-
-            <v-autocomplete class="pipeline-dropdown"
-                            v-model="repModel"
-                            :items="repData"
-                            item-text="name"
-                            item-value="user_id"
-                            label="Rep"
-                            no-data-text="No reps available"
-                            outlined
-                            multiple
-                            dense
-                            hide-details
-                            return-object
-                            ref="repSelect"
-                            @input="repValuesChanged = true">
-
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
-                  {{ repModel.length }} Checked
-                </span>
-              </template>
-              <template v-if="repData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
-                  <v-list-item-action>
-                    <v-icon>{{ repSelectIcon }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action>
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
-
-            <v-btn v-if="!isSetter && !isSetterMgr" id="all-reps-btn" outlined @click="funnelAllReps">
-              All Reps
-            </v-btn>
-          </div>
-        </div>
-      </div>
-
-      <!-- FUNNEL -->
-      <div class="funnel-container">
-        <div v-show="funnelStats.length > 0" id="funnel-background"
-             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"
-             :stype="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
-                                    showPipelineCustomDates && windowInnerWidth >= 1135 ? '84px' :
-                                    windowInnerWidth < 1135 ? '63px' : '69px'}"
-        ></div>
-        <table class="funnel-table">
-          <!-- FUNNEL COLUMN HEADERS -->
-          <tr class="funnel-tr">
-            <th class="funnel-th">EXPECTATION</th>
-            <th class="funnel-th"></th>
-            <th class="funnel-th">TODAY</th>
-            <th class="funnel-th">LAST 7 DAYS</th>
-            <th class="funnel-th">LAST 30 DAYS</th>
-            <th class="funnel-th">
-              <div v-show="showPipelineCustomDates" class="custom-dates-container">
-                <v-menu v-model="pipeline_menu1" transition="scale-transition" offset-y
-                        min-width="290px" :close-on-content-click="false">
-                  <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="pipeline_dt1_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
-                  </template>
-                  <v-date-picker v-model="pipeline_dt1" :max="pipeline_dt2"
-                                 @input="updatePipelineCalendar()"></v-date-picker>
-                </v-menu>
-                <span class="custom-date-span">-</span>
-                <v-menu v-model="pipeline_menu2" transition="scale-transition" offset-y
-                        min-width="290px" :close-on-content-click="false">
-                  <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="pipeline_dt2_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
-                  </template>
-                  <v-date-picker v-model="pipeline_dt2" :min="pipeline_dt1"
-                                 @input="updatePipelineCalendar()"></v-date-picker>
-                </v-menu>
-              </div>
-
-              <v-menu v-model="customDateSelectorIsOpen"
-                      :close-on-content-click="true"
-                      transition="scale-transition"
-                      offset-y>
-                <template v-slot:activator="{ on }">
-                  <v-btn v-on="on" class="custom-dates-btn">
-                    {{ pipelineDateRange.label }}<v-icon>mdi-menu-down</v-icon>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item v-for="(dateRange, index) in pipelineDateRanges"
-                               :key="index"
-                               @click="choosePipelineDateRange(dateRange)">
-                    <v-list-item-title>{{ dateRange.label }}</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </th>
-          </tr>
-          <!-- FUNNEL ROWS -->
-          <tr class="funnel-tr" :class="{'blue-sub-row': [3,2].indexOf(line.id) !== -1}"
-              v-for="(line, index) in funnelStats" :key="line.id">
-            <td v-if="showExpectationInput(index)" id="expectation-input"
-                class="funnel-td funnel-expectation">
-              <v-text-field @change="expectationChanged"
-                            v-model="expectedInstalls"
-                            solo
-                            dense>
-              </v-text-field>
-            </td>
-
-            <!-- FUNNEL EXPECTATION -->
-            <td v-if="!showExpectationInput(index)" class="funnel-td funnel-expectation">
-              {{line.expectation}}
-            </td>
-
-            <!-- FUNNEL NAME -->
-            <td class="funnel-td funnel-line-name">{{line.name}}</td>
-
-            <!-- TODAY COUNT -->
-            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, 'today', line.name) : ''">
-              <div>
-                <div class="funnel-count" :style="{color: line.countTodayState}"
-                     :title="line.todayHover">
-                  {{line.today_day_count}}{{line.id === 4 ? '%' : ''}}
-                </div>
-
-                <div class="funnel-percentage" :style="{color: line.percentTodayState}"
-                     :title="line.percentTodayHover">
-                  {{line.percentToday}}
-                </div>
-
-                <v-icon v-show="line.percentToday !== '0%'" :color="line.percentTodayState"
-                        :style="{'transform': line.percentTodayState === 'green' ? 'none' : 'rotateX(180deg)'}"
-                        class="funnel-arrow">
-                  mdi-triangle
-                </v-icon>
-              </div>
-            </td>
-
-            <!-- LAST 7 DAYS COUNT -->
-            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, '7days', line.name) : ''">
-              <div>
-                <div class="funnel-count" :style="{color: line.count7state}"
-                     :title="line.sevenDayHover">
-                  {{line.seven_day_count}}{{line.id === 4 ? '%' : ''}}
-                </div>
-
-                <div class="funnel-percentage" :style="{color: line.percent7state}"
-                     :title="line.percent7hover">
-                  {{line.percent7}}
-                </div>
-
-                <v-icon v-show="line.percent7 !== '0%'" :color="line.percent7state"
-                        :style="{'transform': line.percent7state === 'green' ? 'none' : 'rotateX(180deg)'}"
-                        class="funnel-arrow">
-                  mdi-triangle
-                </v-icon>
-              </div>
-            </td>
-
-            <!-- LAST 30 DAYS COUNT -->
-            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, '30days', line.name) : ''">
-              <div>
-                <div class="funnel-count" :style="{color: line.count30state}"
-                     :title="line.thirtyDayHover">
-                  {{line.thirty_day_count}}{{line.id === 4 ? '%' : ''}}
-                </div>
-
-                <div class="funnel-percentage" :style="{color: line.percent30state}"
-                     :title="line.percent30hover">
-                  {{line.percent30}}
-                </div>
-
-                <v-icon v-show="line.percent30 !== '0%'" :color="line.percent30state"
-                        :style="{'transform': line.percent30state === 'green' ? 'none' : 'rotateX(180deg)'}"
-                        class="funnel-arrow">
-                  mdi-triangle
-                </v-icon>
-              </div>
-            </td>
-
-            <!-- CUSTOM DATE RANGE COUNT -->
-            <td class="funnel-td"
-                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
-                :title="line.customDayHover"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
-              {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <!-- FUNNEL END -->
-
-    <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
-      <v-card id="funnel-drilldown">
-        <v-card-title class="mb-1">
-          <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
-          <v-text-field v-model="funnelDrilldownSearch"
-                        placeholder="Type to filter..."
-                        single-line
-                        hide-details
-                        outlined
-                        dense
-          ></v-text-field>
-          <span id="funnel-drilldown-row-count">
-            Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
-          </span>
-        </v-card-title>
-
-        <v-card-text>
-          <v-data-table
-            id="funnel-drilldown-table"
-            class="elevation-1"
-            :class="{'mt-6': funnelDrilldownData.length === 0}"
-            :mobile-breakpoint="0"
-            :headers="visibleFunnelDrilldownHeaders"
-            fixed-header
-            :items="funnelDrilldownData"
-            @current-items="filteredFunnelDrilldownItems"
-            :search="funnelDrilldownSearch"
-            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 365px)') : '105px'"
-            dense
-            multi-sort
-            :sort-by="[]"
-            :sort-desc="[]"
-            :loading="funnelDrilldownLoading"
-            :items-per-page="500"
-            :footer-props="footerProps"
-          >
-            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td style="text-align: center">
-                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
-                </td>
-                <td>{{ item.setter_name || '' }}</td>
-                <td class="customer-name">{{ item.customer_name || '' }}</td>
-                <td>
-                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
-                    {{ item.project_id }}
-                  </router-link>
-                  <div v-else>{{ item.project_id || '' }}</div>
-                </td>
-                <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td>{{ item.owner_name || '' }}</td>
-                <td>{{ item.verified_setter_lead || '' }}</td>
-                <td :class="item.appointment_outcome_class">
-                  {{ item.appointment_outcome || '' }}
-                </td>
-                <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td>{{ item.state || '' }}</td>
-                <td>{{ item.office || '' }}</td>
-              </tr>
-            </template>
-
-            <template #no-data>
-              <div class="my-3 funnel-drilldown-no-data-msg">
-                No data is available for the selected date range.
-              </div>
-            </template>
-
-            <template #no-results>
-              <div class="my-3 funnel-drilldown-no-data-msg">
-                No matching records found.
-              </div>
-            </template>
-          </v-data-table>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="closeFunnelDrilldownDialog">
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!------------------------------------- FUNNEL TAB END ------------------------------------>
-
     <!---------------------------------- DASHBOARD TAB START ---------------------------------->
     <!-- PERSONAL PERFORMANCE SECTION START -->
-    <div v-if="showDashboard" class="ranking-tables-section-header">
+    <div class="ranking-tables-section-header">
       Personal Performance
     </div>
-    <div v-if="showDashboard" id="personal-performance-boxes-container" class="mb-6">
+    <div id="personal-performance-boxes-container" class="mb-6">
+      <div v-if="performanceDataLoading" class="section-spinner">
+        <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+      </div>
       <div class="personal-performance-box">
         <span class="personal-performance-box-title">Total Appointments</span>
         <span class="personal-performance-box-number">
@@ -563,17 +95,20 @@
     <!-- PERSONAL PERFORMANCE SECTION END -->
 
     <!-- RANKING TABLES HEADER START -->
-    <div v-if="showDashboard" class="ranking-tables-section-header">
+    <div class="ranking-tables-section-header">
       Company Performance
     </div>
     <!-- RANKING TABLES HEADER END -->
 
     <!-- RANKING TABLES SECTION START -->
-    <div v-if="showDashboard" id="setter-ranking-tables-section">
+    <div id="setter-ranking-tables-section">
       <!-- RANKING TABLES LEFT COLUMN START -->
       <div id="setter-ranking-tables-left-col">
         <!-- TOP OFFICES -->
         <div id="setter-ranking-top-offices-table" class="ranking-table">
+          <div v-if="topOfficesLoading" class="section-spinner">
+            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          </div>
           <div class="ranking-table-header">
             <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
             <span>Top Offices</span>
@@ -602,6 +137,9 @@
 
         <!-- TOP REPS -->
         <div class="ranking-table">
+          <div v-if="topRepsLoading" class="section-spinner">
+            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          </div>
           <div class="ranking-table-header">
             <v-icon class="mr-2 ranking-table-icon">mdi-account-multiple</v-icon>
             <span>Top Reps</span>
@@ -640,6 +178,9 @@
       <div id="setter-ranking-tables-right-col">
         <!-- OFFICE RANKING -->
         <div class="ranking-table">
+          <div v-if="officeRankingLoading" class="section-spinner">
+            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          </div>
           <div class="ranking-table-header">
             <v-icon class="mr-2 ranking-table-icon">mdi-office-building</v-icon>
             <span>Office Ranking</span>
@@ -674,257 +215,38 @@
     </div>
     <!-- RANKING TABLES SECTION END -->
     <!---------------------------------- DASHBOARD TAB END ---------------------------------->
-
-    <!--------------------------------- INCENTIVE TAB START --------------------------------->
-    <v-row v-if="showIncentive" justify="center" no-gutters>
-      <v-col cols="12" id="incentive-container">
-        <img id="incentive-banner" src="../../../assets/blueraven/top_gun_white.svg" alt="incentive competition banner">
-        <div id="milestones-container">
-          <div id="aim-high-phase" class="milestone" :class="{'active-milestone': is_q1,
-                        'align-items-center': windowInnerWidth < 1135,
-                        'align-items-flex-start': windowInnerWidth >= 1135
-                        }"
-               @click="milestoneDrilldown(1)">
-            <span class="milestone-top-label">Aim High</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q1_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ pitchCounts.q1 }} Pitches</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
-                  <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
-                  <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
-          </div>
-
-          <div id="fly-phase" class="milestone"
-               :class="{'active-milestone': is_q2,
-                        'align-items-center': windowInnerWidth < 1135 || is_q2,
-                        'align-items-flex-end': is_q1,
-                        'align-items-flex-start': is_q3 || is_q4}"
-               @click="milestoneDrilldown(2)">
-            <span class="milestone-top-label">Fly</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q2_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ pitchCounts.q2 }} Pitches</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">
-                  <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>
-                  <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q2_lower_label }}</span>
-          </div>
-
-          <div id="fight-phase" class="milestone"
-               :class="{'active-milestone': is_q3,
-                        'align-items-center': windowInnerWidth < 1135 || is_q3,
-                        'align-items-flex-end': is_q1 || is_q2,
-                        'align-items-flex-start': is_q4}"
-               @click="milestoneDrilldown(3)">
-            <span class="milestone-top-label">Fight</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q3_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ pitchCounts.q3 }} Pitches</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">
-                  <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>
-                  <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q3_lower_label }}</span>
-          </div>
-
-          <div id="win-phase" class="milestone"
-               :class="{'active-milestone': is_q4,
-                        'align-items-center': windowInnerWidth < 1135,
-                        'align-items-flex-end': windowInnerWidth >= 1135}"
-               @click="milestoneDrilldown(4)">
-            <span class="milestone-top-label">Win</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q4_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ pitchCounts.q4 }} Pitches</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">
-                  <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>
-                  <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q4_lower_label }}</span>
-          </div>
-        </div>
-
-        <div id="progress-bar-container">
-          <span>Cumulative Point Total</span>
-          <div id="progress-bar">
-            <div id="first-segment" class="progress-bar-segment"></div>
-            <div id="second-segment" class="progress-bar-segment"></div>
-            <div id="third-segment" class="progress-bar-segment"></div>
-            <div id="fourth-segment" class="progress-bar-segment"></div>
-            <div id="fifth-segment" class="progress-bar-segment"></div>
-            <div id="sixth-segment" class="progress-bar-segment"></div>
-            <div id="seventh-segment" class="progress-bar-segment"></div>
-            <div id="eighth-segment" class="progress-bar-segment"></div>
-            <div id="ninth-segment" class="progress-bar-segment"></div>
-            <div id="progress-bar-fill"
-                 :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px',
-                          width: percentAchieved + '%'}"></div>
-          </div>
-        </div>
-
-        <div id="milestone-medals-container">
-          <div class="milestone-medal a-10-level"></div>
-          <div class="milestone-medal f-14-level"></div>
-          <div class="milestone-medal fa-18-level"></div>
-          <div class="milestone-medal f-22-level"></div>
-          <div class="milestone-medal f-35-level"></div>
-        </div>
-      </v-col>
-    </v-row>
-
-    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
-      <v-card>
-        <v-card-title class="mb-1">
-          <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
-        </v-card-title>
-
-        <v-card-text>
-          <v-data-table
-            id="drilldown-table"
-            :headers="headers"
-            :items="milestoneDrilldownData"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            fixed-header
-            dense
-            hide-default-footer
-            class="elevation-1"
-          >
-            <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
-                <td class="text-left">{{ item.id || '' }}</td>
-                <td class="text-left">{{ item.source || '' }}</td>
-                <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td class="text-left">{{ item.appointment_outcome || '' }}</td>
-              </tr>
-            </template>
-
-            <template #no-data>
-              <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
-                Data is not yet available for the selected quarter.
-              </div>
-              <div v-else class="my-3">
-                No data is available for the selected quarter.
-              </div>
-            </template>
-          </v-data-table>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="closeMilestoneDialog">
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!---------------------------------- INCENTIVE TAB END ---------------------------------->
   </v-container>
 </template>
 
 <script>
-  import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
-  import { getSetterDistricts, getSetterRegions, getSetterOffices, getSetterReps } from '@/services/dashboardService'
+  import SpinnerInline from '@/components/SpinnerInline'
 
   export default {
     name: 'setterDashboard',
+    components: {
+      SpinnerInline,
+    },
     data: () => ({
       snackbar: {},
       constants,
-      milestoneDialog: false,
-      funnelDrilldownDialog: false,
       currentUserId: null,
       isSetter: false,
       isSetterMgr: false,
       isSetterRegional: false,
-      selectedQuarter: 1,
-      repValuesChanged: false,
-      modelOverride: false,
-      headers: [
-        { text: '', value: '', show: true, sortable: false },
-        { text: 'Name', value: 'customer_name', show: true },
-        { text: 'Project ID', value: 'id', show: true },
-        { text: 'Source', value: 'source_name', show: true },
-        { text: 'Appointment Date', value: 'appointment_date', show: true },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
-      ],
-      milestoneDrilldownData: [],
+      officeRankingLoading: false,
+      performanceDataLoading: false,
+      topRepsLoading: false,
+      topOfficesLoading: false,
       timeIntervalBtnGroup: 0,
       timeIntervalString: 'MTD', // MTD is selected by default
       timeInterval: +moment().format('DD') - 1,
       tabNum: 1, // Funnel tab is selected by default
-      showFunnel: true,
-      showDashboard: false,
-      showIncentive: false,
-      funnelDataLoaded: false,
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
-      incentiveDataLoaded: false,
-      funnelWasLoaded: false,
-      dashboardWasLoaded: false,
-      currentQuarter: moment().quarter(),
-      pitchCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
-      q1_points: 0,
-      q2_points: 0,
-      q3_points: 0,
-      q4_points: 0,
-      q1_medal_icon: '',
-      q2_medal_icon: '',
-      q3_medal_icon: '',
-      q4_medal_icon: '',
-      q1_lower_label: '',
-      q2_lower_label: '',
-      q3_lower_label: '',
-      q4_lower_label: '',
-      percentAchieved: 0,
-      progressBarIsFull: false,
       rankingData: {},
       rankBoxData: {},
       offices: [],
@@ -934,382 +256,21 @@
       userOfficeId: null,
       userRow: [],
       userRowIndex: -1,
-      numOffices: 0,
-      districtModel: [],
-      districtData: [],
-      regionModel: [],
-      regionData: [],
-      officeModel: [],
-      officeData: [],
-      repModel: [],
-      repData: [],
-      repDataMaster: [],
-      //if we allow users to "Select All" when there are more than this the UI slows to a halt
-      maxRepLimit: 1000,
-      repDataSelectAll: false,
-      pipelineDateRanges: [
-        { label: 'Yesterday', value: 'yesterday' },
-        { label: 'Last Week', value: 'lastWeek' },
-        { label: 'Last Month', value: 'lastMonth' },
-        { label: 'Last 90 days', value: 90 },
-        { label: 'Week to Date', value: 'WTD' },
-        { label: 'Month to Date', value: 'MTD' },
-        { label: 'Quarter to Date', value: 'QTD' },
-        { label: 'Year to Date', value: 'YTD' },
-        { label: 'Custom', value: 'Custom' }
-      ],
-      pipelineDateRange: { label: 'Week to Date', value: 'WTD' },
-      showPipelineCustomDates: false,
-      customDateSelectorIsOpen: false,
-      viewSelect: 'standard',
-      pipeline_dt1: moment().startOf('W').format('YYYY-MM-DD'),
-      pipeline_dt1_formatted: moment().startOf('W').format('M/D/YY'),
-      pipeline_menu1: false,
-      pipeline_dt2: moment().format('YYYY-MM-DD'),
-      pipeline_dt2_formatted: moment().format('M/D/YY'),
-      pipeline_menu2: false,
-      expectedInstalls: 1,
-      expectationTimeout: 0,
-      funnelStats: [],
-      funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [
-        { text: '', value: '', show: true, sortable: false, width: 25 },
-        { text: 'Setter', value: 'setter_name', show: true, width: 90 },
-        { text: 'Name', value: 'customer_name', show: true, width: 90 },
-        { text: 'Project ID', value: 'project_id', show: true, width: 95 },
-        { text: 'Appointment Date', value: 'appointment_date', show: true, width: 150 },
-        { text: 'Closer', value: 'owner_name', show: true, width: 90 },
-        { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
-        { text: 'Date Created', value: 'date_created', show: true, width: 115 },
-        { text: 'State', value: 'state', show: true, width: 80 },
-        { text: 'Office', value: 'office', show: true, width: 90 }
-      ],
-      funnelDrilldownData: [],
-      funnelDrilldownLoading: false,
-      funnelDrilldownSearch: '',
-      filteredFunnelDrilldownData: [],
-      funnelDrilldownRowCount: 0,
-      footerProps: {
-        showFirstLastPage: !constants.IS_MOBILE,
-        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
-        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
-        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
-      }
+      numOffices: 0
     }),
     computed: {
       windowInnerWidth () { return window.innerWidth},
-      is_q1 () { return this.currentQuarter === 1 },
-      is_q2 () { return this.currentQuarter === 2 },
-      is_q3 () { return this.currentQuarter === 3 },
-      is_q4 () { return this.currentQuarter === 4 },
-      milestoneDrilldownTitle () {
-        return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Pitches - Q' + this.selectedQuarter
-      },
-      selectAllDistricts () {
-        return this.districtModel.length === this.districtData.length
-      },
-      selectSomeDistricts () {
-        return this.districtModel.length > 0 && !this.selectAllDistricts
-      },
-      districtSelectIcon () {
-        if (this.districtModel.length === this.districtData.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeDistricts) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      selectAllRegions () {
-        return this.regionModel.length === this.regionData.length
-      },
-      selectSomeRegions () {
-        return this.regionModel.length > 0 && !this.selectAllRegions
-      },
-      regionSelectIcon () {
-        if (this.regionModel.length === this.regionData.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeRegions) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      selectAllOffices () {
-        return this.officeModel.length === this.officeData.length
-      },
-      selectSomeOffices () {
-        return this.officeModel.length > 0 && !this.selectAllOffices
-      },
-      officeSelectIcon () {
-        if (this.officeModel.length === this.officeData.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeOffices) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      selectAllReps () {
-        return this.repModel.length === this.repData.length
-      },
-      selectSomeReps () {
-        return this.repModel.length > 0 && !this.selectAllReps
-      },
-      repSelectIcon () {
-        if (this.repModel.length === this.repData.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeReps) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      visibleFunnelDrilldownHeaders () {
-        return this.funnelDrilldownHeaders.filter(header => header.show === true)
-      }
     },
-    watch: {
-      // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
-      '$store.state.app.loading': function () {
-        if ((this.showFunnel && !this.funnelDataLoaded) || (this.showDashboard && (!this.performanceDataLoaded || !this.rankingTablesLoaded)) || (this.showIncentive && !this.incentiveDataLoaded)) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-        }
-      },
-      pipeline_dt1 () {
-        this.pipeline_dt1_formatted = this.formatFunnelDate(this.pipeline_dt1)
-      },
-      pipeline_dt2 () {
-        this.pipeline_dt2_formatted = this.formatFunnelDate(this.pipeline_dt2)
-      },
-      funnelDrilldownDialog () {
-        this.funnelDrilldownSearch = ''
-      }
-    },
+    watch: {},
     methods: {
-      doRepWatcher() {
-        if(this.repValuesChanged) {
-          if (this.isSetter) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
-          } else if (this.selectAllReps) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
-          } else {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
-          }
-          this.repValuesChanged = false
-        }
-      },
-      async switchTabs (tabNum) {
-        this.tabNum = tabNum
-
-        switch (tabNum) {
-          case 2: // Dashboard tab
-            this.showFunnel = false
-            this.showDashboard = true
-            this.showIncentive = false
-
-            if (!this.dashboardWasLoaded) {
-              await this.setTimeInterval('MTD') // MTD is the default
-              this.dashboardWasLoaded = true
-            }
-            break
-          case 3: // Incentive tab
-            this.showFunnel = false
-            this.showDashboard = false
-            this.showIncentive = true
-
-            await this.loadIncentive()
-            break
-          default: // Funnel tab
-            this.showFunnel = true
-            this.showDashboard = false
-            this.showIncentive = false
-
-            if (!this.funnelWasLoaded) {
-              await this.loadFunnel()
-              this.funnelWasLoaded = true
-            }
-        }
-      },
-
       resetScrollBarPosition () {
         // reset scroll bar positioning to top
         document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
       },
 
-      /* INCENTIVE-RELATED CODE START */
-      async loadIncentive () {
-        this.incentiveDataLoaded = false
-
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {
-            isSetterMgr: this.isSetterMgr,
-            setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
-          }
-
-          getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
-            this.pitchCounts = res.data
-
-            // Calculate points for each quarter
-            this.q1_points = this.calcPointsForQuarter(this.pitchCounts.q1)
-            this.q2_points = this.calcPointsForQuarter(this.pitchCounts.q2)
-            this.q3_points = this.calcPointsForQuarter(this.pitchCounts.q3)
-            this.q4_points = this.calcPointsForQuarter(this.pitchCounts.q4)
-
-            // Get lower milestone labels
-            this.q1_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q1)
-            this.q2_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q2)
-            this.q3_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q3)
-            this.q4_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q4)
-
-            // Fill progress bar based on setter's points for the year
-            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 9) * 100
-            this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
-            this.progressBarIsFull = this.percentAchieved === 100
-
-            this.incentiveDataLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          })
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving incentive data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.incentiveDataLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      calcPointsForQuarter (pitchCount) {
-        if (!this.isSetterMgr) {
-          switch (true) {
-            case pitchCount >= 65 && pitchCount < 78:
-              return 1 // A-10
-            case pitchCount >= 78 && pitchCount < 91:
-              return 2 // F-14
-            case pitchCount >= 91 && pitchCount < 104:
-              return 3 // FA-18
-            case pitchCount >= 104 && pitchCount < 130:
-              return 4 // F-22
-            case pitchCount >= 130:
-              return 5 // F-35
-            default:
-              return 0 // No medal
-          }
-        } else {
-          switch (true) {
-            case pitchCount >= 325 && pitchCount < 390:
-              return 1 // A-10
-            case pitchCount >= 390 && pitchCount < 455:
-              return 2 // F-14
-            case pitchCount >= 455 && pitchCount < 520:
-              return 3 // FA-18
-            case pitchCount >= 520 && pitchCount < 675:
-              return 4 // F-22
-            case pitchCount >= 675:
-              return 5 // F-35
-            default:
-              return 0 // No medal
-          }
-        }
-      },
-
-      getMilestoneMedal (pointsEarned) {
-        switch (pointsEarned) {
-          case 1:
-            return 'a-10-level'
-          case 2:
-            return 'f-14-level'
-          case 3:
-            return 'fa-18-level'
-          case 4:
-            return 'f-22-level'
-          case 5:
-            return 'f-35-level'
-          default:
-            return 'no-medal'
-        }
-      },
-
-      getLowerMilestoneLabel (pitchCount) {
-        if (!this.isSetterMgr) {
-          switch (true) {
-            case pitchCount >= 65 && pitchCount < 78:
-              return (78 - pitchCount) + (78 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Tomcat'
-            case pitchCount >= 78 && pitchCount < 91:
-              return (91 - pitchCount) + (91 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Hornet'
-            case pitchCount >= 91 && pitchCount < 104:
-              return (104 - pitchCount) + (104 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Raptor'
-            case pitchCount >= 104 && pitchCount < 130:
-              return (130 - pitchCount) + (130 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Lightning'
-            case pitchCount >= 130:
-              return 'Lightning Achieved'
-            default:
-              return (65 - pitchCount) + (65 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Warthog'
-          }
-        } else {
-          switch (true) {
-            case pitchCount >= 325 && pitchCount < 390:
-              return (390 - pitchCount) + (390 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Tomcat'
-            case pitchCount >= 390 && pitchCount < 455:
-              return (455 - pitchCount) + (455 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Hornet'
-            case pitchCount >= 455 && pitchCount < 520:
-              return (520 - pitchCount) + (520 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Raptor'
-            case pitchCount >= 520 && pitchCount < 675:
-              return (675 - pitchCount) + (675 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Lightning'
-            case pitchCount >= 675:
-              return 'Lightning Achieved'
-            default:
-              return (325 - pitchCount) + (325 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Warthog'
-          }
-        }
-      },
-
-      async milestoneDrilldown (quarter) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        try {
-          const params = {
-            quarter,
-            isSetterMgr: this.isSetterMgr,
-            setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
-          }
-          const {data} = await getRequestWithParams('/setterDashboard/pitchesDrilldown', {params}, 'blueraven')
-          this.milestoneDrilldownData = cloneDeep(data)
-
-          if (this.milestoneDrilldownData.length > 0) {
-            this.milestoneDrilldownData.forEach(row => {
-              if (row.customer_name) {
-                row.customer_name = row.customer_name.toLowerCase()
-              }
-            })
-          } else {
-            this.milestoneDrilldownData = []
-          }
-
-          this.selectedQuarter = quarter
-          this.milestoneDialog = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      closeMilestoneDialog () {
-        this.milestoneDialog = false
-        this.resetScrollBarPosition()
-      },
-      /* INCENTIVE-RELATED CODE END */
-
       /* PERSONAL PERFORMANCE-RELATED CODE START */
       async loadPersonalPerformance () {
-        this.performanceDataLoaded = false
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.performanceDataLoading = true
 
         try {
           let startDate = moment().subtract(this.timeInterval, 'd').format('YYYY-MM-DD')
@@ -1366,8 +327,7 @@
               }
             }
 
-            this.performanceDataLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.performanceDataLoading = false
           } else {
             let performanceData = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
             this.rankingData = performanceData.data
@@ -1413,15 +373,12 @@
               }
             }
 
-            this.performanceDataLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.performanceDataLoading = false
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving personal performance data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.performanceDataLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
@@ -1429,7 +386,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: repToBeatId, attachmentTypeId: 9}
-          const {data} = await getRequestWithParams('/attachment/getOne', {params})
+          const {data, status} = await getRequestWithParams('/attachment/getOne', {params})
 
           if (data?.presignedUrl) {
             this.rankBoxData.imageUrl = data.presignedUrl
@@ -1440,7 +397,7 @@
               this.rankBoxData.imageAltText = 'User photo placeholder'
             }
 
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1454,8 +411,9 @@
       /* RANKING TABLES-RELATED CODE START */
       async getTopReps () {
         try {
+          this.topRepsLoading = true
           const params = {limit: 5, days: this.timeInterval}
-          const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
           if (this.reps.length > 0) {
@@ -1493,71 +451,66 @@
             }
           }
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.topRepsLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving top reps data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
       async getTopOffices () {
         try {
-          const {data} = await getRequestWithParams('/setterDashboard/topOffices',
+          this.topOfficesLoading = true
+          const {data, status} = await getRequestWithParams('/setterDashboard/topOffices',
             {
               params: {
                 limit: 5,
                 days: this.timeInterval
               }
-            }, 'blueraven')
-          this.offices = data
+            }, 'blueraven', [])
+          this.offices = data || []
 
           // removes empty parentheses from missing metro areas
-          this.offices.forEach(office => {
+          this.offices?.forEach(office => {
             if (office.name.includes(' ()')) {
               office.name = office.name.substr(0, office.name.length - 3)
             }
           })
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.topOfficesLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving top offices data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
       async getOfficeRanking () {
         try {
+          this.officeRankingLoading = true
           const {data} = await getRequestWithParams('/setterDashboard/officeRanking',
             {
               params: {
                 limit: 13,
                 days: this.timeInterval
               }
-            }, 'blueraven')
-          this.officeRankingData = data
+            }, 'blueraven', [])
+          this.officeRankingData = data || []
 
-          this.officeRankingData.forEach(office => {
+          this.officeRankingData?.forEach(office => {
             if (office.org.includes(' ()')) {
               office.org = office.org.substr(0, office.org.length - 3)
             }
           })
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.officeRankingLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving office ranking data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
-      async setTimeInterval (timeIntervalString) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
+      setTimeInterval (timeIntervalString) {
         try {
           this.rankingTablesLoaded = false
           this.timeIntervalString = timeIntervalString
@@ -1578,10 +531,11 @@
               break
           }
 
-          await this.loadPersonalPerformance()
-          await this.getTopReps()
-          await this.getTopOffices()
-          await this.getOfficeRanking()
+          //i dont think there is any reason to wait for the previous requests to finish
+          this.loadPersonalPerformance()
+          this.getTopReps()
+          this.getTopOffices()
+          this.getOfficeRanking()
           this.rankingTablesLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -1593,626 +547,8 @@
         }
       },
       /* RANKING TABLES-RELATED CODE END */
-
-      /* FUNNEL-RELATED CODE START */
-      async districtLoad (preSelectLists) {
-        if (!this.currentUserId) return
-
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await getSetterDistricts(this.currentUserId).then(res => {
-          if (res?.length > 0) {
-            this.districtData = res
-          }
-
-          if (preSelectLists) {
-            this.districtModel = cloneDeep(this.districtData)
-          } else {
-            this.funnelDataLoaded = true
-          }
-
-          if (this.districtModel.length > 0) {
-            this.regionLoad(preSelectLists)
-          }
-        })
-
-        this.funnelStats = []
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-
-      async regionLoad (preSelectLists) {
-        if (!this.currentUserId) return
-
-        let districts = this.districtModel.map(function (district) {
-          return {
-            district_id: district.org_id
-          }
-        })
-
-        if (!this.selectAllDistricts) {
-          this.regionModel = []
-          this.regionData = []
-          this.officeModel = []
-          this.officeData = []
-          this.repModel = []
-          this.repData = []
-          this.funnelStats = []
-
-          if (districts?.length === 0) return
-        }
-
-        this.repModel = [] // in case the user previously clicked the 'All Reps' button
-
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await getSetterRegions(this.currentUserId, JSON.stringify(districts)).then(res => {
-          this.regionData = res
-
-          if (preSelectLists) {
-            this.regionModel = cloneDeep(this.regionData)
-          }
-
-          if (this.regionModel.length > 0) {
-            this.officeLoad(preSelectLists)
-          }
-        })
-
-        this.funnelStats = []
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-
-      async officeLoad (preSelectLists) {
-        if (!this.currentUserId) return
-
-        let regions = this.regionModel.map(function (region) {
-          return {
-            region_id: region.org_id
-          }
-        })
-
-        if (!this.selectAllRegions) {
-          this.officeModel = []
-          this.officeData = []
-          this.repModel = []
-          this.repData = []
-          this.funnelStats = []
-
-          if (regions?.length === 0) return
-        }
-
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await getSetterOffices(this.currentUserId, JSON.stringify(regions)).then(res => {
-          this.officeData = res
-
-          if (preSelectLists) {
-            this.officeModel = cloneDeep(this.officeData)
-          }
-
-          if (this.officeModel.length > 0) {
-            this.repLoad(preSelectLists)
-          }
-        })
-
-        this.funnelStats = []
-        this.repData = []
-        this.repModel = []
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-
-      async repLoad (preSelectLists) {
-        if (!this.currentUserId) return
-
-        let regions = this.regionModel.map(function (region) {
-          return {
-            region_id: region.org_id
-          }
-        })
-
-        let offices = this.officeModel.map(function (office) {
-          return {
-            office_id: office.org_id
-          }
-        })
-
-        if (!this.selectAllOffices) {
-          this.repModel = []
-          this.repData = []
-          this.funnelStats = []
-
-          if (offices?.length === 0) return
-        }
-
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await getSetterReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
-          this.repData = res
-          this.repDataMaster = cloneDeep(res)
-
-          if (preSelectLists) {
-            this.repModel = cloneDeep(this.repData)
-          }
-
-          this.funnelStats = []
-
-          if (this.repModel.length > 0) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-          }
-        })
-
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-
-      roundTenth (value) {
-        if (typeof value !== 'number') {
-          return value
-        }
-        let precision = Math.max(Math.ceil(Math.log10(value)) + 1, 2)
-        if (value < 1) precision = 1
-        if (value === 0) precision = 2
-        return value.toPrecision(precision)
-      },
-
-      daysBetween (start, end) {
-        let a = moment(start)
-        let b = moment(end)
-        return b.diff(a, 'days')
-      },
-
-      getCountHover (count, expectation) {
-        return count < expectation ? 'Worse than expectation' : 'Better than expectation'
-      },
-
-      getPercentColor (percent) {
-        if (percent < 0) return 'red'
-        return 'green'
-      },
-
-      getPercentHover (percent, dayNum) {
-        let state = ''
-        if (percent < 0) {
-          state = 'worse'
-        } else if (percent > 0) {
-          state = 'better'
-        } else {
-          return ''
-        }
-
-        let previousTime = 'last ' + dayNum + ' days'
-        if (dayNum === 1) {
-          previousTime = 'yesterday'
-        }
-
-        return '% ' + state + ' than ' + previousTime
-      },
-
-      funnelAllReps () {
-        this.districtModel = []
-        this.regionModel = []
-        this.officeModel = []
-
-        this.repModel = [
-          {user_id: -1, name: 'All Reps', active: true}
-        ]
-
-        this.repData = [
-          {user_id: -1, name: 'All Reps', active: true}
-        ]
-
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
-      async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
-        this.funnelDataLoaded = false
-        let reps = []
-        let orgs = []
-
-        if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
-          this.funnelStats = []
-          this.funnelDataLoaded = true
-          return
-        }
-
-        this.officeModel.forEach(org => orgs.push(org.org_id))
-
-        this.modelOverride = false
-        if (useRepDataInstead) {
-          this.repData.forEach((rep, index) => {
-            reps.push(rep.user_id)
-
-            if (index === this.repData.length - 1) {
-              // this.districtModel = []
-              // this.regionModel = []
-              // this.officeModel = []
-
-              if (this.repDataSelectAll && this.repDataMaster?.length > this.maxRepLimit) {
-                this.modelOverride = true
-                this.repModel = [
-                  {user_id: -2, name: 'All Filtered Reps', active: true}
-                ]
-                this.repData = [
-                  {user_id: -2, name: 'All Filtered Reps', active: true}
-                ]
-              }
-            }
-          })
-        } else {
-          this.repModel.forEach(rep => reps.push(rep.user_id))
-        }
-
-        if(this.modelOverride) {
-          reps = []
-          //this gets used when there are more than 1000 users selected
-          this.repDataMaster.forEach(rep => reps.push(rep.user_id))
-        }
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const requestBody = {
-            targetInstallations: targetInstallations,
-            users: reps,
-            orgs: orgs,
-            start: moment(start).format('YYYY-MM-DD'),
-            end: moment(end).format('YYYY-MM-DD')
-          }
-          await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
-            data.forEach(row => {
-              // EXPECTATION column
-              row.expectation = this.roundTenth(row.expectation)
-
-              // TODAY column
-              row.countTodayState = row.today_day_count < row.expectation ? 'red' : 'green'
-              row.todayHover = this.getCountHover(row.today_day_count, row.expectation)
-              row.percentToday = row.today_percent ? row.today_percent + '%' : '0%'
-              row.percentTodayState = this.getPercentColor(row.today_percent)
-              row.percentTodayHover = this.getPercentHover(row.today_percent, 1)
-
-              // LAST 7 DAYS column
-              row.count7state = row.seven_day_count < row.expectation ? 'red' : 'green'
-              row.sevenDayHover = this.getCountHover(row.seven_day_count, row.expectation)
-              row.percent7 = row.seven_percent ? row.seven_percent + '%' : '0%'
-              row.percent7state = this.getPercentColor(row.seven_percent)
-              row.percent7hover = this.getPercentHover(row.seven_percent, 7)
-
-              // LAST 30 DAYS column
-              row.count30state = row.thirty_day_count < row.expectation ? 'red' : 'green'
-              row.thirtyDayHover = this.getCountHover(row.thirty_day_count, row.expectation)
-              row.percent30 = row.thirty_day_percent ? row.thirty_day_percent + '%' : '0%'
-              row.percent30state = this.getPercentColor(row.thirty_day_percent)
-              row.percent30hover = this.getPercentHover(row.thirty_day_percent, 30)
-
-              // CUSTOM DATE RANGE column
-              row.custom_date_range_count = Math.round(row.custom_date_range_count)
-              row.customCountState = row.custom_date_range_count < row.expectation ? 'red' : 'green'
-              row.customDayHover = this.getCountHover(row.custom_date_range_count, row.expectation)
-            })
-
-            this.funnelStats = data
-            this.funnelDataLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          })
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving pipeline data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.funnelDataLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      showExpectationInput (index) {
-        if (this.viewSelect === 'standard' && this.funnelStats.length - 1 === index) {
-          return true
-        }
-        if (this.viewSelect === 'cohort' && this.funnelStats.length - 2 === index) {
-          return true
-        }
-        return false
-      },
-
-      choosePipelineDateRange (dateRange) {
-        if (this.showPipelineCustomDates) {
-          this.showPipelineCustomDates = false
-          this.fixFunnelTopMargin()
-        }
-
-        this.pipelineDateRange = dateRange
-
-        switch (dateRange.value) {
-          case 'yesterday':
-            this.yesterday()
-            break
-          case 'lastWeek':
-            this.lastWeek()
-            break
-          case 'lastMonth':
-            this.lastMonth()
-            break
-          case 'WTD':
-            this.weekToDate()
-            break
-          case 'MTD':
-            this.monthToDate()
-            break
-          case 'QTD':
-            this.quarterToDate()
-            break
-          case 'YTD':
-            this.yearToDate()
-            break
-          case 'Custom':
-            this.showPipelineCustomDates = true
-            this.fixFunnelTopMargin()
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            break
-          default:
-            this.previousNumberOfDays(dateRange.value)
-            break
-        }
-      },
-
-      updateInstalls (installs) {
-        this.expectedInstalls = installs
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
-      updatePipelineCalendar () {
-        this.pipeline_menu1 = false
-        this.pipeline_menu2 = false
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
-      yesterday () {
-        this.pipeline_dt1 = moment().subtract(1, 'd').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().subtract(1, 'd').format('YYYY-MM-DD')
-        this.updatePipelineCalendar(true)
-      },
-
-      lastWeek () {
-        this.pipeline_dt1 = moment().subtract(1, 'week').startOf('week').add(1, 'day').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
-        this.updatePipelineCalendar(true)
-      },
-
-      lastMonth () {
-        this.pipeline_dt1 = moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD')
-        this.updatePipelineCalendar(true)
-      },
-
-      weekToDate () {
-        this.pipeline_dt1 = moment().startOf('isoWeek').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
-        this.updatePipelineCalendar(true)
-      },
-
-      monthToDate () {
-        this.pipeline_dt1 = moment().startOf('month').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
-        this.updatePipelineCalendar(true)
-      },
-
-      quarterToDate () {
-        let quarter = moment().quarter()
-        this.pipeline_dt1 = moment().startOf('year').quarter(quarter).format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
-        this.updatePipelineCalendar(true)
-      },
-
-      yearToDate () {
-        this.pipeline_dt1 = moment().startOf('year').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
-        this.updatePipelineCalendar()
-      },
-
-      previousNumberOfDays (days) {
-        this.pipeline_dt1 = moment().subtract(days, 'days').format('YYYY-MM-DD')
-        this.pipeline_dt2 = moment().subtract(1, 'days').format('YYYY-MM-DD')
-        this.updatePipelineCalendar()
-      },
-
-      expectationChanged () {
-        clearTimeout(this.expectationTimeout)
-        let expectedInstalls = this.expectedInstalls
-        if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
-        this.expectedInstalls = expectedInstalls
-        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
-      viewSelected (view) {
-        if (this.viewSelect !== view) {
-          this.viewSelect = view
-
-          if ((this.districtModel.length > 0 && this.regionModel.length > 0 && this.officeModel.length > 0 && this.repModel.length > 0) || this.repModel[0]?.user_id === -1) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-          }
-        }
-      },
-
-      formatFunnelDate (date) {
-        if (!date) return null
-
-        return moment(date).format('M/D/YY')
-      },
-
-      parseFunnelDate (date) {
-        if (!date) return null
-
-        return moment(date, 'M/D/YY').format('YYYY-MM-DD')
-      },
-
-      loadFunnel () {
-        if (!this.showDashboard && this.funnelStats?.length === 0) {
-          if (this.isSetter) {
-            this.districtLoad(true)
-          } else {
-            this.districtLoad(false)
-          }
-        }
-      },
-
-      toggleSelectAllDistricts () {
-        this.$nextTick(() => {
-          if (this.selectAllDistricts) {
-            this.districtModel = []
-            this.regionData = []
-            this.regionModel = []
-            this.officeData = []
-            this.officeModel = []
-            this.repData = []
-            this.repModel = []
-            this.funnelStats = []
-          } else {
-            this.districtModel = cloneDeep(this.districtData)
-            this.repModel = [] // in case the user previously clicked the 'All Reps' button
-            this.regionLoad(false)
-          }
-        })
-      },
-
-      toggleSelectAllRegions () {
-        this.$nextTick(() => {
-          if (this.selectAllRegions) {
-            this.regionModel = []
-            this.officeData = []
-            this.officeModel = []
-            this.repData = []
-            this.repModel = []
-            this.funnelStats = []
-          } else {
-            this.regionModel = cloneDeep(this.regionData)
-            this.officeLoad(false)
-          }
-        })
-      },
-
-      toggleSelectAllOffices () {
-        this.$nextTick(() => {
-          if (this.selectAllOffices) {
-            this.officeModel = []
-            this.repData = []
-            this.repModel = []
-            this.funnelStats = []
-          } else {
-            this.officeModel = cloneDeep(this.officeData)
-            this.repLoad(false)
-          }
-        })
-      },
-
-      toggleSelectAllReps () {
-        this.$nextTick(() => {
-          if (this.selectAllReps) {
-            this.repModel = []
-            this.funnelStats = []
-          } else {
-            if (!this.selectAllReps && this.isSetter) {
-              this.$store.commit(AppMutations.SET_LOADING, true)
-              // this.repModel = cloneDeep(this.repData)
-              // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-              this.doRepWatcher()
-            } else {
-              this.repModel = cloneDeep(this.repData)
-              //the pipeline load gets called automatically when the menu closes
-              // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)
-            }
-          }
-        })
-      },
-
-      async funnelDrilldown (funnelId, dateRange, funnelName) {
-        let reps = []
-        let orgs = []
-        let start, end
-        reps = this.modelOverride ? this.repDataMaster.map(rep => rep.user_id) : this.repModel.map(rep => rep.user_id)
-        orgs = this.officeModel.map(org => org.org_id)
-
-        switch (dateRange) {
-          case 'today':
-            start = moment().format('YYYY-MM-DD')
-            end = moment().format('YYYY-MM-DD')
-            break
-          case '7days':
-            start = moment().subtract(7, 'days').format('YYYY-MM-DD')
-            end = moment().format('YYYY-MM-DD')
-            break
-          case '30days':
-            start = moment().subtract(30, 'days').format('YYYY-MM-DD')
-            end = moment().format('YYYY-MM-DD')
-            break
-          default:
-            start = this.pipeline_dt1
-            end = this.pipeline_dt2
-            break
-        }
-
-        if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
-          this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
-        } else {
-          this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
-        }
-
-        const requestBody = {
-          start: start,
-          end: end,
-          funnelId: funnelId,
-          users: reps,
-          orgs: orgs
-        }
-
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await postRequest(`/setterDashboard/funnelDrilldown/${this.viewSelect}`, requestBody, 'blueraven').then(({data}) => {
-            this.funnelDrilldownData = data?.length > 0 ? data : []
-
-            if (this.funnelDrilldownData?.length > 0) {
-              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
-                this.funnelDrilldownData[i].rowNum = i + 1
-              }
-
-              this.markMissingDrilldownData()
-
-              this.funnelDrilldownData.forEach(row => {
-                if (row.verified_setter_lead !== null && row.verified_setter_lead === true) {
-                  row.verified_setter_lead = 'Yes'
-                } else if (row.verified_setter_lead !== null && row.verified_setter_lead === false) {
-                  row.verified_setter_lead = 'No'
-                }
-              })
-            }
-
-            this.funnelDrilldownDialog = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          })
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      markMissingDrilldownData() {
-        this.funnelDrilldownData = this.funnelDrilldownData.map(function (line) {
-          let newLine = {}
-
-          Object.keys(line).forEach(function (key) {
-            newLine[key] = line[key]
-            newLine[key + '_class'] = !line[key] ? 'missing' : ''
-          })
-
-          return newLine
-        })
-      },
-
-      filteredFunnelDrilldownItems (filteredItems) {
-        this.filteredFunnelDrilldownData = filteredItems
-        this.funnelDrilldownRowCount = filteredItems.length
-      },
-
-      closeFunnelDrilldownDialog () {
-        this.funnelDrilldownDialog = false
-        this.resetScrollBarPosition()
-      }
-      /* FUNNEL-RELATED CODE END */
     },
-    created () {
+    async created () {
       this.currentUserId = this.$store.state.user.details.id
       let userPositions = this.$store.state.user.details.userPositions
 
@@ -2224,18 +560,9 @@
         this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
       }
 
-      this.switchTabs(this.tabNum)
+      this.setTimeInterval('MTD') // MTD is the default
     },
-    mounted () {
-      this.myDynamicRepWatcher = this.$watch(
-        () => this.$refs.repSelect.isMenuActive,
-        (val) => {
-          // if val is false = blur aka the menu is being closed. true = menu is being opened
-          if(!val && this.repModel.length > 0) {
-            this.doRepWatcher()
-          }
-        })
-    },
+    mounted () {},
   }
 </script>
 
@@ -2854,6 +1181,19 @@
     margin-bottom: 15px;
     overflow-x: auto;
     width: 100%;
+    position: relative;
+  }
+
+  .section-spinner {
+    position: absolute;
+    height: 100% !important;
+    width: 100%;
+    text-align: center;
+    opacity: .6;
+    background: white;
+    display: flex;
+    align-items: center;
+    z-index: 1000;
   }
 
   .ranking-table-header {

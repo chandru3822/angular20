@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
@@ -148,7 +148,7 @@ export default {
     addStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
+        const {data, status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
           projectId: this.projectId,
           processStepId: (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id,
           main: true
@@ -157,12 +157,12 @@ export default {
         this.selectedStep = null
         this.newPps = {}
         this.displayDropdown = false
+        handleHidingGlobalLoader(this, status)
         this.$emit('step-added')
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding new process step')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

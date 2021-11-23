@@ -31,7 +31,7 @@
 <script>
 
 import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
+import {handleHidingGlobalLoader, getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
 import {Actions} from "@/store";
 
 export default {
@@ -55,7 +55,7 @@ export default {
     //on context switching had to turn off the spinner
     this.loadHomePageLogo()
     this.getHomePages()
-    this.$store.commit(AppMutations.SET_LOADING, false)
+    // this.$store.commit(AppMutations.SET_LOADING, false)
 	},
   computed: {},
   methods: {
@@ -65,10 +65,10 @@ export default {
         let tempUsr = {
           homePageCompanyFeatureId: this.user.homePageCompanyFeatureId
         }
-        await putRequest(`/user/homePage`, tempUsr)
+        const {status} = await putRequest(`/user/homePage`, tempUsr)
         this.snackbar = getSnackbar('SUCCESS', 'Default Home Page Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Default Home Page')
@@ -78,11 +78,11 @@ export default {
     async getHomePages () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/feature/homePages`)
+        const {data, status} = await getRequest(`/feature/homePages`)
         this.homePages = data.filter(d => {
           return this.$store.getters.userHasFeature(d.featureCode)
         })
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Home Pages')
