@@ -288,13 +288,13 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, postRequest, getSnackbar } from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import Calendar from './components/Calendar'
   import {getEventTypes} from '@/services/scheduleService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { handleHidingGlobalLoader, getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
   import constants from "@/helpers/constants";
 
@@ -527,8 +527,8 @@
             systemListOptionIds: item.systemListOptionIds,
             resourceId: item.resourceId
           }
-          const {data, status} = await postRequest(`/schedule/projectResources`, params)
-          item.resources = data
+          const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
+          item.resources = data || []
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
