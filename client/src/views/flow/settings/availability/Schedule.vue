@@ -356,7 +356,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
 
   export default {
     name: 'Schedule',
@@ -448,11 +448,11 @@
         if(this.orgId || this.userId) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequestWithParams(`/availability`, { params: {
+            const {data, status} = await getRequestWithParams(`/availability`, { params: {
                 userId: this.userId,
                 orgId: this.orgId,
-              }})
-            data.forEach(sched => {
+              }}, null, [])
+            data?.forEach(sched => {
               sched?.resourceScheduleAvailability?.forEach(day => {
                 //if the day was saved during DST, but now is NOT DST, then subtract an hour
                 if(day.daylightSavings && !this.currentlyInDST) {
@@ -466,7 +466,7 @@
               })
             })
             this.schedules = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -478,9 +478,9 @@
       async getWorkDays() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/availability/workDays`)
+          const {data, status} = await getRequestWithParams(`/availability/workDays`)
           this.workDays = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -491,9 +491,9 @@
       async getSlotSchedules() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/availability/slotSchedules`)
+          const {data, status} = await getRequest(`/availability/slotSchedules`)
           this.slotSchedules = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -595,7 +595,7 @@
                   endDate: s.endDate,
                   resourceScheduleAvailability: formattedTimestamps
                 }
-                const {data} = await postRequest(`/availability`, params)
+                const {data, status} = await postRequest(`/availability`, params)
                 //with the changes we made to the datetimepickerinput i dont think we need this code anymore
                 //update the returned formatting to match required input
                 // data.resourceScheduleAvailability.forEach(rsa => {
@@ -606,7 +606,7 @@
                 this.newSchedule = {}
                 this.addNew = false
                 this.expanded = []
-                this.$store.commit(AppMutations.SET_LOADING, false)
+                handleHidingGlobalLoader(this, status)
               } catch (e) {
                 console.error('*** ERROR ***', e)
                 this.$store.commit(AppMutations.SET_LOADING, false)
@@ -654,13 +654,13 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          await deleteRequest(`/availability/${item.id}`)
+          const {status} = await deleteRequest(`/availability/${item.id}`)
           item.archived = true
           //remove it from the schedules list so they can recreate one with the same dates
           this.schedules = this.schedules.filter(s => { return s.id !== item.id })
           this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting schedule')

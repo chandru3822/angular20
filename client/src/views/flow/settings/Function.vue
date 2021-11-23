@@ -115,7 +115,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import { getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 
   export default {
@@ -157,9 +157,9 @@
       async getFunctionDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function/${this.functionId}`)
+          const {data, status} = await getRequest(`/function/${this.functionId}`)
           this.details = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -171,9 +171,9 @@
       async loadParentObjects () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/getParentObjects`)
+          const {data, status} = await getRequest(`/processStep/getParentObjects`)
           this.parentObjects = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -184,11 +184,11 @@
       async loadFieldsByParent(id, dataTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getByParentProcessStep/${id}`)
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${id}`)
           this.availableCustomFields = data.filter(d => {
             return d.dataTypeId === dataTypeId
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -210,13 +210,13 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/function/${this.functionId}/param`, item)
+          const {data, status} = await postRequest(`/function/${this.functionId}/param`, item)
           if(item.parameterTypeId === 3) {
             item.fieldName = data.fieldName
             item.processStepName = data.processStepName
           }
           this.expanded = []
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
           this.snackbar = getSnackbar('SUCCESS', 'Parameter Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {

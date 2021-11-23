@@ -37,7 +37,7 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, postRequest, getSnackbar} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
@@ -57,9 +57,9 @@
               let params = {
                 usernameOrEmail: this.email
               }
-              await postRequest(`/user/forgotPassword`, params)
+              const {status} = await postRequest(`/user/forgotPassword`, params)
               this.email = null
-              this.$store.commit(AppMutations.SET_LOADING, false)
+              handleHidingGlobalLoader(this, status)
               this.snackbar = getSnackbar('SUCCESS', 'An email has been sent.')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$router.push('/login')

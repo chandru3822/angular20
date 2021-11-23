@@ -136,7 +136,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import {getAvailableStates} from '@/services/stateService'
-  import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
 
@@ -180,7 +180,7 @@
           }
           params.stateId = ol.id
           params.id = isNew ? null : params.id
-          const {data} = await putRequest(`/state/saveCompanyState`, params)
+          const {data, status} = await putRequest(`/state/saveCompanyState`, params)
           if(isNew){
             this.companyStates.push(data)
             this.addNew = false
@@ -192,7 +192,7 @@
             this.snackbar = getSnackbar('SUCCESS', 'State Updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
@@ -203,9 +203,9 @@
       async getCompanyStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/state/company`)
+          const {data, status} = await getRequest(`/state/company`)
           this.companyStates = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Company States')
@@ -216,9 +216,9 @@
       async getStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getAvailableStates()
+          const {data, status} = await getAvailableStates()
           this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading States')
@@ -229,11 +229,11 @@
       async deleteCompanyState(companyState) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/state/companyState/${companyState.id}`)
+          const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
           companyState.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'State Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting State')

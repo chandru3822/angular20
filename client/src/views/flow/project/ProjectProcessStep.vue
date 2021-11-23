@@ -353,7 +353,7 @@
 
 <script>
 
-  import {followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
@@ -473,14 +473,16 @@
         return null != nonUniqueGroups
       },
       async getAvailableStatuses() {
-        try {
-          const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
-          // const {data} = await getRequest(`/processStep/status`)
-          this.availableProcessStepStatuses = data
-        } catch (e) {
-          this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          logError(e)
+        if(this.processStep?.processStepId) {
+          try {
+            const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
+            // const {data} = await getRequest(`/processStep/status`)
+            this.availableProcessStepStatuses = data
+          } catch (e) {
+            this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            logError(e)
+          }
         }
       },
       getProcessStep: async function () {
@@ -546,7 +548,7 @@
         //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
         //this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
+          const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
           this.customFieldGroups = data
           this.setCfgValues()
           // this.$store.commit(AppMutations.SET_LOADING, false)
@@ -585,16 +587,18 @@
       },
       async getAvailableOwners() {
         // this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
-          this.availableOwners = data
+        if(this.processStep?.processStepProcessId) {
+          try {
+            const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
+            this.availableOwners = data
 
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          // this.$store.commit(AppMutations.SET_LOADING, false)
+            // this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            logError(e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            // this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       async userCanScheduleLeadAllocation() {
@@ -636,13 +640,13 @@
       async updateProjectFieldGroups() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
+          const {data, status} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
           this.customFieldGroups = data
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -709,14 +713,15 @@
           }
           //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
           this.closerApptSaved = true
-          await this.getProcessStep()
+          const {status} = await this.getProcessStep()
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } finally {
           this.fieldsSaving = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       populateDirtyCfvs(field) {
@@ -737,10 +742,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.processStep.owner = {}
-          await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+          const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
           this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
@@ -752,8 +757,8 @@
         this.displayChangeOwner = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
@@ -766,13 +771,13 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
-          await this.getProcessStep()
+          const {status} = await this.getProcessStep()
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.processStep.main = false
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -859,13 +864,13 @@
             this.timeSlots = []
             this.selectedTimeSlot = {}
           }
-          await this.getProcessStep()
+          const {status} = await this.getProcessStep()
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
           this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

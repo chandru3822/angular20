@@ -106,7 +106,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Codes',
@@ -141,10 +141,10 @@
       async getCodesForZone () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/codes`)
+          const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}/codes`)
           this.postalCodes = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -155,9 +155,9 @@
       async deleteCodeFromZone (code) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/postalCode/zone/code/${code.id}`)
+          const {status} = await deleteRequest(`/postalCode/zone/code/${code.id}`)
           code.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Removing Postal Code')
@@ -175,11 +175,11 @@
               postalCodeZoneId: this.zoneId,
               postalCode: this.newCode
             }
-            const {data} = await postRequest(`/postalCode/zone/addCode`, params)
+            const {data, status} = await postRequest(`/postalCode/zone/addCode`, params)
             this.postalCodes.push(data)
             this.addCode = false
             this.newCode = {}
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'

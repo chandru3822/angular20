@@ -1,568 +1,441 @@
 <template>
-  <v-container id="setter-dash-container">
-    <v-row id="setter-dash-toolbar-container">
-      <v-col cols="12" id="setter-dash-toolbar" class="pt-0 pb-2">
-        <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
-          <v-toolbar-items>
-            <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
-              <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
-              <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
-              <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
-            </v-btn-toggle>
-          </v-toolbar-items>
-        </v-app-bar>
+  <v-container id="setter-dash-container" class="incentive-tab-override">
+      <!--------------------------------- INCENTIVE TAB START --------------------------------->
+    <v-row justify="center" no-gutters>
+      <v-col cols="12" id="incentive-container">
+        <img id="incentive-banner" src="../../../assets/blueraven/top_gun_white.svg" alt="incentive competition banner">
+        <div id="milestones-container">
+          <div id="aim-high-phase" class="milestone" :class="{'active-milestone': is_q1,
+                        'align-items-center': windowInnerWidth < 1135,
+                        'align-items-flex-start': windowInnerWidth >= 1135
+                        }"
+               @click="milestoneDrilldown(1)">
+            <span class="milestone-top-label">Aim High</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q1_points)"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q1 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
+                  <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q1_points > 2" class="milestone-star"
+                          :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
+                  <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
+          </div>
+
+          <div id="fly-phase" class="milestone"
+               :class="{'active-milestone': is_q2,
+                        'align-items-center': windowInnerWidth < 1135 || is_q2,
+                        'align-items-flex-end': is_q1,
+                        'align-items-flex-start': is_q3 || is_q4}"
+               @click="milestoneDrilldown(2)">
+            <span class="milestone-top-label">Fly</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q2_points)"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q2 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">
+                  <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q2_points > 2" class="milestone-star"
+                          :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>
+                  <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q2_lower_label }}</span>
+          </div>
+
+          <div id="fight-phase" class="milestone"
+               :class="{'active-milestone': is_q3,
+                        'align-items-center': windowInnerWidth < 1135 || is_q3,
+                        'align-items-flex-end': is_q1 || is_q2,
+                        'align-items-flex-start': is_q4}"
+               @click="milestoneDrilldown(3)">
+            <span class="milestone-top-label">Fight</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q3_points)"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q3 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">
+                  <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q3_points > 2" class="milestone-star"
+                          :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>
+                  <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q3_lower_label }}</span>
+          </div>
+
+          <div id="win-phase" class="milestone"
+               :class="{'active-milestone': is_q4,
+                        'align-items-center': windowInnerWidth < 1135,
+                        'align-items-flex-end': windowInnerWidth >= 1135}"
+               @click="milestoneDrilldown(4)">
+            <span class="milestone-top-label">Win</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"
+                   :class="this.getMilestoneMedal(this.q4_points)"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q4 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">
+                  <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q4_points > 2" class="milestone-star"
+                          :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>
+                  <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q4_lower_label }}</span>
+          </div>
+        </div>
+
+        <div id="progress-bar-container">
+          <span>Cumulative Point Total</span>
+          <div id="progress-bar">
+            <div id="first-segment" class="progress-bar-segment"></div>
+            <div id="second-segment" class="progress-bar-segment"></div>
+            <div id="third-segment" class="progress-bar-segment"></div>
+            <div id="fourth-segment" class="progress-bar-segment"></div>
+            <div id="fifth-segment" class="progress-bar-segment"></div>
+            <div id="sixth-segment" class="progress-bar-segment"></div>
+            <div id="seventh-segment" class="progress-bar-segment"></div>
+            <div id="eighth-segment" class="progress-bar-segment"></div>
+            <div id="ninth-segment" class="progress-bar-segment"></div>
+            <div id="progress-bar-fill"
+                 :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px',
+                          width: percentAchieved + '%'}"></div>
+          </div>
+        </div>
+
+        <div id="milestone-medals-container">
+          <div class="milestone-medal a-10-level"></div>
+          <div class="milestone-medal f-14-level"></div>
+          <div class="milestone-medal fa-18-level"></div>
+          <div class="milestone-medal f-22-level"></div>
+          <div class="milestone-medal f-35-level"></div>
+        </div>
       </v-col>
     </v-row>
-    <!---------------------------------- DASHBOARD TAB START ---------------------------------->
-    <!-- PERSONAL PERFORMANCE SECTION START -->
-    <div class="ranking-tables-section-header">
-      Personal Performance
-    </div>
-    <div id="personal-performance-boxes-container" class="mb-6">
-      <div v-if="performanceDataLoading" class="section-spinner">
-        <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
-      </div>
-      <div class="personal-performance-box">
-        <span class="personal-performance-box-title">Total Appointments</span>
-        <span class="personal-performance-box-number">
-          {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
-        </span>
-        <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }} (not cancelled)
-        </span>
-      </div>
-      <div class="personal-performance-box">
-        <span class="personal-performance-box-title">Total Pitches</span>
-        <span class="personal-performance-box-number">
-          {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
-        </span>
-        <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-        </span>
-      </div>
-      <div class="personal-performance-box">
-        <span class="personal-performance-box-title">Pitch %</span>
-        <span class="personal-performance-box-number">
-          {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
-        </span>
-        <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-        </span>
-      </div>
-      <div id="personal-performance-rank-box">
-        <div id="rank-box-left-side">
-          <span class="personal-performance-box-title">Company Rank</span>
-          <span v-if="isSetterMgr" class="personal-performance-box-number">
-            {{ rankBoxData.current_office_rank ? rankBoxData.current_office_rank : 'TBD' }}
-          </span>
-          <span v-if="!isSetterMgr" class="personal-performance-box-number">
-            {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
-          </span>
-          <span class="personal-performance-box-subtitle">
-            {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-          </span>
-        </div>
-        <div id="rank-box-separator"></div>
-        <div id="rank-box-right-side">
-          <span class="personal-performance-box-title">
-            {{ isSetterMgr ? 'Office' : 'Rep' }} to Beat
-          </span>
-          <div id="rank-box-content" :style="{'justify-content': rankBoxData.current_office_rank === '1' || rankBoxData.current_user_rank === '1' ? 'space-around' : 'space-between'}">
-            <span v-if="isSetterMgr" id="office-to-beat-name"
-                  :style="{'font-size': (rankBoxData.setter_office_to_beat_name && rankBoxData.current_office_rank !== '1') ? '10px' : '14px'}">
-              {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
-            </span>
-            <v-icon v-if="isSetterMgr" class="office-to-beat-icon">mdi-office-building</v-icon>
 
-            <span v-if="!isSetterMgr" id="rep-to-beat-name"
-                  :style="{'font-size': (rankBoxData.setter_to_beat_name && rankBoxData.current_user_rank !== '1') ? '10px' : '14px'}">
-              {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
-            </span>
-            <img v-if="!isSetterMgr && rankBoxData.imageUrl" class="rep-to-beat-img"
-                 :style="{'width': rankBoxData.current_user_rank !== '1' ? '' : '50px', 'height': rankBoxData.current_user_rank !== '1' ? '' : '50px'}"
-                 :alt="rankBoxData.imageAltText" :src="rankBoxData.imageUrl">
-            <v-icon v-if="!isSetterMgr && !rankBoxData.imageUrl" class="rep-to-beat-icon">mdi-account</v-icon>
+    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
+      <v-card>
+        <v-card-title class="mb-1">
+          <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
+        </v-card-title>
 
-            <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
-                  id="rank-box-subtitle">
-              {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- PERSONAL PERFORMANCE SECTION END -->
+        <v-card-text>
+          <v-data-table
+            id="drilldown-table"
+            :headers="headers"
+            :items="milestoneDrilldownData"
+            :items-per-page="-1"
+            :mobile-breakpoint="0"
+            fixed-header
+            dense
+            hide-default-footer
+            class="elevation-1"
+          >
+            <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+                <td class="text-left">{{ index + 1 }}</td>
+                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
+                <td class="text-left">{{ item.id || '' }}</td>
+                <td class="text-left">{{ item.source || '' }}</td>
+                <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+                <td class="text-left">{{ item.appointment_outcome || '' }}</td>
+              </tr>
+            </template>
 
-    <!-- RANKING TABLES HEADER START -->
-    <div class="ranking-tables-section-header">
-      Company Performance
-    </div>
-    <!-- RANKING TABLES HEADER END -->
+            <template #no-data>
+              <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
+                Data is not yet available for the selected quarter.
+              </div>
+              <div v-else class="my-3">
+                No data is available for the selected quarter.
+              </div>
+            </template>
+          </v-data-table>
+        </v-card-text>
 
-    <!-- RANKING TABLES SECTION START -->
-    <div id="setter-ranking-tables-section">
-      <!-- RANKING TABLES LEFT COLUMN START -->
-      <div id="setter-ranking-tables-left-col">
-        <!-- TOP OFFICES -->
-        <div id="setter-ranking-top-offices-table" class="ranking-table">
-          <div v-if="topOfficesLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
-          </div>
-          <div class="ranking-table-header">
-            <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
-            <span>Top Offices</span>
-          </div>
-          <table v-if="offices.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th class="left-text">Office</th>
-              <th class="center-text">
-                Total Pitched Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-              </th>
-            </tr>
-            <tr v-for="office in offices"
-                :key="office.org_id"
-                :class="{'highlight-user-row': office.org_id === userOfficeId}">
-              <td class="center-text">{{ office.rank }}</td>
-              <td class="left-text">{{ office.name }}</td>
-              <td class="center-text">{{ office.pitches }}</td>
-            </tr>
-          </table>
-          <div v-if="offices.length === 0" class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
-
-        <!-- TOP REPS -->
-        <div class="ranking-table">
-          <div v-if="topRepsLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
-          </div>
-          <div class="ranking-table-header">
-            <v-icon class="mr-2 ranking-table-icon">mdi-account-multiple</v-icon>
-            <span>Top Reps</span>
-          </div>
-          <table v-if="reps.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th></th>
-              <th class="left-text">Rep</th>
-              <th class="center-text">
-                Total Pitched Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-              </th>
-            </tr>
-            <tr v-for="rep in reps" :key="rep.user_id"
-                :class="{'highlight-user-row': rep.user_id === currentUserId}">
-              <td class="center-text">{{ rep.rank }}</td>
-              <td class="user-img-col">
-                <img v-if="rep.userImageUrl" class="ranking-table-img"
-                     :src="rep.userImageUrl" :alt="rep.userImageAltText">
-                <img v-else class="placeholder-img"
-                     src="../../../assets/flow/user_img_placeholder.png" :alt="rep.userImageAltText">
-              </td>
-              <td class="left-text">{{ rep.name }}</td>
-              <td class="center-text">{{ rep.pitches }}</td>
-            </tr>
-          </table>
-          <div v-if="reps.length === 0" class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
-      </div>
-      <!-- RANKING TABLES LEFT COLUMN END -->
-
-      <!-- RANKING TABLES RIGHT COLUMN START -->
-      <div id="setter-ranking-tables-right-col">
-        <!-- OFFICE RANKING -->
-        <div class="ranking-table">
-          <div v-if="officeRankingLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
-          </div>
-          <div class="ranking-table-header">
-            <v-icon class="mr-2 ranking-table-icon">mdi-office-building</v-icon>
-            <span>Office Ranking</span>
-          </div>
-          <table v-if="officeRankingData.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th class="left-text">Office</th>
-              <th class="center-text">
-                Total Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-              </th>
-              <th class="center-text">Pitches</th>
-              <th class="center-text">Pitch %</th>
-            </tr>
-            <tr v-for="office in officeRankingData" :key="office.org_id"
-                :class="{'highlight-user-row': office.org_id === userOfficeId}">
-              <td class="center-text">{{ office.rank }}</td>
-              <td class="left-text">{{ office.org }}</td>
-              <td class="center-text">{{ office.total_appointments }}</td>
-              <td class="center-text">{{ office.total_pitches }}</td>
-              <td class="center-text">{{ office.pitch_percentage }}%</td>
-            </tr>
-          </table>
-          <div v-if="officeRankingData.length === 0"
-               class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
-      </div>
-      <!-- RANKING TABLES RIGHT COLUMN END -->
-    </div>
-    <!-- RANKING TABLES SECTION END -->
-    <!---------------------------------- DASHBOARD TAB END ---------------------------------->
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+                 @click="closeMilestoneDialog">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!---------------------------------- INCENTIVE TAB END ---------------------------------->
   </v-container>
 </template>
 
 <script>
+  import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
-  import SpinnerInline from '@/components/SpinnerInline'
 
   export default {
-    name: 'setterDashboard',
-    components: {
-      SpinnerInline,
-    },
+    name: 'setterIncentive',
     data: () => ({
       snackbar: {},
       constants,
+      milestoneDialog: false,
       currentUserId: null,
-      isSetter: false,
+      selectedQuarter: 1,
+      headers: [
+        { text: '', value: '', show: true, sortable: false },
+        { text: 'Name', value: 'customer_name', show: true },
+        { text: 'Project ID', value: 'id', show: true },
+        { text: 'Source', value: 'source_name', show: true },
+        { text: 'Appointment Date', value: 'appointment_date', show: true },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
+      ],
+      milestoneDrilldownData: [],
+      incentiveDataLoaded: false,
+      currentQuarter: moment().quarter(),
+      pitchCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
+      q1_points: 0,
+      q2_points: 0,
+      q3_points: 0,
+      q4_points: 0,
+      q1_medal_icon: '',
+      q2_medal_icon: '',
+      q3_medal_icon: '',
+      q4_medal_icon: '',
+      q1_lower_label: '',
+      q2_lower_label: '',
+      q3_lower_label: '',
+      q4_lower_label: '',
+      percentAchieved: 0,
+      progressBarIsFull: false,
       isSetterMgr: false,
-      isSetterRegional: false,
-      officeRankingLoading: false,
-      performanceDataLoading: false,
-      topRepsLoading: false,
-      topOfficesLoading: false,
-      timeIntervalBtnGroup: 0,
-      timeIntervalString: 'MTD', // MTD is selected by default
-      timeInterval: +moment().format('DD') - 1,
-      tabNum: 1, // Funnel tab is selected by default
-      performanceDataLoaded: false,
-      rankingTablesLoaded: false,
-      rankingData: {},
-      rankBoxData: {},
-      offices: [],
-      reps: [],
-      officeRankingData: [],
-      userOffice: '',
-      userOfficeId: null,
-      userRow: [],
-      userRowIndex: -1,
-      numOffices: 0
     }),
     computed: {
       windowInnerWidth () { return window.innerWidth},
+      is_q1 () { return this.currentQuarter === 1 },
+      is_q2 () { return this.currentQuarter === 2 },
+      is_q3 () { return this.currentQuarter === 3 },
+      is_q4 () { return this.currentQuarter === 4 },
+      milestoneDrilldownTitle () {
+        return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Pitches - Q' + this.selectedQuarter
+      },
     },
     watch: {},
     methods: {
-      resetScrollBarPosition () {
+      resetScrollBarPosition() {
         // reset scroll bar positioning to top
         document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
       },
 
-      /* PERSONAL PERFORMANCE-RELATED CODE START */
-      async loadPersonalPerformance () {
-        this.performanceDataLoading = true
+      /* INCENTIVE-RELATED CODE START */
+      async loadIncentive() {
+        this.incentiveDataLoaded = false
 
-        try {
-          let startDate = moment().subtract(this.timeInterval, 'd').format('YYYY-MM-DD')
-          let endDate = moment().format('YYYY-MM-DD')
-
-          if (this.isSetterMgr) {
-            let performanceData = await getRequestWithParams('/setterDashboard/getMgrPerformanceReport',
-              {
-                params: {
-                  officeId: this.userOfficeId,
-                  startDate,
-                  endDate
-                }
-              }, 'blueraven')
-            this.rankingData = performanceData.data
-
-            let officeToBeatData = await getRequestWithParams('/setterDashboard/officeToBeat',
-            {
-              params: {
-                officeId: this.userOfficeId,
-                startDate,
-                endDate
-              }
-            }, 'blueraven')
-            this.rankBoxData = officeToBeatData.data
-
-            if (this.rankBoxData.setter_office_to_beat_name && this.rankBoxData.current_office_rank) {
-              if (this.rankBoxData.current_office_rank === "1") {
-                this.rankBoxData.setter_office_to_beat_name = 'Your office is #1!'
-              } else if (this.rankBoxData.current_office_rank === 'T1') {
-                let tiedOffices = this.offices.filter(office => office.rank === 'T1' && office.org_id !== this.userOfficeId)
-
-                if (tiedOffices.length > 0) {
-                  let officeToBeat
-
-                  if (tiedOffices.length === 1) {
-                    officeToBeat = tiedOffices[0]
-                  } else {
-                    // randomly selects an office that's tied for 1st with current manager's office
-                    officeToBeat = tiedOffices[Math.floor(Math.random() * tiedOffices.length)]
-                  }
-
-                  if (officeToBeat.name.includes(' ()')) {
-                    officeToBeat.name = officeToBeat.name.substr(0, officeToBeat.name.length - 3)
-                  }
-
-                  this.rankBoxData.setter_office_to_beat_name = officeToBeat.name
-                  this.rankBoxData.pitches_to_go = 1
-                }
-              } else {
-                if (this.rankBoxData.setter_office_to_beat_name.includes(' ()')) {
-                  this.rankBoxData.setter_office_to_beat_name = this.rankBoxData.setter_office_to_beat_name.substr(0, this.rankBoxData.setter_office_to_beat_name.length - 3)
-                }
-              }
-            }
-
-            this.performanceDataLoading = false
-          } else {
-            let performanceData = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
-            this.rankingData = performanceData.data
-
-            let repToBeatData = await getRequestWithParams('/setterDashboard/repToBeat',
-              {
-                params: {
-                  userId: this.currentUserId,
-                  startDate,
-                  endDate
-                }
-              }, 'blueraven')
-            this.rankBoxData = repToBeatData.data
-
-            if (this.rankBoxData) {
-              if (this.rankBoxData.setter_to_beat_id) {
-                await this.getRepToBeatImage(this.rankBoxData.setter_to_beat_id)
-              } else if (!this.rankBoxData.setter_to_beat_name && this.rankBoxData.current_user_rank) {
-                if (this.rankBoxData.current_user_rank === "1") {
-                  this.rankBoxData.setter_to_beat_name = 'You’re #1!'
-                  await this.getRepToBeatImage(this.currentUserId) // gets current user's picture
-                } else if (this.rankBoxData.current_user_rank === 'T1' && this.reps.length > 0) {
-                  let tiedReps = this.reps.filter(rep => rep.rank === 'T1' && rep.user_id !== this.currentUserId)
-
-                  if (tiedReps.length > 0) {
-                    let repToBeat
-
-                    if (tiedReps.length === 1) {
-                      repToBeat = tiedReps[0]
-                    } else {
-                      // randomly selects one of the reps who is tied for 1st with the current rep
-                      repToBeat = tiedReps[Math.floor(Math.random() * tiedReps.length)]
-                    }
-
-                    await this.getRepToBeatImage(repToBeat.user_id)
-                    this.rankBoxData.setter_to_beat_name = repToBeat.name
-                    this.rankBoxData.pitches_to_go = 1
-                  } else {
-                    this.rankBoxData.imageUrl = null
-                    this.rankBoxData.imageAltText = 'User photo placeholder'
-                  }
-                }
-              }
-            }
-
-            this.performanceDataLoading = false
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving personal performance data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-
-      async getRepToBeatImage (repToBeatId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {sourceId: repToBeatId, attachmentTypeId: 9}
-          const {data, status} = await getRequestWithParams('/attachment/getOne', {params})
-
-          if (data?.presignedUrl) {
-            this.rankBoxData.imageUrl = data.presignedUrl
-
-            if (this.rankBoxData.setter_to_beat_name) {
-              this.rankBoxData.imageAltText = 'Photo of ' + this.rankBoxData.setter_to_beat_name + ', a Blue Raven Solar employee'
-            } else {
-              this.rankBoxData.imageAltText = 'User photo placeholder'
-            }
-
-            handleHidingGlobalLoader(this, status)
+          const params = {
+            isSetterMgr: this.isSetterMgr,
+            setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
           }
+
+          getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
+            this.pitchCounts = res.data
+
+            // Calculate points for each quarter
+            this.q1_points = this.calcPointsForQuarter(this.pitchCounts.q1)
+            this.q2_points = this.calcPointsForQuarter(this.pitchCounts.q2)
+            this.q3_points = this.calcPointsForQuarter(this.pitchCounts.q3)
+            this.q4_points = this.calcPointsForQuarter(this.pitchCounts.q4)
+
+            // Get lower milestone labels
+            this.q1_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q1)
+            this.q2_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q2)
+            this.q3_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q3)
+            this.q4_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q4)
+
+            // Fill progress bar based on setter's points for the year
+            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 9) * 100
+            this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
+            this.progressBarIsFull = this.percentAchieved === 100
+
+            this.incentiveDataLoaded = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving rep to beat image')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving incentive data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.incentiveDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      /* PERSONAL PERFORMANCE-RELATED CODE END */
 
-      /* RANKING TABLES-RELATED CODE START */
-      async getTopReps () {
+      calcPointsForQuarter(pitchCount) {
+        if (!this.isSetterMgr) {
+          switch (true) {
+            case pitchCount >= 65 && pitchCount < 78:
+              return 1 // A-10
+            case pitchCount >= 78 && pitchCount < 91:
+              return 2 // F-14
+            case pitchCount >= 91 && pitchCount < 104:
+              return 3 // FA-18
+            case pitchCount >= 104 && pitchCount < 130:
+              return 4 // F-22
+            case pitchCount >= 130:
+              return 5 // F-35
+            default:
+              return 0 // No medal
+          }
+        } else {
+          switch (true) {
+            case pitchCount >= 325 && pitchCount < 390:
+              return 1 // A-10
+            case pitchCount >= 390 && pitchCount < 455:
+              return 2 // F-14
+            case pitchCount >= 455 && pitchCount < 520:
+              return 3 // FA-18
+            case pitchCount >= 520 && pitchCount < 675:
+              return 4 // F-22
+            case pitchCount >= 675:
+              return 5 // F-35
+            default:
+              return 0 // No medal
+          }
+        }
+      },
+
+      getMilestoneMedal(pointsEarned) {
+        switch (pointsEarned) {
+          case 1:
+            return 'a-10-level'
+          case 2:
+            return 'f-14-level'
+          case 3:
+            return 'fa-18-level'
+          case 4:
+            return 'f-22-level'
+          case 5:
+            return 'f-35-level'
+          default:
+            return 'no-medal'
+        }
+      },
+
+      getLowerMilestoneLabel(pitchCount) {
+        if (!this.isSetterMgr) {
+          switch (true) {
+            case pitchCount >= 65 && pitchCount < 78:
+              return (78 - pitchCount) + (78 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Tomcat'
+            case pitchCount >= 78 && pitchCount < 91:
+              return (91 - pitchCount) + (91 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Hornet'
+            case pitchCount >= 91 && pitchCount < 104:
+              return (104 - pitchCount) + (104 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Raptor'
+            case pitchCount >= 104 && pitchCount < 130:
+              return (130 - pitchCount) + (130 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Lightning'
+            case pitchCount >= 130:
+              return 'Lightning Achieved'
+            default:
+              return (65 - pitchCount) + (65 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Warthog'
+          }
+        } else {
+          switch (true) {
+            case pitchCount >= 325 && pitchCount < 390:
+              return (390 - pitchCount) + (390 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Tomcat'
+            case pitchCount >= 390 && pitchCount < 455:
+              return (455 - pitchCount) + (455 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Hornet'
+            case pitchCount >= 455 && pitchCount < 520:
+              return (520 - pitchCount) + (520 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Raptor'
+            case pitchCount >= 520 && pitchCount < 675:
+              return (675 - pitchCount) + (675 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Lightning'
+            case pitchCount >= 675:
+              return 'Lightning Achieved'
+            default:
+              return (325 - pitchCount) + (325 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Warthog'
+          }
+        }
+      },
+
+      async milestoneDrilldown(quarter) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         try {
-          this.topRepsLoading = true
-          const params = {limit: 5, days: this.timeInterval}
-          const {data, status} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
-          this.reps = data
+          const params = {
+            quarter,
+            isSetterMgr: this.isSetterMgr,
+            setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
+          }
+          const {data} = await getRequestWithParams('/setterDashboard/pitchesDrilldown', {params}, 'blueraven')
+          this.milestoneDrilldownData = cloneDeep(data)
 
-          if (this.reps.length > 0) {
-            let userIds = []
-
-            this.reps.forEach(rep => {
-              if (rep.user_id) {
-                userIds.push(rep.user_id)
+          if (this.milestoneDrilldownData.length > 0) {
+            this.milestoneDrilldownData.forEach(row => {
+              if (row.customer_name) {
+                row.customer_name = row.customer_name.toLowerCase()
               }
             })
-
-            if (userIds.length > 0) {
-              userIds = encodeURI(userIds)
-
-              let params = {
-                sourceIds: userIds,
-                attachmentTypeId: 9
-              }
-
-              const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
-
-              if (data) {
-                this.reps.forEach(rep => {
-                  if (rep.user_id && data[rep.user_id]) {
-                    rep.userImageUrl = data[rep.user_id]
-                  }
-
-                  if (rep.userImageUrl && rep.name) {
-                    rep.userImageAltText = 'Photo of ' + rep.name + ', a Blue Raven Solar employee'
-                  } else {
-                    rep.userImageAltText = 'User photo placeholder'
-                  }
-                })
-              }
-            }
+          } else {
+            this.milestoneDrilldownData = []
           }
 
-          this.topRepsLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving top reps data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-
-      async getTopOffices () {
-        try {
-          this.topOfficesLoading = true
-          const {data, status} = await getRequestWithParams('/setterDashboard/topOffices',
-            {
-              params: {
-                limit: 5,
-                days: this.timeInterval
-              }
-            }, 'blueraven', [])
-          this.offices = data || []
-
-          // removes empty parentheses from missing metro areas
-          this.offices?.forEach(office => {
-            if (office.name.includes(' ()')) {
-              office.name = office.name.substr(0, office.name.length - 3)
-            }
-          })
-          this.topOfficesLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving top offices data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-
-      async getOfficeRanking () {
-        try {
-          this.officeRankingLoading = true
-          const {data} = await getRequestWithParams('/setterDashboard/officeRanking',
-            {
-              params: {
-                limit: 13,
-                days: this.timeInterval
-              }
-            }, 'blueraven', [])
-          this.officeRankingData = data || []
-
-          this.officeRankingData?.forEach(office => {
-            if (office.org.includes(' ()')) {
-              office.org = office.org.substr(0, office.org.length - 3)
-            }
-          })
-          this.officeRankingLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving office ranking data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-
-      setTimeInterval (timeIntervalString) {
-        try {
-          this.rankingTablesLoaded = false
-          this.timeIntervalString = timeIntervalString
-          this.rankingData = {}
-
-          switch (timeIntervalString) {
-            case 'MTD':
-              this.timeInterval = +moment().format('DD') - 1 // MTD
-              break
-            case '60 days':
-              this.timeInterval = 60
-              break
-            case '90 days':
-              this.timeInterval = 90
-              break
-            case 'YTD':
-              this.timeInterval = moment().dayOfYear() - 1 // YTD
-              break
-          }
-
-          //i dont think there is any reason to wait for the previous requests to finish
-          this.loadPersonalPerformance()
-          this.getTopReps()
-          this.getTopOffices()
-          this.getOfficeRanking()
-          this.rankingTablesLoaded = true
+          this.selectedQuarter = quarter
+          this.milestoneDialog = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving ranking table data')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.rankingTablesLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      /* RANKING TABLES-RELATED CODE END */
-    },
-    async created () {
-      this.currentUserId = this.$store.state.user.details.id
-      let userPositions = this.$store.state.user.details.userPositions
 
-      if (userPositions?.length > 0) {
-        this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
-        this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
-        this.isSetter = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-        this.isSetterMgr = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-        this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+      closeMilestoneDialog() {
+        this.milestoneDialog = false
+        this.resetScrollBarPosition()
+      },
+      /* INCENTIVE-RELATED CODE END */
+
+      async created() {
+        this.currentUserId = this.$store.state.user.details.id
+
+        let userPositions = this.$store.state.user.details.userPositions
+
+        if (userPositions?.length > 0) {
+          this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+          this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
+          this.isSetter = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+          this.isSetterMgr = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+          this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+        }
+
+        await this.loadIncentive()
+
+      },
+      mounted() {
       }
-
-      this.setTimeInterval('MTD') // MTD is the default
-    },
-    mounted () {},
+    }
   }
 </script>
 
@@ -1181,19 +1054,6 @@
     margin-bottom: 15px;
     overflow-x: auto;
     width: 100%;
-    position: relative;
-  }
-
-  .section-spinner {
-    position: absolute;
-    height: 100% !important;
-    width: 100%;
-    text-align: center;
-    opacity: .6;
-    background: white;
-    display: flex;
-    align-items: center;
-    z-index: 1000;
   }
 
   .ranking-table-header {

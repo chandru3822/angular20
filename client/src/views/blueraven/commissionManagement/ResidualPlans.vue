@@ -66,7 +66,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ResidualPlans',
@@ -91,10 +91,10 @@
       async getResidualPlans () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/residuals/plans`, 'blueraven')
+          const {data, status} = await getRequest(`/commissionManagement/residuals/plans`, 'blueraven')
           this.residualPlans = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Residual Plans')

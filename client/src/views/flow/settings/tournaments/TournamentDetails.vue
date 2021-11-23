@@ -127,6 +127,7 @@
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
+    handleHidingGlobalLoader,
     getRequest,
     putRequest,
     getSnackbar
@@ -167,9 +168,9 @@
       async getTournamentOwnerTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
           this.ownerTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -181,9 +182,9 @@
       async getTournamentFormulas() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/formulas/${this.tournament.tournamentOwnerTypeId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/formulas/${this.tournament.tournamentOwnerTypeId}`, 'blueraven')
           this.formulas = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -195,9 +196,9 @@
       async getTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
           this.tournament = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
@@ -208,10 +209,10 @@
       async updateTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/tournament`, this.tournament, 'blueraven')
+          const {data, status} = await putRequest(`/tournament`, this.tournament, 'blueraven')
           this.tournament = data
           this.edit = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Tournament')

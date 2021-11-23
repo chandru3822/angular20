@@ -95,7 +95,7 @@
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
 
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -120,9 +120,9 @@
       async getLinks () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/links`)
+          const {data, status} = await getRequest(`/links`)
           this.links = orderBy(data, [a => a.link.toLowerCase()])
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -133,10 +133,10 @@
       async deleteLink (typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/links/${typeId}`)
+          const {status} = await deleteRequest(`/links/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
@@ -149,7 +149,7 @@
         try {
           this.newLink.companyId = this.companyId
           // this.newProcess.createdById = this.userId
-          const {data} = await postRequest(`/links`, this.newLink)
+          const {data, status} = await postRequest(`/links`, this.newLink)
 
           // add it to the records already on the screen
           this.links.push(data)
@@ -160,7 +160,7 @@
           this.newLink = {}
           this.snackbar = getSnackbar('SUCCESS', 'Link Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
@@ -173,10 +173,10 @@
         try {
           this.selectedLinkId = null
           a.modifiedById = this.userId
-          await putRequest(`/links`, a)
+          const {status} = await putRequest(`/links`, a)
           this.snackbar = getSnackbar('SUCCESS', 'Link Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Link')

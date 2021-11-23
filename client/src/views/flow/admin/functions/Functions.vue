@@ -124,7 +124,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -156,9 +156,9 @@
       async getFunctions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/dbFunction`)
+          const {data, status} = await getRequest(`/dbFunction`)
           this.functions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
@@ -170,9 +170,9 @@
         if(this.dataTypes.length === 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/dataType/getSystem`)
+            const {data, status} = await getRequest(`/dataType/getSystem`)
             this.dataTypes = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Data Types')
@@ -185,9 +185,9 @@
         if(this.dbFunctionTypes.length === 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/dbFunction/types`)
+            const {data, status} = await getRequest(`/dbFunction/types`)
             this.dbFunctionTypes = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
@@ -201,9 +201,9 @@
         try {
           //unset the returnDataTypeId if they changed the function type back to Action
           this.newFunction.returnDataTypeId = this.newFunction.dbFunctionTypeId !== 1 ? null : this.newFunction.returnDataTypeId
-          const {data} = await postRequest(`/dbFunction`, this.newFunction)
+          const {data, status} = await postRequest(`/dbFunction`, this.newFunction)
           this.goToFunction(data.id)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
@@ -214,9 +214,9 @@
       async deleteFunction(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/dbFunction/${item.id}`)
+          const {status} = await deleteRequest(`/dbFunction/${item.id}`)
           item.archived = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Functions')

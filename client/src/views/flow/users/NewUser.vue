@@ -123,7 +123,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
-  import {getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {getCountries} from '@/services/countryService'
   import {getCompanyStates} from '@/services/stateService'
@@ -189,10 +189,10 @@
         this.loadingUserInsertFields = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldGroup/getUserInsertFields`)
+          const {data, status} = await getRequest(`/customFieldGroup/getUserInsertFields`)
           this.customFieldGroups = data
           this.loadingUserInsertFields = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
@@ -204,13 +204,13 @@
       async getUserStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getUserStatusTypes()
+          const {data, status} = await getUserStatusTypes()
           this.userStatusTypes = data
 
           //set the user status to the default if there is one
           this.user.userStatusTypeId = this.userStatusTypes?.find(ust => ust.newUserDefault)?.id
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
@@ -221,9 +221,9 @@
       async getCompanyStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCompanyStates()
+          const {data, status} = await getCompanyStates()
           this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
@@ -234,9 +234,9 @@
       async getCountries() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getCountries()
+          const {data, status} = await getCountries()
           this.countries = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
@@ -247,9 +247,9 @@
       async getPositions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/position`)
+          const {data, status} = await getRequest(`/position`)
           this.positions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
@@ -260,9 +260,9 @@
       async getFilters() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgFilters()
+          const {data, status} = await getOrgFilters()
           this.filters = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving org levels')
@@ -331,8 +331,8 @@
             await this.savePosition(data.id)
           }
 
-          await this.$router.push({name: 'userDetails', params: {id: data.id}})
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {status} = await this.$router.push({name: 'userDetails', params: {id: data.id}})
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let errorMsg = 'Error Adding User'

@@ -143,7 +143,7 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import {getActiveStates} from '@/services/stateService'
@@ -231,9 +231,9 @@
       async fetchStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getActiveStates()
+          const {data, status} = await getActiveStates()
           this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
@@ -244,10 +244,10 @@
       async fetchAhjUtilities () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest('/ahjUtility/list/all', 'blueraven')
+          const {data, status} = await getRequest('/ahjUtility/list/all', 'blueraven')
           this.ahjUtilities = cloneDeep(data)
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -259,7 +259,7 @@
       async getActiveMetroAreas () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest('/metro/getActive', 'blueraven')
+          const {data, status} = await getRequest('/metro/getActive', 'blueraven')
           data.forEach(item => {
             let option = {
               text: item.metroArea,
@@ -267,7 +267,7 @@
             }
             this.metroAreas.push(option)
           })
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -297,10 +297,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         if (this.addMode) {
           try {
-            await postRequest('/ahjUtility', this.editedItem, 'blueraven')
+            const {status} = await postRequest('/ahjUtility', this.editedItem, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'AHJ utility created')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error creating AHJ utility')
@@ -309,10 +309,10 @@
           }
         } else {
           try {
-            await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
+            const {status} = await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'AHJ utility updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating AHJ utility')

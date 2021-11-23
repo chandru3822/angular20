@@ -130,7 +130,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'TournamentsAdmin',
@@ -176,9 +176,9 @@
         this.newTournament.tournamentFormulaId = null
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/formulas/${this.newTournament.tournamentOwnerTypeId}`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/formulas/${this.newTournament.tournamentOwnerTypeId}`, 'blueraven')
           this.formulas = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -190,9 +190,9 @@
       async getTournamentOwnerTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
           this.ownerTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -205,10 +205,10 @@
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/tournament`, 'blueraven')
+          const {data, status} = await getRequest(`/tournament`, 'blueraven')
           this.tournaments = data
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
@@ -220,10 +220,10 @@
       async deleteTournament (id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/tournament/${id}`, 'blueraven')
+          const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Tournament Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Tournament')
@@ -234,11 +234,11 @@
       async addTournament () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/tournament`, this.newTournament, 'blueraven')
+          const {data, status} = await postRequest(`/tournament`, this.newTournament, 'blueraven')
           this.$router.push({path: `/settings/tournaments/${data.id}/details`})
           this.snackbar = getSnackbar('SUCCESS', 'Tournament Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Tournament')

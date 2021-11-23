@@ -95,7 +95,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -143,11 +143,11 @@ export default {
     async saveZoneInfo() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await postRequest(`/postalCode/zone`, this.zone)
+        const {status} = await postRequest(`/postalCode/zone`, this.zone)
         this.editZone = false
         this.snackbar = getSnackbar('SUCCESS', 'Zone Name Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Zone Name')
@@ -158,9 +158,9 @@ export default {
     async getCompanyTimezones() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/timezone`)
+        const {data, status} = await getRequestWithParams(`/timezone`)
         this.companyTimezones = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
@@ -171,10 +171,10 @@ export default {
     async getZoneDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/postalCode/zone/${this.zoneId}`)
+        const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}`)
         this.zone = data
         this.dataLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

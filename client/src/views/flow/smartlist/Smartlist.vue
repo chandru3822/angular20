@@ -486,7 +486,7 @@
 <script>
 
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 import draggable from 'vuedraggable'
@@ -707,22 +707,22 @@ export default {
           this.smartlist.mainProcessSteps = true
         }
 
-        const {data} = await postRequest(`/smartlist`, this.smartlist)
+        const {data, status} = await postRequest(`/smartlist`, this.smartlist)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async addNewField () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/smartlist/${this.smartlist.id}/field`, {
+        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/field`, {
           ...this.newField.selectedField,
           smartlistId: this.smartlist.id,
           displayOrder: this.assignedFields.length + 1,
@@ -731,11 +731,11 @@ export default {
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -743,7 +743,7 @@ export default {
       try {
         const maxNumber = this.requirements.map(r => r.displayOrder).reduce((max, cur) => Math.max(max, cur), 0)
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
+        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
           ...requirement,
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
@@ -752,11 +752,11 @@ export default {
         })
         this.requirements.push(data)
         this.resetRequirementForm = true
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding requirement to smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -768,55 +768,55 @@ export default {
           this.smartlist.mainProcessSteps = true
         }
 
-        await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
+        const {status} = await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
 
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.originalObjectTypeId = companyObjectType.objectTypeId
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateLogic () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await putRequest(`/smartlist/${this.smartlist.id}/logic`, this.logic)
+        const {data, status} = await putRequest(`/smartlist/${this.smartlist.id}/logic`, this.logic)
         this.fetchedLogic = [...data]
         this.logic = data
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist logic')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateRequirement (requirement) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await putRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
+        const {data, status} = await putRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
         this.requirements.splice(this.requirements.findIndex(r => r.id === requirement.id), 1, data)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async deleteSmartlist () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/smartlist/${this.$route.params.smartlistId}`)
+        const {status} = await deleteRequest(`/smartlist/${this.$route.params.smartlistId}`)
+        handleHidingGlobalLoader(this, status)
         this.$router.go(-1)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Unable to delete smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -827,12 +827,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await deleteRequest(`/smartlist/${this.$route.params.smartlistId}/field/${fieldToDelete.id}`)
         this.assignedFields.splice(fieldIndex, 1)
-        await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
+        const {status} = await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -846,12 +846,12 @@ export default {
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await putRequest(`/smartlist/${this.$route.params.smartlistId}/order`, this.assignedFields)
+        const {status} = await putRequest(`/smartlist/${this.$route.params.smartlistId}/order`, this.assignedFields)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating field order')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -879,16 +879,16 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
+        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         })
         saveAs(blob, `${this.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -903,15 +903,15 @@ export default {
     async toggleProjectDetails () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
+        const {status} = await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
         this.assignedFields = []
         this.requirements = []
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.smartlist.projectDetails = !this.smartlist.projectDetails
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -934,34 +934,34 @@ export default {
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.smartlist.objectTypeId = companyObjectType.objectTypeId
 
-        const {data} = await putRequest((`/smartlist/${this.smartlist.id}/toggleObjectType`), this.smartlist)
+        const {data, status} = await putRequest((`/smartlist/${this.smartlist.id}/toggleObjectType`), this.smartlist)
 
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
         this.assignedFields = []
         this.requirements = []
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist row type')
         this.smartlist.objectTypeId = this.originalObjectTypeId
         this.smartlist.companyObjectTypeId = this.companyObjectTypes.find(t => t.objectTypeId === this.originalObjectTypeId).companyObjectTypeId
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async copy () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/smartlist/${this.smartlist.id}/copy`)
+        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/copy`)
         this.$router.push('/smartlist')
         this.snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error duplicating smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

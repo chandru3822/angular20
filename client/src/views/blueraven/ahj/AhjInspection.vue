@@ -595,7 +595,7 @@
   import AhjServicingFot from './components/AhjServicingFots'
 
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
@@ -659,7 +659,7 @@
       async getAhjInspection() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/ahj/${this.ahjId}/inspection`, 'blueraven')
+          const {data, status} = await getRequest(`/ahj/${this.ahjId}/inspection`, 'blueraven')
           window.document.title = `AHJ - ${data.ahjName}`
           if (data.servicingFots && data.servicingFots.length > 0) {
             data.servicingFots.forEach(servicingFot => {
@@ -688,23 +688,25 @@
           })
           this.ahjInspection = cloneDeep(data)
           this.ahjInspection.updateAllInState = false
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Inspection')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getCustomFieldGroupAssignmentsForScreen() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: this.ahjInspection.id, objectTypeId: 3}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroupAssignments = cloneDeep(data)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -752,20 +754,21 @@
           }
 
           this.ahjInspection.customFieldGroups = this.customFieldGroupAssignments
-          const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
+          const {data, status} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
           this.ahjInspection = cloneDeep(data)
           this.ahjInspection.updateAllInState = false
           this.dataWasChanged = false
           this.resetCustomFieldValueWasChangedFlags()
           let successMessage = updateAllInState ? 'All inspections in ' + this.ahjInspection.stateName + ' have been updated successfully' : 'Inspection updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let errorMessage = updateAllInState ? 'An error occurred when attempting to update all inspections in ' + this.ahjInspection.stateName : 'Failed to update inspection'
           this.snackbar = getSnackbar('ERROR', errorMessage)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created () {

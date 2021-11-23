@@ -307,7 +307,7 @@
   import AhjRequirement from './components/AhjRequirements'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'ahjDesign',
@@ -345,23 +345,25 @@
       async getAhjDesign() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/ahj/${this.ahjId}/design`, 'blueraven')
+          const {data, status} = await getRequest(`/ahj/${this.ahjId}/design`, 'blueraven')
           window.document.title = `AHJ - ${data.ahjName}`
           this.ahjDesign = cloneDeep(data)
           this.ahjDesign.updateAllInState = false
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Design')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getCustomFieldGroupAssignmentsForScreen() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.ahjDesign.id) {
             const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
-            const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+            const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
             this.customFieldGroupAssignments = cloneDeep(data)
+            handleHidingGlobalLoader(this, status)
           } else {
             console.error('*** ERROR ***', 'Missing parameter "sourceId"')
             this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
@@ -369,8 +371,8 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -414,20 +416,21 @@
           }
 
           this.ahjDesign.customFieldGroups = this.customFieldGroupAssignments
-          const {data} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
+          const {data, status} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
           this.ahjDesign = cloneDeep(data)
           this.ahjDesign.updateAllInState = false
           this.dataWasChanged = false
           this.resetCustomFieldValueWasChangedFlags()
           let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : 'Design updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let errorMessage = updateAllInState ? 'An error occurred when attempting to update all designs in ' + this.ahjDesign.stateName : 'Failed to update design'
           this.snackbar = getSnackbar('ERROR', errorMessage)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created () {

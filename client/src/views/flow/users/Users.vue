@@ -54,7 +54,7 @@
             disable-sort
             :mobile-breakpoint="0"
             :footer-props="footerProps"
-            :loading="dataLoading"
+            :loading="dataLoading || allUsersLoading"
             :server-items-length="totalUsers"
             hide-default-header
             :calculate-widths="true"
@@ -441,7 +441,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
 
-  import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
@@ -450,6 +450,7 @@
   import 'quill/dist/quill.snow.css'
   import {quillEditor} from 'vue-quill-editor'
   import { saveAs } from 'file-saver'
+  import axios from 'axios'
 
   const defaultEmailMessage = '${user.firstName},\n'
 
@@ -531,7 +532,9 @@
         textMediaUrls: [],
         emailFile: null,
         textFile: null,
-        primaryPositionsOnly: true
+        primaryPositionsOnly: true,
+        source: null,
+        allUsersLoading: false
       }
     },
     computed: {
@@ -589,11 +592,50 @@
       debounceGetUsers: debounce( function () {
         this.getUsers()
       }, 500),
+      async getAllUsers () {
+        // Get allUsers once
+        // this was loading twice if a search was done prior to completing this request. putting it in its own fn that is called by the created method fixes that
+        this.allUsersLoading = true
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          //could default these params since we want all users
+          const params = {
+            search: this.filters.search,
+            firstName: this.filters.firstName,
+            lastName: this.filters.lastName,
+            email: this.filters.email,
+            phone: this.filters.phone,
+            statuses: this.filters.statuses,
+            positions: this.filters.positions,
+            orgs: this.getOrgIdsForMax(),
+            primaryFlag: this.primaryPositionsOnly
+          }
+          const {data, status} = await postRequest(`/user/search?page=0&size=9999`, params)
+          this.allUsers = data?.content || []
+          this.allUsersLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving All Users')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.allUsersLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getUsers () {
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
+
+        if(this.source){
+          this.source.cancel()
+        }
+        const CancelToken = axios.CancelToken
+        this.source = CancelToken.source()
+
         if (this.filters.statuses && this.filters.statuses.length > 0) {
           this.dataLoading = true
           const { page, itemsPerPage } = this.options
+
           try {
             const params = {
               search: this.filters.search,
@@ -607,25 +649,26 @@
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
               primaryFlag: this.primaryPositionsOnly
             }
-            // Get allUsers once
-            if (this.allUsers.length < 1) {
-                const {data} = await postRequest(`/user/search?page=${page-1}&size=9999`, params)
-                this.allUsers = data.content;
-            }
 
-            const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
-            this.users = data.content
-            this.totalUsers = data.totalElements
-
-            this.users.forEach(u => {
-              // If the user isn't already a selected user, add to list of selected users
-              if (this.selectedUsers.indexOf(u.id) !== -1) {
-                u.selected = true;
-              }
+            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params, null, [], {
+              source: this.source,
+              cancelToken: this.source.token
             })
+
+            if(status) {
+              this.users = data?.content || []
+              this.totalUsers = data?.totalElements || 0
+
+              this.users.forEach(u => {
+                // If the user isn't already a selected user, add to list of selected users
+                if (this.selectedUsers.indexOf(u.id) !== -1) {
+                  u.selected = true;
+                }
+              })
+            }
             this.dataLoading = false
             this.initialLoad = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
@@ -650,7 +693,7 @@
             const params = {
               orgs: this.getOrgIds()
             }
-            const {data} = await postRequest(`/org/orgHierarchyFilter`, params)
+            const {data, status} = await postRequest(`/org/orgHierarchyFilter`, params, null, [])
             data.forEach(d => {
               //get index of the each header
               let index = this.headers.findIndex(h => h.level === d.orgLevelId)
@@ -675,7 +718,6 @@
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
             this.resetHeaderOrgs()
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
@@ -704,12 +746,15 @@
         })
       },
       async getStatuses (useSavedSearch) {
+        //started using a global loader to ensure they don't search before allUsers get loaded
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/statuses`)
+          const {data} = await getRequest(`/user/statuses`, null, [])
           this.statuses = data
           if(!useSavedSearch) {
             this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
           }
+          await this.getAllUsers()
           await this.getUsers()
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -721,9 +766,8 @@
       },
       async getPositions () {
         try {
-          const {data} = await getRequest(`/position`)
+          const {data, status} = await getRequest(`/position`)
           this.positions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')

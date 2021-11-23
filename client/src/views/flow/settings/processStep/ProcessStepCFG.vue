@@ -13,7 +13,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { getRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'ProcessStepCFG',
@@ -47,10 +47,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/processStep/${this.processStepId}`)
+          const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

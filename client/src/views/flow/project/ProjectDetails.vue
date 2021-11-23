@@ -43,7 +43,7 @@
 
 <script>
 
-import {getRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
@@ -107,7 +107,7 @@ export default {
 
   methods: {
     getDirtyFieldsCount() {
-      return this.dirtyCfvs.length
+      return this.dirtyCfvs?.length || 0
     },
     getProcessSteps: async function () {
       try {
@@ -122,7 +122,7 @@ export default {
     },
     getFieldGroups: async function () {
       try {
-        const {data} = await getRequest(`/customFieldValues/project/${this.projectId}`)
+        const {data} = await getRequest(`/customFieldValues/project/${this.projectId}`, null, [])
         this.customFieldGroups = data
       } catch (e) {
         logError(e)
@@ -133,19 +133,20 @@ export default {
     updateFieldGroups: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
+        const {data, status} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
         if (this.dirtyCfvs.length > 0) {
           this.getProcessSteps()
         }
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } finally {
         this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     populateDirtyCfvs(field) {

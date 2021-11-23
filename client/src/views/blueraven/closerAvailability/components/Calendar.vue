@@ -139,7 +139,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -366,10 +366,10 @@
       async getPostalCodeZones () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zones`)
+          const {data, status} = await getRequest(`/postalCode/zones`)
           this.postalCodeZones = data
           this.postalCodeZonesLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Round Robins')
@@ -384,10 +384,10 @@
           let params = {
             zoneIds: zones?.length > 0 ? zones.map(z => z.id) : null
           }
-          const {data} = await postRequest(`/postalCode/zone/users`, params)
+          const {data, status} = await postRequest(`/postalCode/zone/users`, params)
           this.postalCodeZoneUsers = data
           this.postalCodeZoneUsersLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
@@ -477,9 +477,9 @@
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
-              const {data} = await postRequest(`/schedule`, params)
+              const {data} = await postRequest(`/schedule`, params, null, [])
               let additionalRecords = []
-              data.forEach(d => {
+              data?.forEach(d => {
                 //get all selected users who match the appt user_id
                 let matchingUsers = this.selectedPostalCodeZoneUsers.filter(r => r.userId === d.userId)
 

@@ -379,7 +379,7 @@
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import Vue2Filters from "vue2-filters";
   import constants from "@/helpers/constants";
   import sumBy from "lodash.sumby";
@@ -678,7 +678,7 @@
       async getCurrentPayroll () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven', [])
           this.currentPayroll = data
 
           this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
@@ -691,7 +691,7 @@
             this.dataLoading = false
             this.accountingData = []
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
@@ -713,7 +713,7 @@
           if(this.currentPayroll?.status !== 'PENDING' && this.currentPayroll?.status !== 'REJECTED') {
             params.selectedProjectIds = this.currentPayroll.selectedProjectIds
           }
-          const {data} = await postRequest(`/commissionManagement/accountReview/search`, params, 'blueraven')
+          const {data} = await postRequest(`/commissionManagement/accountReview/search`, params, 'blueraven', [])
           this.accountingData = []
           data.forEach(d => {
             d.selected = !!this.currentPayroll.selectedProjectIds?.includes(d.project_id)

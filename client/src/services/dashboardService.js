@@ -31,28 +31,32 @@ export async function getCloserReps (userId, areas, regions, districts, offices)
   return data
 }
 
-export async function getSetterDistricts (userId) {
-  const params = {userId}
-  const {data} = await getRequestWithParams('/setterDashboard/getDistricts', {params}, 'blueraven')
+export async function getSetterAreas (userId) {
+  const requestBody = {userId}
+  const {data} = await postRequest('/setterDashboard/getAreas', requestBody, 'blueraven')
   return data
 }
 
-export async function getSetterRegions (userId, districts) {
-  districts = encodeURI(districts)
-  const params = {userId, districts}
-  const {data} = await getRequestWithParams('/setterDashboard/getRegions', {params}, 'blueraven')
+export async function getSetterRegions (userId, areas) {
+  const requestBody = {userId, areas}
+  const {data} = await postRequest('/setterDashboard/getRegions', requestBody, 'blueraven')
   return data
 }
 
-export async function getSetterOffices (userId, regions) {
-  regions = encodeURI(regions)
-  const params = {userId, regions}
-  const {data} = await getRequestWithParams('/setterDashboard/getOffices', {params}, 'blueraven')
+export async function getSetterDistricts (userId, areas, regions) {
+  const requestBody = {userId, areas, regions}
+  const {data} = await postRequest('/setterDashboard/getDistricts', requestBody, 'blueraven')
   return data
 }
 
-export async function getSetterReps (userId, regions, offices) {
-  const requestBody = {userId, regions, offices}
+export async function getSetterOffices (userId, areas, regions, districts) {
+  const requestBody = {userId, areas, regions, districts}
+  const {data} = await postRequest('/setterDashboard/getOffices', requestBody, 'blueraven')
+  return data
+}
+
+export async function getSetterReps (userId, areas, regions, districts, offices) {
+  const requestBody = {userId, areas, regions, districts, offices}
   const {data} = await postRequest('/setterDashboard/getReps', requestBody, 'blueraven')
   return data
 }
