@@ -308,7 +308,11 @@ public class GenesysService {
       params.put("userId", SystemSettings.CRON_USER.getId());
     }
 
-    sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+    try {
+      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+    } catch (Exception e) {
+      log.error("GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}", contactId, textValue, cfgaId, e.getMessage());
+    }
   }
 
   private String checkIfCustomFieldDropdownValueExists(
@@ -621,7 +625,7 @@ public class GenesysService {
       return "SMS Level 10";
     }
 
-    return null;
+    return "";
   }
 
   // Get the Genesys id of the Contact List from Genesys
@@ -764,7 +768,8 @@ public class GenesysService {
       try {
         addContact(contact.getId(), values, false);
       } catch (Exception e) {
-        log.error("GENESYS: Error updating contact list: {}", e.getMessage());
+        log.error("GENESYS: Error updating contact list", e);
+        e.printStackTrace();
       }
     }
   }
@@ -813,7 +818,23 @@ public class GenesysService {
     if (isUpdate) {
       contactMap.put("line_id", "");
     } else {
-      saveTextelPhoneKey(contactId, contactMap);
+      try {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("contactId", contactId);
+        Optional<String> textelPhoneKey =
+          sqlCache.get(
+            "genesys.getTextelPhoneKeyByContactId",
+            params,
+            new SingleColumnRowMapper<>(String.class));
+        if (textelPhoneKey.isPresent()) {
+          contactMap.put("line_id", textelPhoneKey.get());
+        }
+        else {
+          saveTextelPhoneKey(contactId, contactMap);
+        }
+      } catch (Exception e) {
+        log.error("GENESYS: Error saving Textel Phone Key for contactId={}, msg={}", contactId, e.getMessage());
+      }
     }
   }
 
