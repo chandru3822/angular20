@@ -384,7 +384,7 @@
           let params = {
             zoneIds: zones?.length > 0 ? zones.map(z => z.id) : null
           }
-          const {data, status} = await postRequest(`/postalCode/zone/users`, params)
+          const {data, status} = await postRequest(`/postalCode/zone/users`, params, null, [])
           this.postalCodeZoneUsers = data
           this.postalCodeZoneUsersLoading = false
           handleHidingGlobalLoader(this, status)
@@ -402,7 +402,7 @@
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime
           }
-          const {data} = await postRequest(`/schedule/closerAvailability`, params)
+          const {data} = await postRequest(`/closerAvailability`, params, 'blueraven', [])
           data.forEach(d => {
             //this is really stupid.  in full calendar an all day appt strips off the time. and just uses the date.
             //so an end time of '2020-12-31 23:59:59' will strip off the time and not include it in the all day range
