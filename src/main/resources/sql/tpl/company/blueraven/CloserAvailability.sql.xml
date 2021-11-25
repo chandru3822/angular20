@@ -1,0 +1,6 @@
+<sql>
+  <closerAvailability.get><![CDATA[
+    select *
+    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :postalCodeZoneUserIds ]::int[]);
+ ]]></closerAvailability.get>
+</sql>
