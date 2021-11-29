@@ -1011,6 +1011,22 @@ public class SmartlistService {
         }
 
         break;
+      case 6:
+        query.append(" from flow.project_process_step_event");
+        query.append(" left join flow.project_process_step on flow.project_process_step.id = flow.project_process_step_event.project_process_step_id ");
+        query.append(" left join flow.project on flow.project.id = flow.project_process_step.project_id ");
+        query.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id ");
+        query.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id ");
+        query.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id ");
+        query.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id ");
+        query.append(" left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+        query.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id ");
+        query.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id ");
+        query.append(" left join flow.org on flow.org.id = \"project_user_position\".org_id ");
+
+        whereClause.append(" flow.project.archived is not true and ");
+        whereClause.append(String.format(" flow.company_project_status_type.company_id = any(%s) and ", companySubquery));
+        break;
       }
     } else {
       //this is all required for the work queue stuff

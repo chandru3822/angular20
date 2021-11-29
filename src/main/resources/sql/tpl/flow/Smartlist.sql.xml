@@ -153,6 +153,7 @@ select null as "smartlistFieldId",
 ]]></smartlist.getAvailableFieldByCfgaId>
 
 <smartlist.getAvailableFields><![CDATA[
+-- process steps without groups
 with psWithoutGroups as (
   select distinct ps1.id
   from flow.process_step ps1
@@ -161,6 +162,7 @@ with psWithoutGroups as (
         cfg.archived is not true and
         ps1.company_id = 3
 )
+-- system fields
 select sf.id as "smartlistFieldId",
        sf.smartlist_system_list_id as "smartlistSystemListId",
        null as "customFieldGroupAssignmentId",
@@ -170,6 +172,8 @@ select sf.id as "smartlistFieldId",
        '[]' as "systemListOptionIds",
        null as "processStepId",
        null as "processStepName",
+       null as "eventId",
+       null as "eventName",
        cdt.data_type_id as "dataTypeId",
        case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
        cdt.allow_multiple as "allowMultiple",
@@ -186,6 +190,7 @@ where ot.id = :objectTypeId and
       cot.company_id = :companyId and
       cot.archived is not true
 union
+-- native fields
 select null as "smartlistFieldId",
        null as "smartlistSystemListId",
        cfga.id as "customFieldGroupAssignmentId",
@@ -195,6 +200,8 @@ select null as "smartlistFieldId",
        to_jsonb(cf.system_list_option_ids) as "systemListOptionIds",
        ps.id as "processStepId",
        ps.process_step_name as "processStepName",
+       e.id as "eventId",
+       e.event_name as "eventName",
        cdt.data_type_id as "dataTypeId",
        cdt.has_list_values as "hasListValues",
        cdt.allow_multiple as "allowMultiple",
@@ -220,6 +227,7 @@ from flow.custom_field_group_assignment cfga
 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
+left join flow.event e on e.id = cfg.event_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
 inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
@@ -229,6 +237,7 @@ where ot.id = :objectTypeId and
       cfga.archived is not true and
       cfg.archived is not true
 union
+-- Not 100% sure, but currently returns no rows for any object type. seems like PS which aren't in the above query?
 select null as "smartlistFieldId",
        null as "smartlistSystemListId",
        cfga.id as "customFieldGroupAssignmentId",
@@ -238,6 +247,8 @@ select null as "smartlistFieldId",
        null as "systemListOptionIds",
        ps.id as "processStepId",
        ps.process_step_name as "processStepName",
+       null as "eventId",
+       null as "eventName",
        null as "dataTypeId",
        null as "hasListValues",
        cdt.allow_multiple as "allowMultiple",
@@ -267,6 +278,7 @@ where cot.object_type_id = :objectTypeId and
                ps1.id = ps.id
     )
 union
+-- PSs without CFGs
 select null as "smartlistFieldId",
        null as "smartlistSystemListId",
        null as "customFieldGroupAssignmentId",
@@ -276,6 +288,8 @@ select null as "smartlistFieldId",
        null as "systemListOptionIds",
        ps.id as "processStepId",
        ps.process_step_name as "processStepName",
+       null as "eventId",
+       null as "eventName",
        null as "dataTypeId",
        null as "hasListValues",
        null as "allowMultiple",
@@ -286,7 +300,8 @@ where ps.archived is not true and
       ps.company_id = :companyId and
       psWithoutGroups.id is null
 order by name,
-         "processStepName"
+         "processStepName",
+         "eventName"
 ]]></smartlist.getAvailableFields>
 
 <smartlist.getAvailableProjectDetailsFields><![CDATA[

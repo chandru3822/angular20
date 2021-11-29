@@ -14,10 +14,10 @@ public class SmartlistFieldAssignment {
   //@TODO humes: customField brings in fields making some direct fields on this class redundant. Remove the direct redundant fields
 
   private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
-      displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
+      displayOrder, processStepId, eventId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
       companyId, systemListId;
 
-  private String name, objectType, processStepName, customFieldSqlKey, projectDetailsColumn;
+  private String name, objectType, processStepName, eventName, customFieldSqlKey, projectDetailsColumn;
 
   private Timestamp dateCreated, dateModified;
 

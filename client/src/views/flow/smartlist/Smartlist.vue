@@ -512,6 +512,7 @@ export default {
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
+      availableEvents: [],
       newField: {},
       showNewFieldForm: false,
       newFieldTypes: [
@@ -580,8 +581,8 @@ export default {
     filteredCompanyObjectTypes () {
       if (this.smartlist.id) {
         let objectTypeIds = []
-        if ([1, 2, 4].includes(this.smartlist.objectTypeId)) {
-          objectTypeIds = [1, 2, 4]
+        if ([1, 2, 4, 6].includes(this.smartlist.objectTypeId)) {
+          objectTypeIds = [1, 2, 4, 6]
         } else {
           objectTypeIds = [3, 5]
         }
@@ -652,6 +653,8 @@ export default {
         if (this.newField.objectTypeId === 4) {
           this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
           this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
+        } else if (this.newField.objectTypeId === 6) {
+          // this.availableEvents = data.reduce((fields, field) => )
         } else {
           this.calculateAvailableFields()
         }
