@@ -136,13 +136,13 @@
           <v-spacer/>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule]">
+              <v-btn text v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
                 <v-icon>edit</v-icon>
               </v-btn>
               <v-btn text class="" v-else @click="saveType()">
                 <v-icon>save</v-icon>
               </v-btn>
-              <v-btn text v-if="editSchedule" class="" @click="[editSchedule = !editSchedule]">
+              <v-btn text v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
                 cancel
               </v-btn>
             </div>
@@ -169,16 +169,15 @@
 
                   <ZonelessTimePickerInput
                     v-model="item.startTime"
-                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
                     :allowed-minutes="allowedMinutesStep"
                     :hide-details="true"
-
                     @click="item.invalid = false"
                     label="Open"
                   />
                   <ZonelessTimePickerInput
                     v-model="item.endTime"
-                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
                     :allowed-minutes="allowedMinutesStep"
                     :hide-details="true"
                     @click="item.invalid = false"
@@ -411,6 +410,7 @@ export default {
         {day: 'Friday', startTime: '07:00', endTime: '22:00', selected: true},
         {day: 'Saturday', startTime: '07:00', endTime: '22:00', selected: true}
       ],
+      prevSchedule: [],
       cardColorToggle: true
     }
   },
@@ -649,6 +649,9 @@ export default {
       else {
         this.workQueueType.schedule = this.noScheduleDefault;
       }
+    },
+    savePrevSchedule() {
+      this.prevSchedule = JSON.parse(JSON.stringify(this.workQueueType.schedule));
     }
   },
 

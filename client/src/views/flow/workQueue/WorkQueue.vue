@@ -44,8 +44,8 @@
                            label="Change in WIP"
                            :value="2"
                            :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
-                  <span @click="showMetricsDialog = true" class="learn-span">Learn more about work queue metrics</span>
                 </v-radio-group>
+                <span @click="showMetricsDialog = true" class="learn-span">Learn more about work queue metrics</span>
               </div>
             </v-col>
             <v-col cols="12" md="6" class="py-0 future-follow-ups-column">
@@ -529,6 +529,7 @@ export default {
 .learn-span {
   color: var(--v-primaryCustom-base);
   font-weight: bold;
+  margin-top: 20px;
 }
 
 .wq-metrics-dialog {
