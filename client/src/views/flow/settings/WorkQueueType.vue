@@ -402,7 +402,7 @@ export default {
         {day: 'Saturday', startTime: null, endTime: null, selected: true}
       ],
       hoursDefaultSchedule: [
-        {day: 'Sunday', startTime: '07:00', endTime: '22:00', selected: false},
+        {day: 'Sunday', startTime: null, endTime: null, selected: false},
         {day: 'Monday', startTime: '07:00', endTime: '22:00', selected: true},
         {day: 'Tuesday', startTime: '07:00', endTime: '22:00', selected: true},
         {day: 'Wednesday', startTime: '07:00', endTime: '22:00', selected: true},
