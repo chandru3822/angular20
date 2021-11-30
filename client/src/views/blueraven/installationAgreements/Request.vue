@@ -98,7 +98,7 @@
                 <v-checkbox label="Send Spanish Installation Agreement"
                             v-model="requestItem.isSpanish"
                 ></v-checkbox>
-                <v-checkbox label="Send Finance Docs (Loan Products Only)"
+                <v-checkbox label="Send Finance Docs (Finance Products Only)"
                             v-model="requestItem.sendLoanDocs"
                 ></v-checkbox>
               </v-col>
