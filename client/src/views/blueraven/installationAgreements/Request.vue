@@ -82,7 +82,7 @@
                 </div>
 
                 <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
-                  Loan Application
+                  Finance Application
                 </v-btn>
               </v-col>
               <v-col>
@@ -98,7 +98,7 @@
                 <v-checkbox label="Send Spanish Installation Agreement"
                             v-model="requestItem.isSpanish"
                 ></v-checkbox>
-                <v-checkbox label="Send Loan Docs (Loan Products Only)"
+                <v-checkbox label="Send Finance Docs (Loan Products Only)"
                             v-model="requestItem.sendLoanDocs"
                 ></v-checkbox>
               </v-col>
@@ -272,7 +272,7 @@ export default {
       } catch (e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
         if (e?.data?.message.includes('locate')) {
-          this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a loan application for this project')
+          this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a finance application for this project')
         } else {
           this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
         }
@@ -284,8 +284,8 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         if (!this.requestItem.proposalNbr) {
-          console.error('*** ERROR ***', 'Error: Unable to generate Loan application without Proposal Number')
-          this.snackbar = getSnackbar('ERROR', 'Unable to generate Loan application without Proposal Number')
+          console.error('*** ERROR ***', 'Error: Unable to generate Finance application without Proposal Number')
+          this.snackbar = getSnackbar('ERROR', 'Unable to generate Finance application without Proposal Number')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
           return
@@ -302,7 +302,7 @@ export default {
         if (e.data.message != null) {
           this.snackbar = getSnackbar('ERROR', e.data.message)
         } else {
-          this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
+          this.snackbar = getSnackbar('ERROR', 'Error generating Finance Application')
         }
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }

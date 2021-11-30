@@ -634,6 +634,12 @@ export default {
     toggleSelection(item) {
       // If Weeks is selected, do not allow days to be selected/unselected
       if (this.editSchedule && this.workQueueType.expectedCycleDurationTypeId != 3) {
+        // If day is being unselected, remove the hours configured
+        if (item.selected) {
+          item.startTime = null;
+          item.endTime = null;
+        }
+
         item.selected = !item.selected;
         item.invalid = false;
         this.$forceUpdate();
