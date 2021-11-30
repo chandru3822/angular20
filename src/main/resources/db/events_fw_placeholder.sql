@@ -15,8 +15,8 @@ insert into flow.object_type(object_type, object_code, flow_type_id, archived)
 -- have to drop this because more has to be returned in the table
 drop function if exists flow.get_availability_time_slots(int, timestamp, timestamp, date, boolean);
 
-insert into flow.feature(feature_name, feature_code, is_system)
-  (select 'Events', 'EVENTS', true  where not exists(select id from flow.feature where feature_code = 'EVENTS'));
+insert into flow.feature(feature_name, feature_code)
+  (select 'Events', 'EVENTS'  where not exists(select id from flow.feature where feature_code = 'EVENTS'));
 
 insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
   (select 'Events', 3, (select id from flow.feature where feature_code = 'EVENTS'), false
@@ -31,7 +31,7 @@ insert into flow.feature_access_control(feature_id, access_control_id, created_b
        where feature_id = (select id from flow.feature where feature_code = 'EVENTS')
          and access_control_id = ac.id
      )
-    and ac.id not in (6, 4, 7)
+    and ac.id not in (6, 4, 7, 5)
   );
 
 insert into flow.company_object_type(object_type_id, company_id, created_by_id)
@@ -891,3 +891,9 @@ create index pdec_company_id_idx
   on brs.project_detail_events_config (company_id);
 
 
+drop FUNCTION if exists brs.set_project_owner(int);
+
+insert into flow.system_value(system_value, archived)
+  (select 'Current Project Process Step Event ID', false
+   from flow.system_value
+   where not exists (select id from flow.system_value where system_value = 'Current Project Process Step Event ID'));
