@@ -314,7 +314,18 @@
             />
 
             <v-autocomplete
-              v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
+              v-if="newField.objectTypeId !== null && newField.objectTypeId === 6"
+              v-model="newField.eventId"
+              label="Event"
+              :items="availableEvents"
+              item-value="eventId"
+              item-text="eventName"
+              @input="calculateAvailableFields"
+              attach
+            />
+
+            <v-autocomplete
+              v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId === 6 && newField.eventId) || (newField.objectTypeId != null && ![4, 6].includes(newField.objectTypeId))"
               v-model="newField.selectedField"
               label="Field"
               :items="availableFields"
@@ -654,7 +665,8 @@ export default {
           this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
           this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
         } else if (this.newField.objectTypeId === 6) {
-          // this.availableEvents = data.reduce((fields, field) => )
+          this.availableEvents = data.reduce((fields, field) => (field.eventId ===  null || fields.find(f => f.eventName === field.eventName)) ? [...fields] : [...fields, field], [])
+          this.availableEvents = this.availableEvents.sort((a, b) => a.eventName.localeCompare(b.eventName))
         } else {
           this.calculateAvailableFields()
         }
@@ -688,6 +700,8 @@ export default {
       this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
       if (this.newField.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
+      } else if (this.newField.eventId) {
+        this.availableFields = this.availableFields.filter(field => field.eventId === this.newField.eventId || field.smartlistFieldId !== null)
       }
 
       this.availableFields = this.availableFields.filter(f => {
@@ -696,6 +710,8 @@ export default {
         } else {
           if (this.newField.processStepId) {
             return !this.assignedFields.filter(a => a.processStepId === this.newField.processStepId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+          } else if (this.newField.eventId) {
+            return !this.assignedFields.filter(a => a.eventId === this.newField.eventId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
           } else {
             return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
           }
