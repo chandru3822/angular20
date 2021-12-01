@@ -746,7 +746,8 @@ export default {
           smartlistId: this.smartlist.id,
           displayOrder: this.assignedFields.length + 1,
           processStepId: this.newField.processStepId || null,
-          projectDetailsColumn: this.newField.projectDetailsColumn
+          projectDetailsColumn: this.newField.projectDetailsColumn,
+          eventId: this.newField.eventId || null
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()

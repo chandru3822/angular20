@@ -510,8 +510,8 @@ where
 ]]></smartlist.getAssignedFieldById>
 
 <smartlist.addField><![CDATA[
-insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified)
-values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :createdById, now(), :createdById, now())
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, event_id, created_by_id, date_created, modified_by_id, date_modified)
+values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :eventId, :createdById, now(), :createdById, now())
 returning id;
 ]]></smartlist.addField>
 
