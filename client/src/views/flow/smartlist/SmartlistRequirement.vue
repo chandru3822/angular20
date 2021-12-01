@@ -67,7 +67,18 @@
         />
 
         <v-autocomplete
-          v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId !== 4 && newRequirement.objectTypeId != null)"
+          v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 6"
+          v-model="newRequirement.eventId"
+          label="Event"
+          :items="availableEvents"
+          item-value="eventId"
+          item-text="eventName"
+          @input="[resetNewProcessStep(), calculateAvailableFields()]"
+          attach
+        />
+
+        <v-autocomplete
+          v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId === 6 && newRequirement.eventId) || (newRequirement.objectTypeId != null && ![4, 6].includes(newRequirement.objectTypeId))"
           v-model="newRequirement.selectedField"
           label="Field"
           :items="availableFields"
@@ -263,6 +274,16 @@
             />
 
             <v-autocomplete
+              v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 6"
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Event"
+              item-text="eventName"
+              disabled
+              attach
+            />
+
+            <v-autocomplete
               v-model="expandedRequirement"
               :items="[expandedRequirement]"
               label="Field"
@@ -366,6 +387,7 @@ const newRequirementStructure = {
   selectedField: null,
   objectTypeId: null,
   processStepId: null,
+  eventId: null,
   operatorTypeId: null,
   dataTypeRequirementId: null,
   requirementValue: null,
@@ -422,6 +444,7 @@ export default {
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
+      availableEvents: [],
       operators: [],
       dataTypeRequirements: [],
       headers: [
@@ -504,6 +527,9 @@ export default {
         if (this.newRequirement.objectTypeId === 4) {
           this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
           this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
+        } else if (this.newRequirement.objectTypeId === 6) {
+          this.availableEvents = data.reduce((fields, field) => (field.eventId ===  null || fields.find(f => f.eventName === field.eventName)) ? [...fields] : [...fields, field], [])
+          this.availableEvents = this.availableEvents.sort((a, b) => a.eventName.localeCompare(b.eventName))
         } else {
           this.calculateAvailableFields()
         }
@@ -616,7 +642,8 @@ export default {
       this.$emit('input', {
         ...this.newRequirement,
         ...this.newRequirement.selectedField,
-        'processStepId': this.newRequirement.processStepId
+        processStepId: this.newRequirement.processStepId,
+        eventId: this.newRequirement.eventId
       })
     },
     updateRequirement (requirement) {
@@ -638,6 +665,8 @@ export default {
       this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
       if (this.newRequirement.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newRequirement.processStepId || field.smartlistFieldId !== null)
+      } else if (this.newRequirement.eventId) {
+        this.availableFields = this.availableFields.filter(field => field.eventId === this.newRequirement.eventId || field.smartlistFieldId !== null)
       }
     },
     resetRequirementForm () {

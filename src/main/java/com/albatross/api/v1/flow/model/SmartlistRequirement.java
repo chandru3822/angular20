@@ -13,11 +13,11 @@ public class SmartlistRequirement {
 
   //@TODO humes: should probably make this have a field of type SmartlistField since it uses most of those fields anyways
 
-  private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
+  private Long id, smartlistId, smartlistFieldId, processStepId, eventId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
                dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, systemListId, listOfValueId, systemListOptionId, customSqlOptionId,
                smartlistSystemListId, companyId;
 
-  private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name, customFieldSqlKey, projectDetailsColumn;
+  private String requirementValue, secondaryRequirementValue, processStepName, eventName, objectType, operatorType, name, customFieldSqlKey, projectDetailsColumn;
 
   private Timestamp dateCreated, dateModified;
 

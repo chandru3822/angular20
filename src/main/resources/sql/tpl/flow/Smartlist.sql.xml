@@ -537,6 +537,7 @@ where id = :id;
 select sr.id,
        sr.smartlist_id,
        sr.process_step_id,
+       sr.event_id,
        sr.custom_field_group_assignment_id,
        sr.operator_type_id,
        sr.requirement_value,
@@ -574,6 +575,7 @@ select sr.id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
+       e.event_name,
        case when sr.project_details_column is not null then
          pdc.display_name else
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
@@ -633,6 +635,7 @@ left join flow.object_type ot on ot.id =  cot.object_type_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
 inner join flow.operator_type opt on opt.id = sr.operator_type_id
 left join flow.process_step ps1 on ps1.id = sr.process_step_id
+left join flow.event e on e.id = sr.event_id
 left join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.company_system_list csl on csl.id = cf.company_system_list_id
@@ -654,6 +657,7 @@ where sr.id = :requirementId and
 select sr.id,
        sr.smartlist_id,
        sr.process_step_id,
+       sr.event_id,
        sr.custom_field_group_assignment_id,
        sr.operator_type_id,
        sr.requirement_value,
@@ -691,6 +695,7 @@ select sr.id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
+       e.event_name,
        case when sr.project_details_column is not null then
          pdc.display_name else
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
@@ -819,6 +824,7 @@ left join flow.object_type ot on ot.id =  cot.object_type_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
 inner join flow.operator_type opt on opt.id = sr.operator_type_id
 left join flow.process_step ps1 on ps1.id = sr.process_step_id
+left join flow.event e on e.id = sr.event_id
 left join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.company_system_list csl on csl.id = cf.company_system_list_id
@@ -838,8 +844,8 @@ order by sr.display_order;
 ]]></smartlist.getRequirements>
 
 <smartlist.addRequirement><![CDATA[
-insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified)
-values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :userId, now(), :userId, now())
+insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, event_id, created_by_id, date_created, modified_by_id, date_modified)
+values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :eventId, :userId, now(), :userId, now())
 returning id;
 ]]></smartlist.addRequirement>
 
