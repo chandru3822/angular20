@@ -1761,7 +1761,7 @@
       async deleteRequirement(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`, null, [])
+          const {data, status} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`, null, null,[])
           if (data?.length > 0) {
             this.deleteError = true
             item.deleteConfirm = false
