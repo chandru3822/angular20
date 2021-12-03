@@ -2,6 +2,8 @@ package com.albatross.api.v1.flow.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * Created by Joseph Canto on 2019-08-01.
  */
@@ -13,6 +15,7 @@ public class WorkQueueType {
       shortWindowDurationTypeId, expectedCycle, expectedCycleDurationTypeId;
     private String workQueueType, workQueueCategory, workQueueCategoryColor,
       longWindowDurationType, shortWindowDurationType, expectedCycleDurationType;
+    private List<WorkQueueTypeSchedule> schedule;
     private Double expectedTarget;
     private Boolean archived, inverseExpectation;
 }

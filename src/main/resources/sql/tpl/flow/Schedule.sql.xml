@@ -111,8 +111,10 @@
                  then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                else ps.company_id = :companyId end
       and ps.archived is not true
-      and cpsst.process_step_status_type_id != 3 --include active and complete, not cancelled  process steps
-      and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
+      and case when pps.cancelled_date is null --pps.cancelled_date is a new column so we have to check it for now
+           then cpsst.process_step_status_type_id != 3 --dont include cancelled  process steps
+           else pps.cancelled_date >= st.timestamp_value::timestamp end  -- cancelled_date > start time means it was cancelled AFTER the appt and so we want to show it. cancelled_date < start time means cancelled before start time and dont want to show it ....right??
+      and (p.cancelled_date is null or p.cancelled_date >= st.timestamp_value::timestamp) --Only remove an appointment if the project was cancelled prior to the appointment start time (it currently pulls off all cancelled projects)
       and ppse.resource_id is not null
       and ppse.resource_id = any(array[ :combined ]::int[])
   ]]></schedule.getEvents>
@@ -121,11 +123,6 @@
     select *
     from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::int[], array[ :userIds ]::int[]);
  ]]></schedule.getAvailability>
-
-  <schedule.getCloserAvailability><![CDATA[
-    select *
-    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :postalCodeZoneUserIds ]::int[]);
- ]]></schedule.getCloserAvailability>
 
   <schedule.getProjects><![CDATA[
         select

@@ -14,7 +14,7 @@ import java.util.List;
 public class CompanyFunction {
 
   private Long id, dbFunctionId, returnDataTypeId, dbFunctionTypeId, companyId;
-  private String companyFunctionName, companyName;
+  private String companyFunctionName, companyName, description;
   private Boolean archived;
   private List<CompanyFunctionParam> companyFunctionParams;
 }

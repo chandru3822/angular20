@@ -97,6 +97,7 @@
                       v-model="workQueueType.expectedCycleDurationTypeId"
                       :items="durationTypes"
                       label="Expected Cycle Duration Type"
+                      @change="expectedCycleDurationChange()"
                       :disabled="!editType"
                       item-text="durationType"
                       item-value="id"
@@ -126,6 +127,68 @@
           </v-form>
         </div>
         <v-divider></v-divider>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" class="pt-0">
+        <v-toolbar color="transparent" class="elevation-0">
+          <v-toolbar-title>Set Queue Schedule</v-toolbar-title>
+          <v-spacer/>
+          <v-toolbar-items>
+            <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
+              <v-btn text v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
+                <v-icon>edit</v-icon>
+              </v-btn>
+              <v-btn text class="" v-else @click="saveType()">
+                <v-icon>save</v-icon>
+              </v-btn>
+              <v-btn text v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
+                cancel
+              </v-btn>
+            </div>
+
+            <v-btn
+              v-if="showNewFieldForm"
+              text
+              @click="resetNewFieldForm"
+            >
+              Cancel
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+
+        <v-col class="text-left">
+          <template>
+            <v-row>
+              <v-card flat tile v-for="item in workQueueType.schedule" class="flex-display  card-main"
+                      width="165" height="165">
+                <v-card-text class="pa-0"
+                             @click="toggleSelection(item)"
+                             :class="[{'schedule-error': item.invalid}, {'schedule-selected': (!item.invalid && item.selected)}]">
+                  <h4>{{item.day}}</h4>
+
+                  <ZonelessTimePickerInput
+                    v-model="item.startTime"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
+                    :allowed-minutes="allowedMinutesStep"
+                    :hide-details="true"
+                    @click="item.invalid = false"
+                    label="Open"
+                  />
+                  <ZonelessTimePickerInput
+                    v-model="item.endTime"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
+                    :allowed-minutes="allowedMinutesStep"
+                    :hide-details="true"
+                    @click="item.invalid = false"
+                    label="Close"
+                  />
+
+                </v-card-text>
+              </v-card>
+            </v-row>
+          </template>
+        </v-col>
       </v-col>
     </v-row>
     <v-row>
@@ -284,17 +347,20 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import draggable from 'vuedraggable'
+import ZonelessTimePickerInput from "./availability/ZonelessTimePickerInput";
 
 export default {
   name: 'WorkQueueType',
   mixins: [Vue2Filters.mixin],
   components: {
-    draggable
+    draggable,
+    ZonelessTimePickerInput
   },
   data() {
     return {
       snackbar: {},
       editType: false,
+      editSchedule: false,
       constants,
       newField: {},
       showNewFieldForm: false,
@@ -315,7 +381,37 @@ export default {
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'),
+      allowedMinutesStep: m => m % 60 === 0,
+      noScheduleDefault: [
+        {day: 'Sunday', startTime: null, endTime: null, selected: false},
+        {day: 'Monday', startTime: null, endTime: null, selected: false},
+        {day: 'Tuesday', startTime: null, endTime: null, selected: false},
+        {day: 'Wednesday', startTime: null, endTime: null, selected: false},
+        {day: 'Thursday', startTime: null, endTime: null, selected: false},
+        {day: 'Friday', startTime: null, endTime: null, selected: false},
+        {day: 'Saturday', startTime: null, endTime: null, selected: false}
+      ],
+      daysDefaultSchedule: [
+        {day: 'Sunday', startTime: null, endTime: null, selected: false},
+        {day: 'Monday', startTime: null, endTime: null, selected: true},
+        {day: 'Tuesday', startTime: null, endTime: null, selected: true},
+        {day: 'Wednesday', startTime: null, endTime: null, selected: true},
+        {day: 'Thursday', startTime: null, endTime: null, selected: true},
+        {day: 'Friday', startTime: null, endTime: null, selected: true},
+        {day: 'Saturday', startTime: null, endTime: null, selected: true}
+      ],
+      hoursDefaultSchedule: [
+        {day: 'Sunday', startTime: null, endTime: null, selected: false},
+        {day: 'Monday', startTime: '07:00', endTime: '22:00', selected: true},
+        {day: 'Tuesday', startTime: '07:00', endTime: '22:00', selected: true},
+        {day: 'Wednesday', startTime: '07:00', endTime: '22:00', selected: true},
+        {day: 'Thursday', startTime: '07:00', endTime: '22:00', selected: true},
+        {day: 'Friday', startTime: '07:00', endTime: '22:00', selected: true},
+        {day: 'Saturday', startTime: '07:00', endTime: '22:00', selected: true}
+      ],
+      prevSchedule: [],
+      cardColorToggle: true
     }
   },
   computed: {},
@@ -364,6 +460,9 @@ export default {
       try {
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueueType = data
+        if (this.workQueueType.schedule.length < 1) {
+          this.workQueueType.schedule = this.noScheduleDefault;
+        }
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -386,12 +485,13 @@ export default {
       }
     },
     async saveType() {
-      if (this.$refs.wqtForm.validate()) {
+      if (this.$refs.wqtForm.validate() && this.validateSchedule()) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await putRequest(`/workQueueType/type`, this.workQueueType)
           this.workQueueType = data
           this.editType = false
+          this.editSchedule = false
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
@@ -502,7 +602,63 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    validateSchedule() {
+      let invalidDate = false;
+      // Only validate if Hours is selected
+      if (this.workQueueType.expectedCycleDurationTypeId != 2) {
+        debugger;
+        return true;
+      }
 
+      for (const dayOfWeek of this.workQueueType.schedule) {
+        if (dayOfWeek.selected) {
+          if (dayOfWeek.startTime == null || dayOfWeek.endTime == null) {
+            invalidDate = true;
+            dayOfWeek.invalid = true
+            this.$forceUpdate();
+          }
+          else {
+            dayOfWeek.invalid = false
+          }
+        }
+      }
+
+      if (invalidDate) {
+        this.snackbar = getSnackbar('ERROR', 'Invalid schedule: All selected days must have a start and end time')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        return false;
+      }
+
+      return true;
+    },
+    toggleSelection(item) {
+      // If Weeks is selected, do not allow days to be selected/unselected
+      if (this.editSchedule && this.workQueueType.expectedCycleDurationTypeId != 3) {
+        // If day is being unselected, remove the hours configured
+        if (item.selected) {
+          item.startTime = null;
+          item.endTime = null;
+        }
+
+        item.selected = !item.selected;
+        item.invalid = false;
+        this.$forceUpdate();
+      }
+    },
+    expectedCycleDurationChange() {
+      if (this.workQueueType.expectedCycleDurationTypeId == 1) {
+        this.workQueueType.schedule = this.daysDefaultSchedule;
+      }
+      else if (this.workQueueType.expectedCycleDurationTypeId == 2) {
+        this.workQueueType.schedule = this.hoursDefaultSchedule;
+      }
+      else {
+        this.workQueueType.schedule = this.noScheduleDefault;
+      }
+    },
+    savePrevSchedule() {
+      this.prevSchedule = JSON.parse(JSON.stringify(this.workQueueType.schedule));
+    }
   },
 
 
@@ -523,5 +679,25 @@ export default {
 .wqt-buttons {
   display: flex;
   align-items: center;
+}
+
+.schedule-selected {
+  border: solid 6px var(--v-primary-base);
+  border-color: #1F3C73!important;
+}
+
+.schedule-error {
+  border: solid 6px var(--v-primary-base);
+  border-color: red !important;
+}
+
+.card-main {
+  /* @click adds the pointer but i didnt want the pointer on count == 0 */
+  cursor: default;
+  text-align: center;
+  border-radius: 11px !important;
+  margin-right: 5px;
+  margin-left: 5px;
+  border: 2px solid #DBE0E3;
 }
 </style>

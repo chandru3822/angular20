@@ -30,6 +30,9 @@
           <v-list-item v-if="dbFunction.dbFunctionTypeId === 2">
             <v-list-item-title>Run in Backend: <strong>{{dbFunction.runInBackend}}</strong></v-list-item-title>
           </v-list-item>
+          <v-list-item>
+            <v-list-item-title>Description: <strong>{{dbFunction.description || 'N/A'}}</strong></v-list-item-title>
+          </v-list-item>
         </v-list>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add New Param</h3>

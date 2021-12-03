@@ -408,12 +408,13 @@
       getProcessStep: async function () {
         this.processStepLoading = true
         try {
-          const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
+          const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           this.processStepLoading = false
           this.getAvailableStatuses()
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
+          return {data, status}
         } catch (e) {
           logError(e)
         } finally {

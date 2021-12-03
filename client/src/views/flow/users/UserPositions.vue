@@ -303,7 +303,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getOrgFilters()
-          this.filters = data
+          this.filters = data || []
           this.populateHeaders()
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -340,7 +340,7 @@
       async getUserPositions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/userPosition/${this.userId}`)
+          const {data, status} = await getRequest(`/userPosition/${this.userId}`, null, [])
           this.userPositions = data
           this.userPositions.forEach((p) => {
             p.keyedHierarchy = keyBy(p.hierarchy, 'orgLevelId')

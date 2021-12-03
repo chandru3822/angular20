@@ -6,7 +6,7 @@ export async function getCompanyStatusTypes(projectId, projectProcessStepId) {
       projectId,
       projectProcessStepId
     }
-    const {data} = await getRequestWithParams(`/processStep/status/company`, { params })
+    const {data, status} = await getRequestWithParams(`/processStep/status/company`, { params })
     return {data, status}
   } catch (e) {
     throw e
@@ -15,7 +15,7 @@ export async function getCompanyStatusTypes(projectId, projectProcessStepId) {
 
 export async function getAvailableForProcessStep(processStepId) {
   try {
-    const {data} = await getRequest(`/processStep/status/company/availableForProcessStep/${processStepId}`)
+    const {data, status} = await getRequest(`/processStep/status/company/availableForProcessStep/${processStepId}`)
     return {data, status}
   } catch (e) {
     throw e
@@ -24,7 +24,7 @@ export async function getAvailableForProcessStep(processStepId) {
 
 export async function getActiveAssignedToProcessStep(processStepId) {
   try {
-    const {data} = await getRequest(`/processStep/status/company/activeAssignedToProcessStep/${processStepId}`)
+    const {data, status} = await getRequest(`/processStep/status/company/activeAssignedToProcessStep/${processStepId}`)
     return {data, status}
   } catch (e) {
     throw e
@@ -33,7 +33,7 @@ export async function getActiveAssignedToProcessStep(processStepId) {
 
 export async function getAssignedToProcessStep(processStepId) {
   try {
-    const {data} = await getRequest(`/processStep/status/company/assignedToProcessStep/${processStepId}`)
+    const {data, status} = await getRequest(`/processStep/status/company/assignedToProcessStep/${processStepId}`, null, [])
     return {data, status}
   } catch (e) {
     throw e
@@ -42,7 +42,7 @@ export async function getAssignedToProcessStep(processStepId) {
 
 export async function getCancelledCompanyStatusTypesAssignedToProcessStep(processStepId) {
   try {
-    const {data} = await getRequestWithParams(`/processStep/status/company/cancelledAssignedToProcessStep/${processStepId}`)
+    const {data, status} = await getRequestWithParams(`/processStep/status/company/cancelledAssignedToProcessStep/${processStepId}`)
     return {data, status}
   } catch (e) {
     throw e
@@ -55,7 +55,7 @@ export async function getCancelledCompanyStatusTypes(projectId, projectProcessSt
       projectId,
       projectProcessStepId
     }
-    const {data} = await getRequestWithParams(`/processStep/status/company/cancelled`, { params })
+    const {data, status} = await getRequestWithParams(`/processStep/status/company/cancelled`, { params })
     return {data, status}
   } catch (e) {
     throw e
@@ -69,7 +69,7 @@ export async function getStatusTypes(projectId, projectProcessStepId) {
       projectId,
       projectProcessStepId
     }
-    const {data} = await getRequestWithParams(`/processStep/status`, { params }, null, [])
+    const {data, status} = await getRequestWithParams(`/processStep/status`, { params }, null, [])
     return {data, status}
   } catch (e) {
     throw e

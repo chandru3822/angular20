@@ -4,11 +4,12 @@ CREATE OR REPLACE FUNCTION brs.limit_by_org_for_setters(p_user_ids integer[], p_
 AS $function$
     BEGIN
         RETURN (select array(
-            select up.user_id
+            select distinct up.user_id
             from flow.user_position up
-            where up.position_id in (4,5) --(Setter, Setter Manager)
+            where up.position_id in (4,5,573,6,73) --(Setter, Setter Manager)
                 and up.org_id is not null
-                and up.org_id = any(p_org_ids)
+                and case when ARRAY_LENGTH( p_org_ids, 1 ) > 1 then
+                           up.org_id = any(p_org_ids) else 1=1 end
                 and up.user_id = any(p_user_ids)
                 and case when up.end_date is not null then
                     p_date_created between up.start_date and up.end_date

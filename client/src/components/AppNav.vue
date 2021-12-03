@@ -203,7 +203,7 @@ export default {
         } else {
           url = `/companies/assignedToUser`
         }
-        const {data} = await getRequest(url)
+        const {data} = await getRequest(url, null, [])
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
         this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId) || {}

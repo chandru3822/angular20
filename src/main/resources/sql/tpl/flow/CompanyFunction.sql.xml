@@ -30,6 +30,7 @@
 
   <companyFunction.getFunctionDetails><![CDATA[
     select cf.*,
+           df.description,
            coalesce((
                 SELECT array_to_json(array_agg(row_to_json(params)))
                 FROM (
