@@ -218,6 +218,9 @@ create index if not exists pse_initial_company_event_status_type_id_idx
   on flow.process_step_event (initial_company_event_status_type_id);
 create index if not exists pse_unique_behavior_type_id_idx
   on flow.process_step_event (unique_behavior_type_id);
+create unique index if not exists pse_process_step_id_event_id_udx
+  on flow.process_step_event (process_step_id, event_id)
+  where archived is false;
 
 CREATE TABLE if not exists flow.project_process_step_event
 (
