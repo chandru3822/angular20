@@ -109,4 +109,4 @@ jobs:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
           NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
+      - run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
