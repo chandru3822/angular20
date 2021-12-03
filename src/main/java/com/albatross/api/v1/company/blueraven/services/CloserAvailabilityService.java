@@ -21,7 +21,6 @@ public class CloserAvailabilityService {
 
   private final SqlCache sqlCache;
 
-  //yes i know this is a brs specific endpoint in the flow code. i just cant
   public String getBrsCloserAvailability(CloserAvailabilityController.EventSearchParams esp) {
     HashMap<String, Object> params = new HashMap<>();
 
