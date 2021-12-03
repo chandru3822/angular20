@@ -45,7 +45,7 @@
                            :value="2"
                            :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
                 </v-radio-group>
-                <span @click="showMetricsDialog = true" class="learn-span">Learn more about work queue metrics</span>
+                <span @click="trackButton" class="learn-span">Learn more about work queue metrics</span>
               </div>
             </v-col>
             <v-col cols="12" md="6" class="py-0 future-follow-ups-column">
@@ -147,7 +147,7 @@
 
     <v-dialog v-model="showMetricsDialog" max-width="330" class="wq-metrics-dialog">
       <v-card>
-        <span align="left" class="flex-display wq-metrics-dialog-text pl-4">
+        <span class="flex-display wq-metrics-dialog-text pl-4">
           Thank you for your interest! More<br>
           information about work queue metrics,<br>
           what they mean, and when they are<br>
@@ -164,7 +164,6 @@
   </v-container>
 </template>
 
-
 <script>
 import {AppMutations} from '@/stores/AppStore'
 
@@ -175,15 +174,11 @@ import {
   getRequest,
   isLightColor,
   getRequestWithParams,
-  deleteRequest,
-  putRequest,
-  postRequest,
   getSnackbar
 } from '@/helpers/helpers'
 
 export default {
   name: 'WorkQueue',
-
   data() {
     return {
       snackbar: {},
@@ -291,6 +286,13 @@ export default {
     },
     getBorder(wq) {
       return `solid 1px ${wq.color}`
+    },
+    trackButton(){
+      this.$gtag.event('learn-work-queue-metrics', {
+        event_category: 'click',
+        event_label: 'Learn About Work Queue Metrics'
+      })
+      this.showMetricsDialog = true
     }
   },
 
@@ -530,6 +532,7 @@ export default {
   color: var(--v-primaryCustom-base);
   font-weight: bold;
   margin-top: 20px;
+  cursor: pointer;
 }
 
 .wq-metrics-dialog {
