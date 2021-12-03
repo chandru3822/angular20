@@ -75,7 +75,7 @@ jobs:
       steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
-        name: Deploy Site
+        name: Setup Node
         with:
           node-version: '12'
           cache: 'npm'
@@ -83,6 +83,7 @@ jobs:
 
     # Deploy the site with netlify-cli
       - run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
+        name: Deploy Site
         env:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
           NETLIFY_SITE_ID: ${{ secrets.STAGE_NETLIFY_SITE_ID }}
