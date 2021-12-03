@@ -6,6 +6,7 @@ $$
 BEGIN
   return query SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                FROM (
+                      --this portion is for personal appts
                       with dates as (
                         select p_start_time::date + d.date                   as date,
                                extract(dow from p_start_time::date + d.date) as day_of_week_id
@@ -31,6 +32,7 @@ BEGIN
                         and pczu.id = any (p_postal_code_zone_user_ids)
 
                       union all
+                      --this portion is for slot schedules
                       select pczu.id                                                                 as "resourceId",
                              ((concat(d.date, ' ', rst.start_time))::timestamp at time zone t.timezone) as "start",
                              ((concat(d.date, ' ', rst.end_time))::timestamp at time zone t.timezone)   as "end",

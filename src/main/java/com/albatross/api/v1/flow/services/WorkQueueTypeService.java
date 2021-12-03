@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -54,7 +55,7 @@ public class WorkQueueTypeService {
   public Optional<WorkQueueType> getType(Long id) {
     return sqlCache.get("workQueueType.getType",
         ImmutableMap.of("id", id),
-        WorkQueueType.class);
+        new WorkQueueTypeMapper<>(WorkQueueType.class, om));
   }
 
   public void deleteType(Long typeId) {
@@ -83,7 +84,7 @@ public class WorkQueueTypeService {
     params.put("expectedCycleDurationTypeId", type.getExpectedCycleDurationTypeId() );
     params.put("inverseExpectation", null != type.getInverseExpectation() ? type.getInverseExpectation() : false );
     params.put("expectedTarget", type.getExpectedTarget() );
-
+    params.put("schedule", type.getSchedule().toString() );
     sqlCache.update("workQueueType.updateType", params);
 
     return getType(type.getId());
@@ -238,6 +239,23 @@ public class WorkQueueTypeService {
       TypeReference<List<WorkQueueTypeProcessStepStatus>> processStepStatusesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepStatuses",
         new JsonCollectionDeserializer(processStepStatusesRef, objectMapper));
+    }
+  }
+
+  public static class WorkQueueTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public WorkQueueTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<WorkQueueTypeSchedule>> wrkQueueTypeScheduleRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "schedule",
+        new JsonCollectionDeserializer(wrkQueueTypeScheduleRef, objectMapper));
     }
   }
 

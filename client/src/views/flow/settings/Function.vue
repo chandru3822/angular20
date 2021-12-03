@@ -3,9 +3,13 @@
     <v-row>
       <v-col cols="12">
         <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-        <v-toolbar class="testing elevation-1">
+        <v-toolbar class="elevation-1 testing">
           <v-toolbar-title class="app-title">{{ details.companyFunctionName }}</v-toolbar-title>
         </v-toolbar>
+        <v-card class="square-card pa-4 elevation-1" v-if="details.description">
+          <strong>Description:</strong> <br/>
+          {{details.description}}
+        </v-card>
 
         <v-data-table
             :headers="headers"
@@ -233,3 +237,9 @@
     }
   }
 </script>
+
+<style scoped lang="scss">
+.testing {
+  margin-bottom: 2px;
+}
+</style>
