@@ -604,7 +604,7 @@
       },
       async userCanScheduleLeadAllocation() {
         //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-        if (this.userIsScheduler) {
+        if (this.userIsScheduler && this.project?.postalCode) {
           this.schedulerLoading = true
           try {
             const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
@@ -612,6 +612,7 @@
                 postalCode: this.project.postalCode
               }
             })
+            // const {data} = await getRequest(`/postalCode/zone/userCanSchedule`)
             this.schedulerCanEdit = data
           } catch (e) {
             logError(e)

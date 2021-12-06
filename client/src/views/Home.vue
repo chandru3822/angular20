@@ -79,9 +79,12 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/feature/homePages`)
-        this.homePages = data.filter(d => {
-          return this.$store.getters.userHasFeature(d.featureCode)
-        })
+        if (status) {
+          console.log('run it!')
+          this.homePages = data.filter(d => {
+            return this.$store.getters.userHasFeature(d.featureCode)
+          })
+        }
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

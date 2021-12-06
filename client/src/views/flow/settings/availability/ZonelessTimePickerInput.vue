@@ -26,6 +26,7 @@
   <v-time-picker
     v-model="localValue"
     :allowed-minutes="allowedMinutes"
+    @change="change"
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
@@ -46,6 +47,7 @@ export default {
     hideDetails: Boolean,
     //if this is empty it shows all minutes
     allowedMinutes: Function,
+    change: Function,
     readonly: {
       type: Boolean,
       default: false

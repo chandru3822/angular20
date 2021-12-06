@@ -243,6 +243,23 @@
         return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Pitches - Q' + this.selectedQuarter
       },
     },
+    /* INCENTIVE-RELATED CODE END */
+    async created() {
+      this.currentUserId = this.$store.state.user.details.id
+
+      let userPositions = this.$store.state.user.details.userPositions
+
+      if (userPositions?.length > 0) {
+        this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+        this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
+        this.isSetter = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+        this.isSetterMgr = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+        this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+      }
+
+      await this.loadIncentive()
+
+    },
     watch: {},
     methods: {
       resetScrollBarPosition() {
@@ -414,26 +431,6 @@
       closeMilestoneDialog() {
         this.milestoneDialog = false
         this.resetScrollBarPosition()
-      },
-      /* INCENTIVE-RELATED CODE END */
-
-      async created() {
-        this.currentUserId = this.$store.state.user.details.id
-
-        let userPositions = this.$store.state.user.details.userPositions
-
-        if (userPositions?.length > 0) {
-          this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
-          this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
-          this.isSetter = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-          this.isSetterMgr = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-          this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-        }
-
-        await this.loadIncentive()
-
-      },
-      mounted() {
       }
     }
   }

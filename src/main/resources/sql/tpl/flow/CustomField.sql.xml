@@ -150,8 +150,8 @@
   ]]></customField.insertField>
 
   <customField.insertListOfValue><![CDATA[
-    insert into flow.list_of_value(name, parent_id, date_created, created_by_id, display_order)
-    values (:name, :parentId, now(), :createdById, (select coalesce(max(display_order) + 1, 0) from flow.list_of_value where parent_id = :parentId and archived is not true))
+   insert into flow.list_of_value(name, parent_id, display_order, date_created, created_by_id, date_modified, modified_by_id)
+   values (:name, :parentId, (select coalesce(max(display_order) + 1, 0) from flow.list_of_value where parent_id = :parentId and archived is not true), now(), :createdById, now(), :createdById)
   ]]></customField.insertListOfValue>
 
   <customField.updateListOfValue><![CDATA[
