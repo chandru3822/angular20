@@ -340,6 +340,7 @@ select
   case when sfa.process_step_event_id is not null then ps2.process_step_name else
     case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end
   end as process_step_name,
+  sfa.process_step_event_id,
   e.event_name,
   pse.event_id,
   sfa.custom_field_group_assignment_id,
@@ -480,6 +481,7 @@ select
   case when sfa.process_step_event_id is not null then ps2.process_step_name else
     case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end
   end as process_step_name,
+  sfa.process_step_event_id,
   e.event_name,
   pse.event_id,
   sfa.custom_field_group_assignment_id,
@@ -568,6 +570,7 @@ select sr.id,
        case when sr.process_step_event_id is not null then ps2.process_step_name else
          case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end
          end as process_step_name,
+       sr.process_step_event_id,
        e.event_name,
        pse.event_id,
        sr.custom_field_group_assignment_id,
@@ -697,6 +700,7 @@ select sr.id,
        case when sr.process_step_event_id is not null then ps2.process_step_name else
         case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end
        end as process_step_name,
+       sr.process_step_event_id,
        e.event_name,
        pse.event_id,
        sr.custom_field_group_assignment_id,
