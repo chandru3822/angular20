@@ -73,7 +73,7 @@
           :items="availableEvents"
           item-value="eventId"
           item-text="eventName"
-          @input="[resetNewProcessStep(), calculateAvailableFields()]"
+          @input="[resetNewProcessStep(), calculateAvailableFields(), getProcessStepEvents()]"
           attach
         />
 
@@ -95,6 +95,16 @@
             getProcessStepOwners(),
             getProjectOwners()
           ]"
+        />
+
+        <v-autocomplete
+          v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 6 && newRequirement.eventId"
+          v-model="newRequirement.processStepEventId"
+          label="Process Step"
+          :items="fetchedProcessStepEvents"
+          item-value="id"
+          item-text="processStepName"
+          attach
         />
       </template>
 
@@ -291,6 +301,16 @@
               disabled
               attach
             />
+
+            <v-autocomplete
+              v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 6"
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Process Step"
+              item-text="processStepName"
+              disabled
+              attach
+            />
           </template>
 
           <v-autocomplete
@@ -445,6 +465,7 @@ export default {
       availableFields: [],
       availableProcessSteps: [],
       availableEvents: [],
+      fetchedProcessStepEvents: [],
       operators: [],
       dataTypeRequirements: [],
       headers: [
@@ -637,13 +658,23 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
+    async getProcessStepEvents() {
+      try {
+        const {data} = await getRequest(`/event/${this.newRequirement.eventId}/processStepEvents`)
+        this.fetchedProcessStepEvents = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     addNewRequirement () {
       // Add the processStepId because system process step fields don't have a processStepId
       this.$emit('input', {
         ...this.newRequirement,
         ...this.newRequirement.selectedField,
         processStepId: this.newRequirement.processStepId,
-        eventId: this.newRequirement.eventId
+        processStepEventId: this.newRequirement.processStepEventId
       })
     },
     updateRequirement (requirement) {

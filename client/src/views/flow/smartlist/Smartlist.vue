@@ -336,10 +336,10 @@
 
             <v-autocomplete
               v-if="newField.objectTypeId !== null && newField.objectTypeId === 6 && newField.eventId"
-              v-model="newField.processStepId"
+              v-model="newField.processStepEventId"
               label="Process Step"
               :items="fetchedProcessStepEvents"
-              item-value="processStepId"
+              item-value="id"
               item-text="processStepName"
               attach
             />
@@ -713,7 +713,7 @@ export default {
         this.fetchedProcessStepEvents = data
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process step events')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
@@ -768,7 +768,7 @@ export default {
           displayOrder: this.assignedFields.length + 1,
           processStepId: this.newField.processStepId || null,
           projectDetailsColumn: this.newField.projectDetailsColumn,
-          eventId: this.newField.eventId || null
+          processStepEventId: this.newField.processStepEventId || null
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()
@@ -889,11 +889,13 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {status} = await putRequest(`/smartlist/${this.$route.params.smartlistId}/order`, this.assignedFields)
         handleHidingGlobalLoader(this, status)
+        return {status}
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating field order')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+        return {status: 500}
       }
     },
     async deleteRequirement (requirement) {
