@@ -229,12 +229,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.ancillary {
-  font-size: 12px;
-}
-</style>
-
-<style lang="scss">
+  .ancillary {
+    font-size: 12px;
+  }
   .field-picker {
     border-bottom: solid 1px rgba(0,0,0,0.4);
     height: 27px;

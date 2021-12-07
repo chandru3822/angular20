@@ -5,6 +5,7 @@ import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import store from './store'
 import {UserMutations} from './stores/UserStore'
 import {getRequest} from '@/helpers/helpers'
+import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
 import {AppMutations} from "@/stores/AppStore";
 
 Vue.use(Router)
@@ -461,6 +462,7 @@ const router = new Router({
           meta: {title: 'Albatross - Settings'},
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
+            ProposalVersionSettingsRoutes,
             {
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},

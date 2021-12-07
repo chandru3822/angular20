@@ -206,10 +206,14 @@
 
   <project.search><![CDATA[
     select *
-    from flow.search_all_projects(:query::character varying, :companyId::int,
-                              :isParent::boolean,:limit::int, :offset::int,
-                                                            :companyProjectStatusTypeId::int,
-                                                            :sortColumn::character varying, :sortDirection::character varying)
+    from flow.search_all_projects(:query::character varying,
+                                  :companyId::int,
+                                  :isParent::boolean,
+                                  :limit::int,
+                                  :offset::int,
+                                  :companyProjectStatusTypeId::int,
+                                  :sortColumn::character varying,
+                                  :sortDirection::character varying)
   ]]></project.search>
 
   <project.searchCount><![CDATA[
