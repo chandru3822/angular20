@@ -14,7 +14,7 @@ import java.util.List;
 public class ProcessStepEvent {
 
   private Long id, processStepId, eventId, initialCompanyEventStatusTypeId, uniqueBehaviorTypeId, displayOrder;
-  private String eventName, initialEventStatusType;
+  private String eventName, initialEventStatusType, processStepName;
   private Boolean archived;
   private List<CompanyEventStatusType> companyEventStatusTypes;
   private List<ProcessStepEventAction> processStepEventActions;

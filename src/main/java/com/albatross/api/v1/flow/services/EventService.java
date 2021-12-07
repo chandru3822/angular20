@@ -14,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -191,6 +188,11 @@ public class EventService {
 
     List<CompanyEventStatusType> companyEventStatusTypes = sqlCache.query("event.availableStatusesForEvent", params, CompanyEventStatusType.class);
     return companyEventStatusTypes;
+  }
+
+
+  public List<ProcessStepEvent> getByEventId(Long eventId) {
+    return sqlCache.query("event.getProcessStepEventsByEventId", Map.of("eventId", eventId), new ProcessStepEventService.ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
   public static class EventMapper<T> extends BeanPropertyRowMapper<T> {

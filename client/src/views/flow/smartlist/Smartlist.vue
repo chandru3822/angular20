@@ -320,7 +320,7 @@
               :items="availableEvents"
               item-value="eventId"
               item-text="eventName"
-              @input="calculateAvailableFields"
+              @input="[calculateAvailableFields(), getProcessStepEvents()]"
               attach
             />
 
@@ -331,6 +331,16 @@
               :items="availableFields"
               item-text="name"
               return-object
+              attach
+            />
+
+            <v-autocomplete
+              v-if="newField.objectTypeId !== null && newField.objectTypeId === 6 && newField.eventId"
+              v-model="newField.processStepId"
+              label="Process Step"
+              :items="fetchedProcessStepEvents"
+              item-value="processStepId"
+              item-text="processStepName"
               attach
             />
           </template>
@@ -524,6 +534,7 @@ export default {
       availableFields: [],
       availableProcessSteps: [],
       availableEvents: [],
+      fetchedProcessStepEvents: [],
       newField: {},
       showNewFieldForm: false,
       newFieldTypes: [
@@ -696,11 +707,21 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
+    async getProcessStepEvents() {
+      try {
+        const {data} = await getRequest(`/event/${this.newField.eventId}/processStepEvents`)
+        this.fetchedProcessStepEvents = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     calculateAvailableFields () {
       this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
-      if (this.newField.processStepId) {
+      if (this.newField.objectTypeId === 4) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
-      } else if (this.newField.eventId) {
+      } else if (this.newField.objectTypeId === 6) {
         this.availableFields = this.availableFields.filter(field => field.eventId === this.newField.eventId || field.smartlistFieldId !== null)
       }
 
@@ -708,9 +729,9 @@ export default {
         if (f.customFieldGroupAssignmentId !== null) {
           return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
         } else {
-          if (this.newField.processStepId) {
+          if (this.newField.objectTypeId === 4) {
             return !this.assignedFields.filter(a => a.processStepId === this.newField.processStepId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
-          } else if (this.newField.eventId) {
+          } else if (this.newField.objectTypeId === 6) {
             return !this.assignedFields.filter(a => a.eventId === this.newField.eventId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
           } else {
             return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)

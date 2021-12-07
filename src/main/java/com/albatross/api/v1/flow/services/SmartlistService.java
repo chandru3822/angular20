@@ -240,7 +240,7 @@ public class SmartlistService {
     params.put("createdById", user.trueUserId());
     params.put("processStepId", assignment.getProcessStepId());
     params.put("projectDetailsColumn", assignment.getProjectDetailsColumn());
-    params.put("eventId", assignment.getEventId());
+    params.put("processStepEventId", assignment.getProcessStepEventId());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
     return this.getAssignedFieldById(assignmentId);
   }
@@ -1592,6 +1592,8 @@ public class SmartlistService {
             projectsValueJoins.append(String.format(" and \"%s\".main is true ", r.getPpsTable()));
           }
           projectsValueJoins.append(String.format(" left join flow.project_process_step_custom_field_value \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s and \"%s\".archived is not true", r.getValueReferenceTable(), r.getValueReferenceTable(), r.getPpsTable(), r.getValueReferenceTable(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable()));
+        } else if (r.getObjectTypeId() == 6) {
+          //grab PS with attached to this event and see if it's already joined
         }
       }
 

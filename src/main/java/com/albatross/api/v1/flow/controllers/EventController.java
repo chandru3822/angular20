@@ -99,4 +99,9 @@ public class EventController {
     return eventService.getAvailableStatusesForEvent(id);
   }
 
+  @GetMapping(value = "/{eventId}/processStepEvents", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepEvent>> getProcessStepEventsByEventId(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getByEventId(eventId), HttpStatus.OK);
+  }
+
 }
