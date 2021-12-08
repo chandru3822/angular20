@@ -54,11 +54,11 @@ public class BlueravenProposalVersionController {
     return proposalVersionService.updateCustomFieldValue(id, objectCode, group);
   }
 
-//  @PostMapping(value = "/{id}/values/{objectCode}/reset")
-//  public void undoChangesToProposalObject(@PathVariable Long id, @PathVariable String objectCode){
-//
-//  }
-
+  @PostMapping(value = "/{id}/values/{objectCode}/reset")
+  public List<ProposalCustomValuesRow> undoChangesToProposalObject(
+      @PathVariable Long id, @PathVariable String objectCode) {
+    return proposalVersionService.resetProposalVersionByCustomFieldByObjectCode(id, objectCode);
+  }
 
   @DeleteMapping(value = "/{id}/values/{objectCode}/{groupUUID}")
   public Optional<ProposalCustomValuesRow> deleteCustomFieldGroup(
@@ -68,7 +68,7 @@ public class BlueravenProposalVersionController {
 
   @PostMapping(value = "/{id}/values/{objectCode}/{groupUUID}/archive")
   public Optional<ProposalCustomValuesRow> archiveCustomFieldGroup(
-    @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
+      @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
     return proposalVersionService.archiveCustomFieldGroup(id, objectCode, groupUUID);
   }
 

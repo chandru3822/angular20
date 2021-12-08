@@ -7,7 +7,7 @@
     <v-toolbar flat class="app-toolbar">
       <v-toolbar-title v-if="detail">
         <span class="app-title">Version {{ detail.version }}</span>
-        <v-chip label>{{ detail.status | capitalize }}</v-chip>
+        <v-chip class="ma-2" label>{{ detail.status | capitalize }}</v-chip>
         <v-chip class="ma-2" color="blue" label v-if="detail.primaryVersion">
           Current
         </v-chip>
@@ -56,43 +56,42 @@
     <v-card v-if="detail">
       <div class="top-actions" v-if="detail && detail.status === 'DRAFT'">
 
-<!--        TODO: add in later -->
-<!--        <v-dialog persistent max-width="600px" v-model="undoDraftChanges">-->
-<!--          <template v-slot:activator="{ on, attrs }">-->
-<!--            <v-btn v-on="on" v-bind="attrs">-->
-<!--              Undo All Changes-->
-<!--            </v-btn>-->
-<!--          </template>-->
-<!--          <template #default>-->
-<!--            <v-card>-->
-<!--              <v-card-title-->
-<!--                class="headline grey lighten-2"-->
-<!--                primary-title-->
-<!--              >-->
-<!--                Confirm-->
-<!--              </v-card-title>-->
+        <v-dialog persistent max-width="600px" v-if="hasChanges" v-model="undoDraftChanges">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-on="on" v-bind="attrs">
+              Undo All Changes
+            </v-btn>
+          </template>
+          <template #default>
+            <v-card>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title
+              >
+                Confirm
+              </v-card-title>
 
-<!--              <v-card-text>-->
-<!--                <v-row align="center" class="pt-4">-->
-<!--                  <p>Are you sure you want to undo all changes to this draft? This action is <b>irreversible</b>! </p>-->
-<!--                </v-row>-->
-<!--              </v-card-text>-->
-<!--              <v-card-actions class="justify-end">-->
-<!--                <v-btn-->
-<!--                  text-->
-<!--                  @click="undoDraftChanges = false"-->
-<!--                >Cancel-->
-<!--                </v-btn>-->
-<!--                <v-btn-->
-<!--                  color="red"-->
-<!--                  @click="undoAllChanges"-->
-<!--                  dark-->
-<!--                >Yes-->
-<!--                </v-btn>-->
-<!--              </v-card-actions>-->
-<!--            </v-card>-->
-<!--          </template>-->
-<!--        </v-dialog>-->
+              <v-card-text>
+                <v-row align="center" class="pt-4">
+                  <p>Are you sure you want to undo all changes to this draft? This action is <b>irreversible</b>! </p>
+                </v-row>
+              </v-card-text>
+              <v-card-actions class="justify-end">
+                <v-btn
+                  text
+                  @click="undoDraftChanges = false"
+                >Cancel
+                </v-btn>
+                <v-btn
+                  color="red"
+                  @click="undoAllChanges"
+                  dark
+                >Yes
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </template>
+        </v-dialog>
 
         <v-btn color="primary" dark @click.prevent="visible = true">
           Add New
@@ -148,7 +147,7 @@
           <v-card color="basil" flat>
             <v-data-table
               :headers="headers"
-              :items="values"
+              :items="rows"
               :options.sync="options"
               :search="search"
               :custom-filter="filterItems"
@@ -157,7 +156,7 @@
               <template #top>
                 <v-container fluid>
                   <v-row>
-                    <v-col cols="12">
+                    <v-col cols="8">
                       <v-text-field
                         v-model="search"
                         prepend-inner-icon="search"
@@ -168,32 +167,31 @@
                         hide-details
                       />
                     </v-col>
-<!--                    <v-col cols="4">-->
-<!--                      <v-switch-->
-<!--                        v-model="modifiedOnlyFilter"-->
-<!--                        inset-->
-<!--                        :label="`${!modifiedOnlyFilter ? 'Show Modified Only' : 'Show All'}`"-->
-<!--                      ></v-switch>-->
-<!--                    </v-col>-->
+                    <v-col cols="4" v-if="detail && detail.status === 'DRAFT'">
+                      <v-switch
+                        v-model="modifiedOnlyFilter"
+                        inset
+                        :label="`${!modifiedOnlyFilter ? 'Show Modified Only' : 'Show All'}`"
+                      ></v-switch>
+                    </v-col>
                   </v-row>
                 </v-container>
 
               </template>
 
               <template #item="{item, headers}">
-                <tr class="clickable">
+                <tr :class="detail && detail.status === 'DRAFT' ? 'clickable' : ''" @click.prevent="editItem(item)">
                   <td v-for="header in headers">
                     <span class="row-actions" v-if="header.value === 'actions'">
-                        <v-btn small text @click.prevent="deleteItem(item)" v-if="item.versionId === detail.id">
+                      <v-btn small text @click.stop="deleteItem(item)" v-if="item.versionId === detail.id">
                            <v-icon>mdi-undo</v-icon>
                       </v-btn>
-
-                      <v-btn small text @click="archiveItemConfirm(item)">
+                      <v-btn small text @click.stop="archiveItemConfirm(item)">
                         <v-icon>mdi-delete</v-icon>
                       </v-btn>
                     </span>
 
-                    <span v-if="item[header.value]" @click.prevent="editItem(item)">
+                    <span v-if="item[header.value]">
                       {{ item[header.value] | customValueFormatter }}
                     </span>
                   </td>
@@ -286,7 +284,14 @@ export default {
     };
   },
   computed: {
+    rows(){
+      return !this.modifiedOnlyFilter ? this.values : this.values?.filter(v=>v.versionId == this.id)
+    },
+    hasChanges(){
+      return this.values?.filter(v=>v.versionId == this.id).length > 0
+    },
     propType() {
+      console.log({propType: this.types[this.tab]})
       return this.types[this.tab] ?? {};
     }
   },
@@ -306,7 +311,7 @@ export default {
       return Object.values(item)
         .filter(v => v.value !== undefined)
         .some(v => {
-          if (Array.isArray(v.value)) {
+           if (Array.isArray(v.value)) {
             const needle = search?.toLowerCase();
             return v.value?.some(f => f.toLowerCase().indexOf(needle) > -1);
           }
@@ -314,6 +319,11 @@ export default {
             const needle = search?.toLowerCase();
             return v?.value?.toLowerCase().indexOf(needle) > -1;
           }
+
+          if (v.type === 'numeric'){
+            return v?.value == search
+          }
+
           return false;
         });
     },
@@ -339,6 +349,9 @@ export default {
       this.values = values;
       this.selectedDeleteItem = undefined
       this.deleteGroupConfirmation = false
+
+      const snackbar = getSnackbar('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
 
     async deleteItem(item) {
@@ -355,10 +368,22 @@ export default {
       values.sort(sorterFn(sortHeader?.value));
 
       this.values = values;
+
+      const snackbar = getSnackbar('SUCCESS', `Row was reverted to previous version!`)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
 
     async undoAllChanges(){
+      const { data } = await postRequest(`/proposals/${this.id}/values/${this.propType.code}/reset`, {}, "blueraven");
+
+      let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }));
+      const sortHeader = this.headers.find(h => h.fieldOrder === 1);
+      values.sort(sorterFn(sortHeader?.value));
+      this.values = values;
       this.undoDraftChanges = false
+
+      const snackbar = getSnackbar('SUCCESS', `All changes to "${this.propType.name}" successfully reverted!`)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
 
     async getProposalDetail(proposalVersionId) {
@@ -403,6 +428,11 @@ export default {
     async publish(proposalVersionId) {
       const { data } = await postRequest(`/proposals/${proposalVersionId}/publish`, {}, "blueraven");
       this.detail = { ...data };
+      //hide the action column
+      this.headers =  this.headers.slice(0, this.headers.length - 1)
+
+      const snackbar = getSnackbar('SUCCESS', `Proposal Version #${proposalVersionId} Successfully Published`)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
 
     async doInput(val) {
@@ -421,6 +451,8 @@ export default {
         values.push({ pk, versionId, ...row });
         values.sort(sorterFn(sortHeader?.value));
         this.values = values;
+        const snackbar = getSnackbar('SUCCESS', 'Row updated successfully!')
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
       } catch (e) {
         const snackbar = getSnackbar("ERROR", "Error Updating Proposal Version Fields");
         this.$store.commit(AppMutations.SHOW_SNACK, snackbar);
@@ -441,7 +473,6 @@ export default {
     margin: 0 10px;
   }
 }
-
 
 .row-actions {
   display: flex;

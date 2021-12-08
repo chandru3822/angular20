@@ -115,8 +115,10 @@ public class ProposalVersionService {
         ProposalFieldObjectType.class);
   }
 
-  public void resetProposalVersionByCustomFieldByObjectCode(Long versionId, String objectCode){
-
+  public List<ProposalCustomValuesRow> resetProposalVersionByCustomFieldByObjectCode(Long versionId, String objectCode) {
+    sqlCache.update(
+        "propTool.resetCustomFieldGroup", Map.of("versionId", versionId, "objectCode", objectCode));
+    return getProposalCustomFieldValues(versionId, objectCode);
   }
 
   @Transactional
@@ -187,8 +189,8 @@ public class ProposalVersionService {
   }
 
   /**
-   * This removes any values for the current version and marks the row as "archived"
-   * This means we don't want to bring this particular group forward in future versions
+   * This removes any values for the current version and marks the row as "archived" This means we
+   * don't want to bring this particular group forward in future versions
    *
    * @param versionId
    * @param objectCode
@@ -196,7 +198,8 @@ public class ProposalVersionService {
    * @return
    */
   @Transactional
-  public Optional<ProposalCustomValuesRow> archiveCustomFieldGroup(Long versionId, String objectCode, UUID groupUUID) {
+  public Optional<ProposalCustomValuesRow> archiveCustomFieldGroup(
+      Long versionId, String objectCode, UUID groupUUID) {
     final var currentUser = securityService.getCurrentUser();
 
     final ProposalVersion proposalVersion =
@@ -223,14 +226,9 @@ public class ProposalVersionService {
     }
 
     sqlCache.update(
-      "propTool.archiveCustomFieldGroup",
-      Map.of(
-        "currentUserId",
-        currentUser.getId(),
-        "groupUUID",
-        groupUUID,
-        "versionId",
-        versionId));
+        "propTool.archiveCustomFieldGroup",
+        Map.of(
+            "currentUserId", currentUser.getId(), "groupUUID", groupUUID, "versionId", versionId));
 
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID);
   }

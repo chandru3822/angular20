@@ -112,17 +112,17 @@ VALUES ('Proposal', 'PROPOSAL')
 on conflict (object_code) do nothing;
 
 insert into brs.object_type (object_type, object_code, parent_id)
-VALUES ('Pricing', 'PROPOSAL_PRICING', (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Rebates', 'PROPOSAL_REBATE', (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Zone Adders', 'PROPOSAL_ZONE_ADDERS', (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Financiers', 'PROPOSAL_FINANCIERS', (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Finance Products', 'PROPOSAL_FINANCE_PRODUCTS',
+VALUES ('Proposal Pricing', 'PROPOSAL_PRICING', (select id from brs.object_type where object_code = 'PROPOSAL')),
+       ('Proposal Rebates', 'PROPOSAL_REBATE', (select id from brs.object_type where object_code = 'PROPOSAL')),
+       ('Proposal Zone Adders', 'PROPOSAL_ZONE_ADDERS', (select id from brs.object_type where object_code = 'PROPOSAL')),
+       ('Proposal Financiers', 'PROPOSAL_FINANCIERS', (select id from brs.object_type where object_code = 'PROPOSAL')),
+       ('Proposal Finance Products', 'PROPOSAL_FINANCE_PRODUCTS',
         (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Equipment Adders', 'PROPOSAL_EQUIPMENT_ADDERS',
+       ('Proposal Equipment Adders', 'PROPOSAL_EQUIPMENT_ADDERS',
         (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Miscellaneous Adders', 'PROPOSAL_MISC_ADDERS',
+       ('Proposal Miscellaneous Adders', 'PROPOSAL_MISC_ADDERS',
         (select id from brs.object_type where object_code = 'PROPOSAL')),
-       ('Source & State Adders', 'PROPOSAL_SOURCE_STATE_ADDERS',
+       ('Proposal Source & State Adders', 'PROPOSAL_SOURCE_STATE_ADDERS',
         (select id from brs.object_type where object_code = 'PROPOSAL'))
 on conflict (object_code) do nothing;
 

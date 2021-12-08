@@ -185,9 +185,28 @@ delete
 from brs.proposal_version_custom_field_group g
     using brs.proposal_version v
 where g.proposal_version_id = v.id
-  and v.proposal_version_status_id <> 2
+  and v.proposal_version_status_id <> 2 -- only in draft mode
   and g.proposal_group_uuid = :groupUUID
   and g.proposal_version_id = :versionId
   ]]></propTool.deleteCustomFieldGroup>
+
+  <propTool.resetCustomFieldGroup><![CDATA[
+delete
+from brs.proposal_version_custom_field_group pvcfg
+    using
+        brs.proposal_version_custom_field_value pvcfv
+            , brs.custom_field_group_assignment cfga
+            , brs.custom_field_group cfg
+            , brs.object_type ot
+            , brs.proposal_version pv
+where pvcfg.id = pvcfv.proposal_version_custom_field_group_id
+  and pvcfv.custom_field_group_assignment_id = cfga.id
+  and cfga.custom_field_group_id = cfg.id
+  and cfg.object_type_id = ot.id
+  and pvcfg.proposal_version_id = pv.id
+  and pv.proposal_version_status_id <> 2 -- only in draft mode
+  and pv.id = :versionId
+  and ot.object_code = :objectCode
+  ]]></propTool.resetCustomFieldGroup>
 
 </sql>
