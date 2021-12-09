@@ -59,10 +59,10 @@
       from brs.design_log_history dlh
   ]]></customFieldSql.brs.designLogNumbers.smartlist>
 
-  <customFieldSql.brs.allStates><![CDATA[
+  <customFieldSql.flow.states><![CDATA[
     select s.id,
            s.state as name
     from flow.state s
     order by s.state
-  ]]></customFieldSql.brs.allStates>
+  ]]></customFieldSql.flow.states>
 </sql>
