@@ -294,6 +294,14 @@
     where id = :cfgaId
   ]]></customFieldGroupAssignment.saveUseParentData>
 
+  <customFieldGroupAssignment.saveDetailView><![CDATA[
+    update flow.custom_field_group_assignment
+      set detail_view = :detailView,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></customFieldGroupAssignment.saveDetailView>
+
   <customFieldGroupAssignment.saveReadOnly><![CDATA[
     update flow.custom_field_group_assignment
       set read_only = :cfgaReadOnly,
