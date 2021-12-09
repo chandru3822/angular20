@@ -10,7 +10,6 @@
              ot.object_type,
              cott.tab_name,
              coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
-             et.event_type,
              coalesce((
                         SELECT array_to_json(array_agg(row_to_json(customFields)))
                         FROM (
@@ -180,7 +179,7 @@
                                     inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                     left join flow.company_system_list csl on csl.id = cf.company_system_list_id
                                  where cf.company_id = :companyId
-                                    and ot.flow_type_id = 2
+                                    and ot.flow_type_id = :flowTypeId
                                     and cf.archived is not true
                                     and cdt.data_type_id = sft.required_data_type_id
                                     and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
@@ -294,6 +293,14 @@
           modified_by_id = :userId
     where id = :cfgaId
   ]]></customFieldGroupAssignment.saveUseParentData>
+
+  <customFieldGroupAssignment.saveDetailView><![CDATA[
+    update flow.custom_field_group_assignment
+      set detail_view = :detailView,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></customFieldGroupAssignment.saveDetailView>
 
   <customFieldGroupAssignment.saveReadOnly><![CDATA[
     update flow.custom_field_group_assignment

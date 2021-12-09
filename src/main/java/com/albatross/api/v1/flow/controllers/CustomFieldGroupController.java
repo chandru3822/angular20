@@ -53,6 +53,12 @@ public class CustomFieldGroupController {
     customFieldGroupService.saveCfgaAndWhiteList(customField, true, savePositions, WhiteListType.CFGA_READ_ONLY.id);
   }
 
+  @PutMapping(value = "/saveDetailView/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveDetailView(@PathVariable Long cfgaId,
+                             @RequestParam Boolean detailView) {
+    customFieldGroupService.saveDetailView(cfgaId, detailView);
+  }
+
   @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
                                      @RequestBody CustomField customField) {
@@ -80,9 +86,9 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getNonEventCustomFieldGroupsByProcessStep(id);
   }
 
-  @GetMapping(value = "/getEventTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ScheduleFieldType> getEventTypesAndFields () {
-    return customFieldGroupService.getEventTypesAndFields();
+  @GetMapping(value = "/getEventTypesAndFields/{flowTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleFieldType> getEventTypesAndFields (@PathVariable Long flowTypeId) {
+    return customFieldGroupService.getEventTypesAndFields(flowTypeId);
   }
 
   @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,6 +106,11 @@ public class CustomFieldGroupController {
   @PostMapping(value = "/addProcessStepCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public CustomFieldGroup addProcessStepCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
     return customFieldGroupService.addProcessStepCustomFieldGroup(customFieldGroup);
+  }
+
+  @PostMapping(value = "/addEventCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addEventCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addEventCustomFieldGroup(customFieldGroup);
   }
 
   @Data

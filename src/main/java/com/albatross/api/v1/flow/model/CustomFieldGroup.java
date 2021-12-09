@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class CustomFieldGroup {
 
-  private Long id, companyObjectTypeId, objectTypeId, companyObjectTypeTabId, groupOrder, processStepId, eventTypeId, uniqueBehaviorTypeId, companyObjectTypeTabDisplayOrder;
+  private Long id, companyObjectTypeId, objectTypeId, companyObjectTypeTabId, groupOrder, processStepId, eventTypeId, eventId, uniqueBehaviorTypeId, companyObjectTypeTabDisplayOrder;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
   private String groupName, objectType, originalGroupName, eventType, tabName;
   private Boolean archived;
