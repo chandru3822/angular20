@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.SystemList;
 import com.albatross.api.v1.flow.model.User;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,14 +20,11 @@ import java.util.List;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor
 public class SystemListService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   public List<SystemList> getSystemListsForCompany() {
     User user = securityService.getCurrentUser();

@@ -337,9 +337,7 @@
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()
-      if(!this.apiPath) {
-        this.getSystemLists()
-      }
+      this.getSystemLists()
     },
     methods: {
       filterDataTypes (item) {

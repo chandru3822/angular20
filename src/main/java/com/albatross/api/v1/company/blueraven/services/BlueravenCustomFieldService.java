@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomFieldService;
+import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class BlueravenCustomFieldService {
   private final SecurityService securityService;
   private final ObjectMapper om;
   private final DataSource dataSource;
+  private final SystemListService systemListService;
 
   public List<CustomField> getAllCustomFields() {
     User user = securityService.getCurrentUser();
@@ -69,19 +71,25 @@ public class BlueravenCustomFieldService {
         .query(
             "blueravenCustomFieldValue.getByObjectCode", params, customFieldBeanPropertyRowMapper)
         .stream()
-        .map(cf -> resolveCustomFieldSql(currentUser.trueUserId(), cf))
+        .map(cf -> resolveCustomField(currentUser, cf))
         .toList();
   }
 
-  private CustomField resolveCustomFieldSql(Long currentUserId, CustomField cf) {
+  private CustomField resolveCustomField(User user, CustomField cf) {
     if (cf.getCustomFieldSqlKey() != null) {
       final var sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
       if (sql != null) {
         cf.setHasListValues(true);
         final var listOfValues =
-            sqlCache.queryBySql(sql, Map.of("userId", currentUserId), ListOfValue.class);
+            sqlCache.queryBySql(sql, Map.of("userId", user.trueUserId()), ListOfValue.class);
         cf.setListOfValues(listOfValues);
       }
+    } else if (cf.getCompanySystemListId() != null) {
+      cf.setHasListValues(true);
+      List<ListOfValue> listOfValues =
+          systemListService.getSystemListOptionsForCompany(
+              cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
+      cf.setListOfValues(listOfValues);
     }
     return cf;
   }
@@ -97,7 +105,7 @@ public class BlueravenCustomFieldService {
     return result.orElse(null);
   }
 
-  public CustomField saveField(CustomField customField) {
+  public CustomField saveField(CustomField customField) throws SQLException {
     User user = securityService.getCurrentUser();
     if (user.getCompanyId() != 3) {
       throw new ResponseStatusException(
@@ -176,6 +184,7 @@ public class BlueravenCustomFieldService {
         params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
         params.put("companyId", customField.getCompanyId());
         params.put("systemListId", customField.getCompanySystemListId());
+        params.put("listOptionIds", createSqlArrayOfType("int",  customField.getSystemListOptionIds()));
         params.put("createdById", user.trueUserId());
         params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
@@ -223,14 +232,14 @@ public class BlueravenCustomFieldService {
     }
   }
 
-//  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-//    if (array != null && !array.isEmpty()) {
-//      try (Connection connection = dataSource.getConnection()) {
-//        return connection.createArrayOf(typeName, array.toArray());
-//      }
-//    }
-//    return null;
-//  }
+    private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+      if (array != null && !array.isEmpty()) {
+        try (Connection connection = dataSource.getConnection()) {
+          return connection.createArrayOf(typeName, array.toArray());
+        }
+      }
+      return null;
+    }
 
   public void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
     User currentUser = securityService.getCurrentUser();
@@ -262,8 +271,7 @@ public class BlueravenCustomFieldService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
 
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef =
-          new TypeReference<>() {};
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<>() {};
       bw.registerCustomEditor(
           List.class,
           "customFieldObjectTypes",
@@ -272,6 +280,10 @@ public class BlueravenCustomFieldService {
       TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(
           List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionsRef, objectMapper));
     }
   }
 }
