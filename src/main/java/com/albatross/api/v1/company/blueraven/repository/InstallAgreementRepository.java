@@ -101,17 +101,17 @@ public class InstallAgreementRepository {
           sunlightService.sendLoanDocs(projectId);
         }
       } catch (JSONException ex){
-        log.error("IARQ: Error sending loan docs via Sunlight", ex.getMessage());
-        resultMsg = "Error sending loan docs through Sunlight";
+        log.error("IARQ: Error sending finance docs via Sunlight", ex.getMessage());
+        resultMsg = "Error sending finance docs through Sunlight";
       }
     }
     else if (sendLoanDocs && isSunpowerProject(financier)) {
       // If credit is approved, send loan docs
       try {
         sunpowerService.sendLoanDocs(projectId);
-      } catch (JSONException ex){
-        log.error("IARQ: Error sending loan docs via Sunpower", ex.getMessage());
-        resultMsg = "Error sending loan docs through Sunpower";
+      } catch (Exception ex){
+        log.error("IARQ: Error sending finance docs via Sunpower", ex.getMessage());
+        resultMsg = "Error sending finance docs through Sunpower";
       }
     }
     else if (sendLoanDocs && isLoanPalProject(financier)) {

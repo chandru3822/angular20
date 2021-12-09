@@ -145,9 +145,18 @@ public class SunpowerService {
     creditJson.put("externalId", projectId.toString());
     HttpResponse creditResp = GET("active-bpel/rt/Contract/"+projectId, IOUtils.toInputStream(creditJson.toString(), (Charset) null));
     JSONObject respJson = creditResp.getJSON();
-    JSONArray projectsResp = respJson.getJSONArray("projects");
-    JSONObject currProject = projectsResp.getJSONObject(0);
-    return currProject.getString("statusText");
+    JSONObject contractResponse = respJson.getJSONObject("contractResponse");
+    JSONObject status = contractResponse.getJSONObject("status");
+    Boolean success = status.getBoolean("success");
+
+    if (success) {
+      return "Loan agreement created successfully";
+    }
+    else {
+      String message = status.getString("message");
+      log.error("SUNPWR: Error creating Loan agreement for Sunpower: {}", message);
+      throw new Exception(message);
+    }
   }
 
   public void setCreditLastCheckedBy(Long projectId, String financier) {
