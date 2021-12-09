@@ -14,7 +14,8 @@ CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements(
                      project_id    INTEGER,
                      customer_name VARCHAR,
                      email         VARCHAR,
-                     address       TEXT
+                     address       TEXT,
+                     creditLastCheckedBySunpower BOOLEAN
                  )
     LANGUAGE plpgsql
 AS $function$
@@ -28,7 +29,8 @@ BEGIN
                 p.id                                                             AS project_id,
                 p.project_name,
                 c.email,
-                concat(p.street1, ', ', p.city, ', ' ,s.state, ' ', p.postal_code) AS address
+                concat(p.street1, ', ', p.city, ', ' ,s.state, ' ', p.postal_code) AS address,
+                case when pd.credit_last_checked_by = 'Sunpower' then true else false end as "creditLastCheckedBySunpower"
             FROM flow.project p
                      left join brs.project_details pd on pd.project_id = p.id
                      INNER JOIN flow.contact c ON c.id = p.contact_id
@@ -47,7 +49,8 @@ BEGIN
                     p.id                                                             AS project_id,
                     p.project_name,
                     c.email,
-                       concat(p.street1, ', ' ,p.city, ', ', s.state, ' ' ,p.postal_code) AS address
+                    concat(p.street1, ', ' ,p.city, ', ', s.state, ' ' ,p.postal_code) AS address,
+                    case when pd.credit_last_checked_by = 'Sunpower' then true else false end as  "creditLastCheckedBySunpower"
                 FROM flow.project p
                          left join brs.project_details pd on pd.project_id = p.id
                          INNER JOIN flow.contact c ON c.id = p.contact_id
