@@ -105,6 +105,17 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.saveUseParentData", params);
   }
 
+  public void saveDetailView(Long cfgaId, Boolean detailView) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+    params.put("detailView", detailView);
+    params.put("cfgaId", cfgaId);
+
+    sqlCache.update("customFieldGroupAssignment.saveDetailView", params);
+  }
+
   public void saveCfgaAndWhiteList(CustomField customField, Boolean savingReadOnly, Boolean savePositions, Long whiteListTypeId) {
     User currentUser = securityService.getCurrentUser();
 
@@ -189,11 +200,12 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public List<ScheduleFieldType> getEventTypesAndFields() {
+  public List<ScheduleFieldType> getEventTypesAndFields(Long flowTypeId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("flowTypeId", flowTypeId);
 
     List<ScheduleFieldType> results = sqlCache.query("customFieldGroupAssignment.getEventTypesAndFields", params, new ScheduleFieldTypeMapper<>(ScheduleFieldType.class, om));
     return results;
@@ -223,6 +235,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
+    params.put("eventId", customFieldGroup.getEventId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 
@@ -245,6 +258,29 @@ public class CustomFieldGroupService {
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
     if(null != customFieldGroup.getEventTypeId() && null != customFieldGroup.getSchedulingFields()) {
+      List<CustomField> newFieldList = new ArrayList<>();
+      for(CustomField cf : customFieldGroup.getSchedulingFields()) {
+        cf.setCustomFieldGroupId(cfg.getId());
+        CustomField newCf = addFieldToGroup(cf);
+        newFieldList.add(newCf);
+      }
+      cfg.setCustomFields(newFieldList);
+    }
+
+    return cfg;
+  }
+
+  public CustomFieldGroup addEventCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.EVENT.id);
+    params.put("companyId", currentUser.getCompanyId());
+    Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+
+    CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+
+    if(null != customFieldGroup.getSchedulingFields()) {
       List<CustomField> newFieldList = new ArrayList<>();
       for(CustomField cf : customFieldGroup.getSchedulingFields()) {
         cf.setCustomFieldGroupId(cfg.getId());
