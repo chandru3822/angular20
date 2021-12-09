@@ -149,8 +149,8 @@ CREATE TABLE if not exists flow.event_company_event_status_type
   modified_by_id               integer,
   archived                     boolean not null            default false,
   CONSTRAINT flow_event_company_event_status_type_pk PRIMARY KEY (id),
-  CONSTRAINT flow_ecest_process_step_id_fk FOREIGN KEY (event_id)
-    REFERENCES flow.process_step (id) MATCH SIMPLE
+  CONSTRAINT flow_ecest_event_id_fk FOREIGN KEY (event_id)
+    REFERENCES flow.event (id) MATCH SIMPLE
     ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT flow_ecest_company_process_step_status_type_id_fk FOREIGN KEY (company_event_status_type_id)
     REFERENCES flow.company_process_step_status_type (id) MATCH SIMPLE
