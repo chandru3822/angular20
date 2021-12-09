@@ -7,6 +7,10 @@
            cf.created_by_id,
            cf.modified_by_id,
            cf.company_data_type_id,
+           cf.company_system_list_id,
+           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           cf.custom_field_sql_key,
+           cf.custom_field_sql_reference_table,
            coalesce((
                       select array_to_json(array_agg(rows))
                       from (
@@ -50,6 +54,10 @@
            cf.created_by_id,
            cf.modified_by_id,
            cf.company_data_type_id,
+           cf.company_system_list_id,
+           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           cf.custom_field_sql_key,
+           cf.custom_field_sql_reference_table,
            coalesce((
                       select array_to_json(array_agg(rows))
                       from (
@@ -102,9 +110,9 @@
   ]]></blueravenCustomField.saveField>
 
   <blueravenCustomField.insertField><![CDATA[
-    insert into brs.custom_field(list_of_value_id, field_name, company_data_type_id, date_created, created_by_id, date_modified, modified_by_id)
-    values (:listOfValueId, :fieldName, :companyDataTypeId, now(), :createdById, now(), :createdById)
-    returning id
+  insert into brs.custom_field(list_of_value_id, field_name, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, date_created, created_by_id, date_modified, modified_by_id)
+  values (:listOfValueId, :fieldName, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :listOptionIds, now(), :createdById, now(), :createdById)
+  returning id
   ]]></blueravenCustomField.insertField>
 
   <blueravenCustomField.insertListOfValue><![CDATA[
@@ -143,4 +151,51 @@
     values (:customFieldId, :objectTypeId, :userId)
     ON CONFLICT do nothing;
   ]]></blueravenCustomField.insertCustomFieldObjectType>
+
+  <blueravenCustomFieldValue.getByObjectCode><![CDATA[
+select cf.id,
+       cf.list_of_value_id,
+       cf.field_name,
+       cf.field_code,
+       cf.company_system_list_id,
+       array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+       cf.custom_field_sql_key,
+       cfga.id                          as custom_field_group_assignment_id,
+       cfga.field_order,
+       cfg.group_name,
+       cfg.group_order,
+       cdt.allow_multiple,
+       dt.id as data_type_id,
+       dt.data_type,
+       ot.object_code,
+       coalesce((
+                    select array_to_json(array_agg(rows))
+                    from (
+                             select lv.id,
+                                    lv.name,
+                                    lv.parent_id      as "parentId",
+                                    lv.date_created   as "dateCreated",
+                                    lv.date_modified  as "dateModified",
+                                    lv.created_by_id  as "createdById",
+                                    lv.modified_by_id as "modifiedById",
+                                    lv.display_order  as "displayOrder",
+                                    lv.archived
+                             from brs.list_of_value lv
+                             where lv.parent_id = cf.list_of_value_id
+                               and lv.archived is not true
+                             order by lv.display_order
+                         ) rows), '[]') AS list_of_values
+from brs.custom_field cf
+         inner join brs.custom_field_group_assignment cfga
+                    on cf.id = cfga.custom_field_id
+         inner join brs.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join brs.object_type ot on cfg.object_type_id = ot.id
+         inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+         inner join flow.data_type dt on cdt.data_type_id = dt.id
+where cfga.archived is false
+  and cfg.archived is false
+  and cf.archived is false
+  and ot.object_code = :objectCode
+order by cfga.field_order, cf.field_name
+  ]]></blueravenCustomFieldValue.getByObjectCode>
 </sql>

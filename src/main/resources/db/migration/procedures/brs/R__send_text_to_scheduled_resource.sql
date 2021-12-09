@@ -9,6 +9,9 @@ declare
     v_resource_id int; -- will either be a user id or an org id
     v_users_to_message bigint[]; --will be used when the resource is an org
     v_message text;
+    v_time_zone_for_resource text;
+    v_project_id int;
+    v_appt_start_time text;
     r record;
 --     v_contact_name text;
 --     v_contact_street text;
@@ -37,12 +40,21 @@ BEGIN
       left join flow.user_position up on up.id = cfv.int_value
     where pps.id = p_project_process_step_id;
 
-
+    --2 = user, 1 = org
     if v_resource_type_id = 2 then
       select array[u.id]::bigint[]
       into v_users_to_message
       from flow."user" u
       where u.id = v_resource_id;
+      -- also get the users timezone
+      select t.timezone into v_time_zone_for_resource
+      from flow.user_position up
+        inner join flow.org o on up.org_id = o.id
+        inner join flow.company_timezone ct on ct.id = o.company_timezone_id
+        inner join flow.timezone t on t.id = ct.timezone_id
+      where up.user_id = v_resource_id
+        and up.primary_flag is true
+        and up.archived is false;
     else
       select array_agg(distinct up.user_id)::bigint[]
       into v_users_to_message
@@ -58,10 +70,31 @@ BEGIN
         and up.primary_flag is true
         and up.start_date <= now()
         and (up.end_date is null or up.end_date >= now());
+      select t.timezone into v_time_zone_for_resource
+      from flow.org o
+        inner join flow.company_timezone ct on ct.id = o.company_timezone_id
+        inner join flow.timezone t on t.id = ct.timezone_id
+      where o.id = v_resource_id;
     end if;
 
+    select pps.project_id into v_project_id
+      from flow.project_process_step pps
+    where pps.id = p_project_process_step_id;
+
+    --this gets the start time fields for the given pps ...which must be a pps with a schedulable custom field group
+    select (ppscfv.timestamp_value at time zone 'UTC') at time zone coalesce(p.time_zone, v_time_zone_for_resource)::text
+      into v_appt_start_time
+    from flow.project_process_step_custom_field_value ppscfv
+      inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+      inner join flow.project p on pps.project_id = p.id
+      inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id and cfga.schedule_field_type_id = 1 --start time
+    where ppscfv.project_process_step_id = p_project_process_step_id
+      and cfga.archived is false
+
+    ;
+
     if p_message_type_id = 1 then
-      select 'A same-day site survey has been added to your calendar.' into v_message;
+      select concat('A site survey has been added to your calendar. Project: ', v_project_id, ' Date: ', v_appt_start_time) into v_message;
     end if;
 
   for r in

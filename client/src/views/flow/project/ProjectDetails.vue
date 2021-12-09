@@ -61,7 +61,6 @@ export default {
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
     Attachments,
-
     CustomValueInput,
     AddProcessStep
   },

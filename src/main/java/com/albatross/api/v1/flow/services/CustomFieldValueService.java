@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
+@RequiredArgsConstructor
 public class CustomFieldValueService {
 
   private final SqlCache sqlCache;
@@ -51,7 +51,7 @@ public class CustomFieldValueService {
     }
   }
 
-  public void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId) {
+  private void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId) {
     if(null != cv.getCustomFieldSqlKey()) {
       cv.setHasListValues(true);
       String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
