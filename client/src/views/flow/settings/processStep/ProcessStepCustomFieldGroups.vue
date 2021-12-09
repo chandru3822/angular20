@@ -886,7 +886,7 @@
         if (this.newGroup.schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data, status} = await getRequest(`/customFieldGroup/getEventTypesAndFields`)
+            const {data, status} = await getRequest(`/customFieldGroup/getEventTypesAndFields/2`)
             this.schedulingFields = data
             handleHidingGlobalLoader(this, status)
           } catch (e) {
