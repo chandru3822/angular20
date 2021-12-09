@@ -29,6 +29,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
 
+    @Value(value = "${app.cron.sendEmail.enabled:false}")
+    private Boolean sendEmailNotifications;
+
     @Value(value = "${app.home_url}")
     private String homeUrl;
 
@@ -48,6 +51,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     private boolean fillProjectGeoCoords;
 
     private final SMSService smsService;
+    private final MailService mailService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
     private final ProjectService projectService;
@@ -91,6 +95,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
             smsService.processTwilioWebhookPayloads();
         }
     }
+
+  //    every  minute
+  @Scheduled(fixedDelayString = "${app.cron.sendEmail.delay:60000}")
+  public void sendUnprocessedEmails() throws InterruptedException {
+    if (sendEmailNotifications) {
+      mailService.sendUnprocessedEmails();
+    }
+  }
 
     //    every  day at 1 am
     @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")

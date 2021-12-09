@@ -151,8 +151,8 @@ public class CommunicationService {
                                       "%s?emailAddress=%s", emailUnsubscribeURL, user.getEmail()),
                                   "user",
                                   user));
-                      return new EmailMessage(
-                          user.getEmail(), sentByEmail, sentByName, subject, message, sentByUserId);
+                      return
+                          new EmailMessage(user.getEmail(), sentByEmail, sentByName, subject, message, sentByUserId, true, null);
                     } catch (Exception e) {
                       log.error(
                           "EMAIL: ERROR: Generating template. template={}, address={}",
@@ -166,7 +166,7 @@ public class CommunicationService {
 
       log.info("EMAIL: Starting to send out emails. Expected count={}", emailMessages.size());
 
-      final int sentMessages = mailService.sendBulkMessages(emailMessages, emailAttachments);
+      final int sentMessages = mailService.sendBulkMessages(emailMessages, emailAttachments, false);
 
       final Instant endTime = Instant.now();
       log.info(
