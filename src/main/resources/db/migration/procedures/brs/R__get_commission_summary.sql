@@ -45,7 +45,7 @@ begin
                                                         when pd.cancelled_date is not null then
                                                             0::numeric
                                                         else coalesce(
-                                                                round(pd.system_size::numeric * sum(opru.m1_allocation), 2),
+                                                                round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * sum(opru.m1_allocation), 2),
                                                                 0) end total
                                              FROM flow.project p1
                                                       inner join brs.project_details pd on pd.project_id = p1.id
@@ -65,7 +65,7 @@ begin
                                                             then
                                                             0::numeric
                                                         else coalesce(round(
-                                                                              pd.system_size::numeric * sum(opru.m2_allocation),
+                                                                        case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * sum(opru.m2_allocation),
                                                                               2),
                                                                       0) end total
                                              FROM flow.project p1
@@ -101,12 +101,12 @@ begin
                                 (SELECT sum(case
                                               when pd1.cancelled_date is not null then
                                                 0::NUMERIC
-                                              else coalesce(round(cpa.allocation * pd1.system_size::numeric - case
+                                              else coalesce(round(cpa.allocation * case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end - case
                                                                                                                when cpsa.milestone_id = 1
                                                                                                                  then
                                                                                                                  case
                                                                                                                    when cpsa.fee_type_id = 1
-                                                                                                                     then coalesce(pd1.system_size::numeric * cpsa.fee_amount, 0)
+                                                                                                                     then coalesce(case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * cpsa.fee_amount, 0)
                                                                                                                    else coalesce(cpsa.fee_amount, 0) end
                                                                                                                else 0 end,
                                                                   2),
@@ -126,12 +126,12 @@ begin
                                 (SELECT sum(case
                                               when pd1.cancelled_date is not null then
                                                 0::NUMERIC
-                                              else coalesce(round(cpa.allocation * pd1.system_size::numeric - case
+                                              else coalesce(round(cpa.allocation * case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end - case
                                                                                                                 when cpsa.milestone_id = 2
                                                                                                                   then
                                                                                                                   case
                                                                                                                     when cpsa.fee_type_id = 1
-                                                                                                                      then coalesce(pd1.system_size::numeric * cpsa.fee_amount, 0)
+                                                                                                                      then coalesce(case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * cpsa.fee_amount, 0)
                                                                                                                     else coalesce(cpsa.fee_amount, 0) end
                                                                                                                 else 0 end,
                                                                   2),
@@ -154,7 +154,7 @@ begin
                                                   when pd1.cancelled_date is not null then
                                                       0::numeric
                                                   else coalesce(
-                                                          round(pd1.system_size::numeric * sum(opru.m1_allocation), 2),
+                                                          round(case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * sum(opru.m1_allocation), 2),
                                                           0) end total
                                        FROM flow.project p1
                                                 inner join brs.project_details pd1 on pd1.project_id = p1.id
@@ -174,7 +174,7 @@ begin
                                                       then
                                                       0::numeric
                                                   else coalesce(round(
-                                                                        pd1.system_size::numeric * sum(opru.m2_allocation),
+                                                                  case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * sum(opru.m2_allocation),
                                                                         2),
                                                                 0) end total
                                        FROM flow.project p1

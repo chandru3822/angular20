@@ -80,7 +80,6 @@ export default {
       try {
         const {data, status} = await getRequest(`/feature/homePages`)
         if (status) {
-          console.log('run it!')
           this.homePages = data.filter(d => {
             return this.$store.getters.userHasFeature(d.featureCode)
           })
