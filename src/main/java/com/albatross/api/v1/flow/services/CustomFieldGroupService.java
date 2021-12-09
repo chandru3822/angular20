@@ -224,6 +224,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
+    params.put("eventId", customFieldGroup.getEventId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 
