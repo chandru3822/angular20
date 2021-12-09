@@ -11,8 +11,8 @@
                 :close-on-content-click="false">
           <template v-slot:activator="{ on }">
             <v-toolbar
-                   color="white"
-                   v-on="on"
+              color="white"
+              v-on="on"
             >
               {{ title }}
               <v-spacer></v-spacer>
@@ -26,11 +26,11 @@
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
-                  v-else
-                  :key="item.title"
-                  :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
-                  @click="[menuOpen = false, setTitle(item.title)]"
+                v-else
+                :key="item.title"
+                :to="item.path"
+                :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                @click="[menuOpen = false, setTitle(item.title)]"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -52,12 +52,12 @@
             <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
               <v-list-item
-                  v-else
-                  :key="item.title"
-                  @click="setTitle"
-                  :to="item.path"
-                  class="dense-setting-row"
-                  :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
+                v-else
+                :key="item.title"
+                @click="setTitle"
+                :to="item.path"
+                class="dense-setting-row"
+                :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
                                           : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
                 <v-list-item-content>
@@ -65,8 +65,9 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 })" :key="o.id"
-                         :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 || cot.flowTypeId === 4 })" :key="o.id"
+                         :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` :
+                                      o.flowTypeId === 4 ? `/settings/events` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
                          @click="setTitle"
                          class="dense-setting-row"
                          :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
@@ -78,7 +79,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="9" class="px-4 pt-0 main-section">
-          <router-view/>
+        <router-view/>
       </v-col>
     </v-row>
   </v-container>
@@ -198,6 +199,10 @@ export default {
         title: 'Organization Types',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/eventStatuses',
+        title: 'Event Statuses',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/processStepStatuses',
         title: 'Process Step Statuses',
         show: this.hasSettingsAccess
@@ -237,7 +242,7 @@ export default {
       //   show: this.hasSettingsAccess
       // }
     ]
-  }
+    }
   },
   methods: {
     async getCustomFieldObjectTypes () {
