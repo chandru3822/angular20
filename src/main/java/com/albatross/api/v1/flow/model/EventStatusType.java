@@ -11,7 +11,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class Event {
+public class EventStatusType {
 
   private Long id, companyId, resourceCustomFieldId;
   private String eventName;
