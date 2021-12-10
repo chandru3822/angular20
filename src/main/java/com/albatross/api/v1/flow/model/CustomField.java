@@ -44,7 +44,8 @@ public class CustomField {
       readonly,
       customFieldGroupAssignmentReadOnly,
       customFieldGroupAssignmentHidden,
-      useParentData;
+      useParentData,
+      sortListValuesAlphabetically;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;

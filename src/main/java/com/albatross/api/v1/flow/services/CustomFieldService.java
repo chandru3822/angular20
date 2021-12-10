@@ -67,6 +67,7 @@ public class CustomFieldService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
+    params.put("sortListValuesAlphabetically", customField.getSortListValuesAlphabetically());
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put(

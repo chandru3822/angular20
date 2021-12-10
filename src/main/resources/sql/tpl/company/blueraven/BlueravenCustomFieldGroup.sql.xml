@@ -23,7 +23,11 @@
                                           cfga.field_order as "fieldOrder",
                                           cf.list_of_value_id as "listOfValueId",
                                           cf.field_name as "fieldName",
+                                          cf.custom_field_sql_key as "customFieldSqlKey",
+                                          cf.company_system_list_id as "companySystemListId",
+                                          cf.system_list_option_ids as "systemListOptionIds",
                                           cf.company_data_type_id as "companyDataTypeId",
+                                          cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                           cfg.object_type_id as "objectTypeId",
                                           cdt.data_type_id as "dataTypeId",
                                           cdt.has_list_values as "hasListValues",
@@ -40,7 +44,9 @@
                                                                 where lov.parent_id is not null
                                                                   and lov.parent_id = cf.list_of_value_id
                                                                   and lov.archived is not true
-                                                                order by lov.display_order
+                                                                order by
+                                                                 case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                                 case when cf.sort_list_values_alphabetically is false then lov.display_order end
                                                             ) listOfValues), '[]') AS "listOfValues"
                                    from brs.custom_field_group_assignment cfga
                                             inner join brs.custom_field cf on cf.id = cfga.custom_field_id
