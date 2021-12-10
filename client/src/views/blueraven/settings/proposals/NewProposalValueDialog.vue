@@ -51,7 +51,8 @@ const DATA_TYPES = {
   'integer': 'intValue',
   'system': 'intValue',
   'integer array': 'intArrayValue',
-  'boolean': 'booleanValue'
+  'boolean': 'booleanValue',
+  'System List' : 'intValue'
 }
 
 const extractFieldData = (field) => {
