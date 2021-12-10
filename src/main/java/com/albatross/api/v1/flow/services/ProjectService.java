@@ -221,12 +221,19 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    return sqlCache.get("project.get",
+    Optional<Project> project = sqlCache.get("project.get",
       ImmutableMap.of("projectId", projectId,
                       "companyId", user.getCompanyId(),
                       "isParent", isParent,
                       "parentCompanyId", user.getHighestParentCompanyId()),
       new ProjectMapper<>(Project.class, om));
+
+    if(project.isPresent() && null != project.get().getOwner() && null != project.get().getOwner().getUserId()) {
+      String presignedUrl = attachmentService.getAttachmentPresignedUrl(project.get().getOwner().getUserId(), com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
+      project.get().getOwner().setPresignedUrl(presignedUrl);
+    }
+
+    return project;
   }
 
   public void deleteProject(Long projectId) {
