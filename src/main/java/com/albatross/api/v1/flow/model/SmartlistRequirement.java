@@ -29,8 +29,9 @@ public class SmartlistRequirement {
 
   private DataTypeRequirement dataTypeRequirement;
 
+  // Used for smartlists
   @JsonIgnore
-  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn, ppsTable, eventTable;
+  private String referenceTable, referenceColumn, valueReferenceTable, valueEventReferenceTable, joinTable, joinColumn, ppsTable, ppsEventTable;
 
   @JsonIgnore
   private CustomField customField;
