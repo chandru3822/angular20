@@ -170,6 +170,16 @@ export async function deleteRequest(path, companyAbbreviation) {
   }
 }
 
+export async function deleteRequestWithPayload(path, companyAbbreviation) {
+  const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
+  try {
+    return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
+  } catch (e) {
+    throw e
+  }
+}
+
+
 export function logError(e) {
   console.error('*** ERROR ***', e)
 }

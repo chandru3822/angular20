@@ -217,8 +217,11 @@
   ]]></attachmentType.getProjectTypes>
 
   <attachmentType.insertProjectType><![CDATA[
-    insert into flow.project_attachment_type (attachment_type_id, company_id, created_by_id, date_created, display_order)
-    values (:attachmentTypeId, :companyId, :createdById, now(), (select coalesce(max(display_order) + 1, 0) from flow.project_attachment_type where company_id = :companyId and archived is not true))
+insert into flow.project_attachment_type (attachment_type_id, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 0)
+                                        from flow.project_attachment_type
+                                        where company_id = :companyId
+                                          and archived is not true), :createdById, now(), :createdById, now())
   ]]></attachmentType.insertProjectType>
 
   <attachmentType.deleteProjectType>

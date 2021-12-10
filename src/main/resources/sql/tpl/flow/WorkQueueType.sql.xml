@@ -102,7 +102,24 @@
   ]]></workQueueType.insertType>
 
   <workQueueType.getAvailableWorkQueueTypesForStep><![CDATA[
-    select wqt.*,
+    select wqt.id,
+           wqt.company_id,
+           work_queue_type,
+           work_queue_category_id,
+           wqt.date_created,
+           wqt.date_modified,
+           wqt.created_by_id,
+           wqt.modified_by_id,
+           wqt.archived,
+           wqt.display_order,
+           long_window,
+           short_window,
+           long_window_duration_type_id,
+           short_window_duration_type_id,
+           expected_cycle,
+           expected_cycle_duration_type_id,
+           expected_target,
+           inverse_expectation,
            wqc.work_queue_category
     from flow.work_queue_type wqt
         inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id

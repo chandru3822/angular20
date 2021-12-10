@@ -1127,7 +1127,7 @@ export default {
         this.addNewWorkQueueType = !this.addNewWorkQueueType
         if (this.addNewWorkQueueType) {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
+          const {data, status} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`, null, [])
           this.workQueueTypes = data
           handleHidingGlobalLoader(this, status)
         }

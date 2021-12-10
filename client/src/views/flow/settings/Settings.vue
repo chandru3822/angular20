@@ -126,6 +126,10 @@ export default {
         title: 'Defaults',
         show: this.hasSettingsAccess,
       }, {
+        path: '/settings/proposals', //NOTE (Kaleb) is this the right spot
+        title: 'Proposals',
+        show: true,
+      }, {
         path: '/settings/states',
         title: 'States',
         show: this.hasSettingsAccess

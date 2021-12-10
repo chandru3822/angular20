@@ -10,7 +10,6 @@
        ot.object_type,
        cott.tab_name,
        coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
-       et.event_type,
        coalesce((
                     SELECT array_to_json(array_agg(row_to_json(customFields)))
                     FROM (

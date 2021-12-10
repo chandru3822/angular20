@@ -169,7 +169,7 @@ BEGIN
                                        u.first_name,
                                        u.last_name,
                                        coalesce(
-                                               round(pd.system_size::numeric*opru.m1_allocation,2),
+                                               round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end*opru.m1_allocation,2),
                                                0)  total,
                                        1 as milestone_id
                                 FROM flow.project p1
@@ -186,7 +186,7 @@ BEGIN
                                        u.first_name,
                                        u.last_name,
                                        coalesce(
-                                               round(pd.system_size::numeric*opru.m2_allocation,2),
+                                               round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end *opru.m2_allocation,2),
                                                0)  total,
                                        2 as milestone_id
                                 FROM flow.project p1
@@ -230,8 +230,8 @@ BEGIN
                          WHERE pc.project_id = p.id and cp.position_id = 1
                         )                                                       AS commission_plan_id,
 
-                        (SELECT coalesce(round(cp.total*pd.system_size::numeric
-                                                   - case when cpsa.fee_type_id = 1 then coalesce(pd.system_size::numeric*cpsa.fee_amount, 0) else
+                        (SELECT coalesce(round(cp.total*case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end
+                                                   - case when cpsa.fee_type_id = 1 then coalesce(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end *cpsa.fee_amount, 0) else
                                 coalesce(cpsa.fee_amount, 0) end ,2),
                                          0) total
                          FROM flow.project p2
@@ -240,7 +240,7 @@ BEGIN
                                   left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.milestone_id = 2 and  cpsa.source_id = pd.source
                          where p2.id = p.id) AS total_commissions,
                         coalesce(
-                                (select pd.system_size::numeric * op2.total
+                                (select case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * op2.total
                                  from brs.override_plan op2
                                           inner join brs.project_override po on op2.id = po.override_plan_id
                                  where po.project_id = p.id and op2.position_id = 1),
@@ -248,8 +248,8 @@ BEGIN
                         coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::NUMERIC
-                                             else coalesce(round(cpa.allocation*pd.system_size::numeric- case when cpsa.milestone_id =1 then
-                                                                                                                             case when cpsa.fee_type_id = 1 then coalesce(pd.system_size::numeric* cpsa.fee_amount,0)
+                                             else coalesce(round(cpa.allocation*case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end - case when cpsa.milestone_id =1 then
+                                                                                                                             case when cpsa.fee_type_id = 1 then coalesce(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * cpsa.fee_amount,0)
                                                                                                                                   else coalesce(cpsa.fee_amount,0) end
                                                                                                                          else 0 end,2),
                                                            0) end total
@@ -263,8 +263,8 @@ BEGIN
                                  WHERE p1.id = p.id ),0) + coalesce(
                                 (SELECT case when pd.cancelled_date is not null THEN
                                                  0::NUMERIC
-                                             else coalesce(round(cpa.allocation*pd.system_size::numeric-case when cpsa.milestone_id =2 then
-                                                                                                                            case when cpsa.fee_type_id = 1 then coalesce(pd.system_size::numeric* cpsa.fee_amount,0)
+                                             else coalesce(round(cpa.allocation*case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end -case when cpsa.milestone_id =2 then
+                                                                                                                            case when cpsa.fee_type_id = 1 then coalesce(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * cpsa.fee_amount,0)
                                                                                                                                  else coalesce(cpsa.fee_amount,0) end
                                                                                                                         else 0 end,2),
                                                            0) end total
@@ -278,7 +278,7 @@ BEGIN
                         coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::numeric
-                                             else coalesce(round(pd.system_size::numeric*(select sum(m1_allocation)
+                                             else coalesce(round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end *(select sum(m1_allocation)
                                                                                                      from brs.override_plan_receiving_user opru
                                                                                                      where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
@@ -288,7 +288,7 @@ BEGIN
                                  WHERE p1.id = p.id),0) + coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::NUMERIC
-                                             else coalesce(round(pd.system_size::numeric * (select sum(m2_allocation)
+                                             else coalesce(round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * (select sum(m2_allocation)
                                                                                                        from brs.override_plan_receiving_user opru
                                                                                                        where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
