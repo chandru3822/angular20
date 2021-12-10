@@ -79,7 +79,6 @@ public class BlueravenCustomFieldService {
     if (cf.getCustomFieldSqlKey() != null) {
       final var sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
       if (sql != null) {
-        cf.setHasListValues(true);
         final var listOfValues =
             sqlCache.queryBySql(
                 sql,
@@ -88,12 +87,16 @@ public class BlueravenCustomFieldService {
         cf.setListOfValues(listOfValues);
       }
     } else if (cf.getCompanySystemListId() != null) {
-      cf.setHasListValues(true);
       List<ListOfValue> listOfValues =
           systemListService.getSystemListOptionsForCompany(
               cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
       cf.setListOfValues(listOfValues);
     }
+
+    if (!cf.getListOfValues().isEmpty()) {
+      cf.setHasListValues(true);
+    }
+
     return cf;
   }
 
