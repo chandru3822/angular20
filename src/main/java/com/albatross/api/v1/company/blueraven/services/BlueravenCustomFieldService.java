@@ -81,7 +81,10 @@ public class BlueravenCustomFieldService {
       if (sql != null) {
         cf.setHasListValues(true);
         final var listOfValues =
-            sqlCache.queryBySql(sql, Map.of("userId", user.trueUserId()), ListOfValue.class);
+            sqlCache.queryBySql(
+                sql,
+                Map.of("userId", user.trueUserId(), "companyId", user.getCompanyId()),
+                ListOfValue.class);
         cf.setListOfValues(listOfValues);
       }
     } else if (cf.getCompanySystemListId() != null) {
@@ -184,7 +187,8 @@ public class BlueravenCustomFieldService {
         params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
         params.put("companyId", customField.getCompanyId());
         params.put("systemListId", customField.getCompanySystemListId());
-        params.put("listOptionIds", createSqlArrayOfType("int",  customField.getSystemListOptionIds()));
+        params.put(
+            "listOptionIds", createSqlArrayOfType("int", customField.getSystemListOptionIds()));
         params.put("createdById", user.trueUserId());
         params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
@@ -232,14 +236,14 @@ public class BlueravenCustomFieldService {
     }
   }
 
-    private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-      if (array != null && !array.isEmpty()) {
-        try (Connection connection = dataSource.getConnection()) {
-          return connection.createArrayOf(typeName, array.toArray());
-        }
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
       }
-      return null;
     }
+    return null;
+  }
 
   public void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
     User currentUser = securityService.getCurrentUser();
@@ -271,7 +275,8 @@ public class BlueravenCustomFieldService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
 
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<>() {};
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef =
+          new TypeReference<>() {};
       bw.registerCustomEditor(
           List.class,
           "customFieldObjectTypes",
@@ -283,7 +288,9 @@ public class BlueravenCustomFieldService {
 
       TypeReference<List<Long>> systemListOptionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
-        List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionsRef, objectMapper));
+          List.class,
+          "systemListOptionIds",
+          new JsonCollectionDeserializer(systemListOptionsRef, objectMapper));
     }
   }
 }
