@@ -116,7 +116,9 @@ public class SmartlistServiceTests {
 
   @Test
   public void processStepMain() {
-//    final List<Long> currentlyFailingProcessStepMain = List.of(1359L,1361L,1370L,1395L,1427L,1474L,1964L,2390L,2392L,2413L,2416L,2441L,2568L,2914L);
+    final var currentlyFailingProcessStepMain = List.of(9, 29, 150, 161, 172, 374, 414, 469, 526, 961, 1038, 1116, 1168, 1169, 1188, 1199, 1220, 1310, 1362, 1432, 1433, 1440, 1499, 1526, 1588, 1680, 1699, 1700, 1746, 1755, 1937, 1945, 2014, 2021, 2077, 2313, 2348, 2349, 2483, 2497, 2634, 2715, 2735, 2765, 2774, 2823, 2906, 3128);
+
+    final var newFailing = List.of(19, 2903);
 
     final String query = """
       select s.id
@@ -135,11 +137,11 @@ public class SmartlistServiceTests {
         log.info("Running smartlist ID: " + id);
         smartlistService.getSmartlistResults(id);
       } catch (Exception e) {
-//        if (!currentlyFailingProcessStepNonMain.contains(id)) {
+        if (!currentlyFailingProcessStepMain.contains(id.intValue())) {
           log.error(String.format("Failed on smartlist ID: %s", id));
           log.info(e.getMessage());
-//          fail(e.getMessage());
-//        }
+          fail(e.getMessage());
+        }
       }
     });
   }
