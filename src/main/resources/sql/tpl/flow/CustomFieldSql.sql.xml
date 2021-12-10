@@ -60,16 +60,12 @@
   ]]></customFieldSql.brs.designLogNumbers.smartlist>
 
   <customFieldSql.brs.availableStates><![CDATA[
-  select s.id,
-         s.state as name
-  from flow.state s
-  where not exists (
-          select state_id
-          from flow.company_state cs
-          where company_id = :companyId
-            and s.id = cs.state_id
-      )
-  order by s.state
+select s.id,
+       s.state as name
+from flow.state s
+         inner join flow.company_state cs on s.id = cs.state_id
+where cs.company_id = :companyId
+order by s.state
   ]]></customFieldSql.brs.availableStates>
 
   <customFieldSql.flow.states><![CDATA[
