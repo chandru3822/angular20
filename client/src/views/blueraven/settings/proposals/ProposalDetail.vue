@@ -291,7 +291,6 @@ export default {
       return this.values?.filter(v=>v.versionId == this.id).length > 0
     },
     propType() {
-      console.log({propType: this.types[this.tab]})
       return this.types[this.tab] ?? {};
     }
   },
@@ -311,11 +310,11 @@ export default {
       return Object.values(item)
         .filter(v => v.value !== undefined)
         .some(v => {
-           if (Array.isArray(v.value)) {
+          if (Array.isArray(v.value)) {
             const needle = search?.toLowerCase();
             return v.value?.some(f => f.toLowerCase().indexOf(needle) > -1);
           }
-          if (v.type === "text" || v.type === "system") {
+          if (v.type === "text" || v.type === "system" || v.type === 'System List') {
             const needle = search?.toLowerCase();
             return v?.value?.toLowerCase().indexOf(needle) > -1;
           }
