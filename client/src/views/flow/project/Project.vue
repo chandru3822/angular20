@@ -121,16 +121,17 @@
                 <span>{{ project.companyName }}</span><br/>
                 <span class="project-company-subheader">Company</span>
               </div>
-              <div v-if="!displayChangeOwner" class="d-inline-block">
+              <div class="d-inline-block">
                 <div v-if="project.owner && project.owner.userId">
-                  <v-row>
+                  <v-row v-if="!displayChangeOwner">
                     <v-avatar
                       :tile="false"
                       :size="40"
                       color="grey lighten-4"
                       class="account-img mr-4 mt-1"
                     >
-                      <v-img name="accountImg" v-if="project.owner.presignedUrl" :src="project.owner.presignedUrl"></v-img>
+                      <v-img name="accountImg" v-if="project.owner.presignedUrl"
+                             :src="project.owner.presignedUrl"></v-img>
                       <img v-else name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
                     </v-avatar>
                     <div class="d-inline-block">
@@ -140,29 +141,29 @@
                   </v-row>
                   <v-row>
                     <v-col class="pa-0">
-                    <div>
-                      {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
-                    </div>
+                      <div  v-if="!displayChangeOwner">
+                        {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+                      </div>
 
-                    <div v-if="displayChangeOwner && !projectOwnerIsReadOnly()">
-                      <v-autocomplete v-model="project.owner"
-                                      :items="availableOwners"
-                                      label="Select Owner"
-                                      item-text="fullName"
-                                      return-object
-                                      autocomplete="off"
-                                      @change="updateOwner"
-                                      attach
-                      >
-                      </v-autocomplete>
-                    </div>
-                    <v-btn text x-small class="change-owner-button"
-                           v-if="!projectOwnerIsReadOnly()"
-                           @click="[displayChangeOwner = !displayChangeOwner, getOwners()]">
-                      <span v-if="displayChangeOwner">cancel</span>
-                      <span v-else-if="project.owner && project.owner.userId">change</span>
-                      <span v-else>add owner</span>
-                    </v-btn>
+                      <div v-if="displayChangeOwner && !projectOwnerIsReadOnly()">
+                        <v-autocomplete v-model="project.owner"
+                                        :items="availableOwners"
+                                        label="Select Owner"
+                                        item-text="fullName"
+                                        return-object
+                                        autocomplete="off"
+                                        @change="updateOwner"
+                                        attach
+                        >
+                        </v-autocomplete>
+                      </div>
+                      <v-btn text x-small class="change-owner-button"
+                             v-if="!projectOwnerIsReadOnly()"
+                             @click="[displayChangeOwner = !displayChangeOwner, getOwners()]">
+                        <span v-if="displayChangeOwner">cancel</span>
+                        <span v-else-if="project.owner && project.owner.userId">change</span>
+                        <span v-else>add owner</span>
+                      </v-btn>
                     </v-col>
                   </v-row>
                 </div>
@@ -492,16 +493,18 @@ export default {
       }
     },
     getOwners: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/project/owners`)
-        this.availableOwners = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if(this.displayChangeOwner) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/project/owners`)
+          this.availableOwners = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
   }

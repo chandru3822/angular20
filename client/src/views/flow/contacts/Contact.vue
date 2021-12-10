@@ -10,7 +10,7 @@
         </v-card-title>
 
         <v-card-text class="pt-4">
-          You have unsaved {{getDirtyText()}}. <br/>
+          You have unsaved {{ getDirtyText() }}. <br/>
           Are you sure you want to continue without saving?
         </v-card-text>
 
@@ -35,12 +35,12 @@
       <v-col cols="6" class="text-left pb-2">
         <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
         <div class="contact-title">
-          {{contact.fullName}}
+          {{ contact.fullName }}
           <v-menu
-              v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
-              bottom
-              offset-y
-              :close-on-content-click="false"
+            v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+            bottom
+            offset-y
+            :close-on-content-click="false"
           >
             <template v-slot:activator="{ on: menu }">
               <v-tooltip top>
@@ -78,10 +78,10 @@
           </v-menu>
         </div>
         <div class="contact-subtitle">
-          {{contact.street1}} - {{contact.city}}, {{contact.state}}
+          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
         </div>
       </v-col>
-      <v-col cols="4" class="contact-owner pb-2">
+      <v-col cols="4" class="contact-owner pb-2 text-right">
         <div class="d-inline-block mr-4" v-if="contact.companyId !== this.companyId">
           <v-avatar
             :tile="false"
@@ -91,47 +91,58 @@
           >
             <v-icon color="white" size="20">mdi-office-building</v-icon>
           </v-avatar>
-          <span>{{contact.companyName}}</span><br/>
+          <span>{{ contact.companyName }}</span><br/>
           <span class="project-company-subheader">Company</span>
         </div>
-        <div v-if="!changeOwner || !userCanEdit" class="d-inline-block">
+        <div class="d-inline-block">
           <div v-if="contact.owner">
-            <v-avatar
+            <v-row v-if="!changeOwner">
+              <v-avatar
                 :tile="false"
-                :size="25"
+                :size="40"
                 color="grey lighten-4"
                 class="account-img mr-2"
-            >
-              <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
-            </v-avatar>
-            {{contact.owner.fullName}}<br/>
-            {{contact.owner.position}}
+              >
+                <v-img name="accountImg" v-if="contact.owner.presignedUrl" :src="contact.owner.presignedUrl"></v-img>
+                <img name="accountImg" v-else src="../../../assets/flow/user_img_placeholder.png">
+              </v-avatar>
+              <div class="d-inline-block">
+                {{ contact.owner.fullName }}<br/>
+                {{ contact.owner.position }}
+              </div>
+            </v-row>
+            <v-row>
+              <v-col class="pa-0">
+                <div v-if="changeOwner && userCanEdit">
+                  <v-autocomplete v-model="contact.owner"
+                                  :items="owners"
+                                  label="Select Owner"
+                                  item-text="fullName"
+                                  return-object
+                                  autocomplete="off"
+                                  @change="updateOwner"
+                                  attach
+                  >
+                  </v-autocomplete>
+                </div>
+                <v-btn text x-small class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
+                       @click="changeOwner = !changeOwner">
+                  <span v-if="changeOwner">cancel</span>
+                  <span v-else-if="contact.owner && contact.owner.userId">change</span>
+                  <span v-else style="font-size: 15px;">add owner</span>
+                </v-btn>
+              </v-col>
+            </v-row>
           </div>
         </div>
-        <div v-if="changeOwner && userCanEdit">
-          <v-autocomplete v-model="contact.owner"
-                    :items="owners"
-                    label="Select Owner"
-                    item-text="fullName"
-                    return-object
-                    autocomplete="off"
-                    @change="updateOwner"
-                          attach
-          >
-          </v-autocomplete>
-        </div>
-        <v-btn text x-small class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
-               @click="changeOwner = !changeOwner">
-          <span v-if="changeOwner">cancel</span>
-          <span v-else-if="contact.owner && contact.owner.userId">change</span>
-          <span v-else style="font-size: 15px;">add owner</span>
-        </v-btn>
       </v-col>
       <v-col cols="2" class="contact-owner pb-2">
         Associated Projects<br/>
         <div v-for="p in contact.projects" :key="p.id">
-          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}/details`">{{p.projectName}} <span v-if="contact.projects && contact.projects.length > 1">- {{p.id}}</span></router-link>
-          <span v-else>{{p.projectName}}</span>
+          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}/details`">
+            {{ p.projectName }} <span v-if="contact.projects && contact.projects.length > 1">- {{ p.id }}</span>
+          </router-link>
+          <span v-else>{{ p.projectName }}</span>
         </div>
       </v-col>
     </v-row>
@@ -144,7 +155,8 @@
             <v-toolbar-items>
               <v-btn text v-if="userCanEdit"
                      :disabled="fieldsSaving"
-                     @click="validate(true)">Save</v-btn>
+                     @click="validate(true)">Save
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -287,10 +299,10 @@
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
           <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
+            <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-<!--              <v-btn text @click="saveContact">Save</v-btn>-->
+              <!--              <v-btn text @click="saveContact">Save</v-btn>-->
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -308,7 +320,7 @@
                           type="Contact"
         ></NotesAndActivity>
 
-        <Attachments :object-type-id="2" :contact-id="contactId" />
+        <Attachments :object-type-id="2" :contact-id="contactId"/>
       </v-col>
     </v-row>
 
@@ -335,7 +347,16 @@ import {AppMutations} from '@/stores/AppStore'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, isNumberOrHyphen, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  isNumberOrHyphen,
+  putRequest,
+  postRequest,
+  getRequestWithParams,
+  getSnackbar
+} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
 import {getCountries} from '@/services/countryService'
@@ -362,7 +383,7 @@ export default {
       }
     }
   },
-  data () {
+  data() {
     return {
       snackbar: {},
       states: [],
@@ -411,7 +432,7 @@ export default {
       ]
     }
   },
-  created () {
+  created() {
     this.getContact()
     this.getCompanyStates()
     this.getCountries()
@@ -419,7 +440,7 @@ export default {
     this.getCustomFieldGroups()
     this.getNotes()
   },
-  beforeRouteLeave (to, from, next) {
+  beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to
     // be navigated away from.
     // has access to `this` component instance.
@@ -440,7 +461,7 @@ export default {
     goToPath(path) {
       this.$router.push(path)
     },
-    async validate (saveContact) {
+    async validate(saveContact) {
       let valid = this.$refs.addressForm?.validate()
       if (valid && saveContact) {
         this.fieldsSaving = false;
@@ -449,41 +470,41 @@ export default {
       }
     },
     contactOwnerIsReadOnly() {
-      if(this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
+      if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.contact.ownerReadOnly
       }
     },
     async saveContact() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
         // save contact - tell server if address changed or not so we know whether to reload lat/long
-          this.contact.reloadCoordinates = this.addressChanged
-          const {data, status} = await postRequest(`/contact`, this.contact)
-          this.addressChanged = false
-          this.contact.reloadCoordinates = false
-          this.contact.projects = data.projects
-          this.dirtySystemFields = false
-          await this.saveCustomFieldValues()
+        this.contact.reloadCoordinates = this.addressChanged
+        const {data, status} = await postRequest(`/contact`, this.contact)
+        this.addressChanged = false
+        this.contact.reloadCoordinates = false
+        this.contact.projects = data.projects
+        this.dirtySystemFields = false
+        await this.saveCustomFieldValues()
 
-          try {
-            // Save BlueRaven Solar Contacts to Genesys
-            if (this.companyId === 3) {
-              await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
-            }
-          } catch (e) {
-            console.error('*** ERROR ***', e)
+        try {
+          // Save BlueRaven Solar Contacts to Genesys
+          if (this.companyId === 3) {
+            await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.fieldsSaving = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
-    async saveCustomFieldValues () {
+    async saveCustomFieldValues() {
       try {
         // save dirty custom field values
         const {data, status} = await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
@@ -502,7 +523,7 @@ export default {
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if(!match) {
+      if (!match) {
         this.dirtyCfvs.push(field)
       }
     },
@@ -519,7 +540,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getContact () {
+    async getContact() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/contact/${this.contactId}`)
@@ -535,13 +556,13 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getOwners () {
+    async getOwners() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
           contactId: parseInt(this.contactId)
         }
-        const {data, status} = await getRequestWithParams(`/contact/owners`, { params })
+        const {data, status} = await getRequestWithParams(`/contact/owners`, {params})
         this.owners = data
 
         handleHidingGlobalLoader(this, status)
@@ -555,9 +576,11 @@ export default {
     async getNotes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequestWithParams(`/note/getContactNotes`, { params: {
+        const {data, status} = await getRequestWithParams(`/note/getContactNotes`, {
+          params: {
             primaryId: this.contactId
-          }}, null, [])
+          }
+        }, null, [])
         this.notes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -581,7 +604,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getAvailableProcesses () {
+    async getAvailableProcesses() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
@@ -614,7 +637,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getCompanyStates () {
+    async getCompanyStates() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCompanyStates()
@@ -627,7 +650,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getCountries () {
+    async getCountries() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCountries(parseInt(this.companyId))
@@ -662,30 +685,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .contact-header {
-    border-bottom: solid 1px #EAEAF4
-  }
-  .contact-title {
-    font-size: 20px;
-  }
-  .contact-subtitle {
-    font-size: 15px;
-  }
-  .contact-status {
-    font-size: 15px;
-    display: flex;
-    align-items: flex-end;
-    text-align: left;
-  }
-  .contact-owner {
-    font-size: 15px;
-    /*display: flex;*/
-    /*align-items: flex-end;*/
-    text-align: right;
-  }
-  .change-owner-button {
-    text-decoration: underline;
-    text-transform: lowercase;
-  }
+.contact-header {
+  border-bottom: solid 1px #EAEAF4
+}
+
+.contact-title {
+  font-size: 20px;
+}
+
+.contact-subtitle {
+  font-size: 15px;
+}
+
+.contact-status {
+  font-size: 15px;
+  display: flex;
+  align-items: flex-end;
+  text-align: left;
+}
+
+.contact-owner {
+  font-size: 15px;
+  /*display: flex;*/
+  /*align-items: flex-end;*/
+  text-align: right;
+}
+
+.change-owner-button {
+  text-decoration: underline;
+  text-transform: lowercase;
+}
 </style>
 
