@@ -116,6 +116,14 @@ public class BlueravenCustomFieldService {
     } else {
       HashMap<String, Object> params = new HashMap<>();
       params.put("fieldName", customField.getFieldName());
+      params.put("sortListValuesAlphabetically", customField.getSortListValuesAlphabetically());
+      params.put("systemListId", customField.getCompanySystemListId());
+      params.put(
+        "systemListOptionIds",
+        null == customField.getSystemListOptionIds()
+          || customField.getSystemListOptionIds().isEmpty()
+          ? null
+          : createSqlArrayOfType("int", customField.getSystemListOptionIds()));
       Long id = null;
       boolean doInsertAfterHandlingOtherScenarios = false;
       boolean insertParentRecordIfNeeded = false;

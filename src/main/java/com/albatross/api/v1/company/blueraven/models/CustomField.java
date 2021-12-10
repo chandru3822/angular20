@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.models;
 
+import com.albatross.api.v1.flow.model.ListOfValue;
 import lombok.Getter;
 import lombok.Setter;
 

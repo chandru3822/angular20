@@ -6,7 +6,9 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CustomField;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +21,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -37,6 +36,7 @@ public class BlueravenCustomFieldGroupService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final ObjectMapper om;
+  private final SystemListService systemListService;
 
   public List<CustomFieldGroup> getCustomFieldGroupAssignmentsByObjectTypeId(Long sourceId, Long objectTypeId) {
     User user = securityService.getCurrentUser();
@@ -48,7 +48,36 @@ public class BlueravenCustomFieldGroupService {
       params.put("objectTypeId", objectTypeId);
 
       List<CustomFieldGroup> results = sqlCache.query("blueravenCustomFieldGroup.getAssignmentsByObjectType", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+      // brs custom fields cannot call custom sql that requires projectId, etc
+      handleCustomListOfValue(results, 3L);
+
       return results;
+    }
+  }
+
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
+    for(CustomFieldGroup cfg : results) {
+      for(CustomFieldValue cv : cfg.getCustomFieldValues()){
+        handleCustomListValueForCfv(cv, companyId);
+      }
+    }
+  }
+
+  private void handleCustomListValueForCfv(CustomFieldValue cv, Long companyId) {
+    if(null != cv.getCustomFieldSqlKey()) {
+      cv.setHasListValues(true);
+      String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
+      if(null != sql) {
+        cv.setHasListValues(true);
+        List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+        cv.setListOfValues(listOfValues);
+      }
+    } else if (null != cv.getCompanySystemListId()) {
+      cv.setHasListValues(true);
+//          cv.getIntValue() is passed so we can add to the sub option list any option already selected but no longer available in the list
+      List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue(), companyId);
+      cv.setListOfValues(listOfValues);
     }
   }
 
