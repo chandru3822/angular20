@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,7 +33,7 @@ public class AhjInspectionService {
   private SecurityService securityService;
 
   @Autowired
-  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public Optional<AhjInspectionDetail> getAhjInspectionDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -93,7 +94,7 @@ public class AhjInspectionService {
     if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState()) {
       params.put("ahjIds", inspection.getAhjIds());
       sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
-      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspection.getInspectionIds());
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspection.getInspectionIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -102,7 +103,7 @@ public class AhjInspectionService {
       } else {
         params.put("id", inspectionId);
         sqlCache.update("ahj.inspection.update", params);
-        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspectionId);
+        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspectionId);
       }
     }
 
