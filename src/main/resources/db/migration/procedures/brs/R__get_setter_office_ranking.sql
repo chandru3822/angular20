@@ -32,7 +32,9 @@ BEGIN
                  from flow.project p2
                      inner join brs.project_details pd2 on pd2.project_id = p2.id
                      inner join flow.contact c2 on c2.id = p2.contact_id
-                     inner join flow.user_position up2 on (up2.user_id = pd2.setter_user_id and up2.primary_flag is true and up2.position_id in (4,5))
+                     inner join flow.user_position up2 on (up2.user_id = pd2.setter_user_id and up2.primary_flag is true and up2.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS'))
                      inner join flow.org o2 on (o2.id = up2.org_id and o2.active_flag is true)
                  where pd2.source in (525, 526) --(Setter Gen, Retargeted)
                      and case when up2.end_date is not null
@@ -64,7 +66,9 @@ BEGIN
             from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.contact c on c.id = p.contact_id
-                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
+                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS') and up.archived is not true)
                 inner join flow.org o on (o.id = up.org_id and o.active_flag is true)
                 left join flow.organization_custom_field_value ocfv on ocfv.org_id = o.id
                 left join flow.list_of_value lov on ocfv.int_value = lov.id
