@@ -1264,12 +1264,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    getListValueName(item) {
-      let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
-        item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
-      let match = item.availableListOfValues.find(i => i.id === idToUse)
-      return match ? match.name : 'unknown'
-    },
+
     async saveRowChanges(rows) {
       if (rows?.length > 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)

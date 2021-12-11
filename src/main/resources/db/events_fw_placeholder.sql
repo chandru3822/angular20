@@ -1,3 +1,9 @@
+-- run these functions
+--get_pps_with_actions_and_requirements
+--get_project_process_step_event_requirements_with_values
+--get_availability_time_slots
+--pps_has_active_events
+
 drop FUNCTION if  exists flow.set_closer_appointment(p_project_id integer,
                                                      p_current_user_id integer,
                                                      p_project_process_step_id integer,
@@ -474,5 +480,27 @@ drop FUNCTION if exists brs.set_project_owner(int);
 
 insert into flow.system_value(system_value, archived)
   (select 'Current Project Process Step Event ID', false
-   from flow.system_value
    where not exists (select id from flow.system_value where system_value = 'Current Project Process Step Event ID'));
+
+--change the Installer unique behavior to be on Schedule Closer Appt instead of Closer Appt - per M.M. per Judson
+update flow.custom_field_group
+set unique_behavior_type_id = 2
+where process_step_id = 1
+  and group_name = 'Closer Appointment Scheduling'
+  and archived is false;
+
+-- add the db function that checks for active events on a pps
+insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+  select 'flow.pps_has_active_events', 3, 1, 'Project Process Step has Active Events', 'Checks to see if a project process step has any active events assigned to it.'
+   where not exists (select id from flow.db_function where function_name = 'flow.pps_has_active_events');
+;
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 'Project Process Step ID', 0,
+    6, 1, 3
+      where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_active_events')
+        and parameter_name = 'Project Process Step ID');
+
+insert into flow.company_function(company_function_name, db_function_id, company_id)
+select 'Project Process Step has Active Events', (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Project Process Step has Active Events');
