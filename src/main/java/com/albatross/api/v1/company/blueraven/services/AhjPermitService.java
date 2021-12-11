@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,7 +36,7 @@ public class AhjPermitService {
   private SecurityService securityService;
 
   @Autowired
-  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public Optional<AhjPermitDetail> getAhjPermitDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -95,7 +96,7 @@ public class AhjPermitService {
     if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState()) {
       params.put("ahjIds", permit.getAhjIds());
       sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
-      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(permit.getCustomFieldGroups(), permit.getPermitIds());
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permit.getPermitIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -104,7 +105,7 @@ public class AhjPermitService {
       } else {
         params.put("id", permitId);
         sqlCache.update("ahj.permit.update", params);
-        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), permitId);
+        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permitId);
       }
     }
 

@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjContact;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
@@ -35,7 +36,7 @@ public class AhjDesignService {
   private SecurityService securityService;
 
   @Autowired
-  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public Optional<AhjDesignDetail> getAhjDesignDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -75,7 +76,7 @@ public class AhjDesignService {
     if (design.getUpdateAllInState() != null && design.getUpdateAllInState()) {
       params.put("ahjIds", design.getAhjIds());
       sqlCache.update("ahj.design.updateAllAhjDesignsInState", params);
-      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(design.getCustomFieldGroups(), design.getDesignIds());
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), design.getDesignIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -84,7 +85,7 @@ public class AhjDesignService {
       } else {
         params.put("id", designId);
         sqlCache.update("ahj.design.update", params);
-        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(design.getCustomFieldGroups(), designId);
+        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), designId);
       }
     }
 
