@@ -220,7 +220,11 @@ public class SMSService {
         params.put("created", null);
 
         jdbcTemplate.update(queueUpdate, params);
-        log.error("TWILIO: ERROR: {}", e.toString());
+        String errorMsg = e.toString();
+        if(!errorMsg.contains("violates a blacklist rule") && !errorMsg.contains("is not a valid phone number")) {
+          //cron logs are noisy. only log error if not one we are expecting
+          log.error("TWILIO: ERROR: {}", e.toString());
+        }
       }
     }
   }
