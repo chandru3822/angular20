@@ -89,5 +89,20 @@
     ]]>
   </company.updateCompany>
 
+  <company.getConfigurationValues><![CDATA[
+    select *
+    from flow.company_configuration_value
+    where archived is false
+    order by name;
+  ]]></company.getConfigurationValues>
+
+  <company.updateConfigurationValue><![CDATA[
+    update flow.company_configuration_value
+      set value = trim(:value),
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+  ]]></company.updateConfigurationValue>
+
 
 </sql>
