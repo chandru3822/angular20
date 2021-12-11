@@ -122,8 +122,9 @@ export default {
         header: 'Company',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/company',
+        path: '/settings/company/settings',
         title: 'Defaults',
+        pathMatch: '/settings/company',
         show: this.hasSettingsAccess,
       }, {
         path: '/settings/proposals', //NOTE (Kaleb) is this the right spot

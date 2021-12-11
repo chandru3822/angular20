@@ -142,7 +142,7 @@ import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/h
 import constants from '@/helpers/constants'
 
 export default {
-  name: 'UserProfile',
+  name: 'CompanySettings',
 
   data () {
     return {
