@@ -6,7 +6,9 @@ AS $function$
         RETURN (select array(
             select distinct up.user_id
             from flow.user_position up
-            where up.position_id in (4,5,573,6,73) --(Setter, Setter Manager)
+            where up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                     from flow.company_configuration_value
+                                     where code = 'SETTER_POSITION_IDS') --(Setter, Setter Manager)
                 and up.org_id is not null
                 and case when ARRAY_LENGTH( p_org_ids, 1 ) > 1 then
                            up.org_id = any(p_org_ids) else 1=1 end
