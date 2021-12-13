@@ -17,5 +17,6 @@ public class CompanyObjectType {
   private String objectType;
   private Boolean archived, statusReadOnly, ownerReadOnly;
   private List<WhiteListedPosition> statusReadOnlyWhiteListedPositions, ownerReadOnlyWhiteListedPositions;
+
 }
 

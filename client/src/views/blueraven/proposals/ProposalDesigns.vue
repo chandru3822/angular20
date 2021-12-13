@@ -43,7 +43,7 @@
       async getProposalDesigns () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/proposals/designs/${this.projectId}`, 'blueraven')
+          const {data, status} = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven')
           this.designs = data
           handleHidingGlobalLoader(this, status)
         } catch (e) {

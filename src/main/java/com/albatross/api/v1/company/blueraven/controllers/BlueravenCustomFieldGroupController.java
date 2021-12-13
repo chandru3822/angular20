@@ -82,4 +82,9 @@ public class BlueravenCustomFieldGroupController {
     customFieldGroupService.updateFieldsInGroup(customFields);
   }
 
+  @PutMapping(value = "/saveUseParentData", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveUseParentData(@RequestBody CustomField customField) {
+    customFieldGroupService.saveUseParentData(customField);
+  }
+
 }
