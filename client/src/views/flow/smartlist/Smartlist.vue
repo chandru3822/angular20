@@ -240,7 +240,7 @@
 
                 <v-col cols="4" md="2">
                   <v-checkbox
-                      v-if="isProcessStepObjectType"
+                      v-if="isProcessStepOrEvent"
                       v-model="smartlist.mainProcessSteps"
                       label="Primary Steps Only"
                   />
@@ -369,7 +369,7 @@
                 <v-col cols="1" class="text-left smartlist-field">Order</v-col>
                 <v-col cols="3" class="text-left smartlist-field">Field Name</v-col>
                 <v-col cols="4" class="text-left smartlist-field">Object Type</v-col>
-                <v-col cols="4" class="text-left smartlist-field">Process Step Name</v-col>
+                <v-col cols="4" class="text-left smartlist-field">Process Step/Event Name</v-col>
               </v-row>
             </v-list-item-content>
 
@@ -403,7 +403,7 @@
                   <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
                   <v-col cols="3" class="text-left">{{field.name}}</v-col>
                   <v-col cols="4" class="text-left">{{field.objectType}}</v-col>
-                  <v-col cols="4" class="text-left">{{field.processStepName}}</v-col>
+                  <v-col cols="4" class="text-left">{{(field.objectTypeId === 6) ? field.eventName : field.processStepName}}</v-col>
                 </v-row>
               </v-list-item-content>
 
@@ -579,8 +579,8 @@ export default {
     isNewFieldButtonDisabled () {
       return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
     },
-    isProcessStepObjectType () {
-      return this.smartlist.companyObjectTypeId !== null && this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.id === 4
+    isProcessStepOrEvent () {
+      return this.smartlist.companyObjectTypeId !== null && ([4,6].includes(this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.objectTypeId))
     },
     isUserOrgObjectType () {
       if (this.smartlist.companyObjectTypeId) {
@@ -750,7 +750,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        if (!this.isProcessStepObjectType) {
+        if (!this.isProcessStepOrEvent) {
           this.smartlist.mainProcessSteps = true
         }
 
@@ -812,7 +812,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        if (!this.isProcessStepObjectType) {
+        if (!this.isProcessStepOrEvent) {
           this.smartlist.mainProcessSteps = true
         }
 
