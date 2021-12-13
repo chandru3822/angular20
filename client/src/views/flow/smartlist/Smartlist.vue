@@ -603,10 +603,12 @@ export default {
     filteredCompanyObjectTypes () {
       if (this.smartlist.id) {
         let objectTypeIds = []
-        if ([1, 2, 4, 6].includes(this.smartlist.objectTypeId)) {
-          objectTypeIds = [1, 2, 4, 6]
-        } else {
-          objectTypeIds = [3, 5]
+        if ([1,2,4].includes(this.smartlist.objectTypeId)) {
+          objectTypeIds = [1,2,4]
+        } else if ([3,5].includes(this.smartlist.objectTypeId)) {
+          objectTypeIds = [3,5]
+        } else if (this.smartlist.objectTypeId === 6) {
+          objectTypeIds = [1,2,4,6]
         }
         return this.companyObjectTypes.filter(t => objectTypeIds.includes(t.objectTypeId))
       } else {
