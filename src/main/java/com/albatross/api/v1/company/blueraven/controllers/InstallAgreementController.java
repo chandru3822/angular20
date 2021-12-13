@@ -73,7 +73,8 @@ public class InstallAgreementController {
   }
 
   @GetMapping(value = "/generate/{projectId}/{proposalNbr}")
-  public ResponseEntity<Object> generate(@PathVariable Long projectId, @PathVariable Long proposalNbr, @RequestParam(required = false) String sendVia) throws Exception {
+  public ResponseEntity<Object> generate(@PathVariable Long projectId, @PathVariable Long proposalNbr,
+                                         @PathVariable(required = false) String sendVia) throws Exception {
     try {
       return ResponseEntity.ok(installAgreementRepository.generateLoanApplication(projectId, proposalNbr, sendVia));
     } catch (Exception e) {

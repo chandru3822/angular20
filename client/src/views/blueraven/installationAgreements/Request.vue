@@ -82,8 +82,7 @@
                 </div>
 
                 <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
-                  <span v-if="requestItem.creditLastCheckedBySunpower">Update Finance Details</span>
-                  <span v-else>Finance Application</span>
+                  <span>Finance Application</span>
                 </v-btn>
               </v-col>
               <v-col>
@@ -166,7 +165,6 @@ export default {
       sendLoanDocs: true,
       sendInstallationAgreement: false,
       isSpanish: false,
-      creditLastCheckedBySunpower: false,
       projectId: ''
     },
     currentEmail: '',
@@ -223,7 +221,6 @@ export default {
       this.requestItem.email = it.email
       this.currentEmail = it.email
       this.requestItem.projectId = it.project_id
-      this.requestItem.creditLastCheckedBySunpower = it.credit_last_checked_by_sunpower
 
       // get proposal numbers
       try {
@@ -298,8 +295,8 @@ export default {
           status
         } = await getRequest('/install-agreement/generate/' + this.requestItem.projectId + '/' + this.requestItem.proposalNbr, 'blueraven')
         // Handle case for Sunpower update
-        if (data == 'Quote Updated') {
-          this.snackbar = getSnackbar('SUCCESS', 'Quote Updated')
+        if (data == 'Application already exists, customer information updated if applicable') {
+          this.snackbar = getSnackbar('SUCCESS', 'Application already exists, customer information updated if applicable')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         else {
