@@ -184,6 +184,7 @@ public class BlueravenCustomFieldGroupService {
       params.put("customFieldId", customField.getId());
       params.put("createdById", currentUser.trueUserId());
       params.put("fieldOrder", customField.getFieldOrder());
+      params.put("ancillaryCustomFieldGroupAssignmentId", customField.getAncillaryCustomFieldGroupAssignmentId());
 
       Long id = sqlCache.updateReturningId("blueravenCustomFieldGroup.assignment.addFieldToGroup", params, "id").longValue();
 
@@ -231,6 +232,17 @@ public class BlueravenCustomFieldGroupService {
     for(CustomField cf : customFields){
       updateFieldInGroup(cf);
     }
+  }
+
+  public void saveUseParentData(CustomField customField) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("useParentData", customField.getUseParentData());
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+
+    sqlCache.update("blueravenCustomFieldGroup.assignment.saveUseParentData", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

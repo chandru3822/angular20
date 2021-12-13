@@ -1,7 +1,8 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
+import com.albatross.api.v1.company.blueraven.models.CompanyObjectType;
 import com.albatross.api.v1.company.blueraven.services.BlueravenObjectTypeService;
-import com.albatross.api.v1.flow.model.CompanyObjectType;
+import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,9 @@ public class BlueRavenObjectTypeController {
     return objectTypeService.getCompanyObjectTypeDetail(typeId);
   }
 
+  @GetMapping(value = "/{typeId}/getParentObjectsWithTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CombinedStepAndType> getParentObjectsWithTypes(@PathVariable Long typeId) {
+    return objectTypeService.getParentObjectsWithTypes(typeId);
+  }
 
 }
