@@ -70,11 +70,11 @@ public class PostalCodeService {
     return results;
   }
 
-  public List<PostalCode> getCodesForZone(Long zoneId) {
+  public List<PostalCodeZonePostalCode> getCodesForZone(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
 
-    List<PostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCode.class);
+    List<PostalCodeZonePostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCodeZonePostalCode.class);
     return results;
   }
 
@@ -214,7 +214,7 @@ public class PostalCodeService {
     return result.orElse(null);
   }
 
-  public ResponseEntity addCode(PostalCode pc) {
+  public ResponseEntity addCode(PostalCodeZonePostalCode pc) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -222,7 +222,7 @@ public class PostalCodeService {
     params.put("postalCode", pc.getPostalCode());
     params.put("createdById", user.trueUserId());
 
-    Optional<PostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCode.class);
+    Optional<PostalCodeZonePostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCodeZonePostalCode.class);
     if(result.isPresent() && !result.get().getPostalCodeZoneArchived()) {
       HashMap<String, Object> errorObj = new HashMap<>();
       errorObj.put("message", "Error: Postal Code Already In Use");
@@ -344,11 +344,11 @@ public class PostalCodeService {
     return null;
   }
 
-  public PostalCode getZonePostalCode(Long id) {
+  public PostalCodeZonePostalCode getZonePostalCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCode> result = sqlCache.get("postalCode.getZoneCode", params, PostalCode.class);
+    Optional<PostalCodeZonePostalCode> result = sqlCache.get("postalCode.getZoneCode", params, PostalCodeZonePostalCode.class);
     return result.orElse(null);
   }
 
@@ -362,7 +362,7 @@ public class PostalCodeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<PostalCode>> postalCodesRef = new TypeReference<>() {};
+      TypeReference<List<PostalCodeZonePostalCode>> postalCodesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "postalCodes",
         new JsonCollectionDeserializer(postalCodesRef, objectMapper));
 

@@ -14,7 +14,7 @@
     and case when :searchQuery::text is not null then
                  lower(translate(pcz.zone_name, '*,.&', '')) like '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%'
             OR pcz.id in (select pc.postal_code_zone_id
-                from flow.postal_code pc
+                from flow.postal_code_zone_postal_code pc
                 where pc.archived is not true
                 and pc.postal_code like '%' || :searchQuery::text || '%')
             OR pcz.id in (select distinct pczu.postal_code_zone_id
@@ -40,7 +40,7 @@
        distribution_time_frame_days,
        schedulable_future_days
     from flow.postal_code_zone pcz
-        inner join flow.postal_code pc on pcz.id = pc.postal_code_zone_id
+        inner join flow.postal_code_zone_postal_code pc on pcz.id = pc.postal_code_zone_id
     where company_id = :companyId
       and pcz.archived is not true
       and pc.archived is not true
@@ -77,7 +77,7 @@
            pc.postal_code as "postalCode",
            pc.postal_code_zone_id as "postalCodeZoneId",
            pc.archived
-    from flow.postal_code pc
+    from flow.postal_code_zone_postal_code pc
     where pc.postal_code_zone_id = :zoneId
       and pc.archived is not true
     order by pc.postal_code
@@ -193,7 +193,7 @@
   ]]></postalCode.getZoneUser>
 
   <postalCode.updateZoneCode><![CDATA[
-      update flow.postal_code
+      update flow.postal_code_zone_postal_code
       set archived = false,
           date_modified = now(),
           modified_by_id = :createdById,
@@ -202,12 +202,12 @@
   ]]></postalCode.updateZoneCode>
 
   <postalCode.addZoneCode><![CDATA[
-    insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id, date_modified, modified_by_id)
+    insert into flow.postal_code_zone_postal_code(postal_code_zone_id, postal_code, date_created, created_by_id, date_modified, modified_by_id)
     values (:postalCodeZoneId, trim(:postalCode), now(), :createdById, now(), :createdById)
   ]]></postalCode.addZoneCode>
 
   <postalCode.deleteZoneCode><![CDATA[
-    update flow.postal_code
+    update flow.postal_code_zone_postal_code
     set archived = true,
         modified_by_id = :modifiedById,
         date_modified = now()
@@ -219,7 +219,7 @@
        pc.postal_code_zone_id,
        pc.postal_code,
        pc.archived
-    from flow.postal_code pc
+    from flow.postal_code_zone_postal_code pc
     where pc.id = :id
   ]]></postalCode.getZoneCode>
 
@@ -227,7 +227,7 @@
     select pczu.*
     from flow.postal_code_zone_user pczu
              inner join flow.postal_code_zone pcz on pczu.postal_code_zone_id = pcz.id
-             inner join flow.postal_code pc on pcz.id = pc.postal_code_zone_id
+             inner join flow.postal_code_zone_postal_code pc on pcz.id = pc.postal_code_zone_id
     where pczu.user_id = :userId
       and pczu.archived is not true
       and pcz.company_id = :companyId
@@ -334,7 +334,7 @@
        pc.postal_code,
        pc.archived,
        pcz.archived as postal_code_zone_archived
-from flow.postal_code pc
+from flow.postal_code_zone_postal_code pc
   inner join flow.postal_code_zone pcz on pc.postal_code_zone_id = pcz.id
 where pc.postal_code = :postalCode
   and pc.archived is not true
