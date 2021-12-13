@@ -961,12 +961,17 @@ export default {
     checkObjectTypeChange () {
       if (this.smartlist.id) {
         const newObjectTypeId = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)?.objectTypeId
-        if ([1, 2, 4].includes(this.originalObjectTypeId) && [3, 5].includes(newObjectTypeId)) {
+        if ([1, 2, 4].includes(this.originalObjectTypeId) && [3, 5, 6].includes(newObjectTypeId)) {
           this.showObjectTypeDialog = true
           return
         }
 
-        if ([3, 5].includes(this.originalObjectTypeId) && [1, 2, 4].includes(newObjectTypeId)) {
+        if ([3, 5].includes(this.originalObjectTypeId) && [1, 2, 4, 6].includes(newObjectTypeId)) {
+          this.showObjectTypeDialog = true
+          return
+        }
+
+        if (this.originalObjectTypeId === 6 && newObjectTypeId !== 6) {
           this.showObjectTypeDialog = true
         }
       }

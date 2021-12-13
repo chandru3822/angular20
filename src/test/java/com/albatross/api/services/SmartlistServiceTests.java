@@ -118,6 +118,7 @@ public class SmartlistServiceTests {
   public void processStepMain() {
     final var currentlyFailingProcessStepMain = List.of(9, 29, 150, 161, 172, 374, 414, 469, 526, 961, 1038, 1116, 1168, 1169, 1188, 1199, 1220, 1310, 1362, 1432, 1433, 1440, 1499, 1526, 1588, 1680, 1699, 1700, 1746, 1755, 1937, 1945, 2014, 2021, 2077, 2313, 2348, 2349, 2483, 2497, 2634, 2715, 2735, 2765, 2774, 2823, 2906, 3128);
 
+    //@TODO: These are the smartlist which are failing due to event changes. This list should be empty by event release
     final var newFailing = List.of(19, 2903);
 
     final String query = """
