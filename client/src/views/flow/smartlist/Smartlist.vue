@@ -713,6 +713,11 @@ export default {
       try {
         const {data} = await getRequest(`/event/${this.newField.eventId}/processStepEvents`)
         this.fetchedProcessStepEvents = data
+        const psEventsForSelectedEvent = data.filter(pse => pse.eventId === this.newField.eventId)
+        //if this event is attached to only one process step, autoselect the process step event id
+        if (psEventsForSelectedEvent.length === 1) {
+          this.newField.processStepEventId = psEventsForSelectedEvent[0].id
+        }
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process step events')
