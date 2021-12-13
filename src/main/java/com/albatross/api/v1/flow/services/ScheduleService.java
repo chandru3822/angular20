@@ -196,7 +196,7 @@ public class ScheduleService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProjectEvent>> eventsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStepEvent>> eventsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "events",
           new JsonCollectionDeserializer(eventsRef, objectMapper));
     }

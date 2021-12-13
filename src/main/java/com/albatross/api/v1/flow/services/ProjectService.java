@@ -480,9 +480,9 @@ public class ProjectService {
       new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<ProjectEvent> getEventsByProjectId(Long projectId) {
+  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId) {
     return sqlCache.query("project.getEventsByProjectId",
-      ImmutableMap.of("projectId", projectId), ProjectEvent.class);
+      ImmutableMap.of("projectId", projectId), ProjectProcessStepEvent.class);
   }
 
   public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {

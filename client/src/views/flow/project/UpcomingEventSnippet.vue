@@ -23,11 +23,11 @@
         <template #item="{ item, index }">
           <tr>
             <td class="text-left" id="qa-event-link">
-              {{ item.projectProcessStepEventId }}
+              {{ item.id }}
             </td>
             <td class="text-left" id="qa-event-name">{{item.eventName}}</td>
-            <td class="text-left" id="qa-event-start">{{ item.start | formatDate('timestamp') }}</td>
-            <td class="text-left">{{item.resourceName}}</td>
+            <td class="text-left" id="qa-event-start">{{ item.startTime | formatDate('timestamp') }}</td>
+            <td class="text-left">{{item.resource}}</td>
             <td class="text-left" id="qa-event-status">{{item.eventStatusType}}</td>
           </tr>
         </template>
@@ -50,8 +50,8 @@ export default {
       headers: [
       {text: 'ID', value: 'id', show: true},
       {text: 'Name', value: 'eventName', show: true},
-      {text: 'Start', value: 'start', show: true},
-      {text: 'Resource', value: 'resourceName', show: true},
+      {text: 'Start', value: 'startTime', show: true},
+      {text: 'Resource', value: 'resource', show: true},
       {text: 'Status', value: 'companyEventStatusType', show: true},
     ]
     }

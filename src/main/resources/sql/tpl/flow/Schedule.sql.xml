@@ -14,19 +14,20 @@
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(steps)))
                       FROM (
-                             SELECT ps.process_step_name as "processStepName",
+                             SELECT ppse.id,
+                                    ps.process_step_name as "processStepName",
                                     pps.id as "projectProcessStepId",
                                     ps.id as "processStepId",
                                     pse.id as "processStepEventId",
                                     pse.event_id as "eventId",
                                     e.event_name as "eventName",
-                                    ppse.id as "projectProcessStepEventId",
                                     pps.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                                     cpsst.process_step_status_type as "processStepStatusType",
                                     cpsst.process_step_status_type_id as "processStepStatusTypeId",
-                                    ppse.start_time as start,
-                                    ppse.start_time as "end",
-                                    case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as "resourceName"
+                                    ppse.start_time as "startTime",
+                                    ppse.start_time as "endTime",
+                                    pps.project_id as "projectId",
+                                    case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as "resource"
                              from flow.project_process_step_event ppse
                                     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                                     inner join flow.event e on pse.event_id = e.id

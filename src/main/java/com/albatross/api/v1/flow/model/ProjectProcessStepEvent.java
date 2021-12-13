@@ -14,15 +14,16 @@ import java.util.List;
 @Setter
 public class ProjectProcessStepEvent {
 
-  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId,
-    eventId, resourceId, uniqueBehaviorTypeId, rootProjectProcessStepStatusTypeId; //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
-  private String eventName, eventStatusType, startTime, endTime, resource;
+  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId,
+    eventId, resourceId, uniqueBehaviorTypeId, eventStatusTypeId, rootProjectProcessStepStatusTypeId, //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
+    processStepId, projectId;
+  private String eventName, eventStatusType, startTime, endTime, resource, processStepName, lastUpdated, dateCreated;
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions;
   private Boolean archived;
 
-  
+
   @Data
   public static class Resource {
     private Long id;

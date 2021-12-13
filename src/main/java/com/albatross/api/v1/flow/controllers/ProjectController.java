@@ -85,7 +85,7 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/{projectId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<ProjectEvent>> getProjectEvents(@PathVariable Long projectId) {
+  public ResponseEntity<List<ProjectProcessStepEvent>> getProjectEvents(@PathVariable Long projectId) {
     return new ResponseEntity<>(projectService.getEventsByProjectId(projectId), HttpStatus.OK);
   }
 

@@ -13,5 +13,5 @@ public class ProjectWithEvents {
   private Long id, contactId;
   private String projectName;
 
-  private List<ProjectEvent> events;
+  private List<ProjectProcessStepEvent> events;
 }

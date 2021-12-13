@@ -250,6 +250,7 @@ BEGIN
                                       ppse.start_time as "startTime",
                                       ppse.end_time as "endTime",
                                       ppse.resource_id as "resourceId",
+                                      pps.project_id as "projectId",
                                       case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
                                       ppse.modified_by_id as "modifiedById",
                                       pse.event_id as "eventId",
