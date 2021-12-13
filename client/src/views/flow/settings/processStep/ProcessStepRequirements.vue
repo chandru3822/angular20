@@ -519,7 +519,7 @@
     putRequest,
     postRequest,
     getRequestWithParams,
-    getSnackbar
+    getSnackbar, handleHidingGlobalLoader
   } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import Sortable from "sortablejs";
@@ -597,9 +597,10 @@
       async getRequirements() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(this.apiUrl)
+          const {data, status} = await getRequest(this.apiUrl)
+          console.log('randaLogger',data)
           this.requirements = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -774,6 +775,12 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      getListValueName(item) {
+        let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
+          item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+        let match = item.availableListOfValues.find(i => i.id === idToUse)
+        return match ? match.name : 'unknown'
       },
       operatorDataTypeCheck(item) {
         // keeps multiselects using the right operator with the right lists.  i could probably do this better
