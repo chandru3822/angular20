@@ -277,7 +277,7 @@ public class InstallAgreementRepository {
         try {
           return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, sendVia);
         } catch (Exception e) {
-          throw new Exception("Failed to load credit application, please contact your administrator if the error persists", e);
+          throw new Exception(e.getMessage(), e);
         }
       } else if (pd.getLoanType().contains("LoanPal")) {
         // Check if this project has already had a credit check via Sunlight, if so throw error

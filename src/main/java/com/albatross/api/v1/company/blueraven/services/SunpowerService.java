@@ -133,7 +133,7 @@ public class SunpowerService {
     else {
       String message = status.getString("message");
       log.error("SUNPWR: Error opening or updating Loan Application for Sunpower: {}", message);
-      throw new Exception(message);
+      throw new Exception("Error opening or updating Loan Application for Sunpower: " + message);
     }
 
     setCreditLastCheckedBy(projectId, "Sunpower");
