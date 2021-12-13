@@ -208,7 +208,7 @@
         <td class="text-left" style="width: 65px">{{requirement.displayOrder}}</td>
         <td class="text-left">{{requirement.name}}</td>
         <td class="text-left">{{requirement.objectType}}</td>
-        <td class="text-left">{{requirement.processStepName}}</td>
+        <td class="text-left">{{(requirement.objectTypeId === 6) ? requirement.eventName : requirement.processStepName}}</td>
         <td class="text-left">{{requirement.operatorType}}</td>
         <td class="text-left">
           <template v-if="requirement.requirementValue">{{requirement.requirementValue}}</template>
@@ -472,7 +472,7 @@ export default {
         {text: 'ID', value: 'displayOrder'},
         {text: 'Field Name', value: 'name'},
         {text: 'Object Type', value: 'objectType'},
-        {text: 'Process Step Name', value: 'processStepName'},
+        {text: 'Process Step/Event Name', value: 'processStepName'},
         {text: 'Operator', value: 'operatorType'},
         {text: 'Value', value: 'requirementValue'},
         {text: null, value: 'actions'}
