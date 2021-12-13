@@ -504,3 +504,59 @@ select (select id from flow.db_function where function_name = 'flow.pps_has_acti
 insert into flow.company_function(company_function_name, db_function_id, company_id)
 select 'Project Process Step has Active Events', (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 3
 where not exists (select id from flow.company_function where company_function_name = 'Project Process Step has Active Events');
+
+-- SMARTLIST STUFF
+alter table if exists flow.smartlist_field_assignment
+add if not exists process_step_event_id int;
+
+alter table if exists flow.smartlist_field_assignment
+drop constraint if exists sfa_process_step_event_id_fk;
+
+alter table if exists flow.smartlist_field_assignment
+add constraint sfa_process_step_event_id_fk foreign key (process_step_event_id) references flow.process_step_event;
+
+alter table if exists flow.smartlist_requirement
+add if not exists process_step_event_id int;
+
+alter table if exists flow.smartlist_requirement
+drop constraint if exists sr_process_step_event_id_fk;
+
+alter table if exists flow.smartlist_requirement
+add constraint sr_process_step_event_id_fk foreign key (process_step_event_id) references flow.process_step_event;
+
+-- archive smartlist field assignments which point to fields that were migrated from a process step to event
+with offendingFields as (
+  select sfa.id
+  from flow.smartlist_field_assignment sfa
+         inner join flow.smartlist s on s.id = sfa.smartlist_id
+         inner join flow.custom_field_group_assignment cfga on cfga.id = sfa.custom_field_group_assignment_id
+         inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+         inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+         inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+  where s.archived is false and
+        sfa.archived is false and
+        cot.object_type_id = 6
+)
+update flow.smartlist_field_assignment sfa1
+set archived = true
+from offendingFields
+where sfa1.id = offendingFields.id;
+
+-- archive smartlist requirements which point to fields that were migrated from a process step to event
+with offendingRequirements as (
+  select sr.id
+  from flow.smartlist_requirement sr
+         inner join flow.smartlist s on s.id = sr.smartlist_id
+         inner join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
+         inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+         inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+         inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+  where s.archived is false and
+        sr.archived is false and
+        cot.object_type_id = 6
+)
+update flow.smartlist_requirement sr
+set archived = true
+from offendingRequirements
+where sr.id = offendingRequirements.id;
+-- END SMARTLIST STUFF
