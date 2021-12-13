@@ -126,8 +126,8 @@ public class SunpowerService {
       if (message.equals("OK")) {
         result = customerResponse.getString("activationURL");
       }
-      else {
-        result = message;
+      else if (message.equals("Quote Updated")) {
+        result = "Application already exists, customer information updated if applicable";
       }
     }
     else {
