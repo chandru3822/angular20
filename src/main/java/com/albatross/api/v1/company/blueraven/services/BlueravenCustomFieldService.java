@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomFieldService;
+import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,9 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +36,7 @@ public class BlueravenCustomFieldService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final ObjectMapper om;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
   private final SystemListService systemListService;
 
   public List<CustomField> getAllCustomFields() {
@@ -126,7 +124,7 @@ public class BlueravenCustomFieldService {
         null == customField.getSystemListOptionIds()
           || customField.getSystemListOptionIds().isEmpty()
           ? null
-          : createSqlArrayOfType("int", customField.getSystemListOptionIds()));
+          : sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
       Long id = null;
       boolean doInsertAfterHandlingOtherScenarios = false;
       boolean insertParentRecordIfNeeded = false;
@@ -199,7 +197,7 @@ public class BlueravenCustomFieldService {
         params.put("companyId", customField.getCompanyId());
         params.put("systemListId", customField.getCompanySystemListId());
         params.put(
-            "listOptionIds", createSqlArrayOfType("int", customField.getSystemListOptionIds()));
+            "listOptionIds", sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
         params.put("createdById", user.trueUserId());
         params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
@@ -245,15 +243,6 @@ public class BlueravenCustomFieldService {
       return null;
       //    }
     }
-  }
-
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
   }
 
   public void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {

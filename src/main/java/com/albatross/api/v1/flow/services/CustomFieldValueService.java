@@ -10,16 +10,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +33,7 @@ public class CustomFieldValueService {
   private final UserPositionService userPositionService;
   private final ProjectService projectService;
   private final ObjectMapper om;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
     handleCustomListOfValue(results, null, null, companyId);
@@ -84,7 +80,7 @@ public class CustomFieldValueService {
         params.put("numericValue", cfv.getNumericValue());
         params.put("intValue", cfv.getIntValue());
 //        params.put("intArrayValue", cfv.getIntArrayValue());
-        params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
+        params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
         params.put("userId", currentUser.trueUserId());
@@ -100,15 +96,6 @@ public class CustomFieldValueService {
       log.error("CFV: error saving value");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
-  }
-
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
   }
 
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
@@ -131,7 +118,7 @@ public class CustomFieldValueService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("objectTypeId", ObjectType.get(objectType).id);
       params.put("sourceId", id);
-      params.put("userPositions", null != userPositions && userPositions.size() > 0 ? createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
+      params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
       params.put("systemAdmin", systemAdmin);
       String sqlPrefix = "customFieldValues." + objectType;
 

@@ -17,9 +17,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +29,7 @@ public class PostalCodeService {
 
 
   private final SqlCache sqlCache;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
   private final SecurityService securityService;
   private final ObjectMapper om;
 
@@ -329,19 +326,10 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("zoneIds", createSqlArrayOfType("int", zoneIds));
+    params.put("zoneIds", sqlArrayService.createSqlArrayOfType("int", zoneIds));
 
     List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getAllZoneUsers", params, new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
     return results;
-  }
-
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
   }
 
   public PostalCodeZonePostalCode getZonePostalCode(Long id) {

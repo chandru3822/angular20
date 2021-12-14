@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.SqlArrayService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,6 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +32,7 @@ public class BlueravenCustomFieldValueService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
 
   //use this method when only saving dirty cfvs...the other ones are crap and require updating every field
   //also this method doesn't return anything because of how specific types have to return the data
@@ -52,7 +49,7 @@ public class BlueravenCustomFieldValueService {
         params.put("textValue", cfv.getTextValue());
         params.put("numericValue", cfv.getNumericValue());
         params.put("intValue", cfv.getIntValue());
-        params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
+        params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
         params.put("userId", currentUser.trueUserId());
@@ -68,15 +65,6 @@ public class BlueravenCustomFieldValueService {
       log.error("CFV: error saving value: {}", e.getMessage());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
-  }
-
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
   }
 
   public void handleSavingCustomFieldValuesUsingGroups(String objectType, List<CustomFieldGroup> groups, Long sourceId){
