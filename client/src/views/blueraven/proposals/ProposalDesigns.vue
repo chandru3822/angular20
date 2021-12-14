@@ -26,18 +26,21 @@
           <v-img name="designImg"
                  class="design-image"
                  src="https://media.istockphoto.com/photos/beautiful-luxury-home-exterior-at-twilight-picture-id1026205392?k=20&m=1026205392&s=612x612&w=0&h=lYFMV5cOuQQpddmwsE5QLBCyhgWQ1OI46i_dalro9OE="></v-img>
-          <div class="mt-3 design-details">
+          <div class="mt-3 design-small-gray">
             Created: {{d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
           </div>
           <v-btn color="primaryCustom" dark class="mt-3 one-hunned" @click="addProposal(d)">
             Create new proposal
           </v-btn>
             <v-list v-if="d.proposals.length > 0">
-              <v-list-item v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))" :key="index"
+              <v-list-item v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
+                           :key="index" two-line
                            class="proposal-container"
                            @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
-                <v-list-item-title>Proposal {{proposal.id}}</v-list-item-title>
-                <v-list-item-subtitle>{{proposal.dateCreated | formatDate('date')}}</v-list-item-subtitle>
+                <v-list-item-content>
+                  <v-list-item-title>Proposal {{proposal.id}}</v-list-item-title>
+                  <v-list-item-subtitle class="design-small-gray">{{proposal.dateCreated | formatDate('date', 'MMM D, YYYY')}}</v-list-item-subtitle>
+                </v-list-item-content>
               </v-list-item>
             </v-list>
           <div v-else>No Proposals Available</div>
@@ -147,7 +150,7 @@
   width: 323px;
   border-radius: 0 !important;
 }
-.design-details {
+.design-small-gray {
   color: #808588;
   font-size: 12px;
 }
@@ -157,7 +160,7 @@
 .slice-selectors {
   position: absolute;
   bottom: 0;
-  width: calc(100% - 20px);
+  width: calc(100% - 40px);
   text-align: center;
 }
 </style>
