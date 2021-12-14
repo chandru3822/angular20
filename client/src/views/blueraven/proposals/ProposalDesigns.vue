@@ -10,6 +10,9 @@
           width="300" height="300" class="pa-5">
           <v-icon>house</v-icon>
           PPS_ID: {{d.projectProcessStepId}}
+          <v-btn color="primaryCustom" dark class="" @click="addProposal(d)">
+            Create new proposal
+          </v-btn>
             <v-list v-if="d.proposals.length > 0">
               <v-list-item v-for="(proposal, index) in d.proposals" :key="index"
                            @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
@@ -18,6 +21,7 @@
             </v-list>
           <div v-else>No Proposals Available</div>
         </v-card>
+
       </v-col>
     </v-row>
   </v-container>
@@ -25,7 +29,7 @@
 
 <script>
 
-  import {handleHidingGlobalLoader, logError, getRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, logError, getRequest, postRequest} from '@/helpers/helpers'
   import {AppMutations} from "@/stores/AppStore";
 
   export default {
@@ -45,6 +49,20 @@
         try {
           const {data, status} = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven')
           this.designs = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          logError(e)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async addProposal (design) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            projectProcessStepId: design.projectProcessStepId
+          }
+          const {data, status} = await postRequest(`/proposal`, params, 'blueraven')
+          this.$router.push({name: 'proposal', params: {proposalId: data.id}})
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.albatross.api.v1.company.blueraven.models.ProposalDesign;
 import com.albatross.api.v1.company.blueraven.models.ProposalProject;
@@ -35,6 +36,17 @@ public class BlueravenProposalController {
   @GetMapping(value = "/{proposalId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Proposal> getProposal(@PathVariable Long proposalId) {
     return proposalService.getProposal(proposalId);
+  }
+
+  @PostMapping(value = "/{proposalId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId,
+                                                            @RequestBody List<CustomFieldValue> cfvs) {
+    return proposalService.updateProposal(proposalId, cfvs);
+  }
+
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Proposal> addProposal(@RequestBody Proposal proposal) {
+    return proposalService.addProposal(proposal);
   }
 
 }

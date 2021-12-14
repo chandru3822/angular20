@@ -14,6 +14,10 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +35,49 @@ public class BlueravenCustomFieldValueService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final DataSource dataSource;
+
+  //use this method when only saving dirty cfvs...the other ones are crap and require updating every field
+  //also this method doesn't return anything because of how specific types have to return the data
+  //todo: maybe a generic return type can be added for object types without special requirements but i dont need that atm so im not doing it. wah
+  public void updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
+    try {
+      User currentUser = securityService.getCurrentUser();
+      for (CustomFieldValue cfv : values) {
+        //if the field came here it was dirty and should always be saved
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("dateValue", cfv.getDateValue());
+        params.put("timestampValue", cfv.getTimestampValue());
+        params.put("booleanValue", cfv.getBooleanValue());
+        params.put("textValue", cfv.getTextValue());
+        params.put("numericValue", cfv.getNumericValue());
+        params.put("intValue", cfv.getIntValue());
+        params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
+        params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+        params.put("sourceId", sourceId);
+        params.put("userId", currentUser.trueUserId());
+
+        //only used on upsert
+        params.put("id", cfv.getId());
+
+        //this is actually doing an upsert
+        String sql = getInsertSqlStatement(objectType);
+        sqlCache.updateBySql(sql, params);
+      }
+    } catch (Exception e) {
+      log.error("CFV: error saving value: {}", e.getMessage());
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+    }
+  }
+
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
+  }
 
   public void handleSavingCustomFieldValuesUsingGroups(String objectType, List<CustomFieldGroup> groups, Long sourceId){
     User currentUser = securityService.getCurrentUser();
@@ -61,7 +108,7 @@ public class BlueravenCustomFieldValueService {
                 sqlCache.updateBySql(getUpdateSqlStatement(objectType, false), params);
               } else {
                 params.put("sourceId", sourceId);
-                params.put("createdById", currentUser.trueUserId());
+                params.put("userId", currentUser.trueUserId());
 
                 sqlCache.updateBySql(getInsertSqlStatement(objectType), params);
               }
@@ -93,10 +140,22 @@ public class BlueravenCustomFieldValueService {
   }
 
   public String getInsertSqlStatement(String objectType) {
+    //writing this as an upsert so it can be used for new or existing
     String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
     String sql = "insert into brs." + objectType + "_custom_field_value" +
       "(" + primaryKeyColumn + ", date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)" +
-      " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById, now(),  :createdById, now())";
+      " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :userId, now(), :userId, now())" +
+      " ON CONFLICT (" + primaryKeyColumn + ", custom_field_group_assignment_id)\n" +
+      "      DO UPDATE\n" +
+      "        set date_value = :dateValue::date,\n" +
+      "        timestamp_value = :timestampValue::timestamp,\n" +
+      "        boolean_value = :booleanValue,\n" +
+      "        text_value = :textValue,\n" +
+      "        numeric_value = :numericValue,\n" +
+      "        int_value = :intValue,\n" +
+      "        int_array_value = :intArrayValue::int[],\n" +
+      "        modified_by_id = :userId,\n" +
+      "        date_modified = now()";
     return sql;
   }
 
@@ -124,7 +183,7 @@ public class BlueravenCustomFieldValueService {
               params.put("intArrayValue", cfv.getIntArrayValue());
               params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
               params.put("modifiedById", currentUser.trueUserId());
-              params.put("createdById", currentUser.trueUserId());
+              params.put("userId", currentUser.trueUserId());
 
               ArrayList<Long> cfvIds = new ArrayList<>();
 

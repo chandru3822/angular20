@@ -16,10 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,10 +40,7 @@ public class BlueravenCustomFieldGroupService {
   private final SystemListService systemListService;
 
   public List<CustomFieldGroup> getCustomFieldGroupAssignmentsByObjectTypeId(Long sourceId, Long objectTypeId) {
-    User user = securityService.getCurrentUser();
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("sourceId", sourceId);
       params.put("objectTypeId", objectTypeId);
@@ -54,27 +49,28 @@ public class BlueravenCustomFieldGroupService {
 
       List<CustomFieldGroup> results = sqlCache.queryBySql(getCfgaSql(objectType), params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
-      // brs custom fields cannot call custom sql that requires projectId, etc
-      handleCustomListOfValue(results, 3L);
+      // default brs custom fields cannot call custom sql that requires projectId, etc
+      handleCustomListOfValue(results, 3L, null);
 
       return results;
-    }
   }
 
-  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId, Long projectId) {
     for(CustomFieldGroup cfg : results) {
       for(CustomFieldValue cv : cfg.getCustomFieldValues()){
-        handleCustomListValueForCfv(cv, companyId);
+        handleCustomListValueForCfv(cv, companyId, projectId);
       }
     }
   }
 
-  private void handleCustomListValueForCfv(CustomFieldValue cv, Long companyId) {
+  private void handleCustomListValueForCfv(CustomFieldValue cv, Long companyId, Long projectId) {
     if(null != cv.getCustomFieldSqlKey()) {
       cv.setHasListValues(true);
       String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
       if(null != sql) {
         cv.setHasListValues(true);
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("projectId", projectId);
         List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
         cv.setListOfValues(listOfValues);
       }
@@ -87,24 +83,17 @@ public class BlueravenCustomFieldGroupService {
   }
 
   public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId(Long objectTypeId) {
-    User user = securityService.getCurrentUser();
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("objectTypeId", objectTypeId);
 
       List<CustomFieldGroup> results = sqlCache.query("blueravenCustomFieldGroup.assignment.getByObjectTypeId", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
       return results;
-    }
   }
 
   public CustomFieldGroup addCustomFieldGroup(CustomFieldGroup customFieldGroup, Long objectTypeId) {
     User user = securityService.getCurrentUser();
-
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("groupName", customFieldGroup.getGroupName());
       params.put("objectTypeId", objectTypeId);
@@ -116,14 +105,11 @@ public class BlueravenCustomFieldGroupService {
       Optional<CustomFieldGroup> group = sqlCache.get("blueravenCustomFieldGroup.assignment.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
       return group.orElse(null);
-    }
   }
 
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {
     User user = securityService.getCurrentUser();
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", customFieldGroup.getId());
       params.put("groupOrder", customFieldGroup.getGroupOrder());
@@ -135,7 +121,7 @@ public class BlueravenCustomFieldGroupService {
       Optional<CustomFieldGroup> group = sqlCache.get("blueravenCustomFieldGroup.assignment.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
       return group.orElse(null);
-    }
+
   }
 
   public void updateCustomFieldGroups(List<CustomFieldGroup> customFieldGroups) {
@@ -147,22 +133,17 @@ public class BlueravenCustomFieldGroupService {
   public void deleteFieldFromGroup(Long cfgaId) {
     User user = securityService.getCurrentUser();
 
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("modifiedById", user.trueUserId());
       params.put("id", cfgaId);
 
       sqlCache.update("blueravenCustomFieldGroup.assignment.deleteFieldFromGroup", params);
-    }
   }
 
   public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId) {
     User user = securityService.getCurrentUser();
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("companyObjectTypeId", companyObjectTypeId);
       params.put("groupId", groupId);
@@ -170,15 +151,12 @@ public class BlueravenCustomFieldGroupService {
       List<CustomField> results = sqlCache.query("blueravenCustomFieldGroup.assignment.getAvailableCustomFieldsInGroup", params, CustomField.class);
 
       return results;
-    }
   }
 
   public CustomField addFieldToGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
-    if(currentUser.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("customFieldGroupId", customField.getCustomFieldGroupId());
       params.put("customFieldId", customField.getId());
@@ -189,7 +167,7 @@ public class BlueravenCustomFieldGroupService {
       Long id = sqlCache.updateReturningId("blueravenCustomFieldGroup.assignment.addFieldToGroup", params, "id").longValue();
 
       return getCustomField(id);
-    }
+
   }
 
   public CustomField getCustomField(Long id){
@@ -202,30 +180,26 @@ public class BlueravenCustomFieldGroupService {
   public void deleteFieldGroup(Long cfgId) {
     User user = securityService.getCurrentUser();
 
-    if(user.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("modifiedById", user.trueUserId());
       params.put("id", cfgId);
 
       sqlCache.update("blueravenCustomFieldGroup.deleteCustomFieldGroup", params);
-    }
+
   }
 
   public void updateFieldInGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
-    if(currentUser.getCompanyId() != 3) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    } else {
+    securityService.validateCompanyAccess(3L);
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", customField.getId());
       params.put("modifiedById", currentUser.trueUserId());
       params.put("fieldOrder", customField.getFieldOrder());
 
       sqlCache.update("blueravenCustomFieldGroup.assignment.updateFieldInGroup", params);
-    }
+
   }
 
   public void updateFieldsInGroup(List<CustomField> customFields) {

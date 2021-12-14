@@ -1,5 +1,5 @@
 <sql>
-  <proposals.getProjects><![CDATA[
+  <proposal.getProjects><![CDATA[
       select distinct pps.project_id,
                       p.project_name
       from flow.project_process_step pps
@@ -9,9 +9,9 @@
       and cpsst.process_step_status_type_id in (1,2)
       and case when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
        lower(p.project_name) like '%' ||  lower(trim(:query::text))  || '%') else 1=1 end
-  ]]></proposals.getProjects>
+  ]]></proposal.getProjects>
 
-  <proposals.getProjectsCount><![CDATA[
+  <proposal.getProjectsCount><![CDATA[
       select count(distinct pps.project_id)
       from flow.project_process_step pps
         inner join flow.project p on pps.project_id = p.id
@@ -20,9 +20,9 @@
       and cpsst.process_step_status_type_id in (1,2)
       and case when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
        lower(p.project_name) like '%' ||  lower(trim(:query::text))  || '%') else 1=1 end
-  ]]></proposals.getProjectsCount>
+  ]]></proposal.getProjectsCount>
 
-  <proposals.getDesigns><![CDATA[
+  <proposal.getDesigns><![CDATA[
     select pps.project_id,
            pps.process_step_id,
            pps.id as project_process_step_id,
@@ -41,15 +41,168 @@
     where pps.process_step_id = 3507
       and pps.project_id = :projectId
       and cpsst.process_step_status_type_id in (1,2);
-  ]]></proposals.getDesigns>
+  ]]></proposal.getDesigns>
 
 
-  <proposals.get><![CDATA[
+  <proposal.get><![CDATA[
    select p.id,
-          p.archived
-     from brs.proposal p
-     where p.id = :proposalId
-  ]]></proposals.get>
+       p.project_process_step_id,
+       p.archived,
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(cfgs)))
+                  FROM (
+                         select cfg.id,
+                                cfg.group_name                 as "groupName",
+                                cfg.object_type_id             as "objectTypeId",
+                                cfg.group_order                as "groupOrder",
+                                cfg.archived,
+                                coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(cfvs)))
+                                           FROM (
+                                                  select pcv.id,
+                                                         p.project_id                                                       as "projectId",
+                                                         p.process_step_id                                                  as "processStepId",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.date_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.date_value
+                                                           else pcv.date_value
+                                                           end                                                              as "dateValue",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.timestamp_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.timestamp_value
+                                                           else pcv.timestamp_value
+                                                           end                                                              as "timestampValue",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.boolean_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.boolean_value
+                                                           else pcv.boolean_value
+                                                           end                                                              as "booleanValue",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.text_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.text_value
+                                                           else pcv.text_value
+                                                           end                                                              as "textValue",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.numeric_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.numeric_value
+                                                           else pcv.numeric_value
+                                                           end                                                              as "numericValue",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.int_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.int_value
+                                                           else pcv.int_value
+                                                           end                                                              as "intValue",
+                                                         case
+                                                           when cotAnc.object_type_id = 1 then pcfv.int_array_value
+                                                           when cotAnc.object_type_id = 4 then ppscfv.int_array_value
+                                                           else pcv.int_array_value
+                                                           end                                                              as "intArrayValue",
+                                                         cfga.custom_field_group_id                                         as "customFieldGroupId",
+                                                         cfga.id                                                            as "customFieldGroupAssignmentId",
+                                                         cfga.ancillary_custom_field_group_assignment_id                    as "ancillaryCustomFieldGroupAssignmentId",
+                                                         cfga.custom_field_id                                               as "customFieldId",
+                                                         cfga.field_order                                                   as "fieldOrder",
+                                                         cfga.use_parent_data                                               as "useParentData",
+                                                         coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
+                                                         coalesce(cf.field_name, flowCf.field_name)                         as "fieldName",
+                                                         coalesce(cf.sort_list_values_alphabetically,
+                                                                  flowCf.sort_list_values_alphabetically)                   as "sortListValuesAlphabetically",
+                                                         coalesce(cf.custom_field_sql_key, flowCf.custom_field_sql_key)     as "customFieldSqlKey",
+                                                         coalesce(cf.company_system_list_id, flowCf.company_system_list_id) as "companySystemListId",
+                                                         coalesce(cf.system_list_option_ids, flowCf.system_list_option_ids) as "systemListOptionIds",
+                                                         coalesce(cf.company_data_type_id, flowCf.company_data_type_id)     as "companyDataTypeId",
+                                                         coalesce(cdt.data_type_id, flowCdt.data_type_id)                   as "dataTypeId",
+                                                         coalesce(cdt.has_list_values, flowCdt.has_list_values)             as "hasListValues",
+                                                         coalesce((
+                                                                    SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                                    FROM (
+                                                                           select lov.id,
+                                                                                  lov.name,
+                                                                                  lov.code,
+                                                                                  lov.parent_id,
+                                                                                  lov.display_order
+                                                                           from brs.list_of_value lov
+                                                                           where lov.parent_id is not null
+                                                                             and lov.parent_id = cf.list_of_value_id
+                                                                             and lov.archived is not true
+                                                                           union all
+                                                                           select lov.id,
+                                                                                  lov.name,
+                                                                                  lov.code,
+                                                                                  lov.parent_id,
+                                                                                  lov.display_order
+                                                                           from flow.list_of_value lov
+                                                                           where lov.parent_id is not null
+                                                                             and lov.parent_id = cf.list_of_value_id
+                                                                             and lov.archived is not true
+                                                                         ) listOfValues), '[]')                             AS "listOfValues",
+                                                         cfga1.id,
+                                                         cfg1.id,
+                                                         cotAnc.object_type_id,
+                                                         cfgAnc.process_step_id,
+                                                         cfga.use_parent_data,
+                                                         cfga.ancillary_custom_field_group_assignment_id,
+                                                         pps1.id
+                                                  from brs.custom_field_group_assignment cfga
+                                                         left join brs.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id
+                                                         left join flow.object_type ot1 on ot1.id = cfg1.object_type_id
+                                                         left join flow.custom_field_group_assignment cfga1
+                                                                   on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
+                                                         left join flow.custom_field_group cfgAnc on cfgAnc.id = cfga1.custom_field_group_id
+                                                         left join flow.company_object_type cotAnc on cotAnc.id = cfgAnc.company_object_type_id
+                                                    --       left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = cfgAnc.process_step_id and pps1.archived is false
+--         and case when cfga.use_parent_data is true then pps1.id = ( select id from flow.pps_parent_hierarchy(pps.id, cfga.ancillary_custom_field_group_assignment_id)) else pps1.main is true end
+--       left join flow.project_process_step pps1 on pps1.project_id = 441522 and pps1.process_step_id = cfgAnc.process_step_id and pps1.archived is false
+--             and case when cfga.use_parent_data is true then pps1.id = ( select id from flow.pps_parent_hierarchy(3822499, cfga.ancillary_custom_field_group_assignment_id)) else pps1.main is true end
+                                                         left join flow.project_process_step pps1
+                                                                   on pps1.project_id = 441522 and
+                                                                      pps1.process_step_id = cfgAnc.process_step_id and
+                                                                      pps1.archived is false
+                                                                     and case
+                                                                           when cfga.use_parent_data is true then pps1.id = 3822499
+                                                                           else pps1.main is true end
+                                                         left join flow.company_process_step_status_type cpsst
+                                                                   on cpsst.id = pps1.company_process_step_status_type_id
+                                                         left join brs.custom_field cf on cf.id = cfga.custom_field_id
+                                                         left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                         left join flow.custom_field flowCf
+                                                                   on flowCf.id = cfga.custom_field_id or flowCf.id = cfga1.custom_field_id
+                                                         left join flow.company_data_type flowCdt on flowCdt.id = flowCf.company_data_type_id
+
+
+--       left join brs.proposal_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.proposal_id = p.id
+                                                         left join brs.proposal_custom_field_value pcv
+                                                                   on pcv.custom_field_group_assignment_id = cfga.id and pcv.proposal_id = 1
+                                                         left join flow.project_process_step_custom_field_value ppscfv
+                                                                   on ppscfv.custom_field_group_assignment_id =
+                                                                      cfga.ancillary_custom_field_group_assignment_id and
+                                                                      ppscfv.project_process_step_id = pps1.id and ppscfv.archived is not true
+--       left join flow.project_process_step p on p.id = :sourceId
+                                                         left join flow.project_process_step p on p.id = 3822499
+                                                         left join flow.project proj on proj.id = p.project_id
+                                                         left join flow.project_custom_field_value pcfv
+                                                                   on pcfv.custom_field_group_assignment_id = cfga1.id and
+                                                                      pcfv.project_id = p.project_id and
+                                                                      pcfv.archived is not true
+--       left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga1.id and ccfv.contact_id = proj.contact_id and ccfv.archived is not true
+                                                  where cfga.custom_field_group_id = 27 --cfg.id
+                                                    and cfga.archived is not true
+                                                  order by cfga.field_order
+                                                ) cfvs), '[]') AS "customFieldValues"
+                         from brs.custom_field_group cfg
+                         where cfg.object_type_id = 10
+                           and cfg.archived is not true
+                         ) cfgs), '[]') AS "customFieldGroups"
+from brs.proposal p
+       inner join flow.project_process_step pps on p.project_process_step_id = pps.id
+where p.id = :proposalId
+  and p.archived is false;
+  ]]></proposal.get>
+
+  <proposal.insert><![CDATA[
+   insert into brs.proposal(project_process_step_id, created_by_id)
+    values(:projectProcessStepId, :userId)
+  ]]></proposal.insert>
 
 
 </sql>

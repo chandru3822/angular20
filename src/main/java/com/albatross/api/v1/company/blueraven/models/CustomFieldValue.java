@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CustomFieldValue {
 
-  private Long id, sourceId, customFieldGroupAssignmentId, customFieldGroupId,
+  private Long id, sourceId, customFieldGroupAssignmentId, customFieldGroupId, ancillaryCustomFieldGroupAssignmentId,
                customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId,
                companySystemListId;
   private Boolean valueWasChanged;

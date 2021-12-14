@@ -69,7 +69,7 @@ public class BlueravenCustomFieldService {
     final var customFieldBeanPropertyRowMapper = new CustomFieldMapper<>(CustomField.class, om);
     return sqlCache
         .query(
-            "blueravenCustomFieldValue.getByObjectCode", params, customFieldBeanPropertyRowMapper)
+            "blueravenCustomField.getByObjectCode", params, customFieldBeanPropertyRowMapper)
         .stream()
         .map(cf -> resolveCustomField(currentUser, cf))
         .toList();
