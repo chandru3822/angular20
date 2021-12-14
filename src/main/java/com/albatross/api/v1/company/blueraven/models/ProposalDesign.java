@@ -12,6 +12,7 @@ import java.util.List;
 public class ProposalDesign {
 
   private Long projectId, projectProcessStepId;
-  private String projectName;
+  private Long offset = 0L;
+  private String projectName, dateCreated;
   private List<Proposal> proposals;
 }
