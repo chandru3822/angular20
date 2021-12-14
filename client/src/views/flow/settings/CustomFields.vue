@@ -444,14 +444,15 @@
       async deleteField(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          item.archived = true
-          const {data, status} = await putRequest(`/customField/delete/${item.id}`, this.apiPath, null, [])
+          const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, [])
           if (data?.length > 0) {
+            item.deleteConfirm = false
             this.deleteError = true
             this.fieldsInUse = data
             this.snackbar = getSnackbar('ERROR', 'Field Cannot Be Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
+            item.archived = true
             this.fieldsInUse = []
             this.customFields = this.customFields.filter((cf) => {
               return cf.id !== item.id

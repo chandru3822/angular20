@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
+/**
+ * Created by randanunn on 2019-05-20. !Describe Purpose!
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,15 +46,15 @@ public class BlueravenCustomFieldService {
     // basic security?
     if (user.getCompanyId() != 3) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+        HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
     } else {
       HashMap<String, Object> params = new HashMap<>();
       params.put("companyId", user.getCompanyId());
       List<CustomField> result =
-          sqlCache.query(
-              "blueravenCustomField.getAll",
-              params,
-              new CustomFieldMapper<>(CustomField.class, om));
+        sqlCache.query(
+          "blueravenCustomField.getAll",
+          params,
+          new CustomFieldMapper<>(CustomField.class, om));
       return result;
     }
   }
@@ -62,15 +64,15 @@ public class BlueravenCustomFieldService {
 
     final var currentUser = securityService.getCurrentUser();
     final Map<String, Object> params =
-        Map.of("companyId", currentUser.getCompanyId(), "objectCode", code);
+      Map.of("companyId", currentUser.getCompanyId(), "objectCode", code);
 
     final var customFieldBeanPropertyRowMapper = new CustomFieldMapper<>(CustomField.class, om);
     return sqlCache
-        .query(
-            "blueravenCustomField.getByObjectCode", params, customFieldBeanPropertyRowMapper)
-        .stream()
-        .map(cf -> resolveCustomField(currentUser, cf))
-        .toList();
+      .query(
+        "blueravenCustomField.getByObjectCode", params, customFieldBeanPropertyRowMapper)
+      .stream()
+      .map(cf -> resolveCustomField(currentUser, cf))
+      .toList();
   }
 
   private CustomField resolveCustomField(User user, CustomField cf) {
@@ -78,16 +80,16 @@ public class BlueravenCustomFieldService {
       final var sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
       if (sql != null) {
         final var listOfValues =
-            sqlCache.queryBySql(
-                sql,
-                Map.of("userId", user.trueUserId(), "companyId", user.getCompanyId()),
-                ListOfValue.class);
+          sqlCache.queryBySql(
+            sql,
+            Map.of("userId", user.trueUserId(), "companyId", user.getCompanyId()),
+            ListOfValue.class);
         cf.setListOfValues(listOfValues);
       }
     } else if (cf.getCompanySystemListId() != null) {
       List<ListOfValue> listOfValues =
-          systemListService.getSystemListOptionsForCompany(
-              cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
+        systemListService.getSystemListOptionsForCompany(
+          cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
       cf.setListOfValues(listOfValues);
     }
 
@@ -102,10 +104,10 @@ public class BlueravenCustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     Optional<CustomField> result =
-        sqlCache.get(
-            "blueravenCustomField.getOne",
-            params,
-            new CustomFieldService.CustomFieldMapper<>(CustomField.class, om));
+      sqlCache.get(
+        "blueravenCustomField.getOne",
+        params,
+        new CustomFieldService.CustomFieldMapper<>(CustomField.class, om));
     return result.orElse(null);
   }
 
@@ -113,7 +115,7 @@ public class BlueravenCustomFieldService {
     User user = securityService.getCurrentUser();
     if (user.getCompanyId() != 3) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+        HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
     } else {
       HashMap<String, Object> params = new HashMap<>();
       params.put("fieldName", customField.getFieldName());
@@ -158,9 +160,9 @@ public class BlueravenCustomFieldService {
           lovParent.put("parentId", null);
           lovParent.put("createdById", user.trueUserId());
           parentId =
-              sqlCache
-                  .updateReturningId("blueravenCustomField.insertListOfValue", lovParent, "id")
-                  .longValue();
+            sqlCache
+              .updateReturningId("blueravenCustomField.insertListOfValue", lovParent, "id")
+              .longValue();
         } else {
           parentId = customField.getListOfValueId();
           lovCreatedById = user.trueUserId();
@@ -197,15 +199,15 @@ public class BlueravenCustomFieldService {
         params.put("companyId", customField.getCompanyId());
         params.put("systemListId", customField.getCompanySystemListId());
         params.put(
-            "listOptionIds", sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
+          "listOptionIds", sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
         params.put("createdById", user.trueUserId());
         params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
         // insert new custom field with listOfValueId if needed
         id =
-            sqlCache
-                .updateReturningId("blueravenCustomField.insertField", params, "id")
-                .longValue();
+          sqlCache
+            .updateReturningId("blueravenCustomField.insertField", params, "id")
+            .longValue();
       }
 
       // add / delete custom field object types
@@ -223,25 +225,24 @@ public class BlueravenCustomFieldService {
     User currentUser = securityService.getCurrentUser();
     if (currentUser.getCompanyId() != 3) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+        HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
     } else {
       HashMap<String, Object> params = new HashMap<>();
       params.put("fieldId", id);
       params.put("modifiedById", currentUser.trueUserId());
 
       // todo: add in the validations after this is all working
-      // check if field is in use by a custom field group
-      //    List <CustomField> fields = sqlCache.query("customField.getGroupsUsingField", params,
-      // CustomField.class);
+//       check if field is in use by a custom field group
+      List<CustomField> fields = sqlCache.query("blueravenCustomField.getGroupsUsingField", params, CustomField.class);
 
       // if the field is assigned somewhere, return those values to frontend
-      //    if(!fields.isEmpty()) {
-      //      return fields;
-      //    } else {
-      // archive single custom field
-      sqlCache.update("blueravenCustomField.deleteField", params);
-      return null;
-      //    }
+      if (!fields.isEmpty()) {
+        return fields;
+      } else {
+        // archive single custom field
+        sqlCache.update("blueravenCustomField.deleteField", params);
+        return null;
+      }
     }
   }
 
@@ -276,21 +277,24 @@ public class BlueravenCustomFieldService {
     protected void initBeanWrapper(BeanWrapper bw) {
 
       TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "customFieldObjectTypes",
-          new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
+        List.class,
+        "customFieldObjectTypes",
+        new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+        List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, objectMapper));
 
-      TypeReference<List<Long>> systemListOptionsRef = new TypeReference<>() {};
+      TypeReference<List<Long>> systemListOptionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "systemListOptionIds",
-          new JsonCollectionDeserializer(systemListOptionsRef, objectMapper));
+        List.class,
+        "systemListOptionIds",
+        new JsonCollectionDeserializer(systemListOptionsRef, objectMapper));
     }
   }
 }
