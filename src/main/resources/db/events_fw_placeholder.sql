@@ -559,4 +559,8 @@ update flow.smartlist_requirement sr
 set archived = true
 from offendingRequirements
 where sr.id = offendingRequirements.id;
+
+--system fields
+insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, created_by_id, company_data_type_id, join_table, join_column, smartlist_system_list_id)
+values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, null, null, null);
 -- END SMARTLIST STUFF
