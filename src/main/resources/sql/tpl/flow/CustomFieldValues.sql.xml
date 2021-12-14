@@ -389,6 +389,11 @@
                                       p.project_id as "projectId",
                                       p.process_step_id as "processStepId",
                                       case
+                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then '(Project)'
+                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then '(Contact)'
+                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 and cfga1.id is not null and cfga.use_parent_data is false then '(Primary)'
+                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 and cfga.use_parent_data is true then '(Parent)' end                                           as "ancillaryCustomFieldHint",
+                                      case
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 1 then pcfv.date_value
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 2 then ccfv.date_value
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 then
