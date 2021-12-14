@@ -102,7 +102,7 @@ public class PandaDocService {
 
     // if we're still not finding a match, abort
     if (tplId == null) {
-      String err = String.format("no PandaDoc template matching '%s'", name);
+      String err = String.format("No PandaDoc template matching '%s'", name);
       throw new Exception(err);
     }
 
