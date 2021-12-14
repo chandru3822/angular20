@@ -12,6 +12,6 @@ import java.util.List;
 public class Proposal {
 
   private Long id, projectId, projectProcessStepId, proposalVersionId;
-  private String projectName, version;
+  private String projectName, version, dateCreated;
   private List<CustomFieldGroup> customFieldGroups;
 }
