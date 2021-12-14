@@ -101,6 +101,21 @@
     order by cf.field_name
   ]]></blueravenCustomField.getAll>
 
+  <blueravenCustomField.getGroupsUsingField><![CDATA[
+    select cf.id,
+           cf.field_name,
+           cfg.group_name,
+           ot.object_type
+    from brs.custom_field_group cfg
+           inner join brs.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+           inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+           inner join brs.object_type ot on ot.id = cfg.object_type_id
+    where cf.id = :fieldId
+      and cfg.archived is not true
+      and cfga.archived is not true
+    order by ot.object_type, cfg.group_name, cf.field_name
+  ]]></blueravenCustomField.getGroupsUsingField>
+
   <blueravenCustomField.deleteField><![CDATA[
     update brs.custom_field
       set archived = true,
