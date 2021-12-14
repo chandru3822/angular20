@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -19,6 +20,7 @@ import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -33,7 +35,7 @@ public class SunpowerService {
   @Value(value = "${sunpower.api.host}")
   private String apiUrl;
 
-  public String saveLoanFields(InstallAgreementRepository.PropLogDetail propLogDetail, Long projectId, String sendVia) throws Exception {
+  public String saveLoanFields(InstallAgreementRepository.PropLogDetail propLogDetail, Long projectId, Long proposalNbr, String sendVia, boolean isUpdate) throws Exception {
     JSONObject jsonContact = new JSONObject();
     JSONArray projectsArray = new JSONArray();
     JSONArray applicantsArray = new JSONArray();
@@ -41,6 +43,15 @@ public class SunpowerService {
     JSONObject projectDetails = new JSONObject();
     JSONObject applicantDetails = new JSONObject();
     JSONObject quoteDetails = new JSONObject();
+
+    // If we are updating, don't return the application URL, make an API call so that proposal data gets updated in Sunpower
+    if (!isUpdate) {
+      Optional<Object> sunpowerUrl = getSunpowerUrl(projectId, proposalNbr);
+      if (sunpowerUrl.isPresent()) {
+        setCreditLastCheckedBy(projectId, "Sunpower");
+        return sunpowerUrl.get().toString();
+      }
+    }
 
     projectDetails.put("externalId", propLogDetail.getProjectId().toString());
     DecimalFormat df2 = new DecimalFormat("#.##");
@@ -125,6 +136,7 @@ public class SunpowerService {
       String message = status.getString("message");
       if (message.equals("OK")) {
         result = customerResponse.getString("activationURL");
+        setSunpowerUrl(projectId, proposalNbr, result);
       }
       else if (message.equals("Quote Updated")) {
         result = "Application already exists, customer information updated if applicable";
@@ -157,6 +169,21 @@ public class SunpowerService {
       log.error("SUNPWR: Error creating Loan agreement for Sunpower: {}", message);
       throw new Exception(message);
     }
+  }
+
+  private Optional<Object> getSunpowerUrl(Long projectId, Long proposalNbr) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNbr", proposalNbr);
+    return sqlCache.get("installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
+  }
+
+  private void setSunpowerUrl(Long projectId, Long proposalNbr, String url) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNbr", proposalNbr);
+    params.put("url", url);
+    sqlCache.update("installAgreement.setSunpowerUrl", params);
   }
 
   public void setCreditLastCheckedBy(Long projectId, String financier) {

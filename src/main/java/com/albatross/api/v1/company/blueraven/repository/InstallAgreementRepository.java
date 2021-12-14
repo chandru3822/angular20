@@ -111,7 +111,7 @@ public class InstallAgreementRepository {
         sunpowerService.sendLoanDocs(projectId);
       } catch (Exception ex){
         log.error("IARQ: Error sending finance docs via Sunpower", ex.getMessage());
-        resultMsg = "Error sending finance docs through Sunpower";
+        resultMsg = "Error sending finance docs through Sunpower: " + ex.getMessage();
       }
     }
     else if (sendLoanDocs && isLoanPalProject(financier)) {
@@ -164,7 +164,10 @@ public class InstallAgreementRepository {
         log.warn(String.format("IARQ: Unable to locate goodleap application for project ID: %s", projectId));
         throw new RuntimeException(e);
       } else {
-        resultMsg = e.getMessage();
+        if (!resultMsg.isEmpty()) {
+          resultMsg += ". ";
+        }
+        resultMsg += e.getMessage();
       }
     }
 
@@ -275,7 +278,7 @@ public class InstallAgreementRepository {
       } else if (pd.getLoanType().contains("Sunpower")) {
         Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
         try {
-          return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, sendVia);
+          return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }

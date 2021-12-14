@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
+import com.albatross.api.v1.company.blueraven.services.SunpowerService;
 import com.albatross.api.v1.flow.model.Contact;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,8 @@ public class InstallAgreementController {
   private final GoodleapService goodleapService;
 
   private final SunlightService sunlightService;
+
+  private final SunpowerService sunpowerService;
 
   @Autowired
   private SqlCache sqlCache;
@@ -77,6 +80,23 @@ public class InstallAgreementController {
                                          @PathVariable(required = false) String sendVia) throws Exception {
     try {
       return ResponseEntity.ok(installAgreementRepository.generateLoanApplication(projectId, proposalNbr, sendVia));
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
+    }
+  }
+
+  @PostMapping(value = "/updateSunpowerApp/{projectId}/{proposalNbr}")
+  public ResponseEntity<Object> updateSunpowerApp(@PathVariable Long projectId, @PathVariable Long proposalNbr) {
+    String message = "";
+    JSONObject updateResponse = new JSONObject();
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("proposalNbr", proposalNbr);
+      Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+      message = sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
+      updateResponse.put("message", message);
+      return ResponseEntity.ok(updateResponse.toString());
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
     }
