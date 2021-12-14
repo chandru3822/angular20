@@ -152,6 +152,21 @@ public class SunpowerService {
     return result;
   }
 
+  public JSONObject getApplicationDetails(Long projectId, Long proposalNbr) {
+    JSONObject returnApplication = new JSONObject();
+    returnApplication.put("type", "Sunpower");
+
+    Optional<Object> sunpowerUrl = getSunpowerUrl(projectId, proposalNbr);
+    if (sunpowerUrl.isPresent()) {
+      returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
+    }
+    else {
+      returnApplication.put("applicationUrl", "");
+    }
+
+    return returnApplication;
+  }
+
   public String sendLoanDocs(Long projectId) throws Exception {
     JSONObject creditJson = new JSONObject();
     creditJson.put("externalId", projectId.toString());
