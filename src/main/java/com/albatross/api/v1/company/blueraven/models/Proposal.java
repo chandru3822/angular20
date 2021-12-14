@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Proposal {
 
-  private Long id, projectId, projectProcessStepId;
-  private String projectName;
+  private Long id, projectId, projectProcessStepId, proposalVersionId;
+  private String projectName, version;
   private List<CustomFieldGroup> customFieldGroups;
 }

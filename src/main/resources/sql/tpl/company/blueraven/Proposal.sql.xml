@@ -46,6 +46,8 @@
 
   <proposal.get><![CDATA[
     select p.id,
+           p.proposal_version_id,
+           pv.version,
            pps.project_id,
            p.project_process_step_id,
            p.archived,
@@ -195,14 +197,21 @@
                            ) cfgs), '[]') AS "customFieldGroups"
     from brs.proposal p
            inner join flow.project_process_step pps on p.project_process_step_id = pps.id
+           inner join flow.proposal_version pv on pv.id = p.proposal_version_id
     where p.id = :proposalId
       and p.archived is false
   ]]></proposal.get>
 
   <proposal.insert><![CDATA[
-   insert into brs.proposal(project_process_step_id, created_by_id)
-    values(:projectProcessStepId, :userId)
+   insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id)
+    values(:projectProcessStepId, :userId, :proposalVersionId)
   ]]></proposal.insert>
+
+  <proposal.getCurrentVersion><![CDATA[
+   select proposal_version_id
+    from brs.primary_company_proposal_version
+    where company_id = :companyId
+  ]]></proposal.getCurrentVersion>
 
 
 </sql>
