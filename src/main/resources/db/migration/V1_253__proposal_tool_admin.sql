@@ -107,9 +107,9 @@ alter table brs.object_type
 create unique index if not exists object_type_ux on brs.object_type (object_code);
 create index if not exists object_type_parent_id_ix on brs.object_type (parent_id);
 
-insert into brs.object_type (object_type, object_code)
-VALUES ('Proposal', 'PROPOSAL')
-on conflict (object_code) do nothing;
+-- insert into brs.object_type (object_type, object_code)
+-- VALUES ('Proposal', 'PROPOSAL')
+-- on conflict (object_code) do nothing;
 
 insert into brs.object_type (object_type, object_code, parent_id)
 VALUES ('Proposal Pricing', 'PROPOSAL_PRICING', (select id from brs.object_type where object_code = 'PROPOSAL')),
