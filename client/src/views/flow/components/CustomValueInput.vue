@@ -2,7 +2,8 @@
 <v-row class="d-flex justify-space-between align-center">
   <v-col v-if="showFieldName">
     {{field.fieldName}}
-    <span class="ancillary" v-if="field.useParentData">(Parent)</span>
+    <span class="ancillary" v-if="field.ancillaryCustomFieldHint">{{field.ancillaryCustomFieldHint}}</span>
+    <span class="ancillary" v-else-if="field.useParentData">(Parent)</span>
     <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
   </v-col>
 

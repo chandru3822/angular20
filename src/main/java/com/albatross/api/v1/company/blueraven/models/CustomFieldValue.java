@@ -20,13 +20,13 @@ public class CustomFieldValue {
   private Boolean valueWasChanged;
 
   // not sure on these types
-  private String fieldName, fieldValue, textValue, customFieldSqlKey;
+  private String fieldName, fieldValue, textValue, customFieldSqlKey, ancillaryCustomFieldHint;
   private Long intValue;
 
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues;
+  private Boolean booleanValue, hasListValues, useParentData;
 
   private Timestamp dateValue, timestampValue;
 

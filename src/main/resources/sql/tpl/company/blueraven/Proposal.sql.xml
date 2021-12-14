@@ -101,6 +101,10 @@
                                                              cfga.custom_field_group_id                                         as "customFieldGroupId",
                                                              cfga.id                                                            as "customFieldGroupAssignmentId",
                                                              cfga.ancillary_custom_field_group_assignment_id                    as "ancillaryCustomFieldGroupAssignmentId",
+                                                             case
+                                                           when cotAnc.object_type_id = 1 then '(Project)'
+                                                           when cotAnc.object_type_id = 4 and cfga.use_parent_data is true then '(Parent)'
+                                                           when cotAnc.object_type_id = 4 and cfga.use_parent_data is false then '(Primary)' end                                           as "ancillaryCustomFieldHint",
                                                              cfga.custom_field_id                                               as "customFieldId",
                                                              cfga.field_order                                                   as "fieldOrder",
                                                              cfga.use_parent_data                                               as "useParentData",
@@ -137,14 +141,7 @@
                                                                                  and lov.parent_id = cf.list_of_value_id
                                                                                  and lov.archived is not true
                                                                              ) listOfValues),
-                                                                      '[]')                                                     AS "listOfValues",
-                                                             cfga1.id,
-                                                             cfg1.id,
-                                                             cotAnc.object_type_id,
-                                                             cfgAnc.process_step_id,
-                                                             cfga.use_parent_data,
-                                                             cfga.ancillary_custom_field_group_assignment_id,
-                                                             pps1.id
+                                                                      '[]')                                                     AS "listOfValues"
                                                       from brs.custom_field_group_assignment cfga
                                                              left join brs.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id
                                                              left join flow.object_type ot1 on ot1.id = cfg1.object_type_id
