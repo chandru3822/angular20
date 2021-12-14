@@ -125,6 +125,10 @@ public class InstallAgreementController {
           JSONObject sunlightApp = sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
           return ResponseEntity.ok(sunlightApp.toString());
         }
+        else if (loan.contains("Sunpower")) {
+          JSONObject sunlightApp = sunpowerService.getApplicationDetails(Long.parseLong(projectId), Long.parseLong(proposalNbr));
+          return ResponseEntity.ok(sunlightApp.toString());
+        }
       }
     } catch (Exception e) {
       log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
