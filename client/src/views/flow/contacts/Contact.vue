@@ -95,8 +95,8 @@
           <span class="project-company-subheader">Company</span>
         </div>
         <div class="d-inline-block">
-          <div v-if="contact.owner">
-            <v-row v-if="!changeOwner">
+          <div>
+            <v-row v-if="contact.owner && !changeOwner">
               <v-avatar
                 :tile="false"
                 :size="40"

@@ -77,12 +77,20 @@
         </v-card-title>
 
         <v-card-text class="pt-4">
-          Select a design <br/><br/>
-
           Describe your request (Required)
           <v-textarea required auto-grow filled
                       v-model="newDesignRequest.description">
           </v-textarea>
+
+          <v-file-input
+            dense
+            class="mb-3"
+            multiple
+            ref="fileInput"
+            hide-details
+            label="Attach utility bill, notes/drawings for reference"
+            @change="uploadFiles"
+          />
 
           <DatetimePickerInput
             v-model="newDesignRequest.dueDate"
@@ -99,6 +107,7 @@
           <v-btn
             color="primaryCustom"
             class="white--text"
+            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
             @click="requestNewDesign()">
             Request
           </v-btn>
@@ -190,7 +199,10 @@ import {
           logError(e)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      uploadFiles: function (files) {
+        this.newDesignRequest.attachments = files
+      },
     }
   }
 </script>

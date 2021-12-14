@@ -122,8 +122,8 @@
                 <span class="project-company-subheader">Company</span>
               </div>
               <div class="d-inline-block">
-                <div v-if="project.owner && project.owner.userId">
-                  <v-row v-if="!displayChangeOwner">
+                <div>
+                  <v-row v-if="project.owner && project.owner.userId && !displayChangeOwner">
                     <v-avatar
                       :tile="false"
                       :size="40"
@@ -141,7 +141,7 @@
                   </v-row>
                   <v-row>
                     <v-col class="pa-0">
-                      <div  v-if="!displayChangeOwner">
+                      <div  v-if="project.owner && project.owner.userId && !displayChangeOwner">
                         {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
                       </div>
 
