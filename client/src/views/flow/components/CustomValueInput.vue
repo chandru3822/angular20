@@ -82,6 +82,7 @@
       v-if="field.dataTypeId === 6 && !field.hasListValues"
       text
       :readonly="readonly"
+      :disabled="readonly"
       :label="hideLabel ? null : field.fieldName"
       :hide-details="hideDetails"
       placeholder=" "

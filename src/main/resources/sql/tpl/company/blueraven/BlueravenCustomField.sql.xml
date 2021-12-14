@@ -163,7 +163,7 @@
     ON CONFLICT do nothing;
   ]]></blueravenCustomField.insertCustomFieldObjectType>
 
-  <blueravenCustomFieldValue.getByObjectCode><![CDATA[
+  <blueravenCustomField.getByObjectCode><![CDATA[
 select cf.id,
        cf.list_of_value_id,
        cf.field_name,
@@ -211,5 +211,5 @@ where cfga.archived is false
   and cf.archived is false
   and ot.object_code = :objectCode
 order by cfga.field_order, cf.field_name
-  ]]></blueravenCustomFieldValue.getByObjectCode>
+  ]]></blueravenCustomField.getByObjectCode>
 </sql>

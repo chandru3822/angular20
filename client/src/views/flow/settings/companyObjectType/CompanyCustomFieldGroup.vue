@@ -196,10 +196,12 @@
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
                             (Ancillary)<br/>
-                            <label>Use Parent Data: </label>
-                            <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
-                                   @change="saveUseParentData(cf)"
-                                   :readonly="!userCanEdit" :disabled="!userCanEdit">
+                            <div v-if="cf.processStepName">
+                              <label>Use Parent Data: </label>
+                              <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
+                                     @change="saveUseParentData(cf)"
+                                     :readonly="!userCanEdit" :disabled="!userCanEdit">
+                            </div>
                           </div>
                         </v-list-item-content>
                         <v-dialog
