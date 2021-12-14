@@ -82,10 +82,14 @@ public class BlueravenProposalService {
 
   public Optional<Proposal> addProposal(Proposal proposal) {
     securityService.validateCompanyAccess(3L);
-
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+
+    Long proposalVersionId = sqlCache.queryForObject("proposal.getCurrentVersion", params, Long.class);
+
+    params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
     params.put("userId", user.getId());
 
