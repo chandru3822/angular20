@@ -58,24 +58,84 @@
           </div>
           <div style="position:absolute; top: 0">PPS_ID: {{d.projectProcessStepId}} (temp for testing)</div>
         </v-card>
+      <v-card width="355" height="535" class="proposal-card request-new">
+        <a @click="showNewDesignRequestForm = true">
+          <v-icon :size="60">add</v-icon>
+          <div>
+            Request New Design
+          </div>
+        </a>
+      </v-card>
     </v-row>
+    <v-dialog width="500" v-model="showNewDesignRequestForm">
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Request New design
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          Select a design <br/><br/>
+
+          Describe your request (Required)
+          <v-textarea required auto-grow filled
+                      v-model="newDesignRequest.description">
+          </v-textarea>
+
+          <DatetimePickerInput
+            v-model="newDesignRequest.dueDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            label="Pick a due date and time (Required)"
+          />
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primaryCustom"
+            class="white--text"
+            @click="requestNewDesign()">
+            Request
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
 
-  import {handleHidingGlobalLoader, logError, getRequest, postRequest, formatPhoneNumber} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  logError,
+  getRequest,
+  postRequest,
+  formatPhoneNumber,
+  getSnackbar
+} from '@/helpers/helpers'
   import {AppMutations} from "@/stores/AppStore";
+  import DatetimePickerInput from "@/components/DatetimePickerInput";
 
   export default {
     name: "ProposalDesigns",
+    components: {
+      DatetimePickerInput,
+    },
     data () {
       return {
         designs: [],
         offset: 0,
         numberToDisplay: 3,
+        newDesignRequest: {},
+        showNewDesignRequestForm: false,
         project: {},
         projectId: this.$route.params.projectId,
+        timezone: this.$store.state.user.details.timezone?.value,
         formatPhoneNumber
       }
     },
@@ -84,6 +144,9 @@
       this.getProposalDesigns()
     },
     methods: {
+      requestNewDesign() {
+        console.log('do something', this.newDesignRequest)
+      },
       disableAddSlice(proposalCount, offset) {
         let pageCount = (Math.floor(proposalCount / this.numberToDisplay))
         let dividesEqually = proposalCount % this.numberToDisplay === 0
@@ -127,7 +190,7 @@
           logError(e)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
+      }
     }
   }
 </script>
@@ -144,6 +207,7 @@
   margin-left: 10px;
   margin-right: 10px;
   position: relative;
+  margin-bottom: 20px;
 }
 .design-image {
   height: 170px;
@@ -162,5 +226,13 @@
   bottom: 0;
   width: calc(100% - 40px);
   text-align: center;
+}
+.request-new {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>
