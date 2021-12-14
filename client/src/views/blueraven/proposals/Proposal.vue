@@ -2,6 +2,8 @@
   <v-container id="proposals-container">
     <v-row>
       <v-col cols="12">
+        <router-link v-if="proposal && proposal.projectId"
+                     :to="`/proposalDesigns/${proposal.projectId}`">Back</router-link>
         <v-toolbar class="elevation-1">
           <v-toolbar-title>Proposal Details Page</v-toolbar-title>
         </v-toolbar>

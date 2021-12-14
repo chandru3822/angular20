@@ -2,6 +2,7 @@
   <v-container id="proposals-container">
     <v-row>
       <v-col cols="12">
+        <router-link :to="`/proposals`">Back</router-link>
         <v-toolbar class="elevation-1 mb-3">
           <v-toolbar-title>Designs </v-toolbar-title>
         </v-toolbar>
