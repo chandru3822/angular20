@@ -138,10 +138,10 @@
                 </table>
               </v-card>
 
-<!--              <v-btn class="white&#45;&#45;text"-->
-<!--                     color="primaryButton"-->
-<!--                     @click="saveEventAction(action)"-->
-<!--              >Save Action</v-btn>-->
+              <!--              <v-btn class="white&#45;&#45;text"-->
+              <!--                     color="primaryButton"-->
+              <!--                     @click="saveEventAction(action)"-->
+              <!--              >Save Action</v-btn>-->
 
               <v-toolbar flat dense color="transparent">
                 <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
@@ -307,22 +307,22 @@
 </template>
 
 <script>
-  import Vue2Filters from 'vue2-filters'
-  import {AppMutations} from '@/stores/AppStore'
-  import {
-    getRequest,
-    deleteRequest,
-    putRequest,
-    postRequest,
-    getRequestWithParams,
-    getSnackbar, logError
-  } from '@/helpers/helpers'
-  import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-  import {getAvailableForEvent} from "@/services/eventStatusTypeService";
-  import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessStepRequirements";
-  import orderBy from 'lodash.orderby'
-  import Sortable from "sortablejs"
-  import cloneDeep from 'lodash.clonedeep'
+import Vue2Filters from 'vue2-filters'
+import {AppMutations} from '@/stores/AppStore'
+import {
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getRequestWithParams,
+  getSnackbar, logError
+} from '@/helpers/helpers'
+import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import {getAvailableForEvent} from "@/services/eventStatusTypeService";
+import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessStepRequirements";
+import orderBy from 'lodash.orderby'
+import Sortable from "sortablejs"
+import cloneDeep from 'lodash.clonedeep'
 
   export default {
     name: 'ProcessStepEvent',
@@ -636,38 +636,38 @@
           this.requiredKey++
         }
 
+      try {
+        const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}`, item)
+        //resetting the id in case it got archived/added a new one, etc. this will keep multiple updates to the same field working without refreshing the screen
+        item.id = data
+        this.snackbar = getSnackbar('SUCCESS', 'Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveRowChanges(rows) {
+      if (rows?.length > 0) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}`, item)
-          //resetting the id in case it got archived/added a new one, etc. this will keep multiple updates to the same field working without refreshing the screen
-          item.id = data
-          this.snackbar = getSnackbar('SUCCESS', 'Saved')
+          const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/order`, rows)
+          this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving')
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async saveRowChanges(rows) {
-        if (rows?.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/order`, rows)
-            this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-    }
-
+      }
+    },
   }
+
+}
 </script>
 
 <style scoped lang="scss">

@@ -59,6 +59,15 @@
       from brs.design_log_history dlh
   ]]></customFieldSql.brs.designLogNumbers.smartlist>
 
+  <customFieldSql.brs.availableStates><![CDATA[
+select s.id,
+       s.state as name
+from flow.state s
+         inner join flow.company_state cs on s.id = cs.state_id
+where cs.company_id = :companyId
+order by s.state
+  ]]></customFieldSql.brs.availableStates>
+
   <customFieldSql.flow.states><![CDATA[
     select s.id,
            s.state as name

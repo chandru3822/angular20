@@ -67,8 +67,8 @@ public class ProcessStepEventController {
   //event actions
   @PostMapping(value = "/{eventId}/action", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepEventAction> addStepEventAction (@PathVariable Long stepId,
-                                 @PathVariable Long eventId,
-                                 @RequestBody ProcessStepEventAction processStepEventAction) {
+                                                              @PathVariable Long eventId,
+                                                              @RequestBody ProcessStepEventAction processStepEventAction) {
     return processStepEventService.saveStepEventAction(stepId, eventId, processStepEventAction);
   }
 

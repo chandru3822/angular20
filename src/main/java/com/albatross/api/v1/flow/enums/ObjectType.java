@@ -8,27 +8,27 @@ public enum ObjectType {
     ORGANIZATION(5L),
     EVENT(6L);
 
-    public final Long id;
+  public final Long id;
 
-    ObjectType(Long id) {
-        this.id = id;
-    }
+  ObjectType(Long id) {
+    this.id = id;
+  }
 
-    public static ObjectType get(String name) {
-        name = name.toLowerCase();
-        for (ObjectType s : values()) {
-            if (s.toString().equals(name) || s.textValue().equals(name)) {
-                return s;
-            }
-        }
-        throw new IllegalArgumentException();
+  public static ObjectType get(String name) {
+    name = name.toLowerCase();
+    for (ObjectType s : values()) {
+      if (s.toString().equals(name) || s.textValue().equals(name)) {
+        return s;
+      }
     }
+    throw new IllegalArgumentException();
+  }
 
-    public String toString() {
-        return name().toLowerCase().replaceAll("_", " ");
-    }
+  public String toString() {
+    return name().toLowerCase().replaceAll("_", " ");
+  }
 
-    public String textValue() {
-        return name().toLowerCase();
-    }
+  public String textValue() {
+    return name().toLowerCase();
+  }
 }

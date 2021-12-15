@@ -43,63 +43,63 @@
 </template>
 
 <script>
-  import Vue2Filters from 'vue2-filters'
+import Vue2Filters from 'vue2-filters'
 
-  import constants from '@/helpers/constants'
-  import {AppMutations} from "@/stores/AppStore";
-  import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
+import constants from '@/helpers/constants'
+import {AppMutations} from "@/stores/AppStore";
+import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
 
-  export default {
-    name: 'Event',
-    mixins: [Vue2Filters.mixin],
+export default {
+  name: 'Event',
+  mixins: [Vue2Filters.mixin],
 
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        editName: false,
-        oldName: null,
-        event: {},
-        eventId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+  data () {
+    return {
+      snackbar: {},
+      constants,
+      editName: false,
+      oldName: null,
+      event: {},
+      eventId: this.$route.params.id,
+      companyId: this.$store.state.user.details.companyId,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+    }
+  },
+  computed: {
+  },
+  async created () {
+    await this.getEvent()
+  },
+  methods: {
+    async getEvent () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/event/${this.eventId}`)
+        this.event = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    computed: {
+    async saveEventName() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/event`, this.event)
+        this.editName = false
+        this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
-    async created () {
-      await this.getEvent()
-    },
-    methods: {
-      async getEvent () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/event/${this.eventId}`)
-          this.event = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveEventName() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/event`, this.event)
-          this.editName = false
-          this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Event')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    }
+  }
 
   }
 </script>

@@ -12,9 +12,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +27,7 @@ public class CustomFieldService {
   private final SecurityService securityService;
   private final SystemListService systemListService;
   private final ObjectMapper om;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
 
   public CustomField findCustomFieldById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -67,6 +64,7 @@ public class CustomFieldService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
+    params.put("sortListValuesAlphabetically", null != customField.getSortListValuesAlphabetically() && customField.getSortListValuesAlphabetically());
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put(
@@ -74,7 +72,7 @@ public class CustomFieldService {
         null == customField.getSystemListOptionIds()
                 || customField.getSystemListOptionIds().isEmpty()
             ? null
-            : createSqlArrayOfType("int", customField.getSystemListOptionIds()));
+            : sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
     Long id = null;
     boolean doInsertAfterHandlingOtherScenarios = false;
     boolean insertParentRecordIfNeeded = false;
@@ -276,15 +274,6 @@ public class CustomFieldService {
     }
 
     return results;
-  }
-
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
   }
 
   public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {

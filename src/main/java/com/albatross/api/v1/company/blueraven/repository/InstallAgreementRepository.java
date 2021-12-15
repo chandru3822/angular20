@@ -8,6 +8,7 @@ import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.PandaDocService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
+import com.albatross.api.v1.company.blueraven.services.SunpowerService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,8 @@ public class InstallAgreementRepository {
   private final SecurityService securityService;
 
   private final SunlightService sunlightService;
+
+  private final SunpowerService sunpowerService;
 
   private final PandaDocService pandaDocService;
 
@@ -98,8 +101,17 @@ public class InstallAgreementRepository {
           sunlightService.sendLoanDocs(projectId);
         }
       } catch (JSONException ex){
-        log.error("IARQ: Error sending loan docs via Sunlight", ex.getMessage());
-        resultMsg = "Error sending loan docs through Sunlight";
+        log.error("IARQ: Error sending finance docs via Sunlight", ex.getMessage());
+        resultMsg = "Error sending finance docs through Sunlight";
+      }
+    }
+    else if (sendLoanDocs && isSunpowerProject(financier)) {
+      // If credit is approved, send loan docs
+      try {
+        sunpowerService.sendLoanDocs(projectId);
+      } catch (Exception ex){
+        log.error("IARQ: Error sending finance docs via Sunpower", ex.getMessage());
+        resultMsg = "Error sending finance docs through Sunpower: " + ex.getMessage();
       }
     }
     else if (sendLoanDocs && isLoanPalProject(financier)) {
@@ -152,7 +164,10 @@ public class InstallAgreementRepository {
         log.warn(String.format("IARQ: Unable to locate goodleap application for project ID: %s", projectId));
         throw new RuntimeException(e);
       } else {
-        resultMsg = e.getMessage();
+        if (!resultMsg.isEmpty()) {
+          resultMsg += ". ";
+        }
+        resultMsg += e.getMessage();
       }
     }
 
@@ -169,6 +184,10 @@ public class InstallAgreementRepository {
 
   public Boolean isSunlightProject(String financier) {
     return financier != null && financier.equalsIgnoreCase("sunlight");
+  }
+
+  public Boolean isSunpowerProject(String financier) {
+    return financier != null && financier.equalsIgnoreCase("sunpower");
   }
 
   public String getFinancierFromProposalLog(Long projectId, Long proposalNbr) {
@@ -236,7 +255,7 @@ public class InstallAgreementRepository {
     );
   }
 
-  public String generateLoanApplication(Long projectId, Long proposalNbr) throws Exception {
+  public String generateLoanApplication(Long projectId, Long proposalNbr, String sendVia) throws Exception {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
@@ -255,6 +274,13 @@ public class InstallAgreementRepository {
           return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
         } catch (Exception e) {
           return sunlightPortalUrl + "salesdashboard";
+        }
+      } else if (pd.getLoanType().contains("Sunpower")) {
+        Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+        try {
+          return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
+        } catch (Exception e) {
+          throw new Exception(e.getMessage(), e);
         }
       } else if (pd.getLoanType().contains("LoanPal")) {
         // Check if this project has already had a credit check via Sunlight, if so throw error

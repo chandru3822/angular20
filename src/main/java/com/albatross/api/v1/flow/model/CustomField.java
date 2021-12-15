@@ -30,7 +30,7 @@ public class CustomField {
   private List<Long> systemListOptionIds;
   private String fieldName, fieldCode, objectType, groupName, customFieldSqlKey, customFieldSqlReferenceTable, processStepName, eventName, dataType;
   private Boolean archived, showOnInsert, requireOnInsert, showOnUserProfile, hasListValues, allowMultiple, detailView,
-    readonly, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentHidden, useParentData;
+    readonly, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentHidden, useParentData, sortListValuesAlphabetically;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;

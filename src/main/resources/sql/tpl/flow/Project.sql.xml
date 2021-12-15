@@ -296,6 +296,7 @@
                      u.last_name as "lastName",
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      pos.position,
+                     u.phone_number as "phoneNumber",
                      up.id as "userPositionId"
                   FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id

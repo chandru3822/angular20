@@ -291,7 +291,6 @@ export default {
       return this.values?.filter(v=>v.versionId == this.id).length > 0
     },
     propType() {
-      console.log({propType: this.types[this.tab]})
       return this.types[this.tab] ?? {};
     }
   },
@@ -311,11 +310,11 @@ export default {
       return Object.values(item)
         .filter(v => v.value !== undefined)
         .some(v => {
-           if (Array.isArray(v.value)) {
+          if (Array.isArray(v.value)) {
             const needle = search?.toLowerCase();
             return v.value?.some(f => f.toLowerCase().indexOf(needle) > -1);
           }
-          if (v.type === "text" || v.type === "system") {
+          if (v.type === "text" || v.type === "system" || v.type === 'System List') {
             const needle = search?.toLowerCase();
             return v?.value?.toLowerCase().indexOf(needle) > -1;
           }
@@ -339,7 +338,7 @@ export default {
     },
 
     async archiveItem(item) {
-      const { data } = await postRequest(`/proposals/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven');
+      const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven');
       const pk = data?.pk || item.pk;
       const values = this.values?.filter(v => v.pk !== pk) ?? [];
 
@@ -355,7 +354,7 @@ export default {
     },
 
     async deleteItem(item) {
-      const { data } = await deleteRequestWithPayload(`/proposals/${this.id}/values/${this.propType.code}/${item.pk}`, "blueraven");
+      const { data } = await deleteRequestWithPayload(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}`, "blueraven");
       const pk = data?.pk || item.pk;
       const values = this.values?.filter(v => v.pk !== pk) ?? [];
 
@@ -374,7 +373,7 @@ export default {
     },
 
     async undoAllChanges(){
-      const { data } = await postRequest(`/proposals/${this.id}/values/${this.propType.code}/reset`, {}, "blueraven");
+      const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/reset`, {}, "blueraven");
 
       let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }));
       const sortHeader = this.headers.find(h => h.fieldOrder === 1);
@@ -387,17 +386,17 @@ export default {
     },
 
     async getProposalDetail(proposalVersionId) {
-      const { data } = await getRequestWithParams(`/proposals/${proposalVersionId}`, {}, "blueraven");
+      const { data } = await getRequestWithParams(`/proposal/versions/${proposalVersionId}`, {}, "blueraven");
       this.detail = data ? { ...data } : null;
     },
 
     async getProposalObjectTypes() {
-      const { data } = await getRequestWithParams("/proposals/types", {}, "blueraven");
+      const { data } = await getRequestWithParams("/proposal/versions/types", {}, "blueraven");
       this.types = [...data];
     },
 
     async getProposalObjectTypeFields(objectType) {
-      const { data } = await getRequestWithParams(`/proposals/fields/${objectType}`, {}, "blueraven");
+      const { data } = await getRequestWithParams(`/proposal/versions/fields/${objectType}`, {}, "blueraven");
 
       let headers = data?.length > 0
         ? data.map(r => ({
@@ -418,7 +417,7 @@ export default {
     },
 
     async getProposalObjectTypeFieldValues(proposalVersionId, objectType) {
-      const { data } = await getRequestWithParams(`/proposals/${proposalVersionId}/values/${objectType}`, {}, "blueraven");
+      const { data } = await getRequestWithParams(`/proposal/versions/${proposalVersionId}/values/${objectType}`, {}, "blueraven");
       let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }));
       const sortHeader = this.headers.find(h => h.fieldOrder === 1);
       values.sort(sorterFn(sortHeader?.value));
@@ -426,7 +425,7 @@ export default {
     },
 
     async publish(proposalVersionId) {
-      const { data } = await postRequest(`/proposals/${proposalVersionId}/publish`, {}, "blueraven");
+      const { data } = await postRequest(`/proposal/versions/${proposalVersionId}/publish`, {}, "blueraven");
       this.detail = { ...data };
       //hide the action column
       this.headers =  this.headers.slice(0, this.headers.length - 1)
@@ -444,7 +443,7 @@ export default {
 
     async doSaveValues(group) {
       try {
-        const { data = {} } = await postRequest(`/proposals/${this.detail.id}/values/${this.propType.code}`, group, "blueraven");
+        const { data = {} } = await postRequest(`/proposal/versions/${this.detail.id}/values/${this.propType.code}`, group, "blueraven");
         const { pk, versionId, row } = data;
         const sortHeader = this.headers.find(h => h.fieldOrder === 1);
         const values = this.values?.filter(v => v.pk !== pk) ?? [];

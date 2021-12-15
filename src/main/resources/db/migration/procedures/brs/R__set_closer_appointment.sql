@@ -44,17 +44,17 @@ BEGIN
     raise exception 'Unable to schedule closer appointment.  Call support to complete.';
   end if;
 
-  select pcz.id
-  into v_postal_code_zone_id
-  from flow.project p
-         inner join flow.postal_code pc on pc.postal_code = substr(
-    trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
-         inner join flow.postal_code_zone pcz
-                    on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-         inner join flow.postal_code_zone_user pczu
-                    on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
-                       pczu.archived is false
-  where p.id = p_project_id;
+    select pcz.id
+    into v_postal_code_zone_id
+    from flow.project p
+             inner join flow.postal_code_zone_postal_code pc on pc.postal_code = substr(
+            trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
+             inner join flow.postal_code_zone pcz
+                        on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+             inner join flow.postal_code_zone_user pczu
+                        on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
+                           pczu.archived is false
+    where p.id = p_project_id;
 
 
   if array_length(p_users, 1) < 2 then

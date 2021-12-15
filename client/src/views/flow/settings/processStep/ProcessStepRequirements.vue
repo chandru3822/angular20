@@ -508,494 +508,493 @@
 </template>
 
 <script>
-  import Vue2Filters from 'vue2-filters'
-  import {AppMutations} from '@/stores/AppStore'
-  import cloneDeep from 'lodash.clonedeep'
-  import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getActiveAssignedToProcessStep, getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-  import {
-    getRequest,
-    deleteRequest,
-    putRequest,
-    postRequest,
-    getRequestWithParams,
-    getSnackbar, handleHidingGlobalLoader
-  } from '@/helpers/helpers'
-  import orderBy from 'lodash.orderby'
-  import Sortable from "sortablejs";
+import Vue2Filters from 'vue2-filters'
+import {AppMutations} from '@/stores/AppStore'
+import cloneDeep from 'lodash.clonedeep'
+import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
+import {getActiveAssignedToProcessStep, getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import {
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getRequestWithParams,
+  getSnackbar
+} from '@/helpers/helpers'
+import orderBy from 'lodash.orderby'
+import Sortable from "sortablejs";
 
-  export default {
-    name: 'ProcessStepRequirements',
-    mixins: [Vue2Filters.mixin],
-    props: {
-      eventRequirements: Boolean,
-      callback: Function
-    },
-    mounted() {},
-    watch: {
-      requirements: function () {
-        //any time the requirements change, send back to parent component
-        this.callback(this.requirements)
+export default {
+  name: 'ProcessStepRequirements',
+  mixins: [Vue2Filters.mixin],
+  props: {
+    eventRequirements: Boolean,
+    callback: Function
+  },
+  mounted() {},
+  watch: {
+    requirements: function () {
+      //any time the requirements change, send back to parent component
+      this.callback(this.requirements)
+    }
+  },
+  data() {
+    return {
+      snackbar: {},
+      expandRequirements: true,
+      expanded: [],
+      deleteError: false,
+      actionsUsingLogic: [],
+      invalidRequirement: true,
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      headers: [
+        {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
+        {text: 'Type', value: 'processStepRequirementType', show: true},
+        {text: 'Details', value: 'custom', show: true},
+        {text: 'Operator', value: 'operatorType', show: true},
+        {text: 'Value', value: 'requirementValue', show: true},
+        {text: null, value: 'icons', show: true}
+      ],
+      addNewRequirement: false,
+      newRequirement: {
+        requirementParamDynamicValues: [],
+        customValue: false
+      },
+      dataTypeRequirements: [],
+      selectedDataTypeRequirement: {},
+      selectedCustomField: {},
+      listOfValues: [],
+      selectedListOfValues: [],
+      selectedListValue: {},
+      selectedFunction: {},
+      selectedRequirementIndex: null,
+      availableRequirementTypes: [],
+      processStepId: this.$route.params.id,
+      processStepEventId: this.$route.params.eventId,
+      companyId: this.$store.state.user.details.companyId,
+      parentObjects: [],
+      parent: {},
+      customFields: [],
+      operatorTypes: [],
+      operationTypes: [],
+      selectedProcessStepStatus: {},
+      processStepStatuses: [],
+
+      requirements: [],
+      availableFunctions: [],
+      apiUrl: ''
+    }
+  },
+  computed: {},
+  async created() {
+    //api = process step requirements OR process step event requirements
+    this.apiUrl = this.eventRequirements ? `/processStep/${this.processStepId}/event/${this.processStepEventId}/requirement` : `/processStep/${this.processStepId}/requirement`
+    this.getRequirements()
+  },
+  methods: {
+    //requirements
+    async getRequirements() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(this.apiUrl)
+        this.requirements = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    data() {
-      return {
-        snackbar: {},
-        expandRequirements: true,
-        expanded: [],
-        deleteError: false,
-        actionsUsingLogic: [],
-        invalidRequirement: true,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        headers: [
-          {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
-          {text: 'Type', value: 'processStepRequirementType', show: true},
-          {text: 'Details', value: 'custom', show: true},
-          {text: 'Operator', value: 'operatorType', show: true},
-          {text: 'Value', value: 'requirementValue', show: true},
-          {text: null, value: 'icons', show: true}
-        ],
-        addNewRequirement: false,
-        newRequirement: {
-          requirementParamDynamicValues: [],
-          customValue: false
-        },
-        dataTypeRequirements: [],
-        selectedDataTypeRequirement: {},
-        selectedCustomField: {},
-        listOfValues: [],
-        selectedListOfValues: [],
-        selectedListValue: {},
-        selectedFunction: {},
-        selectedRequirementIndex: null,
-        availableRequirementTypes: [],
-        processStepId: this.$route.params.id,
-        processStepEventId: this.$route.params.eventId,
-        companyId: this.$store.state.user.details.companyId,
-        parentObjects: [],
-        parent: {},
-        customFields: [],
-        operatorTypes: [],
-        operationTypes: [],
-        selectedProcessStepStatus: {},
-        processStepStatuses: [],
-
-        requirements: [],
-        availableFunctions: [],
-        apiUrl: ''
+    filterRequirements() {
+      return this.requirements.filter(r => {
+        return !r.archived
+      })
+    },
+    async getRequirementTypes() {
+      this.addNewRequirement = !this.addNewRequirement
+      if (this.addNewRequirement) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
+          this.availableRequirementTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
-    computed: {},
-    async created() {
-      //api = process step requirements OR process step event requirements
-      this.apiUrl = this.eventRequirements ? `/processStep/${this.processStepId}/event/${this.processStepEventId}/requirement` : `/processStep/${this.processStepId}/requirement`
-      this.getRequirements()
-    },
-    methods: {
-      //requirements
-      async getRequirements() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(this.apiUrl)
-          console.log('randaLogger',data)
-          this.requirements = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterRequirements() {
-        return this.requirements.filter(r => {
-          return !r.archived
-        })
-      },
-      async getRequirementTypes() {
-        this.addNewRequirement = !this.addNewRequirement
-        if (this.addNewRequirement) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
-            this.availableRequirementTypes = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async selectRequirementType() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          //1 == process step custom field, 2 == function, 3 == project custom field, 4 == contact custom field
-          if (this.newRequirement.processStepRequirementTypeId === 1 || this.newRequirement.processStepRequirementTypeId === 7) {
-            this.loadParentObjects()
-          } else if (this.newRequirement.processStepRequirementTypeId === 3) {
-            //get project custom fields
-            this.loadCustomFieldsByObjectType(1)
-          } else if (this.newRequirement.processStepRequirementTypeId === 4) {
-            //get contact custom fields
-            this.loadCustomFieldsByObjectType(2)
-          } else {
-            const {data} = await getRequest(`/function/requirement`)
-            this.availableFunctions = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadChildFunctions() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/function/action`)
-          this.childFunctions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadParentObjects() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
-          this.parentObjects = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadValues(parent) {
-        if(this.newRequirement?.processStepRequirementTypeId === 1) {
-          await this.loadFieldsByParent(parent)
-        } else if (this.newRequirement?.processStepRequirementTypeId === 7) {
-          this.newRequirement.customValue = true
-          await this.getStatusesAssignedToProcessStep(parent)
-          //this 7 = data type for multi select
-          await this.loadOperatorTypes(7, 7)
-        }
-      },
-      async getStatusesAssignedToProcessStep(parent) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getAssignedToProcessStep(parent.id)
-          //if the selected process step is the same as the active process step being viewed, only allow active process step status types
-          this.processStepStatuses = parent.id === parseInt(this.processStepId) ? data.filter(d => d.processStepStatusTypeId === 1) : data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadFieldsByParent(parent) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
-          this.customFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadCustomFieldsByObjectType(objectTypeId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
-          this.customFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadFunctionParams(dbFunctionId, isRequirement) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
-          if (isRequirement) {
-            this.newRequirement.requirementParamDynamicValues = data
-          } else {
-            this.selectedChildRequirementParamDynamicValues = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadOperatorTypes(dataTypeId, processStepRequirementTypeId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/operator/${dataTypeId}`)
-          if(processStepRequirementTypeId === 7) {
-            this.operatorTypes = data.filter(d => d.id === 5)
-          } else {
-            this.operatorTypes = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadDataTypeRequirements(dataTypeId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
-          this.dataTypeRequirements = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getListValueName(item) {
-        let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
-          item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
-        let match = item.availableListOfValues.find(i => i.id === idToUse)
-        return match ? match.name : 'unknown'
-      },
-      operatorDataTypeCheck(item) {
-        // keeps multiselects using the right operator with the right lists.  i could probably do this better
-        if (item) {
-          if (item.operatorTypeId === 5 && item.dataTypeId === 7) {
-            item.customValue = true
-            item.dataTypeRequirement = {}
-          } else if (item.dataTypeId === 7) {
-            item.customValue = false
-            item.listOfValues = []
-            this.loadDataTypeRequirements(item.dataTypeId)
-          }
+    async selectRequirementType() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //1 == process step custom field, 2 == function, 3 == project custom field, 4 == contact custom field
+        if (this.newRequirement.processStepRequirementTypeId === 1 || this.newRequirement.processStepRequirementTypeId === 7) {
+          this.loadParentObjects()
+        } else if (this.newRequirement.processStepRequirementTypeId === 3) {
+          //get project custom fields
+          this.loadCustomFieldsByObjectType(1)
+        } else if (this.newRequirement.processStepRequirementTypeId === 4) {
+          //get contact custom fields
+          this.loadCustomFieldsByObjectType(2)
         } else {
-          if (this.newRequirement.operatorTypeId === 5 && this.selectedCustomField.dataTypeId === 7) {
-            this.newRequirement.customValue = true
-            this.selectedDataTypeRequirement = {}
-          } else if (this.selectedCustomField.dataTypeId) {
-            this.newRequirement.customValue = false
-            this.selectedListOfValues = []
-            let dataTypeToUse = this.newRequirement.processStepRequirementTypeId === 7 ? 7 : this.selectedCustomField.dataTypeId
-            this.loadDataTypeRequirements(dataTypeToUse)
-          }
+          const {data} = await getRequest(`/function/requirement`)
+          this.availableFunctions = data
         }
-      },
-      validateRequirementForm() {
-        let invalidParams = false
-        //if there are dynamic params, ensure they are all populated
-        if (this.newRequirement.requirementParamDynamicValues.length > 0) {
-          this.newRequirement.requirementParamDynamicValues.forEach(fp => {
-            if (!fp.dynamicValue) {
-              invalidParams = true
-            }
-          })
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadChildFunctions() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/function/action`)
+        this.childFunctions = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadParentObjects() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
+        this.parentObjects = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadValues(parent) {
+      if(this.newRequirement?.processStepRequirementTypeId === 1) {
+        await this.loadFieldsByParent(parent)
+      } else if (this.newRequirement?.processStepRequirementTypeId === 7) {
+        this.newRequirement.customValue = true
+        await this.getStatusesAssignedToProcessStep(parent)
+        //this 7 = data type for multi select
+        await this.loadOperatorTypes(7, 7)
+      }
+    },
+    async getStatusesAssignedToProcessStep(parent) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getAssignedToProcessStep(parent.id)
+        //if the selected process step is the same as the active process step being viewed, only allow active process step status types
+        this.processStepStatuses = parent.id === parseInt(this.processStepId) ? data.filter(d => d.processStepStatusTypeId === 1) : data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadFieldsByParent(parent) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
+        this.customFields = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadCustomFieldsByObjectType(objectTypeId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
+        this.customFields = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadFunctionParams(dbFunctionId, isRequirement) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+        if (isRequirement) {
+          this.newRequirement.requirementParamDynamicValues = data
+        } else {
+          this.selectedChildRequirementParamDynamicValues = data
         }
-
-        //check validity of initial value
-        let invalidValue = (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id && !this.selectedListValue.id && this.selectedListOfValues.length === 0)
-
-        //if a secondary requirement is required check for a value there
-        let invalidSecondaryValue = (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
-
-        this.invalidRequirement = invalidParams || invalidValue || invalidSecondaryValue
-      },
-      async saveNewRequirement() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newRequirement.customFieldGroupAssignmentId = this.selectedCustomField.customFieldGroupAssignmentId
-          this.newRequirement.companyFunctionId = this.selectedFunction.id
-          this.newRequirement.processStepId = this.processStepId
-
-          //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
-          //adjust value of requirementValue as needed:
-          if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && this.selectedCustomField.allowMultiple) {
-            // if from list of values and allow multiple build the json array of selected ids
-            this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
-
-            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            this.newRequirement.systemListOptionId = null
-            this.newRequirement.customSqlOptionId = null
-            this.newRequirement.listOfValueId = null
-            this.newRequirement.dataTypeRequirementId = null
-            this.newRequirement.requirementValue = null
-          } else if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
-            //  if from a list of values and not allow multiple use the selected value id,
-            this.newRequirement.listOfValueId = this.selectedListValue.id
-            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            this.newRequirement.systemListOptionId = null
-            this.newRequirement.customSqlOptionId = null
-            this.newRequirement.listOfValueIds = null
-            this.newRequirement.dataTypeRequirementId = null
-            this.newRequirement.requirementValue = null
-          } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
-            //  if from a system list and not allow multiple use the selected value id,
-            this.newRequirement.systemListOptionId = this.selectedListValue.id
-            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            this.newRequirement.listOfValueId = null
-            this.newRequirement.listOfValueIds = null
-            this.newRequirement.customSqlOptionId = null
-            this.newRequirement.dataTypeRequirementId = null
-            this.newRequirement.requirementValue = null
-          } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSqlKey && !this.selectedCustomField.allowMultiple) {
-            //  if from a list of values and not allow multiple use the selected value id,
-            this.newRequirement.customSqlOptionId = this.selectedListValue.id
-            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            this.newRequirement.listOfValueId = null
-            this.newRequirement.systemListOptionId = null
-            this.newRequirement.listOfValueIds = null
-            this.newRequirement.dataTypeRequirementId = null
-            this.newRequirement.requirementValue = null
-          } else if (this.newRequirement.customValue) {
-            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            //here
-            if(this.newRequirement.processStepRequirementTypeId === 7) {
-              this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
-              this.newRequirement.referenceProcessStepId = this.parent.id
-            } else {
-              this.newRequirement.listOfValueIds = null
-            }
-            this.newRequirement.systemListOptionId = null
-            this.newRequirement.customSqlOptionId = null
-            this.newRequirement.listOfValueId = null
-            this.newRequirement.dataTypeRequirementId = null
-          } else if (!this.newRequirement.customValue) {
-            this.newRequirement.dataTypeRequirementId = this.selectedDataTypeRequirement.id
-            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
-            this.newRequirement.listOfValueIds = null
-            this.newRequirement.systemListOptionId = null
-            this.newRequirement.customSqlOptionId = null
-            this.newRequirement.listOfValueId = null
-            this.newRequirement.requirementValue = null
-          }
-
-          if(this.eventRequirements) {
-            this.newRequirement.processStepEventId = this.processStepEventId
-          }
-          const {data} = await postRequest(this.apiUrl, this.newRequirement)
-          this.requirements.push(data)
-          this.selectedCustomField = {}
-          this.selectedListOfValues = []
-          this.selectedListValue = {}
-          this.addNewRequirement = false
-          this.newRequirement = {
-            requirementParamDynamicValues: []
-          }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadOperatorTypes(dataTypeId, processStepRequirementTypeId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/operator/${dataTypeId}`)
+        if(processStepRequirementTypeId === 7) {
+          this.operatorTypes = data.filter(d => d.id === 5)
+        } else {
+          this.operatorTypes = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadDataTypeRequirements(dataTypeId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
+        this.dataTypeRequirements = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    operatorDataTypeCheck(item) {
+      // keeps multiselects using the right operator with the right lists.  i could probably do this better
+      if (item) {
+        if (item.operatorTypeId === 5 && item.dataTypeId === 7) {
+          item.customValue = true
+          item.dataTypeRequirement = {}
+        } else if (item.dataTypeId === 7) {
+          item.customValue = false
+          item.listOfValues = []
+          this.loadDataTypeRequirements(item.dataTypeId)
+        }
+      } else {
+        if (this.newRequirement.operatorTypeId === 5 && this.selectedCustomField.dataTypeId === 7) {
+          this.newRequirement.customValue = true
           this.selectedDataTypeRequirement = {}
-          this.parent = {}
-          this.availableFunctions = []
-          this.snackbar = getSnackbar('SUCCESS', 'Requirement Added')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Requirement')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        } else if (this.selectedCustomField.dataTypeId) {
+          this.newRequirement.customValue = false
+          this.selectedListOfValues = []
+          let dataTypeToUse = this.newRequirement.processStepRequirementTypeId === 7 ? 7 : this.selectedCustomField.dataTypeId
+          this.loadDataTypeRequirements(dataTypeToUse)
         }
-      },
-      async updateRequirement(requirement) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          requirement.dataTypeRequirementId = requirement.customValue ? null : requirement.dataTypeRequirement.id
-          requirement.dataTypeRequirement = requirement.customValue ? {} : requirement.dataTypeRequirement
-          requirement.secondaryRequirementValue = !requirement.customValue && requirement.dataTypeRequirement.secondaryRequirement ? requirement.secondaryRequirementValue : null
-
-          //adjust value of requirementValue as needed:
-          if (requirement.customValue && requirement.listOfValues) {
-            // if from list of values and allow multiple build the json array of selected ids
-            requirement.listOfValueIds = requirement.listOfValues.map(v => v.id)
-            //reset this in case they changed values around
-            requirement.dataTypeRequirementId = null
-          } else if (requirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
-            //  if from a list of values and not allow multiple use the selected value id,
-            requirement.listOfValueId = this.selectedListValue.id
-            //reset this in case they changed values around
-            requirement.dataTypeRequirementId = null
-          } else if (!requirement.customValue) {
-            //reset these in case they changed values around
-            requirement.listOfValueIds = null
-            requirement.listOfValueId = null
-            requirement.requirementValue = null
+      }
+    },
+    validateRequirementForm() {
+      let invalidParams = false
+      //if there are dynamic params, ensure they are all populated
+      if (this.newRequirement.requirementParamDynamicValues.length > 0) {
+        this.newRequirement.requirementParamDynamicValues.forEach(fp => {
+          if (!fp.dynamicValue) {
+            invalidParams = true
           }
+        })
+      }
 
-          if(this.eventRequirements) {
-            this.newRequirement.processStepEventId = this.processStepEventId
-          }
+      //check validity of initial value
+      let invalidValue = (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id && !this.selectedListValue.id && this.selectedListOfValues.length === 0)
 
-          const {data} = await putRequest(this.apiUrl, requirement)
-          this.expanded = []
-          // this forces the list to update the operator displayed ... using requirement = data did not work
-          requirement.operatorType = data.operatorType
-          this.snackbar = getSnackbar('SUCCESS', 'Requirement Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Requirement')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteRequirement(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let url = this.apiUrl + `/${item.id}`
-          const {data} = await putRequest(url)
-          if (data?.length > 0) {
-            this.deleteError = true
-            item.deleteConfirm = false
-            this.actionsUsingLogic = data
-            this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //if a secondary requirement is required check for a value there
+      let invalidSecondaryValue = (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
+
+      this.invalidRequirement = invalidParams || invalidValue || invalidSecondaryValue
+    },
+    async saveNewRequirement() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newRequirement.customFieldGroupAssignmentId = this.selectedCustomField.customFieldGroupAssignmentId
+        this.newRequirement.companyFunctionId = this.selectedFunction.id
+        this.newRequirement.processStepId = this.processStepId
+
+        //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
+        //adjust value of requirementValue as needed:
+        if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && this.selectedCustomField.allowMultiple) {
+          // if from list of values and allow multiple build the json array of selected ids
+          this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
+
+          //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+          this.newRequirement.systemListOptionId = null
+          this.newRequirement.customSqlOptionId = null
+          this.newRequirement.listOfValueId = null
+          this.newRequirement.dataTypeRequirementId = null
+          this.newRequirement.requirementValue = null
+        } else if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
+          //  if from a list of values and not allow multiple use the selected value id,
+          this.newRequirement.listOfValueId = this.selectedListValue.id
+          //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+          this.newRequirement.systemListOptionId = null
+          this.newRequirement.customSqlOptionId = null
+          this.newRequirement.listOfValueIds = null
+          this.newRequirement.dataTypeRequirementId = null
+          this.newRequirement.requirementValue = null
+        } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
+          //  if from a system list and not allow multiple use the selected value id,
+          this.newRequirement.systemListOptionId = this.selectedListValue.id
+          //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+          this.newRequirement.listOfValueId = null
+          this.newRequirement.listOfValueIds = null
+          this.newRequirement.customSqlOptionId = null
+          this.newRequirement.dataTypeRequirementId = null
+          this.newRequirement.requirementValue = null
+        } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSqlKey && !this.selectedCustomField.allowMultiple) {
+          //  if from a list of values and not allow multiple use the selected value id,
+          this.newRequirement.customSqlOptionId = this.selectedListValue.id
+          //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+          this.newRequirement.listOfValueId = null
+          this.newRequirement.systemListOptionId = null
+          this.newRequirement.listOfValueIds = null
+          this.newRequirement.dataTypeRequirementId = null
+          this.newRequirement.requirementValue = null
+        } else if (this.newRequirement.customValue) {
+          //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+          //here
+          if(this.newRequirement.processStepRequirementTypeId === 7) {
+            this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
+            this.newRequirement.referenceProcessStepId = this.parent.id
           } else {
-            item.archived = true
-            this.requirements = this.requirements.filter(r => !r.archived)
-            this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.newRequirement.listOfValueIds = null
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
+          this.newRequirement.systemListOptionId = null
+          this.newRequirement.customSqlOptionId = null
+          this.newRequirement.listOfValueId = null
+          this.newRequirement.dataTypeRequirementId = null
+        } else if (!this.newRequirement.customValue) {
+          this.newRequirement.dataTypeRequirementId = this.selectedDataTypeRequirement.id
+          //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+          this.newRequirement.listOfValueIds = null
+          this.newRequirement.systemListOptionId = null
+          this.newRequirement.customSqlOptionId = null
+          this.newRequirement.listOfValueId = null
+          this.newRequirement.requirementValue = null
+        }
+
+        if(this.eventRequirements) {
+          this.newRequirement.processStepEventId = this.processStepEventId
+        }
+        const {data} = await postRequest(this.apiUrl, this.newRequirement)
+        this.requirements.push(data)
+        this.selectedCustomField = {}
+        this.selectedListOfValues = []
+        this.selectedListValue = {}
+        this.addNewRequirement = false
+        this.newRequirement = {
+          requirementParamDynamicValues: []
+        }
+        this.selectedDataTypeRequirement = {}
+        this.parent = {}
+        this.availableFunctions = []
+        this.snackbar = getSnackbar('SUCCESS', 'Requirement Added')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Requirement')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateRequirement(requirement) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        requirement.dataTypeRequirementId = requirement.customValue ? null : requirement.dataTypeRequirement.id
+        requirement.dataTypeRequirement = requirement.customValue ? {} : requirement.dataTypeRequirement
+        requirement.secondaryRequirementValue = !requirement.customValue && requirement.dataTypeRequirement.secondaryRequirement ? requirement.secondaryRequirementValue : null
+
+        //adjust value of requirementValue as needed:
+        if (requirement.customValue && requirement.listOfValues) {
+          // if from list of values and allow multiple build the json array of selected ids
+          requirement.listOfValueIds = requirement.listOfValues.map(v => v.id)
+          //reset this in case they changed values around
+          requirement.dataTypeRequirementId = null
+        } else if (requirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
+          //  if from a list of values and not allow multiple use the selected value id,
+          requirement.listOfValueId = this.selectedListValue.id
+          //reset this in case they changed values around
+          requirement.dataTypeRequirementId = null
+        } else if (!requirement.customValue) {
+          //reset these in case they changed values around
+          requirement.listOfValueIds = null
+          requirement.listOfValueId = null
+          requirement.requirementValue = null
+        }
+
+        if(this.eventRequirements) {
+          this.newRequirement.processStepEventId = this.processStepEventId
+        }
+
+        const {data} = await putRequest(this.apiUrl, requirement)
+        this.expanded = []
+        // this forces the list to update the operator displayed ... using requirement = data did not work
+        requirement.operatorType = data.operatorType
+        this.snackbar = getSnackbar('SUCCESS', 'Requirement Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteRequirement(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let url = this.apiUrl + `/${item.id}`
+        const {data} = await putRequest(url)
+        if (data?.length > 0) {
+          this.deleteError = true
+          item.deleteConfirm = false
+          this.actionsUsingLogic = data
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        } else {
+          item.archived = true
+          this.requirements = this.requirements.filter(r => !r.archived)
+          this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-      },
-    }
-
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getListValueName(item) {
+      let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
+        item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+      let match = item.availableListOfValues.find(i => i.id === idToUse)
+      return match ? match.name : 'unknown'
+    },
   }
+
+}
 </script>
 
 <style scoped lang="scss">
-  .params {
-    width: 100%;
-  }
+.params {
+  width: 100%;
+}
 
-  .req-header-bar {
-    border-bottom: 1px solid #E6E6E6;
-  }
+.req-header-bar {
+  border-bottom: 1px solid #E6E6E6;
+}
 
 </style>

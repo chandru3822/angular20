@@ -129,13 +129,47 @@
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
                 <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
-                  <v-autocomplete v-model="newField"
+                  <v-radio-group v-if="objectType.allowAncillary"
+                                 v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
+                    <v-radio label="Native Custom Field"
+                             value="native"></v-radio>
+                    <v-radio label="Reference Field: viewed only from other process steps or objects"
+                             value="ancillary"></v-radio>
+                  </v-radio-group>
+                  <v-autocomplete v-if="newFieldType === 'native'"
+                                  v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
                                   item-text="fieldName"
                                   return-object
                                   autocomplete="off"
                                   @input="assignCustomField(item)"
+                  >
+                    <template slot='item' slot-scope='{ item }'>
+                      {{ item.fieldName }}
+                    </template>
+                  </v-autocomplete>
+                  <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                  v-model="parent"
+                                  :items="parentObjects"
+                                  label="Parent Object"
+                                  item-text="name"
+                                  return-object
+                                  autocomplete="off"
+                                  @input="loadFieldsByParent"
+                  >
+                    <template slot='item' slot-scope='{ item }'>
+                      {{ item.name }}
+                    </template>
+                  </v-autocomplete>
+                  <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                  v-model="selectedAncillaryField"
+                                  :items="ancillaryCustomFields"
+                                  label="Custom Field"
+                                  item-text="fieldName"
+                                  return-object
+                                  autocomplete="off"
+                                  @input="assignCustomField(item, true)"
                   >
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.fieldName }}
@@ -156,8 +190,18 @@
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          <div>
+                          <div v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
                             {{cf.fieldName}}
+                          </div>
+                          <div v-else>
+                            {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
+                            (Ancillary)<br/>
+                            <div v-if="cf.processStepName">
+                              <label>Use Parent Data: </label>
+                              <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
+                                     @change="saveUseParentData(cf)"
+                                     :readonly="!userCanEdit" :disabled="!userCanEdit">
+                            </div>
                           </div>
                         </v-list-item-content>
                         <v-dialog
@@ -237,6 +281,7 @@ export default {
       constants,
       addNew: false,
       objectType: {},
+      newFieldType: 'native',
       deleteError: false,
       deleteHeader: null,
       deleteText: null,
@@ -263,7 +308,9 @@ export default {
       ],
       expanded: [],
       parent: {},
-      parentObjects: []
+      parentObjects: [],
+      selectedAncillaryField: {},
+      ancillaryCustomFields: [],
     }
   },
   mounted() {
@@ -283,9 +330,24 @@ export default {
     })
   },
   created () {
+    this.getObjectType()
     this.getCustomFieldGroups()
   },
   methods: {
+    async getObjectType() {
+      //we have to get the object type details to determine if it can use ancillary fields
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/objectType/getByType/${this.$route.params.id}`,  'blueraven')
+        this.objectType = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -304,9 +366,9 @@ export default {
       }
     },
     async fetchAvailableCustomFields (groupId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        if(this.addField) {
+        if(this.addField && this.newFieldType === 'native') {
+          this.$store.commit(AppMutations.SET_LOADING, true)
           const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
               objectTypeId: parseInt(this.$route.params.id),
@@ -314,8 +376,15 @@ export default {
             }
           }, 'blueraven')
           this.availableCustomFields = data
+          handleHidingGlobalLoader(this, status)
+        } else if (this.addField && this.newFieldType === 'ancillary') {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          this.availableCustomFields = []
+          const {data, status} = await getRequest(`/objectType/${this.$route.params.id}/getParentObjectsWithTypes`, 'blueraven')
+          this.selectedAncillaryField = {}
+          this.parentObjects = data
+          handleHidingGlobalLoader(this, status)
         }
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -342,14 +411,24 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async assignCustomField (item) {
+    async assignCustomField (cfg, isAncillary) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addField = false
-        this.newField.customFieldGroupId = item.id
-        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField, 'blueraven')
-        item.customFields.push(data)
+        this.newField.customFieldGroupId = cfg.id
+        let params = !isAncillary ? this.newField : {
+          customFieldGroupId: cfg.id,
+          id: null,
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+          fieldOrder: 0
+        }
+        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params, 'blueraven')
+        cfg.customFields.push(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.ancillaryCustomFields = []
+        this.addField = false
+        this.parent = {}
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -467,7 +546,38 @@ export default {
     },
     filterCustomFieldGroups () {
       return this.customFieldGroups.filter(cfgt => { return !cfgt.archived})
-    }
+    },
+    async loadFieldsByParent() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        if (this.parent.isProcessStep) {
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          handleHidingGlobalLoader(this, status)
+        } else {
+          const {data, status} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          handleHidingGlobalLoader(this, status)
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveUseParentData(field) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/customFieldGroup/saveUseParentData`, field, 'blueraven')
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

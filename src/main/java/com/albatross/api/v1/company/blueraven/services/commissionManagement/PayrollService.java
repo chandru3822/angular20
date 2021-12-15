@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.models.commissionManagement.Accoun
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
 import com.albatross.api.v1.flow.model.OverrideResult;
+import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -35,6 +34,7 @@ public class PayrollService {
 
     private final SqlCache sqlCache;
     private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
     private final SecurityService securityService;
 
     public Long findCurrentPayroll(Long positionId) {
@@ -174,10 +174,10 @@ public class PayrollService {
         params.put("cancelEndDate", request.getCancelEndDate());
         params.put("overridePlanId", request.getOverridePlanId());
         params.put("commissionPlanId", request.getCommissionPlanId());
-        params.put("selectedProjectIds", null != request.getSelectedProjectIds() ? createSqlArrayOfType("int", request.getSelectedProjectIds()) : null);
+        params.put("selectedProjectIds", null != request.getSelectedProjectIds() ? sqlArrayService.createSqlArrayOfType("int", request.getSelectedProjectIds()) : null);
 
         if (request.getProjectId() != null) {
-            params.put("selectedProjectIds", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
+            params.put("selectedProjectIds", sqlArrayService.createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
         }
 
         String sqlKey = request.getPositionId() == 1 ? "payroll.getAccountReviewForClosers" : "payroll.getAccountReviewForSetters";
@@ -253,7 +253,7 @@ public class PayrollService {
         params.put("payrollId", payrollId);
         params.put("description", updateRequest.getDescription());
         params.put("periodEndDate", updateRequest.getPeriodEnd());
-        params.put("projectIds", createSqlArrayOfType("bigint", updateRequest.getProjectIds()));
+        params.put("projectIds", sqlArrayService.createSqlArrayOfType("bigint", updateRequest.getProjectIds()));
 
         int update = sqlCache.update("payroll.updatePayroll", params);
 
@@ -296,12 +296,6 @@ public class PayrollService {
         }
 
         return false;
-    }
-
-    private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            return connection.createArrayOf(typeName, array.toArray());
-        }
     }
 
     @Data

@@ -47,16 +47,16 @@ public class CustomFieldGroupController {
     customFieldGroupService.saveUseParentData(customField);
   }
 
-  @PutMapping(value = "/saveDetailView/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveDetailView(@PathVariable Long cfgaId,
-                             @RequestParam Boolean detailView) {
-    customFieldGroupService.saveDetailView(cfgaId, detailView);
-  }
-
   @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveReadOnlyAndWhiteList(@RequestParam(required = false) Boolean savePositions,
                                        @RequestBody CustomField customField) {
     customFieldGroupService.saveCfgaAndWhiteList(customField, true, savePositions, WhiteListType.CFGA_READ_ONLY.id);
+  }
+
+  @PutMapping(value = "/saveDetailView/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveDetailView(@PathVariable Long cfgaId,
+                             @RequestParam Boolean detailView) {
+    customFieldGroupService.saveDetailView(cfgaId, detailView);
   }
 
   @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)

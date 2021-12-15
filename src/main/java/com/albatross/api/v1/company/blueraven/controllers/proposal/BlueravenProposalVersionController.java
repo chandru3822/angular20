@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/company/blueraven/proposals")
+@RequestMapping(value = "/api/v1/company/blueraven/proposal/versions")
 @RequiredArgsConstructor
 public class BlueravenProposalVersionController {
   private final ProposalVersionService proposalVersionService;

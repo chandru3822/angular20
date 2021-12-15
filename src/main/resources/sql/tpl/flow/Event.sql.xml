@@ -205,12 +205,14 @@
       select
         cpst.id,
         cpst.event_status_type,
+        cpst.display_order,
         pst.id as event_status_type_id,
         cpst.archived,
         pst.event_status_type as "rootEventStatusType"
     from flow.company_event_status_type cpst
     inner join flow.event_status_type pst on pst.id = cpst.event_status_type_id
     where cpst.company_id = :companyId and cpst.archived is not true
+    order by cpst.display_order
   ]]></event.getCompanyStatuses>
 
   <event.getOneCompanyStatus><![CDATA[
@@ -229,6 +231,7 @@
       update flow.company_event_status_type
     set event_status_type = :eventStatusType,
         modified_by_id = :currentUserId,
+        display_order = :displayOrder,
         date_modified = now()
     where id = :id
   ]]></event.updateCompanyStatus>

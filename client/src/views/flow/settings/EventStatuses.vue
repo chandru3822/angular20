@@ -17,11 +17,11 @@
           <v-text-field label="Event Status" v-model="newType.eventStatusType">
           </v-text-field>
           <v-autocomplete single-line
-                    :items="rootStatusTypes"
-                    v-model="newType.eventStatusTypeId"
-                    item-value="id"
-                    label="Select a Category"
-                    item-text="eventStatusType"></v-autocomplete>
+                          :items="rootStatusTypes"
+                          v-model="newType.eventStatusTypeId"
+                          item-value="id"
+                          label="Select a Category"
+                          item-text="eventStatusType"></v-autocomplete>
           <v-btn :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">Save</v-btn>
         </v-card>
         <v-data-table
@@ -45,13 +45,13 @@
                             :disabled="!userCanEdit"
               ></v-text-field>
               <v-autocomplete
-                        :items="rootStatusTypes"
-                        v-model="item.eventStatusTypeId"
-                        item-value="id"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Select a Category"
-                        item-text="eventStatusType"></v-autocomplete>
+                :items="rootStatusTypes"
+                v-model="item.eventStatusTypeId"
+                item-value="id"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Select a Category"
+                item-text="eventStatusType"></v-autocomplete>
               <v-btn color="primaryCustom" dark class="white--text"
                      :disabled="!item.eventStatusType || !item.eventStatusTypeId"
                      @click="saveType(item, false)">Save</v-btn>
@@ -297,31 +297,31 @@
             this.statusTypes.push(data)
             this.statusTypes = orderBy(this.statusTypes, [s => s.eventStatusType.toLowerCase()])
 
-            // reset the new process fields
-            this.addNew = false
-            this.newType = {}
-          }
-          this.expanded = []
-          this.selectedStatusTypeId = null
-          this.snackbar = getSnackbar('SUCCESS', 'Event Status Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Event Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          // reset the new process fields
+          this.addNew = false
+          this.newType = {}
         }
-      },
-      filterEventStatuses () {
-        return this.statusTypes.filter(s => { return !s.archived})
+        this.expanded = []
+        this.selectedStatusTypeId = null
+        this.snackbar = getSnackbar('SUCCESS', 'Event Status Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Event Status')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async created () {
-      this.getCompanyStatusTypes()
-      this.getEventStatusTypes()
+    filterEventStatuses () {
+      return this.statusTypes.filter(s => { return !s.archived})
     }
+  },
+  async created () {
+    this.getCompanyStatusTypes()
+    this.getEventStatusTypes()
   }
+}
 </script>
 
 <style scoped lang="scss">
