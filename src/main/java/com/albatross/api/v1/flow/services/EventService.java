@@ -109,7 +109,6 @@ public class EventService {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
-    // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
     List<EventStatusType> results = sqlCache.query("event.getCompanyStatuses",
       ImmutableMap.of("companyId", companyId), EventStatusType.class);
 
@@ -121,6 +120,12 @@ public class EventService {
       ImmutableMap.of("id", id), EventStatusType.class);
 
     return result;
+  }
+
+  public void saveCompanyEventStatuses(List<EventStatusType> statuses) {
+    for (EventStatusType s : statuses) {
+      saveCompanyEventStatus(s);
+    }
   }
 
   public Optional<EventStatusType> saveCompanyEventStatus(EventStatusType status) {
