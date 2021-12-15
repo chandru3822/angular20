@@ -19,7 +19,7 @@
         <div class="mb-4">
           <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewEventStatusType">
             <h3>Assign a Status Type</h3>
-            <v-autocomplete label="Process Step Status Type"
+            <v-autocomplete label="Event Status Type"
                             :items="availableCompanyEventStatusTypes"
                             v-model="newEventStatusTypeId"
                             item-text="eventStatusType"

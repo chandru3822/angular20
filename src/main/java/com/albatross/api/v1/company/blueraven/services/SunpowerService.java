@@ -139,13 +139,13 @@ public class SunpowerService {
         setSunpowerUrl(projectId, proposalNbr, result);
       }
       else if (message.equals("Quote Updated")) {
-        result = "Application already exists, customer information updated if applicable";
+        result = "Customer application updated if applicable";
       }
     }
     else {
       String message = status.getString("message");
-      log.error("SUNPWR: Error opening or updating Loan Application for Sunpower: {}", message);
-      throw new Exception("Error opening or updating Loan Application for Sunpower: " + message);
+      log.error("SUNPWR: Error opening or updating Loan Application for SunPower: {}", message);
+      throw new Exception("Error opening or updating Loan Application for SunPower: " + message);
     }
 
     setCreditLastCheckedBy(projectId, "Sunpower");

@@ -296,15 +296,7 @@ export default {
           data,
           status
         } = await getRequest('/install-agreement/generate/' + this.requestItem.projectId + '/' + this.requestItem.proposalNbr, 'blueraven')
-        // Handle case for Sunpower update
-        if (data == 'Application already exists, customer information updated if applicable') {
-          this.snackbar = getSnackbar('SUCCESS', 'Application already exists, customer information updated if applicable')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        else {
-          window.open(data);
-        }
-
+        window.open(data);
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
