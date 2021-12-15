@@ -210,7 +210,7 @@ public class SunpowerService {
 
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {
     String url = apiUrl + uri;
-    log.debug("SUNPOWER: sending to Sunpower url: {}", url);
+    log.debug("SUNPOWER: sending to SunPower url: {}", url);
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", String.format("Basic %s", basicToken));
     headers.put("Content-Type", "application/json");
