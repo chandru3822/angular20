@@ -204,7 +204,7 @@ export default {
     disableAddSlice(proposalCount, offset) {
       let pageCount = (Math.floor(proposalCount / this.numberToDisplay))
       let dividesEqually = proposalCount % this.numberToDisplay === 0
-      if (dividesEqually) {
+      if (dividesEqually && pageCount !== 0) {
         pageCount--
       }
       return pageCount === offset
