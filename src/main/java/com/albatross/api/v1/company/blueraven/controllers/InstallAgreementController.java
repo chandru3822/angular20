@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
+import com.albatross.api.v1.company.blueraven.services.SunpowerService;
 import com.albatross.api.v1.flow.model.Contact;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,8 @@ public class InstallAgreementController {
   private final GoodleapService goodleapService;
 
   private final SunlightService sunlightService;
+
+  private final SunpowerService sunpowerService;
 
   @Autowired
   private SqlCache sqlCache;
@@ -82,6 +85,23 @@ public class InstallAgreementController {
     }
   }
 
+  @PostMapping(value = "/updateSunpowerApp/{projectId}/{proposalNbr}")
+  public ResponseEntity<Object> updateSunpowerApp(@PathVariable Long projectId, @PathVariable Long proposalNbr) {
+    String message = "";
+    JSONObject updateResponse = new JSONObject();
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("proposalNbr", proposalNbr);
+      Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+      message = sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
+      updateResponse.put("message", message);
+      return ResponseEntity.ok(updateResponse.toString());
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
+    }
+  }
+
   @PutMapping(value = "/updateEmailAddress/{projectId}")
   public void updateEmailAddress(@PathVariable Long projectId, @RequestBody Contact contact) {
       installAgreementRepository.updateEmailAddress(projectId, contact.getEmail());
@@ -103,6 +123,10 @@ public class InstallAgreementController {
         }
         else if (loan.contains("Sunlight")) {
           JSONObject sunlightApp = sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
+          return ResponseEntity.ok(sunlightApp.toString());
+        }
+        else if (loan.contains("Sunpower")) {
+          JSONObject sunlightApp = sunpowerService.getApplicationDetails(Long.parseLong(projectId), Long.parseLong(proposalNbr));
           return ResponseEntity.ok(sunlightApp.toString());
         }
       }
