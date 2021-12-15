@@ -61,6 +61,15 @@ public class AttachmentService {
   }
 
   /**
+   * Set the URL to public url.
+   *
+   * @param a
+   */
+  public void setAttachmentPresignedUrl(Attachment a) {
+    setAttachmentPresignedUrl(storageBucket, a);
+  }
+
+  /**
    * Overload the setAttachmentPresignedUrl function for mobile
    */
   private void setAttachmentPresignedUrl(String bucket, Attachment a) {

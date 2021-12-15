@@ -759,4 +759,8 @@
           date_modified = now()
   ]]></customFieldValue.project.updateValueUsingCfId>
 
+  <customFieldValue.updateValueUsingFunction><![CDATA[
+      select from flow.set_pps_cfv(:projectId::int, :userId::int, :cfgaId::integer, :value::text);
+  ]]></customFieldValue.updateValueUsingFunction>
+
 </sql>
