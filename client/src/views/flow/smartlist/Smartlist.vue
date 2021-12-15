@@ -936,7 +936,7 @@ export default {
         saveAs(blob, `${this.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
         handleHidingGlobalLoader(this, status)
       } catch (e) {
-        this.snackbar = getSnackbar('ERROR', e.message)
+        this.snackbar = getSnackbar('ERROR', e.data.message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
         this.$store.commit(AppMutations.SET_LOADING, false)

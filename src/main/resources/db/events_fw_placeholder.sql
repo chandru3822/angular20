@@ -564,5 +564,7 @@ where sr.id = offendingRequirements.id;
 insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, created_by_id, company_data_type_id, join_table, join_column, smartlist_system_list_id)
 values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, null, null, null),
        (91, 'Event Name', 'flow.event', 'event_name', 99999999, 1, null, null, null),
-       (91, 'Event Created', 'flow.project_process_step_event', 'date_created', 99999999, 3, null, null, null);
+       (91, 'Event Created', 'flow.project_process_step_event', 'date_created', 99999999, 3, null, null, null),
+       (91, 'Event Start Time', 'flow.project_process_step_event', 'start_time', 99999999, 3, null, null, null),
+       (91, 'Event End Time', 'flow.project_process_step_event', 'end_time', 99999999, 3, null, null, null);
 -- END SMARTLIST STUFF

@@ -1851,9 +1851,15 @@ public class SmartlistService {
 
     if (usedProcessStepIds.isEmpty()) {
       //at this point, the only fields are project/contact, so this is essentially a project/contact smartlist
-      //set smartlist object type to "project" and build sql like usual
-      smartlist.setObjectTypeId(1L);
-      return buildSql(smartlist, fields);
+
+      if (smartlist.getObjectTypeId() == 6) {
+        //@TODO: I don't like having a service dealing with controller stuff. Change this someday...
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An event smartlist must have at least 1 event type column");
+      } else {
+        //set smartlist object type to "project" and build sql like usual
+        smartlist.setObjectTypeId(1L);
+        return buildSql(smartlist, fields);
+      }
     }
 
     //a with clause will be generated for each distinct process step
