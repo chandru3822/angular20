@@ -13,6 +13,6 @@ public class EventStatusType {
     private String eventStatusType, rootEventStatusType;
     private Attachment icon;
 
-    private Boolean archived, isDefault;
+  private Boolean archived, isDefault;
 
 }

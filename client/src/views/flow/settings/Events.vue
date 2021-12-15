@@ -14,9 +14,9 @@
         <v-container class="pa-0">
           <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
             <v-text-field
-                label="Event Name"
-                tabindex=1
-                v-model="newEvent.eventName"
+              label="Event Name"
+              tabindex=1
+              v-model="newEvent.eventName"
             ></v-text-field>
 
             <v-autocomplete
@@ -62,7 +62,7 @@
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        v-model="item.deleteConfirm" width="500">
+                              v-model="item.deleteConfirm" width="500">
 
                       <template v-slot:activator="{ on }">
                         <v-btn small text v-on="on">
@@ -112,76 +112,62 @@
 </template>
 
 <script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
+import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
 
-  import { getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import debounce from "lodash.debounce";
+import { getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import debounce from "lodash.debounce";
 
-  export default {
-    name: 'Events',
-    mixins: [Vue2Filters.mixin],
+export default {
+  name: 'Events',
+  mixins: [Vue2Filters.mixin],
 
-    data () {
-      return {
-        snackbar: {},
-        addNew: false,
-        deleteError: false,
-        fieldsInUse: [],
-        search: '',
-        newEvent: {},
-        selectedEventId: null,
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        events: [],
-        schedulingFields: [],
-        headers: [
-          {text: 'Event Name', value: 'eventName', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': 'Rows per page:'
-        },
-      }
-    },
-    watch: {
-      options: {
-        handler () {
-          this.getEvents()
-        },
-        deep: true,
+  data () {
+    return {
+      snackbar: {},
+      addNew: false,
+      deleteError: false,
+      fieldsInUse: [],
+      search: '',
+      newEvent: {},
+      selectedEventId: null,
+      companyId: this.$store.state.user.details.companyId,
+      userId: this.$store.state.user.details.id,
+      events: [],
+      schedulingFields: [],
+      headers: [
+        {text: 'Event Name', value: 'eventName', show: true},
+        {text: '', value: 'icons', show: true},
+      ],
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 1000],
+        'items-per-page-text': 'Rows per page:'
       },
-    },
-    computed: {
-    },
-    methods: {
-      debounceGetSteps: debounce( function () {
+    }
+  },
+  watch: {
+    options: {
+      handler () {
         this.getEvents()
-      }, 500),
-      goToEvent(eventId) {
-        this.$router.push({path: `/settings/event/${eventId}/components`})
       },
-      async getSchedulingFields() {
-        if(this.addNew) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
-            this.schedulingFields = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async getEvents () {
+      deep: true,
+    },
+  },
+  computed: {
+  },
+  methods: {
+    debounceGetSteps: debounce( function () {
+      this.getEvents()
+    }, 500),
+    goToEvent(eventId) {
+      this.$router.push({path: `/settings/event/${eventId}/components`})
+    },
+    async getSchedulingFields() {
+      if(this.addNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/event`)
-          this.events = data
+          const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
+          this.schedulingFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -189,61 +175,75 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async deleteEvent (event) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await putRequest(`/event/delete/${event.id}`)
-          if (data?.length > 0) {
-            this.deleteError = true
-            event.deleteConfirm = false
-            this.fieldsInUse = data
-            this.snackbar = getSnackbar('ERROR', 'Event Cannot Be Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.fieldsInUse = []
-            event.archived = true
-            this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addEvent () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await postRequest(`/event`, this.newEvent)
-          this.$router.push({path: `/settings/event/${data.id}/customFieldGroups`})
-          this.snackbar = getSnackbar('SUCCESS', 'Event Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterEvents () {
-        return this.events.filter(e => { return !e.archived})
-      },
+      }
     },
-    async created () {
-      await this.getEvents()
-    }
+    async getEvents () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/event`)
+        this.events = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteEvent (event) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/event/delete/${event.id}`)
+        if (data?.length > 0) {
+          this.deleteError = true
+          event.deleteConfirm = false
+          this.fieldsInUse = data
+          this.snackbar = getSnackbar('ERROR', 'Event Cannot Be Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } else {
+          this.fieldsInUse = []
+          event.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async addEvent () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await postRequest(`/event`, this.newEvent)
+        this.$router.push({path: `/settings/event/${data.id}/customFieldGroups`})
+        this.snackbar = getSnackbar('SUCCESS', 'Event Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    filterEvents () {
+      return this.events.filter(e => { return !e.archived})
+    },
+  },
+  async created () {
+    await this.getEvents()
   }
+}
 </script>
 
 <style lang="scss">
-  #event-step-container .v-data-table__wrapper {
-    height: calc(100vh - 310px);
-    min-height: 300px;
-  }
+#event-step-container .v-data-table__wrapper {
+  height: calc(100vh - 310px);
+  min-height: 300px;
+}
 
 </style>

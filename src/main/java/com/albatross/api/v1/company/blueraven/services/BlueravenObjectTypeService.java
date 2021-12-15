@@ -2,7 +2,8 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CompanyObjectType;
+import com.albatross.api.v1.company.blueraven.models.CompanyObjectType;
+import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,19 @@ public class BlueravenObjectTypeService {
       params.put("companyId", user.getCompanyId());
       params.put("objectTypeId", objectTypeId);
       Optional<CompanyObjectType> result = sqlCache.get("blueravenObjectType.getCompanyObjectTypeDetail", params, CompanyObjectType.class);
+      return result;
+    }
+  }
+
+  public List<CombinedStepAndType> getParentObjectsWithTypes(Long objectTypeId) {
+    User user = securityService.getCurrentUser();
+    if(user.getCompanyId() != 3) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+    } else {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("companyId", user.getCompanyId());
+      params.put("objectTypeId", objectTypeId);
+      List<CombinedStepAndType> result = sqlCache.query("blueravenObjectType.getParentObjectsIncludingTypes", params, CombinedStepAndType.class);
       return result;
     }
   }

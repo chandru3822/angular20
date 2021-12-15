@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -39,7 +40,7 @@ public class AhjUtilityService {
   private NamedParameterJdbcTemplate jdbc;
 
   @Autowired
-  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public List<AhjUtility> getAllAhjUtilities() {
     HashMap<String, Object> params = new HashMap<>();
@@ -105,7 +106,7 @@ public class AhjUtilityService {
       id = sqlCache.updateReturningId("ahj.utility.insert", params, "id").longValue();
     }
 
-    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(utility.getCustomFieldGroups(), id);
+    blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_UTILITY.textValue(), utility.getCustomFieldGroups(), id);
 
     return getUtilityById(id);
   }

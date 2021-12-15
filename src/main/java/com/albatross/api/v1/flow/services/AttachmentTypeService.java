@@ -337,6 +337,4 @@ public class AttachmentTypeService {
       ImmutableMap.of("id", id,
         "modifiedById", currentUser.getId()));
   }
-
-
 }

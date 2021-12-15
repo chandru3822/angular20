@@ -82,7 +82,7 @@
                 </div>
 
                 <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
-                  Finance Application
+                  <span>Finance Application</span>
                 </v-btn>
               </v-col>
               <v-col>
@@ -273,6 +273,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
         if (e?.data?.message.includes('locate')) {
           this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a finance application for this project')
+        } else if (e?.data?.message) {
+          this.snackbar = getSnackbar('ERROR', e.data.message)
         } else {
           this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
         }

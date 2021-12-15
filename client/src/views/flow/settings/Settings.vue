@@ -11,8 +11,8 @@
                 :close-on-content-click="false">
           <template v-slot:activator="{ on }">
             <v-toolbar
-                   color="white"
-                   v-on="on"
+              color="white"
+              v-on="on"
             >
               {{ title }}
               <v-spacer></v-spacer>
@@ -26,11 +26,11 @@
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
-                  v-else
-                  :key="item.title"
-                  :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
-                  @click="[menuOpen = false, setTitle(item.title)]"
+                v-else
+                :key="item.title"
+                :to="item.path"
+                :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                @click="[menuOpen = false, setTitle(item.title)]"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -52,12 +52,12 @@
             <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
               <v-list-item
-                  v-else
-                  :key="item.title"
-                  @click="setTitle"
-                  :to="item.path"
-                  class="dense-setting-row"
-                  :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
+                v-else
+                :key="item.title"
+                @click="setTitle"
+                :to="item.path"
+                class="dense-setting-row"
+                :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
                                           : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
                 <v-list-item-content>
@@ -79,7 +79,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="9" class="px-4 pt-0 main-section">
-          <router-view/>
+        <router-view/>
       </v-col>
     </v-row>
   </v-container>
@@ -122,8 +122,9 @@ export default {
         header: 'Company',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/company',
+        path: '/settings/company/settings',
         title: 'Defaults',
+        pathMatch: '/settings/company',
         show: this.hasSettingsAccess,
       }, {
         path: '/settings/proposals', //NOTE (Kaleb) is this the right spot
@@ -238,7 +239,7 @@ export default {
       //   show: this.hasSettingsAccess
       // }
     ]
-  }
+    }
   },
   methods: {
     async getCustomFieldObjectTypes () {

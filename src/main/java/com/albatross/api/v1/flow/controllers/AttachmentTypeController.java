@@ -1,11 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.AttachmentType;
-import com.albatross.api.v1.flow.model.EventAttachmentType;
-import com.albatross.api.v1.flow.model.ObjectTypeAttachmentType;
-import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
-import com.albatross.api.v1.flow.model.ProjectAttachmentType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

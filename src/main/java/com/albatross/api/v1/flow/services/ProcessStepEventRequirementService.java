@@ -179,11 +179,11 @@ public class ProcessStepEventRequirementService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
-          new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
+        new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
       TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "dataTypeRequirement",
-          new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
+        new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
 
       TypeReference<CustomField> customFieldRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "customField",
@@ -191,23 +191,23 @@ public class ProcessStepEventRequirementService {
 
       TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "listOfValue",
-          new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+        new JsonCollectionDeserializer(listOfValueRef, objectMapper));
 
       TypeReference<List<ListOfValue>> listOfValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
-          new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
+        new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
 
       TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "availableListOfValues",
-          new JsonCollectionDeserializer(availableListOfValuesRef, objectMapper));
+        new JsonCollectionDeserializer(availableListOfValuesRef, objectMapper));
 
       TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValueIds",
-          new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
+        new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
 
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "systemListOptionIds",
-          new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+        new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
 
     }
   }

@@ -87,7 +87,7 @@ export default {
   },
   methods: {
     async create() {
-      const {data} = await postRequest('/proposals', {}, 'blueraven')
+      const {data} = await postRequest('/proposal/versions', {}, 'blueraven')
       this.versions.push({...data})
       await this.$router.push({name: 'proposalDetail', params: {id: data.id}})
     },
@@ -96,7 +96,7 @@ export default {
     },
     async getProposalFields() {
       this.loading = true
-      const {data} = await getRequestWithParams('/proposals', {}, 'blueraven')
+      const {data} = await getRequestWithParams('/proposal/versions', {}, 'blueraven')
       this.versions = [...data.content]
       this.loading = false
     }

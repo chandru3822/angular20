@@ -561,11 +561,34 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "company" */ './views/flow/settings/Company.vue')
+                  return import (/* webpackChunkName: "company" */ './views/flow/settings/defaults/Defaults.vue')
                 } else {
                   return accessDenied()
                 }
               },
+              children: [
+                {
+                  path: 'settings',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                    if (store.getters.userHasFeature('SETTINGS')) {
+                      return import (/* webpackChunkName: "company" */ './views/flow/settings/defaults/CompanySettings.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  },
+                }, {
+                  path: 'configurations',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                    if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                      return import (/* webpackChunkName: "company" */ './views/flow/settings/defaults/Configurations.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  },
+                }
+              ]
             }, {
               path: 'postalCodes',
               meta: {title: 'Albatross - Round Robin'},
@@ -781,6 +804,16 @@ const router = new Router({
                   component: () => import (/* webpackChunkName: "processStepEvents" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
                 },
               ]
+            },  {
+              path: 'eventStatuses',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventStatuses" */ './views/flow/settings/EventStatuses.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }, {
               path: 'eventStatuses',
               meta: {title: 'Albatross - Settings'},

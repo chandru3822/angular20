@@ -1876,7 +1876,7 @@ export default {
 
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven', []).then(({data}) => {
+        await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven', []).then(({data, status}) => {
           this.funnelDrilldownData = data?.length > 0 ? data : []
 
           if (this.funnelDrilldownData?.length > 0) {

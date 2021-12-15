@@ -26,7 +26,9 @@ BEGIN
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and case when up.end_date is not null
                      then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
@@ -56,7 +58,9 @@ BEGIN
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and case when up.end_date is not null
                      then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date

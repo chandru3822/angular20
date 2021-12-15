@@ -13,7 +13,7 @@ BEGIN
         return (select coalesce( ( select lov.name = p_expected_value
             from brs.ahj a
                  inner join brs.ahj_design ad on ad.ahj_id = a.id
-                 inner join brs.custom_field_value cfv on cfv.source_id = ad.id
+                 inner join brs.ahj_design_custom_field_value cfv on cfv.ahj_design_id = ad.id
                  inner join brs.custom_field_group_assignment bcfga on bcfga.id = cfv.custom_field_group_assignment_id
                  inner join brs.custom_field bcf on bcf.id = bcfga.custom_field_id
                  inner join brs.list_of_value lov on lov.id = cfv.int_value
@@ -38,7 +38,7 @@ BEGIN
             return (select coalesce( ( select lov.name = p_expected_value
                                        from brs.ahj a
                                                 inner join brs.ahj_permit ap on ap.ahj_id = a.id
-                                                inner join brs.custom_field_value cfv on cfv.source_id = ap.id
+                                                inner join brs.ahj_permit_custom_field_value cfv on cfv.ahj_permit_id = ap.id
                                                 inner join brs.custom_field_group_assignment bcfga on bcfga.id = cfv.custom_field_group_assignment_id
                                                 inner join brs.custom_field bcf on bcf.id = bcfga.custom_field_id
                                                 inner join brs.list_of_value lov on lov.id = cfv.int_value
@@ -62,7 +62,7 @@ BEGIN
             return (select coalesce( ( select lov.name = p_expected_value
                                        from brs.ahj a
                                                 inner join brs.ahj_inspection ai on ai.ahj_id = a.id
-                                                inner join brs.custom_field_value cfv on cfv.source_id = ai.id
+                                                inner join brs.ahj_inspection_custom_field_value cfv on cfv.ahj_inspection_id = ai.id
                                                 inner join brs.custom_field_group_assignment bcfga on bcfga.id = cfv.custom_field_group_assignment_id
                                                 inner join brs.custom_field bcf on bcf.id = bcfga.custom_field_id
                                                 inner join brs.list_of_value lov on lov.id = cfv.int_value
@@ -85,7 +85,7 @@ BEGIN
             -- gets the selected value for the ahj UTILITY custom field
             return (select coalesce( ( select lov.name = p_expected_value
                                          from brs.ahj_utility au
-                                         inner join brs.custom_field_value cfv on cfv.source_id = au.id
+                                         inner join brs.ahj_utility_custom_field_value cfv on cfv.ahj_utility_id = au.id
                                          inner join brs.custom_field_group_assignment bcfga on bcfga.id = cfv.custom_field_group_assignment_id
                                          inner join brs.custom_field bcf on bcf.id = bcfga.custom_field_id
                                          inner join brs.list_of_value lov on lov.id = cfv.int_value

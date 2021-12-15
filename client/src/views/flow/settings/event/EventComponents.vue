@@ -19,7 +19,7 @@
         <div class="mb-4">
           <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewEventStatusType">
             <h3>Assign a Status Type</h3>
-            <v-autocomplete label="Process Step Status Type"
+            <v-autocomplete label="Event Status Type"
                             :items="availableCompanyEventStatusTypes"
                             v-model="newEventStatusTypeId"
                             item-text="eventStatusType"
@@ -116,12 +116,12 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-autocomplete v-if="addNewType"
-                  v-model="newType.attachmentTypeId"
-                  :items="availableAttachmentTypes"
-                  label="Select Attachment Type"
-                  item-text="attachmentType"
-                  item-value="id"
-                  @input="assignNewType"
+                        v-model="newType.attachmentTypeId"
+                        :items="availableAttachmentTypes"
+                        label="Select Attachment Type"
+                        item-text="attachmentType"
+                        item-value="id"
+                        @input="assignNewType"
         ></v-autocomplete>
         <v-card flat >
           <draggable v-model="eventAttachmentTypes" group="projectAttachmentTypes"

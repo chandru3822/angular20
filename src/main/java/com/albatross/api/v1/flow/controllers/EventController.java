@@ -38,7 +38,7 @@ public class EventController {
 
   @PostMapping(value = "/{id}/saveResourceField/{resourceCustomFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveResourceField(@PathVariable Long id,
-                        @PathVariable Long resourceCustomFieldId) {
+                                @PathVariable Long resourceCustomFieldId) {
     eventService.saveResourceField(id, resourceCustomFieldId);
   }
 
@@ -79,8 +79,13 @@ public class EventController {
   }
 
   @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Optional<EventStatusType>> saveCompanyProjectStatus(@RequestBody EventStatusType status) {
+  public ResponseEntity<Optional<EventStatusType>> saveCompanyEventStatus(@RequestBody EventStatusType status) {
     return new ResponseEntity<>(eventService.saveCompanyEventStatus(status), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/companyStatuses", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveCompanyProjectStatuses(@RequestBody List<EventStatusType> statuses) {
+    eventService.saveCompanyEventStatuses(statuses);
   }
 
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

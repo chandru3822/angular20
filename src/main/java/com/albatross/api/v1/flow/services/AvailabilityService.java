@@ -30,11 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.sql.DataSource;
 import java.io.InputStream;
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -53,7 +49,7 @@ public class AvailabilityService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
   private final ObjectMapper om;
   private final CommunicationService communicationService;
   private final ProjectService projectService;
@@ -620,7 +616,7 @@ public class AvailabilityService {
       params.put("projectProcessStepId", request.getProjectProcessStepId());
       params.put("projectProcessStepEventId", request.getProjectProcessStepEventId());
       params.put("appointmentTime", request.getAppointmentTime());
-      params.put("users", createSqlArrayOfType("int", request.getUsers()));
+      params.put("users", sqlArrayService.createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
       List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
@@ -751,15 +747,6 @@ public class AvailabilityService {
     params.put("id", id);
     params.put("userId", user.trueUserId());
     sqlCache.update("availability.deleteSlotSchedule", params);
-  }
-
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
   }
 
   public ResourceAppointment getOneResourceAppointment(Long id) {

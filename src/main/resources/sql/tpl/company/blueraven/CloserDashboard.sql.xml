@@ -271,7 +271,9 @@
                INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                LEFT JOIN flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
-        where  up.position_id in (1,2,3,133,237,517)
+        where  up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                    from flow.company_configuration_value
+                                    where code = 'CLOSER_POSITION_IDS')
         AND up.archived IS FALSE
         AND up.primary_flag IS true
         AND (up.end_date is null or up.end_date >= now())
