@@ -7,7 +7,10 @@ import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
+import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.AttachmentService;
+import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +23,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +40,8 @@ public class BlueravenProposalService {
   private final SecurityService securityService;
   private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
+  private final ProjectProcessStepService projectProcessStepService;
+  private final AttachmentService attachmentService;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     securityService.validateCompanyAccess(3L);
@@ -56,7 +63,49 @@ public class BlueravenProposalService {
     params.put("projectId", projectId);
 
     List<ProposalDesign> results = sqlCache.query("proposal.getDesigns", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+    for(ProposalDesign pd : results) {
+      for(Attachment a : pd.getAttachments()) {
+        attachmentService.setAttachmentPresignedUrl(a);
+      }
+    }
     return results;
+  }
+
+  public List<ProposalDesign> requestNewDesign(Long projectId, String description, String dueDate, List<MultipartFile> attachments) throws IOException {
+    securityService.validateCompanyAccess(3L);
+    User user = securityService.getCurrentUser();
+
+    //create new "create proposal design" step (active, cancel others)
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("processStepId", 3507);
+    params.put("userPositionId", null);
+    params.put("userId", user.trueUserId());
+    params.put("companyId", 3L);
+    params.put("parentProjectProcessStepId", null);
+    params.put("initialCompanyProcessStepStatusTypeId", 1L);
+    params.put("existingCompanyProcessStepStatusTypeId", 3L);
+
+    Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
+//    Long ppsId = 3822530L;
+    log.info("the new ppsId is: {}", ppsId);
+    //upload attachments to the new step
+    for(MultipartFile a : attachments) {
+      projectProcessStepService.addAttachment(a, ppsId, 936L);
+    }
+
+    //save custom field data for description and due date
+    //cfgaId for description field on proposal = 22592
+    params.put("cfgaId", 22592);
+    params.put("value", description);
+    sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
+
+    //cfgaId for due date field on proposal = 22591
+    params.put("cfgaId", 22591);
+    params.put("value", dueDate);
+    sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
+
+    return getProposalDesigns(projectId);
   }
 
   public Optional<Proposal> getProposal(Long proposalId) {
@@ -110,6 +159,10 @@ public class BlueravenProposalService {
       TypeReference<List<Proposal>> proposalsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "proposals",
         new JsonCollectionDeserializer(proposalsRef, objectMapper));
+
+      TypeReference<List<Attachment>> attachmentsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "attachments",
+        new JsonCollectionDeserializer(attachmentsRef, objectMapper));
 
     }
   }

@@ -4,6 +4,8 @@ import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.albatross.api.v1.company.blueraven.models.ProposalDesign;
 import com.albatross.api.v1.company.blueraven.models.ProposalProject;
+import com.albatross.api.v1.flow.model.Attachment;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +37,14 @@ public class BlueravenProposalController {
     return proposalService.getProposalDesigns(projectId);
   }
 
+  @PostMapping(value = "/design", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProposalDesign> requestNewDesign(@RequestParam Long projectId,
+                               @RequestParam String description,
+                               @RequestParam String dueDate,
+                               @RequestParam(required = false) List<MultipartFile> attachments) throws IOException {
+    return proposalService.requestNewDesign(projectId, description, dueDate, attachments);
+  }
+
   @GetMapping(value = "/{proposalId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Proposal> getProposal(@PathVariable Long proposalId) {
     return proposalService.getProposal(proposalId);
@@ -49,4 +61,10 @@ public class BlueravenProposalController {
     return proposalService.addProposal(proposal);
   }
 
+  @Data
+  public static class DesignRequest {
+    private Long projectId;
+    private String description, dueDate;
+    private List<Attachment> attachments;
+  }
 }
