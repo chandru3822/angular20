@@ -125,7 +125,7 @@ public class InstallAgreementController {
           JSONObject sunlightApp = sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
           return ResponseEntity.ok(sunlightApp.toString());
         }
-        else if (loan.contains("Sunpower")) {
+        else if (loan.toLowerCase().contains("sunpower")) {
           JSONObject sunlightApp = sunpowerService.getApplicationDetails(Long.parseLong(projectId), Long.parseLong(proposalNbr));
           return ResponseEntity.ok(sunlightApp.toString());
         }

@@ -275,7 +275,7 @@ public class InstallAgreementRepository {
         } catch (Exception e) {
           return sunlightPortalUrl + "salesdashboard";
         }
-      } else if (pd.getLoanType().contains("Sunpower")) {
+      } else if (pd.getLoanType().toLowerCase().contains("sunpower")) {
         Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
         try {
           return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
