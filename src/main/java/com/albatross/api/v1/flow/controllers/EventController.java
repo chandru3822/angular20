@@ -109,4 +109,8 @@ public class EventController {
     return new ResponseEntity<>(eventService.getByEventId(eventId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "{eventId}/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SystemListOption>> getAvaiableOwners(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getAvailableOwners(eventId), HttpStatus.OK);
+  }
 }

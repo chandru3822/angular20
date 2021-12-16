@@ -314,4 +314,17 @@
           pse.archived is not true
     order by pse.display_order
   ]]></event.getProcessStepEventsByEventId>
+
+<event.getAvailableOwners><![CDATA[
+with customField as (
+  select cf.id,
+         cf.company_system_list_id,
+         cf.system_list_option_ids
+  from flow.custom_field cf
+         inner join flow.event e on e.resource_custom_field_id = cf.id
+  where e.id = :eventId
+)
+select o.*
+from customField, flow.get_system_list_options(:companyId::int, customField.company_system_list_id::int, true, customField.system_list_option_ids::int[]) o
+]]></event.getAvailableOwners>
 </sql>

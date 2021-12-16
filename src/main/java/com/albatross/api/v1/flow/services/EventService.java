@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -195,9 +196,23 @@ public class EventService {
     return companyEventStatusTypes;
   }
 
-
   public List<ProcessStepEvent> getByEventId(Long eventId) {
     return sqlCache.query("event.getProcessStepEventsByEventId", Map.of("eventId", eventId), new ProcessStepEventService.ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+  }
+
+  /**
+   * Get available resource owners for the given eventId
+   * @param eventId
+   * @return List<SystemListOption>
+   */
+  public List<SystemListOption> getAvailableOwners(Long eventId) {
+    var companyId = securityService.getCurrentUser().getCompanyId();
+    List<Map<String, Object>> results = sqlCache.query("event.getAvailableOwners", Map.of("eventId", eventId, "companyId", companyId), new ColumnMapRowMapper());
+    var options = new ArrayList<SystemListOption>();
+    results.forEach(r -> {
+      options.add(new SystemListOption(Long.parseLong(r.get("id").toString()), r.get("name").toString()));
+    });
+    return options;
   }
 
   public static class EventMapper<T> extends BeanPropertyRowMapper<T> {
