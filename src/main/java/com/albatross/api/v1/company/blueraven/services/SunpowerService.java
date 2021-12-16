@@ -58,6 +58,12 @@ public class SunpowerService {
     projectDetails.put("apr",  Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100)));
     projectDetails.put("isACH", true);
 
+    if (sendVia == null) {
+      sendVia = "embedded";
+    }
+
+    projectDetails.put("sendVia", sendVia);
+
     if (propLogDetail.getLoanAmount() == null) {
       String message = "No Loan Amount found for this proposal";
       log.error("SUNPWR: Error opening or updating Loan Application for Sunpower: {}", message);
@@ -121,11 +127,8 @@ public class SunpowerService {
     projectsArray.put(projectDetails);
     jsonContact.put("projects", projectsArray);
 
-    if (sendVia == null) {
-      sendVia = "embedded";
-    }
 
-    HttpResponse res = POST("active-bpel/rt/Customer?sendVia="+sendVia, IOUtils.toInputStream(jsonContact.toString(), (Charset) null));
+    HttpResponse res = POST("active-bpel/rt/Customer", IOUtils.toInputStream(jsonContact.toString(), (Charset) null));
     JSONObject respJson = res.getJSON();
     JSONObject customerResponse = respJson.getJSONObject("customerResponse");
     JSONObject status = customerResponse.getJSONObject("status");
