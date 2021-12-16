@@ -131,7 +131,7 @@ public class PandaDocService {
         JSONObject tpl = templates.getJSONObject(i);
         String tplName = tpl.getString("name");
         String version = tpl.getString("version");
-        if (name.equals(tplName) && version.equals("2")) {
+        if (tplName.contains(name) && version.equals("2")) {
           tplId = tpl.getString("id");
           log.debug("PANDADOC: selected template named {}", tplName);
           break;
@@ -244,7 +244,7 @@ public class PandaDocService {
       validateCashProject(projectId, tokens);
     } else if (installAgreementRepository.isLoanPalProject(financier)) {
       validateLoanPalProject(projectId, tokens);
-    } else if (!installAgreementRepository.isSunlightProject(financier)) {
+    } else if (!installAgreementRepository.isSunlightProject(financier) && !installAgreementRepository.isSunpowerProject(financier)) {
       throw new Exception(String.format(
         "unexpected financier for project %d: %s",
           projectId, financier
