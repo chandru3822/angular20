@@ -244,7 +244,7 @@ public class PandaDocService {
       validateCashProject(projectId, tokens);
     } else if (installAgreementRepository.isLoanPalProject(financier)) {
       validateLoanPalProject(projectId, tokens);
-    } else if (!installAgreementRepository.isSunlightProject(financier)) {
+    } else if (!installAgreementRepository.isSunlightProject(financier) && !installAgreementRepository.isSunpowerProject(financier)) {
       throw new Exception(String.format(
         "unexpected financier for project %d: %s",
           projectId, financier
