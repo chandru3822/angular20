@@ -855,6 +855,15 @@ BEGIN
     where project_id = v_project_id;
   end if;
 
+  if ((old.resource_id is null and new.resource_id is not null) or
+     (old.resource_id != new.resource_id)) then
+
+    update flow.project p
+    set user_position_id = new.resource_id,
+        date_modified =  now()
+    where p.id = v_project_id;
+  end if;
+
 
   RETURN NULL;
 END

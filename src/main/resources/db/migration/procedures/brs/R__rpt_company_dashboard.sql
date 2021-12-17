@@ -33,10 +33,11 @@ BEGIN
                       from (
                              with first_appointment as (
                                select pps.project_id,
-                                      min(pps.process_step_complete_date) date_created
+                                      min(ppse.date_created) date_created
                                from flow.project_process_step pps
+                               inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
                                where pps.process_step_id = 1
-                                 and pps.process_step_complete_date is not null
+                                -- and pps.process_step_complete_date is not null
                                group by pps.project_id
                              )
                              select 'First Time Appointments Created' as name,
