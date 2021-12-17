@@ -1727,6 +1727,8 @@ public class SmartlistService {
             projectsValueJoins.append(String.format(" inner join flow.event \"%s\" on \"%s\".id = \"%s\".event_id ", r.getValueReferenceTable(), r.getValueReferenceTable(), pseTable));
 
             joinTable = r.getValueReferenceTable();
+          } else if (r.getReferenceTable().equals("flow.user")) {
+            joinColumn = r.getJoinColumn();
           }
 
           referenceLocation = String.format("\"%s\".%s", joinTable, joinColumn);
@@ -1814,8 +1816,8 @@ public class SmartlistService {
             if (r.getSmartlistSystemListId() != null) {
               projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-              if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+              // If this field is process step owner or event resource, make sure we're getting past instances where this user had the same position and not just the current primary position
+              if ((r.getObjectTypeId() == 4 || r.getObjectTypeId() == 6) && Objects.equals(r.getReferenceTable(), "flow.user")) {
                 final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                 projectsWhereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
               } else {
@@ -1918,7 +1920,15 @@ public class SmartlistService {
             final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
             selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, f.getValueReferenceTable(), f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
-            selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
+
+            var valueTable = "";
+            if (f.getObjectTypeId() == 4) {
+              valueTable = f.getValueReferenceTable();
+            } else if (f.getObjectTypeId() == 6) {
+              valueTable = f.getValueEventReferenceTable();
+            }
+
+            selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", valueTable, valueTable, f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
                      Objects.equals(f.getReferenceTable(), "flow.process_step") ||
                      Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
@@ -2019,8 +2029,16 @@ public class SmartlistService {
           //smartlist system fields
           if (f.getReferenceTable().equals("flow.user")) {
             final String joinUserPosition = UUID.randomUUID().toString();
-            valueJoins.append(String.format(" inner join flow.user_position \"%s\" on \"%s\".id = flow.project_process_step.%s ", joinUserPosition, joinUserPosition, f.getJoinColumn()));
-            valueJoins.append(String.format(" inner join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
+            valueJoins.append(String.format(" inner join flow.user_position \"%s\" on \"%s\".id = %s.%s ", joinUserPosition, joinUserPosition, f.getJoinTable(), f.getJoinColumn()));
+
+            var valueTable = "";
+            if (f.getObjectTypeId() == 4) {
+              valueTable = f.getValueReferenceTable();
+            } else if (f.getObjectTypeId() == 6) {
+              valueTable = f.getValueEventReferenceTable();
+            }
+
+            valueJoins.append(String.format(" inner join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), valueTable, valueTable, joinUserPosition));
             f.setUserPositionTable(joinUserPosition);
           }
         } else {
@@ -2153,7 +2171,10 @@ public class SmartlistService {
 //              joinTable = UUID.randomUUID().toString();
 //            }
 
-            if (r.getReferenceTable().contains(".")) {
+            if (Objects.equals(r.getReferenceTable(), "flow.user")) {
+              // Since this is an event smartlist field, if it's looking at the user table, it's the event resource field
+              referenceLocation = r.getJoinTable() + "." + r.getJoinColumn();
+            } else if (r.getReferenceTable().contains(".")) {
               referenceLocation = String.format("%s.%s", joinTable, r.getReferenceColumn());
             }
           }
@@ -2243,8 +2264,8 @@ public class SmartlistService {
               if (r.getSmartlistSystemListId() != null) {
                 whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
               } else {
-                // If this field is process step owner, make sure we're getting past instances where this user had the same position and not just the current primary position
-                if (r.getObjectTypeId() == 4 && Objects.equals(r.getReferenceTable(), "flow.user")) {
+                // If this field is process step owner or event resource, make sure we're getting past instances where this user had the same position and not just the current primary position
+                if ((r.getObjectTypeId() == 4 || r.getObjectTypeId() == 6) && Objects.equals(r.getReferenceTable(), "flow.user")) {
                   final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                   whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
                 } else {
@@ -2272,6 +2293,10 @@ public class SmartlistService {
 
       if (smartlist.isMainProcessSteps()) {
         withClause.append(" and flow.project_process_step.main is true");
+      }
+
+      if (smartlist.getObjectTypeId() == 6) {
+        withClause.append(" and flow.project_process_step_event.start_time is not null and flow.project_process_step_event.end_time is not null");
       }
 
       query.append(String.format("%s), ", withClause));

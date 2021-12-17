@@ -666,6 +666,10 @@ select sr.id,
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
             ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 6 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select id, name from flow.get_system_list_options(cot.company_id, cf2.company_system_list_id, true, cf2.system_list_option_ids)
+            ) rows)
           else '[]'
         end as available_list_of_values
 from flow.smartlist_requirement sr
@@ -697,6 +701,7 @@ left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step_event pse on pse.id = sr.process_step_event_id
 left join flow.event e on e.id = pse.event_id
 left join flow.process_step ps2 on ps2.id = pse.process_step_id
+left join flow.custom_field cf2 on cf2.id = e.resource_custom_field_id
 where sr.id = :requirementId and
       sr.archived is not true;
 ]]></smartlist.getRequirementById>
@@ -809,6 +814,10 @@ select sr.id,
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
             ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 6 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select id, name from flow.get_system_list_options(cot.company_id, cf2.company_system_list_id, true, cf2.system_list_option_ids)
+            ) rows)
           else '[]'
         end as available_list_of_values,
         (select row_to_json(f) from(
@@ -899,6 +908,7 @@ left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step_event pse on pse.id = sr.process_step_event_id
 left join flow.event e on e.id = pse.event_id
 left join flow.process_step ps2 on ps2.id = pse.process_step_id
+left join flow.custom_field cf2 on cf2.id = e.resource_custom_field_id
 where sr.smartlist_id = :smartlistId and
       sr.archived is not true
 order by sr.display_order

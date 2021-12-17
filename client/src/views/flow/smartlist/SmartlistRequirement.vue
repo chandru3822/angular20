@@ -93,7 +93,8 @@
             checkSmartlistSystemList(),
             getContactOwners(),
             getProcessStepOwners(),
-            getProjectOwners()
+            getProjectOwners(),
+            getEventOwners()
           ]"
         />
 
@@ -632,6 +633,19 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching project owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getEventOwners() {
+      if (this.newRequirement.eventId !== null) {
+        try {
+          const {data} = await getRequest(`/event/${this.newRequirement.eventId}/owners`)
+          this.newRequirement.selectedField.listOfValues = data
+          this.newRequirement.selectedField.hasListValues = true
+        } catch(e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching event owners')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
