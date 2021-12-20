@@ -78,6 +78,16 @@ public class EventController {
     return new ResponseEntity<>(eventService.getAssignedEventStatuses(eventId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/{eventId}/lovStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ListOfValue>> getAssignedEventStatusesByListOfValue(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getAssignedEventStatusesByListOfValue(eventId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{eventId}/lovCategory", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ListOfValue>> getAssignedEventCategoriesByListOfValue(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getAssignedEventCategoriesByListOfValue(eventId), HttpStatus.OK);
+  }
+
   @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Optional<EventStatusType>> saveCompanyEventStatus(@RequestBody EventStatusType status) {
     return new ResponseEntity<>(eventService.saveCompanyEventStatus(status), HttpStatus.OK);

@@ -193,7 +193,7 @@ where ot.id = :objectTypeId and
       cot.company_id = :companyId and
       cot.archived is not true
 union
--- native fields
+-- custom fields
 select null as "smartlistFieldId",
        null as "smartlistSystemListId",
        cfga.id as "customFieldGroupAssignmentId",
@@ -225,8 +225,8 @@ select null as "smartlistFieldId",
                 lv.parent_id = cf.list_of_value_id and
                 lv.archived is not true
             order by
-                               case when cf.sort_list_values_alphabetically is true  then lv.name end,
-                               case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                case when cf.sort_list_values_alphabetically is false then lv.display_order end
         ) rows), '[]') AS "listOfValues"
 from flow.custom_field_group_assignment cfga
 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
@@ -670,6 +670,29 @@ select sr.id,
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select id, name from flow.get_system_list_options(cot.company_id, cf2.company_system_list_id, true, cf2.system_list_option_ids)
             ) rows)
+          when sf.reference_table = 'flow.company_event_status_type' then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select ecest.id,
+                     cest.event_status_type as name
+              from flow.event_company_event_status_type ecest
+              inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+              WHERE ecest.event_id = e.id and
+                    cest.company_id = :companyId and
+                    ecest.archived is not true
+              order by cest.event_status_type
+            ) rows)
+          when sf.reference_table = 'flow.event_status_type' then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select est.id,
+                     est.event_status_type as name
+              from flow.event_company_event_status_type ecest
+              inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+              inner join flow.event_status_type est on cest.event_status_type_id = est.id
+              WHERE ecest.event_id = e.id and
+                    cest.company_id = :companyId and
+                    ecest.archived is not true
+              order by cest.event_status_type
+            ) rows)
           else '[]'
         end as available_list_of_values
 from flow.smartlist_requirement sr
@@ -817,6 +840,29 @@ select sr.id,
           when sf.reference_table = 'flow.user' and ot.id = 6 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select id, name from flow.get_system_list_options(cot.company_id, cf2.company_system_list_id, true, cf2.system_list_option_ids)
+            ) rows)
+          when sf.reference_table = 'flow.company_event_status_type' then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select ecest.id,
+                     cest.event_status_type as name
+              from flow.event_company_event_status_type ecest
+              inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+              WHERE ecest.event_id = e.id and
+                    cest.company_id = :companyId and
+                    ecest.archived is not true
+              order by cest.event_status_type
+            ) rows)
+          when sf.reference_table = 'flow.event_status_type' then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select est.id,
+                     est.event_status_type as name
+              from flow.event_company_event_status_type ecest
+              inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+              inner join flow.event_status_type est on cest.event_status_type_id = est.id
+              WHERE ecest.event_id = e.id and
+                    cest.company_id = :companyId and
+                    ecest.archived is not true
+              order by cest.event_status_type
             ) rows)
           else '[]'
         end as available_list_of_values,

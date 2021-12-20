@@ -327,4 +327,27 @@ with customField as (
 select o.*
 from customField, flow.get_system_list_options(:companyId::int, customField.company_system_list_id::int, true, customField.system_list_option_ids::int[]) o
 ]]></event.getAvailableOwners>
+
+<event.getAssignedEventStatusesByListOfValue><![CDATA[
+select ecest.id,
+       cest.event_status_type as name
+from flow.event_company_event_status_type ecest
+inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+WHERE ecest.event_id = :eventId and
+      cest.company_id = :companyId and
+      ecest.archived is not true
+order by cest.event_status_type
+]]></event.getAssignedEventStatusesByListOfValue>
+
+<event.getAssignedEventCategoriesByListOfValue><![CDATA[
+select est.id,
+       est.event_status_type as name
+from flow.event_company_event_status_type ecest
+inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+inner join flow.event_status_type est on cest.event_status_type_id = est.id
+WHERE ecest.event_id = :eventId and
+      cest.company_id = :companyId and
+      ecest.archived is not true
+order by cest.event_status_type
+]]></event.getAssignedEventCategoriesByListOfValue>
 </sql>

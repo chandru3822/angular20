@@ -73,7 +73,11 @@
           :items="availableEvents"
           item-value="eventId"
           item-text="eventName"
-          @input="[resetNewProcessStep(), calculateAvailableFields(), getProcessStepEvents()]"
+          @input="[
+            resetNewProcessStep(),
+            calculateAvailableFields(),
+            getProcessStepEvents()
+          ]"
           attach
         />
 
@@ -91,10 +95,7 @@
             getDataTypeRequirements(newRequirement.selectedField.dataTypeId),
             getProcessStepFieldData(),
             checkSmartlistSystemList(),
-            getContactOwners(),
-            getProcessStepOwners(),
-            getProjectOwners(),
-            getEventOwners()
+            getSystemFieldListOfValues()
           ]"
         />
 
@@ -494,13 +495,13 @@ export default {
       },
       projectStatusTypes: [],
       companyProjectStatusTypes: [],
-      processStepStatusTypes: [],
-      companyProcessStepStatusTypes: []
+      // processStepStatusTypes: [],
+      // companyProcessStepStatusTypes: []
     }
   },
   created () {
     this.getProjectStatusTypes()
-    this.getProcessStepStatusTypes()
+    // this.getProcessStepStatusTypes()
   },
   updated () {
     if (this.resetForm) {
@@ -593,59 +594,64 @@ export default {
         }
       }
     },
-    async getContactOwners () {
-      // @TODO It's bad this checks for the field name since it might change. Make better
-      if (this.newRequirement.objectTypeId === 2 && this.newRequirement.selectedField.name === 'Contact Owner') {
-        try {
-          const {data} = await getRequest(`/contact/owners`)
-          //do i just filter here when there are dupes?
+    async getSystemFieldListOfValues() {
+      const selectedFieldName = this.newRequirement.selectedField.name
 
-          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+      // @TODO It's bad these check for the field name since it might change. Make better
+      if ([1,2,4].includes(this.newRequirement.objectTypeId)) {
+
+        //if this isn't one of the specific system fields we need, bail
+        if (!['Project Owner','Contact Owner','Process Step Owner'].includes(selectedFieldName)) {
+          return
+        }
+
+        try {
+          let results
+          if (selectedFieldName === 'Project Owner') {
+            const {data} = await getRequest(`/project/owners`)
+            results = data
+          } else if (selectedFieldName === 'Contact Owner') {
+            const {data} = await getRequest(`/contact/owners`)
+            results = data
+          } else if (selectedFieldName === 'Process Step Owner' && this.newRequirement.processStepId !== null) {
+            const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
+            results = data
+          }
+
+          this.newRequirement.selectedField.listOfValues = results.map(o => ({id: o.userPositionId, name: o.fullName}))
           this.newRequirement.selectedField.hasListValues = true
+          this.newRequirement.isCustomValue = true
         } catch (e) {
           logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
+          this.snackbar = getSnackbar('ERROR', 'Error fetching available values')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-      }
-    },
-    async getProcessStepOwners () {
-      // @TODO It's bad this checks for the field name since it might change. Make better
-      if (this.newRequirement.processStepId !== null && this.newRequirement.selectedField.name === 'Process Step Owner') {
+      } else if (this.newRequirement.eventId !== null) {
+
+        //if this isn't one of the specific system fields we need, bail
+        if (!['Event Resource','Event Status','Event Category'].includes(selectedFieldName)) {
+          return
+        }
+
         try {
-          const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
-          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          let results
+          if (selectedFieldName === 'Event Resource') {
+            const {data} = await getRequest(`/event/${this.newRequirement.eventId}/owners`)
+            results = data
+          } else if (selectedFieldName === 'Event Status') {
+            const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovStatus`)
+            results = data
+          } else if (selectedFieldName === 'Event Category') {
+            const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovCategory`)
+            results = data
+          }
+
+          this.newRequirement.selectedField.listOfValues = results
           this.newRequirement.selectedField.hasListValues = true
+          this.newRequirement.isCustomValue = true
         } catch (e) {
           logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      }
-    },
-    async getProjectOwners () {
-      // @TODO It's bad this checks for the field name since it might change. Make better
-      if (this.newRequirement.objectTypeId === 1 && this.newRequirement.selectedField.name === 'Project Owner') {
-        try {
-          const {data} = await getRequest(`/project/owners`)
-          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
-          this.newRequirement.selectedField.hasListValues = true
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching project owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      }
-    },
-    async getEventOwners() {
-      if (this.newRequirement.eventId !== null) {
-        try {
-          const {data} = await getRequest(`/event/${this.newRequirement.eventId}/owners`)
-          this.newRequirement.selectedField.listOfValues = data
-          this.newRequirement.selectedField.hasListValues = true
-        } catch(e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching event owners')
+          this.snackbar = getSnackbar('ERROR', 'Error fetching available values')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
@@ -661,15 +667,48 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getProcessStepStatusTypes () {
-      try {
-        const [result, companyResult] = await Promise.all([getRequest(`/processStep/status`), getRequest(`/processStep/status/company`)])
-        this.processStepStatusTypes = result.data
-        this.companyProcessStepStatusTypes = companyResult.data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    // async getProcessStepStatusTypes () {
+    //   try {
+    //     const [result, companyResult] = await Promise.all([getRequest(`/processStep/status`), getRequest(`/processStep/status/company`)])
+    //     this.processStepStatusTypes = result.data
+    //     this.companyProcessStepStatusTypes = companyResult.data
+    //   } catch (e) {
+    //     logError(e)
+    //     this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //   }
+    // },
+    async getEventStatuses() {
+      if (this.newRequirement.eventId) {
+        try {
+          const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovStatus`)
+
+          //find the event status field and insert statues
+          const fieldIndex = this.fetchedAvailableFields.findIndex(f => f.name === 'Event Status')
+          this.fetchedAvailableFields[fieldIndex].hasListValues = true
+          this.fetchedAvailableFields[fieldIndex].listOfValues = data
+
+          this.calculateAvailableFields()
+        } catch(e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching event statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getEventCategories() {
+      if (this.newRequirement.eventId) {
+        try {
+          const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovCategory`)
+
+          //find the event category field and insert categories
+
+          // calculateAvailableFields()
+        } catch(e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching event categories')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
       }
     },
     async getProcessStepEvents() {

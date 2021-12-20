@@ -103,6 +103,16 @@ public class EventService {
     return results;
   }
 
+  public List<ListOfValue> getAssignedEventStatusesByListOfValue(Long eventId) {
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+    return sqlCache.query("event.getAssignedEventStatusesByListOfValue", Map.of("eventId", eventId, "companyId", companyId), ListOfValue.class);
+  }
+
+  public List<ListOfValue> getAssignedEventCategoriesByListOfValue(Long eventId) {
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+    return sqlCache.query("event.getAssignedEventCategoriesByListOfValue", Map.of("eventId", eventId, "companyId", companyId), ListOfValue.class);
+  }
+
   public List<EventStatusType> getCompanyEventStatuses() {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
