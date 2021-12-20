@@ -1727,6 +1727,18 @@ public class SmartlistService {
             projectsValueJoins.append(String.format(" inner join flow.event \"%s\" on \"%s\".id = \"%s\".event_id ", r.getValueReferenceTable(), r.getValueReferenceTable(), pseTable));
 
             joinTable = r.getValueReferenceTable();
+          } else if (r.getReferenceTable().equals("flow.company_event_status_type")) {
+            final String companyStatusTable = UUID.randomUUID().toString();
+            projectsValueJoins.append(String.format(" inner join %s \"%s\" on \"%s\".id = \"%s\".%s ", r.getReferenceTable(), companyStatusTable, companyStatusTable, r.getPpsEventTable(), r.getJoinColumn()));
+            joinTable = companyStatusTable;
+            joinColumn = "id";
+          } else if (r.getReferenceTable().equals("flow.event_status_type")) {
+            final String companyStatusTable = UUID.randomUUID().toString();
+            final String statusTable = UUID.randomUUID().toString();
+            projectsValueJoins.append(String.format(" inner join flow.company_event_status_type \"%s\" on \"%s\".id = \"%s\".company_event_status_type_id ", companyStatusTable, companyStatusTable, r.getPpsEventTable()));
+            projectsValueJoins.append(String.format(" inner join %s \"%s\" on \"%s\".id = \"%s\".%s ", r.getReferenceTable(), statusTable, statusTable, companyStatusTable, r.getJoinColumn()));
+            joinTable = statusTable;
+            joinColumn = "id";
           } else if (r.getReferenceTable().equals("flow.user")) {
             joinColumn = r.getJoinColumn();
           }
@@ -1932,7 +1944,9 @@ public class SmartlistService {
           } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
                      Objects.equals(f.getReferenceTable(), "flow.process_step") ||
                      Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
-                     Objects.equals(f.getReferenceTable(), "flow.event"))
+                     Objects.equals(f.getReferenceTable(), "flow.event") ||
+                     Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
+                     Objects.equals(f.getReferenceTable(), "flow.event_status_type"))
           {
             if (f.getDataTypeId() == 1) {
               selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
@@ -2004,6 +2018,8 @@ public class SmartlistService {
         fromClause.append(" inner join flow.process_step_event on flow.process_step_event.id = flow.project_process_step_event.process_step_event_id ");
         fromClause.append(" inner join flow.event on flow.event.id = flow.process_step_event.event_id ");
         fromClause.append(" inner join flow.project_process_step on flow.project_process_step.id = flow.project_process_step_event.project_process_step_id ");
+        fromClause.append(" inner join flow.company_event_status_type on company_event_status_type.id = flow.project_process_step_event.company_event_status_type_id ");
+        fromClause.append(" inner join flow.event_status_type on flow.event_status_type.id = flow.company_event_status_type.event_status_type_id ");
       }
 
       fromClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
@@ -2174,6 +2190,10 @@ public class SmartlistService {
             if (Objects.equals(r.getReferenceTable(), "flow.user")) {
               // Since this is an event smartlist field, if it's looking at the user table, it's the event resource field
               referenceLocation = r.getJoinTable() + "." + r.getJoinColumn();
+            } else if (r.getReferenceTable().equals("flow.company_event_status_type")) {
+              referenceLocation = r.getReferenceTable() + ".id";
+            } else if (r.getReferenceTable().equals("flow.event_status_type")) {
+              referenceLocation = r.getReferenceTable() + ".id";
             } else if (r.getReferenceTable().contains(".")) {
               referenceLocation = String.format("%s.%s", joinTable, r.getReferenceColumn());
             }

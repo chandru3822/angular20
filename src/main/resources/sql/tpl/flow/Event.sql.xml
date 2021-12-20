@@ -329,7 +329,7 @@ from customField, flow.get_system_list_options(:companyId::int, customField.comp
 ]]></event.getAvailableOwners>
 
 <event.getAssignedEventStatusesByListOfValue><![CDATA[
-select ecest.id,
+select cest.id,
        cest.event_status_type as name
 from flow.event_company_event_status_type ecest
 inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id

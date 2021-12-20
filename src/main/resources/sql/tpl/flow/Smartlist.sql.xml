@@ -672,7 +672,7 @@ select sr.id,
             ) rows)
           when sf.reference_table = 'flow.company_event_status_type' then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select ecest.id,
+              select cest.id,
                      cest.event_status_type as name
               from flow.event_company_event_status_type ecest
               inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
@@ -843,7 +843,7 @@ select sr.id,
             ) rows)
           when sf.reference_table = 'flow.company_event_status_type' then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select ecest.id,
+              select cest.id,
                      cest.event_status_type as name
               from flow.event_company_event_status_type ecest
               inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id

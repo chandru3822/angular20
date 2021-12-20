@@ -568,6 +568,6 @@ values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, nu
        (91, 'Event Start Time', 'flow.project_process_step_event', 'start_time', 99999999, 3, null, null, null),
        (91, 'Event End Time', 'flow.project_process_step_event', 'end_time', 99999999, 3, null, null, null),
        (91, 'Event Resource', 'flow.user', 'concat(\"%s\".first_name, '' '', \"%s\".last_name)', 99999999, 7, 'flow.project_process_step_event', 'resource_id', null),
-       (91, 'Event Status', 'flow.company_event_status_type', 'event_status_type', 99999999, 1, 'flow.project_process_step_event', 'company_event_status_type_id', null),
-       (91, 'Event Category', 'flow.event_status_type', 'event_status_type', 99999999, 1, 'flow.company_event_status_type', 'company_event_status_type_id', null);
+       (91, 'Event Status', 'flow.company_event_status_type', 'event_status_type', 99999999, 7, 'flow.project_process_step_event', 'company_event_status_type_id', null),
+       (91, 'Event Category', 'flow.event_status_type', 'event_status_type', 99999999, 7, 'flow.company_event_status_type', 'event_status_type_id', null);
 -- END SMARTLIST STUFF
