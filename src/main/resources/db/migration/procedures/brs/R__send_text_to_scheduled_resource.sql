@@ -82,7 +82,7 @@ BEGIN
     where pps.id = p_project_process_step_id;
 
     --this gets the start time fields for the given pps ...which must be a pps with a schedulable custom field group
-    select (ppscfv.timestamp_value at time zone 'UTC') at time zone coalesce(p.time_zone, v_time_zone_for_resource)::text
+    select to_char((ppscfv.timestamp_value at time zone 'UTC') at time zone coalesce(p.time_zone, v_time_zone_for_resource)::text, 'MM/DD/YYYY HH:MI am')
       into v_appt_start_time
     from flow.project_process_step_custom_field_value ppscfv
       inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
