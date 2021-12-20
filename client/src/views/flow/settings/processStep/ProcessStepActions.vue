@@ -986,6 +986,19 @@ export default {
         return !a.archived
       })
     },
+    async loadChildFunctions() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/function/action`)
+        this.childFunctions = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async saveNewAction() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
