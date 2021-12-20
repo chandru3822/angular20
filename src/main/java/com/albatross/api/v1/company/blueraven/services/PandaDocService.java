@@ -586,6 +586,11 @@ public class PandaDocService {
         tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
         tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
         tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
+        tokens.put("Deal.Annual Utility Usage (kWh)", result.get("custom_fields.Annual Utility Usage (kWh)"));
+        tokens.put("Deal.Pre-Solar Cost per kWh ($)", result.get("custom_fields.Pre-Solar Cost per kWh ($)"));
+        tokens.put("Deal.Interest Rate", result.get("custom_fields.Interest Rate"));
+        tokens.put("Deal.Loan Term", result.get("custom_fields.Loan Term"));
+        tokens.put("Deal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
 
         Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
         Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());
