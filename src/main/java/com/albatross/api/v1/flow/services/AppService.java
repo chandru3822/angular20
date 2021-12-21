@@ -6,8 +6,7 @@ import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.AppAttachment;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
+import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +14,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -123,11 +121,25 @@ public class AppService {
    * @param attachmentTypeId ID of the attachmentType
    * @return
    */
-  public List<AppAttachment> getAttachmentsByType(Long attachmentTypeId) {
+  public List<AppAttachment> getAttachmentsByAttachmentType(Long attachmentTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("attachmentTypeId", attachmentTypeId);
 
-    List<AppAttachment> attachments = sqlCache.query("app.getAttachmentsByType", params, AppAttachment.class);
+    List<AppAttachment> attachments = sqlCache.query("app.getAttachmentsByAttachmentType", params, AppAttachment.class);
+    attachments.forEach(attachment -> {
+      setAttachmentUrl(storageBucket, attachment);
+      setAttachmentPresignedUrl(storageBucket, attachment);
+    });
+
+    return attachments;
+  }
+
+  public List<AppAttachment> getAttachmentsByAppAndAttachmentType(Long appTypeId, Long attachmentTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("appTypeId", appTypeId);
+
+    List<AppAttachment> attachments = sqlCache.query("app.getAttachmentsByAppAndAttachmentType", params, AppAttachment.class);
     attachments.forEach(attachment -> {
       setAttachmentUrl(storageBucket, attachment);
       setAttachmentPresignedUrl(storageBucket, attachment);
@@ -174,7 +186,7 @@ public class AppService {
   }
 
   //endpoint for automating mobile build uploads
-  public AppAttachment insertAttachmentRecord(AppAttachment attachment) throws IOException {
+  public AppAttachment insertAttachmentRecord(AppAttachment attachment, User currentUser) throws IOException {
 
     //todo: if used from within the app need to get companyId off of user in those cases
     if (null == attachment) {
@@ -188,18 +200,62 @@ public class AppService {
     params.put("contentType", attachment.getContentType());
     params.put("size", attachment.getSize());
     params.put("appTypeId", attachment.getAppTypeId());
-    params.put("companyId", attachment.getCompanyId());
+    params.put("companyId", null != currentUser ? currentUser.getCompanyId() : attachment.getCompanyId());
     params.put("attachmentTypeId", attachment.getAttachmentTypeId());
     params.put("displayName", attachment.getDisplayName());
     params.put("versionNumber", attachment.getVersionNumber());
     params.put("buildNumber", attachment.getBuildNumber());
-    params.put("createdById", SystemSettings.SYSTEM_USER.getId());
+    params.put("createdById", null != currentUser ? currentUser.getId() : SystemSettings.SYSTEM_USER.getId());
     params.put("key", key);
 
     Long id = sqlCache.updateReturningId("app.insertAttachmentRecord", params, "id").longValue();
 
     return findById(id);
   }
+
+  public void uploadApp(String versionNumber, Long buildNumber, Long appTypeId, MultipartFile attachment, MultipartFile secondaryAttachment) throws IOException {
+    User currentUser = securityService.getCurrentUser();
+    if (attachment.isEmpty()) {
+      throw new RuntimeException("File cannot be empty");
+    }
+    String keyPattern = "apps/apps/%s";
+
+    //upload the main attachment, for android this is the only one (apk), for ios it is the plist
+    String key = uploadToS3(currentUser, keyPattern, attachment);
+
+    //upload the secondary attachment (the ipa for ios)
+    if(null != secondaryAttachment && !secondaryAttachment.isEmpty()) {
+      String key2 = uploadToS3(currentUser, "apps/apps/%s", secondaryAttachment);
+    }
+
+    //add the record to app_attachment
+    AppAttachment newApp = new AppAttachment();
+    newApp.setFilename(attachment.getOriginalFilename());
+    newApp.setContentType(attachment.getContentType());
+    newApp.setSize(attachment.getSize());
+    newApp.setAppTypeId(appTypeId);
+    newApp.setAttachmentTypeId(8L);
+    newApp.setVersionNumber(versionNumber);
+    newApp.setBuildNumber(buildNumber);
+    newApp.setKeyPattern(keyPattern);
+    newApp.setS3Key(key);
+
+    insertAttachmentRecord(newApp, currentUser);
+  }
+
+  public String uploadToS3(User currentUser, String keyPattern, MultipartFile attachment) throws IOException {
+    String key = String.format(currentUser.getAwsBucket() + "/" + keyPattern, UUID.randomUUID());
+
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentLength(attachment.getSize());
+    metadata.setContentType(attachment.getContentType());
+    metadata.setCacheControl("public, max-age=31536000");
+
+    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(attachment.getBytes()), metadata);
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    return key;
+  }
+
 
   /**
    * Find Attachment by ID, using a custom S3 bucket name.

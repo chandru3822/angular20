@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.AppType;
 import com.albatross.api.v1.flow.enums.AttachmentType;
 import com.albatross.api.v1.flow.model.AppAttachment;
 import com.albatross.api.v1.flow.services.AppService;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +25,17 @@ public class AppController {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public List<AppAttachment> getApps() {
-    return appService.getAttachmentsByType(AttachmentType.APP_DOWNLOAD.id);
+    return appService.getAttachmentsByAttachmentType(AttachmentType.APP_DOWNLOAD.id);
+  }
+
+  @GetMapping(value="/ios", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AppAttachment> getIosApps() {
+    return appService.getAttachmentsByAppAndAttachmentType(AppType.IOS.id, AttachmentType.APP_DOWNLOAD.id);
+  }
+
+  @GetMapping(value="/android", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AppAttachment> getAndroidApps() {
+    return appService.getAttachmentsByAppAndAttachmentType(AppType.ANDROID.id, AttachmentType.APP_DOWNLOAD.id);
   }
 
   @GetMapping(value="/{appTypeId}/minVersion", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,8 +78,25 @@ public class AppController {
   @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
   public AppAttachment uploadDocument(@RequestBody AppAttachment appAttachment) throws IOException {
 
-    AppAttachment newRecord = appService.insertAttachmentRecord(appAttachment);
+    AppAttachment newRecord = appService.insertAttachmentRecord(appAttachment, null);
 
     return newRecord;
+  }
+
+  @RequestMapping(method = RequestMethod.POST, value = "/ios")
+  public void uploadIosApp(@RequestParam String versionNumber,
+                           @RequestParam Long buildNumber,
+                           @RequestParam MultipartFile attachment,
+                           @RequestParam MultipartFile secondaryAttachment) throws IOException {
+
+    appService.uploadApp(versionNumber, buildNumber, AppType.IOS.id, attachment, secondaryAttachment);
+  }
+
+  @RequestMapping(method = RequestMethod.POST, value = "/android")
+  public void uploadAndroidApp(@RequestParam String versionNumber,
+                               @RequestParam Long buildNumber,
+                               @RequestParam MultipartFile attachment) throws IOException {
+
+    appService.uploadApp(versionNumber, buildNumber, AppType.ANDROID.id, attachment, null);
   }
 }
