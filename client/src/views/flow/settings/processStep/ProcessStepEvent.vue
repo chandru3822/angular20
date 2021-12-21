@@ -28,6 +28,9 @@
           >Save</v-btn>
         </v-card>
       </v-col>
+
+
+
       <ProcessStepRequirements :callback="populateRequirements" :event-requirements="true"></ProcessStepRequirements>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="wqt-header-bar">

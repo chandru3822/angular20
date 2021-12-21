@@ -571,3 +571,12 @@ values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, nu
        (91, 'Event Status', 'flow.company_event_status_type', 'event_status_type', 99999999, 7, 'flow.project_process_step_event', 'company_event_status_type_id', null),
        (91, 'Event Category', 'flow.event_status_type', 'event_status_type', 99999999, 7, 'flow.company_event_status_type', 'event_status_type_id', null);
 -- END SMARTLIST STUFF
+
+-- *** WORK QUEUE STUFF ***
+--add a column to determine if work queue type is for process steps or events
+-- todo: v2 they want the 2 types to be used together.  see if we can do that in v1 before going this route
+-- alter table flow.work_queue_type
+--   add column if not exists use_event_data boolean not null default false;
+
+
+-- *** END WORK QUEUE STUFF ***
