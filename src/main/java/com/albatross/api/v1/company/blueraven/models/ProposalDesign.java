@@ -12,9 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 public class ProposalDesign {
 
-  private Long projectId, projectProcessStepId;
+  private Long projectId, projectProcessStepId, processStepStatusTypeId;
   private Long offset, imageIndex = 0L;
-  private String projectName, dateCreated;
+  private String projectName, dateCreated, companyProcessStepStatusType;
   private List<Proposal> proposals;
   private List<Attachment> attachments;
 }
