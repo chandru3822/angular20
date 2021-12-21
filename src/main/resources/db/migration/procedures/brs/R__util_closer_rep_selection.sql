@@ -83,11 +83,13 @@ BEGIN
                                  upv.user_position_id
                           from flow.user_positions_vw upv
                                    inner join flow.user u on u.id = upv.user_id
-                                   inner join flow.user_position up on u.id = up.user_id and up.position_id in (1,2,3,133,237,517)
+                                   inner join flow.user_position up on u.id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                                from flow.company_configuration_value
+                                                                                                                where code = 'CLOSER_POSITION_IDS')
                                                                  and up.archived is not true and up.id = upv.user_position_id
                                    inner join flow.org o on o.id = up.org_id
                                    inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-                            where ust.user_status_type != 'Expired'
+                            where ust.user_status_type = 'Active'
                       ) as sub_rows  order by active desc, name) as sub_rows;
         else
             case when (v_org_level_id < 7) OR (326 = any (v_current_position_ids)) OR

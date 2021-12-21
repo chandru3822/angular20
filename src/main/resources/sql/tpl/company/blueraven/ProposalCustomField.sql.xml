@@ -1,0 +1,15 @@
+<sql>
+  <proposal.customFieldSql.financeProduct><![CDATA[
+
+  ]]></proposal.customFieldSql.financeProduct>
+
+  <proposal.customFieldSql.brsProduct><![CDATA[
+
+  ]]></proposal.customFieldSql.brsProduct>
+
+  <proposal.customFieldSql.adderType><![CDATA[
+
+  ]]></proposal.customFieldSql.adderType>
+
+
+</sql>

@@ -487,11 +487,12 @@
       },
       getProcessStep: async function () {
         try {
-          const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
+          const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           this.getAvailableStatuses()
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
+          return {data, status}
         } catch (e) {
           logError(e)
         } finally {
@@ -603,7 +604,7 @@
       },
       async userCanScheduleLeadAllocation() {
         //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-        if (this.userIsScheduler) {
+        if (this.userIsScheduler && this.project?.postalCode) {
           this.schedulerLoading = true
           try {
             const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
@@ -611,6 +612,7 @@
                 postalCode: this.project.postalCode
               }
             })
+            // const {data} = await getRequest(`/postalCode/zone/userCanSchedule`)
             this.schedulerCanEdit = data
           } catch (e) {
             logError(e)

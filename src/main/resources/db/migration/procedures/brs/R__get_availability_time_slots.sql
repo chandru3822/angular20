@@ -19,7 +19,7 @@ BEGIN
   select coalesce(t.timezone, p.time_zone)
   into v_timezone
   from flow.project p
-         inner join flow.postal_code pc on pc.postal_code = substr(
+         inner join flow.postal_code_zone_postal_code pc on pc.postal_code = substr(
     trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
          inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
          left join flow.company_timezone ct on pcz.company_timezone_id = ct.id
@@ -35,7 +35,7 @@ BEGIN
                 from flow.user_position up2
                 where user_id = up.user_id) as user_position_ids
         from flow.project p
-               inner join flow.postal_code pc on pc.postal_code = substr(
+               inner join flow.postal_code_zone_postal_code pc on pc.postal_code = substr(
           trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
                inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                inner join flow.postal_code_zone_user pczu
@@ -73,7 +73,7 @@ BEGIN
                         on pczu.user_id = ra.user_id and pczu.postal_code_zone_user_type_id = 1 and
                            pczu.archived is false
              inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id and pcz.archived is false
-             inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id and pc.archived is false
+             inner join flow.postal_code_zone_postal_code pc on pc.postal_code_zone_id = pcz.id and pc.archived is false
              inner join flow.project p on p.postal_code = pc.postal_code
              inner join user_ids ui2 on ui2.user_id = ra.user_id
       where p.id = p_project_id
@@ -174,7 +174,7 @@ BEGIN
                                   'UTC' as available_times,
                                   90    as default_appointment_length
                            from flow.project p
-                                  inner join flow.postal_code pc on pc.postal_code = substr(
+                                  inner join flow.postal_code_zone_postal_code pc on pc.postal_code = substr(
                              trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and
                                                                     pc.archived is false
                                   inner join flow.postal_code_zone pcz

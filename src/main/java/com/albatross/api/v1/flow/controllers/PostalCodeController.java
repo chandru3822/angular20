@@ -45,7 +45,7 @@ public class PostalCodeController {
   }
 
   @GetMapping(value = "/zone/{id}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<PostalCode> getCodesForZone(@PathVariable Long id) {
+  public List<PostalCodeZonePostalCode> getCodesForZone(@PathVariable Long id) {
     return postalCodeService.getCodesForZone(id);
   }
 
@@ -94,7 +94,7 @@ public class PostalCodeController {
   }
 
   @PostMapping(value = "/zone/addCode", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity addCode(@RequestBody PostalCode postalCode) {
+  public ResponseEntity addCode(@RequestBody PostalCodeZonePostalCode postalCode) {
     return postalCodeService.addCode(postalCode);
   }
 

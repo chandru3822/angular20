@@ -27,7 +27,7 @@
       </v-col>
       <v-col cols="12" class="pt-0 pb-0">
 
-        <v-app-bar dense id="header" :color="headerColor" tabs dark style="z-index: 1001;">
+        <v-app-bar dense id="header" :color="headerColor" tabs dark>
           <v-menu data-app left
                   offset-y
                   :disabled="userIsMasquerading"
@@ -203,7 +203,7 @@ export default {
         } else {
           url = `/companies/assignedToUser`
         }
-        const {data} = await getRequest(url)
+        const {data} = await getRequest(url, null, [])
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
         this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId) || {}

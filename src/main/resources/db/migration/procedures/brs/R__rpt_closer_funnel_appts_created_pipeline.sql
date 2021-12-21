@@ -109,7 +109,8 @@ BEGIN
                                            where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                              and pd.closer_appointment_start is not null
                                              and pd.company_id = v_company_id
-                                             and pd.source is not null) as custom_date_range_count
+                                             and (pd.source = any (p_self_gen_source_ids) OR pd.source = any (p_brs_provided_source_ids))
+                                          ) as custom_date_range_count
                                    from brs.funnel
                                    where id = 10 --Total Appointments Created
                                ) as row_counts

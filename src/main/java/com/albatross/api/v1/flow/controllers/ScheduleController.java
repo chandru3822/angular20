@@ -41,11 +41,6 @@ public class ScheduleController {
     return scheduleService.getAvailabilityForCompanyByOrgAndUser(params);
   }
 
-  @PostMapping(value = "/closerAvailability", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getBrsCloserAvailability(@RequestBody EventSearchParams params) {
-    return scheduleService.getBrsCloserAvailability(params);
-  }
-
   @PostMapping(value = "/projects", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getScheduleProjects(@RequestBody EventSearchParams params) {
     return scheduleService.getScheduleProjects(params);

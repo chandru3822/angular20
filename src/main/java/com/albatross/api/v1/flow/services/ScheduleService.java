@@ -94,19 +94,6 @@ public class ScheduleService {
     return null == results ? "[]": results;
   }
 
-  //yes i know this is a brs specific endpoint in the flow code. i just cant
-  public String getBrsCloserAvailability(ScheduleController.EventSearchParams esp) {
-    HashMap<String, Object> params = new HashMap<>();
-
-    params.put("postalCodeZoneUserIds", esp.getPostalCodeZoneUserIds());
-    params.put("startTime", esp.getStartTime());
-    params.put("endTime", esp.getEndTime());
-
-    String results = sqlCache.queryForObject("schedule.getCloserAvailability", params, String.class);
-
-    return null == results ? "[]": results;
-  }
-
   // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
   public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();

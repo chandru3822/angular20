@@ -322,14 +322,14 @@ BEGIN
                                        mailing_city, mailing_postal_code, date_created, date_modified,
                                        created_by_id, modified_by_id, company_id, archived, title,
                                        owner_user_position_id, migrate_lead_id, company_state_id,
-                                       mailing_company_state_id, company_country_id)
+                                       mailing_company_state_id, company_country_id, latitude, longitude)
         values(new.id, new.contact_type_id, new.first_name, new.last_name,
                new.street1, new.street2, new.city, new.postal_code, new.phone, new.email,
                new.prospect_status, new.mobile, new.mailing_street1, new.mailing_street2,
                new.mailing_city, new.mailing_postal_code, new.date_created, new.date_modified,
                new.created_by_id, new.modified_by_id, new.company_id, new.archived, new.title,
                new.owner_user_position_id, new.migrate_lead_id, new.company_state_id,
-               new.mailing_company_state_id, new.company_country_id);
+               new.mailing_company_state_id, new.company_country_id, new.latitude, new.longitude);
 
     RETURN NULL;
 END

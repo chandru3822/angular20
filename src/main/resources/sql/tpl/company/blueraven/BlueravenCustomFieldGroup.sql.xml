@@ -1,64 +1,4 @@
 <sql>
-  <blueravenCustomFieldGroup.getAssignmentsByObjectType>
-    <![CDATA[
-      select cfg.id,
-             cfg.group_name as "groupName",
-             cfg.group_order as "groupOrder",
-             coalesce((
-                          SELECT array_to_json(array_agg(row_to_json(fields)))
-                          FROM (
-                                   select ccv.id,
-                                          ccv.source_id as "sourceId",
-                                          false as "valueWasChanged",
-                                          ccv.date_value as "dateValue",
-                                          ccv.timestamp_value as "timestampValue",
-                                          ccv.boolean_value as "booleanValue",
-                                          ccv.text_value as "textValue",
-                                          ccv.numeric_value as "numericValue",
-                                          ccv.int_value as "intValue",
-                                          ccv.int_array_value as "intArrayValue",
-                                          cfga.custom_field_group_id as "customFieldGroupId",
-                                          cfga.id as "customFieldGroupAssignmentId",
-                                          cfga.custom_field_id as "customFieldId",
-                                          cfga.field_order as "fieldOrder",
-                                          cf.list_of_value_id as "listOfValueId",
-                                          cf.field_name as "fieldName",
-                                          cf.company_data_type_id as "companyDataTypeId",
-                                          cfg.object_type_id as "objectTypeId",
-                                          cdt.data_type_id as "dataTypeId",
-                                          cdt.has_list_values as "hasListValues",
-                                          coalesce((
-                                                       SELECT array_to_json(array_agg(row_to_json(listOfValues)))
-                                                       FROM (
-                                                                select lov.id,
-                                                                       lov.name,
-                                                                       lov.code,
-                                                                       lov.parent_id as "parentId",
-                                                                       lov.show_other as "showOther",
-                                                                       lov.display_order as "displayOrder"
-                                                                from brs.list_of_value lov
-                                                                where lov.parent_id is not null
-                                                                  and lov.parent_id = cf.list_of_value_id
-                                                                  and lov.archived is not true
-                                                                order by lov.display_order
-                                                            ) listOfValues), '[]') AS "listOfValues"
-                                   from brs.custom_field_group_assignment cfga
-                                            inner join brs.custom_field cf on cf.id = cfga.custom_field_id
-                                            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                            left join brs.custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.source_id = :sourceId
-                                   where cfga.custom_field_group_id = cfg.id
-                                     and cfga.archived is not true
-                                     and cf.archived is not true
-                                   order by cfga.field_order, cf.field_name
-                               ) fields), '[]') AS "customFieldValues"
-      from brs.custom_field_group cfg
-               inner join brs.object_type cot on cot.id = cfg.object_type_id
-      where cot.id = :objectTypeId
-        and cfg.archived is not true
-      order by cfg.group_order
-    ]]>
-  </blueravenCustomFieldGroup.getAssignmentsByObjectType>
-
   <blueravenCustomFieldGroup.assignment.getByObjectTypeId><![CDATA[
     select cfg.*,
            cfg.group_name as original_group_name,
@@ -68,37 +8,59 @@
                       FROM (
                              SELECT cfga.id,
                                     cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                     cfga.custom_field_id as "customFieldId",
+                                    cfga.use_parent_data as "useParentData",
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.field_order as "fieldOrder",
                                     cfga.archived,
                                     cf.field_name as "fieldName",
                                     cfot.id as "customFieldObjectTypeId",
                                     null as "processStepName",
-                                    null as "groupName"
+                                    null as "groupName",
+                                    ot.object_type as "objectType"
                              FROM brs.custom_field_group_assignment cfga
-                                    inner join brs.custom_field cf on cf.id = cfga.custom_field_id
-                                    inner join brs.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+                               inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                               inner join brs.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+                               inner join brs.object_type ot on cfot.object_type_id = ot.id
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfga.archived is not true
                                AND cfot.archived is not true
                                and cfot.object_type_id = :objectTypeId
-                             ORDER BY "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                             union all
+                             SELECT cfga.id,
+                               cfga.custom_field_group_id as "customFieldGroupId",
+                               cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                               cfga.custom_field_id as "customFieldId",
+                               cfga.use_parent_data as "useParentData",
+                               cfga.id as "customFieldGroupAssignmentId",
+                               cfga.field_order as "fieldOrder",
+                               cfga.archived,
+                               cf2.field_name as "fieldName",
+                               cfot2.id as "customFieldObjectTypeId",
+                               ps.process_step_name as "processStepName",
+                               cfg2.group_name as "groupName",
+                               ot2.object_type as "objectType"
+                             FROM brs.custom_field_group_assignment cfga
+                               inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                               inner join flow.custom_field cf2 on cf2.id = cfga2.custom_field_id
+                               inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+                               inner join flow.custom_field_object_type cfot2 on cfot2.custom_field_id = cf2.id  and cfot2.company_object_type_id = cfg2.company_object_type_id
+                               inner join flow.company_object_type cot2 on cfg2.company_object_type_id = cot2.id
+                               inner join flow.object_type ot2 on cot2.object_type_id = ot2.id
+                               left join flow.process_step ps on cfg2.process_step_id = ps.id
+                             WHERE cfga.custom_field_group_id = cfg.id
+                               AND cfga.archived is not true
+                               AND cfga2.archived is not true
+                               AND cfot2.archived is not true
+                             ORDER BY "fieldOrder", "fieldName"
+                        ) customFields), '[]') AS "customFields"
     from brs.custom_field_group cfg
            inner join brs.object_type cot on cot.id = cfg.object_type_id
     where cot.id = :objectTypeId
       and cfg.archived is not true
     order by cfg.group_order, cfg.group_name
   ]]></blueravenCustomFieldGroup.assignment.getByObjectTypeId>
-
-  <blueravenCustomFieldGroup.findBySourceId>
-    <![CDATA[
-      select id
-      from brs.custom_field_value
-      where source_id = :sourceId
-        and custom_field_group_assignment_id = :customFieldGroupAssignmentId
-    ]]>
-  </blueravenCustomFieldGroup.findBySourceId>
 
   <blueravenCustomFieldGroup.insertCustomFieldGroup><![CDATA[
     insert into brs.custom_field_group(group_name, object_type_id, group_order, created_by_id, date_created, modified_by_id, date_modified)
@@ -136,40 +98,7 @@
     where cfg.id = :id
   ]]></blueravenCustomFieldGroup.assignment.getOne>
 
-  <blueravenCustomFieldGroup.updateCustomFieldValue><![CDATA[
-    update brs.custom_field_value
-    set date_value = :dateValue::date,
-        timestamp_value = :timestampValue::timestamp,
-        boolean_value = :booleanValue,
-        text_value = :textValue,
-        numeric_value = :numericValue,
-        int_value = :intValue,
-        int_array_value = :intArrayValue,
-        modified_by_id = :modifiedById,
-        date_modified = now()
-    where id = :id
-  ]]></blueravenCustomFieldGroup.updateCustomFieldValue>
 
-  <blueravenCustomFieldGroup.bulkUpdateCustomFieldValues>
-    <![CDATA[
-      update brs.custom_field_value
-      set date_value = :dateValue::date,
-          timestamp_value = :timestampValue::timestamp,
-          boolean_value = :booleanValue,
-          text_value = :textValue,
-          numeric_value = :numericValue,
-          int_value = :intValue,
-          int_array_value = :intArrayValue,
-          modified_by_id = :modifiedById,
-          date_modified = now()
-      where id in (:cfvIds)
-    ]]>
-  </blueravenCustomFieldGroup.bulkUpdateCustomFieldValues>
-
-  <blueravenCustomFieldGroup.insertCustomFieldValue><![CDATA[
-insert into brs.custom_field_value(source_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
-values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById, now(),  :createdById, now())
-  ]]></blueravenCustomFieldGroup.insertCustomFieldValue>
 
   <blueravenCustomFieldGroup.assignment.deleteFieldFromGroup><![CDATA[
     update brs.custom_field_group_assignment
@@ -213,9 +142,11 @@ values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampVa
            cfga.id as custom_field_group_assignment_id,
            cfga.custom_field_group_id as "customFieldGroupId",
            cfga.custom_field_id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
            cfga.archived,
            cf.field_name,
+           null as "processStepName",
            cfg.group_name,
            cot.object_type as "objectType"
     FROM brs.custom_field_group_assignment cfga
@@ -223,11 +154,31 @@ values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampVa
            inner join brs.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
            inner join brs.object_type cot on cot.id = cfg.object_type_id
     WHERE cfga.id = :id
+    union all
+    SELECT cfga.id,
+           cfga.id as custom_field_group_assignment_id,
+           cfga.custom_field_group_id as "customFieldGroupId",
+           cf.id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+           cfga.field_order as "fieldOrder",
+           cfga.archived,
+           cf.field_name as "fieldName",
+           ps.process_step_name as "processStepName",
+           cfg2.group_name as "groupName",
+           ot.object_type as "objectType"
+    FROM brs.custom_field_group_assignment cfga
+           inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+           inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+           inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+           left join flow.process_step ps on cfg2.process_step_id = ps.id
+           inner join flow.company_object_type cot on cot.id = cfg2.company_object_type_id
+           inner join flow.object_type ot on ot.id = cot.object_type_id
+    WHERE cfga.id = :id
   ]]></blueravenCustomFieldGroup.assignment.getCustomField>
 
   <blueravenCustomFieldGroup.assignment.addFieldToGroup><![CDATA[
-  insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, created_by_id, date_created, modified_by_id, date_modified)
-  values (:customFieldGroupId, :customFieldId, (select coalesce(max(field_order) + 1, 0) from brs.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now())
+  insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified)
+  values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from brs.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now())
   ]]></blueravenCustomFieldGroup.assignment.addFieldToGroup>
 
   <blueravenCustomFieldGroup.assignment.updateFieldInGroup><![CDATA[
@@ -237,4 +188,12 @@ values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampVa
           modified_by_id = :modifiedById
     where id = :id
   ]]></blueravenCustomFieldGroup.assignment.updateFieldInGroup>
+
+  <blueravenCustomFieldGroup.assignment.saveUseParentData><![CDATA[
+    update brs.custom_field_group_assignment
+      set use_parent_data = :useParentData,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></blueravenCustomFieldGroup.assignment.saveUseParentData>
 </sql>

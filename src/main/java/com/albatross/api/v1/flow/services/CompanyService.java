@@ -4,12 +4,15 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.Company;
+import com.albatross.api.v1.flow.model.CompanyConfigurationValue;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,5 +77,27 @@ public class CompanyService {
     params.put("minuteIncrement", company.getMinuteIncrement());
     sqlCache.update("company.updateCompany", params);
     return getCompany(company.getId());
+  }
+
+  //configuration values
+  public List<CompanyConfigurationValue> getCompanyConfigurationValues(Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", companyId);
+    List<CompanyConfigurationValue> results = sqlCache.query("company.getConfigurationValues", params, CompanyConfigurationValue.class);
+    return results;
+  }
+
+  public void saveCompanyConfigurationValue(CompanyConfigurationValue ccv) {
+    User currentUser = securityService.getCurrentUser();
+
+    if(!currentUser.getCompanyId().equals(ccv.getCompanyId())) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to edit this value.", new Exception());
+    } else {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", ccv.getId());
+      params.put("modifiedById", currentUser.trueUserId());
+      params.put("value", ccv.getValue());
+      sqlCache.update("company.updateConfigurationValue", params);
+    }
   }
 }

@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.services.CompanyService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -256,6 +258,13 @@ public class SecurityService implements UserDetailsService {
 
   public void setCurrentUserDetails(UserAccountDetails uad) {
     SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(uad, null, uad.getAuthorities()));
+  }
+
+  public void validateCompanyAccess(Long companyId) {
+    User user = getCurrentUser();
+    if(!user.getCompanyId().equals(companyId)) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+    }
   }
 }
 

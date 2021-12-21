@@ -22,6 +22,7 @@ begin
                                      on pps.company_process_step_status_type_id = cpsst.id
                           inner join flow.process_step_status_type psst
                                      on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+                          inner join all_project_ids api2 on pps.project_id = any(api2.v_all_projects)
                  where pps.process_step_id = 175
                  group by project_id
              ),
@@ -31,6 +32,8 @@ begin
                           left join flow.project_process_step pps on pps.project_id = pd.project_id and pps.process_step_id = 3365
                           left join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
                           left join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
+                        inner join all_project_ids api2 on pps.project_id = any(api2.v_all_projects)
+                 where pd.substantial_completion_date is not null or pps.process_step_complete_date is not null
                  group by pps.project_id,pd.project_id,pd.substantial_completion_date
              ),
              users AS (SELECT opru1.user_id                                                       AS user_id,
@@ -42,7 +45,7 @@ begin
                                                         when pd.cancelled_date is not null then
                                                             0::numeric
                                                         else coalesce(
-                                                                round(pd.system_size::numeric * sum(opru.m1_allocation), 2),
+                                                                round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * sum(opru.m1_allocation), 2),
                                                                 0) end total
                                              FROM flow.project p1
                                                       inner join brs.project_details pd on pd.project_id = p1.id
@@ -54,15 +57,15 @@ begin
                                                                  on op.id = po.override_plan_id and op.position_id = 1
                                                       inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
                                              WHERE p1.id = any (a.v_all_projects)
-                                               and user_id = opru1.user_id
-                                             group by cancelled_date, system_size) as foo) +
+                                               and opru.user_id = opru1.user_id
+                                             group by pd.cancelled_date, system_size) as foo) +
                                       (select coalesce(sum(total), 0)
                                        from (SELECT case
                                                         when pd.cancelled_date is not null
                                                             then
                                                             0::numeric
                                                         else coalesce(round(
-                                                                              pd.system_size::numeric * sum(opru.m2_allocation),
+                                                                        case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * sum(opru.m2_allocation),
                                                                               2),
                                                                       0) end total
                                              FROM flow.project p1
@@ -76,7 +79,7 @@ begin
                                                       inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
 
                                              WHERE p1.id = any (a.v_all_projects)
-                                               and user_id = opru1.user_id
+                                               and opru.user_id = opru1.user_id
                                              group by pd.cancelled_date, pd.system_size) as foo)) as overrides_earned,
                               -- coalesce(brs.get_overrides_earned(a.v_all_projects,p.period_end, opru.user_id), 0) as overrides_earned,
                               coalesce(brs.get_total_overrides(p.id, a.v_all_projects, opru1.user_id, 1),
@@ -93,31 +96,76 @@ begin
                        GROUP BY opru1.user_id, p.id, a.v_all_projects
              ),
              commission_users AS (
-                 SELECT array_agg(DISTINCT p.id)                                              AS project_ids,
-                        pd.closer_user_id                                                     AS user_id,
-                        pay.id,
-                        a.v_all_projects,
-                        coalesce(brs.get_commissions_earned(array_agg(DISTINCT p.id), pay.period_end),
-                                 0)                                                           as commissions_earned,
-                        coalesce(brs.get_ledger_totals(pay.id, array_agg(DISTINCT p.id), 1, 1),
+               select *,
+                      (select coalesce(
+                                (SELECT sum(case
+                                              when pd1.cancelled_date is not null then
+                                                0::NUMERIC
+                                              else coalesce(round(cpa.allocation * case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end - case
+                                                                                                               when cpsa.milestone_id = 1
+                                                                                                                 then
+                                                                                                                 case
+                                                                                                                   when cpsa.fee_type_id = 1
+                                                                                                                     then coalesce(case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * cpsa.fee_amount, 0)
+                                                                                                                   else coalesce(cpsa.fee_amount, 0) end
+                                                                                                               else 0 end,
+                                                                  2),
+                                                            0) end) total
+                                 FROM flow.project p1
+                                        inner join brs.project_details pd1 on pd1.project_id = p1.id
+                                        inner join milestone_one_projects mop on mop.project_id = p1.id and mop.milestone_one_complete_date::date <= foo.period_end
+                                        inner join brs.project_commission pc on pc.project_id = p1.id
+                                        inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
+                                        inner join brs.commission_plan_allocation cpa
+                                                   on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
+                                        left join brs.commission_plan_source_allocation cpsa
+                                                  on cpsa.commission_plan_id = cp.id and
+                                                     cpsa.source_id = pd1.source and cpsa.milestone_id = 1
+                                 WHERE p1.id = any(foo.project_ids)), 0)) as commissions_earned,
+                      (select coalesce(
+                                (SELECT sum(case
+                                              when pd1.cancelled_date is not null then
+                                                0::NUMERIC
+                                              else coalesce(round(cpa.allocation * case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end - case
+                                                                                                                when cpsa.milestone_id = 2
+                                                                                                                  then
+                                                                                                                  case
+                                                                                                                    when cpsa.fee_type_id = 1
+                                                                                                                      then coalesce(case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * cpsa.fee_amount, 0)
+                                                                                                                    else coalesce(cpsa.fee_amount, 0) end
+                                                                                                                else 0 end,
+                                                                  2),
+                                                            0) end) total
+                                 FROM flow.project p1
+                                        inner join brs.project_details pd1 on pd1.project_id = p1.id
+                                        inner join milestone_two_projects mop on mop.project_id = p1.id and mop.milestone_two_complete_date::date <= foo.period_end
+                                        inner join brs.project_commission pc on pc.project_id = p1.id
+                                        inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
+                                        inner join brs.commission_plan_allocation cpa
+                                                   on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
+                                        left join brs.commission_plan_source_allocation cpsa
+                                                  on cpsa.commission_plan_id = cp.id and
+                                                     cpsa.source_id = pd1.source and cpsa.milestone_id = 2
+                                 WHERE p1.id = any(foo.project_ids)), 0)) as commissions_earned1,
+                      coalesce(brs.get_ledger_totals(pay_id, foo.project_ids, 1, 1),
                                  0)                                                           as ledger_totals,
-                        (select (select coalesce(sum(total), 0)
+                         (select (select coalesce(sum(total), 0)
                                  from (SELECT case
                                                   when pd1.cancelled_date is not null then
                                                       0::numeric
                                                   else coalesce(
-                                                          round(pd1.system_size::numeric * sum(opru.m1_allocation), 2),
+                                                          round(case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * sum(opru.m1_allocation), 2),
                                                           0) end total
                                        FROM flow.project p1
                                                 inner join brs.project_details pd1 on pd1.project_id = p1.id
                                                 inner join milestone_one_projects mop2 on mop2.project_id = p1.id and
-                                                                                          mop2.milestone_one_complete_date::date <= pay.period_end
+                                                                                          mop2.milestone_one_complete_date::date <= foo.period_end
                                                 inner join brs.project_override po on po.project_id = p1.id
                                                 inner join brs.override_plan op
                                                            on op.id = po.override_plan_id and op.position_id = 1
                                                 inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
-                                       WHERE p1.id = any (a.v_all_projects)
-                                         and user_id = pd.closer_user_id
+                                       WHERE p1.id = any (foo.v_all_projects)
+                                         and user_id = foo.user_id
                                          and pd1.project_id = p1.id
                                        group by pd1.cancelled_date, pd1.system_size) as foo) +
                                 (select coalesce(sum(total), 0)
@@ -126,49 +174,57 @@ begin
                                                       then
                                                       0::numeric
                                                   else coalesce(round(
-                                                                        pd1.system_size::numeric * sum(opru.m2_allocation),
+                                                                  case when pd1.primary_financier_name = 'LoanPal' and pd1.loan_term = 427 and pd1.interest_rate = 2.99  then 0 else pd1.system_size::numeric end * sum(opru.m2_allocation),
                                                                         2),
                                                                 0) end total
                                        FROM flow.project p1
                                                 inner join brs.project_details pd1 on pd1.project_id = p1.id
                                                 inner join milestone_two_projects mtp2 on mtp2.project_id = p1.id and
-                                                                                          mtp2.milestone_two_complete_date::date <= pay.period_end
+                                                                                          mtp2.milestone_two_complete_date::date <= foo.period_end
                                                 inner join brs.project_override po on po.project_id = p1.id
                                                 inner join brs.override_plan op
                                                            on op.id = po.override_plan_id and op.position_id = 1
                                                 inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
 
-                                       WHERE p1.id = any (a.v_all_projects)
-                                         and user_id = pd.closer_user_id
+                                       WHERE p1.id = any (foo.v_all_projects)
+                                         and user_id = foo.user_id
                                          and pd1.project_id = p1.id
                                        group by pd1.cancelled_date, pd1.system_size) as foo)) as overrides_earned,
-                        -- coalesce(brs.get_overrides_earned(a.v_all_projects,pay.period_end,pd.closer_user_id), 0) as overrides_earned,
-                        coalesce(brs.get_total_overrides(pay.id, a.v_all_projects, pd.closer_user_id, 1),
+                      coalesce(brs.get_total_overrides(pay_id, foo.v_all_projects, foo.user_id, 1),
                                  0)                                                           as total_overrides,
-                        coalesce(brs.get_ledger_adjustment_current_totals(pay.id, array_agg(DISTINCT p.id), 1),
+                      coalesce(brs.get_ledger_adjustment_current_totals(pay_id, project_ids, 1),
                                  0)                                                           as ledger_adjustments
-                 FROM brs.payroll pay
-                          INNER JOIN flow.project p ON p.id = any (pay.selected_project_ids)
+                  from (
+                 SELECT array_agg(DISTINCT p.id)                                              AS project_ids,
+                        pd.closer_user_id                                                     AS user_id,
+                        pay.id as pay_id,
+                        a.v_all_projects,
+                        pay.period_end
+                 FROM brs.commission_plan_user cpu
+                        inner join brs.commission_plan cp on cpu.commission_plan_id = cp.id and cp.position_id =1
+                        inner join brs.project_commission pc on pc.commission_plan_id = cp.id
+                        INNER JOIN flow.project p ON p.id = pc.project_id
+                        inner join brs.payroll pay on p.id = any (pay.selected_project_ids) and current is true
+                        inner join all_project_ids a on a.id = pay.id
                           inner join brs.project_details pd on pd.project_id = p.id
-                          inner join all_project_ids a on a.id = pay.id
-                 WHERE pay.current is true
+                WHERE cpu.user_id = pd.closer_user_id
                  GROUP BY pd.closer_user_id, pay.id, a.v_all_projects
-             )
+               ) as foo )
         SELECT array_to_json(array_agg(row_to_json(sub_rows)))
         FROM (
                  SELECT u3.id,
                         u3.first_name || ' ' || u3.last_name     AS closer_user,
-                        cu.commissions_earned - cu.ledger_totals AS total_commission,
+                        cu.commissions_earned + cu.commissions_earned1 - cu.ledger_totals AS total_commission,
                         cu.overrides_earned - cu.total_overrides AS total_overrides,
                         cu.ledger_adjustments                    AS commission_adjustments,
-                        cu.commissions_earned +
+                        cu.commissions_earned +  cu.commissions_earned1 +
                         cu.overrides_earned +
                         cu.ledger_adjustments -
                         (cu.ledger_totals +
                          cu.total_overrides)                     AS current_pay
                  FROM commission_users cu
                           INNER JOIN flow.user u3 ON u3.id = cu.user_id
-                 GROUP BY u3.id, project_ids, cu.id, cu.v_all_projects, cu.commissions_earned, cu.overrides_earned,
+                 GROUP BY u3.id, project_ids, cu.pay_id, cu.v_all_projects, cu.commissions_earned,cu.commissions_earned1, cu.overrides_earned,
                           cu.ledger_adjustments,
                           cu.total_overrides, cu.ledger_totals
                  UNION
@@ -213,7 +269,7 @@ begin
                                                      inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
                                             WHERE p1.id = any(a.v_all_projects)
                                                 and opru.user_id = opru1.user_id
-                                           group by cancelled_date),0)) AS overrides_earned,
+                                           group by pd.cancelled_date),0)) AS overrides_earned,
 
                                   -- coalesce(brs.get_overrides_earned(a.v_all_projects,p.period_end, opru.user_id), 0) as overrides_earned,
                                   coalesce(brs.get_total_overrides(p.id, a.v_all_projects, opru1.user_id, 4),

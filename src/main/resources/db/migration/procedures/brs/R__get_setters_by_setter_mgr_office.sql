@@ -15,7 +15,9 @@ BEGIN
     FROM flow.user_position
     WHERE org_id = p_office_id
         AND primary_flag IS TRUE
-        AND position_id in (4,5);
+        AND position_id in (select unnest(string_to_array(value, ',')::int[])
+                            from flow.company_configuration_value
+                            where code = 'SETTER_POSITION_IDS');
 
     RETURN v_setter_ids;
 

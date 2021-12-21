@@ -2,7 +2,8 @@
 <v-row class="d-flex justify-space-between align-center">
   <v-col v-if="showFieldName">
     {{field.fieldName}}
-    <span class="ancillary" v-if="field.useParentData">(Parent)</span>
+    <span class="ancillary" v-if="field.ancillaryCustomFieldHint">{{field.ancillaryCustomFieldHint}}</span>
+    <span class="ancillary" v-else-if="field.useParentData">(Parent)</span>
     <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
   </v-col>
 
@@ -82,6 +83,7 @@
       v-if="field.dataTypeId === 6 && !field.hasListValues"
       text
       :readonly="readonly"
+      :disabled="readonly"
       :label="hideLabel ? null : field.fieldName"
       :hide-details="hideDetails"
       placeholder=" "
@@ -229,12 +231,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.ancillary {
-  font-size: 12px;
-}
-</style>
-
-<style lang="scss">
+  .ancillary {
+    font-size: 12px;
+  }
   .field-picker {
     border-bottom: solid 1px rgba(0,0,0,0.4);
     height: 27px;

@@ -72,7 +72,9 @@
                                                                   and up5.archived is false
                                                                   and cf.archived is false)
                                                      WHEN rp.position_id = 4
-                                                         THEN up.position_id IN (4,5,6)
+                                                         THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS')
                                                     END
                                                 )                                  AS position,
                                             u.id                               AS "userId",
@@ -168,7 +170,9 @@
                                                     and up5.archived is false
                                                     and cf.archived is false)
                               WHEN rp.position_id = 4
-                                  THEN up.position_id IN (4,5,6)
+                                  THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS')
                              END
                          )                                  AS position
               FROM brs.residual_plan_user rpu

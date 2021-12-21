@@ -82,7 +82,7 @@
                 </div>
 
                 <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
-                  Loan Application
+                  <span>Finance Application</span>
                 </v-btn>
               </v-col>
               <v-col>
@@ -98,7 +98,7 @@
                 <v-checkbox label="Send Spanish Installation Agreement"
                             v-model="requestItem.isSpanish"
                 ></v-checkbox>
-                <v-checkbox label="Send Loan Docs (Loan Products Only)"
+                <v-checkbox label="Send Finance Docs (Finance Products Only)"
                             v-model="requestItem.sendLoanDocs"
                 ></v-checkbox>
               </v-col>
@@ -264,54 +264,57 @@ export default {
           return
         }
 
-              const {status} = await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
-              this.requestDialog = false;
-              handleHidingGlobalLoader(this, status)
-              this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } catch (e) {
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              if (e?.data?.message.includes('locate')) {
-                  this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a loan application for this project')
-              }
-              else {
-                  this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
-              }
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              console.error('*** ERROR ***', e)
-          }
-      },
-      async openLoanApp() {
-          try {
-              this.$store.commit(AppMutations.SET_LOADING, true)
-              if (!this.requestItem.proposalNbr) {
-                  console.error('*** ERROR ***', 'Error: Unable to generate Loan application without Proposal Number')
-                  this.snackbar = getSnackbar('ERROR', 'Unable to generate Loan application without Proposal Number')
-                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                  this.$store.commit(AppMutations.SET_LOADING, false)
-                  return
-              }
-              const {data, status} = await getRequest('/install-agreement/generate/'+this.requestItem.projectId+'/'+this.requestItem.proposalNbr, 'blueraven')
-              window.open(data);
-              handleHidingGlobalLoader(this, status)
-          } catch (e) {
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              console.error('*** ERROR ***', e)
-              if (e.data.message!= null) {
-                this.snackbar = getSnackbar('ERROR', e.data.message)
-              }
-              else {
-                this.snackbar = getSnackbar('ERROR', 'Error generating Loan Application')
-              }
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-      },
-      async updateEmail(it) {
-          try {
-              this.$store.commit(AppMutations.SET_LOADING, true)
-              const {status} = await putRequest('/install-agreement/updateEmailAddress/'+this.requestItem.projectId, {
-                  email: this.requestItem.email
-              }, 'blueraven')
+        const {status} = await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
+        this.requestDialog = false;
+        handleHidingGlobalLoader(this, status)
+        this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        if (e?.data?.message.includes('locate')) {
+          this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a finance application for this project')
+        } else if (e?.data?.message) {
+          this.snackbar = getSnackbar('ERROR', e.data.message)
+        } else {
+          this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
+        }
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        console.error('*** ERROR ***', e)
+      }
+    },
+    async openLoanApp() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        if (!this.requestItem.proposalNbr) {
+          console.error('*** ERROR ***', 'Error: Unable to generate Finance application without Proposal Number')
+          this.snackbar = getSnackbar('ERROR', 'Unable to generate Finance application without Proposal Number')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return
+        }
+        const {
+          data,
+          status
+        } = await getRequest('/install-agreement/generate/' + this.requestItem.projectId + '/' + this.requestItem.proposalNbr, 'blueraven')
+        window.open(data);
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        console.error('*** ERROR ***', e)
+        if (e.data.message != null) {
+          this.snackbar = getSnackbar('ERROR', e.data.message)
+        } else {
+          this.snackbar = getSnackbar('ERROR', 'Error generating Finance Application')
+        }
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async updateEmail(it) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {status} = await putRequest('/install-agreement/updateEmailAddress/' + this.requestItem.projectId, {
+          email: this.requestItem.email
+        }, 'blueraven')
 
         this.currentEmail = this.requestItem.email;
         this.editEmail = false;

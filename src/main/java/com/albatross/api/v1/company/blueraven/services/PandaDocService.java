@@ -102,7 +102,7 @@ public class PandaDocService {
 
     // if we're still not finding a match, abort
     if (tplId == null) {
-      String err = String.format("no PandaDoc template matching '%s'", name);
+      String err = String.format("No PandaDoc template matching '%s'", name);
       throw new Exception(err);
     }
 
@@ -131,7 +131,7 @@ public class PandaDocService {
         JSONObject tpl = templates.getJSONObject(i);
         String tplName = tpl.getString("name");
         String version = tpl.getString("version");
-        if (name.equals(tplName) && version.equals("2")) {
+        if (tplName.contains(name) && version.equals("2")) {
           tplId = tpl.getString("id");
           log.debug("PANDADOC: selected template named {}", tplName);
           break;
@@ -244,7 +244,7 @@ public class PandaDocService {
       validateCashProject(projectId, tokens);
     } else if (installAgreementRepository.isLoanPalProject(financier)) {
       validateLoanPalProject(projectId, tokens);
-    } else if (!installAgreementRepository.isSunlightProject(financier)) {
+    } else if (!installAgreementRepository.isSunlightProject(financier) && !installAgreementRepository.isSunpowerProject(financier)) {
       throw new Exception(String.format(
         "unexpected financier for project %d: %s",
           projectId, financier
@@ -586,10 +586,28 @@ public class PandaDocService {
         tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
         tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
         tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
+        tokens.put("Deal.Annual Utility Usage (kWh)", result.get("custom_fields.Annual Utility Usage (kWh)"));
+        tokens.put("Deal.Pre-Solar Cost per kWh ($)", result.get("custom_fields.Pre-Solar Cost per kWh ($)"));
+        tokens.put("Deal.Interest Rate", result.get("custom_fields.Interest Rate"));
+        tokens.put("Deal.Loan Term", result.get("custom_fields.Loan Term"));
+        tokens.put("Deal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
 
         Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
         Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());
         tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
+
+        Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
+        if (deets.getFinancier().equals("Cash")) {
+          tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+          Double progressPayment = ((totalCost - referralPromotionAmount) / 2);
+          tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+        }
+        else {
+          cashDownPayment = Double.min(cashDownPayment, Double.parseDouble(result.get("custom_fields.Total Cash Down Payment").toString()));
+          tokens.put("Deal.NV Cash Down Payment",  Math.round(cashDownPayment));
+          Double progressPayment = Double.parseDouble(result.get("custom_fields.Total Cash Down Payment") == null ? "0" : result.get("custom_fields.Total Cash Down Payment").toString());
+          tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+        }
     } catch (EmptyResultDataAccessException e) {
         log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
         e.printStackTrace();
@@ -672,11 +690,19 @@ public class PandaDocService {
         tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
         tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
         tokens.put("Deal.System Size", result.get("system_size"));
+        tokens.put("Deal.Estimated ITC", result.get("estimated_itc"));
 
         Double totalSystemPrice = Double.parseDouble(result.get("total_system_price") == null ? "0" : result.get("total_system_price").toString());
         Double referralPromotionAmount = Double.parseDouble(result.get("referral_promotion_amount") == null ? "0" : result.get("referral_promotion_amount").toString());
         tokens.put("Deal.Total System Price", totalSystemPrice - referralPromotionAmount);
         tokens.put("Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
+
+        Double cashDownPayment = Double.parseDouble(result.get("cash_down_payment") == null ? "0" : result.get("cash_down_payment").toString());
+        tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+
+        Double progressPayment = Double.parseDouble(result.get("progress_payment") == null ? "0" : result.get("progress_payment").toString());
+        progressPayment -= cashDownPayment;
+        tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
 
         // include the current date for use in the template
         String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))

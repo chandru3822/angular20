@@ -94,7 +94,7 @@
         const {page, itemsPerPage} = this.options
         try {
           this.isProjectsLoading = true
-          const {data} = await getRequestWithParams(`/proposals/projects`, {
+          const {data} = await getRequestWithParams(`/proposal/projects`, {
             params: {
               query: this.searchQuery,
               page: page - 1,

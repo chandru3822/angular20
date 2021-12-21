@@ -89,9 +89,11 @@
       <![CDATA[
               SELECT plh.loan_amount, plh.loan_term, plh.interest_rate, u.first_name as salesRepresentativeFirstName,
                      u.last_name as salesRepresentativeLastName, u.email as salesRepresentativeEmail,
-                     plh.project_id, plh.address, plh.city, plh.state, plh.zip, plh.phone, plh.email, plh.fullname
+                     plh.project_id, plh.address, plh.city, plh.state, plh.zip, c.mobile as phone, c.email, plh.fullname
               from brs.proposal_log_history plh
                 left join flow.user u on u.first_name|| ' ' || u.last_name = project_owner
+                left join flow.project p on plh.project_id = p.id
+                left join flow.contact c on p.contact_id = c.id
               where project_id::integer = :projectId::integer
               and proposal_nbr::integer = :proposalNbr::integer
           ]]>
@@ -130,10 +132,25 @@
     <installAgreement.setSunlightHashId>
       <![CDATA[
             UPDATE brs.proposal_log_history
-            SET sunlight_hash_id = :sunlightHashId, date_modified = now()
+            SET sunlight_hash_id = :sunlightHashId
             WHERE project_id = :projectId and proposal_nbr = :proposalNbr
               ]]>
     </installAgreement.setSunlightHashId>
+
+    <installAgreement.getSunpowerUrl>
+      <![CDATA[
+                select plh.sunpower_url from brs.proposal_log_history plh
+                WHERE plh.project_id = :projectId and plh.proposal_nbr = :proposalNbr;
+                ]]>
+    </installAgreement.getSunpowerUrl>
+
+    <installAgreement.setSunpowerUrl>
+      <![CDATA[
+              UPDATE brs.proposal_log_history
+              SET sunpower_url = :url
+              WHERE project_id = :projectId and proposal_nbr = :proposalNbr
+                ]]>
+    </installAgreement.setSunpowerUrl>
 
     <installAgreement.getCreditLastCheckedBy><![CDATA[
         select pd.credit_last_checked_by from brs.project_details pd

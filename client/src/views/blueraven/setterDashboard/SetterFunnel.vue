@@ -708,6 +708,7 @@
     methods: {
       doRepWatcher() {
         if(this.repValuesChanged) {
+          console.log('IS SETTER? ',this.isSetter)
           if (this.isSetter) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
           } else if (this.selectAllReps) {
@@ -886,7 +887,7 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
-      async repLoad (preSelectLists) {
+      async repLoad (preSelectLists, loadFilterOnFirstLoad) {
         if (!this.currentUserId) return
 
         let areas = this.areaModel.map(function (area) {
@@ -932,7 +933,7 @@
 
           this.funnelStats = []
 
-          if (!this.initialPageLoad) {
+          if (!this.initialPageLoad || loadFilterOnFirstLoad) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           }
         })
@@ -1238,12 +1239,20 @@
         return moment(date, 'M/D/YY').format('YYYY-MM-DD')
       },
 
-      loadFunnel () {
+      async loadFunnel () {
         if (this.funnelStats?.length === 0) {
           if (this.isSetter) {
-            this.areaLoad(true)
+            await this.areaLoad(true)
+            await this.regionLoad(true)
+            await this.districtLoad(true)
+            await this.officeLoad(true)
+            this.repLoad(true, true)
           } else {
-            this.areaLoad(false)
+            await this.areaLoad(false)
+            await this.regionLoad(false)
+            await this.districtLoad(false)
+            await this.officeLoad(false)
+            this.repLoad(false, false)
           }
         }
       },

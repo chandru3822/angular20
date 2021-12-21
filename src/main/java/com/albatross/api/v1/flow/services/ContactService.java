@@ -110,8 +110,14 @@ public class ContactService {
     params.put("contactId", contactId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
-    return result.orElse(null);
+    Optional<Contact> contact = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
+
+    if(contact.isPresent() && null != contact.get().getOwner() && null != contact.get().getOwner().getUserId()) {
+      String presignedUrl = attachmentService.getAttachmentPresignedUrl(contact.get().getOwner().getUserId(), com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
+      contact.get().getOwner().setPresignedUrl(presignedUrl);
+    }
+
+    return contact.orElse(null);
   }
 
   public Contact getHubspotContact(Long contactId) {
