@@ -306,7 +306,9 @@
                                               inner join flow.position p2 on up5.position_id = p2.id
                                        where up5.primary_flag is true
                                          and up5.archived is false
-                                         and p2.id in (4,5,6)
+                                         and p2.id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS')
                                          and p2.company_id = 3)
                         AND ust.has_access is true),false) AS "is_active_user",
            (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
@@ -319,7 +321,9 @@
     FROM flow.user u
            INNER JOIN flow.user_position up ON up.user_id = u.id AND
                                                ((up.primary_flag IS TRUE AND up.end_date IS NULL AND up.archived IS NOT TRUE) OR 1 = 1)
-                                                 AND up.position_id IN (4,5,6)
+                                                 AND up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS')
            inner join flow.company_user_status cus on cus.user_id = u.id
            inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.has_access is true and ust.company_id = 3
            LEFT JOIN brs.commission_plan_user cpu ON cpu.user_id = u.id AND (cpu.start_date <= CURRENT_TIMESTAMP AND
@@ -469,7 +473,9 @@ FROM (SELECT cp.id,
                                                   and up5.archived is false
                                                   and cf.archived is false)
                                     WHEN cp.position_id = 4
-                                        THEN up.position_id IN (4,5,6)
+                                        THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS')
                                    END
                                )                                  AS position,
                            u.id                               AS "userId",
@@ -511,7 +517,9 @@ FROM (SELECT cp.id,
                                     and up5.archived is false
                                     and cf.archived is false)
                WHEN cp.position_id = 4
-                 THEN up.position_id IN (4,5,6)
+                 THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS')
                END
              )                                  AS position,
              (select cfv.text_value

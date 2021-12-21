@@ -1,15 +1,38 @@
 <sql>
   <email.insert><![CDATA[
-    INSERT INTO flow.emails_sent (
+    INSERT INTO flow.email_queue (
         user_id, subject, message,
-        attachments, from_email, to_email
+        attachments, from_email, to_email, processed, from_display_name
     ) VALUES (
         :userId,
         :subject,
         :message,
         :attachments,
         :from,
-        :to
+        :to,
+        :processed,
+        :fromDisplayName
     )
   ]]></email.insert>
+
+  <email.getAllUnprocessed><![CDATA[
+    select id,
+           to_email as "to",
+           from_email as "from",
+           from_email as "fromDisplayName",
+           subject,
+           message as content,
+           processed,
+           user_id as "sentByUserId"
+    from flow.email_queue
+    where processed is not true
+  ]]></email.getAllUnprocessed>
+
+  <email.markProcessed><![CDATA[
+    update flow.email_queue
+    set processed = true,
+        date_processed = now()
+    where id = :id
+  ]]></email.markProcessed>
+
 </sql>

@@ -102,7 +102,7 @@ public class PandaDocService {
 
     // if we're still not finding a match, abort
     if (tplId == null) {
-      String err = String.format("no PandaDoc template matching '%s'", name);
+      String err = String.format("No PandaDoc template matching '%s'", name);
       throw new Exception(err);
     }
 
@@ -131,7 +131,7 @@ public class PandaDocService {
         JSONObject tpl = templates.getJSONObject(i);
         String tplName = tpl.getString("name");
         String version = tpl.getString("version");
-        if (name.equals(tplName) && version.equals("2")) {
+        if (tplName.contains(name) && version.equals("2")) {
           tplId = tpl.getString("id");
           log.debug("PANDADOC: selected template named {}", tplName);
           break;
@@ -244,7 +244,7 @@ public class PandaDocService {
       validateCashProject(projectId, tokens);
     } else if (installAgreementRepository.isLoanPalProject(financier)) {
       validateLoanPalProject(projectId, tokens);
-    } else if (!installAgreementRepository.isSunlightProject(financier)) {
+    } else if (!installAgreementRepository.isSunlightProject(financier) && !installAgreementRepository.isSunpowerProject(financier)) {
       throw new Exception(String.format(
         "unexpected financier for project %d: %s",
           projectId, financier
@@ -586,6 +586,11 @@ public class PandaDocService {
         tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
         tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
         tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
+        tokens.put("Deal.Annual Utility Usage (kWh)", result.get("custom_fields.Annual Utility Usage (kWh)"));
+        tokens.put("Deal.Pre-Solar Cost per kWh ($)", result.get("custom_fields.Pre-Solar Cost per kWh ($)"));
+        tokens.put("Deal.Interest Rate", result.get("custom_fields.Interest Rate"));
+        tokens.put("Deal.Loan Term", result.get("custom_fields.Loan Term"));
+        tokens.put("Deal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
 
         Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
         Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());

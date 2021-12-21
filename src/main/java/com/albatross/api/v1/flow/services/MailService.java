@@ -6,7 +6,6 @@ import com.albatross.api.utils.SqlCache;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -90,11 +89,26 @@ public class MailService {
       msg.setContent(multiPart);
       Transport.send(msg);
 
-      insertEmail(sentByEmail, to, subject, message, attachmentNames, sentByUserId);
+      insertEmail(sentByEmail, to, subject, message, attachmentNames, sentByUserId, true, sentByName);
       log.debug("EMAIL: MESSAGE SENT");
     } catch (Exception e) {
       log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
     }
+  }
+
+  /**
+   * Called from the CRON. Will try to send all "unprocessed" emails that are inserted directly
+   * into the db by functions and other ways not handled by the backend
+   */
+  public void sendUnprocessedEmails() throws InterruptedException {
+    //get all unprocessed emails
+    List<EmailMessage> unprocessedEmails = sqlCache.query("email.getAllUnprocessed", Collections.emptyMap(), EmailMessage.class);
+
+    //TODO: it would be cool if this could send "templated" emails, and pass in an array of params so we could make .ftl files for these and format them more easily
+
+    //currently this fn is not able to send attachments.
+    // would need to refactor a bit in order to handle that
+    sendBulkMessages(unprocessedEmails, null, true);
   }
 
   /**
@@ -107,7 +121,7 @@ public class MailService {
    * @throws InterruptedException
    * @return
    */
-  public int sendBulkMessages(List<EmailMessage> messages, Map<String, DataSource> attachments)
+  public int sendBulkMessages(List<EmailMessage> messages, Map<String, DataSource> attachments, Boolean sendingUnprocessedEmails)
       throws InterruptedException {
 
     Session session = getSession();
@@ -126,23 +140,23 @@ public class MailService {
 
               final MimeMessage mimeMessage = new MimeMessage(session);
 
-              String from = message.from();
+              String from = message.getFrom();
               if (null == from) {
                 from = "support@blueravensolar.com";
               }
 
               final InternetAddress fromAddress =
-                  new InternetAddress(StringUtils.trimWhitespace(from), message.fromDisplayName());
+                  new InternetAddress(StringUtils.trimWhitespace(from), message.getFromDisplayName());
               mimeMessage.setFrom(fromAddress);
               mimeMessage.setReplyTo(new Address[] {fromAddress});
               mimeMessage.addRecipient(
                   Message.RecipientType.TO,
-                  new InternetAddress(StringUtils.trimWhitespace(message.to())));
+                  new InternetAddress(StringUtils.trimWhitespace(message.getTo())));
 
-              mimeMessage.setSubject(message.subject());
+              mimeMessage.setSubject(message.getSubject());
 
               MimeBodyPart bodyPart = new MimeBodyPart();
-              bodyPart.setContent(message.content(), "text/html; charset=utf-8");
+              bodyPart.setContent(message.getContent(), "text/html; charset=utf-8");
 
               Multipart multiPart = new MimeMultipart();
               multiPart.addBodyPart(bodyPart);
@@ -160,16 +174,22 @@ public class MailService {
               }
               mimeMessage.setContent(multiPart);
               mimeMessage.saveChanges();
-              log.debug("EMAIL: Sending email to {}", message.to());
+              log.debug("EMAIL: Sending email to {}", message.getTo());
               transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
 
-              insertEmail(
+              if(sendingUnprocessedEmails) {
+                markEmailProcessed(message.getId());
+              } else {
+                insertEmail(
                   from,
-                  message.to(),
-                  message.subject(),
-                  message.content(),
+                  message.getTo(),
+                  message.getSubject(),
+                  message.getContent(),
                   attachmentNames,
-                  message.sentByUserId());
+                  message.getSentByUserId(),
+                  true,
+                  message.getFromDisplayName());
+              }
 
               // count the number of successful emails sent
               counter.getAndIncrement();
@@ -209,22 +229,36 @@ public class MailService {
     return session;
   }
 
+  private void markEmailProcessed(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    sqlCache.update("email.markProcessed", params);
+  }
+
   private void insertEmail(
       String from,
       String to,
       String subject,
       String message,
       List<String> attachments,
-      Long userId) {
+      Long userId,
+      Boolean processed,
+      String fromDisplayName) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("from", from);
     params.put("to", to);
     params.put("subject", subject);
     params.put("message", message);
+    //set the processed param to false if you are inserting a row to the db to be processed by the cron job
+    //otherwise set it to true for any other reason
+    params.put("processed", processed);
+    params.put("fromDisplayName", fromDisplayName);
     params.put(
         "attachments",
         attachments.isEmpty() ? null : attachments.toString().replace("[", "").replace("]", ""));
     params.put("userId", userId);
+
     sqlCache.update("email.insert", params);
   }
 }

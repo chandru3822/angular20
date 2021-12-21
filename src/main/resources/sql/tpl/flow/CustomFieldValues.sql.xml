@@ -29,6 +29,7 @@
             cf.list_of_value_id as "listOfValueId",
             cf.field_name as "fieldName",
             cf.readonly,
+            cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
             cf.custom_field_sql_key as "customFieldSqlKey",
             cf.company_system_list_id as "companySystemListId",
             cf.system_list_option_ids as "systemListOptionIds",
@@ -48,7 +49,9 @@
                                   where lov.parent_id is not null
                                     and lov.parent_id = cf.list_of_value_id
                                     and lov.archived is not true
-                                  order by lov.display_order
+                                  order by
+                                                   case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                   case when cf.sort_list_values_alphabetically is false then lov.display_order end
                               ) listOfValues), '[]') AS "listOfValues",
               coalesce((
                         SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -127,6 +130,7 @@
           cf.list_of_value_id as "listOfValueId",
           cf.field_name as "fieldName",
           cf.readonly,
+          cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
           cf.custom_field_sql_key as "customFieldSqlKey",
           cf.company_system_list_id as "companySystemListId",
           cf.system_list_option_ids as "systemListOptionIds",
@@ -146,7 +150,9 @@
                             where lov.parent_id is not null
                               and lov.parent_id = cf.list_of_value_id
                               and lov.archived is not true
-                            order by lov.display_order
+                            order by
+                                                   case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                   case when cf.sort_list_values_alphabetically is false then lov.display_order end
                           ) listOfValues), '[]') AS "listOfValues"
     from flow.custom_field_group_assignment cfga
           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
@@ -188,6 +194,7 @@
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
                                     cf.readonly,
+                                    cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -206,7 +213,9 @@
                                                         where lov.parent_id is not null
                                                             and lov.parent_id = cf.list_of_value_id
                                                             and lov.archived is not true
-                                                        order by lov.display_order
+                                                        order by
+                                                   case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                   case when cf.sort_list_values_alphabetically is false then lov.display_order end
                                                       ) listOfValues), '[]') AS "listOfValues",
                                     coalesce((
                                       SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -286,6 +295,7 @@
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
                                     cf.readonly,
+                                    cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -304,7 +314,9 @@
                                                           where lov.parent_id is not null
                                                             and lov.parent_id = cf.list_of_value_id
                                                             and lov.archived is not true
-                                                          order by lov.display_order
+                                                          order by
+                                                   case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                   case when cf.sort_list_values_alphabetically is false then lov.display_order end
                                                       ) listOfValues), '[]') AS "listOfValues",
                                       coalesce((
                                         SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -377,6 +389,11 @@
                                       p.project_id as "projectId",
                                       p.process_step_id as "processStepId",
                                       case
+                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then '(Project)'
+                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then '(Contact)'
+                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 and cfga1.id is not null and cfga.use_parent_data is false then '(Primary)'
+                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 and cfga.use_parent_data is true then '(Parent)' end                                           as "ancillaryCustomFieldHint",
+                                      case
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 1 then pcfv.date_value
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 2 then ccfv.date_value
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 then
@@ -430,6 +447,7 @@
                                       cf.list_of_value_id as "listOfValueId",
                                       cf.field_name as "fieldName",
                                       cf.readonly,
+                                      cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                       cf.custom_field_sql_key as "customFieldSqlKey",
                                       cf.company_system_list_id as "companySystemListId",
                                       cf.system_list_option_ids as "systemListOptionIds",
@@ -449,7 +467,9 @@
                                                             where lov.parent_id is not null
                                                               and lov.parent_id = cf.list_of_value_id
                                                               and lov.archived is not true
-                                                            order by lov.display_order
+                                                            order by
+                                                             case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                             case when cf.sort_list_values_alphabetically is false then lov.display_order end
                                                         ) listOfValues), '[]') AS "listOfValues",
                                       coalesce((
                                                    SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -546,6 +566,7 @@
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
                                     cf.readonly,
+                                    cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -565,7 +586,9 @@
                                                           where lov.parent_id is not null
                                                             and lov.parent_id = cf.list_of_value_id
                                                             and lov.archived is not true
-                                                          order by lov.display_order
+                                                          order by
+                                                           case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                           case when cf.sort_list_values_alphabetically is false then lov.display_order end
                                                       ) listOfValues), '[]') AS "listOfValues",
                                      coalesce((
                                         SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -735,5 +758,9 @@
           modified_by_id = :userId,
           date_modified = now()
   ]]></customFieldValue.project.updateValueUsingCfId>
+
+  <customFieldValue.updateValueUsingFunction><![CDATA[
+      select from flow.set_pps_cfv(:projectId::int, :userId::int, :cfgaId::integer, :value::text);
+  ]]></customFieldValue.updateValueUsingFunction>
 
 </sql>

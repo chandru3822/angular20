@@ -203,13 +203,17 @@
 
                     <v-col class="options-container"
                             v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
-                      <span>Selectable Options</span>
+                      <div class="mb-2">
+                        Selectable Options<br/>
+                        Sort Alphabetically:
+                        <input type="checkbox" class="ml-3" v-model="item.sortListValuesAlphabetically">
+                      </div>
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
-                        <v-list v-for="(ddo, index2) in filterBy(item.listOfValues, false, 'archived')"
+                        <v-list v-for="(ddo, index2) in getLovValues(item.listOfValues, item.sortListValuesAlphabetically)"
                                 :class="{'shaded-row': selectedIndex % 2}"
                                 :key="index2">
-                          <v-list-item class="grab">
+                          <v-list-item dense>
                             <v-list-item-content>
                               <v-text-field
                                   class="one-hunned"
@@ -219,7 +223,7 @@
                                   v-model="ddo.name">
                               </v-text-field>
                             </v-list-item-content>
-                            <v-list-item-action>
+                            <v-list-item-action class="grab" v-if="!item.sortListValuesAlphabetically">
                               <v-icon>drag_handle</v-icon>
                             </v-list-item-action>
                             <v-list-item-action class="clickable" @click="ddo.archived = true">
@@ -337,11 +341,13 @@
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()
-      if(!this.apiPath) {
-        this.getSystemLists()
-      }
+      this.getSystemLists()
     },
     methods: {
+      getLovValues(lovs, alphaSort) {
+        // return lovs
+        return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder)
+      },
       filterDataTypes (item) {
         if(this.$store.getters.userHasFeature('SYSTEM')) {
           return this.dataTypes
@@ -438,14 +444,15 @@
       async deleteField(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          item.archived = true
-          const {data, status} = await putRequest(`/customField/delete/${item.id}`, this.apiPath, null, [])
+          const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, [])
           if (data?.length > 0) {
+            item.deleteConfirm = false
             this.deleteError = true
             this.fieldsInUse = data
             this.snackbar = getSnackbar('ERROR', 'Field Cannot Be Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
+            item.archived = true
             this.fieldsInUse = []
             this.customFields = this.customFields.filter((cf) => {
               return cf.id !== item.id

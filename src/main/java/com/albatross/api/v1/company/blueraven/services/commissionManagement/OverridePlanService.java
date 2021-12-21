@@ -3,13 +3,13 @@ package com.albatross.api.v1.company.blueraven.services.commissionManagement;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.OverridePlanStatus;
-import com.albatross.api.v1.company.blueraven.models.CustomField;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.BackdatedPlanApprovalCredentials;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.OverridePlanAllocation;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,11 +22,9 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Array;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -37,11 +35,10 @@ import java.util.stream.Collectors;
 public class OverridePlanService {
 
     private final SqlCache sqlCache;
-    private final DataSource dataSource;
     private final SecurityService securityService;
     private final PayrollService payroll;
     private final ObjectMapper om;
-
+    private final SqlArrayService sqlArrayService;
 
     @Data
     public static class OverrideReceivingUser {
@@ -153,10 +150,10 @@ public class OverridePlanService {
         params.put("userId", userId);
         params.put("positionId", overridePlan.getPositionId());
 
-        Array assignedUsersArray = createSqlArrayOfType("int", overridePlan.getAssignedUsers());
+        Array assignedUsersArray = sqlArrayService.createSqlArrayOfType("int", overridePlan.getAssignedUsers());
         params.put("assignedUsers", assignedUsersArray);
 
-        Array receivingUsersArray = createSqlArrayOfType("int", overridePlan.getReceivingUsers());
+        Array receivingUsersArray = sqlArrayService.createSqlArrayOfType("int", overridePlan.getReceivingUsers());
         params.put("receivingUsers", receivingUsersArray);
 
         Optional<Long> clonedId = sqlCache.get("overridePlan.clone", params, new SingleColumnRowMapper<>(Long.class));
@@ -388,15 +385,6 @@ public class OverridePlanService {
         });
 
         return status.orElse(OverridePlanStatus.UNKNOWN);
-    }
-
-    private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-        if (array != null && !array.isEmpty()) {
-            try (Connection connection = dataSource.getConnection()) {
-                return connection.createArrayOf(typeName, array.toArray());
-            }
-        }
-        return null;
     }
 
     private boolean validateBackdatedPlan(OverrideAssignedUser user, Long positionId)

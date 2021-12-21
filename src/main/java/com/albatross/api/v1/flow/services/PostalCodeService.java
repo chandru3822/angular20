@@ -17,9 +17,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.sql.DataSource;
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +29,7 @@ public class PostalCodeService {
 
 
   private final SqlCache sqlCache;
-  private final DataSource dataSource;
+  private final SqlArrayService sqlArrayService;
   private final SecurityService securityService;
   private final ObjectMapper om;
 
@@ -70,11 +67,11 @@ public class PostalCodeService {
     return results;
   }
 
-  public List<PostalCode> getCodesForZone(Long zoneId) {
+  public List<PostalCodeZonePostalCode> getCodesForZone(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
 
-    List<PostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCode.class);
+    List<PostalCodeZonePostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCodeZonePostalCode.class);
     return results;
   }
 
@@ -214,7 +211,7 @@ public class PostalCodeService {
     return result.orElse(null);
   }
 
-  public ResponseEntity addCode(PostalCode pc) {
+  public ResponseEntity addCode(PostalCodeZonePostalCode pc) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -222,7 +219,7 @@ public class PostalCodeService {
     params.put("postalCode", pc.getPostalCode());
     params.put("createdById", user.trueUserId());
 
-    Optional<PostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCode.class);
+    Optional<PostalCodeZonePostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCodeZonePostalCode.class);
     if(result.isPresent() && !result.get().getPostalCodeZoneArchived()) {
       HashMap<String, Object> errorObj = new HashMap<>();
       errorObj.put("message", "Error: Postal Code Already In Use");
@@ -329,26 +326,17 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("zoneIds", createSqlArrayOfType("int", zoneIds));
+    params.put("zoneIds", sqlArrayService.createSqlArrayOfType("int", zoneIds));
 
     List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getAllZoneUsers", params, new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
     return results;
   }
 
-  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
-    if (array != null && !array.isEmpty()) {
-      try (Connection connection = dataSource.getConnection()) {
-        return connection.createArrayOf(typeName, array.toArray());
-      }
-    }
-    return null;
-  }
-
-  public PostalCode getZonePostalCode(Long id) {
+  public PostalCodeZonePostalCode getZonePostalCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCode> result = sqlCache.get("postalCode.getZoneCode", params, PostalCode.class);
+    Optional<PostalCodeZonePostalCode> result = sqlCache.get("postalCode.getZoneCode", params, PostalCodeZonePostalCode.class);
     return result.orElse(null);
   }
 
@@ -362,7 +350,7 @@ public class PostalCodeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<PostalCode>> postalCodesRef = new TypeReference<>() {};
+      TypeReference<List<PostalCodeZonePostalCode>> postalCodesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "postalCodes",
         new JsonCollectionDeserializer(postalCodesRef, objectMapper));
 

@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Company;
+import com.albatross.api.v1.flow.model.CompanyConfigurationValue;
 import com.albatross.api.v1.flow.services.CompanyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,5 +50,15 @@ public class CompanyController {
         .orElse(ResponseEntity.notFound().build());
   }
 
+  //configuration values
+  @GetMapping(value = "/{id}/configuration", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CompanyConfigurationValue>> getCompanyConfigurationValues(@PathVariable Long id) {
+    return new ResponseEntity<>(companyService.getCompanyConfigurationValues(id), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/{id}/configuration", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void getCompanyConfigurationValues(@RequestBody CompanyConfigurationValue ccv) {
+    companyService.saveCompanyConfigurationValue(ccv);
+  }
 
 }

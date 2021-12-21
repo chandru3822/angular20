@@ -27,7 +27,7 @@
       </v-col>
       <v-col cols="12" class="pt-0 pb-0">
 
-        <v-app-bar dense id="header" :color="headerColor" tabs dark style="z-index: 1001;">
+        <v-app-bar dense id="header" :color="headerColor" tabs dark>
           <v-menu data-app left
                   offset-y
                   :disabled="userIsMasquerading"

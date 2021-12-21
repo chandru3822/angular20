@@ -38,19 +38,10 @@
                       v-model="showNonPrimaryDocs"></v-checkbox>
         </v-col>
         <v-col cols="5" class="py-3" v-if="!displayType.readOnly" >
-          <div @drop.prevent="addDragDocument" @dragover.prevent>
-            <v-file-input
-              dense
-              multiple
-              ref="fileInput"
-              hide-details
-              :show-size="error.error"
-              outlined
-              label="Upload Files"
-              @change="uploadDocument"
-            />
-          <span class="error-text" v-if="error.message">{{error.message}}</span>
-        </div>
+          <AttachmentUpload :project-id="projectId" :project-process-step-id="projectProcessStepId"
+                            :user-id="userId" :contact-id="contactId" :object-type-id="objectTypeId"
+                            :org-id="orgId" :attachment-type-id="displayType.attachmentTypeId"
+                            :callback="uploadCallback"></AttachmentUpload>
         </v-col>
         <v-row class="d-flex flex-wrap justify-start">
           <v-col
@@ -174,12 +165,16 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
 import {deleteAttachment} from '@/services/attachmentService'
+import AttachmentUpload from "@/views/flow/components/AttachmentUpload";
 import orderBy from 'lodash.orderby'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
 export default {
   name: "Attachments",
+  components: {
+    AttachmentUpload
+  },
   data () {
     return {
       attachmentTypes: [],
@@ -305,7 +300,6 @@ export default {
     },
     addDragDocument: async function (e, attachmentTypeId) {
       let files = e.dataTransfer.files
-      console.log('files here', files)
       await this.uploadDocument(files, attachmentTypeId)
     },
     uploadDocument: async function (files, attachmentTypeId) {
@@ -328,20 +322,7 @@ export default {
                 contactId: this.contactId,
                 orgId: this.orgId,
                 objectTypeId: this.objectTypeId,
-                callback: async (newAttachment, error) => {
-                  if (error) {
-                    this.error = error
-                    this.snackbar = getSnackbar('ERROR', error.message)
-                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                  } else {
-                    let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
-                    newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
-
-                    this.attachments = [...this.attachments, newAttachment]
-                  }
-                  this.$refs?.fileInput?.reset()
-                  this.$store.commit(AppMutations.SET_LOADING, false)
-                }
+                callback: this.uploadCallback
               })
             }
           }
@@ -353,6 +334,19 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
+    },
+    async uploadCallback(newAttachment, error) {
+      if (error) {
+        this.error = error
+        this.snackbar = getSnackbar('ERROR', error.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else {
+        let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
+        newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
+
+        this.attachments = [...this.attachments, newAttachment]
+      }
+      this.$store.commit(AppMutations.SET_LOADING, false)
     }
   }
 }
