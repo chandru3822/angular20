@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 public class ProjectProcessStepEvent {
 
-  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId,
+  private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId, companyProcessStepStatusTypeId,
     eventId, resourceId, uniqueBehaviorTypeId, eventStatusTypeId, rootProjectProcessStepStatusTypeId, //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
     processStepId, projectId;
   private String eventName, eventStatusType, startTime, endTime, resource, processStepName, lastUpdated, dateCreated;
