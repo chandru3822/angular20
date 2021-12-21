@@ -80,13 +80,19 @@
         </div>
         <div style="position:absolute; top: 0">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
       </v-card>
-      <v-card width="355" height="535" class="proposal-card request-new">
-        <a @click="showNewDesignRequestForm = true">
+      <v-card width="355" height="535" class="proposal-card request-new"
+          :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
+        <v-btn :disabled="activeDesign && null != activeDesign.projectId"
+          text @click="showNewDesignRequestForm = true">
           <v-icon :size="60">add</v-icon>
-          <div>
-            Request New Design
-          </div>
-        </a>
+        </v-btn>
+        <div class="mt-5">
+          Request New Design
+        </div>
+        <div class="request-new-details" v-if="activeDesign && null != activeDesign.projectId">
+          Last Requested: {{activeDesign.dateCreated | formatDate('date')}} <br/>
+          Current Status: {{activeDesign.companyProcessStepStatusType}}
+        </div>
       </v-card>
     </v-row>
     <v-dialog width="500" v-model="showNewDesignRequestForm">
@@ -120,6 +126,7 @@
             :timezone="timezone"
             :type="'date'"
             :format="'MMMM DD, YYYY'"
+            :min-date="minDate"
             label="Pick a due date and time (Required)"
           />
 
@@ -151,6 +158,7 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import {AppMutations} from "@/stores/AppStore";
+import moment from 'moment'
 import DatetimePickerInput from "@/components/DatetimePickerInput";
 import constants from "@/helpers/constants";
 
@@ -162,12 +170,14 @@ export default {
   data() {
     return {
       designs: [],
+      minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
       offset: 0,
       numberToDisplay: 3,
       newDesignRequest: {},
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       showNewDesignRequestForm: false,
       project: {},
+      activeDesign: {},
       projectId: this.$route.params.projectId,
       timezone: this.$store.state.user.details.timezone?.value,
       formatPhoneNumber
@@ -175,7 +185,8 @@ export default {
   },
   created() {
     this.getProposalProject()
-    this.getProposalDesigns()
+    this.getCompletedProposalDesigns()
+    this.getActiveDesign()
   },
   methods: {
     async requestNewDesign() {
@@ -193,6 +204,7 @@ export default {
         const {data, status} = await postRequest(`/proposal/design`, formData, 'blueraven')
         //this endpoint returns all of the designs because adding a new one could possible remove (cancel) an existing one
         this.designs = data
+        await this.getActiveDesign()
         this.newDesignRequest = {}
         this.showNewDesignRequestForm = false
         handleHidingGlobalLoader(this, status)
@@ -220,11 +232,24 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getProposalDesigns() {
+    async getCompletedProposalDesigns() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven', [])
         this.designs = data
+        //get the active one (there should only ever be one of these)
+        this.activeDesign = data.find(d => d.processStepStatusTypeId === 1)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getActiveDesign() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
+        this.activeDesign = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -315,8 +340,18 @@ export default {
   text-align: center;
   width: 100%;
   height: 100%;
+  font-size: 18px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.request-new-details {
+  margin-top: 16px;
+  font-size: 12px;
+}
+
+.disable-new {
+  color: #BDBDBD !important;
 }
 </style>

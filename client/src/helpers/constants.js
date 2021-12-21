@@ -20,6 +20,7 @@ constants.MAX_FILE_SIZE = 1048576000 //1 gb
 constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
 constants.STANDARD_IMAGES_ONLY = 'image/*'
 constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
+constants.APP_FILE_TYPES = '.apk, .plist, .ipa'
 
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [

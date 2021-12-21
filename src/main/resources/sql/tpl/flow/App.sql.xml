@@ -52,7 +52,7 @@
     WHERE id = :id
   ]]></app.deleteById>
 
-  <app.getAttachmentsByType><![CDATA[
+  <app.getAttachmentsByAttachmentType><![CDATA[
     SELECT
       a.id,
       a.attachment_type_id,
@@ -60,6 +60,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.display_name,
       a.show,
       a.app_type_id,
       ap.app_type,
@@ -73,7 +74,33 @@
     WHERE at.id = :attachmentTypeId
       AND a.archived IS NOT TRUE
       order by a.date_created desc
-  ]]></app.getAttachmentsByType>
+  ]]></app.getAttachmentsByAttachmentType>
+
+  <app.getAttachmentsByAppAndAttachmentType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.show,
+      a.display_name,
+      a.app_type_id,
+      ap.app_type,
+      ap.minimum_required_build_number,
+      a.date_created,
+      a.date_modified,
+      a.archived
+    FROM flow.app_attachment a
+      INNER JOIN flow.app_type ap ON ap.id = a.app_type_id
+      INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
+    WHERE at.id = :attachmentTypeId
+      and ap.id = :appTypeId
+      AND a.archived IS NOT TRUE
+      order by a.date_created desc
+  ]]></app.getAttachmentsByAppAndAttachmentType>
+
 
   <app.showOrHideAttachment><![CDATA[
         UPDATE flow.app_attachment

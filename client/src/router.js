@@ -108,7 +108,13 @@ const router = new Router({
           name: 'appDownloads',
           meta: {title: 'Albatross - App Download'},
           props: true,
-          component: () => import(/* webpackChunkName: "appDownloads" */ './views/flow/appDownloads/AppDownloads.vue')
+          component: () => {
+            if (store.getters.userHasFeature('APP_DOWNLOADS')) {
+              return import(/* webpackChunkName: "schedule" */ './views/flow/appDownloads/AppDownloads.vue')
+            } else {
+              return accessDenied()
+            }
+          }
         }, {
           path: '/errorLog',
           name: 'errorLog',
