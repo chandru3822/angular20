@@ -24,6 +24,9 @@
       </div>
       <v-spacer></v-spacer>
       <v-toolbar-items>
+        <v-btn text @click="[addNew = !addNew, newApp = {}]" v-if="userCanAdd">
+          <v-icon>add</v-icon>
+        </v-btn>
         <v-btn v-if="isIos" text @click="showIos = !showIos">
           <v-icon>mdi-chevron-down</v-icon>
         </v-btn>
@@ -32,6 +35,46 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
+    <v-card flat class="square-card mt-3 pa-4" v-if="addNew">
+      <v-file-input
+        dense
+        v-if="isIos"
+        class="mb-3"
+        :accept="'.ipa'"
+        ref="fileInput"
+        hide-details
+        label="Select an .ipa File"
+        @change="uploadSecondaryFile"
+      />
+      <v-file-input
+        dense
+        class="mb-3"
+        :accept="isIos ? '.plist' : '.apk'"
+        ref="fileInput"
+        hide-details
+        :label="isIos ? 'Select a .plist File' : 'Select an .apk File'"
+        @change="uploadFile"
+      />
+      <v-text-field text
+                    type="text"
+                    label="Version Number"
+                    v-model="newApp.versionNumber">
+      </v-text-field>
+      <v-text-field text
+                    type="number"
+                    label="Build Number"
+                    v-model.number="newApp.buildNumber">
+      </v-text-field>
+
+      <v-btn color="primaryCustom"
+             class="white--text"
+             :disabled="!newApp.versionNumber || !newApp.buildNumber
+                        || (!newApp.attachment || !newApp.attachment.name)
+                        || (isIos && (!newApp.secondaryAttachment || !newApp.secondaryAttachment.name))"
+             @click="saveNewApp">
+        Save
+      </v-btn>
+    </v-card>
     <v-data-table v-if="(isIos && showIos) || (!isIos && showAndroid)"
         :headers="filterHeaders()"
         :items="getFilteredApps(true)"
@@ -74,7 +117,7 @@
           </td>
           <td class="px-0">
             <v-dialog
-                v-if="userCanEdit"
+                v-if="userCanDelete"
                 v-model="item.deleteConfirm"
                 width="500">
               <template #activator="{ on }">
@@ -148,7 +191,16 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import { handleHidingGlobalLoader, deleteRequest, putRequest, putRequestWithRequestParams, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  deleteRequest,
+  putRequest,
+  putRequestWithRequestParams,
+  getRequestWithParams,
+  getRequest,
+  getSnackbar,
+  postRequest
+} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 
@@ -157,15 +209,20 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {},
   props: {
-    isIos: Boolean,
-    userCanEdit: Boolean,
-    apps: Array
+    isIos: Boolean
   },
   data () {
     return {
       snackbar: {},
       constants,
       showIos: true,
+      addNew: false,
+      apps: [],
+      newApp: {},
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD'),
+      userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT'),
+      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE'),
       minVersion: null,
       buildNumbers: [],
       editMinVersion: false,
@@ -182,6 +239,7 @@ export default {
     }
   },
   created () {
+    this.getApps()
     this.getMinVersion()
     this.getAvailableBuildNumbers()
     let userAgent = window.navigator.userAgent
@@ -194,6 +252,41 @@ export default {
     }
   },
   methods: {
+    async saveNewApp() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      const formData = new FormData()
+      formData.append('versionNumber', this.newApp.versionNumber);
+      formData.append('buildNumber', this.newApp.buildNumber);
+      formData.append('attachment', this.newApp.attachment);
+      formData.append('secondaryAttachment', this.newApp.secondaryAttachment);
+
+      let url = this.isIos ? '/app/ios' : '/app/android'
+      const {data, status} = await postRequest(url, formData)
+      this.newApp = {}
+      this.addNew = false
+      //reload it all cuz i'm lazy
+      await this.getApps()
+    },
+    uploadFile: function (file) {
+      this.newApp.attachment = file
+    },
+    uploadSecondaryFile: function (file) {
+      this.newApp.secondaryAttachment = file
+    },
+    async getApps() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let url = this.isIos ? '/app/ios' : '/app/android'
+        const {data, status} = await getRequest(url)
+        this.apps = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Apps')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     filterHeaders () {
       return this.headers.filter(header => header.show === true)
     },
@@ -264,11 +357,9 @@ export default {
       }
     },
     getFilteredApps() {
-      let appTypeId = this.isIos ? 1 : 3
-      //1 = ios
-      //3 = android
+      //filter archived
       return this.apps.filter(a => {
-        return this.userCanEdit ? a.appTypeId === appTypeId && !a.archived : a.appTypeId === appTypeId && a.show && !a.archived
+        return this.userCanEdit || this.userCanViewAll ? !a.archived : a.show && !a.archived
       })
     },
     getVersion (filename) {
