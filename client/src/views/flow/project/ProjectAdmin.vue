@@ -305,12 +305,13 @@ export default {
     getProjectProcessSteps: async function () {
       try {
         this.isProjectProcessStepsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
+        const {data, status} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.projectProcessSteps = data.map(step => {
           // step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
           step.newStatusToUse = {NEW_STATUS_TO_USE}
           return step
         })
+        return {status}
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
