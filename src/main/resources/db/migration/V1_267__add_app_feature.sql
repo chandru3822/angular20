@@ -6,7 +6,7 @@ where not exists (select id from flow.feature where feature_code = 'APP_DOWNLOAD
 --add the app downloads feature to company_id = 3
 insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
 select 'App Downloads', 3, (select id from flow.feature where feature_code = 'APP_DOWNLOADS'), false
-where not exists (select id from flow.company_feature where feature_name = 'App Downloads' and company_id = 3)
+where not exists (select id from flow.company_feature where feature_name = 'App Downloads' and company_id = 3);
 
 --add the access levels for the feature
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id)
