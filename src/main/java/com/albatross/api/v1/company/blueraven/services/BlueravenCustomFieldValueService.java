@@ -182,7 +182,7 @@ public class BlueravenCustomFieldValueService {
                 params.put("sourceId", sourceId);
 
                 String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
-                String sql = "select id from brs." + objectType +
+                String sql = "select id from brs." + objectType + "_custom_field_value" +
                   " where " + primaryKeyColumn + " = :sourceId " +
                   " and custom_field_group_assignment_id = :customFieldGroupAssignmentId";
 
