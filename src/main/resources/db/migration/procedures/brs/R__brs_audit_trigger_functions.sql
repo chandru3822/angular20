@@ -225,7 +225,7 @@ $$
 
 
 drop trigger if exists ahj_utility_custom_field_value_audit_trg ON brs.ahj_utility_custom_field_value;
-CREATE TRIGGER ahj_utility_custom_field_value
+CREATE TRIGGER ahj_utility_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.ahj_utility_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.ahj_utility_audit();
 
