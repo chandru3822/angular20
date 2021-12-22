@@ -432,7 +432,7 @@ left join (
              left join flow.process_step ps on cfg.process_step_id = ps.id
              left join flow.process_step_process psp on ps.id = psp.process_step_id
              left join flow.company_process cp on psp.company_process_id = cp.id
-    where cp.process_id = 1
+    where (cp.process_id = 1 or pdc.custom_field_group_assignment_id = 0)
 ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where
   sfa.smartlist_id = :smartlistId and
@@ -460,7 +460,7 @@ inner join (
              left join flow.process_step ps on cfg.process_step_id = ps.id
              left join flow.process_step_process psp on ps.id = psp.process_step_id
              left join flow.company_process cp on psp.company_process_id = cp.id
-    where cp.process_id = 1
+    where (cp.process_id = 1 or pdc.custom_field_group_assignment_id = 0)
 ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where sfa.smartlist_id = :smartlistId and
       sfa.archived is not true
@@ -525,7 +525,7 @@ left join (
              left join flow.process_step ps on cfg.process_step_id = ps.id
              left join flow.process_step_process psp on ps.id = psp.process_step_id
              left join flow.company_process cp on psp.company_process_id = cp.id
-    where cp.process_id = 1
+    where (cp.process_id = 1 or pdc.custom_field_group_assignment_id = 0)
 ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where
   sfa.id = :id and
@@ -677,7 +677,7 @@ left join (
              left join flow.process_step ps on cfg.process_step_id = ps.id
              left join flow.process_step_process psp on ps.id = psp.process_step_id
              left join flow.company_process cp on psp.company_process_id = cp.id
-    where cp.process_id = 1
+    where (cp.process_id = 1 or pdc.custom_field_group_assignment_id = 0)
 ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sr.project_details_column
 where sr.id = :requirementId and
       sr.archived is not true;
