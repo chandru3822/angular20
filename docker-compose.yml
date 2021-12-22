@@ -1,7 +1,7 @@
 version: '3'
 services:
   db:
-    restart: always
+    restart: unless-stopped
     image: postgres:12.5-alpine
     ports:
       - "${PGPORT:-5433}:5432"
@@ -9,15 +9,5 @@ services:
       POSTGRES_DB: "${PGDATABASE:-blueraven}"
       POSTGRES_USER: "${PGUSER:-dbadmin}"
       POSTGRES_PASSWORD: "${PGPASSWORD:-password}"
-  sign-proxy:
-    image: codekoala/aws-sign-proxy:v0.1.4
-    environment:
-      AWS_ACCESS_KEY_ID: "${LOANPAL_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${LOANPAL_SECRET_ACCESS_KEY}"
-      AWS_SIGN_PROXY_TARGETHOST: "${AWS_SIGN_PROXY_TARGETHOST}"
-      AWS_SIGN_PROXY_PROVIDER: "${AWS_SIGN_PROXY_PROVIDER}"
-      AWS_SIGN_PROXY_REGION: "${AWS_SIGN_PROXY_REGION}"
-      AWS_SIGN_PROXY_BLOCKHEADERS: "connection"
-    ports:
-      - "8081:8080"
+
 #TODO: add  mailtrap and localstack
