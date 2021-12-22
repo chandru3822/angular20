@@ -736,6 +736,7 @@ declare
   v_closer_name      varchar;
   v_user_id          integer;
   v_user_position_id integer;
+  v_unique_behavior_type_id integer;
   x                  record;
   v_config_id        integer;
   v_sql              text;
@@ -762,6 +763,11 @@ BEGIN
   into v_config_id
   from brs.project_detail_events_config
   where process_step_event_id = new.process_step_event_id;
+
+  select unique_behavior_type_id
+  into v_unique_behavior_type_id
+  from flow.process_step_event
+  where id = new.process_step_event_id;
 
   if new.resource_id is not null then
     select case
@@ -856,7 +862,7 @@ BEGIN
   end if;
 
   if ((old.resource_id is null and new.resource_id is not null) or
-     (old.resource_id != new.resource_id)) then
+     (old.resource_id != new.resource_id)) and (v_unique_behavior_type_id is not null and v_unique_behavior_type_id = 1) then
 
     update flow.project p
     set user_position_id = new.resource_id,

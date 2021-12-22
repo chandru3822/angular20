@@ -49,7 +49,7 @@
                 <label>Use Event Data:</label>
                 <input type="checkbox" class="ml-3" disabled v-model="workQueueType.useEventData">
               </div>
-              <table class="one-hunned">
+              <table class="one-hunned" v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
                 <tr>
                   <td class="wqt-row pr-2">
                     <v-text-field text
@@ -132,7 +132,7 @@
         <v-divider></v-divider>
       </v-col>
     </v-row>
-    <v-row>
+    <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
       <v-col cols="12" class="pt-0">
         <v-toolbar color="transparent" class="elevation-0">
           <v-toolbar-title>Set Queue Schedule</v-toolbar-title>
