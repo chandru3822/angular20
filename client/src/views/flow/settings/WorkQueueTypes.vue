@@ -34,7 +34,12 @@
               item-value="id"
               attach
             ></v-autocomplete>
-            <v-btn :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
+            <div>
+              <label>Use Event Data:</label>
+              <input type="checkbox" class="ml-3" v-model="newType.useEventData">
+              <span class="no-change-text">* This value cannot be changed after creation.</span>
+            </div>
+            <v-btn class="mt-2" :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
           </div>
           <v-text-field
             v-model="search"
@@ -74,6 +79,9 @@
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
                   {{item.workQueueCategory}}
+                </td>
+                <td class="text-left" @click="goToDetails(item)">
+                  <input type="checkbox" disabled v-model="item.useEventData">
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
@@ -198,6 +206,7 @@
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Type', value: 'workQueueType', show: true },
           { text: 'Category', value: 'workQueueCategory', show: true },
+          { text: 'Uses Event Data', value: 'useEventData', show: true },
           { text: null, value: 'icons', show: true, width: 150 }
         ],
       }
@@ -318,5 +327,10 @@
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.no-change-text {
+  margin-left: 10px;
+  color: #BDBDBD;
 }
 </style>

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 
@@ -227,6 +226,10 @@ public class ProcessStepEventService {
       TypeReference<List<ProcessStepEventAction>> processStepEventActionRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepEventActions",
         new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
+
+      TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypes",
+        new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
     }
   }
 

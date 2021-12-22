@@ -45,7 +45,10 @@
                   attach
                 ></v-autocomplete>
               </div>
-
+              <div>
+                <label>Use Event Data:</label>
+                <input type="checkbox" class="ml-3" disabled v-model="workQueueType.useEventData">
+              </div>
               <table class="one-hunned">
                 <tr>
                   <td class="wqt-row pr-2">

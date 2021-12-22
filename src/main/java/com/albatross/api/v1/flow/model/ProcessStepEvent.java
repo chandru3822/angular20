@@ -18,5 +18,6 @@ public class ProcessStepEvent {
   private Boolean archived;
   private List<CompanyEventStatusType> companyEventStatusTypes;
   private List<ProcessStepEventAction> processStepEventActions;
+  private List<ProcessStepEventWorkQueueType> workQueueTypes;
 }
 

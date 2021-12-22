@@ -187,6 +187,70 @@
     order by pst.event_status_type
   ]]></event.getStatuses>
 
+  <event.getStatusesForWqt><![CDATA[
+    select
+      null::int as id,
+      'Category' as header,
+      null::int as "eventStatusTypeId",
+      null::int as "companyEventStatusTypeId",
+      false as archived,
+      null::text as "uniqueText",
+      null::text as "group",
+      false as is_root,
+      null::text as event_status_type,
+      null::text as root_event_status_type,
+      0 as display_sort
+    union all
+    select
+      null::int as id,
+      null::text as header,
+      est.id as "eventStatusTypeId",
+      null::int as "companyEventStatusTypeId",
+      est.archived,
+      concat(est.event_status_type, 'EST')::text as "uniqueText",
+      'Category' as "group",
+      true as is_root,
+      est.event_status_type,
+      est.event_status_type as root_event_status_type,
+      1 as display_sort
+    from flow.event_status_type est
+    where est.archived is not true
+    union all
+    select
+      null::int as id,
+      'Event Status' as header,
+      null::int as "eventStatusTypeId",
+      null::int as "companyEventStatusTypeId",
+      false as archived,
+      null::text as "uniqueText",
+      null::text as "group",
+      false as is_root,
+      null::text as event_status_type,
+      null::text as root_event_status_type,
+      2 as display_sort
+    union all
+    select
+      null::int as id,
+      null::text as header,
+      est.id as "eventStatusTypeId",
+      cest.id as "companyEventStatusTypeId",
+      cest.archived,
+      concat(cest.event_status_type, 'CEST')::text as "uniqueText",
+      'Event' as "group",
+      false as is_root,
+      cest.event_status_type,
+      est.event_status_type as root_event_status_type,
+      3 as display_sort
+    from flow.event_company_event_status_type ecest
+           inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+           inner join flow.event_status_type est on est.id = cest.event_status_type_id
+    where cest.company_id = :companyId
+      and cest.archived is not true
+      and ecest.archived is not true
+      and ecest.event_id = :eventId
+    order by display_sort, root_event_status_type, event_status_type
+]]></event.getStatusesForWqt>
+
   <event.getAssignedStatuses><![CDATA[
     select
       cest.id,

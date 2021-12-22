@@ -95,6 +95,17 @@ public class EventService {
     return results;
   }
 
+  public List<WorkQueueTypeEventStatus> getStatusesForWqt(Long processStepId, Long eventId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("processStepId", processStepId);
+    params.put("eventId", eventId);
+    List<WorkQueueTypeEventStatus> results = sqlCache.query("event.getStatusesForWqt", params, WorkQueueTypeEventStatus.class);
+    return results;
+  }
+
   public List<CompanyEventStatusType> getAssignedEventStatuses(Long eventId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("eventId", eventId);

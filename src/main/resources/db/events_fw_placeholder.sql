@@ -574,9 +574,219 @@ values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, nu
 
 -- *** WORK QUEUE STUFF ***
 --add a column to determine if work queue type is for process steps or events
--- todo: v2 they want the 2 types to be used together.  see if we can do that in v1 before going this route
--- alter table flow.work_queue_type
---   add column if not exists use_event_data boolean not null default false;
+-- todo: v2 they want the 2 types to be used together.  see if we can do that in v1 before truly going this route
+alter table flow.work_queue_type
+  add column if not exists use_event_data boolean not null default false;
+
+--add the tables to hold the work queue event status stuff
+CREATE TABLE if not exists flow.process_step_event_work_queue_type
+(
+  id              serial                NOT NULL,
+  process_step_event_id      integer,
+  work_queue_type_id integer,
+  archived boolean default false,
+  date_created   timestamp without time zone DEFAULT now(),
+  date_modified   timestamp without time zone,
+  created_by_id  integer                not null,
+  modified_by_id integer,
+  CONSTRAINT process_step_event_work_queue_type_pk PRIMARY KEY (id),
+  CONSTRAINT psewqt_process_step_event_id_fk FOREIGN KEY (process_step_event_id)
+    REFERENCES flow.process_step_event (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT psewqt_work_queue_type_id_fk FOREIGN KEY (work_queue_type_id)
+    REFERENCES flow.work_queue_type (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT psewqt_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT psewqt_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create index if not exists psewqt_process_step_event_id_idx
+  on flow.process_step_event_work_queue_type (process_step_event_id);
+
+ALTER TABLE flow.process_step_event_work_queue_type
+  DROP CONSTRAINT if exists psewqt_process_step_event_work_queue_type_uk;
+alter table flow.process_step_event_work_queue_type
+  add constraint psewqt_process_step_event_work_queue_type_uk
+    unique (process_step_event_id, work_queue_type_id);
+
+CREATE INDEX if not exists fki_psewqt_work_queue_type_id
+  on flow.process_step_event_work_queue_type (work_queue_type_id);
+
+create unique index if not exists psewqt_uniq_idx
+  on flow.process_step_event_work_queue_type (process_step_event_id, work_queue_type_id)
+  where (archived IS FALSE);
+
+CREATE TABLE if not exists flow.process_step_event_work_queue_type_process_step_status_type
+(
+  id                       serial  NOT NULL,
+  company_process_step_status_type_id integer,
+  process_step_status_type_id integer,
+  process_step_event_work_queue_type_id integer not null,
+  date_created     timestamp without time zone DEFAULT now(),
+  date_modified   timestamp without time zone,
+  created_by_id    integer      not null,
+  modified_by_id  integer,
+  archived       boolean not null default false,
+  CONSTRAINT process_step_event_work_queue_type_process_step_status_type_pk PRIMARY KEY (id),
+  CONSTRAINT flow_psewqtpsst_company_process_step_status_type_id_fk FOREIGN KEY (company_process_step_status_type_id)
+    REFERENCES flow.company_process_step_status_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtpsst_process_step_status_type_id_fk FOREIGN KEY (process_step_status_type_id)
+    REFERENCES flow.process_step_status_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtpsst_process_step_event_work_queue_type_id_fk FOREIGN KEY (process_step_event_work_queue_type_id)
+    REFERENCES flow.process_step_event_work_queue_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtpsst_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT flow_psewqtpsst_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+ALTER TABLE flow.process_step_event_work_queue_type_process_step_status_type
+  ADD CONSTRAINT null_company_and_root_process_step_status_check
+    CHECK (
+        process_step_status_type_id is not null
+        OR company_process_step_status_type_id is not null
+      );
+
+create index process_step_event_wqt_project_process_step_status_type_id_idx
+  on flow.process_step_event_work_queue_type_process_step_status_type (process_step_status_type_id);
+
+create index process_step_event_wqt_company_process_step_status_type_idx
+  on flow.process_step_event_work_queue_type_process_step_status_type (company_process_step_status_type_id);
+
+create unique index process_step_event_work_queue_type_process_step_status_type_udx
+  on flow.process_step_event_work_queue_type_process_step_status_type (company_process_step_status_type_id, process_step_event_work_queue_type_id)
+  where (archived IS FALSE);
+
+create unique index psewqtpsst_handle_unique_null_idx
+  on flow.process_step_event_work_queue_type_process_step_status_type (COALESCE(company_process_step_status_type_id, '-1'::integer), COALESCE(process_step_status_type_id, '-1'::integer), process_step_event_work_queue_type_id);
+
+create index psewqtpsst_work_queue_type_pk
+  on flow.process_step_event_work_queue_type_process_step_status_type (process_step_event_work_queue_type_id);
+
+alter table flow.process_step_event_work_queue_type_process_step_status_type
+  add constraint psewqtpst_process_step_status_type_uk
+    unique (company_process_step_status_type_id, process_step_status_type_id, process_step_event_work_queue_type_id);
+
+CREATE TABLE if not exists flow.process_step_event_work_queue_type_project_status_type
+(
+  id                       serial  NOT NULL,
+  company_project_status_type_id integer,
+  project_status_type_id integer,
+  process_step_event_work_queue_type_id integer not null,
+  date_created     timestamp without time zone DEFAULT now(),
+  date_modified   timestamp without time zone,
+  created_by_id    integer      not null,
+  modified_by_id  integer,
+  archived       boolean not null default false,
+  CONSTRAINT process_step_event_work_queue_type_project_status_type_pk PRIMARY KEY (id),
+  CONSTRAINT flow_psewqtpst_company_project_status_type_id_fk FOREIGN KEY (company_project_status_type_id)
+    REFERENCES flow.company_project_status_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtpst_project_status_type_id_fk FOREIGN KEY (project_status_type_id)
+    REFERENCES flow.project_status_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtpst_process_step_work_queue_type_id_fk FOREIGN KEY (process_step_event_work_queue_type_id)
+    REFERENCES flow.process_step_event_work_queue_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtpst_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT flow_psewqtpst_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+ALTER TABLE flow.process_step_event_work_queue_type_project_status_type
+  ADD CONSTRAINT null_company_and_root_project_status_check
+    CHECK (
+        project_status_type_id is not null
+        OR company_project_status_type_id is not null
+      );
 
 
+create index process_step_event_wqt_project_project_status_type_id_idx
+  on flow.process_step_event_work_queue_type_project_status_type (project_status_type_id);
+
+create index process_step_event_work_queue_type_project_status_type_pk
+  on flow.process_step_event_work_queue_type_project_status_type (company_project_status_type_id);
+
+create unique index process_step_event_work_queue_type_project_status_type_udx
+  on flow.process_step_event_work_queue_type_project_status_type (company_project_status_type_id, process_step_event_work_queue_type_id)
+  where (archived IS FALSE);
+
+create unique index psewqtpst_handle_unique_null_idx
+  on flow.process_step_event_work_queue_type_project_status_type (COALESCE(company_project_status_type_id, '-1'::integer), COALESCE(project_status_type_id, '-1'::integer), process_step_event_work_queue_type_id);
+
+create index psewqtpst_work_queue_type_fk
+  on flow.process_step_event_work_queue_type_project_status_type (process_step_event_work_queue_type_id);
+
+alter table flow.process_step_event_work_queue_type_project_status_type
+  add constraint psewqtpst_project_status_type_uk
+    unique (company_project_status_type_id, project_status_type_id, process_step_event_work_queue_type_id);
+
+
+CREATE TABLE if not exists flow.process_step_event_work_queue_type_event_status_type
+(
+  id                       serial  NOT NULL,
+  company_event_status_type_id integer,
+  event_status_type_id integer,
+  process_step_event_work_queue_type_id integer not null,
+  date_created     timestamp without time zone DEFAULT now(),
+  date_modified   timestamp without time zone,
+  created_by_id    integer      not null,
+  modified_by_id  integer,
+  archived       boolean not null default false,
+  CONSTRAINT process_step_event_work_queue_type_event_status_type_pk PRIMARY KEY (id),
+  CONSTRAINT flow_psewqtest_company_event_status_type_id_fk FOREIGN KEY (company_event_status_type_id)
+    REFERENCES flow.company_event_status_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtest_event_status_type_id_fk FOREIGN KEY (event_status_type_id)
+    REFERENCES flow.event_status_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtest_process_step_work_queue_type_id_fk FOREIGN KEY (process_step_event_work_queue_type_id)
+    REFERENCES flow.process_step_event_work_queue_type (id) MATCH SIMPLE
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT flow_psewqtest_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT flow_psewqtest_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+ALTER TABLE flow.process_step_event_work_queue_type_event_status_type
+  ADD CONSTRAINT null_company_and_root_event_status_check
+    CHECK (
+        event_status_type_id is not null
+        OR company_event_status_type_id is not null
+      );
+
+create index process_step_event_wqt_project_event_status_type_id_idx
+  on flow.process_step_event_work_queue_type_event_status_type (event_status_type_id);
+
+create index process_step_event_work_queue_type_event_status_type_idx
+  on flow.process_step_event_work_queue_type_event_status_type (company_event_status_type_id);
+
+create unique index process_step_event_work_queue_type_event_status_type_udx
+  on flow.process_step_event_work_queue_type_event_status_type (company_event_status_type_id, process_step_event_work_queue_type_id)
+  where (archived IS FALSE);
+
+create unique index psewqtest_handle_unique_null_idx
+  on flow.process_step_event_work_queue_type_event_status_type (COALESCE(company_event_status_type_id, '-1'::integer), COALESCE(event_status_type_id, '-1'::integer), process_step_event_work_queue_type_id);
+
+create index psewqtest_work_queue_type_fk
+  on flow.process_step_event_work_queue_type_event_status_type (process_step_event_work_queue_type_id);
+
+alter table flow.process_step_event_work_queue_type_event_status_type
+  add constraint psewqtest_event_status_type_uk
+    unique (company_event_status_type_id, event_status_type_id, process_step_event_work_queue_type_id);
 -- *** END WORK QUEUE STUFF ***

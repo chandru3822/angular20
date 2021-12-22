@@ -63,6 +63,12 @@ public class EventController {
     return new ResponseEntity<>(eventService.getEventStatuses(), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/statusesForWqt", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<WorkQueueTypeEventStatus>> getStatusesForWqt(@RequestParam Long processStepId,
+                                                                          @RequestParam Long eventId) {
+    return new ResponseEntity<>(eventService.getStatusesForWqt(processStepId, eventId), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<EventStatusType>> getCompanyProjectStatuses() {
     return new ResponseEntity<>(eventService.getCompanyEventStatuses(), HttpStatus.OK);
@@ -123,4 +129,5 @@ public class EventController {
   public ResponseEntity<List<SystemListOption>> getAvaiableOwners(@PathVariable Long eventId) {
     return new ResponseEntity<>(eventService.getAvailableOwners(eventId), HttpStatus.OK);
   }
+
 }

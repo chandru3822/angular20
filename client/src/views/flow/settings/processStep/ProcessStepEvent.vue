@@ -29,7 +29,7 @@
         </v-card>
       </v-col>
 
-
+      <ProcessStepWorkQueueTypes v-if="!eventLoading && selectedEvent.id" :event="selectedEvent"></ProcessStepWorkQueueTypes>
 
       <ProcessStepRequirements :callback="populateRequirements" :event-requirements="true"></ProcessStepRequirements>
       <v-col cols="12" class="pt-0 px-0">
@@ -326,12 +326,14 @@ import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessSt
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
+import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 
   export default {
     name: 'ProcessStepEvent',
     mixins: [Vue2Filters.mixin],
     components: {
-      ProcessStepRequirements
+      ProcessStepRequirements,
+      ProcessStepWorkQueueTypes
     },
     mounted() {
       let table = document.querySelector('.event-actions-table tbody')
@@ -371,6 +373,7 @@ import cloneDeep from 'lodash.clonedeep'
           processStepEventActions: []
         },
         expanded: [],
+        eventLoading: true,
         addNewEventAction: false,
         newEventAction: {},
         addRequiredField: false,
@@ -435,9 +438,12 @@ import cloneDeep from 'lodash.clonedeep'
       },
       async getEventDetails() {
         try {
+          this.eventLoading = true
           const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.eventId}`)
           this.selectedEvent = data
+          this.eventLoading = false
         } catch (e) {
+          this.eventLoading = true
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

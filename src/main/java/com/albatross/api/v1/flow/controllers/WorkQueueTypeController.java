@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DurationType;
+import com.albatross.api.v1.flow.model.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.WorkQueueType;
 import com.albatross.api.v1.flow.services.WorkQueueTypeService;
@@ -75,13 +76,39 @@ public class WorkQueueTypeController {
     return workQueueTypeService.insertProcessStepWorkQueueType(workQueueType);
   }
 
-  @PutMapping(value = "/saveStatusTypesToWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/saveStatusTypesToProcessStepWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepWorkQueueType> saveProjectStatusTypesToWorkQueueType(@RequestBody ProcessStepWorkQueueType processStepWorkQueueType) {
-    workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType);
-    workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(processStepWorkQueueType);
+    workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType, null);
+    workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(processStepWorkQueueType, null);
 
-    workQueueTypeService.callConfigChangeFunction(processStepWorkQueueType.getId());
+    workQueueTypeService.callConfigChangeFunction(processStepWorkQueueType.getId(), null);
     return workQueueTypeService.getProcessStepWorkQueueType(processStepWorkQueueType.getId());
+  }
+
+  @PutMapping(value = "/saveStatusTypesToProcessStepEventWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEventWorkQueueType> saveProjectStatusTypesToEventWorkQueueType(@RequestBody ProcessStepEventWorkQueueType processStepEventWorkQueueType) {
+    workQueueTypeService.saveProjectStatusTypesToWorkQueueType(null, processStepEventWorkQueueType);
+    workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(null, processStepEventWorkQueueType);
+    workQueueTypeService.saveEventStatusTypesToWorkQueueType(processStepEventWorkQueueType);
+
+    workQueueTypeService.callConfigChangeFunction(null, processStepEventWorkQueueType.getId());
+    return workQueueTypeService.getEventWorkQueueType(processStepEventWorkQueueType.getId());
+  }
+
+  //event wqt
+  @GetMapping(value = "/event/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueType> getAvailableWorkQueueTypesForEvent (@PathVariable Long id) {
+    return workQueueTypeService.getAvailableWorkQueueTypesForEvent(id);
+  }
+
+  @DeleteMapping(value = "/event/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteEventWorkQueueType(@PathVariable Long id) {
+    workQueueTypeService.deleteEventWorkQueueType(id);
+  }
+
+  @PostMapping(value = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEventWorkQueueType> insertEventWorkQueueType(@RequestBody ProcessStepEventWorkQueueType workQueueType) {
+    return workQueueTypeService.insertEventWorkQueueType(workQueueType);
   }
 
 }
