@@ -89,7 +89,8 @@
       <![CDATA[
               SELECT plh.loan_amount, plh.loan_term, plh.interest_rate, u.first_name as salesRepresentativeFirstName,
                      u.last_name as salesRepresentativeLastName, u.email as salesRepresentativeEmail,
-                     plh.project_id, plh.address, plh.city, plh.state, plh.zip, c.mobile as phone, c.email, plh.fullname
+                     plh.project_id, plh.address, plh.city, plh.state, plh.zip,
+                     case when c.mobile is not null and c.mobile <> '' then c.mobile else c.phone end as phone, c.email, plh.fullname
               from brs.proposal_log_history plh
                 left join flow.user u on u.first_name|| ' ' || u.last_name = project_owner
                 left join flow.project p on plh.project_id = p.id
