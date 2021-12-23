@@ -37,6 +37,11 @@ public class BlueravenProposalController {
     return proposalService.getProposalDesigns(projectId);
   }
 
+  @GetMapping(value = "/design/{projectId}/active", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProposalDesign> getActiveDesign(@PathVariable Long projectId) {
+    return proposalService.getActiveDesign(projectId);
+  }
+
   @PostMapping(value = "/design", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProposalDesign> requestNewDesign(@RequestParam Long projectId,
                                @RequestParam String description,

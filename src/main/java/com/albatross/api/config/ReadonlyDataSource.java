@@ -13,8 +13,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Configuration
+@RequiredArgsConstructor
 public class ReadonlyDataSource {
 
   private final PropertiesConfiguration propConfig;

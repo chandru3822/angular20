@@ -71,6 +71,17 @@ public class BlueravenProposalService {
     return results;
   }
 
+  public Optional<ProposalDesign> getActiveDesign(Long projectId) {
+    securityService.validateCompanyAccess(3L);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    Optional<ProposalDesign> result = sqlCache.get("proposal.getActiveDesign", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+
+    return result;
+  }
+
+
   public List<ProposalDesign> requestNewDesign(Long projectId, String description, String dueDate, List<MultipartFile> attachments) throws IOException {
     securityService.validateCompanyAccess(3L);
     User user = securityService.getCurrentUser();
@@ -90,8 +101,10 @@ public class BlueravenProposalService {
 //    Long ppsId = 3822530L;
     log.info("the new ppsId is: {}", ppsId);
     //upload attachments to the new step
-    for(MultipartFile a : attachments) {
-      projectProcessStepService.addAttachment(a, ppsId, 936L);
+    if(null != attachments && attachments.size() > 0) {
+      for(MultipartFile a : attachments) {
+        projectProcessStepService.addAttachment(a, ppsId, 936L);
+      }
     }
 
     //save custom field data for description and due date
