@@ -20,6 +20,7 @@
         :label="`Status To Change To (${newStatusOptional === true ? 'Optional' : 'Required'})`"
         return-object
         class="mt-2"
+        autocomplete="off"
         attach
       />
       <div class="error-text"
