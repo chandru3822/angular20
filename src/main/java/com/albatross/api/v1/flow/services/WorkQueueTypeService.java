@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -84,7 +83,7 @@ public class WorkQueueTypeService {
     params.put("expectedCycleDurationTypeId", type.getExpectedCycleDurationTypeId() );
     params.put("inverseExpectation", null != type.getInverseExpectation() ? type.getInverseExpectation() : false );
     params.put("expectedTarget", type.getExpectedTarget() );
-    params.put("schedule", type.getSchedule().toString() );
+    params.put("schedule", null != type.getSchedule() ? type.getSchedule().toString() : null);
     sqlCache.update("workQueueType.updateType", params);
 
     return getType(type.getId());
