@@ -35,7 +35,7 @@ export default {
   },
   watch: {
     // whenever objectTypeId changes, this function will run
-    '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
+    '$route.params.id': function () {
       // reset the selected group when the object type changes
       this.companyObjectTypeId = this.$route.params.id
       this.objectType = this.$route.query.objectType

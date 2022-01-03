@@ -1,50 +1,21 @@
-import {getRequest} from '@/helpers/helpers'
+import { getRequest } from '@/helpers/helpers'
 
 export async function getOrgTypes() {
-  try {
-    const {data, status} = await getRequest(`/orgType`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/orgType`)
 }
 
 export async function getSchedulingOrgTypes() {
-  try {
-    const {data, status} = await getRequest(`/orgType/schedulable`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/orgType/schedulable`)
 }
 
 export async function getOrgsByType(typeId) {
-  try {
-    const {data, status} = await getRequest(`/org/getOrgsByType/${typeId}`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/org/getOrgsByType/${typeId}`)
 }
 
 export async function getOrgFilters() {
-  try {
-    const {data, status} = await getRequest(`/org/filters`, null, [])
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/org/filters`, null, [])
 }
 
 export async function getOrgLevels() {
-  try {
-    const {data, status} = await getRequest(`/orgType/levels`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/orgType/levels`)
 }
-
-
-
-

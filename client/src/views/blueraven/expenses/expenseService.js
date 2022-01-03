@@ -1,41 +1,20 @@
-import {getRequest, getRequestWithParams} from '@/helpers/helpers'
+import { getRequest } from '@/helpers/helpers'
 
 export async function getBudgetTypes() {
-  try {
-    const {data, status} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
 }
 
 export async function getGlCodes() {
-  try {
-    const {data, status} = await getRequest(`/expenses/glCodes`, 'blueraven')
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/expenses/glCodes`, 'blueraven')
 }
 
 export async function getUsersWithBudget() {
-  try {
-    const {data, status} = await getRequest(`/expenseBudgets/usersWithBudget`, 'blueraven')
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/expenseBudgets/usersWithBudget`, 'blueraven')
 }
 
 export async function getReimbursementRequestImage(requestId) {
-  try {
-    const {data, status} = await getRequest(`/reimbursement/request/${requestId}/image`, 'blueraven')
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(
+    `/reimbursement/request/${requestId}/image`,
+    'blueraven'
+  )
 }
-
-
-
-

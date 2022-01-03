@@ -3,7 +3,6 @@
 
 name: Albatross Build [Dev]
 
-#on: workflow_dispatch
 on:
   push:
     branches:
@@ -11,27 +10,22 @@ on:
 
 jobs:
   build:
-    name: Package & Deploy
+    name: Package API and Deploy to ECS
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{ github.token }}
+    concurrency:
+      group: dev_env
+      cancel-in-progress: true
 
+    steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK 16
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: 16
-
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          distribution: 'zulu'
+          cache: 'maven'
 
       - name: Maven Package
         run: mvn -B package -DskipTests
@@ -96,18 +90,47 @@ jobs:
           cluster: albatross-dev-cluster
 
   frontend-build:
-    needs: build
-    runs-on: ubuntu-18.04
+    name: Build Front End
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         name: Setup Node
         with:
-          node-version: '12'
+          node-version: '16'
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
 
-      - run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
+      - name: Build Site
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: netlify build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: client/dist
+          retention-days: 1
+
+  netlify-deploy:
+    name: Deploy UI to Netlify
+    needs: [ build, frontend-build ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: client/dist
+
+      - name: set env
+        id: vars
+        run: |
+          echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
+
+      - run: netlify deploy --dir=client/dist --prod --message "Deployed from GitHub Action sha $GITHUB_SHA"
         name: Deploy Site
         env:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}

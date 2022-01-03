@@ -145,7 +145,7 @@
               </div>
               <span
                 v-if="index === 1 && selectedCompanies.length >= 3"
-                class="primary--text caption"
+                class="primary--text text-caption"
               >{{ selectedCompanies.length }} selected</span>
             </template>
           </v-select>
@@ -163,13 +163,11 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
     name: 'DbFunction',
-
     data() {
       return {
         constants,

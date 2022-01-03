@@ -16,7 +16,7 @@
                 </template>
                 <v-card class="pa-5">
                   <v-card-title>
-                    <span class="headline">Confirm</span>
+                    <span class="text-h5">Confirm</span>
                   </v-card-title>
 
                   <v-card-text>
@@ -41,7 +41,7 @@
                 </template>
                 <v-card class="pa-5">
                   <v-card-title>
-                    <span class="headline">Confirm</span>
+                    <span class="text-h5">Confirm</span>
                   </v-card-title>
 
                   <v-card-text>
@@ -179,7 +179,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title>
                           Confirm
                         </v-card-title>
@@ -326,7 +326,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
@@ -642,7 +642,7 @@ export default {
     async saveSubmittedExpense(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/expenses`, item, 'blueraven')
+        await putRequest(`/expenses`, item, 'blueraven')
         //yep
         window.location.reload()
       } catch (e) {

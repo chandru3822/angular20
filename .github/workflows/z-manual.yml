@@ -26,7 +26,6 @@ jobs:
                 with:
                     access_token: ${{ github.token }}
 
-
             -   uses: actions/checkout@v2
 #
             -   name: Configure AWS credentials
@@ -77,13 +76,13 @@ jobs:
 
     frontend-build:
       needs: build
-      runs-on: ubuntu-18.04
+      runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         name: Setup Node
         with:
-          node-version: '12'
+          node-version: '16'
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
 

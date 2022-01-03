@@ -29,7 +29,7 @@
             </template>
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Confirm
               </v-card-title>
@@ -66,7 +66,7 @@
             </template>
             <v-card v-if="planHasActiveUsers()">
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Error
               </v-card-title>
@@ -93,7 +93,7 @@
             </v-card>
             <v-card v-else>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Confirm
               </v-card-title>
@@ -133,7 +133,7 @@
 
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title
               >
                 Clone {{residualPlan.name}}
@@ -373,7 +373,7 @@
                     </v-btn>
                   </template>
                   <v-card>
-                    <v-card-title class="headline grey lighten-2" primary-title>
+                    <v-card-title class="text-h5 grey lighten-2" primary-title>
                       Confirm
                     </v-card-title>
 
@@ -578,7 +578,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -617,7 +617,6 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -638,12 +637,12 @@
       }
     },
     watch: {
-      $route(to, from) {
+      $route(to) {
         // react to route changes...
         this.planId = to.params.id
         this.getResidualPlanDetails()
       },
-      userSearch (val, test, third) {
+      userSearch (val) {
         if(!val) {
           this.newUser.userId = null
           this.usersToAdd = []
@@ -886,7 +885,7 @@
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/commissionManagement/residuals/${this.planId}/updateUser`, item, 'blueraven')
+          const {status} = await postRequest(`/commissionManagement/residuals/${this.planId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
@@ -1024,7 +1023,7 @@
       async updateLevel(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, item, 'blueraven')
+          const {status} = await putRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, item, 'blueraven')
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)

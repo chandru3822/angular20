@@ -76,7 +76,7 @@
                   </tr>
                 </thead>
               </template>
-              <template #item="{ item, index }" class="table-body">
+              <template #item="{ item, index }">
                 <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"
                     :style="{'background-color': index === 0 ? '#e9f2ff' : ''}">
                   <td class="milestone-col-td">{{ item.name }}</td>

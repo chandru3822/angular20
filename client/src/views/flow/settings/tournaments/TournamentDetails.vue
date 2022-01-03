@@ -255,7 +255,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_DELETE, {
             id,
-            callback: async (status) => {
+            callback: async () => {
               this.tournament.backgroundAttachmentId = null
               this.tournament.backgroundAttachmentPresignedUrl = null
               // this.$store.commit(UserMutations.SET_USER_IMAGE, {})

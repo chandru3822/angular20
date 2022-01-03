@@ -3,7 +3,7 @@
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="text-h5 grey lighten-2"
           primary-title
         >
           Confirm

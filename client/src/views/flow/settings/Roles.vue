@@ -31,7 +31,7 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.roleName}}</td>
               <!-- icon column -->
               <td class="text-right">
@@ -48,7 +48,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                        class="headline grey lighten-2"
+                        class="text-h5 grey lighten-2"
                         primary-title
                     >
                       Confirm

@@ -71,7 +71,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title
                         >
                           Confirm
@@ -115,7 +115,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 
-import { getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import debounce from "lodash.debounce";
 
 export default {

@@ -7,7 +7,7 @@
                       :user="showScoreUser.fullName"
                       :user-id="showScoreUser.userId"
                       @scoreDialogClosed="showModal = false"
-      ></ScoreDrilldown>
+      />
     </v-dialog>
 
     <v-card color="white" flat class="square-card">

@@ -1,4 +1,4 @@
-import { getRequestWithParams, postRequest } from '@/helpers/helpers'
+import { postRequest } from '@/helpers/helpers'
 
 export async function getCloserAreas (userId, setterOverride) {
   const requestBody = {userId, setterOverride}
@@ -12,7 +12,7 @@ export async function getCloserRegions (userId, areas, setterOverride) {
   return data
 }
 
-export async function getCloserDistricts (userId, areas, regions, setterOverride) {
+export async function getCloserDistricts (userId, areas, regions) {
   const requestBody = {userId, areas, regions}
   const {data} = await postRequest('/closerDashboard/getDistricts', requestBody, 'blueraven')
   return data

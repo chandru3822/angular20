@@ -34,7 +34,7 @@
           No requests found
         </template>
 
-        <template #body="{ items }" class="table-body">
+        <template #body="{ items }">
           <tr
             v-for="(it, index) in items"
             :key="it.id"
@@ -55,7 +55,7 @@
       <v-dialog v-model="requestDialog" max-width="700px">
         <v-card>
           <v-card-title>
-            <span class="headline">Request for Installation Agreement</span>
+            <span class="text-h5">Request for Installation Agreement</span>
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -309,7 +309,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async updateEmail(it) {
+    async updateEmail() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {status} = await putRequest('/install-agreement/updateEmailAddress/' + this.requestItem.projectId, {

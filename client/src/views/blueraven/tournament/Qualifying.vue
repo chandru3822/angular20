@@ -8,7 +8,7 @@
                       :user="showScoreUser.fullName"
                       :user-id="showScoreUser.userId"
                       @scoreDialogClosed="showModal = false"
-      ></ScoreDrilldown>
+      />
     </v-dialog>
 
     <v-card color="white" flat class="square-card">
@@ -196,7 +196,7 @@
         if(this.seededUserIds?.length > 0 && this.finalMatches.length === this.tournamentUserCount / 2) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.finalMatches, 'blueraven')
+            const {status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.finalMatches, 'blueraven')
             this.pool.advanced = true
             handleHidingGlobalLoader(this, status)
           } catch (e) {

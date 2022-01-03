@@ -29,7 +29,7 @@
               </div>
               <span
                   v-if="index === 1 && selectedPostalCodeZones.length >= 3"
-                  class="primary--text caption"
+                  class="primary--text text-caption"
               >{{ selectedPostalCodeZones.length }} selected</span>
             </template>
           </v-autocomplete>
@@ -66,7 +66,7 @@
               </div>
               <span
                 v-if="index === 1 && selectedPostalCodeZoneUsers.length >= 3"
-                class="primary--text caption"
+                class="primary--text text-caption"
               >{{ selectedPostalCodeZoneUsers.length }} selected</span>
             </template>
             <template v-slot:prepend-item>
@@ -330,7 +330,7 @@
       }
     },
     methods: {
-      limiter(e) {
+      limiter() {
         this.countSelected = this.selectedPostalCodeZoneUsers?.length
         this.postalCodeZoneUsers.forEach(u => {
           let match = this.selectedPostalCodeZoneUsers.find(su => su.id === u.id)

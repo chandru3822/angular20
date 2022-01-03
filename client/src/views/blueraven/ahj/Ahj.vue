@@ -60,7 +60,7 @@
             </tr>
           </template>
 
-          <template #item="{ item, index }" class="table-body">
+          <template #item="{ item, index }">
             <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
               <td class="text-left">{{ item.name ? item.name : '' }}</td>
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
@@ -94,7 +94,7 @@
         <v-dialog v-model="ahjDialog" max-width="500px">
           <v-card>
             <v-card-title>
-              <span class="headline">{{ ahjFormTitle }}</span>
+              <span class="text-h5">{{ ahjFormTitle }}</span>
             </v-card-title>
 
             <v-card-text>
@@ -139,7 +139,7 @@
         <v-dialog v-model="ahjDeleteDialog" max-width="500px">
           <v-card>
             <v-card-title>
-              <span class="headline">Confirm</span>
+              <span class="text-h5">Confirm</span>
             </v-card-title>
 
             <v-card-text>

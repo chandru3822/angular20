@@ -127,7 +127,7 @@
                 </v-btn>
               </template>
               <v-card>
-                <v-card-title class="headline grey lighten-2" primary-title>
+                <v-card-title class="text-h5 grey lighten-2" primary-title>
                   Confirm
                 </v-card-title>
 
@@ -160,7 +160,7 @@
                 </v-btn>
               </template>
               <v-card>
-                <v-card-title class="headline grey lighten-2" primary-title>
+                <v-card-title class="text-h5 grey lighten-2" primary-title>
                   Confirm
                 </v-card-title>
 
@@ -261,7 +261,7 @@ export default {
       formData.append('secondaryAttachment', this.newApp.secondaryAttachment);
 
       let url = this.isIos ? '/app/ios' : '/app/android'
-      const {data, status} = await postRequest(url, formData)
+      await postRequest(url, formData)
       this.newApp = {}
       this.addNew = false
       //reload it all cuz i'm lazy
