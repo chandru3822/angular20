@@ -144,14 +144,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
       }
     }
 
-  // @TODO: This is temporary - randa. updating contact geo-location until all are finished
-    @Scheduled(cron = "0 0 4 * * *", zone = "America/Denver")
-    public void updateContactLatLong() throws Exception {
-      log.info("*** CRON: start CONTACT geo coords updates ***");
-      contactService.updateContactLatLong(50000);
-      log.info("*** CRON: end CONTACT geo coords updates ***");
-    }
-
     @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
     public Executor taskExecutor() {
       return Executors.newScheduledThreadPool(10);
