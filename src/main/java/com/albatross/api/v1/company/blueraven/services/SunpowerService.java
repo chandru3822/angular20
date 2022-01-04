@@ -105,7 +105,12 @@ public class SunpowerService {
       applicantDetails.put("lastName", propLogDetail.getFullName().substring(idx + 1));
     }
 
-    applicantDetails.put("phone", propLogDetail.getPhone());
+    String phone = propLogDetail.getPhone();
+    if (!phone.isEmpty() && phone.startsWith("+1")) {
+      phone = phone.substring(2);
+    }
+
+    applicantDetails.put("phone", phone);
 
     if (propLogDetail.getEmail() != null && propLogDetail.getEmail().contains("@")) {
       applicantDetails.put("email", propLogDetail.getEmail());
