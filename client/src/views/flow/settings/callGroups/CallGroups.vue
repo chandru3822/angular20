@@ -96,7 +96,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title
                         >
                           Confirm
@@ -241,7 +241,7 @@
         this.errorMsg = ''
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/callGroup/`, item, 'blueraven')
+          const {status} = await postRequest(`/callGroup/`, item, 'blueraven')
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)

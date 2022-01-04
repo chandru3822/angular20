@@ -282,7 +282,7 @@
   import orderBy from 'lodash.orderby'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
 
@@ -490,7 +490,7 @@
             timeInterval: this.timeInterval,
             officeFdcRank: false
           }
-          const {data, status} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven', [])
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven', [])
 
           if (data?.companyRankingValues?.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
             this.userOffice = data?.companyRankingValues?.filter(row => row.userId === this.currentUserId)[0].officeName

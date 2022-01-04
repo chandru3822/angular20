@@ -5,7 +5,7 @@
                 v-model="deleteError"
       >
         <v-card>
-          <v-card-title class="headline grey lighten-2 error--text">
+          <v-card-title class="text-h5 grey lighten-2 error--text">
             Error Deleting Status from Process Step
           </v-card-title>
 
@@ -124,7 +124,7 @@
                           </template>
                           <v-card>
                             <v-card-title
-                              class="headline grey lighten-2"
+                              class="text-h5 grey lighten-2"
                               primary-title
                             >
                               Confirm
@@ -406,7 +406,7 @@
                             </template>
                             <v-card>
                               <v-card-title
-                                class="headline grey lighten-2"
+                                class="text-h5 grey lighten-2"
                                 primary-title
                               >
                                 Confirm
@@ -494,7 +494,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title
                         >
                           Confirm
@@ -579,7 +579,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title
                         >
                           Confirm
@@ -624,7 +624,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
-import {getStatusTypes, getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
+import {getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
@@ -1027,7 +1027,7 @@ export default {
       try {
         this.addNewType = !this.addNewType
         if (this.addNewType) {
-          const {data, status} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
+          const {data} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
           this.availableAttachmentTypes = data
         }
         handleHidingGlobalLoader(this, status)

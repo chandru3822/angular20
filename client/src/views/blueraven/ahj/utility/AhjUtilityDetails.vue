@@ -6,7 +6,8 @@
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
             <v-btn id="back-btn" text class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
-              <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
+              <v-icon>arrow_left</v-icon>
+              <span id="back-btn-text">Back to menu</span>
             </v-btn>
 
             <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
@@ -35,7 +36,8 @@
                    color="primaryButton"
                    class="white--text mr-0"
                    @click="saveAhjUtility"
-            >Save</v-btn>
+            >Save
+            </v-btn>
           </v-col>
 
           <v-row no-gutters>
@@ -116,7 +118,7 @@
                                     :readonly="!userCanEdit"
                                     :disabled="!userCanEdit"
                                     filled
-                     ></v-text-field>
+                      ></v-text-field>
                     </v-col>
                     <v-col cols="6" class="pl-4">
                       <v-text-field v-model="ahjUtility.rebateRates"
@@ -125,7 +127,7 @@
                                     :readonly="!userCanEdit"
                                     :disabled="!userCanEdit"
                                     filled
-                     ></v-text-field>
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                   <AhjDocument v-if="dataReady"
@@ -382,14 +384,15 @@
                         :field="item"
                         :filled-style="true"
                       />
-                      <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
-                                    v-model="item.textValue"
-                                    @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                    :readonly="!userCanEdit"
-                                    :disabled="!userCanEdit"
-                                    label="Other Value"
-                                    filled
-                                    class="other-field"
+                      <v-text-field
+                        v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
+                        v-model="item.textValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        label="Other Value"
+                        filled
+                        class="other-field"
                       ></v-text-field>
                     </div>
                   </div>
@@ -480,25 +483,26 @@
                   PTO Details
                 </v-card-title>
                 <v-card-text class="mt-4">
-                    <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id"
-                         :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
-                      <CustomValueInput
-                        :callback="(item) => updateDirtyValue(item)"
-                        :readonly="!userCanEdit"
-                        :showFieldName="false"
-                        :field="item"
-                        :filled-style="true"
-                      />
-                      <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
-                                    v-model="item.textValue"
-                                    :readonly="!userCanEdit"
-                                    :disabled="!userCanEdit"
-                                    @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                    label="Other Value"
-                                    filled
-                                    class="other-field"
-                      ></v-text-field>
-                    </div>
+                  <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id"
+                       :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
+                    <CustomValueInput
+                      :callback="(item) => updateDirtyValue(item)"
+                      :readonly="!userCanEdit"
+                      :showFieldName="false"
+                      :field="item"
+                      :filled-style="true"
+                    />
+                    <v-text-field
+                      v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
+                      v-model="item.textValue"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                      label="Other Value"
+                      filled
+                      class="other-field"
+                    ></v-text-field>
+                  </div>
                   <AhjChecklist v-if="dataReady"
                                 title="Checklist for Submission"
                                 :checklistTypeId="6"
@@ -562,14 +566,15 @@
                           :field="item"
                           :filled-style="true"
                         />
-                        <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
-                                      v-model="item.textValue"
-                                      :readonly="!userCanEdit"
-                                      :disabled="!userCanEdit"
-                                      @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                      label="Other Value"
-                                      filled
-                                      class="other-field"
+                        <v-text-field
+                          v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
+                          v-model="item.textValue"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                          label="Other Value"
+                          filled
+                          class="other-field"
                         ></v-text-field>
                       </div>
                       <v-text-field v-model="ahjUtility.timelines"
@@ -643,243 +648,264 @@
 </template>
 
 <script>
-  import cloneDeep from 'lodash.clonedeep'
-  import orderBy from "lodash.orderby"
-  import AhjChecklist from "../components/AhjChecklist"
-  import AhjContact from "../components/AhjContacts"
-  import AhjDocument from "../components/AhjDocuments"
-  import AhjDocumentsButton from "../components/AhjDocumentsButton"
-  import AhjLink from "../components/AhjLinks"
-  import AhjRequirement from "../components/AhjRequirements"
-  import { AppMutations } from '@/stores/AppStore'
-  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
-  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import cloneDeep from "lodash.clonedeep"
+import orderBy from "lodash.orderby"
+import AhjChecklist from "../components/AhjChecklist"
+import AhjContact from "../components/AhjContacts"
+import AhjDocument from "../components/AhjDocuments"
+import AhjDocumentsButton from "../components/AhjDocumentsButton"
+import AhjLink from "../components/AhjLinks"
+import AhjRequirement from "../components/AhjRequirements"
+import { AppMutations } from "@/stores/AppStore"
+import { getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest } from "@/helpers/helpers"
+import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 
-  export default {
-    name: 'ahjUtilityDetails',
-    components: {
-      AhjChecklist,
-      AhjContact,
-      AhjDocument,
-      AhjDocumentsButton,
-      AhjLink,
-      AhjRequirement,
-      CustomValueInput
+export default {
+  name: "ahjUtilityDetails",
+  components: {
+    AhjChecklist,
+    AhjContact,
+    AhjDocument,
+    AhjDocumentsButton,
+    AhjLink,
+    AhjRequirement,
+    CustomValueInput
+  },
+  computed: {
+    userCanEdit() {
+      return this.$store.getters.userHasFeatureAccessLevel("AHJ_DATABASE", "EDIT")
+    }
+  },
+  data: () => ({
+    ahjUtilityId: null,
+    itemType: "utility",
+    snackbar: {},
+    dataWasChanged: false,
+    dataReady: false,
+    customFieldGroupAssignments: [],
+    selectedFinancier: { submissionMethod: null },
+    ahjUtility: {
+      customerSignatureLinks: [],
+      ptoLinks: [],
+      ptoFollowupLinks: [],
+      submissionLinks: [],
+      submissionChecklist: [],
+      approvalChecklist: [],
+      ptoChecklist: [],
+      utilityInspectionChecklist: [],
+      contacts: [],
+      utilityRequirements: []
     },
-    computed: {
-      userCanEdit() {
-        return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
-      },
+    documents: [],
+    financiers: []
+  }),
+  methods: {
+    updateDirtyValue(item) {
+      item.valueWasChanged = true
+      this.dataWasChanged = true
     },
-    data: () => ({
-      ahjUtilityId: null,
-      itemType: 'utility',
-      snackbar: {},
-      dataWasChanged: false,
-      dataReady: false,
-      customFieldGroupAssignments: [],
-      selectedFinancier: {submissionMethod: null},
-      ahjUtility: {
-        customerSignatureLinks: [],
-        ptoLinks: [],
-        ptoFollowupLinks: [],
-        submissionLinks: [],
-        submissionChecklist: [],
-        approvalChecklist: [],
-        ptoChecklist: [],
-        utilityInspectionChecklist: [],
-        contacts: [],
-        utilityRequirements: []
-      },
-      documents: [],
-      financiers: []
-    }),
-    methods: {
-      updateDirtyValue(item) {
-        item.valueWasChanged = true
-        this.dataWasChanged = true
-      },
-      async getAhjUtility() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
-          this.ahjUtility = cloneDeep(data)
-          window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
-          this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name?.toLowerCase())
-          this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name?.toLowerCase())
-          this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name?.toLowerCase())
-          this.ahjUtility.submissionLinks = orderBy(this.ahjUtility.submissionLinks, link => link.name?.toLowerCase())
-          this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name?.toLowerCase())
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Utility')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getFinancierList() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest('/financier/active', 'blueraven')
-          this.financiers = cloneDeep(data)
-          this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : {submissionMethod: null}
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving list of financiers')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCustomFieldGroupAssignmentsForScreen() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {sourceId: this.ahjUtility.id, objectTypeId: 2}
-          const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroupAssignments = cloneDeep(data)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getCustomFieldsForGroup(groupId) {
-        let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
-        return match ? match.customFieldValues : []
-      },
-      showOtherField(int, list) {
-        let match = list.find(l => l.id === int)
-        return match ? match.showOther : false
-      },
-      resetCustomFieldValueWasChangedFlags() {
-        this.customFieldGroupAssignments.forEach(group => {
-          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
-        })
-      },
-      async resetForm() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
-        this.dataWasChanged = false
-        this.dataReady = false
-        this.getAhjUtility().then(() => {
-          this.getFinancierList()
-          this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
-        })
-      },
-      async saveAhjUtility() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
-
-        try {
-          this.ahjUtility.customFieldGroups = this.customFieldGroupAssignments
-          const {data, status} = await putRequest('/ahjUtility', this.ahjUtility, 'blueraven')
-          this.ahjUtility = cloneDeep(data)
-          this.dataWasChanged = false
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Utility saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Utility')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+    async getAhjUtility() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const { data, status } = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, "blueraven")
+        this.ahjUtility = cloneDeep(data)
+        window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
+        this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name?.toLowerCase())
+        this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name?.toLowerCase())
+        this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name?.toLowerCase())
+        this.ahjUtility.submissionLinks = orderBy(this.ahjUtility.submissionLinks, link => link.name?.toLowerCase())
+        this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name?.toLowerCase())
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error("*** ERROR ***", e)
+        this.snackbar = getSnackbar("ERROR", "Error retrieving AHJ Utility")
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async created () {
+    async getFinancierList() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
-
+      try {
+        const { data, status } = await getRequest("/financier/active", "blueraven")
+        this.financiers = cloneDeep(data)
+        this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : { submissionMethod: null }
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error("*** ERROR ***", e)
+        this.snackbar = getSnackbar("ERROR", "Error retrieving list of financiers")
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCustomFieldGroupAssignmentsForScreen() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const params = { sourceId: this.ahjUtility.id, objectTypeId: 2 }
+        const {
+          data,
+          status
+        } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, { params }, "blueraven")
+        this.customFieldGroupAssignments = cloneDeep(data)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error("*** ERROR ***", e)
+        this.snackbar = getSnackbar("ERROR", "Error retrieving custom fields")
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getCustomFieldsForGroup(groupId) {
+      let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+      return match ? match.customFieldValues : []
+    },
+    showOtherField(int, list) {
+      let match = list.find(l => l.id === int)
+      return match ? match.showOther : false
+    },
+    resetCustomFieldValueWasChangedFlags() {
+      this.customFieldGroupAssignments.forEach(group => {
+        group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+      })
+    },
+    async resetForm() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
+      this.dataWasChanged = false
+      this.dataReady = false
       this.getAhjUtility().then(() => {
-        this.getFinancierList().then(() => {
-          this.getCustomFieldGroupAssignmentsForScreen().then(() => {
-            this.dataReady = true
-          })
+        this.getFinancierList()
+        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
+      })
+    },
+    async saveAhjUtility() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
+
+      try {
+        this.ahjUtility.customFieldGroups = this.customFieldGroupAssignments
+        const { data, status } = await putRequest("/ahjUtility", this.ahjUtility, "blueraven")
+        this.ahjUtility = cloneDeep(data)
+        this.dataWasChanged = false
+        this.snackbar = getSnackbar("SUCCESS", "AHJ Utility saved")
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error("*** ERROR ***", e)
+        this.snackbar = getSnackbar("ERROR", "Error saving AHJ Utility")
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
+  },
+  async created() {
+    this.$store.commit(AppMutations.SET_LOADING, true)
+    this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
+
+    this.getAhjUtility().then(() => {
+      this.getFinancierList().then(() => {
+        this.getCustomFieldGroupAssignmentsForScreen().then(() => {
+          this.dataReady = true
         })
       })
-    }
+    })
   }
+}
 </script>
 
 <style scoped lang="scss">
-  #back-btn {
-    text-transform: unset;
-    letter-spacing: unset;
-    &:before {
-      background-color: initial;
-    }
-    #back-btn-text:hover {
-      text-decoration: underline;
-    }
+#back-btn {
+  text-transform: unset;
+  letter-spacing: unset;
+
+  &:before {
+    background-color: initial;
   }
-  .page-title {
-    font-size: 32px;
-    font-weight: 200;
-  }
-  .page-info {
-    font-family: 'Roboto Condensed', sans-serif;
-    font-size: 20px;
-    text-align: right;
-  }
-  #utility-tab-bar {
-    border-top: 1px solid #E6E6E6;
-    border-bottom: 1px solid #E6E6E6;
-    .v-tab:hover {
-      color: var(--v-primaryCustom-base);
-    }
-  }
-  .ahj-form-btns {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  #save-btn {
-    margin: 0 5px 0 0;
-    text-transform: capitalize;
-  }
-  .v-card__title,
-  .v-toolbar__title {
-    font-size: 1em !important;
-  }
-  .v-text-field,
-  .v-select,
-  .v-input ::v-deep label,
-  .v-list-item__title,
-  .list-link {
-    font-size: 0.95em !important;
-  }
-  .cancel-link {
-    font-size: 0.85em !important;
-  }
-  .cancel-link:hover {
+
+  #back-btn-text:hover {
     text-decoration: underline;
   }
-  .link-btns {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    button {
-      margin: 0 0 0 7px;
-    }
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 200;
+}
+
+.page-info {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 20px;
+  text-align: right;
+}
+
+#utility-tab-bar {
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+
+  .v-tab:hover {
+    color: var(--v-primaryCustom-base);
   }
-  .custom-field {
-    width: 48%;
+}
+
+.ahj-form-btns {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#save-btn {
+  margin: 0 5px 0 0;
+  text-transform: capitalize;
+}
+
+.v-card__title,
+.v-toolbar__title {
+  font-size: 1em !important;
+}
+
+.v-text-field,
+.v-select,
+.v-input ::v-deep label,
+.v-list-item__title,
+.list-link {
+  font-size: 0.95em !important;
+}
+
+.cancel-link {
+  font-size: 0.85em !important;
+}
+
+.cancel-link:hover {
+  text-decoration: underline;
+}
+
+.link-btns {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+
+  button {
+    margin: 0 0 0 7px;
   }
-  .other-field {
-    margin-top: -20px;
-  }
-  .v-input--is-disabled ::v-deep .v-input__slot,
-  .v-input--is-disabled ::v-deep input {
-    cursor: not-allowed;
-    pointer-events: all;
-  }
-  .v-input--is-disabled ::v-deep label {
-    color: rgba(0, 0, 0, 0.38) !important;
-  }
+}
+
+.custom-field {
+  width: 48%;
+}
+
+.other-field {
+  margin-top: -20px;
+}
+
+.v-input--is-disabled ::v-deep .v-input__slot,
+.v-input--is-disabled ::v-deep input {
+  cursor: not-allowed;
+  pointer-events: all;
+}
+
+.v-input--is-disabled ::v-deep label {
+  color: rgba(0, 0, 0, 0.38) !important;
+}
 </style>

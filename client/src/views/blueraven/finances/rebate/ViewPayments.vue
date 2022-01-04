@@ -52,7 +52,7 @@
           <v-checkbox :disabled="!userCanEdit"  color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
         </template>
 
-        <template #body="{ items }" class="table-body">
+        <template #body="{ items }">
           <tr
             v-for="(it, index) in items"
             :key="it.id"
@@ -84,7 +84,7 @@
       <v-dialog v-model="newPayDialog" max-width="1000px">
         <v-card>
           <v-card-title>
-            <span class="headline">New Recurring Payment</span>
+            <span class="text-h5">New Recurring Payment</span>
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -150,7 +150,7 @@
     <v-dialog v-model="approveDialog" max-width="600px">
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="text-h5 grey lighten-2"
           primary-title
         >
           Confirm
@@ -181,7 +181,7 @@
     <v-dialog v-model="passwordDialog" max-width="600px">
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="text-h5 grey lighten-2"
           primary-title
         >
           Please confirm payment approval
@@ -216,7 +216,6 @@
 </template>
 
 <script>
-
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import constants from '@/helpers/constants'
@@ -507,7 +506,7 @@
 
           if (status === 200) {
             let param = {paymentIds: this.paymentIdsToApprove}
-            const {status} = await postRequest('/rebate/approve', param, 'blueraven')
+            await postRequest('/rebate/approve', param, 'blueraven')
             window.location.reload()
           }
 

@@ -1,32 +1,32 @@
 <template>
-  <div @drop.prevent="addDragDocument" @dragover.prevent>
+  <div @drop.prevent='addDragDocument' @dragover.prevent>
     <v-file-input
       dense
       multiple
-      ref="fileInput"
+      ref='fileInput'
       hide-details
-      :show-size="error.error"
+      :show-size='error.error'
       outlined
-      label="Upload Files"
-      @change="uploadDocument"
+      label='Upload Files'
+      @change='uploadDocument'
     />
-  <span class="error-text" v-if="error.message">{{error.message}}</span>
-</div>
+    <span class='error-text' v-if='error.message'>{{ error.message }}</span>
+  </div>
 </template>
 
 <script>
 import { Actions } from '@/store'
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, putRequest, getFileIcon, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
+import { getSnackbar, logError } from '@/helpers/helpers'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
 export default {
-  name: "AttachmentUpload",
-  data () {
+  name: 'AttachmentUpload',
+  data() {
     return {
       error: {},
-      companyId: this.$store.state.user.details.companyId,
+      companyId: this.$store.state.user.details.companyId
     }
   },
   props: {
@@ -39,16 +39,16 @@ export default {
     orgId: Number,
     callback: Function
   },
-  created () {
+  created() {
   },
   computed: {},
   methods: {
-    addDragDocument: async function (e) {
+    addDragDocument: async function(e) {
       let files = e.dataTransfer.files
       console.log('files here', files)
       await this.uploadDocument(files, this.attachmentTypeId)
     },
-    uploadDocument: async function (files) {
+    uploadDocument: async function(files) {
       if (files?.length > 0) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -56,7 +56,7 @@ export default {
           this.error = {}
           // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
           for (let i = 0; i < files.length; ++i) {
-            let file = files[i];
+            let file = files[i]
             if (file && file.size > 0) {
               await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
                 null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD : Actions.OBJECT_TYPE_FILE_UPLOAD, {
@@ -88,25 +88,30 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
-  .v-btn:before {
-    display: none;
-  }
-  .type {
-    font-size: 12px;
-  }
-  .link {
-    color: inherit;
-    text-decoration: none;
-  }
-  .attachment-table {
-    border-top: solid 2px #E0E0E0;
-    border-bottom: solid 2px #E0E0E0;
-  }
-  .primary-row{
-    background-color: #ebf5ff !important;
-  }
-  .file-hover {
-    background: #F6F7F8;
-  }
+<style scoped lang='scss'>
+.v-btn:before {
+  display: none;
+}
+
+.type {
+  font-size: 12px;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.attachment-table {
+  border-top: solid 2px #E0E0E0;
+  border-bottom: solid 2px #E0E0E0;
+}
+
+.primary-row {
+  background-color: #ebf5ff !important;
+}
+
+.file-hover {
+  background: #F6F7F8;
+}
 </style>

@@ -104,7 +104,7 @@
       async saveCompanyUserStatusType(type) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/user/statusType`, type)
+          const {status} = await putRequest(`/user/statusType`, type)
           this.expanded = []
           this.snackbar = getSnackbar('SUCCESS', 'User Status Type Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

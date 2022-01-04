@@ -68,7 +68,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                            class="headline grey lighten-2"
+                            class="text-h5 grey lighten-2"
                             primary-title
                         >
                           Confirm
@@ -112,8 +112,6 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-
-  import orderBy from 'lodash.orderby'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
@@ -227,7 +225,7 @@
         if(rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data, status} = await putRequest(`/objectTypeTab/order`, rows)
+            const {status} = await putRequest(`/objectTypeTab/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Tab Order Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             handleHidingGlobalLoader(this, status)

@@ -20,11 +20,8 @@
 </template>
 
 <script>
-
-
   export default {
     name: 'Expenses',
-
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)

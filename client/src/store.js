@@ -62,7 +62,7 @@ const store = new Vuex.Store({
     CANCEL_PENDING_REQUESTS(context) {
 
       // Cancel all request where a token exists
-      context.state.cancelTokens.forEach((request, i) => {
+      context.state.cancelTokens.forEach((request) => {
         if(request.cancel){
           request.cancel();
         }
@@ -78,7 +78,7 @@ const store = new Vuex.Store({
     },
     [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, sizeLimit, callback }) => {
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function (e) {
+      reader.addEventListener('loadend', async function () {
         let maxFileSize = sizeLimit ?? constants.MAX_FILE_SIZE
         if (file.size > maxFileSize) {
           const error = { error: true, errorMsg: `File size cannot exceed ${maxFileSize / 1048576}MB` }
@@ -105,7 +105,7 @@ const store = new Vuex.Store({
     [Actions.PROJECT_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectId, callback }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function (e) {
+      reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {
           callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
@@ -130,7 +130,7 @@ const store = new Vuex.Store({
     [Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectProcessStepId, callback }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function (e) {
+      reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {
           callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
@@ -155,7 +155,7 @@ const store = new Vuex.Store({
     [Actions.OBJECT_TYPE_FILE_UPLOAD]: (context, { file, attachmentTypeId, userId, contactId, orgId, objectTypeId, callback }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function (e) {
+      reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {
           callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {

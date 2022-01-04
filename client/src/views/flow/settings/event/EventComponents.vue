@@ -68,7 +68,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title
                         >
                           Confirm
@@ -149,7 +149,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -188,11 +188,10 @@
 <script>
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
-import {getCompanyEventStatusTypes, getAvailableForEvent, getEventStatusTypes} from '@/services/eventStatusTypeService'
+import {getAvailableForEvent} from '@/services/eventStatusTypeService'
 import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters"
 import orderBy from "lodash.orderby"
-import {getAvailableForProcessStep} from "@/services/processStepStatusTypeService";
 
 export default {
   name: 'EventComponents',

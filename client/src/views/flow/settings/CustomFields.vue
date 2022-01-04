@@ -4,7 +4,7 @@
       v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="headline error--text">Error Deleting Custom Field</v-card-title>
+        <v-card-title class="text-h5 error--text">Error Deleting Custom Field</v-card-title>
 
         <v-card-text>
           You cannot delete a field that is currently in use.  Please remove the field from the following locations before deleting.
@@ -103,7 +103,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                            class="headline grey lighten-2"
+                            class="text-h5 grey lighten-2"
                             primary-title
                         >
                           Confirm
@@ -136,7 +136,7 @@
             </template>
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-col justify="center" class="flex-display pl-3 pr-3" :class="{'shaded-row': selectedIndex % 2}">
+                <v-col class="flex-display pl-3 pr-3 justify" :class="{'shaded-row': selectedIndex % 2}">
                   <v-card text class="text-center field-card one-hunned" flat
                           :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>

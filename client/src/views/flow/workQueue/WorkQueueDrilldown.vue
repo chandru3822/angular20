@@ -268,7 +268,6 @@
       async getWorkDetails() {
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { page, itemsPerPage } = this.options
         try {
           let path = ''
           if (typeof this.installationCrewIds !== 'undefined') {

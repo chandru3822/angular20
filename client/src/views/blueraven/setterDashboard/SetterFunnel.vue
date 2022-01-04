@@ -45,7 +45,7 @@
                             @input="areaValuesChanged = true"
                             return-object>
               <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text caption">
+              <span v-if="index === 0" class="grey--text text-caption">
                 {{ areaModel.length }} Checked
               </span>
               </template>
@@ -87,7 +87,7 @@
                             return-object
                             @input="regionValuesChanged = true">
               <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
+                <span v-if="index === 0" class="grey--text text-caption">
                   {{ regionModel.length }} Checked
                 </span>
               </template>
@@ -129,7 +129,7 @@
                             return-object
                             @input="districtValuesChanged = true">
               <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
+                <span v-if="index === 0" class="grey--text text-caption">
                   {{ districtModel.length }} Checked
                 </span>
               </template>
@@ -172,7 +172,7 @@
                             return-object
                             @input="officeValuesChanged = true">
               <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
+                <span v-if="index === 0" class="grey--text text-caption">
                   {{ officeModel.length }} Checked
                 </span>
               </template>
@@ -216,7 +216,7 @@
                             @input="repValuesChanged = true">
 
               <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">
+                <span v-if="index === 0" class="grey--text text-caption">
                   {{ repModel.length }} Checked
                 </span>
               </template>
@@ -451,7 +451,7 @@
             :items-per-page="500"
             :footer-props="footerProps"
           >
-            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td style="text-align: center">
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
@@ -507,7 +507,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
   import {
@@ -515,8 +515,7 @@
     getSetterRegions,
     getSetterDistricts,
     getSetterOffices,
-    getSetterReps,
-    getCloserAreas
+    getSetterReps
   } from '@/services/dashboardService'
 
   export default {

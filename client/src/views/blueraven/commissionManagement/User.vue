@@ -373,7 +373,6 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
@@ -617,7 +616,7 @@
           m2Allocation: 0,
         }
         try {
-          const {data, status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
+          const {status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
           this.$router.push({name: 'override', params: {id: overridePlanId}})
           handleHidingGlobalLoader(this, status)
         } catch (e) {

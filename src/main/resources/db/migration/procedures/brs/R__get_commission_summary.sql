@@ -58,7 +58,7 @@ begin
                                                       inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
                                              WHERE p1.id = any (a.v_all_projects)
                                                and opru.user_id = opru1.user_id
-                                             group by pd.cancelled_date, system_size) as foo) +
+                                             group by pd.cancelled_date, system_size,pd.primary_financier_name,pd.loan_term,pd.interest_rate ) as foo) +
                                       (select coalesce(sum(total), 0)
                                        from (SELECT case
                                                         when pd.cancelled_date is not null
@@ -80,7 +80,7 @@ begin
 
                                              WHERE p1.id = any (a.v_all_projects)
                                                and opru.user_id = opru1.user_id
-                                             group by pd.cancelled_date, pd.system_size) as foo)) as overrides_earned,
+                                             group by pd.cancelled_date, pd.system_size,pd.primary_financier_name,pd.loan_term,pd.interest_rate) as foo)) as overrides_earned,
                               -- coalesce(brs.get_overrides_earned(a.v_all_projects,p.period_end, opru.user_id), 0) as overrides_earned,
                               coalesce(brs.get_total_overrides(p.id, a.v_all_projects, opru1.user_id, 1),
                                        0)                                                         as total_overrides
@@ -167,7 +167,7 @@ begin
                                        WHERE p1.id = any (foo.v_all_projects)
                                          and user_id = foo.user_id
                                          and pd1.project_id = p1.id
-                                       group by pd1.cancelled_date, pd1.system_size) as foo) +
+                                       group by pd1.cancelled_date, pd1.system_size,pd1.primary_financier_name,pd1.loan_term,pd1.interest_rate) as foo) +
                                 (select coalesce(sum(total), 0)
                                  from (SELECT case
                                                   when pd1.cancelled_date is not null
@@ -189,7 +189,7 @@ begin
                                        WHERE p1.id = any (foo.v_all_projects)
                                          and user_id = foo.user_id
                                          and pd1.project_id = p1.id
-                                       group by pd1.cancelled_date, pd1.system_size) as foo)) as overrides_earned,
+                                       group by pd1.cancelled_date, pd1.system_size,pd1.primary_financier_name,pd1.loan_term,pd1.interest_rate) as foo)) as overrides_earned,
                       coalesce(brs.get_total_overrides(pay_id, foo.v_all_projects, foo.user_id, 1),
                                  0)                                                           as total_overrides,
                       coalesce(brs.get_ledger_adjustment_current_totals(pay_id, project_ids, 1),

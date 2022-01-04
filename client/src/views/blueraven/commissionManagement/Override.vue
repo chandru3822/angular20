@@ -30,7 +30,7 @@
             </template>
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Confirm
               </v-card-title>
@@ -66,7 +66,7 @@
             </template>
             <v-card v-if="planHasActiveUsers()">
               <v-card-title
-                  class="headline grey lighten-2"
+                  class="text-h5 grey lighten-2"
                   primary-title>
                 Error
               </v-card-title>
@@ -93,7 +93,7 @@
             </v-card>
             <v-card v-else>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Confirm
               </v-card-title>
@@ -131,7 +131,7 @@
 
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title
               >
                 Clone {{override.name}}
@@ -385,7 +385,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -594,7 +594,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -663,7 +663,7 @@
         //they can't switch between Setter/Closer while on an actual override plan
         this.$router.push(`/commissionManagement/overrides`)
       },
-      $route(to, from) {
+      $route(to) {
         // react to route changes...
         // this.$router.push({name: 'commission', params: {id: to.params.id}})
         // this.planId = to.params.id
@@ -813,8 +813,8 @@
           return u.endDate === null || u.endDate > new Date()
         })
       },
-      goToDetails (item) {
-      },
+      // goToDetails (item) {
+      // },
       async deleteOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -964,7 +964,7 @@
       async inactivateOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/inactivate`, {}, 'blueraven')
+          await postRequest(`/commissionManagement/overrides/${this.overrideId}/inactivate`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Override Plan Inactivated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$router.push({name: 'overrides'})
@@ -978,7 +978,7 @@
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/updateUser`, item, 'blueraven')
+          const {status} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
@@ -1086,7 +1086,7 @@
       async updateReceivingUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
+          const {status} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
           this.checkErrorMessages()
           handleHidingGlobalLoader(this, status)
         } catch (e) {

@@ -6,11 +6,9 @@
                           v-for="(b, idx) in getBracketsInRows(row)"
                           :bracket-count="bracketCount"
                           :row-number="row"
-                          :bracket="b" :reverse="idx % 2 !== 0"></BracketComponent>
-
+                          :bracket="b" :reverse="idx % 2 !== 0"/>
       </v-row>
     </div>
-
   </v-container>
 </template>
 

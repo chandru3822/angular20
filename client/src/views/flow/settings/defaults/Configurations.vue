@@ -56,22 +56,15 @@
             </tr>
           </template>
         </v-data-table>
-
-
       </v-col>
     </v-row>
-
-
   </v-container>
 </template>
 
-
 <script>
-import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import {getGlCodes} from "@/views/blueraven/expenses/expenseService";
 
 export default {
   name: 'Configurations',
@@ -112,7 +105,7 @@ export default {
     async saveConfigurationValue(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/companies/${this.companyId}/configuration`, item)
+        const {status} = await putRequest(`/companies/${this.companyId}/configuration`, item)
         this.editIndex = null
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -125,7 +118,3 @@ export default {
   },
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>

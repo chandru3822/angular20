@@ -23,7 +23,7 @@
             </template>
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title
               >
                 Confirm
@@ -201,7 +201,7 @@
                       </v-btn>
                     </template>
                     <v-card>
-                      <v-card-title class="headline grey lighten-2" primary-title>
+                      <v-card-title class="text-h5 grey lighten-2" primary-title>
                         Add Adjustment
                       </v-card-title>
                       <v-card-text class="pt-3">
@@ -291,7 +291,7 @@
                       </v-btn>
                     </template>
                     <v-card>
-                      <v-card-title class="headline grey lighten-2" primary-title>
+                      <v-card-title class="text-h5 grey lighten-2" primary-title>
                         Add Adjustment
                       </v-card-title>
                       <v-card-text class="pt-3">
@@ -376,7 +376,6 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import cloneDeep from 'lodash.clonedeep'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'

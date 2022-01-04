@@ -4,7 +4,7 @@
       v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="headline error--text">
+        <v-card-title class="text-h5 error--text">
           {{deleteHeader}}
         </v-card-title>
 
@@ -80,7 +80,7 @@
             </v-chip>
             <span
               v-if="index === 1 && objectType.ownerReadOnlyWhiteListedPositions && objectType.ownerReadOnlyWhiteListedPositions.length >= 2"
-              class="primary--text caption"
+              class="primary--text text-caption"
             >{{ objectType.ownerReadOnlyWhiteListedPositions.length }} selected</span>
           </template>
         </v-autocomplete>
@@ -195,7 +195,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                            class="headline grey lighten-2"
+                            class="text-h5 grey lighten-2"
                             primary-title>
                           Confirm
                         </v-card-title>
@@ -227,7 +227,7 @@
             </template>
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
+                <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
                   <v-radio-group v-if="isProject" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
                     <v-radio label="Project Custom Field"
@@ -275,7 +275,7 @@
                     </template>
                   </v-autocomplete>
                 </v-col>
-                <v-col  cols="12" justify="center"  class="px-3 py-0" >
+                <v-col  cols="12"  class="px-3 py-0 justify" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                              :disabled="!userCanEdit"
@@ -338,7 +338,7 @@
                                           </v-chip>
                                           <span
                                             v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
-                                            class="primary--text caption"
+                                            class="primary--text text-caption"
                                           >{{ cf.whiteListedPositions.length }} selected</span>
                                         </template>
                                       </v-autocomplete>
@@ -398,7 +398,7 @@
                                           </v-chip>
                                           <span
                                             v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
-                                            class="primary--text caption"
+                                            class="primary--text text-caption"
                                           >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
                                         </template>
                                       </v-autocomplete>
@@ -466,7 +466,7 @@
                           </template>
                           <v-card>
                             <v-card-title
-                                class="headline grey lighten-2"
+                                class="text-h5 grey lighten-2"
                                 primary-title
                             >
                               Confirm
@@ -593,7 +593,7 @@ export default {
   },
   watch: {
     // whenever objectTypeId changes, this function will run
-    '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
+    '$route.params.id': function () {
       // reset the selected group when the object type changes
       this.typeId = this.$route.params.id ?? this.$route.query.companyObjectTypeid
       this.availableCustomFields = []
@@ -675,7 +675,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         if(this.addField && this.newFieldType === 'native') {
-          const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+          const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
               companyObjectTypeId: this.typeId,
               groupId
@@ -841,7 +841,7 @@ export default {
     async saveReadOnlyAndWhiteList (field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+        const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
         field.positionsChanged = false
         if(!field.customFieldGroupAssignmentReadOnly) {
           this.$set(field, 'whiteListedPositions', [])
@@ -857,7 +857,7 @@ export default {
     async saveHiddenAndWhiteList(field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
+        const {status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
         field.hiddenPositionsChanged = false
         if (!field.customFieldGroupAssignmentHidden) {
           this.$set(field, 'hiddenWhiteListedPositions', [])
@@ -888,7 +888,7 @@ export default {
     async saveOwnerReadOnlyAndWhiteList () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.objectType)
+        const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.objectType)
         this.ownerReadOnlyPositionsChanged = false
         if(!this.objectType.ownerReadOnly) {
           this.ownerReadOnlyWhiteListedPositions = []

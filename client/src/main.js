@@ -8,7 +8,9 @@ import store from './store'
 import axios from 'axios'
 import { UserMutations } from './stores/UserStore'
 import moment from 'moment-timezone'
-import VueGtag from "vue-gtag";
+import VueGtag from 'vue-gtag'
+
+import '@/styles/main.scss'
 
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
@@ -37,7 +39,7 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
 
   const timezone = store?.state?.user?.details?.timezone?.value
 
-  if(!type || (type === 'timestamp' && !timezone)) {
+  if (!type || (type === 'timestamp' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
     return
   }
@@ -45,13 +47,21 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
   // default format if none provided
   if (!format) {
     // timestampAsDate means do the timezone conversion but then only display the date
-    format = (type === 'date') || (type === 'timestampAsDate') ? 'M/D/YYYY' : 'M/D/YYYY h:mm a'
+    format =
+      type === 'date' || type === 'timestampAsDate'
+        ? 'M/D/YYYY'
+        : 'M/D/YYYY h:mm a'
   }
 
   if (value) {
     // date doesn't do anything with timezone, just reformats the string
     // leave it be = assume it is already in the right timezone and dont mess with it
-    return type === 'date' ? moment.utc(String(value), inputFormat ?? null).format(format) : moment.utc(String(value), inputFormat ?? null).tz(timezone).format(format)
+    return type === 'date'
+      ? moment.utc(String(value), inputFormat ?? null).format(format)
+      : moment
+          .utc(String(value), inputFormat ?? null)
+          .tz(timezone)
+          .format(format)
   }
 })
 
@@ -60,62 +70,82 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-axios.interceptors.request.use(config => {
-  if (store && store.state && store.state.user && config.url.indexOf(VUE_APP_BASE_API) > -1) {
+axios.interceptors.request.use((config) => {
+  if (
+    store &&
+    store.state &&
+    store.state.user &&
+    config.url.indexOf(VUE_APP_BASE_API) > -1
+  ) {
     config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
   }
 
   // if config.source passed in then use that
   let source = config.source
 
-  if(!source) {
+  if (!source) {
     // if no source passed in, Generate cancel token source
-    source = axios.CancelToken.source();
+    source = axios.CancelToken.source()
     config.cancelToken = source.token
   }
 
   // Add to vuex to make cancellation available from anywhere
-  store.commit('ADD_CANCEL_TOKEN', source);
+  store.commit('ADD_CANCEL_TOKEN', source)
   return config
 })
 
-axios.interceptors.response.use((response) => {
-  return response
-}, ({ response }) => {
-  if (response) {
-    const { message } = response?.data
-    const { status } = response
-    console.error('*** Request Error ***', response)
-    // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
-    if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
-        || status === 401  || status === 403) {
-      const msg = response.status === 401  ? 'Session Expired' : response.status === 403 ? 'User Unauthorized' : 'Unknown Error'
-      localStorage.removeItem('store')
-      store.commit(UserMutations.LOGIN_ERROR, msg)
-      router.push({ name: 'login' })
-    } else if (status >= 500 && status <= 599) {
-      //remove the loading spinner that was likely turned on before this error happened
-      store.commit(UserMutations.SET_LOADING, false)
-      //dont do this reroute on local, it is super annoying
-      if(VUE_APP_ENV !== 'local') {
-        router.push({path: `/serverError?code=${response.status}`})
+axios.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  ({ response }) => {
+    if (response) {
+      const { message } = response?.data
+      const { status } = response
+      console.error('*** Request Error ***', response)
+      // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
+      if (
+        (message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1) ||
+        status === 401 ||
+        status === 403
+      ) {
+        const msg =
+          response.status === 401
+            ? 'Session Expired'
+            : response.status === 403
+            ? 'User Unauthorized'
+            : 'Unknown Error'
+        localStorage.removeItem('store')
+        store.commit(UserMutations.LOGIN_ERROR, msg)
+        router.push({ name: 'login' })
+      } else if (status >= 500 && status <= 599) {
+        //remove the loading spinner that was likely turned on before this error happened
+        store.commit(UserMutations.SET_LOADING, false)
+        //dont do this reroute on local, it is super annoying
+        if (VUE_APP_ENV !== 'local') {
+          router.push({ path: `/serverError?code=${response.status}` })
+        }
+      } else if (![200, 201, 204].includes(status)) {
+        //dont take this out, it makes axios await errors work correctly
+        throw { data: response?.data, status }
       }
-    } else if (![200, 201, 204].includes(status)) {
-      //dont take this out, it makes axios await errors work correctly
-      throw { data: response?.data, status }
     }
   }
-})
+)
 
-Vue.use(VueGtag, {
-  config: { id: VUE_APP_GA_ID }
-}, router);
+Vue.use(
+  VueGtag,
+  {
+    config: { id: VUE_APP_GA_ID },
+  },
+  router
+)
+
+Vue.use(Chat)
 
 new Vue({
   router,
   store,
   vuetify: Vuetify,
-  render: h => h(App)
+  render: (h) => h(App),
 }).$mount('#app')
-
-Vue.use(Chat)

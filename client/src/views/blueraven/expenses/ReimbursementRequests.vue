@@ -119,7 +119,7 @@
                     </template>
                     <v-card>
                       <v-card-title
-                        class="headline grey lighten-2"
+                        class="text-h5 grey lighten-2"
                         primary-title>
                         Confirm
                       </v-card-title>
@@ -466,7 +466,7 @@ export default {
         // item.skipApproval = self.skipApproval;
         //there is already an endpoint for lists of these so just sending up as a list
         let listOfItem = [item]
-        const {data, status} = await postRequest(`/expenses/addExpenseItems`, listOfItem, 'blueraven')
+        const {status} = await postRequest(`/expenses/addExpenseItems`, listOfItem, 'blueraven')
         if (isNew) {
           //do not add the new one to the list cuz it already got approved
           this.newReimbursementRequest = {}
@@ -544,7 +544,7 @@ export default {
 
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/expenses/markExpensesRejected`, this.selectedRequest.expenses, 'blueraven')
+        const {status} = await postRequest(`/expenses/markExpensesRejected`, this.selectedRequest.expenses, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Expenses Rejected.')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 

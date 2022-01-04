@@ -59,7 +59,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteFunction (functionId) {
+      async deleteFunction () {
         // await deleteRequest(`/processStep/${processStepId}`)
       }
     },

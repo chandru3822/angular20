@@ -327,7 +327,7 @@
                   </template>
                   <v-card>
                     <v-card-title>
-                      <span class="headline">Confirm</span>
+                      <span class="text-h5">Confirm</span>
                     </v-card-title>
                     <v-card-text>
                       Are you sure you want to archive this schedule?<br>
@@ -501,7 +501,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
-      async saveSchedule(sched, isNew) {
+      async saveSchedule(sched) {
         //clone the schedule so the times don't change on the screen, they only change for the save to the db
         let s = cloneDeep(sched)
 
