@@ -448,8 +448,8 @@
   ]]></availability.updateSlotTime>
 
   <availability.insertSlotTime><![CDATA[
-    insert into flow.resource_slot_time(resource_slot_schedule_id, start_time, end_time, created_by_id)
-    values (:resourceSlotScheduleId, :startTime::time, :endTime::time, :userId)
+  insert into flow.resource_slot_time(resource_slot_schedule_id, start_time, end_time, created_by_id, date_created, modified_by_id, date_modified)
+  values (:resourceSlotScheduleId, :startTime::time, :endTime::time, :userId, now(), :userId, now())
   ]]></availability.insertSlotTime>
 
   <availability.archiveUnusedExcludedSlots><![CDATA[
