@@ -72,7 +72,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
   import constants from "@/helpers/constants";
-  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Payroll',

@@ -154,7 +154,7 @@
                     </template>
                     <v-card>
                       <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title>
                         Confirm
                       </v-card-title>
@@ -273,7 +273,7 @@ export default {
       if(rows?.length > 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
+          const {status} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
           // this.$set(this.process, 'processStepProcesses', data.processStepProcesses)
           this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

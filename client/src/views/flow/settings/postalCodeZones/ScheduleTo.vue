@@ -141,7 +141,7 @@
                     </v-btn>
                   </template>
                   <v-card>
-                    <v-card-title class="headline grey lighten-2" primary-title>
+                    <v-card-title class="text-h5 grey lighten-2" primary-title>
                       Confirm
                     </v-card-title>
 
@@ -327,7 +327,7 @@ export default {
           r.manualAllocation = r.manualAllocationWhole ? r.manualAllocationWhole / 100 : null
         })
         if (updatedRows?.length > 0) {
-          const {data, status} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
+          const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
           this.scheduleToUsers = data
           this.getTotalManualAllocation()
           if (this.is7oaksAdmin) {

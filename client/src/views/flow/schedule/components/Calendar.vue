@@ -26,7 +26,7 @@
               </div>
               <span
                 v-if="index === 1 && selectedStates.length >= 3"
-                class="primary--text caption"
+                class="primary--text text-caption"
               >{{ selectedStates.length }} selected</span>
             </template>
             <v-list-item
@@ -71,7 +71,7 @@
               </div>
               <span
                   v-if="index === 1 && selectedOrgTypes.length >= 3"
-                  class="primary--text caption"
+                  class="primary--text text-caption"
               >{{ selectedOrgTypes.length }} selected</span>
             </template>
             <v-list-item
@@ -116,7 +116,7 @@
               </div>
               <span
                   v-if="index === 1 && selectedPositions.length >= 3"
-                  class="primary--text caption"
+                  class="primary--text text-caption"
               >{{ selectedPositions.length }} selected</span>
             </template>
             <v-list-item
@@ -160,7 +160,7 @@
               slot="selection"
               slot-scope="{ item, index }"
             >
-              <span v-if="index === 0" class="primary--text caption">
+              <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedOrgs.length }} selected
               </span>
             </template>
@@ -188,7 +188,7 @@
               slot="selection"
               slot-scope="{ item, index }"
             >
-              <span v-if="index === 0" class="primary--text caption">
+              <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedUsers.length }} selected
               </span>
             </template>
@@ -669,7 +669,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      limiter(e) {
+      limiter() {
         this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
         this.orgs.forEach(o => {
           let match = this.selectedOrgs.find(so => so.id === o.id)

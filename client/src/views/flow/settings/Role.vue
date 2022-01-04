@@ -87,7 +87,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(this.roleId) {
-            const {data, status} = await putRequest(`/role/`, this.role)
+            const {status} = await putRequest(`/role/`, this.role)
             this.$router.push({name: 'role', params: {id: this.roleId}})
             handleHidingGlobalLoader(this, status)
           } else {

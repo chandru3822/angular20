@@ -187,11 +187,10 @@
       clickRow(id){
         this.$router.push({name: 'org', params: {id}})
       },
-      filterResults(value, search, item) {
-      },
+      // filterResults(value, search, item) {
+      // },
       async getOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
           const {data, status} = await getRequestWithParams(`/org`)
           this.orgs = data

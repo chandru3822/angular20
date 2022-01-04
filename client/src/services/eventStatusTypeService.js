@@ -1,38 +1,18 @@
-import {getRequest, getRequestWithParams} from '@/helpers/helpers'
+import { getRequest } from '@/helpers/helpers'
 
 export async function getCompanyEventStatusTypes() {
-  try {
-    const {data} = await getRequest(`/event/companyStatus`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/event/companyStatus`)
 }
 
 export async function getEventStatusTypes() {
   //these are at the root level
-  try {
-    const {data} = await getRequest(`/event/status`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/event/status`)
 }
 
 export async function getAvailableForEvent(eventId) {
-  try {
-    const {data} = await getRequest(`/event/status/company/availableForEvent/${eventId}`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/event/status/company/availableForEvent/${eventId}`)
 }
 
 export async function getAssignedToEvent(eventId) {
-  try {
-    const {data} = await getRequest(`/event/status/company/availableForEvent/${eventId}`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/event/status/company/availableForEvent/${eventId}`)
 }

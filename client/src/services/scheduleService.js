@@ -1,4 +1,4 @@
-import {getRequest} from '@/helpers/helpers'
+import { getRequest } from '@/helpers/helpers'
 
 export async function getEventTypes() {
   try {
@@ -8,7 +8,3 @@ export async function getEventTypes() {
     throw e
   }
 }
-
-
-
-

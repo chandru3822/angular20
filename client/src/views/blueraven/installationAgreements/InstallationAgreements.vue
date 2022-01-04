@@ -20,11 +20,8 @@
 </template>
 
 <script>
-
-
   export default {
     name: 'installationAgreements',
-
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)

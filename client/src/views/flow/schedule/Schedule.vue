@@ -51,7 +51,7 @@
                 </div>
                 <span
                     v-if="index === 1 && selectedEventTypes.length >= 3"
-                    class="primary--text caption"
+                    class="primary--text text-caption"
                 >{{ selectedEventTypes.length }} selected</span>
               </template>
             </v-select>
@@ -202,7 +202,7 @@
                 </template>
                 <v-card>
                   <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title>
                     Confirm
                   </v-card-title>
@@ -443,7 +443,7 @@
         this.selectedProject.resourceName = this.selectedProject.resource.name
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
+          const {status} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
           this.$refs.calendar.getEvents(false, true)
           handleHidingGlobalLoader(this, status)
@@ -490,7 +490,7 @@
       },
       async getActiveStatesByHierarchy() {
         try {
-          const {data, status} = await getActiveStatesByHierarchy()
+          const {data} = await getActiveStatesByHierarchy()
           this.states = data
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -537,7 +537,7 @@
           // this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
 
           //the new way - use root statuses
-          const {data, status} = await getStatusTypes()
+          const {data} = await getStatusTypes()
           //only show active and complete
           this.processStepStatusTypes = data?.filter(d => d.id !== 3)
         } catch (e) {

@@ -34,7 +34,7 @@
           No requests found
         </template>
 
-        <template #body="{ items }" class="table-body">
+        <template #body="{ items }">
           <tr
             v-for="(it, index) in items"
             :key="it.id"
@@ -55,7 +55,7 @@
       <v-dialog v-model="requestDialog" max-width="700px">
         <v-card>
           <v-card-title>
-            <span class="headline">Document generator</span>
+            <span class="text-h5">Document generator</span>
           </v-card-title>
           <v-card-text>
             <v-row>

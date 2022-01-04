@@ -151,8 +151,13 @@
   ]]></customField.saveField>
 
   <customField.insertField><![CDATA[
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, readonly, sort_list_values_alphabetically)
-    values (:listOfValueId, :companyId, trim(:fieldName), now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly, :sortListValuesAlphabetically)
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key,
+                                  custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
+                                  readonly, sort_list_values_alphabetically,
+                                  date_created, created_by_id, date_modified, modified_by_id)
+    values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey,
+            :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly,
+            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById)
     returning id
   ]]></customField.insertField>
 
@@ -188,8 +193,8 @@
   ]]></customField.updateCustomFieldObjectType>
 
   <customField.insertCustomFieldObjectType><![CDATA[
-    insert into flow.custom_field_object_type(custom_field_id, company_object_type_id, created_by_id)
-    values (:customFieldId, :companyObjectTypeId, :userId)
+    insert into flow.custom_field_object_type(custom_field_id, company_object_type_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:customFieldId, :companyObjectTypeId, :userId, now(), :userId, now())
     ON CONFLICT do nothing;
   ]]></customField.insertCustomFieldObjectType>
 

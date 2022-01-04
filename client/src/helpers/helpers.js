@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import axios from 'axios'
 import constants from './constants'
 import { AppMutations } from '@/stores/AppStore'
@@ -100,83 +99,44 @@ export function handleHidingGlobalLoader(instance, status) {
 // pass in [] as returnType if you need an empty result to return you an empty list instead of an object
 export async function getRequest(path, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    const {data, status} = await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {data: returnType, status: null}
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {data: returnType, status: null}
 }
 
 export async function getRequestWithParams(path, params, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    const {data, status} = await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, params) ?? {data: returnType, status: null}
-    return {data, status}
-  } catch (e) {
-      throw e
-  }
+  return await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, params) ?? {data: returnType, status: null}
 }
 
 export async function postRequest(path, body, companyAbbreviation, returnType = {}, extraParams = {}) {
   //"extraParams" can be used to cancel post requests and send in the token and/or the source
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    const {data, status} = await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, extraParams) ?? {data: returnType, status: null}
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, extraParams) ?? {data: returnType, status: null}
 }
 
 export async function postRequestWithRequestParams(path, body, params, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    const {data, status} = await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params}) ?? {data: returnType, status: null}
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params}) ?? {data: returnType, status: null}
 }
 
 export async function putRequest(path, body, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    const {data, status} = await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body) ?? {data: returnType, status: null}
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body) ?? {data: returnType, status: null}
 }
 
 export async function putRequestWithRequestParams(path, body, params, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    const {data, status} = await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params}) ?? {data: returnType, status: null}
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params}) ?? {data: returnType, status: null}
 }
 
 export async function deleteRequest(path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   // not returning data as part of a delete
-  try {
-    const {status} = await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
-    return {status}
-  } catch (e) {
-    throw e
-  }
+  return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
 }
 
 export async function deleteRequestWithPayload(path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  try {
-    return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
-  } catch (e) {
-    throw e
-  }
+  return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
 }
 
 

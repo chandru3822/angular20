@@ -480,18 +480,8 @@ select sfa.id,
        case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 inner join (
-    select distinct pdc.field_to_update,
-                    pdc.display_name,
-                    pdc.data_type_id,
-                    pdc.second_field_to_update,
-                    pdc.second_data_type_id
-    from brs.project_details_config pdc
-             left join flow.custom_field_group_assignment cfga on pdc.custom_field_group_assignment_id = cfga.id
-             left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-             left join flow.process_step ps on cfg.process_step_id = ps.id
-             left join flow.process_step_process psp on ps.id = psp.process_step_id
-             left join flow.company_process cp on psp.company_process_id = cp.id
-    where (cp.process_id = 1 or pdc.custom_field_group_assignment_id = 0)
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
+  from brs.project_details_config
 ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where sfa.smartlist_id = :smartlistId and
       sfa.archived is not true

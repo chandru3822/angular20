@@ -125,7 +125,7 @@ export default {
     },
 
     updateFieldValue(field) {
-      const {code, value, id} = extractFieldData(field)
+      const {value, id} = extractFieldData(field)
       if (value.value === undefined) {
         Vue.delete(this.dirtyCfvs, id)
       } else {
@@ -144,7 +144,7 @@ export default {
       await this.fetchObjectFields(this.objectCode)
     },
 
-    closeDialog(dialog) {
+    closeDialog() {
       this.$emit('input', false)
     }
   }

@@ -225,7 +225,7 @@ export default {
       this.getContacts()
     }, 500),
     async getContacts () {
-      const { sortBy, sortDesc, page, itemsPerPage } = this.options
+      const { page, itemsPerPage } = this.options
 
       if(this.source){
         this.source.cancel();

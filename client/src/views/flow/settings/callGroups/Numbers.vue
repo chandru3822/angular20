@@ -78,7 +78,7 @@
                     </v-btn>
                   </template>
                   <v-card>
-                    <v-card-title class="headline grey lighten-2" primary-title>
+                    <v-card-title class="text-h5 grey lighten-2" primary-title>
                       Confirm
                     </v-card-title>
 
@@ -220,7 +220,7 @@
             id: item.id,
             active: item.active
           }
-          const {data, status} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
+          const {status} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)

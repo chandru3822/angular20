@@ -276,7 +276,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
 import {Actions} from "@/store"
@@ -355,7 +355,7 @@ export default {
         let selectedBudget = this.newReimbursement.expenseBudgetId ? this.availableBudgets.find(ab => ab.id === this.newReimbursement.expenseBudgetId) : null
         this.newReimbursement.expenseBudgetUserId = selectedBudget ? selectedBudget.userId : null
 
-        const {data, status} = await postRequest(`/reimbursement/request`, this.newReimbursement, 'blueraven')
+        const {status} = await postRequest(`/reimbursement/request`, this.newReimbursement, 'blueraven')
         this.newReimbursement = {}
         this.receiptLogo = {}
         this.snackbar = getSnackbar('SUCCESS', 'Reimbursement Request Submitted.')
@@ -494,7 +494,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         request.reimbursementRequestStatusId = statusId
-        const {data, status} = postRequest(`/reimbursement/request/updateStatus`, request, 'blueraven')
+        const {status} = postRequest(`/reimbursement/request/updateStatus`, request, 'blueraven')
         this.needsApprovalRequest = {}
         //dont show the one that just got approved/rejected
         this.requestsNeedingApproval = this.requestsNeedingApproval.filter((r) => r.id !== request.id)

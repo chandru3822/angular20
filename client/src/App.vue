@@ -91,11 +91,6 @@
   }
 </script>
 
-<style lang="scss">
-@import "@/styles/main.scss";
-
-</style>
-
 <style scoped lang="scss">
 #app {
   font-family: 'Lato', sans-serif;

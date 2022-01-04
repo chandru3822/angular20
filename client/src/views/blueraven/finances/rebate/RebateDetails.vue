@@ -201,7 +201,7 @@
           <v-dialog v-model="deleteConfirm" width="500">
                 <v-card>
                   <v-card-title
-                    class="headline grey lighten-2"
+                    class="text-h5 grey lighten-2"
                     primary-title
                   >
                     Confirm
@@ -476,7 +476,7 @@
         }
 
         try {
-          const {data} = await putRequest(`/contact/updateMailingAddress`, contact)
+          await putRequest(`/contact/updateMailingAddress`, contact)
           this.snackbar = getSnackbar('SUCCESS', 'Mailing address saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.editMailing = false;
@@ -535,7 +535,7 @@
           projectId: this.rebateDetails.project_id
         }
         try {
-          const {data} = await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
+          await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Total Promotion Amount saved!')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.editMailing = false;
@@ -561,7 +561,7 @@
         // If row already existed
         if (this.deleteItem.id) {
           try {
-            const {data} = await deleteRequest('/rebate/deletePayment/' + this.deleteItem.id, 'blueraven')
+            await deleteRequest('/rebate/deletePayment/' + this.deleteItem.id, 'blueraven')
             this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== this.deleteItem.payment_nbr)
             this.editMailing = false;
           } catch (e) {
@@ -585,13 +585,13 @@
                 paymentAmount: ph.payment_amount,
                 paymentStateId: ph.payment_state_id
               }
-              const {data} = await postRequest(`/rebate/updatePayment`, params, 'blueraven')
+              await postRequest(`/rebate/updatePayment`, params, 'blueraven')
             } else {
               let params = {
                 projectId: this.rebateDetails.project_id,
                 paymentAmount: ph.payment_amount
               }
-              const {data} = await postRequest(`/rebate/addExtraPayment`, params, 'blueraven')
+              await postRequest(`/rebate/addExtraPayment`, params, 'blueraven')
             }
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -618,7 +618,7 @@
             voidNote: this.notesItem.void_note
           }
 
-          const {data} = await postRequest(`/rebate/updateNote`, params, 'blueraven')
+          await postRequest(`/rebate/updateNote`, params, 'blueraven')
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving payment note')
@@ -634,7 +634,7 @@
             voidNote: item.void_note
           }
 
-          const {data} = await postRequest(`/rebate/voidPayment`, params, 'blueraven')
+          await postRequest(`/rebate/voidPayment`, params, 'blueraven')
           item.void_note = '';
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -651,7 +651,7 @@
             paymentId: item.id
           }
 
-          const {data} = await postRequest(`/rebate/unvoidPayment`, params, 'blueraven')
+          await postRequest(`/rebate/unvoidPayment`, params, 'blueraven')
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error unvoiding payment')

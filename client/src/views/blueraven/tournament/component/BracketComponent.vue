@@ -13,7 +13,7 @@
       <v-dialog v-model="showOverrideModal" class="square-card" width="500">
         <v-card>
           <v-card-title
-            class="headline grey lighten-2"
+            class="text-h5 grey lighten-2"
             primary-title>
             Bracket User Override
           </v-card-title>
@@ -81,7 +81,7 @@
                 </template>
                 <v-card>
                   <v-card-title
-                    class="headline grey lighten-2"
+                    class="text-h5 grey lighten-2"
                     primary-title
                   >
                     Confirm

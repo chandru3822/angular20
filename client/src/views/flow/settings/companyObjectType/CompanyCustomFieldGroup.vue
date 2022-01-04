@@ -94,7 +94,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title>
                           Confirm
                         </v-card-title>
@@ -127,7 +127,7 @@
 
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
+                <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
                   <v-radio-group v-if="objectType.allowAncillary"
                                  v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
@@ -176,10 +176,10 @@
                     </template>
                   </v-autocomplete>
                 </v-col>
-                <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="!item.customFields || item.customFields.length === 0">
+                <v-col cols="12" class="pl-3 pr-3 justify" v-if="!item.customFields || item.customFields.length === 0">
                   No fields assigned to this group
                 </v-col>
-                <v-col  cols="12" justify="center"  class="px-3 py-0" v-else>
+                <v-col  cols="12"  class="px-3 py-0 justify" v-else>
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                              :disabled="!userCanEdit"
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
@@ -215,7 +215,7 @@
                           </template>
                           <v-card>
                             <v-card-title
-                                class="headline grey lighten-2"
+                                class="text-h5 grey lighten-2"
                                 primary-title
                             >
                               Confirm
@@ -472,7 +472,7 @@ export default {
     async deleteGroup(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -487,7 +487,7 @@ export default {
     async deleteFieldFromGroup(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
@@ -500,10 +500,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteField(item, customFieldGroupId, customFieldGroupAssignmentId) {
+    async deleteField(item, customFieldGroupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
+        const {status} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')

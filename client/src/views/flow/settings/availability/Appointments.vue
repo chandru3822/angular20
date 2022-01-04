@@ -194,7 +194,7 @@
                   </template>
                   <v-card>
                     <v-card-title>
-                      <span class="headline">Confirm</span>
+                      <span class="text-h5">Confirm</span>
                     </v-card-title>
                     <v-card-text v-if="item.recurringEventId">
                       Do you want to delete all occurrences or this one only?<br>
@@ -330,7 +330,7 @@
         if(this.orgId || this.userId) {
           this.dataLoading = true
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const { sortBy, sortDesc, page, itemsPerPage } = this.options
+          const { page, itemsPerPage } = this.options
           try {
             const {data, status} = await getRequestWithParams(`/availability/appointments`, { params: {
                 userId: this.userId,

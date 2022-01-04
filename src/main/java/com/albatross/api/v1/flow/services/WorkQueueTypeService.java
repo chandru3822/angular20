@@ -84,7 +84,7 @@ public class WorkQueueTypeService {
     params.put("expectedCycleDurationTypeId", type.getExpectedCycleDurationTypeId() );
     params.put("inverseExpectation", null != type.getInverseExpectation() ? type.getInverseExpectation() : false );
     params.put("expectedTarget", type.getExpectedTarget() );
-    params.put("schedule", type.getSchedule().toString() );
+    params.put("schedule", null != type.getSchedule() ? type.getSchedule().toString() : null);
     sqlCache.update("workQueueType.updateType", params);
 
     return getType(type.getId());

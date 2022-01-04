@@ -240,4 +240,14 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/ascendmedia", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAscendMedia(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/solarwizard", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarWizard(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
 }

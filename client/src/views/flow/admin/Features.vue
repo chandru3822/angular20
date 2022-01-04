@@ -99,7 +99,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                        class="headline grey lighten-2"
+                        class="text-h5 grey lighten-2"
                         primary-title>
                       Confirm
                     </v-card-title>
@@ -142,7 +142,6 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";

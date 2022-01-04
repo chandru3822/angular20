@@ -4,7 +4,7 @@
       v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="headline error--text">
+        <v-card-title class="text-h5 error--text">
           Error Deleting Requirement
         </v-card-title>
 
@@ -469,7 +469,7 @@
                         </template>
                         <v-card>
                           <v-card-title
-                            class="headline grey lighten-2"
+                            class="text-h5 grey lighten-2"
                             primary-title>
                             Confirm
                           </v-card-title>
@@ -510,19 +510,14 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
-import cloneDeep from 'lodash.clonedeep'
-import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-import {getActiveAssignedToProcessStep, getAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import { getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import {
   getRequest,
-  deleteRequest,
   putRequest,
   postRequest,
   getRequestWithParams,
   getSnackbar
 } from '@/helpers/helpers'
-import orderBy from 'lodash.orderby'
-import Sortable from "sortablejs";
 
 export default {
   name: 'ProcessStepRequirements',

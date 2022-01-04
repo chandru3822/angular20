@@ -3,7 +3,7 @@
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="text-h5 grey lighten-2"
           primary-title
         >
           Confirm
@@ -268,7 +268,7 @@
               </template>
               <v-card>
                 <v-card-title
-                  class="headline grey lighten-2"
+                  class="text-h5 grey lighten-2"
                   primary-title>
                   Confirm
                 </v-card-title>
@@ -481,7 +481,7 @@ export default {
       try {
         // save contact - tell server if address changed or not so we know whether to reload lat/long
         this.contact.reloadCoordinates = this.addressChanged
-        const {data, status} = await postRequest(`/contact`, this.contact)
+        const {data} = await postRequest(`/contact`, this.contact)
         this.addressChanged = false
         this.contact.reloadCoordinates = false
         this.contact.projects = data.projects
@@ -594,7 +594,7 @@ export default {
       this.changeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
+        const {status} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.contact.owner = {}

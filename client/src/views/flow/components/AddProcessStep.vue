@@ -148,7 +148,7 @@ export default {
     addStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
+        const {status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
           projectId: this.projectId,
           processStepId: (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id,
           main: true

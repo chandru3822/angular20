@@ -89,7 +89,7 @@
                         </template>
                         <v-card>
                           <v-card-title
-                            class="headline grey lighten-2"
+                            class="text-h5 grey lighten-2"
                             primary-title>
                             Confirm
                           </v-card-title>
@@ -138,8 +138,7 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getRequestWithParams,
-  getSnackbar, logError
+  getSnackbar
 } from '@/helpers/helpers'
 
 export default {
@@ -271,7 +270,7 @@ export default {
       if (rows?.length > 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/processStep/${this.processStepId}/event/order`, rows)
+          await putRequest(`/processStep/${this.processStepId}/event/order`, rows)
           this.snackbar = getSnackbar('SUCCESS', 'Event Order Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

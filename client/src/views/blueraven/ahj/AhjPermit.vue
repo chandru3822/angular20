@@ -621,7 +621,7 @@
     <v-dialog v-model="saveDialog" max-width="700">
       <v-card>
         <v-card-title>
-          <span class="headline">Save Changes</span>
+          <span class="text-h5">Save Changes</span>
         </v-card-title>
 
         <v-divider></v-divider>
@@ -657,7 +657,7 @@
     <v-dialog v-model="saveConfirmDialog" max-width="500">
       <v-card>
         <v-card-title>
-          <span class="headline">Confirm</span>
+          <span class="text-h5">Confirm</span>
         </v-card-title>
 
         <v-card-text class="pb-0 py-2">

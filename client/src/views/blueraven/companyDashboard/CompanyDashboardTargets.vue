@@ -27,7 +27,7 @@
                         :items-per-page="5"
                         mobile-breakpoint=""
                         dense>
-            <template #item="{ item }" class="table-body">
+            <template #item="{ item }">
               <tr>
                 <td class="fixed-col-1">{{ item.targetDate | formatDate('date', 'MM/DD/YYYY') }}</td>
                 <td class="fixed-col-2">

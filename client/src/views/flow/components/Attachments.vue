@@ -30,7 +30,7 @@
         </v-col>
       </v-row>
       <v-row v-else>
-        <v-col cols="4" class="text-left" pb-0>
+        <v-col cols="4" class="text-left pb-0">
           <v-btn @click="displayType = null">Back</v-btn>
         </v-col>
         <v-col cols="3" class="text-left py-0">
@@ -121,7 +121,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title>
                           Confirm
                         </v-card-title>

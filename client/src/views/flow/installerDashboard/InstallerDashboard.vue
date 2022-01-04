@@ -47,7 +47,7 @@
                   slot="selection"
                   slot-scope="{ item, index }"
                 >
-                <span v-if="index === 0" class="primary--text caption">
+                <span v-if="index === 0" class="primary--text text-caption">
                   {{ selectedRegionalManagers.length }} selected
                 </span>
                 </template>
@@ -79,7 +79,7 @@
                   slot="selection"
                   slot-scope="{ item, index }"
                 >
-                <span v-if="index === 0" class="primary--text caption">
+                <span v-if="index === 0" class="primary--text text-caption">
                   {{ selectedInstallationCrews.length }} selected
                 </span>
                 </template>
@@ -249,7 +249,7 @@
                     slot="selection"
                     slot-scope="{ item, index }"
                   >
-                  <span v-if="index === 0" class="primary--text caption">
+                  <span v-if="index === 0" class="primary--text text-caption">
                     {{ selectedRegionalManagers.length }} selected
                   </span>
                   </template>
@@ -281,7 +281,7 @@
                     slot="selection"
                     slot-scope="{ item, index }"
                   >
-                  <span v-if="index === 0" class="primary--text caption">
+                  <span v-if="index === 0" class="primary--text text-caption">
                     {{ selectedInstallationCrews.length }} selected
                   </span>
                   </template>

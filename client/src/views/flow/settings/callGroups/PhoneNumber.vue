@@ -39,7 +39,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
