@@ -54,8 +54,6 @@
   </v-time-picker>
 </v-menu>
 </template>
-
-
 <script>
 
 import {DateTime} from 'luxon'
@@ -238,6 +236,3 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss">
-</style>

@@ -88,7 +88,7 @@
               </template>
               <v-card>
                 <v-card-title>
-                  <span class="headline">Confirm</span>
+                  <span class="text-h5">Confirm</span>
                 </v-card-title>
                 <v-card-text>
                   Are you sure you want to archive this requirement?<br>

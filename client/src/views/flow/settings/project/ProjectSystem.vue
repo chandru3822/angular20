@@ -45,7 +45,7 @@
             </v-chip>
             <span
               v-if="index === 1 && projectObjectType.statusReadOnlyWhiteListedPositions && projectObjectType.statusReadOnlyWhiteListedPositions.length >= 2"
-              class="primary--text caption"
+              class="primary--text text-caption"
             >{{ projectObjectType.statusReadOnlyWhiteListedPositions.length }} selected</span>
           </template>
         </v-autocomplete>
@@ -102,7 +102,7 @@
             </v-chip>
             <span
               v-if="index === 1 && projectObjectType.ownerReadOnlyWhiteListedPositions && projectObjectType.ownerReadOnlyWhiteListedPositions.length >= 2"
-              class="primary--text caption"
+              class="primary--text text-caption"
             >{{ projectObjectType.ownerReadOnlyWhiteListedPositions.length }} selected</span>
           </template>
         </v-autocomplete>
@@ -205,7 +205,7 @@
       async saveReadOnlyAndWhiteList () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${this.statusReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
+          const {status} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${this.statusReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
           this.statusReadOnlyPositionsChanged = false
           if(!this.projectObjectType.statusReadOnly) {
             this.statusReadOnlyWhiteListedPositions = []

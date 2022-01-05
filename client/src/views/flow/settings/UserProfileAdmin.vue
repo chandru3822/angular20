@@ -50,12 +50,9 @@
 
 
 <script>
-import { Actions } from '@/store'
-import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import {getUserProfileDefaultFields} from '@/services/userService'
-
-import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -111,7 +108,3 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>

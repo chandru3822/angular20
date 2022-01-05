@@ -4,7 +4,7 @@
       v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="headline error--text">
+        <v-card-title class="text-h5 error--text">
           {{deleteHeader}}
         </v-card-title>
 
@@ -164,7 +164,7 @@
                         </template>
                         <v-card>
                           <v-card-title
-                            class="headline grey lighten-2"
+                            class="text-h5 grey lighten-2"
                             primary-title>
                             Confirm
                           </v-card-title>
@@ -201,7 +201,7 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
-                  <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
+                  <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
                     <v-radio-group v-model="newFieldType"
                                    @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
@@ -252,11 +252,11 @@
                     </v-autocomplete>
                     <v-btn @click="addField = false">Cancel</v-btn>
                   </v-col>
-                  <v-col cols="12" justify="center" class="px-3 py-0 pt-2"
+                  <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
                     No Custom Fields Added
                   </v-col>
-                  <v-col cols="12" justify="center" class="px-3 py-0"
+                  <v-col cols="12" class="px-3 py-0 justify"
                          v-if="item.customFields && item.customFields.length > 0">
                     <div v-if="item.eventTypeId">Scheduling Tool Event Type: {{item.eventType}}</div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
@@ -322,7 +322,7 @@
                                             </v-chip>
                                             <span
                                               v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
-                                              class="primary--text caption"
+                                              class="primary--text text-caption"
                                             >{{ cf.whiteListedPositions.length }} selected</span>
                                           </template>
                                         </v-autocomplete>
@@ -382,7 +382,7 @@
                                             </v-chip>
                                             <span
                                               v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
-                                              class="primary--text caption"
+                                              class="primary--text text-caption"
                                             >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
                                           </template>
                                         </v-autocomplete>
@@ -445,7 +445,7 @@
                             </template>
                             <v-card>
                               <v-card-title
-                                class="headline grey lighten-2"
+                                class="text-h5 grey lighten-2"
                                 primary-title>
                                 Confirm
                               </v-card-title>
@@ -775,7 +775,7 @@
       async saveReadOnlyAndWhiteList(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+          const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
           field.positionsChanged = false
           if (!field.customFieldGroupAssignmentReadOnly) {
             this.$set(field, 'whiteListedPositions', [])
@@ -791,7 +791,7 @@
       async saveHiddenAndWhiteList(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
+          const {status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
           field.hiddenPositionsChanged = false
           if (!field.customFieldGroupAssignmentHidden) {
             this.$set(field, 'hiddenWhiteListedPositions', [])

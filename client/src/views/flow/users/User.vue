@@ -3,7 +3,7 @@
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="text-h5 grey lighten-2"
           primary-title
         >
           Confirm
@@ -106,14 +106,14 @@
 </template>
 
 <script>
-  import store, { Actions } from '@/store'
+  import { Actions } from '@/store'
   import {AppMutations} from '@/stores/AppStore'
   import axios from 'axios'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import {UserActions, UserMutations} from "@/stores/UserStore";
+  import {UserMutations} from "@/stores/UserStore";
 
   export default {
     name: 'User',

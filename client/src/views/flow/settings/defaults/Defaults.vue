@@ -17,9 +17,6 @@
 </template>
 
 <script>
-
-  import store from "@/store";
-
   export default {
     name: 'Defaults',
 
@@ -44,11 +41,7 @@
         ]
       }
     },
-    created() {
-
-    },
-    methods: {
-
-    }
+    created() {},
+    methods: {}
   }
 </script>

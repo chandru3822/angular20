@@ -63,7 +63,7 @@
             </tr>
           </template>
 
-          <template #item="{ item, index }" class="table-body">
+          <template #item="{ item, index }">
             <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
               <td class="text-left" :class="{'strike': item.archived}">{{ item.name ? item.name : '' }}</td>
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
@@ -89,7 +89,7 @@
         <v-dialog v-model="ahjUtilityDialog" max-width="500px">
           <v-card>
             <v-card-title>
-              <span class="headline">{{ ahjUtilityFormTitle }}</span>
+              <span class="text-h5">{{ ahjUtilityFormTitle }}</span>
             </v-card-title>
 
             <v-card-text>

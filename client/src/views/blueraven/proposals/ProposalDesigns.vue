@@ -98,7 +98,7 @@
     <v-dialog width="500" v-model="showNewDesignRequestForm">
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="text-h5 grey lighten-2"
           primary-title
         >
           Request New design
@@ -154,8 +154,7 @@ import {
   logError,
   getRequest,
   postRequest,
-  formatPhoneNumber,
-  getSnackbar
+  formatPhoneNumber
 } from '@/helpers/helpers'
 import {AppMutations} from "@/stores/AppStore";
 import moment from 'moment'

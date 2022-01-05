@@ -50,7 +50,7 @@
         class="elevation-1 pay-table"
       >
 
-        <template #body="{ items }" class="table-body">
+        <template #body="{ items }">
           <tr
             v-for="(it, index) in items"
             :key="it.id"

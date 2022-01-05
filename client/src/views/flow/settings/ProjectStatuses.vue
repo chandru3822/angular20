@@ -65,7 +65,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title>
                       Confirm
                     </v-card-title>
@@ -172,7 +172,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -334,7 +334,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_DELETE, {
             id: item.icon.id,
-            callback: async (status) => {
+            callback: async () => {
               item.icon = {}
               // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
               this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')

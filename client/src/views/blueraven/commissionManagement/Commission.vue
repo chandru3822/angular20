@@ -30,7 +30,7 @@
             </template>
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Confirm
               </v-card-title>
@@ -67,7 +67,7 @@
             </template>
             <v-card v-if="planHasActiveUsers()">
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Error
               </v-card-title>
@@ -94,7 +94,7 @@
             </v-card>
             <v-card v-else>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title>
                 Confirm
               </v-card-title>
@@ -136,7 +136,7 @@
 
             <v-card>
               <v-card-title
-                class="headline grey lighten-2"
+                class="text-h5 grey lighten-2"
                 primary-title
               >
                 Clone {{commission.name}}
@@ -386,7 +386,7 @@
                     </v-btn>
                   </template>
                   <v-card v-if="checkIfMilestoneUsed(item.milestoneId)">
-                    <v-card-title class="headline grey lighten-2" primary-title>
+                    <v-card-title class="text-h5 grey lighten-2" primary-title>
                       Error
                     </v-card-title>
                     <v-card-text>
@@ -401,7 +401,7 @@
                     </v-card-actions>
                   </v-card>
                   <v-card v-else>
-                    <v-card-title class="headline grey lighten-2" primary-title>
+                    <v-card-title class="text-h5 grey lighten-2" primary-title>
                       Confirm
                     </v-card-title>
 
@@ -551,7 +551,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -759,7 +759,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -798,7 +798,6 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -828,12 +827,12 @@
         //they can't switch between Setter/Closer while on an actual commission plan
         this.$router.push(`/commissionManagement/commissions`)
       },
-      $route(to, from) {
+      $route(to) {
         // react to route changes...
         this.planId = to.params.id
         this.getCommissionDetails()
       },
-      userSearch (val, test, third) {
+      userSearch (val) {
         if(!val) {
           this.usersToAdd = []
           this.newUser.userId = null
@@ -1135,7 +1134,7 @@
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
+          const {status} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
@@ -1235,7 +1234,7 @@
       async updateMilestone(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
+          const {status} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
           this.checkErrorMessages()
           handleHidingGlobalLoader(this, status)
         } catch (e) {

@@ -16,8 +16,6 @@
 </template>
 
 <script>
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, deleteRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
@@ -41,10 +39,7 @@ export default {
       ],
     }
   },
-  created() {
-  },
-  methods: {
-
-  }
+  created() {},
+  methods: {}
 }
 </script>

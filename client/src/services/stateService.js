@@ -1,52 +1,22 @@
-import {getRequest, getRequestWithParams} from '@/helpers/helpers'
+import { getRequest, getRequestWithParams } from '@/helpers/helpers'
 
 export async function getStates() {
-  try {
-    const {data, status} = await getRequest(`/state`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/state`)
 }
 
 export async function getAvailableStates() {
-  try {
-    const {data, status} = await getRequest(`/state/available`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/state/available`)
 }
 
 export async function getCompanyStates(companyId) {
-  try {
-    let params = {
-      companyId
-    }
-    const {data, status} = await getRequestWithParams(`/state/company`, {params})
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  let params = { companyId }
+  return await getRequestWithParams(`/state/company`, { params })
 }
 
 export async function getActiveStates() {
-  try {
-    const {data, status} = await getRequest(`/state/active`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/state/active`)
 }
 
 export async function getActiveStatesByHierarchy() {
-  try {
-    const {data, status} = await getRequest(`/state/activeByHierarchy`, null, [])
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/state/activeByHierarchy`, null, [])
 }
-
-
-

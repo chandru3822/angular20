@@ -108,7 +108,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                        class="headline grey lighten-2"
+                        class="text-h5 grey lighten-2"
                         primary-title>
                       Confirm
                     </v-card-title>
@@ -150,7 +150,6 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import {getOrgFilters, getOrgLevels} from '@/services/orgService'
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'

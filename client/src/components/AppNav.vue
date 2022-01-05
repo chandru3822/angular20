@@ -106,7 +106,6 @@ import {AppMutations} from '@/stores/AppStore'
 import {UserActions, UserMutations} from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
@@ -117,8 +116,6 @@ const { VUE_APP_ENV } = process.env
 export default {
   name: 'appNav',
   components: {
-
-
     AccountMenu,
     CompanyTools,
   },

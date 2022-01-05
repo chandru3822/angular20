@@ -3,8 +3,8 @@
   publish = "dist/"
   ignore = "git diff --quiet HEAD^ HEAD ."
 
-[build.environment]
-  NODE_VERSION = "12.18.3"
+# [build.environment]
+#   NODE_VERSION = "12.18.3"
 
 [context.release]
   publish = "client/dist/"

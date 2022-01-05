@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { register } from 'register-service-worker'
 
 register('/service-worker.js', {

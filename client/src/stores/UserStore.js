@@ -68,7 +68,7 @@ export const UserStore = {
         )
       }
     },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit, state }, params) => {
+    [UserActions.CHANGE_CONTEXT]: async ({ commit }, params) => {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
@@ -102,14 +102,14 @@ export const UserStore = {
       // 1 is the master company id
       return state.details.highestCompanyId === 1
     },
-    isParent: state => parentId => {
+    isParent: () => parentId => {
       // is albatross or parentId is null (no longer checking for parentId is null due to single context)
       return parentId === 1
     },
-    isCompanyRoot: state => companyId => {
+    isCompanyRoot: () => companyId => {
       return companyId === 1
     },
-    isSystemAdmin: state => highestCompanyId => {
+    isSystemAdmin: () => highestCompanyId => {
       return highestCompanyId === 1
     },
     userHasFeatureAccessLevel: (state, getters) => (featureCode, accessCode) => {

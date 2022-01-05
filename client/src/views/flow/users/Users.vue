@@ -98,7 +98,7 @@
                     </v-chip>
                     <span
                         v-if="index === 1 && filters.orgs[header.level] && filters.orgs[header.level].length >= 2"
-                        class="primary--text caption"
+                        class="primary--text text-caption"
                     >{{ filters.orgs[header.level].length }} selected</span>
                   </template>
                   <template #item="{ item }">
@@ -150,7 +150,7 @@
                     </v-chip>
                     <span
                         v-if="index === 1 && filters.statuses.length >= 2"
-                        class="primary--text caption"
+                        class="primary--text text-caption"
                     >{{ filters.statuses.length }} selected</span>
                   </template>
                 </v-autocomplete>
@@ -175,7 +175,7 @@
                     </v-chip>
                     <span
                         v-if="index === 1 && filters.positions && filters.positions.length >= 2"
-                        class="primary--text caption"
+                        class="primary--text text-caption"
                     >{{ filters.positions.length }} selected</span>
                   </template>
                 </v-autocomplete>
@@ -215,7 +215,7 @@
     <v-dialog v-model="selectedUsersDialog" max-width="700px" class="selected-users-dialog">
       <v-card>
         <v-card-title>
-          <span class="headline">Selected Users</span>
+          <span class="text-h5">Selected Users</span>
         </v-card-title>
         <v-data-table
           :headers="usersTableHeaders"
@@ -251,7 +251,7 @@
 
     <v-dialog v-model="msgDialog" max-width="800px">
       <v-card>
-        <v-card-title class="headline" primary-title>
+        <v-card-title class="text-h5" primary-title>
             Send Bulk Emails/Texts
         </v-card-title>
           <v-toolbar-items>
@@ -290,7 +290,7 @@
               </v-chip>
               <span
                 v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
-                class="primary--text caption"
+                class="primary--text text-caption"
               >{{ selectedUsers.length }} selected</span>
             </template>
 
@@ -378,7 +378,7 @@
                 </v-chip>
                 <span
                   v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
-                  class="primary--text caption"
+                  class="primary--text text-caption"
                 >{{ selectedUsers.length }} selected</span>
               </template>
 
@@ -693,7 +693,7 @@
             const params = {
               orgs: this.getOrgIds()
             }
-            const {data, status} = await postRequest(`/org/orgHierarchyFilter`, params, null, [])
+            const {data} = await postRequest(`/org/orgHierarchyFilter`, params, null, [])
             data.forEach(d => {
               //get index of the each header
               let index = this.headers.findIndex(h => h.level === d.orgLevelId)
@@ -766,7 +766,7 @@
       },
       async getPositions () {
         try {
-          const {data, status} = await getRequest(`/position`)
+          const {data} = await getRequest(`/position`)
           this.positions = data
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -952,7 +952,7 @@
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
       },
-      onEmailMessageChange({ quill, html, text }) {
+      onEmailMessageChange({ text }) {
           this.emailCharacterCount = text.trim().length;
           this.emailWordCount = text.trim().split(' ').length;
       },
