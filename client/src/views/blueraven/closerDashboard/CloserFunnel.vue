@@ -92,7 +92,7 @@
                         return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text caption">
+                  <span v-if="index === 0" class="grey--text text-caption">
                     {{ brsProvidedSourceModel.length }} Checked
                   </span>
                 </template>
@@ -123,7 +123,7 @@
                         return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text caption">
+                  <span v-if="index === 0" class="grey--text text-caption">
                     {{ selfGenSourceModel.length }} Checked
                   </span>
                 </template>
@@ -184,7 +184,7 @@
                             @input="areaValuesChanged = true"
                             return-object>
               <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text caption">
+              <span v-if="index === 0" class="grey--text text-caption">
                 {{ areaModel.length }} Checked
               </span>
               </template>
@@ -227,7 +227,7 @@
                             return-object
                             ref="regionSelect">
               <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text caption">
+              <span v-if="index === 0" class="grey--text text-caption">
                 {{ regionModel.length }} Checked
               </span>
               </template>
@@ -270,7 +270,7 @@
                             @input="districtValuesChanged = true"
                             return-object>
               <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text caption">
+              <span v-if="index === 0" class="grey--text text-caption">
                 {{ districtModel.length }} Checked
               </span>
               </template>
@@ -313,7 +313,7 @@
                             return-object
                             ref="officeSelect">
               <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text caption">
+              <span v-if="index === 0" class="grey--text text-caption">
                 {{ officeModel.length }} Checked
               </span>
               </template>
@@ -355,7 +355,7 @@
                             return-object
                             ref="repSelect">
               <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text caption">
+              <span v-if="index === 0" class="grey--text text-caption">
                 {{ repModel.length }} Checked
               </span>
               </template>
@@ -631,7 +631,7 @@
               :items-per-page="500"
               :footer-props="footerProps"
             >
-              <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+              <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
                 <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
                     :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                   <td style="text-align: center">
@@ -759,7 +759,7 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {
@@ -1464,7 +1464,7 @@ export default {
       this.apptsToFdcPipelineLoaded = true
     },
 
-    async regionLoad(preSelectLists, loadedFromHigher) {
+    async regionLoad(preSelectLists) {
       if (!this.currentUserId) return
 
       let areas = this.areaModel.map(function (area) {
@@ -1510,7 +1510,7 @@ export default {
       this.apptsToFdcPipelineData = []
     },
 
-    async districtLoad(preSelectLists, loadedFromHigher) {
+    async districtLoad(preSelectLists) {
       if (!this.currentUserId) return
 
       let areas = this.areaModel.map(function (area) {
@@ -1553,7 +1553,7 @@ export default {
       this.apptsToFdcPipelineLoaded = true
     },
 
-    async officeLoad(preSelectLists, loadedFromHigher) {
+    async officeLoad(preSelectLists) {
       if (!this.currentUserId) return
 
 

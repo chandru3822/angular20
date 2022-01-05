@@ -70,7 +70,7 @@ export default {
     this.mapbox = Mapbox
   },
   methods: {
-    async changeMapLocation(event) {
+    async changeMapLocation() {
       // Here we catching 'load' map event
       await this.asyncActions.flyTo({
         center: [this.longitude, this.latitude],

@@ -156,7 +156,7 @@
             hide-default-footer
             class="elevation-1"
           >
-            <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
+            <template v-if="drilldownData.length > 0" #item="{ item, index }">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
                 <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
@@ -195,7 +195,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
 

@@ -77,7 +77,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm

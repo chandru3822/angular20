@@ -4,7 +4,7 @@
       v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="headline error--text">
+        <v-card-title class="text-h5 error--text">
           Error Deleting Process Step
         </v-card-title>
 
@@ -103,7 +103,7 @@
                       </template>
                       <v-card>
                         <v-card-title
-                          class="headline grey lighten-2"
+                          class="text-h5 grey lighten-2"
                           primary-title
                         >
                           Confirm

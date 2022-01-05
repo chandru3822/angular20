@@ -221,7 +221,7 @@
 <script>
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
 
@@ -413,7 +413,7 @@
         try {
           this.topRepsLoading = true
           const params = {limit: 5, days: this.timeInterval}
-          const {data, status} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
+          const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
           if (this.reps.length > 0) {
@@ -462,7 +462,7 @@
       async getTopOffices () {
         try {
           this.topOfficesLoading = true
-          const {data, status} = await getRequestWithParams('/setterDashboard/topOffices',
+          const {data} = await getRequestWithParams('/setterDashboard/topOffices',
             {
               params: {
                 limit: 5,

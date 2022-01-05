@@ -327,7 +327,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_DELETE, {
           id,
-          callback: async (status) => {
+          callback: async () => {
             this.profileImage = {}
             this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')

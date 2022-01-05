@@ -150,9 +150,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 @import "@/styles/main.scss";
-
 tr:nth-of-type(even) {
     @extend .shaded-row;
 }

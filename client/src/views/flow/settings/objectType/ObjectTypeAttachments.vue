@@ -47,7 +47,7 @@
                   </template>
                   <v-card>
                     <v-card-title
-                      class="headline grey lighten-2"
+                      class="text-h5 grey lighten-2"
                       primary-title
                     >
                       Confirm
@@ -137,7 +137,7 @@ export default {
       try {
         this.addNewType = !this.addNewType
         if (this.addNewType) {
-          const {data, status} = await getRequest(`/attachmentType/typesForObjectType/${this.$route.params.id}`)
+          const {data} = await getRequest(`/attachmentType/typesForObjectType/${this.$route.params.id}`)
           this.availableAttachmentTypes = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)

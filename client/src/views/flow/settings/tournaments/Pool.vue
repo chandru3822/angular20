@@ -145,7 +145,7 @@
                     </template>
                     <v-card>
                       <v-card-title
-                        class="headline grey lighten-2"
+                        class="text-h5 grey lighten-2"
                         primary-title>
                         Confirm
                       </v-card-title>
@@ -243,7 +243,7 @@
                     </template>
                     <v-card>
                       <v-card-title
-                        class="headline grey lighten-2"
+                        class="text-h5 grey lighten-2"
                         primary-title>
                         Confirm
                       </v-card-title>
@@ -343,7 +343,7 @@
     },
     watch: {
       // whenever pool type id changes, this function will run
-      '$route.params.poolTypeId': function (oldObjectTypeId, newObjectTypeId) {
+      '$route.params.poolTypeId': function () {
         // reset the selected group when the object type changes
         this.poolTypeId = parseInt(this.$route.params.poolTypeId)
         this.pool = {}
@@ -502,7 +502,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_DELETE, {
             id,
-            callback: async (status) => {
+            callback: async () => {
               this.pool.backgroundAttachmentId = null
               this.pool.backgroundAttachmentPresignedUrl = null
               // this.$store.commit(UserMutations.SET_USER_IMAGE, {})

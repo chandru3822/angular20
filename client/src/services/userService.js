@@ -1,21 +1,11 @@
-import {getRequest} from '@/helpers/helpers'
+import { getRequest } from '@/helpers/helpers'
 
 export async function getUserStatusTypes() {
-  try {
-    const {data} = await getRequest(`/user/statuses`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/user/statuses`)
 }
 
 export async function getUserProfileDefaultFields() {
-  try {
-    const {data} = await getRequest(`/defaultField/userProfile`)
-    return {data, status}
-  } catch (e) {
-    throw e
-  }
+  return await getRequest(`/defaultField/userProfile`)
 }
 
 
