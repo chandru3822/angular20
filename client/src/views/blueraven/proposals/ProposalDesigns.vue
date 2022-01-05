@@ -59,8 +59,13 @@
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
               <v-list-item-title>Proposal {{ proposal.id }}</v-list-item-title>
-              <v-list-item-subtitle class="design-small-gray">
-                {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+              <v-list-item-subtitle>
+                <v-container class="design-small-gray subtitle-container">
+                  <v-row>
+                    <v-col class="pt-2 pb-0">more info</v-col> <!--todo: use actual info here-->
+                    <v-col class="pt-2 pb-0 text-right">{{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}</v-col>
+                  </v-row>
+                </v-container>
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -81,9 +86,9 @@
         <div style="position:absolute; top: 0">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
       </v-card>
       <v-card width="355" height="535" class="proposal-card request-new"
-          :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
+              :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
         <v-btn :disabled="activeDesign && null != activeDesign.projectId"
-          text @click="showNewDesignRequestForm = true">
+               text @click="showNewDesignRequestForm = true">
           <v-icon :size="60">add</v-icon>
         </v-btn>
         <div class="mt-5">
@@ -98,8 +103,8 @@
     <v-dialog width="500" v-model="showNewDesignRequestForm">
       <v-card>
         <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
+            class="text-h5 grey lighten-2"
+            primary-title
         >
           Request New design
         </v-card-title>
@@ -111,23 +116,23 @@
           </v-textarea>
 
           <v-file-input
-            dense
-            class="mb-3"
-            multiple
-            :accept="acceptedFileTypes"
-            ref="fileInput"
-            hide-details
-            label="Attach utility bill, notes/drawings for reference"
-            @change="uploadFiles"
+              dense
+              class="mb-3"
+              multiple
+              :accept="acceptedFileTypes"
+              ref="fileInput"
+              hide-details
+              label="Attach utility bill, notes/drawings for reference"
+              @change="uploadFiles"
           />
 
           <DatetimePickerInput
-            v-model="newDesignRequest.dueDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
-            :min-date="minDate"
-            label="Pick a due date and time (Required)"
+              v-model="newDesignRequest.dueDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              :min-date="minDate"
+              label="Pick a due date and time (Required)"
           />
 
         </v-card-text>
@@ -135,10 +140,10 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="primaryCustom"
-            class="white--text"
-            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
-            @click="requestNewDesign()">
+              color="primaryCustom"
+              class="white--text"
+              :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+              @click="requestNewDesign()">
             Request
           </v-btn>
         </v-card-actions>
@@ -322,6 +327,10 @@ export default {
 .design-small-gray {
   color: #808588;
   font-size: 12px;
+}
+
+.subtitle-container {
+  padding:0;
 }
 
 .proposal-container {
