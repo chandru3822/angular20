@@ -33,7 +33,7 @@
     select ppse.*,
            cest.event_status_type,
            cpsst2.process_step_status_type_id as root_project_process_step_status_type_id,
-           case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
+           case when sl.system_list_type_id = 1 then o.org_name when u.first_name is null and u.last_name is null then null else concat(u.first_name, ' ', u.last_name) end as resource,
            e.event_name,
            e.resource_custom_field_id,
            pse.event_id,
