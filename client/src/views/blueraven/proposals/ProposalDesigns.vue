@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <router-link :to="`/proposals`">Back</router-link>
-        <div class="project-title">
+        <div class="proposal-designs-title font-weight-bold">
           {{ project.projectName }}
         </div>
         <div class="project-subtitle">
@@ -20,11 +20,11 @@
     </v-row>
     <v-divider></v-divider>
     <v-toolbar flat color="transparent">
-      <v-toolbar-title class="app-title">Designs and Proposals</v-toolbar-title>
+      <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
     </v-toolbar>
     <v-row class="mx-2">
       <v-card v-for="(d, idx) in designs" :key="idx"
-              width="355" height="535" class="pa-5 proposal-card">
+              width="355" height="535" class="pa-4 proposal-card">
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <v-img name="designImg"
                  class="design-image"
@@ -48,7 +48,7 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primaryCustom" dark class="mt-3 one-hunned" @click="addProposal(d)">
+        <v-btn color="primaryCustom" dark class="mt-4 one-hunned text-capitalize font-weight-bold" @click="addProposal(d)">
           Create new proposal
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
@@ -58,7 +58,7 @@
             class="proposal-container"
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
-              <v-list-item-title>Proposal {{ proposal.id }}</v-list-item-title>
+              <v-list-item-title class="proposal-title">Proposal {{ proposal.id }}</v-list-item-title>
               <v-list-item-subtitle>
                 <v-container class="design-small-gray subtitle-container">
                   <v-row>
@@ -282,12 +282,15 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.project-title {
-  font-size: 20px;
+.proposal-designs-title {
+  font-size: 18px;
+	color: var(--v-blackText-base);
+	font-weight: bold;
 }
 
 .project-subtitle {
-  font-size: 15px;
+  font-size: 14px;
+	color: var(--v-blackText-base);
 }
 
 .proposal-card {
@@ -327,6 +330,11 @@ export default {
 .design-small-gray {
   color: #808588;
   font-size: 12px;
+}
+
+.proposal-title {
+	font-size: 14px;
+	color: var(--v-blackText-base);
 }
 
 .subtitle-container {
