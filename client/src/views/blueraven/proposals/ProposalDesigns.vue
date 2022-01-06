@@ -1,6 +1,6 @@
 <template>
   <v-container id="proposals-container">
-    <v-row>
+    <v-row class="ml-0 mr-0">
       <v-col cols="12">
         <router-link :to="`/proposals`">Back</router-link>
         <div class="proposal-designs-title font-weight-bold">
@@ -53,10 +53,10 @@
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
-            v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
-            :key="index" two-line
-            class="proposal-container"
-            @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
+              v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
+              :key="index" two-line
+              class="proposal-container"
+              @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
               <v-list-item-title class="proposal-title">Proposal {{ proposal.id }}</v-list-item-title>
               <v-list-item-subtitle>
@@ -72,16 +72,16 @@
         </v-list>
         <div class="mt-6 ml-4" v-else>No Proposals Available</div>
         <div class="slice-selectors" v-if="d.proposals.length > numberToDisplay">
-          <v-btn text
-                 :disabled="d.offset === 0"
-                 @click="d.offset--">
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
-          <v-btn text
-                 :disabled="disableAddSlice(d.proposals.length, d.offset)"
-                 @click="d.offset++">
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
+
+          <v-icon dense
+                  class="pr-1 pb-3"
+                  :disabled="d.offset === 0"
+                  @click="d.offset--">mdi-chevron-left</v-icon>
+          <v-icon dense
+                  class="pl-1 pb-3"
+                  :disabled="disableAddSlice(d.proposals.length, d.offset)"
+                  @click="d.offset++">mdi-chevron-right</v-icon>
+
         </div>
         <div style="position:absolute; top: 0">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
       </v-card>
@@ -101,17 +101,22 @@
       </v-card>
     </v-row>
     <v-dialog width="500" v-model="showNewDesignRequestForm">
-      <v-card>
+      <v-card class="pa-6">
         <v-card-title
-            class="text-h5 grey lighten-2"
+            color="blackText"
+            class="text-h6 text-capitalize pa-0 font-weight-bold"
             primary-title
-        >
-          Request New design
+        >Request New design
+          <v-spacer></v-spacer>
+          <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
         </v-card-title>
-
-        <v-card-text class="pt-4">
+        <v-card-text class="pt-4 px-0">
           Describe your request (Required)
-          <v-textarea required auto-grow filled
+          <v-textarea required
+                      auto-grow
+                      outlined
+                      counter="250"
+                      color="#808588"
                       v-model="newDesignRequest.description">
           </v-textarea>
 
@@ -137,11 +142,11 @@
 
         </v-card-text>
 
-        <v-card-actions>
+        <v-card-actions class="pa-0">
           <v-spacer></v-spacer>
           <v-btn
               color="primaryCustom"
-              class="white--text"
+              class="white--text text-capitalize font-weight-bold"
               :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
               @click="requestNewDesign()">
             Request
@@ -284,13 +289,13 @@ export default {
 <style scoped lang="scss">
 .proposal-designs-title {
   font-size: 18px;
-	color: var(--v-blackText-base);
-	font-weight: bold;
+  color: var(--v-blackText-base);
+  font-weight: bold;
 }
 
 .project-subtitle {
   font-size: 14px;
-	color: var(--v-blackText-base);
+  color: var(--v-blackText-base);
 }
 
 .proposal-card {
@@ -333,8 +338,8 @@ export default {
 }
 
 .proposal-title {
-	font-size: 14px;
-	color: var(--v-blackText-base);
+  font-size: 14px;
+  color: var(--v-blackText-base);
 }
 
 .subtitle-container {
