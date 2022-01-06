@@ -134,16 +134,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
       }
     }
 
-    // @TODO: This is temporary - https://trello.com/c/IUk94IAk
-    @Scheduled(cron = "0 30 23 * * *", zone = "America/Denver")
-    public void fillProjectGeoCoords() {
-      if (fillProjectGeoCoords) {
-        log.info("*** CRON: start project geo coords ***");
-        projectService.fillGeoCoords();
-        log.info("*** CRON: end project geo coords ***");
-      }
-    }
-
   // @TODO: This is temporary - randa. updating contact geo-location until all are finished
     @Scheduled(cron = "0 0 4 * * *", zone = "America/Denver")
     public void updateContactLatLong() throws Exception {
