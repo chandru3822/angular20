@@ -1930,7 +1930,15 @@ public class SmartlistService {
           if (f.getSystemListId() != null) {
             //PS system lists
             final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
-            selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, f.getValueReferenceTable(), f.getId()));
+
+            var valueTable = "";
+            if (f.getObjectTypeId() == 4) {
+              valueTable = f.getValueReferenceTable();
+            } else if (f.getObjectTypeId() == 6) {
+              valueTable = f.getValueEventReferenceTable();
+            }
+
+            selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, valueTable, f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
 
             var valueTable = "";
