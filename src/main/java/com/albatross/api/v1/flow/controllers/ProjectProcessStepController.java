@@ -128,7 +128,7 @@ public class ProjectProcessStepController {
 
       //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
       //run auto triggers for those actions
-      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStep.class);
+      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(projectProcessStepId)), ProjectProcessStep.class);
       for(ProjectProcessStep step : steps) {
         //only run if the referring PPS is active
         if(step.getProcessStepStatusTypeId() == 1) {
@@ -153,8 +153,6 @@ public class ProjectProcessStepController {
     Long newPpsId = projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, null, true, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId);
 
     try {
-      projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
-
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places. Consolidate to projectProcessStepService
       List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(newPpsId);
       if (!cfgaIds.isEmpty()) {
@@ -169,7 +167,7 @@ public class ProjectProcessStepController {
 
       //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
       //run auto triggers for those actions
-      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", Map.of("projectProcessStepId", newPpsId), ProjectProcessStep.class);
+      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(newPpsId)), ProjectProcessStep.class);
       for(ProjectProcessStep step : steps) {
         //only run if the referring PPS is active
         if(step.getProcessStepStatusTypeId() == 1) {
@@ -220,7 +218,7 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), status.getCancelledCompanyProcessStepStatusTypeId(), null, null, null, new ArrayList<>());
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), status.getCancelledCompanyProcessStepStatusTypeId());
 
         // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free time... good one
         try {
@@ -228,7 +226,7 @@ public class ProjectProcessStepController {
 
           //check for any actions using this PS - Status as a requirement - NOT including SELF (because that creates a potential infinite loop) if active
           //run auto triggers for those actions
-          List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsId", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStep.class);
+          List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(projectProcessStepId)), ProjectProcessStep.class);
           for(ProjectProcessStep step : steps) {
             //only run if the referring PPS is active
             if(step.getProcessStepStatusTypeId() == 1) {
