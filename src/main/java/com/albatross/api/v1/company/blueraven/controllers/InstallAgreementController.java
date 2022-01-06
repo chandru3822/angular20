@@ -3,7 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
-import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
+import com.albatross.api.v1.company.blueraven.services.InstallAgreementService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.company.blueraven.services.SunpowerService;
@@ -31,7 +31,7 @@ import java.util.Optional;
 @RequestMapping(value = "/api/v1/company/blueraven/install-agreement")
 public class InstallAgreementController {
 
-  private final InstallAgreementRepository installAgreementRepository;
+  private final InstallAgreementService installAgreementRepository;
 
   private final GoodleapService goodleapService;
 
@@ -71,7 +71,7 @@ public class InstallAgreementController {
   }
 
   @GetMapping(value = "/getProposalNumbers/{projectId}")
-  public List<InstallAgreementRepository.ProposalInfo> getProposalNumbers(@PathVariable Long projectId) {
+  public List<InstallAgreementService.ProposalInfo> getProposalNumbers(@PathVariable Long projectId) {
       return installAgreementRepository.getProposalNumbers(projectId);
   }
 
@@ -93,7 +93,7 @@ public class InstallAgreementController {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", proposalNbr);
-      Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+      Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
       message = sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
       updateResponse.put("message", message);
       return ResponseEntity.ok(updateResponse.toString());

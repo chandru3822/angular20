@@ -1,12 +1,10 @@
-package com.albatross.api.v1.flow.services;
+package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.services.ContactLeadService;
-import com.albatross.api.v1.flow.model.HubspotLead;
+import com.albatross.api.v1.company.blueraven.models.HubspotLead;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;

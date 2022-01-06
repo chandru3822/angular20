@@ -1,14 +1,10 @@
-package com.albatross.api.v1.company.blueraven.repository;
+package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
-import com.albatross.api.v1.company.blueraven.services.GoodleapService;
-import com.albatross.api.v1.company.blueraven.services.PandaDocService;
-import com.albatross.api.v1.company.blueraven.services.SunlightService;
-import com.albatross.api.v1.company.blueraven.services.SunpowerService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +30,7 @@ import java.util.Optional;
 @Repository
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class InstallAgreementRepository {
+public class InstallAgreementService {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
@@ -118,7 +114,7 @@ public class InstallAgreementRepository {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", request.getProposalNbr());
-      Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+      Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
 
       JSONObject loanApplication = goodleapService.getApplicationByProjectId(request.getProjectId());
       if (loanApplication != null) {
@@ -269,14 +265,14 @@ public class InstallAgreementRepository {
     if (deets.isPresent()) {
       PandaDocProjectDetails pd = deets.get();
       if (pd.getLoanType().contains("Sunlight")) {
-        Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
         try {
           return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
         } catch (Exception e) {
           return sunlightPortalUrl + "salesdashboard";
         }
       } else if (pd.getLoanType().toLowerCase().contains("sunpower")) {
-        Optional<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.PropLogDetail.class);
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
         try {
           return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
         } catch (Exception e) {
@@ -460,11 +456,11 @@ public class InstallAgreementRepository {
     private String loanType;
   }
 
-  public List<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.ProposalInfo> getProposalNumbers(Long projectId) {
+  public List<InstallAgreementService.ProposalInfo> getProposalNumbers(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
-    List<com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository.ProposalInfo.class);
+    List<InstallAgreementService.ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, InstallAgreementService.ProposalInfo.class);
     return results;
   }
 
