@@ -1,4 +1,4 @@
- <template>
+<template>
   <v-container id="proposals-container">
     <v-row>
       <v-col cols="12" class="py-0">
@@ -7,7 +7,7 @@
         </router-link>
         <v-toolbar dense flat color="transparent">
           <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
-					<v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
+          <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
           <v-spacer></v-spacer>
           <v-toolbar-items>
 
@@ -18,28 +18,42 @@
     <v-row>
       <v-col cols="12" sm="4">
         <v-card class="configuration-container square-card">
-          <div class="configuration-title">Configurations</div>
-          <v-card
-            flat
-            class="pt-0"
-            v-for="(cfg, index) in proposal.customFieldGroups"
-            :key="index"
-          >
-            <div class="configuration-group-title">{{cfg.groupName}}</div>
-            <CustomValueInput
-              v-for="(field, idx) in cfg.customFieldValues"
-              :key="idx"
-              :callback="populateDirtyCfvs"
-              :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
-              :field="field"
-              :show-field-name="false"
-            />
-          </v-card>
+          <div>
+            <div class="configuration-title">Configurations</div>
+            <v-card
+                flat
+                class="pt-0"
+                v-for="(cfg, index) in proposal.customFieldGroups"
+                :key="index"
+            >
+              <div class="configuration-group-title">{{cfg.groupName}}</div>
+              <CustomValueInput
+                  v-for="(field, idx) in cfg.customFieldValues"
+                  :key="idx"
+                  :callback="populateDirtyCfvs"
+                  :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :field="field"
+                  :show-field-name="false"
+              />
+            </v-card>
+          </div>
           <div class="configuration-save-container">
+            <v-btn depressed
+                   :disabled="dirtyCfvs.length === 0"
+                   class="text-capitalize font-weight-bold"
+            >
+              Reset to Default
+            </v-btn>
+            <!--todo: above button requires @click and accompanying function-->
+            <!--todo: fix disabled logic-->
+            <v-spacer></v-spacer>
             <v-btn color="primaryButton"
+                   depressed
                    :dark="dirtyCfvs.length !== 0"
                    :disabled="dirtyCfvs.length === 0"
-                   @click="saveCustomFieldValues">
+                   @click="saveCustomFieldValues"
+                   class="text-capitalize font-weight-bold"
+            >
               Save and Reflect
             </v-btn>
           </div>
@@ -47,6 +61,25 @@
       </v-col>
       <v-col cols="12" sm="8">
         <v-card class="proposal-container square-card">
+          <div class="proposal-container-header">
+            <div class="configuration-title">Proposal</div>
+            <v-spacer></v-spacer>
+            <v-btn depressed
+                   :disabled="dirtyCfvs.length === 0"
+                   class="proposal-container-buttons text-capitalize font-weight-bold">Present</v-btn>
+            <!--todo: above button requires @click and accompanying function-->
+            <!--todo: fix disabled logic-->
+            <v-btn depressed
+                   :disabled="dirtyCfvs.length === 0"
+                   class="proposal-container-buttons text-capitalize font-weight-bold">Save Proposal</v-btn>
+            <!--todo: above button requires @click and accompanying function-->
+            <!--todo: fix disabled logic-->
+            <v-btn depressed
+                   :disabled="dirtyCfvs.length === 0"
+                   class="proposal-container-buttons text-capitalize font-weight-bold">Download</v-btn>
+            <!--todo: above button requires @click and accompanying function-->
+            <!--todo: fix disabled logic-->
+          </div>
           proposal goes here
         </v-card>
       </v-col>
@@ -122,8 +155,8 @@ export default {
 @import "@/styles/main.scss";
 
 .new-proposal-header {
-	font-size: 18px;
-	font-weight: 700;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 ::v-deep {
@@ -139,13 +172,17 @@ tr:nth-of-type(even) {
 
 .configuration-container {
   position: relative;
-  padding: 20px;
+  padding: 24px;
   height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .configuration-title {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 24px;
+  color: var(--v-blackText-base);
 }
 .configuration-group-title {
   font-size: 14px;
@@ -153,17 +190,26 @@ tr:nth-of-type(even) {
   color: #808588;
   margin-bottom: 16px;
 }
+
 .configuration-save-container {
-  position: absolute;
-  bottom: 10px;
-  width: 100%;
-  padding-right: 30px;
-  text-align: right;
+
+  display: flex;
 }
 
 .proposal-container {
-  padding: 20px;
+  padding: 28px;
   height: calc(100vh - 180px);
 }
+
+.proposal-container-header {
+  display: flex;
+  align-items: baseline;
+}
+
+.proposal-container-buttons {
+  margin-left: 36px;
+  color: var(--v-blackText-base);
+}
+
 </style>
 
