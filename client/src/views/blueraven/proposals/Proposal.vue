@@ -1,4 +1,4 @@
-<template>
+ <template>
   <v-container id="proposals-container">
     <v-row>
       <v-col cols="12" class="py-0">
@@ -6,7 +6,8 @@
                      :to="`/proposalDesigns/${proposal.projectId}`">Back
         </router-link>
         <v-toolbar dense flat color="transparent">
-          <v-toolbar-title>New Proposal</v-toolbar-title>
+          <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
+					<v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
           <v-spacer></v-spacer>
           <v-toolbar-items>
 
@@ -119,6 +120,11 @@ export default {
 
 <style scoped lang="scss">
 @import "@/styles/main.scss";
+
+.new-proposal-header {
+	font-size: 18px;
+	font-weight: 700;
+}
 
 ::v-deep {
   .v-data-table__wrapper {

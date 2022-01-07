@@ -1,9 +1,9 @@
 <template>
   <v-container id="proposals-container">
-    <v-row>
+    <v-row class="ml-0 mr-0">
       <v-col cols="12">
         <router-link :to="`/proposals`">Back</router-link>
-        <div class="project-title">
+        <div class="proposal-designs-title font-weight-bold">
           {{ project.projectName }}
         </div>
         <div class="project-subtitle">
@@ -20,11 +20,11 @@
     </v-row>
     <v-divider></v-divider>
     <v-toolbar flat color="transparent">
-      <v-toolbar-title class="app-title">Designs and Proposals</v-toolbar-title>
+      <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
     </v-toolbar>
     <v-row class="mx-2">
       <v-card v-for="(d, idx) in designs" :key="idx"
-              width="355" height="535" class="pa-5 proposal-card">
+              width="355" height="535" class="pa-4 proposal-card">
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <v-img name="designImg"
                  class="design-image"
@@ -48,42 +48,47 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primaryCustom" dark class="mt-3 one-hunned" @click="addProposal(d)">
+        <v-btn color="primaryCustom" dark class="mt-4 one-hunned text-capitalize font-weight-bold" @click="addProposal(d)">
           Create new proposal
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
-            v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
-            :key="index" two-line
-            class="proposal-container"
-            @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
+              v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
+              :key="index" two-line
+              class="proposal-container"
+              @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
-              <v-list-item-title>Proposal {{ proposal.id }}</v-list-item-title>
-              <v-list-item-subtitle class="design-small-gray">
-                {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+              <v-list-item-title class="proposal-title">Proposal {{ proposal.id }}</v-list-item-title>
+              <v-list-item-subtitle>
+                <v-container class="design-small-gray subtitle-container">
+                  <v-row>
+                    <v-col class="pt-2 pb-0">more info</v-col> <!--todo: use actual info here-->
+                    <v-col class="pt-2 pb-0 text-right">{{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}</v-col>
+                  </v-row>
+                </v-container>
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list>
         <div class="mt-6 ml-4" v-else>No Proposals Available</div>
         <div class="slice-selectors" v-if="d.proposals.length > numberToDisplay">
-          <v-btn text
-                 :disabled="d.offset === 0"
-                 @click="d.offset--">
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
-          <v-btn text
-                 :disabled="disableAddSlice(d.proposals.length, d.offset)"
-                 @click="d.offset++">
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
+
+          <v-icon dense
+                  class="pr-1 pb-3"
+                  :disabled="d.offset === 0"
+                  @click="d.offset--">mdi-chevron-left</v-icon>
+          <v-icon dense
+                  class="pl-1 pb-3"
+                  :disabled="disableAddSlice(d.proposals.length, d.offset)"
+                  @click="d.offset++">mdi-chevron-right</v-icon>
+
         </div>
         <div style="position:absolute; top: 0">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
       </v-card>
       <v-card width="355" height="535" class="proposal-card request-new"
-          :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
+              :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
         <v-btn :disabled="activeDesign && null != activeDesign.projectId"
-          text @click="showNewDesignRequestForm = true">
+               text @click="showNewDesignRequestForm = true">
           <v-icon :size="60">add</v-icon>
         </v-btn>
         <div class="mt-5">
@@ -96,49 +101,54 @@
       </v-card>
     </v-row>
     <v-dialog width="500" v-model="showNewDesignRequestForm">
-      <v-card>
+      <v-card class="pa-6">
         <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Request New design
+            color="blackText"
+            class="text-h6 text-capitalize pa-0 font-weight-bold"
+            primary-title
+        >Request New design
+          <v-spacer></v-spacer>
+          <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
         </v-card-title>
-
-        <v-card-text class="pt-4">
+        <v-card-text class="pt-4 px-0">
           Describe your request (Required)
-          <v-textarea required auto-grow filled
+          <v-textarea required
+                      auto-grow
+                      outlined
+                      counter="250"
+                      color="#808588"
                       v-model="newDesignRequest.description">
           </v-textarea>
 
           <v-file-input
-            dense
-            class="mb-3"
-            multiple
-            :accept="acceptedFileTypes"
-            ref="fileInput"
-            hide-details
-            label="Attach utility bill, notes/drawings for reference"
-            @change="uploadFiles"
+              dense
+              class="mb-3"
+              multiple
+              :accept="acceptedFileTypes"
+              ref="fileInput"
+              hide-details
+              label="Attach utility bill, notes/drawings for reference"
+              @change="uploadFiles"
           />
 
           <DatetimePickerInput
-            v-model="newDesignRequest.dueDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
-            :min-date="minDate"
-            label="Pick a due date and time (Required)"
+              v-model="newDesignRequest.dueDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              :min-date="minDate"
+              label="Pick a due date and time (Required)"
           />
 
         </v-card-text>
 
-        <v-card-actions>
+        <v-card-actions class="pa-0">
           <v-spacer></v-spacer>
           <v-btn
-            color="primaryCustom"
-            class="white--text"
-            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
-            @click="requestNewDesign()">
+              color="primaryCustom"
+              class="white--text text-capitalize font-weight-bold"
+              :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+              @click="requestNewDesign()">
             Request
           </v-btn>
         </v-card-actions>
@@ -277,12 +287,15 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.project-title {
-  font-size: 20px;
+.proposal-designs-title {
+  font-size: 18px;
+  color: var(--v-blackText-base);
+  font-weight: bold;
 }
 
 .project-subtitle {
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--v-blackText-base);
 }
 
 .proposal-card {
@@ -322,6 +335,15 @@ export default {
 .design-small-gray {
   color: #808588;
   font-size: 12px;
+}
+
+.proposal-title {
+  font-size: 14px;
+  color: var(--v-blackText-base);
+}
+
+.subtitle-container {
+  padding:0;
 }
 
 .proposal-container {
