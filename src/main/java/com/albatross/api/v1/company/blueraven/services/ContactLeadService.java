@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ContactLead;
+import com.albatross.api.v1.company.blueraven.models.HubspotLead;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
