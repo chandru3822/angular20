@@ -50,8 +50,8 @@ from pps1, cpsst
 where pps.id = pps1.id;
 
 -- Insert new active and main pps
-insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main, user_position_id, parent_project_process_step_id)
-values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, p_user_id, true, p_user_position_id, p_parent_project_process_step_id)
+insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, main, user_position_id, parent_project_process_step_id, created_by_id, date_created, modified_by_id, date_modified)
+values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, true, p_user_position_id, p_parent_project_process_step_id, p_user_id, now(), p_user_id, now())
 returning id into p_project_process_step_id;
 
 RETURN p_project_process_step_id;
