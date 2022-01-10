@@ -1,183 +1,227 @@
 <template>
-<v-row class="d-flex justify-space-between align-center">
-  <v-col v-if="showFieldName">
-    {{field.fieldName}}
-    <span class="ancillary" v-if="field.ancillaryCustomFieldHint">{{field.ancillaryCustomFieldHint}}</span>
-    <span class="ancillary" v-else-if="field.useParentData">(Parent)</span>
-    <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
-  </v-col>
+  <div>
+    <v-row class="d-flex justify-space-between align-center">
+      <v-col v-if="showFieldName">
+        {{ field.fieldName }}
+        <span class="ancillary" v-if="field.ancillaryCustomFieldHint">{{ field.ancillaryCustomFieldHint }}</span>
+        <span class="ancillary" v-else-if="field.useParentData">(Parent)</span>
+        <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
+      </v-col>
 
-  <v-col class="d-flex justify-start align-self-start py-0">
+      <v-col class="d-flex justify-start align-self-start py-0">
+        <DatetimePickerInput
+          v-if="field.dataTypeId === 1"
+          v-model="field.dateValue"
+          :timezone="this.timezone"
+          :type="'date'"
+          :min-date="minDate"
+          :max-date="maxDate"
+          :filled="filledStyle"
+          :format="'MMMM DD, YYYY'"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          :readonly="readonly"
+          @input="callback(field)"
+        />
 
-    <DatetimePickerInput
-      v-if="field.dataTypeId === 1"
-      v-model="field.dateValue"
-      :timezone="this.timezone"
-      :type="'date'"
-      :min-date="minDate"
-      :max-date="maxDate"
-      :filled="filledStyle"
-      :format="'MMMM DD, YYYY'"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      :readonly="readonly"
-      @input="callback(field)"
-    />
+        <DatetimePickerInput
+          v-if="field.dataTypeId === 2"
+          v-model="field.timestampValue"
+          :timezone="this.timezone"
+          type="timestamp"
+          :filled="filledStyle"
+          :required="required"
+          :format="'MMMM DD, YYYY, h:mm A'"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          :readonly="readonly"
+          @input="callback(field)"
+        />
 
-    <DatetimePickerInput
-      v-if="field.dataTypeId === 2"
-      v-model="field.timestampValue"
-      :timezone="this.timezone"
-      type="timestamp"
-      :filled="filledStyle"
-      :required="required"
-      :format="'MMMM DD, YYYY, h:mm A'"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      :readonly="readonly"
-      @input="callback(field)"
-    />
+        <v-checkbox
+          v-if="field.dataTypeId === 3"
+          v-model="field.booleanValue"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          :rules="getRequiredRule()"
+          :filled="filledStyle"
+          :disabled="readonly"
+          :ripple="false"
+          @change="callback(field)"
+        />
 
-    <v-checkbox
-      v-if="field.dataTypeId === 3"
-      v-model="field.booleanValue"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      :rules="getRequiredRule()"
-      :filled="filledStyle"
-      :disabled="readonly"
-      :ripple="false"
-      @change="callback(field)"
-    />
+        <v-text-field
+          v-if="field.dataTypeId === 4"
+          text
+          :readonly="readonly"
+          placeholder=" "
+          :rules="getRequiredRule()"
+          :filled="filledStyle"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          type="number"
+          v-model.number="field.numericValue"
+          @change="callback(field)"
+        />
 
-    <v-text-field
-      v-if="field.dataTypeId === 4"
-      text
-      :readonly="readonly"
-      placeholder=" "
-      :rules="getRequiredRule()"
-      :filled="filledStyle"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      type="number"
-      v-model.number="field.numericValue"
-      @change="callback(field)"
-    />
+        <v-textarea
+          v-if="field.dataTypeId === 5"
+          auto-grow
+          rows="1"
+          :readonly="readonly"
+          :disabled="readonly"
+          placeholder=" "
+          :rules="getRequiredRule()"
+          :filled="filledStyle"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          v-model="field.textValue"
+          @change="callback(field)"
+        />
 
-    <v-textarea
-      v-if="field.dataTypeId === 5"
-      auto-grow
-      rows="1"
-      :readonly="readonly"
-      :disabled="readonly"
-      placeholder=" "
-      :rules="getRequiredRule()"
-      :filled="filledStyle"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      v-model="field.textValue"
-      @change="callback(field)"
-    />
+        <v-text-field
+          v-if="field.dataTypeId === 6 && !field.hasListValues"
+          text
+          :readonly="readonly"
+          :disabled="readonly"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          placeholder=" "
+          :filled="filledStyle"
+          :rules="getRequiredRule()"
+          type="number"
+          v-model.number="field.intValue"
+          @change="callback(field)"
+        />
 
-    <v-text-field
-      v-if="field.dataTypeId === 6 && !field.hasListValues"
-      text
-      :readonly="readonly"
-      :disabled="readonly"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      placeholder=" "
-      :filled="filledStyle"
-      :rules="getRequiredRule()"
-      type="number"
-      v-model.number="field.intValue"
-      @change="callback(field)"
-    />
+        <v-autocomplete
+          v-if="field.dataTypeId === 6 && field.hasListValues"
+          v-model="field.intValue"
+          :hide-no-data="field.lazyLoadValues"
+          :clearable="!readonly"
+          :readonly="readonly"
+          :disabled="readonly"
+          :filled="filledStyle"
+          :rules="getRequiredRule()"
+          :items="field.listOfValues"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          :loading="isLoading"
+          placeholder=" "
+          item-value="id"
+          item-text="name"
+          @input="callback(field)"
+        >
+          <template #item="{ item }">
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
+            </v-list-item-content>
+          </template>
+        </v-autocomplete>
 
-    <v-autocomplete
-      v-if="field.dataTypeId === 6 && field.hasListValues"
-      v-model="field.intValue"
-      text
-      :clearable="!readonly"
-      :readonly="readonly"
-      :disabled="readonly"
-      placeholder=" "
-      :filled="filledStyle"
-      :rules="getRequiredRule()"
-      :items="field.listOfValues"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      item-value="id"
-      item-text="name"
-      @input="callback(field)"
-   />
+        <v-autocomplete
+          v-if="field.dataTypeId === 7 || field.dataTypeId === 10"
+          multiple
+          placeholder=" "
+          v-model="field.intArrayValue"
+          :hide-no-data="field.lazyLoadValues"
+          :search-input.sync="search"
+          :filled="filledStyle"
+          :items="field.listOfValues"
+          :clearable="!readonly"
+          :readonly="readonly"
+          :disabled="readonly"
+          :rules="getRequiredRule()"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          item-value="id"
+          item-text="name"
+          @input="callback(field)"
+        >
+          <template #item="{ item }">
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
+            </v-list-item-content>
+          </template>
+        </v-autocomplete>
 
-    <v-autocomplete
-      v-if="field.dataTypeId === 7"
-      text
-      multiple
-      placeholder=" "
-      :filled="filledStyle"
-      :items="field.listOfValues"
-      :clearable="!readonly"
-      :readonly="readonly"
-      :disabled="readonly"
-      :rules="getRequiredRule()"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      v-model="field.intArrayValue"
-      item-value="id"
-      item-text="name"
-      @input="callback(field)"
-    />
+        <v-autocomplete
+          v-if="field.dataTypeId === 8"
+          v-model="field.intValue"
+          :search-input.sync="search"
+          :hide-no-data="field.lazyLoadValues"
+          :clearable="!readonly"
+          :filled="filledStyle"
+          :readonly="readonly"
+          :disabled="readonly"
+          :items="field.listOfValues"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          :rules="getRequiredRule()"
+          placeholder=" "
+          item-value="id"
+          item-text="name"
+          @input="callback(field)"
+        >
+          <template #item="{ item }">
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
+            </v-list-item-content>
+          </template>
+        </v-autocomplete>
 
-    <v-autocomplete
-      v-if="field.dataTypeId === 8"
-      v-model="field.intValue"
-      text
-      :clearable="!readonly"
-      :filled="filledStyle"
-      :readonly="readonly"
-      :disabled="readonly"
-      :items="field.listOfValues"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      :rules="getRequiredRule()"
-      placeholder=" "
-      item-value="id"
-      item-text="name"
-      @input="callback(field)"
-    />
-
-    <v-autocomplete
-      v-if="field.dataTypeId === 9"
-      v-model="field.intValue"
-      text
-      :filled="filledStyle"
-      :clearable="!readonly"
-      :items="field.listOfValues"
-      :label="hideLabel ? null : field.fieldName"
-      :hide-details="hideDetails"
-      :readonly="readonly"
-      :disabled="readonly"
-      :rules="getRequiredRule()"
-      placeholder=" "
-      item-value="id"
-      item-text="name"
-      @input="callback(field)"
-    />
-  </v-col>
-</v-row>
+        <v-autocomplete
+          v-if="field.dataTypeId === 9"
+          v-model="field.intValue"
+          :search-input.sync="search"
+          :hide-no-data="field.lazyLoadValues"
+          :filled="filledStyle"
+          :clearable="!readonly"
+          :items="field.listOfValues"
+          :label="hideLabel ? null : field.fieldName"
+          :hide-details="hideDetails"
+          :readonly="readonly"
+          :disabled="readonly"
+          :rules="getRequiredRule()"
+          placeholder=" "
+          item-value="id"
+          item-text="name"
+          @input="callback(field)"
+        >
+          <template #item="{ item }">
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
+            </v-list-item-content>
+          </template>
+        </v-autocomplete>
+      </v-col>
+    </v-row>
+    <v-row v-if="field.lazyLoadValues && field.values">
+      <v-col />
+      <v-col>
+        Current Value(s): {{ field | fieldValues }}
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
-
-import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import constants from '@/helpers/constants'
+import debounce from "lodash.debounce"
+import DatetimePickerInput from "@/components/DatetimePickerInput.vue"
+import constants from "@/helpers/constants"
+import { getRequestWithParams } from "@/helpers/helpers"
 
 export default {
-  name: 'CustomValueInput',
+  name: "CustomValueInput",
   props: {
+    apiPath: {
+      type: String,
+      default: "flow"
+    },
     required: {
       type: Boolean,
       default: false
@@ -208,35 +252,66 @@ export default {
   components: {
     DatetimePickerInput
   },
-  data () {
+  filters: {
+    fieldValues: function(field) {
+      if (Array.isArray(field.values)){
+        return field?.values?.join(', ')
+      }
+      return field.values
+    }
+  },
+  data() {
     return {
+      search: null,
+      isLoading: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value
     }
   },
   // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
   // computed: {
-    // displayedFieldName () {
-    //   return this.field.useParentData ? this.field.fieldName + ' (Parent)' : this.field.ancillaryCustomFieldGroupAssignmentId ? this.field.fieldName + ' (Primary)' : this.field.fieldName
-    // }
+  // displayedFieldName () {
+  //   return this.field.useParentData ? this.field.fieldName + ' (Parent)' : this.field.ancillaryCustomFieldGroupAssignmentId ? this.field.fieldName + ' (Primary)' : this.field.fieldName
+  // }
   // },
+  watch: {
+    search(val) {
+      if (this.field.lazyLoadValues) {
+        this.getItems(val)
+      }
+    }
+  },
+
   methods: {
     getRequiredRule() {
-      if(this.required) {
+      if (this.required) {
         return this.requiredRules
       }
     },
+
+    getItems: debounce(async function(query = "") {
+      try {
+        if (query) {
+          this.isLoading = false
+          const { data = [] } = await getRequestWithParams(`/customField/${this.field.id}/values`, { params: { query } }, this.apiPath, [])
+          this.field.listOfValues = [...data]
+        }
+      } finally {
+        this.isLoading = false
+      }
+    }, 250)
   }
 }
 </script>
 
 <style scoped lang="scss">
-  .ancillary {
-    font-size: 12px;
-  }
-  .field-picker {
-    border-bottom: solid 1px rgba(0,0,0,0.4);
-    height: 27px;
-    min-width: 100%;
-  }
+.ancillary {
+  font-size: 12px;
+}
+
+.field-picker {
+  border-bottom: solid 1px rgba(0, 0, 0, 0.4);
+  height: 27px;
+  min-width: 100%;
+}
 </style>
