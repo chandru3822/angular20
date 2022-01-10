@@ -296,7 +296,16 @@ export default {
           data,
           status
         } = await getRequest('/install-agreement/generate/' + this.requestItem.projectId + '/' + this.requestItem.proposalNbr, 'blueraven')
-        window.open(data);
+
+        // Handle case for Sunpower update
+        if (data == 'Quote Updated') {
+          this.snackbar = getSnackbar('SUCCESS', 'Quote Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+        else {
+          window.open(data);
+        }
+
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.$store.commit(AppMutations.SET_LOADING, false)

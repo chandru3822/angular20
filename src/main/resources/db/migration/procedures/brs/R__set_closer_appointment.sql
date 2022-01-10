@@ -171,8 +171,8 @@ BEGIN
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
                                                                           custom_field_group_assignment_id, int_value,
-                                                                          date_created, created_by_id, archived)
-                VALUES (p_project_process_step_id, 7, v_user_position_id, now(), p_current_user_id, false);
+                                                                          date_created, created_by_id, date_modified, created_by_id, archived)
+                VALUES (p_project_process_step_id, 7, v_user_position_id, now(), p_current_user_id, now(), p_current_user_id, false);
             end if;
 
             v_project_process_step_id = null;
@@ -194,8 +194,8 @@ BEGIN
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
                                                                           custom_field_group_assignment_id,
                                                                           timestamp_value,
-                                                                          date_created, created_by_id, archived)
-                VALUES (p_project_process_step_id, 5, p_appointment_start_time, now(), p_current_user_id, false);
+                                                                          date_created, created_by_id, date_modified, modified_by_id, archived)
+                VALUES (p_project_process_step_id, 5, p_appointment_start_time, now(), p_current_user_id, now(), p_current_user_id, false);
             end if;
 
             v_project_process_step_id = null;
@@ -214,13 +214,11 @@ BEGIN
                     date_modified   = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
-                INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
-                                                                          custom_field_group_assignment_id,
-                                                                          timestamp_value,
-                                                                          date_created, created_by_id, archived)
+                INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id, custom_field_group_assignment_id, timestamp_value,
+                                                                          date_created, created_by_id, date_modified, modified_by_id, archived)
                 VALUES (p_project_process_step_id, 6, p_appointment_start_time +
-                                                      (case when p_remote is false then 90 else 60 end || 'minutes')::interval, now(),
-                        p_current_user_id, false);
+                                                      (case when p_remote is false then 90 else 60 end || 'minutes')::interval,
+                        now(), p_current_user_id, now(), p_current_user_id, false);
             end if;
             -- raise notice 'user id %',v_user_id;
             -- raise notice 'p_appointment_start_time %',p_appointment_start_time;
