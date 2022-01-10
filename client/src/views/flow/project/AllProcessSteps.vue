@@ -33,9 +33,7 @@
               :key="step.processStepName"
               :steps="step.processSteps"
               :projectId="projectId"
-              :contactId="null"/>
-<!--            todo: @randa fix this!! -->
-<!--              :contactId="project.contactId"/>-->
+              :contactId="project.contactId"/>
           </template>
         </v-col>
 
@@ -58,6 +56,7 @@ export default {
     ProjectProcessStepSnippet
   },
   props: {
+    project: Object
   },
   data() {
     return {

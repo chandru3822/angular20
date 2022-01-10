@@ -8,11 +8,6 @@
               <v-col class="text-left pb-0">
                 <h3>All Events</h3>
               </v-col>
-              <v-col class="text-right pb-0">
-              <span @click="eventsExpanded = false" class="clickable">
-                Collapse All Events <v-icon>mdi-menu-down</v-icon>
-              </span>
-              </v-col>
             </v-row>
             <v-row>
               <v-col cols="12" class="pt-0">

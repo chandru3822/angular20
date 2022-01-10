@@ -22,11 +22,11 @@
           <template #item="{ item, index }">
             <tr>
               <td class="text-left">
-                {{ item.projectProcessStepEventId }}
+                {{ item.id }}
               </td>
               <td class="text-left">{{item.eventName}}</td>
-              <td class="text-left">{{ item.start | formatDate('timestamp') }}</td>
-              <td class="text-left">{{item.resourceName}}</td>
+              <td class="text-left">{{ item.startTime | formatDate('timestamp') }}</td>
+              <td class="text-left">{{item.resource}}</td>
               <td class="text-left">{{ item.eventStatusType }}</td>
             </tr>
           </template>

@@ -75,12 +75,11 @@
           {{this.saveErrorMsg}}
         </div>
 
-<!--        todo: randa!! postal code crap -->
-<!--        <v-card class="pa-4 square-card mb-2"-->
-<!--                v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">-->
-<!--          A state and postal code are required on the project to continue with scheduling. Please return to the-->
-<!--          project screen and update.-->
-<!--        </v-card>-->
+        <v-card class="pa-4 square-card mb-2"
+                v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
+          A state and postal code are required on the project to continue with scheduling. Please return to the
+          project screen and update.
+        </v-card>
 
         <v-form ref="eventFieldForm" v-else>
           <DatetimePickerInput
@@ -282,7 +281,6 @@ export default {
       ppsEventId: parseInt(this.$route.params.ppsEventId),
       menuOpen: false,
       dirtyCfvs: [],
-      contactId: this.$route.query.contactId,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details.timezone.value,
       projectId: this.$route.params.projectId,
@@ -317,8 +315,7 @@ export default {
   },
   async created() {
     this.getCompanyEventStatusTypes()
-    //todo: randa figure out how to access project postal code without having to reload or pass in url
-    //this.userCanScheduleLeadAllocation()
+    this.userCanScheduleLeadAllocation()
     this.userCanScheduleRemoteLeadAllocation()
     await this.getEventDetails()
   },
@@ -327,6 +324,13 @@ export default {
       this.$nextTick(() => {
         this.$refs.eventFieldForm.validate()
       })
+    },
+    // whenever pps event id changes, this function will run
+    '$route.params.ppsEventId': function () {
+      // reset the selected item
+      this.projectProcessStepId = parseInt(this.$route.params.processStepId)
+      this.ppsEventId = parseInt(this.$route.params.ppsEventId)
+      this.getEventDetails()
     },
   },
   computed: {},
@@ -483,8 +487,7 @@ export default {
         this.selectedEvent.isNew = true
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-          //todo @randa postal code stuff
-          // this.getRoundRobinNumDays()
+          this.getRoundRobinNumDays()
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -525,8 +528,7 @@ export default {
         this.selectedEvent = data
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-          //todo @randa postal code stuff
-          // this.getRoundRobinNumDays()
+          this.getRoundRobinNumDays()
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

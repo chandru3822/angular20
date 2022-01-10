@@ -340,6 +340,17 @@
         processStepLoading: true
       }
     },
+    watch: {
+      // whenever pps id changes, this function will run
+      '$route.params.processStepId': async function () {
+        // reset the selected item
+        this.processStepId = this.$route.query.processStepId
+        this.projectProcessStepId = this.$route.params.processStepId
+        this.getCustomFieldGroups()
+        await this.getProcessStep()
+        this.getAvailableOwners()
+      },
+    },
     async created() {
       this.getCustomFieldGroups()
       //per 9/24 request judson had us remove notes from process steps

@@ -77,7 +77,7 @@
         <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
       </v-col>
       <v-col cols="5" class="router-view-column">
-        <router-view class="router-view"></router-view>
+        <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </v-col>
       <v-col cols="4" class="white-bg">
         <ProjectActivity></ProjectActivity>
