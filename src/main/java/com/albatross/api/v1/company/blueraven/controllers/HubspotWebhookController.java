@@ -1,8 +1,8 @@
-package com.albatross.api.v1.flow.controllers;
+package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.flow.model.HubspotContact;
-import com.albatross.api.v1.flow.model.HubspotLead;
-import com.albatross.api.v1.flow.services.HubspotWebhookService;
+import com.albatross.api.v1.company.blueraven.models.HubspotContact;
+import com.albatross.api.v1.company.blueraven.models.HubspotLead;
+import com.albatross.api.v1.company.blueraven.services.HubspotWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

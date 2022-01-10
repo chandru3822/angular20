@@ -701,16 +701,4 @@ set project_name = :name,
     date_modified = now()
 where contact_id = :contactId
 ]]></project.updateNameByContactId>
-
-  <project.getNoGeoCoords><![CDATA[
-select p.id
-from flow.project p
-inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-where p.latitude is null and
-      p.longitude is null and
-      cpst.project_status_type_id = 1 and
-      p.company_process_id = 1
-order by p.id desc
-limit 10
-]]></project.getNoGeoCoords>
 </sql>

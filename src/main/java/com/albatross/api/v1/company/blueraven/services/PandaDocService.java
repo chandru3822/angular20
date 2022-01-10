@@ -6,7 +6,6 @@ import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
-import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.TemplatingEngineService;
 import com.google.gson.Gson;
@@ -54,7 +53,7 @@ public class PandaDocService {
 
   @Autowired
   @Lazy
-  private InstallAgreementRepository installAgreementRepository;
+  private InstallAgreementService installAgreementRepository;
 
   /**
    * Get the necessary information about a project to determine which PandaDoc

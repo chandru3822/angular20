@@ -62,35 +62,6 @@ public class ProjectService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
-  // @TODO: Project geo coords are nulling out and causing this issue - https://trello.com/c/IUk94IAk
-  // Remove this function and it's associated cron once the actual problem is fixed
-  public void fillGeoCoords() {
-    User cronUser = new User();
-    cronUser.setId(SystemSettings.CRON_USER.getId());
-    securityService.setCurrentUserDetails(new UserAccountDetails(cronUser, Collections.emptyList()));
-
-    List<Long> ids = sqlCache.query("project.getNoGeoCoords", null, new SingleColumnRowMapper<>(Long.class));
-
-    ids.forEach(
-        projectId -> {
-          Optional<Project> project = this.getProject(projectId);
-          project.ifPresent(
-              p -> {
-                try {
-                  // Spreading out the http calls so we don't potentially overload the cron. I know it's not
-                  // thread safe, but this is just a temporary band aid... ¯\_(ツ)_/¯
-                  TimeUnit.MILLISECONDS.sleep(500);
-                  getProjectCoordinates(p, p.getId());
-                } catch (InterruptedException ie) {
-                  log.error("PROJ: Thread interruption during sleep");
-                  Thread.currentThread().interrupt();
-                } catch (Exception e) {
-                  log.error("PROJ: Updating Geo Lat/Lng Timezone failed");
-                }
-              });
-        });
-  }
-
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
     return sqlCache.query("project.getAllForCompanyProcess", ImmutableMap.of("companyId", user.getCompanyId() , "processId", processId), Project.class);

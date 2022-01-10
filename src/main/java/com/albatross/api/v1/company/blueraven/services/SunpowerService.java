@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,7 @@ public class SunpowerService {
   @Value(value = "${sunpower.api.host}")
   private String apiUrl;
 
-  public String saveLoanFields(InstallAgreementRepository.PropLogDetail propLogDetail, Long projectId, Long proposalNbr, String sendVia, boolean isUpdate) throws Exception {
+  public String saveLoanFields(InstallAgreementService.PropLogDetail propLogDetail, Long projectId, Long proposalNbr, String sendVia, boolean isUpdate) throws Exception {
     JSONObject jsonContact = new JSONObject();
     JSONArray projectsArray = new JSONArray();
     JSONArray applicantsArray = new JSONArray();
@@ -105,7 +104,12 @@ public class SunpowerService {
       applicantDetails.put("lastName", propLogDetail.getFullName().substring(idx + 1));
     }
 
-    applicantDetails.put("phone", propLogDetail.getPhone());
+    String phone = propLogDetail.getPhone();
+    if (!phone.isEmpty() && phone.startsWith("+1")) {
+      phone = phone.substring(2);
+    }
+
+    applicantDetails.put("phone", phone);
 
     if (propLogDetail.getEmail() != null && propLogDetail.getEmail().contains("@")) {
       applicantDetails.put("email", propLogDetail.getEmail());

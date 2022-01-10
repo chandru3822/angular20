@@ -371,9 +371,9 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("customFieldGroupAssignmentId", customField.getCustomFieldGroupAssignmentId());
     params.put("modifiedById", user.trueUserId());
-    params.put("showOnInsert", customField.getShowOnInsert());
-    params.put("showOnUserProfile", customField.getShowOnUserProfile());
-    params.put("requireOnInsert", customField.getRequireOnInsert());
+    params.put("showOnInsert", null != customField.getShowOnInsert() ? customField.getShowOnInsert() : false);
+    params.put("showOnUserProfile", null != customField.getShowOnUserProfile() ? customField.getShowOnUserProfile() : false);
+    params.put("requireOnInsert", null != customField.getRequireOnInsert() ? customField.getRequireOnInsert() : false);
 
     sqlCache.update("customFieldGroup.updateFieldShowOrRequire", params);
   }
