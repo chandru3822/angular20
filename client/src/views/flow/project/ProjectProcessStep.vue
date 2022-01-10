@@ -166,12 +166,6 @@
       </v-col>
       <v-col cols="12" lg="6" class="text-left pt-0">
         <v-col class="pt-0">
-          <ProjectProcessStepEvents
-            :project-process-step-events="processStep.projectProcessStepEvents"
-            :events-loading="processStepLoading"
-            :project="project"
-            v-if="userHasEventsFeature && !projectLoading"
-          ></ProjectProcessStepEvents>
         </v-col>
         <!--    process field groups-->
         <v-col
@@ -258,9 +252,6 @@
         <!--      :primaryId="parseInt(projectProcessStepId)"-->
         <!--      type="ProjectProcessStep"-->
         <!--    />-->
-        <v-row>
-          <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
-        </v-row>
 
         <v-row>
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
@@ -293,7 +284,6 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
-  import ProjectProcessStepEvents from '@/views/flow/project/ProjectProcessStepEvents'
   import Links from '@/views/flow/components/Links'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
@@ -312,7 +302,6 @@
       CustomValueInput,
       DatetimePickerInput,
       ProjectProcessStepStatus,
-      ProjectProcessStepEvents
     },
     data() {
       return {

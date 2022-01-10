@@ -1,0 +1,733 @@
+<template>
+  <v-main class="events-container">
+    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+      <v-toolbar-title>
+        Event Details
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-card class="pa-4 square-card">
+      <div>
+        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
+          <v-toolbar-title>
+            {{ selectedEvent.eventName }}
+
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <div>
+            <v-autocomplete
+              v-model="selectedEvent.companyEventStatusTypeId"
+              :items="companyEventStatuses"
+              label="Event Status"
+              :disabled="!userCanManage"
+              item-text="eventStatusType"
+              item-value="id"
+            ></v-autocomplete>
+          </div>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-dialog
+              v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+              v-model="selectedEvent.deleteConfirm"
+              width="500">
+              <template v-slot:activator="{ on }">
+                <v-list-item-action class="clickable" v-on="on">
+                  <v-icon>delete</v-icon>
+                </v-list-item-action>
+              </template>
+              <v-card>
+                <v-card-title
+                  class="headline grey lighten-2"
+                  primary-title
+                >
+                  Confirm
+                </v-card-title>
+
+                <v-card-text>
+                  Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    @click="selectedEvent.deleteConfirm = false">
+                    No
+                  </v-btn>
+                  <v-btn
+                    color="primaryCustom"
+                    text
+                    @click="[selectedEvent.archived = true, deleteEvent(selectedEvent.id)]">
+                    Yes
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <v-btn text x-small class="pl-1 pr-2 mb-2" @click="closeEventWindow()">
+              <v-icon>close</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <div class="error-text" v-if="eventActionMissingRequirements">
+          {{this.saveErrorMsg}}
+        </div>
+
+<!--        todo: randa!! postal code crap -->
+<!--        <v-card class="pa-4 square-card mb-2"-->
+<!--                v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">-->
+<!--          A state and postal code are required on the project to continue with scheduling. Please return to the-->
+<!--          project screen and update.-->
+<!--        </v-card>-->
+
+        <v-form ref="eventFieldForm" v-else>
+          <DatetimePickerInput
+            v-model="selectedEvent.startTime"
+            :timezone="this.timezone"
+            :disabled="uniqueAlreadyHasValue || !userCanEdit"
+            :readonly="uniqueAlreadyHasValue || !userCanEdit"
+            :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
+            :type="'timestamp'"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            label="Start Time"
+          />
+          <DatetimePickerInput
+            v-model="selectedEvent.endTime"
+            :timezone="this.timezone"
+            :disabled="uniqueAlreadyHasValue || !userCanEdit"
+            :readonly="uniqueAlreadyHasValue || !userCanEdit"
+            :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
+            :type="'timestamp'"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            label="End Time"
+          />
+          <v-autocomplete
+            v-if="selectedEvent && selectedEvent.availableResources"
+            v-model="selectedEvent.resourceId"
+            :items="selectedEvent.availableResources"
+            :disabled="uniqueAlreadyHasValue || !userCanEdit"
+            :readonly="uniqueAlreadyHasValue || !userCanEdit"
+            :rules="getResourceRequirement()"
+            label="Resource"
+            item-text="name"
+            item-value="id"
+          ></v-autocomplete>
+
+          <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
+                 class="white--text mb-4"
+                 :disabled="uniqueAlreadyHasValue"
+                 id="qa-round-robin-button"
+                 @click="showRoundRobin = !showRoundRobin">Round Robin
+          </v-btn>
+          <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
+            <v-toolbar flat color="transparent">
+              <v-toolbar-title>Lead Allocation</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="py-0">
+              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
+                You do not have access to schedule projects in this Postal Code
+              </v-card-text>
+              <div class="pb-3">
+                <CustomValueInput
+                  :readonly="!userCanEdit"
+                  :min-date="minDate"
+                  :callback="checkAvailabilityDate"
+                  :field="availabilityDateField"
+                />
+                <div class="text-right" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primaryCustom" class="white--text"
+                         :loading="remoteSearchLoading"
+                         :disabled="inPersonSearchLoading"
+                         v-if="showRemoteSearch || userIsAdmin"
+                         id="qa-round-robin-search-remote"
+                         @click="getAvailableTimeSlots(true)">
+                    Search Remote Appt. Slots
+                  </v-btn>
+                  <v-btn color="primaryCustom" class="white--text ml-3"
+                         :loading="inPersonSearchLoading"
+                         v-if="schedulerCanEdit || userIsAdmin"
+                         :disabled="remoteSearchLoading"
+                         id="qa-round-robin-search"
+                         @click="getAvailableTimeSlots(false)">
+                    Search In-person Appt. Slots
+                  </v-btn>
+                </div>
+                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
+                          v-model="selectedTimeSlot"
+                          class="qa-round-robin-time-select"
+                          :items="timeSlots"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Select an Available Time Slot"
+                          return-object
+                >
+                  <template slot="selection" slot-scope="data">
+                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                  </template>
+                  <template slot="item" slot-scope="data">
+                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                  </template>
+                </v-select>
+                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
+                  Selected Date
+                </div>
+                <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
+                  <v-btn color="primaryCustom" class="white--text"
+                         @click="saveCloserAppointment" id="qa-round-robin-save">
+                    Save Appointment
+                  </v-btn>
+                </div>
+              </div>
+            </v-card-text>
+
+          </div>
+
+          <v-col
+            v-if="selectedEvent && selectedEvent.id"
+            class="pt-0"
+            v-for="(cfg, index) in selectedEvent.customFieldGroups"
+            :key="cfg.id"
+          >
+            <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+              <v-toolbar-title>
+                <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
+                <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
+                <!--                <v-icon>mdi-calendar</v-icon>-->
+                <!--              </v-btn>-->
+                {{ cfg.groupName }}
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card flat class="pa-3">
+              <CustomValueInput
+                v-for="(field, idx) in cfg.customFieldValues"
+                :key="idx"
+                :required="field.required && !eventSaveOverrideRequired"
+                :callback="populateDirtyCfvs"
+                :readonly="getReadOnly(field)"
+                :field="field"
+              />
+            </v-card>
+          </v-col>
+        </v-form>
+
+        <v-btn class="white--text mr-2 mb-2 save-btn"
+               @click="checkFieldsForUnique()"
+               :disabled="!userCanEdit"
+               color="primaryButton"
+        >Save Event Fields
+        </v-btn>
+        <v-btn class="white--text save-btn mb-2 mr-2"
+               color="primaryButton"
+               :disabled="!action.canPerform"
+               @click="[attemptedAction = action, validateActionRequirements(action)]"
+               v-for="(action, i) in selectedEvent.eventActions"
+               :key="i">
+          {{ action.actionName }}
+        </v-btn>
+        <v-row>
+          <Attachments v-if="selectedEvent && selectedEvent.id"
+                       :project-process-step-event-id="selectedEvent.id" :event-id="selectedEvent.eventId"
+                       :project-process-step-id="projectProcessStepId"/>
+        </v-row>
+      </div>
+    </v-card>
+  </v-main>
+</template>
+
+<script>
+
+import {
+  getRequest,
+  logError,
+  getSnackbar,
+  getRequestWithParams,
+  putRequest,
+  postRequest,
+  scrollToTop,
+  postRequestWithRequestParams, deleteRequest
+} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
+import {getEventCustomFieldReadOnly} from "@/services/customFieldService";
+import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import Attachments from '@/views/flow/components/Attachments'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import constants from '@/helpers/constants'
+import moment from 'moment-timezone'
+import {DateTime} from 'luxon'
+
+export default {
+  name: 'ProjectProcessStepEvent',
+  components: {
+    CustomValueInput,
+    Attachments,
+    DatetimePickerInput
+  },
+  props: {
+    project: Object
+  },
+  data() {
+    return {
+      snackbar: {},
+      selectedEvent: {},
+      attemptedAction: {},
+      companyEventStatuses: [],
+      saveErrorMsg: '',
+      eventActionMissingRequirements: false,
+      ppsEventId: parseInt(this.$route.params.ppsEventId),
+      menuOpen: false,
+      dirtyCfvs: [],
+      contactId: this.$route.query.contactId,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      timezone: this.$store.state.user.details.timezone.value,
+      projectId: this.$route.params.projectId,
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'),
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
+      userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
+      projectProcessStepId: parseInt(this.$route.params.processStepId),
+      processStepId: this.$route.query.processStepId,
+      eventSaveOverrideRequired: false,
+      actionRequiresStart: false,
+      actionRequiresEnd: false,
+      actionRequiresResource: false,
+      roundRobinNumberOfDays: 7,
+      timeSlots: [],
+      selectedTimeSlot: {},
+      schedulerCanEdit: false,
+      showRemoteSearch: false,
+      inPersonSearchLoading: false,
+      remoteSearchLoading: false,
+      mostRecentSearchWasRemote: false,
+      schedulerLoading: true,
+      closerApptOverride: false,
+      minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
+      closerApptSaved: false,
+      searchedTimeSlots: false,
+      showRoundRobin: false,
+      uniqueAlreadyHasValue: false,
+      availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
+    }
+  },
+  async created() {
+    this.getCompanyEventStatusTypes()
+    //todo: randa figure out how to access project postal code without having to reload or pass in url
+    //this.userCanScheduleLeadAllocation()
+    this.userCanScheduleRemoteLeadAllocation()
+    await this.getEventDetails()
+  },
+  watch: {
+    eventActionMissingRequirements: function () {
+      this.$nextTick(() => {
+        this.$refs.eventFieldForm.validate()
+      })
+    },
+  },
+  computed: {},
+  methods: {
+    closeEventWindow() {
+      this.selectedEvent = {}
+    },
+    getResourceRequirement() {
+      if (this.actionRequiresResource && !this.selectedEvent.resourceId && !this.eventSaveOverrideRequired) {
+        return this.requiredRules
+      }
+    },
+    validateActionRequirements: async function (action) {
+      this.eventActionMissingRequirements = false
+      this.eventSaveOverrideRequired = false
+      this.actionRequiresStart = true //action?.requireStartTime
+      this.actionRequiresEnd = action?.requireEndTime
+      this.actionRequiresResource = action?.requireResource
+      //will only be used if there is an error shown here
+      this.saveErrorMsg = 'The following fields are required to perform the selected action.'
+
+      let requiredFields = action?.customFields?.filter(cf => cf.required) || []
+      if((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
+        this.eventActionMissingRequirements = true
+        document.getElementById('event-header').scrollIntoView()
+      } else if (requiredFields.length > 0) {
+        let fieldValueMissing = false
+        this.selectedEvent?.customFieldGroups?.forEach(cfg => {
+          cfg?.customFieldValues?.forEach(cf => {
+            let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+            if (match) {
+              if ( // check each data type to see if it has a value
+                (cf.dataTypeId === 1 && null == cf.dateValue) ||
+                (cf.dataTypeId === 2 && null == cf.timestampValue) ||
+                (cf.dataTypeId === 3 && null == cf.booleanValue) ||
+                (cf.dataTypeId === 4 && null == cf.numericValue) ||
+                (cf.dataTypeId === 5 && null == cf.textValue) ||
+                (cf.dataTypeId === 6 && null == cf.intValue) ||
+                (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
+                (cf.dataTypeId === 8 && null == cf.intValue) ||
+                (cf.dataTypeId === 9 && null == cf.intValue)
+              ) {
+                cf.required = true
+                fieldValueMissing = true
+                this.eventActionMissingRequirements = true
+                document.getElementById('event-header').scrollIntoView()
+              }
+            } else {
+              cf.required = false
+            }
+          })
+        })
+        //if there wasn't a match, or there was a match but no missing data, then run the event
+        if (!fieldValueMissing) {
+          this.eventActionMissingRequirements = false
+          //update the cfv's
+          await this.updateFieldGroups()
+          //then do the event action which will save the event details as well
+          await this.doEventAction(action)
+        }
+      } else {
+        this.eventActionMissingRequirements = false
+        await this.doEventAction(action)
+      }
+    },
+    async getCompanyEventStatusTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCompanyEventStatusTypes()
+        this.companyEventStatuses = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async userCanScheduleLeadAllocation() {
+      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+      if (this.userIsScheduler) {
+        this.schedulerLoading = true
+        try {
+          const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
+            params: {
+              postalCode: this.project.postalCode
+            }
+          })
+          this.schedulerCanEdit = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.schedulerLoading = false
+        }
+      }
+    },
+    async userCanScheduleRemoteLeadAllocation() {
+      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+      if (this.userIsScheduler) {
+        this.schedulerLoading = true
+        try {
+          const {data} = await getRequest(`/postalCode/zone/userCanScheduleRemote`)
+          this.showRemoteSearch = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.schedulerLoading = false
+        }
+      }
+    },
+    doEventAction: async function (action) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let params = {
+          startTime: this.selectedEvent.startTime,
+          endTime: this.selectedEvent.endTime,
+          resourceId: this.selectedEvent.resourceId,
+          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId
+        }
+
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
+        //we dont need to update the data now that the page is reloading
+        // this.selectedEvent = data
+        // this.selectedEvent = data
+        //reload the page so we get the updated pps status stuff
+        this.$router.go(this.$router.currentRoute)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getRoundRobinNumDays: async function () {
+      //need to load the round robin Number of days into future for this project
+      const {data} = await getRequestWithParams(`/postalCode/zone/byPostalCode`, {
+        params: {
+          projectId: this.projectId,
+          postalCode: this.project.postalCode
+        }
+      })
+      this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
+    },
+    addEvent: async function (pse) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
+        //i have no idea why i am using 2 data objects for the same value but dont have time to figure it out atm
+        this.selectedEvent = data
+        this.selectedEvent.isNew = true
+        if (data.uniqueBehaviorTypeId === 1) {
+          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
+          //todo @randa postal code stuff
+          // this.getRoundRobinNumDays()
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } finally {
+        this.chosenEvent = {}
+      }
+    },
+    getReadOnly: function (field) {
+      // if events admin then they can edit any event fields, otherwise idk???
+      return getEventCustomFieldReadOnly(this.$store, field)
+        || !this.userCanEdit
+    },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      if (!match && field?.id != -1) {
+        this.dirtyCfvs.push(field)
+      }
+    },
+    getEventCfgs: async function (ppsEvent) {
+      try {
+        const {data} = await getRequest(`/customFieldValues/event/${ppsEvent.id}`)
+        this.selectedEvent.customFieldGroups = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getEventDetails: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
+        this.selectedEvent = data
+        if (data.uniqueBehaviorTypeId === 1) {
+          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
+          //todo @randa postal code stuff
+          // this.getRoundRobinNumDays()
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveEventDetails() {
+      let isNewEvent = this.selectedEvent.isNew
+      this.eventSaveOverrideRequired = true
+      this.eventActionMissingRequirements = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
+        this.selectedEvent = data
+
+        if(isNewEvent) {
+          this.projectProcessStepEvents.push(data)
+        } else if(this.selectedEvent?.id != null) {
+          //populate the event into the previous list so that it will be right if they click the X
+          //get selected event index
+          let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.selectedEvent.id)
+          console.log('randaLogger INDEX FACE: ', index)
+          this.projectProcessStepEvents[index] = this.selectedEvent
+        }
+
+        if (data.uniqueBehaviorTypeId === 1) {
+          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
+          this.getRoundRobinNumDays()
+        }
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Default Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateFieldGroups() {
+      if (this.dirtyCfvs?.length > 0) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        // this.processStep.customFieldGroups = this.customFieldGroups
+        try {
+          // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+          // save dirty custom field values
+          this.$refs.eventFieldForm.resetValidation()
+          const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
+          this.dirtyCfvs = []
+          this.customFieldGroups = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async getAvailableTimeSlots(remote) {
+      this.mostRecentSearchWasRemote = remote
+      try {
+        this.remoteSearchLoading = remote
+        this.inPersonSearchLoading = !remote
+        this.selectedTimeSlot = {}
+        this.searchedTimeSlots = false
+
+        let params = {
+          projectId: this.projectId,
+          startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          availableDate: this.availabilityDateField.dateValue,
+          remote: remote
+        }
+        const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
+        this.searchedTimeSlots = true
+        this.timeSlots = data
+        this.remoteSearchLoading = false
+        this.inPersonSearchLoading = false
+      } catch (e) {
+        logError(e)
+        this.remoteSearchLoading = false
+        this.inPersonSearchLoading = false
+        let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
+        this.snackbar = getSnackbar('ERROR', errorMsg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async saveCloserAppointment() {
+      try {
+        let body = {
+          projectId: this.projectId,
+          projectProcessStepId: this.projectProcessStepId,
+          projectProcessStepEventId: this.selectedEvent.id, // i think?
+          // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          appointmentTime: this.selectedTimeSlot.scheduledStartTime,
+          users: this.selectedTimeSlot.users
+        }
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/availability/setCloserAppointment`, body)
+        if (data) {
+          // this.customFieldGroups = data
+          // this.setCfgValues()
+          this.closerApptSaved = true
+          this.showRoundRobin = false
+          this.availabilityDateField.dateValue = null
+          this.timeSlots = []
+          this.selectedTimeSlot = {}
+          //set the start time, end time and resource on the event
+          this.selectedEvent.startTime = data.appointmentStartTime
+          this.selectedEvent.endTime = data.appointmentEndTime
+          this.selectedEvent.resourceId = data.userPositionId
+          this.selectedEvent.resource = data.userFullName
+          this.uniqueAlreadyHasValue = true
+
+        }
+      } catch (e) {
+        logError(e)
+        let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
+        this.snackbar = getSnackbar('ERROR', msg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    checkAvailabilityDate() {
+      if (this.availabilityDateField.dateValue !== null) {
+        // Limit user to selecting availability dates < 8 days out
+        const selectedDate = DateTime.fromISO(this.availabilityDateField.dateValue)
+        const cappedDate = DateTime.local().set({
+          hour: 0,
+          minute: 0,
+          second: 0,
+          millisecond: 0
+        }).plus({days: this.roundRobinNumberOfDays})
+        if (selectedDate > cappedDate) {
+          this.availabilityDateField.dateValue = null
+          this.snackbar = getSnackbar('ERROR', `You can only schedule appointments ${this.roundRobinNumberOfDays} days in advance`)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } else {
+          this.populateDirtyCfvs(this.availabilityDateField)
+        }
+      }
+    },
+    async checkFieldsForUnique() {
+      if(null != this.selectedEvent.startTime) {
+        let validSave = true
+        let resource = null
+        if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
+          let startTime = this.selectedEvent.startTime
+          let endTime = this.selectedEvent.endTime
+          resource = this.selectedEvent.resourceId
+          if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
+            this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            validSave = false
+          } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+            this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            validSave = false
+          } else if (startTime && endTime && !resource) {
+            //resource required if times are saving
+            this.snackbar = getSnackbar('ERROR', 'Resource is required')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            validSave = false
+          }
+        }
+        if (validSave) {
+          this.saveEventDetails()
+          this.updateFieldGroups()
+        }
+      } else {
+        //only startTime is required to save fields
+        this.actionRequiresEnd = false
+        this.actionRequiresResource = false
+        this.eventActionMissingRequirements = true
+        this.saveErrorMsg = 'Start Time is required to save the event fields'
+        document.getElementById('event-header').scrollIntoView()
+      }
+    },
+    filterProjectProcessStepEvents () {
+      return this.projectProcessStepEvents ? this.projectProcessStepEvents.filter(ppse => { return !ppse.archived}) : []
+    },
+  }
+}
+</script>
+
+<style lang="scss">
+.event-button .v-btn__content {
+  //max-width: 100%;
+  width: 100%; white-space: normal;
+}
+</style>
+<style lang="scss" scoped>
+.events-container {
+
+}
+
+</style>

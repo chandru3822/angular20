@@ -23,7 +23,7 @@
         <template #item="{ item, index }">
           <tr>
             <td class="text-left" id="qa-event-link">
-              {{ item.id }}
+              <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`">{{ item.id }}</router-link>
             </td>
             <td class="text-left" id="qa-event-name">{{item.eventName}}</td>
             <td class="text-left" id="qa-event-start">{{ item.startTime | formatDate('timestamp') }}</td>

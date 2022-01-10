@@ -1,38 +1,7 @@
 <template>
 <v-row id="project-details-container" class="mt-2">
   <v-col cols="12" lg="12" class="text-left pt-0">
-    <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-      <v-row>
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Upcoming & Past Due Events</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-          </v-toolbar-items>
-        </v-toolbar>
 
-        <v-col cols="12" v-if="upcomingEventsLoading">
-          <SpinnerInline :size="20" color="primaryCustom"/>
-        </v-col>
-
-        <v-col cols="12" v-else class="pt-0">
-          <UpcomingEventSnippet
-            :events="getUpcomingEvents(events)"
-            :projectId="projectId"/>
-        </v-col>
-      </v-row>
-    </v-col>
-
-    <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-      <v-col
-        cols="12"
-        class="text-right pt-0"
-      >
-        <router-link :to="`/project/${projectId}/events`">All events</router-link>
-      </v-col>
-    </v-fade-transition>
-
-    <v-expand-transition>
-      <v-col v-show="eventsExpanded">
         <v-row>
           <v-col cols="12">
             <v-row class="justify-space-around align-center">
@@ -75,8 +44,6 @@
 
         </v-row>
       </v-col>
-    </v-expand-transition>
-  </v-col>
 
 </v-row>
 </template>
@@ -104,13 +71,8 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
       customFieldGroups: [],
-      menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       upcomingEventsLoading: false,
-      snackbar: {},
       eventSearch: '',
-      eventsExpanded: false,
-      companyId: this.$store.state.user.details.companyId,
     }
   },
   created () {

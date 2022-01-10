@@ -1,5 +1,5 @@
 <template>
-<v-row id="project-details-container" class="mt-2">
+<v-row id="project-details-container" v-if="project && project.id" class="mt-2">
   <v-col cols="12" lg="12" class="pt-0">
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primaryCustom"/>
@@ -45,16 +45,24 @@
 
 import {handleHidingGlobalLoader, getRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
+import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
+import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
+import Attachments from '@/views/flow/components/Attachments'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
 export default {
   name: 'ProjectDetails',
   components: {
     SpinnerInline,
+    ActiveProjectProcessStepSnippet,
+    ProjectProcessStepSnippet,
+    Attachments,
     CustomValueInput,
+    AddProcessStep
   },
   data () {
     return {

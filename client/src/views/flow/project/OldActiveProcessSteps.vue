@@ -42,14 +42,74 @@
 
     <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-col
+        v-show="!isProcessStepsExpanded"
         cols="12"
         class="text-right pt-0"
       >
-        <router-link :to="`/project/${projectId}/processSteps`">All process steps</router-link>
-
+        <span @click="isProcessStepsExpanded = true" class="clickable">
+          Expand All Process Steps <v-icon>mdi-menu-down</v-icon>
+        </span>
       </v-col>
     </v-fade-transition>
 
+    <v-expand-transition>
+      <v-col v-show="isProcessStepsExpanded">
+        <v-row>
+          <v-col cols="12">
+            <v-row class="justify-space-around align-center">
+              <v-col class="text-left pb-0">
+                <h3>All Process Steps</h3>
+              </v-col>
+              <v-col class="text-right pb-0">
+              <span @click="isProcessStepsExpanded = false" class="clickable">
+                Collapse All Process Steps <v-icon>mdi-menu-down</v-icon>
+              </span>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" class="pt-0">
+                <v-divider/>
+              </v-col>
+            </v-row>
+          </v-col>
+
+          <v-col cols="12" v-if="isProcessStepsLoading">
+            <SpinnerInline :size="20" color="primaryCustom"/>
+          </v-col>
+
+          <v-col cols="12" class="pt-0" v-else>
+            <v-text-field placeholder="Filter..."
+                          hide-details
+                          outlined
+                          type="search"
+                          class=""
+                          v-model="stepsSearch"></v-text-field>
+
+            <template v-for="step in filteredProcessSteps()">
+              <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
+              <ProjectProcessStepSnippet
+                :key="step.processStepName"
+                :steps="step.processSteps"
+                :projectId="projectId"
+                :contactId="project.contactId"/>
+            </template>
+          </v-col>
+
+        </v-row>
+      </v-col>
+    </v-expand-transition>
+
+    <v-col  class="pt-0 px-0">
+      <v-row class="pt-0">
+        <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
+      </v-row>
+    </v-col>
+
+    <v-col  class="pt-0 px-0">
+      <v-row class="pt-0">
+        <Attachments :projectId="projectId"/>
+      </v-row>
+    </v-col>
   </v-col>
 
 </v-row>
@@ -61,6 +121,8 @@ import {getRequest, logError} from '@/helpers/helpers'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
+import Attachments from '@/views/flow/components/Attachments'
+import UpcomingEvents from '@/views/flow/project/UpcomingEvents'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
@@ -70,7 +132,9 @@ export default {
     SpinnerInline,
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
+    Attachments,
     AddProcessStep,
+    UpcomingEvents
   },
   props: {
     project: Object
