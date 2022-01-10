@@ -146,7 +146,13 @@ public class SunpowerService {
         setSunpowerUrl(projectId, proposalNbr, result);
       }
       else if (message.equals("Quote Updated")) {
-        result = "Customer application updated if applicable";
+        Optional<Object> sunpowerUrl = getSunpowerUrl(projectId);
+        if (sunpowerUrl.isPresent() && false) {
+          setSunpowerUrl(projectId, proposalNbr, sunpowerUrl.get().toString());
+          return sunpowerUrl.get().toString();
+        }
+
+        result = "Quote Updated";
       }
     }
     else {
@@ -198,6 +204,12 @@ public class SunpowerService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
     return sqlCache.get("installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
+  }
+
+  private Optional<Object> getSunpowerUrl(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    return sqlCache.get("installAgreement.getSunpowerUrlPerProject", params, new SingleColumnRowMapper<>(Object.class));
   }
 
   private void setSunpowerUrl(Long projectId, Long proposalNbr, String url) {

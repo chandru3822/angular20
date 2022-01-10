@@ -145,6 +145,14 @@
                 ]]>
     </installAgreement.getSunpowerUrl>
 
+    <installAgreement.getSunpowerUrlPerProject>
+      <![CDATA[
+                  select plh.sunpower_url from brs.proposal_log_history plh
+                  WHERE plh.project_id = :projectId and plh.sunpower_url is not null
+                  limit 1;
+                  ]]>
+    </installAgreement.getSunpowerUrlPerProject>
+
     <installAgreement.setSunpowerUrl>
       <![CDATA[
               UPDATE brs.proposal_log_history
