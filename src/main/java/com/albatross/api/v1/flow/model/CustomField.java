@@ -7,7 +7,6 @@ import lombok.Setter;
 import java.util.Date;
 import java.util.List;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
@@ -28,7 +27,8 @@ public class CustomField {
       companySystemListId,
       scheduleFieldTypeId;
   private List<Long> systemListOptionIds;
-  private String fieldName, fieldCode,
+  private String fieldName,
+      fieldCode,
       objectType,
       groupName,
       customFieldSqlKey,
@@ -45,9 +45,22 @@ public class CustomField {
       customFieldGroupAssignmentReadOnly,
       customFieldGroupAssignmentHidden,
       useParentData,
-      sortListValuesAlphabetically;
+      sortListValuesAlphabetically,
+      lazyLoadValues;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
   private Date dateCreated, dateModified;
+
+  public boolean shouldHaveListOfValues() {
+    if (this.listOfValues != null && !this.listOfValues.isEmpty()) {
+      return true;
+    }
+
+    if (this.customFieldSqlKey != null) {
+      return true;
+    }
+
+    return this.companySystemListId != null;
+  }
 }

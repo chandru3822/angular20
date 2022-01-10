@@ -11,6 +11,7 @@
            cf.company_system_list_id,
            cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           cf.lazy_load_values,
            cf.custom_field_sql_key,
            cf.custom_field_sql_reference_table,
            coalesce((
@@ -61,9 +62,10 @@
            cf.company_data_type_id,
            cf.company_system_list_id,
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           cf.lazy_load_values,
            cf.custom_field_sql_key,
-           cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
            cf.custom_field_sql_reference_table,
+           cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
            coalesce((
                       select array_to_json(array_agg(rows))
                       from (
@@ -127,6 +129,7 @@
   <blueravenCustomField.saveField><![CDATA[
     update brs.custom_field
     set field_name = trim(:fieldName),
+        lazy_load_values = :lazyLoadValues,
         company_system_list_id = :systemListId,
         sort_list_values_alphabetically = :sortListValuesAlphabetically,
         system_list_option_ids = :systemListOptionIds::int[],
@@ -136,8 +139,8 @@
   ]]></blueravenCustomField.saveField>
 
   <blueravenCustomField.insertField><![CDATA[
-  insert into brs.custom_field(list_of_value_id, field_name, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, date_created, created_by_id, date_modified, modified_by_id)
-  values (:listOfValueId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :listOptionIds, now(), :createdById, now(), :createdById)
+  insert into brs.custom_field(list_of_value_id, field_name, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, lazy_load_values, date_created, created_by_id, date_modified, modified_by_id)
+  values (:listOfValueId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :listOptionIds, :lazyLoadValues, now(), :createdById, now(), :createdById)
   returning id
   ]]></blueravenCustomField.insertField>
 
@@ -186,6 +189,7 @@ select cf.id,
        cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
        cf.company_system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+       cf.lazy_load_values,
        cf.custom_field_sql_key,
        cfga.id                          as custom_field_group_assignment_id,
        cfga.field_order,
