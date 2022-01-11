@@ -54,6 +54,7 @@
             label="Change Event Status To"
             item-text="eventStatusType"
             item-value="id"
+            clearable
           ></v-autocomplete>
           <v-autocomplete
             v-model="newEventAction.companyProcessStepStatusTypeId"
@@ -61,6 +62,7 @@
             label="Change Process Step Status To"
             item-text="processStepStatusType"
             item-value="id"
+            clearable
           >
             <template slot="item" slot-scope="data">
               <!-- HTML that describes how select should render items when the select is open -->
@@ -70,6 +72,7 @@
           <v-btn class="white--text"
                  color="primaryButton"
                  @click="saveEventAction(newEventAction)"
+                 :disabled="!newEventAction.actionName || (!newEventAction.companyEventStatusTypeId && !newEventAction.companyProcessStepStatusTypeId)"
           >Add Action</v-btn>
         </v-card>
         <v-data-table
@@ -106,6 +109,7 @@
                 label="Change Event Status To"
                 item-text="eventStatusType"
                 item-value="id"
+                clearable
               ></v-autocomplete>
               <v-autocomplete
                 v-model="action.companyProcessStepStatusTypeId"
@@ -113,6 +117,7 @@
                 label="Change Process Step Status To"
                 item-text="processStepStatusType"
                 item-value="id"
+                clearable
               >
                 <template slot="item" slot-scope="data">
                   <!-- HTML that describes how select should render items when the select is open -->
@@ -201,6 +206,7 @@
                 <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
               </div>
               <v-btn v-if="userCanEdit" class="mt-4 ml-3 mb-4"
+                     :disabled="!action.actionName || (!action.companyProcessStepStatusTypeId && !action.companyEventStatusTypeId)"
                      @click="validateActionLogicString(action, true)" >
                 <v-icon class="mr-2">save</v-icon>
                 Save Changes
