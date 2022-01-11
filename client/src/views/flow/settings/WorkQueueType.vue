@@ -345,7 +345,7 @@ import orderBy from 'lodash.orderby'
 import Vue2Filters from 'vue2-filters'
 import {getWorkQueueCategories} from '@/services/workQueueService'
 import {
-  handleHidingGlobalLoader, getRequest, logError, deleteRequest, getMinMaxRule,
+  handleHidingGlobalLoader, getRequest, logError, deleteRequest, getMinMaxRule, getRequestWithParams,
   putRequest, postRequest, getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -430,7 +430,9 @@ export default {
   methods: {
     async buildSql() {
       try {
-        const {data} = await getRequest(`/workQueue/smartlist/${this.workQueueType.smartlistId}/buildSql`)
+        const {data} = await getRequestWithParams(`/workQueue/smartlist/${this.workQueueType.smartlistId}/buildSql`, {params: {
+          useEventData: this.workQueueType.useEventData
+          }})
         this.sql = data
       } catch (e) {
         logError(e)

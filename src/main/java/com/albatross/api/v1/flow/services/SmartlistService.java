@@ -1532,7 +1532,11 @@ public class SmartlistService {
     return query.toString();
   }
 
-  private String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
+  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
+    return buildProcessStepSql(smartlist, fields, null, false);
+  }
+
+  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, Boolean useEventData) {
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
@@ -1865,11 +1869,10 @@ public class SmartlistService {
 
     if (usedProcessStepIds.isEmpty()) {
       //at this point, the only fields are project/contact, so this is essentially a project/contact smartlist
-
       if (smartlist.getObjectTypeId() == 6) {
         //@TODO: I don't like having a service dealing with controller stuff. Change this someday...
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An event smartlist must have at least 1 event type column");
-      } else {
+      } else if(!useEventData) {
         //set smartlist object type to "project" and build sql like usual
         smartlist.setObjectTypeId(1L);
         return buildSql(smartlist, fields);
