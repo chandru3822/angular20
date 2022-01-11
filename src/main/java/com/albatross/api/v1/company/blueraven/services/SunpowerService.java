@@ -147,7 +147,7 @@ public class SunpowerService {
       }
       else if (message.equals("Quote Updated")) {
         Optional<Object> sunpowerUrl = getSunpowerUrl(projectId);
-        if (sunpowerUrl.isPresent() && false) {
+        if (sunpowerUrl.isPresent()) {
           setSunpowerUrl(projectId, proposalNbr, sunpowerUrl.get().toString());
           return sunpowerUrl.get().toString();
         }
