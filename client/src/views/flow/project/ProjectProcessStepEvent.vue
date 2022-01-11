@@ -77,6 +77,9 @@
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
+      <v-btn class="one-hunned">
+        Upload Documents
+      </v-btn>
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>
           Details/Custom Fields

@@ -188,6 +188,9 @@
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
+      <v-btn class="one-hunned">
+        Upload Documents
+      </v-btn>
       <v-col cols="12" class="text-left pt-0">
         <v-col class="pt-0">
           <v-toolbar color="transparent" class="elevation-0">
