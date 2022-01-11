@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldService;
 import com.albatross.api.v1.flow.model.CustomField;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,12 @@ public class BlueravenCustomFieldController {
     // add the field and list of values
     CustomField field = customFieldService.saveField(customField);
     return field;
+  }
+
+  @GetMapping(value = "/{id}/values")
+  public List<ListOfValue> getCustomFieldListOfValues(
+      @PathVariable Long id, @RequestParam String query) {
+    return customFieldService.getCustomFieldListOfValues(id, query);
   }
 
   @PutMapping(value = "/delete/{id}")

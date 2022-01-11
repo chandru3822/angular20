@@ -107,12 +107,12 @@ public class BaseSqlCache {
     //noinspection unchecked
     return (T) jdbc.queryForObject(sql, paramSource, elementType);
   }
-  
+
   public <T> Optional<T> queryForObjectOptional(String key, Map<String, Object> params, Class<T> elementType) {
     try {
       MapSqlParameterSource paramSource = scrubParams(params);
       String sql = getByKey(key);
-      
+
       //noinspection unchecked
       return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
     } catch (DataAccessException e) {
@@ -226,11 +226,4 @@ public class BaseSqlCache {
     //noinspection unchecked
     return new HashMap.SimpleEntry(key, value);
   }
-
-
-  public static class Dummy extends SimpleModule {
-
-
-  }
-
 }

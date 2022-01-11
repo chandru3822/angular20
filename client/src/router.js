@@ -1074,7 +1074,7 @@ const router = new Router({
           meta: {title: 'Albatross - Installer Dashboard'},
           component: () => {
             if (store.getters.userHasFeature('INSTALLER_DASHBOARD')) {
-              return import (/* webpackChunkName: "installerDashboard" */ './views/flow/installerDashboard/InstallerDashboard.vue')
+              return import (/* webpackChunkName: "installerDashboard" */ './views/blueraven/installerDashboard/InstallerDashboard.vue')
             } else {
               return accessDenied()
             }
@@ -1365,7 +1365,7 @@ const router = new Router({
           meta: {title: 'Albatross - Electronic Documents'},
           component: () => {
             if (store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')) {
-              return import (/* webpackChunkName: "electronicDocuments" */ './views/flow/electronicDocuments/ElectronicDocuments.vue')
+              return import (/* webpackChunkName: "electronicDocuments" */ './views/blueraven/electronicDocuments/ElectronicDocuments.vue')
             } else {
               return accessDenied()
             }
@@ -1375,7 +1375,7 @@ const router = new Router({
               path: 'request',
               component: () => {
                 if (store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')) {
-                  return import (/* webpackChunkName: "electronicDocuments" */ './views/flow/electronicDocuments/Request.vue')
+                  return import (/* webpackChunkName: "electronicDocuments" */ './views/blueraven/electronicDocuments/Request.vue')
                 } else {
                   return accessDenied()
                 }

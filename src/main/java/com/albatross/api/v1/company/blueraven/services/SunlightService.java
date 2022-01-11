@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +49,7 @@ public class SunlightService {
   @Value(value = "${sunlight.api.portal}")
   private String portalUrl;
 
-  public String saveLoanFields(InstallAgreementRepository.PropLogDetail propLogDetail, Long projectId, Long proposalNbr) throws Exception {
+  public String saveLoanFields(InstallAgreementService.PropLogDetail propLogDetail, Long projectId, Long proposalNbr) throws Exception {
     JSONObject jsonContact = new JSONObject();
     JSONArray projectsArray = new JSONArray();
     JSONArray applicantsArray = new JSONArray();

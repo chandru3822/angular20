@@ -57,26 +57,26 @@ BEGIN
     -- 8,system
     -- 9,System List
             if v_data_type_id = 1 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, coalesce(v_date_value_to_save::date, p_value_to_save::date), null, null, null, null, null, null, p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, coalesce(v_date_value_to_save::date, p_value_to_save::date), null, null, null, null, null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 2 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, coalesce(v_date_value_to_save::timestamp, p_value_to_save::timestamp), null, null, null, null, null, p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, null, coalesce(v_date_value_to_save::timestamp, p_value_to_save::timestamp), null, null, null, null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 3 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, p_value_to_save::boolean, null, null, null, null, p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, null, null, p_value_to_save::boolean, null, null, null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 4 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, null,p_value_to_save::numeric(10,2), null, null, p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, null, null, null, null,p_value_to_save::numeric(10,2), null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 5 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 6 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, null, null, p_value_to_save::int, null, p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, null, null, null, null, null, p_value_to_save::int, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 7 then
-                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, null, null, null, p_value_to_save::int[], p_user_id);
+                insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+                values (v_project_process_step_id, p_cfga, null, null, null, null, null, null, p_value_to_save::int[], p_user_id, now(), p_user_id, now());
             end if;
         else
             if v_data_type_id = 1 then
