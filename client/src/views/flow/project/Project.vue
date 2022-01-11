@@ -34,7 +34,11 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-row class="project-split-container">
-      <v-col cols="3" class="white-bg">
+      <v-col cols="3" class="white-bg project-section">
+        <v-btn fab small text @click="collapseSidebar = !collapseSidebar">
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+        <div v-if="collapseSidebar">will collapse later</div>
         <v-toolbar flat>
           <v-toolbar-title>Overview</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -61,10 +65,10 @@
         <v-divider class="mt-5"></v-divider>
         <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
       </v-col>
-      <v-col cols="5" class="router-view-column">
-        <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
+      <v-col cols="5" class="router-view-column project-section">
+          <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </v-col>
-      <v-col cols="4" class="white-bg">
+      <v-col cols="4" class="white-bg project-section">
         <ProjectActivity></ProjectActivity>
       </v-col>
     </v-row>
@@ -100,6 +104,7 @@ export default {
     return {
       snackbar: {},
       project: {},
+      collapseSidebar: false,
       statuses: [],
       getStatusColor,
       availableOwners: [],
@@ -225,9 +230,13 @@ export default {
   overflow: auto;
 }
 
+.project-section {
+  overflow: auto;
+  max-height: calc(100% - 15px);
+}
+
 .white-bg {
   background-color: #fff;
 }
-
 </style>
 

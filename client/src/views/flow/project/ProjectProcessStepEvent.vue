@@ -1,41 +1,33 @@
 <template>
   <v-main class="events-container" v-if="selectedEvent && selectedEvent.id">
-    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-      <v-toolbar-title>
-        Event Details
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-      </v-toolbar-items>
-    </v-toolbar>
-    <v-card class="pa-4 square-card">
-      <div>
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
-          <v-toolbar-title>
-            {{ selectedEvent.eventName }}
+    <div>
+      <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
+        <v-toolbar-title>
+          {{ selectedEvent.eventName }}
 
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <div>
+          <v-autocomplete
+            v-model="selectedEvent.companyEventStatusTypeId"
+            :items="companyEventStatuses"
+            label="Event Status"
+            :disabled="!userCanManage"
+            item-text="eventStatusType"
+            item-value="id"
+          ></v-autocomplete>
+        </div>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
           <div>
-            <v-autocomplete
-              v-model="selectedEvent.companyEventStatusTypeId"
-              :items="companyEventStatuses"
-              label="Event Status"
-              :disabled="!userCanManage"
-              item-text="eventStatusType"
-              item-value="id"
-            ></v-autocomplete>
-          </div>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
             <v-dialog
               v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
               v-model="selectedEvent.deleteConfirm"
               width="500">
               <template v-slot:activator="{ on }">
-                <v-list-item-action class="clickable" v-on="on">
+                <v-btn text class="clickable" v-on="on">
                   <v-icon>delete</v-icon>
-                </v-list-item-action>
+                </v-btn>
               </template>
               <v-card>
                 <v-card-title
@@ -66,175 +58,183 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-            <v-btn text x-small class="pl-1 pr-2 mb-2" @click="closeEventWindow()">
-              <v-icon>close</v-icon>
+          </div>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>
+          Actions
+        </v-toolbar-title>
+      </v-toolbar>
+      <v-btn class="white--text save-btn mb-2 mr-2"
+             color="primaryButton"
+             :disabled="!action.canPerform"
+             @click="[attemptedAction = action, validateActionRequirements(action)]"
+             v-for="(action, i) in selectedEvent.eventActions"
+             :key="i">
+        {{ action.actionName }}
+      </v-btn>
+      <div class="error-text" v-if="eventActionMissingRequirements">
+        {{ this.saveErrorMsg }}
+      </div>
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>
+          Details/Custom Fields
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <div>
+            <v-btn class="white--text mr-2 mb-2 save-btn"
+                   @click="checkFieldsForUnique()"
+                   :disabled="!userCanEdit"
+                   color="primaryButton"
+            >Save Fields
             </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <div class="error-text" v-if="eventActionMissingRequirements">
-          {{this.saveErrorMsg}}
+          </div>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card class="pa-4 square-card mb-2"
+              v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
+        A state and postal code are required on the project to continue with scheduling. Please return to the
+        project screen and update.
+      </v-card>
+
+      <v-form ref="eventFieldForm" v-else>
+        <DatetimePickerInput
+          v-model="selectedEvent.startTime"
+          :timezone="this.timezone"
+          :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+          :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+          :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
+          :type="'timestamp'"
+          :format="'MMMM DD, YYYY, h:mm A'"
+          label="Start Time"
+        />
+        <DatetimePickerInput
+          v-model="selectedEvent.endTime"
+          :timezone="this.timezone"
+          :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+          :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+          :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
+          :type="'timestamp'"
+          :format="'MMMM DD, YYYY, h:mm A'"
+          label="End Time"
+        />
+        <v-autocomplete
+          v-if="selectedEvent && selectedEvent.availableResources"
+          v-model="selectedEvent.resourceId"
+          :items="selectedEvent.availableResources"
+          :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+          :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+          :rules="getResourceRequirement()"
+          label="Resource"
+          item-text="name"
+          item-value="id"
+        ></v-autocomplete>
+
+        <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
+               class="white--text mb-4"
+               :disabled="uniqueAlreadyHasValue"
+               id="qa-round-robin-button"
+               @click="showRoundRobin = !showRoundRobin">Round Robin
+        </v-btn>
+        <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
+          <v-toolbar flat color="transparent">
+            <v-toolbar-title>Lead Allocation</v-toolbar-title>
+          </v-toolbar>
+          <v-card-text class="py-0">
+            <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
+              You do not have access to schedule projects in this Postal Code
+            </v-card-text>
+            <div class="pb-3">
+              <CustomValueInput
+                :readonly="!userCanEdit"
+                :min-date="minDate"
+                :callback="checkAvailabilityDate"
+                :field="availabilityDateField"
+              />
+              <div class="text-right" v-if="availabilityDateField.dateValue">
+                <v-btn color="primaryCustom" class="white--text"
+                       :loading="remoteSearchLoading"
+                       :disabled="inPersonSearchLoading"
+                       v-if="showRemoteSearch || userIsAdmin"
+                       id="qa-round-robin-search-remote"
+                       @click="getAvailableTimeSlots(true)">
+                  Search Remote Appt. Slots
+                </v-btn>
+                <v-btn color="primaryCustom" class="white--text ml-3"
+                       :loading="inPersonSearchLoading"
+                       v-if="schedulerCanEdit || userIsAdmin"
+                       :disabled="remoteSearchLoading"
+                       id="qa-round-robin-search"
+                       @click="getAvailableTimeSlots(false)">
+                  Search In-person Appt. Slots
+                </v-btn>
+              </div>
+              <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
+                        v-model="selectedTimeSlot"
+                        class="qa-round-robin-time-select"
+                        :items="timeSlots"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        label="Select an Available Time Slot"
+                        return-object
+              >
+                <template slot="selection" slot-scope="data">
+                  {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                </template>
+                <template slot="item" slot-scope="data">
+                  {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                </template>
+              </v-select>
+              <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
+                Selected Date
+              </div>
+              <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
+                <v-btn color="primaryCustom" class="white--text"
+                       @click="saveCloserAppointment" id="qa-round-robin-save">
+                  Save Appointment
+                </v-btn>
+              </div>
+            </div>
+          </v-card-text>
+
         </div>
 
-        <v-card class="pa-4 square-card mb-2"
-                v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
-          A state and postal code are required on the project to continue with scheduling. Please return to the
-          project screen and update.
-        </v-card>
+        <v-col
+          v-if="selectedEvent && selectedEvent.id"
+          class="pt-0"
+          v-for="(cfg, index) in selectedEvent.customFieldGroups"
+          :key="cfg.id"
+        >
+          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+            <v-toolbar-title>
+              <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
+              <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
+              <!--                <v-icon>mdi-calendar</v-icon>-->
+              <!--              </v-btn>-->
+              {{ cfg.groupName }}
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card flat class="pa-3">
+            <CustomValueInput
+              v-for="(field, idx) in cfg.customFieldValues"
+              :key="idx"
+              :required="field.required && !eventSaveOverrideRequired"
+              :callback="populateDirtyCfvs"
+              :readonly="getReadOnly(field)"
+              :field="field"
+            />
+          </v-card>
+        </v-col>
+      </v-form>
 
-        <v-form ref="eventFieldForm" v-else>
-          <DatetimePickerInput
-            v-model="selectedEvent.startTime"
-            :timezone="this.timezone"
-            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-            :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
-            :type="'timestamp'"
-            :format="'MMMM DD, YYYY, h:mm A'"
-            label="Start Time"
-          />
-          <DatetimePickerInput
-            v-model="selectedEvent.endTime"
-            :timezone="this.timezone"
-            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-            :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
-            :type="'timestamp'"
-            :format="'MMMM DD, YYYY, h:mm A'"
-            label="End Time"
-          />
-          <v-autocomplete
-            v-if="selectedEvent && selectedEvent.availableResources"
-            v-model="selectedEvent.resourceId"
-            :items="selectedEvent.availableResources"
-            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-            :rules="getResourceRequirement()"
-            label="Resource"
-            item-text="name"
-            item-value="id"
-          ></v-autocomplete>
 
-          <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
-                 class="white--text mb-4"
-                 :disabled="uniqueAlreadyHasValue"
-                 id="qa-round-robin-button"
-                 @click="showRoundRobin = !showRoundRobin">Round Robin
-          </v-btn>
-          <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
-            <v-toolbar flat color="transparent">
-              <v-toolbar-title>Lead Allocation</v-toolbar-title>
-            </v-toolbar>
-            <v-card-text class="py-0">
-              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
-                You do not have access to schedule projects in this Postal Code
-              </v-card-text>
-              <div class="pb-3">
-                <CustomValueInput
-                  :readonly="!userCanEdit"
-                  :min-date="minDate"
-                  :callback="checkAvailabilityDate"
-                  :field="availabilityDateField"
-                />
-                <div class="text-right" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primaryCustom" class="white--text"
-                         :loading="remoteSearchLoading"
-                         :disabled="inPersonSearchLoading"
-                         v-if="showRemoteSearch || userIsAdmin"
-                         id="qa-round-robin-search-remote"
-                         @click="getAvailableTimeSlots(true)">
-                    Search Remote Appt. Slots
-                  </v-btn>
-                  <v-btn color="primaryCustom" class="white--text ml-3"
-                         :loading="inPersonSearchLoading"
-                         v-if="schedulerCanEdit || userIsAdmin"
-                         :disabled="remoteSearchLoading"
-                         id="qa-round-robin-search"
-                         @click="getAvailableTimeSlots(false)">
-                    Search In-person Appt. Slots
-                  </v-btn>
-                </div>
-                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
-                          v-model="selectedTimeSlot"
-                          class="qa-round-robin-time-select"
-                          :items="timeSlots"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          label="Select an Available Time Slot"
-                          return-object
-                >
-                  <template slot="selection" slot-scope="data">
-                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                  </template>
-                  <template slot="item" slot-scope="data">
-                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                  </template>
-                </v-select>
-                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
-                  Selected Date
-                </div>
-                <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                  <v-btn color="primaryCustom" class="white--text"
-                         @click="saveCloserAppointment" id="qa-round-robin-save">
-                    Save Appointment
-                  </v-btn>
-                </div>
-              </div>
-            </v-card-text>
 
-          </div>
-
-          <v-col
-            v-if="selectedEvent && selectedEvent.id"
-            class="pt-0"
-            v-for="(cfg, index) in selectedEvent.customFieldGroups"
-            :key="cfg.id"
-          >
-            <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-              <v-toolbar-title>
-                <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
-                <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
-                <!--                <v-icon>mdi-calendar</v-icon>-->
-                <!--              </v-btn>-->
-                {{ cfg.groupName }}
-              </v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-card flat class="pa-3">
-              <CustomValueInput
-                v-for="(field, idx) in cfg.customFieldValues"
-                :key="idx"
-                :required="field.required && !eventSaveOverrideRequired"
-                :callback="populateDirtyCfvs"
-                :readonly="getReadOnly(field)"
-                :field="field"
-              />
-            </v-card>
-          </v-col>
-        </v-form>
-
-        <v-btn class="white--text mr-2 mb-2 save-btn"
-               @click="checkFieldsForUnique()"
-               :disabled="!userCanEdit"
-               color="primaryButton"
-        >Save Event Fields
-        </v-btn>
-        <v-btn class="white--text save-btn mb-2 mr-2"
-               color="primaryButton"
-               :disabled="!action.canPerform"
-               @click="[attemptedAction = action, validateActionRequirements(action)]"
-               v-for="(action, i) in selectedEvent.eventActions"
-               :key="i">
-          {{ action.actionName }}
-        </v-btn>
-        <v-row>
-          <Attachments v-if="selectedEvent && selectedEvent.id"
-                       :project-process-step-event-id="selectedEvent.id" :event-id="selectedEvent.eventId"
-                       :project-process-step-id="projectProcessStepId"/>
-        </v-row>
-      </div>
-    </v-card>
+    </div>
   </v-main>
 </template>
 
@@ -353,7 +353,7 @@ export default {
       this.saveErrorMsg = 'The following fields are required to perform the selected action.'
 
       let requiredFields = action?.customFields?.filter(cf => cf.required) || []
-      if((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
+      if ((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
         this.eventActionMissingRequirements = true
         document.getElementById('event-header').scrollIntoView()
       } else if (requiredFields.length > 0) {
@@ -478,27 +478,6 @@ export default {
       })
       this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
     },
-    addEvent: async function (pse) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, pse)
-        //i have no idea why i am using 2 data objects for the same value but dont have time to figure it out atm
-        this.selectedEvent = data
-        this.selectedEvent.isNew = true
-        if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-          this.getRoundRobinNumDays()
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } finally {
-        this.chosenEvent = {}
-      }
-    },
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
       return getEventCustomFieldReadOnly(this.$store, field)
@@ -551,15 +530,6 @@ export default {
       try {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
         this.selectedEvent = data
-
-        if(isNewEvent) {
-          this.projectProcessStepEvents.push(data)
-        } else if(this.selectedEvent?.id != null) {
-          //populate the event into the previous list so that it will be right if they click the X
-          //get selected event index
-          let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.selectedEvent.id)
-          this.projectProcessStepEvents[index] = this.selectedEvent
-        }
 
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
@@ -680,7 +650,7 @@ export default {
       }
     },
     async checkFieldsForUnique() {
-      if(null != this.selectedEvent.startTime) {
+      if (null != this.selectedEvent.startTime) {
         let validSave = true
         let resource = null
         if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
@@ -718,8 +688,10 @@ export default {
         document.getElementById('event-header').scrollIntoView()
       }
     },
-    filterProjectProcessStepEvents () {
-      return this.projectProcessStepEvents ? this.projectProcessStepEvents.filter(ppse => { return !ppse.archived}) : []
+    filterProjectProcessStepEvents() {
+      return this.projectProcessStepEvents ? this.projectProcessStepEvents.filter(ppse => {
+        return !ppse.archived
+      }) : []
     },
   }
 }
@@ -728,7 +700,8 @@ export default {
 <style lang="scss">
 .event-button .v-btn__content {
   //max-width: 100%;
-  width: 100%; white-space: normal;
+  width: 100%;
+  white-space: normal;
 }
 </style>
 <style lang="scss" scoped>

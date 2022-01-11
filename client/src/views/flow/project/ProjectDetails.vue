@@ -1,6 +1,22 @@
 <template>
 <v-row id="project-details-container" class="mt-2">
   <v-col cols="12" lg="12" class="pt-0">
+    <v-tabs v-if="tabs.length > 0"
+            background-color="transparent"
+            v-model="selectedTab.uniqueIdentifier"
+            show-arrows>
+      <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
+      <v-tab v-for="t in tabs" :key="t.id"
+             @click="selectedTab = t">
+        {{ t.tabName }}
+      </v-tab>
+    </v-tabs>
+    <v-tabs v-else background-color="transparent">
+      <v-tab>
+        Project Details
+      </v-tab>
+    </v-tabs>
+
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primaryCustom"/>
     </v-col>
@@ -16,11 +32,14 @@
           <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-          <v-btn
-            v-if="index === 0 && userCanEdit"
-            text
-            :disabled="fieldsSaving"
-            @click="[fieldsSaving = true, updateFieldGroups()]">Save</v-btn>
+            <div>
+              <v-btn
+                v-if="index === 0 && userCanEdit"
+                color="primaryCustom"
+                class="white--text mt-3"
+                :disabled="fieldsSaving"
+                @click="[fieldsSaving = true, updateFieldGroups()]">Save Project Fields</v-btn>
+            </div>
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="pa-4 text-left square-card">
@@ -43,7 +62,14 @@
 
 <script>
 
-import {handleHidingGlobalLoader, getRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  postRequest,
+  logError,
+  getSnackbar,
+  getRequestWithParams
+} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 
@@ -60,6 +86,9 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
+      tabs: [],
+      tabsLoading: true,
+      selectedTab: {},
       customFieldGroups: [],
       menuOpen: false,
       fieldsSaving: false,
@@ -73,12 +102,12 @@ export default {
     }
   },
   created () {
+    this.getProjectTabs()
     this.getProcessSteps()
     this.getFieldGroups()
   },
   props: {
     project: Object,
-    selectedTab: Object
   },
   computed: {
     displayedGroups () {
@@ -97,6 +126,21 @@ export default {
   },
 
   methods: {
+    getProjectTabs: async function () {
+      this.tabsLoading = true
+      try {
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
+        this.tabs = data
+        this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.tabsLoading = false
+      }
+    },
     getDirtyFieldsCount() {
       return this.dirtyCfvs?.length || 0
     },
@@ -180,7 +224,8 @@ export default {
 
 <style lang="scss">
 .process-step-toolbar .v-toolbar__content {
-  padding-left: 10px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 .manage-btn {
 

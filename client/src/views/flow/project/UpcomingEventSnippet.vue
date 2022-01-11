@@ -2,7 +2,7 @@
 <v-row>
   <v-col cols="12" class="pt-0">
     <v-card flat v-for="e in events" class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
-      {{ e.processStepName }}
+      {{ e.eventName }}
       <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span>
     </v-card>
   </v-col>

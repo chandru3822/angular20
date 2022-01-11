@@ -1,46 +1,87 @@
 <template>
-<v-row id="project-details-container" class="mt-2">
-  <v-col cols="12" lg="12" class="text-left pt-0">
-
+  <v-row id="project-details-container" class="mt-2">
+    <v-col cols="12" lg="12" class="text-left pt-0">
+      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
-          <v-col cols="12">
-            <v-row class="justify-space-around align-center">
-              <v-col class="text-left pb-0">
-                <h3>All Events</h3>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12" class="pt-0">
-                <v-divider/>
-              </v-col>
-            </v-row>
-          </v-col>
+          <v-toolbar color="transparent" class="elevation-0">
+            <v-toolbar-title>Upcoming Events</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+            </v-toolbar-items>
+          </v-toolbar>
 
           <v-col cols="12" v-if="upcomingEventsLoading">
             <SpinnerInline :size="20" color="primaryCustom"/>
           </v-col>
 
-          <v-col cols="12" class="pt-0" v-else>
-            <v-text-field placeholder="Filter..."
-                          hide-details
-                          outlined
-                          type="search"
-                          class=""
-                          v-model="eventSearch"></v-text-field>
-
-            <template v-for="event in filteredEvents()">
-              <h4 class="text-left work-type-header">{{event.eventName}}</h4>
-              <EventSnippet
-                :key="event.eventName"
-                :events="event.events"
-                :projectId="projectId"/>
-            </template>
+          <v-col cols="12" v-else class="pt-0">
+            <TableUpcomingEventSnippet
+              :events="getUpcomingEvents(events)"
+              :projectId="projectId"/>
           </v-col>
-
         </v-row>
       </v-col>
 
-</v-row>
+      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+        <v-col
+          v-show="!eventsExpanded"
+          cols="12"
+          class="text-right pt-0"
+        >
+        <span @click="eventsExpanded = true" class="clickable">
+          Expand All Events <v-icon>mdi-menu-down</v-icon>
+        </span>
+        </v-col>
+      </v-fade-transition>
+
+      <v-expand-transition>
+        <v-col v-show="eventsExpanded">
+          <v-row>
+            <v-col cols="12">
+              <v-row class="justify-space-around align-center">
+                <v-col class="text-left pb-0">
+                  <h3>All Events</h3>
+                </v-col>
+                <v-col class="text-right pb-0">
+              <span @click="eventsExpanded = false" class="clickable">
+                Collapse All Events <v-icon>mdi-menu-down</v-icon>
+              </span>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12" class="pt-0">
+                  <v-divider/>
+                </v-col>
+              </v-row>
+            </v-col>
+
+            <v-col cols="12" v-if="upcomingEventsLoading">
+              <SpinnerInline :size="20" color="primaryCustom"/>
+            </v-col>
+
+            <v-col cols="12" class="pt-0" v-else>
+              <v-text-field placeholder="Filter..."
+                            hide-details
+                            outlined
+                            type="search"
+                            class=""
+                            v-model="eventSearch"></v-text-field>
+
+              <template v-for="event in filteredEvents()">
+                <h4 class="text-left work-type-header">{{event.eventName}}</h4>
+                <EventSnippet
+                  :key="event.eventName"
+                  :events="event.events"
+                  :projectId="projectId"/>
+              </template>
+            </v-col>
+
+          </v-row>
+        </v-col>
+      </v-expand-transition>
+    </v-col>
+
+  </v-row>
 </template>
 
 <script>
@@ -48,7 +89,7 @@
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-import UpcomingEventSnippet from '@/views/flow/project/UpcomingEventSnippet'
+import TableUpcomingEventSnippet from '@/views/flow/project/TableUpcomingEventSnippet'
 import moment from 'moment'
 
 export default {
@@ -56,7 +97,7 @@ export default {
   components: {
     SpinnerInline,
     EventSnippet,
-    UpcomingEventSnippet
+    TableUpcomingEventSnippet
   },
   props: {
     project: Object
@@ -66,8 +107,13 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
       customFieldGroups: [],
+      menuOpen: false,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       upcomingEventsLoading: false,
+      snackbar: {},
       eventSearch: '',
+      eventsExpanded: true,
+      companyId: this.$store.state.user.details.companyId,
     }
   },
   created () {
@@ -96,14 +142,14 @@ export default {
     },
     getEvents: async function () {
       try {
-      this.upcomingEventsLoading = true
-       const {data} = await getRequest(`/project/${this.projectId}/events`)
-       this.events = data
-     } catch (e) {
-       logError(e)
-     } finally {
-       this.upcomingEventsLoading = false
-     }
+        this.upcomingEventsLoading = true
+        const {data} = await getRequest(`/project/${this.projectId}/events`)
+        this.events = data
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.upcomingEventsLoading = false
+      }
     },
   }
 }
