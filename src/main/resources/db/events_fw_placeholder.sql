@@ -788,3 +788,28 @@ alter table flow.process_step_event_work_queue_type_event_status_type
   add constraint psewqtest_event_status_type_uk
     unique (company_event_status_type_id, event_status_type_id, process_step_event_work_queue_type_id);
 -- *** END WORK QUEUE STUFF ***
+
+-- EVENT READ ONLY/WHITE LIST DEFAULT FIELDS
+alter table flow.event
+  add column if not exists start_time_read_only boolean not null default false;
+
+alter table flow.event
+  add column if not exists end_time_read_only boolean not null default false;
+
+alter table flow.event
+  add column if not exists resource_read_only boolean not null default false;
+
+alter table flow.white_listed_position
+  add column if not exists event_id int references flow.event(id);
+
+insert into flow.white_list_type(white_list_type, archived)
+  (select 'EVENT_START_TIME_READ_ONLY', false
+   where not exists (select id from flow.white_list_type where white_list_type = 'EVENT_START_TIME_READ_ONLY'));
+
+insert into flow.white_list_type(white_list_type, archived)
+  (select 'EVENT_END_TIME_READ_ONLY', false
+   where not exists (select id from flow.white_list_type where white_list_type = 'EVENT_END_TIME_READ_ONLY'));
+
+insert into flow.white_list_type(white_list_type, archived)
+  (select 'EVENT_RESOURCE_READ_ONLY', false
+   where not exists (select id from flow.white_list_type where white_list_type = 'EVENT_RESOURCE_READ_ONLY'));

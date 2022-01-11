@@ -1,5 +1,5 @@
 <template>
-  <v-main class="events-container">
+  <v-main class="events-container" v-if="selectedEvent && selectedEvent.id">
     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
       <v-toolbar-title>
         Event Details
@@ -85,8 +85,8 @@
           <DatetimePickerInput
             v-model="selectedEvent.startTime"
             :timezone="this.timezone"
-            :disabled="uniqueAlreadyHasValue || !userCanEdit"
-            :readonly="uniqueAlreadyHasValue || !userCanEdit"
+            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
             :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -95,8 +95,8 @@
           <DatetimePickerInput
             v-model="selectedEvent.endTime"
             :timezone="this.timezone"
-            :disabled="uniqueAlreadyHasValue || !userCanEdit"
-            :readonly="uniqueAlreadyHasValue || !userCanEdit"
+            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
             :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -106,8 +106,8 @@
             v-if="selectedEvent && selectedEvent.availableResources"
             v-model="selectedEvent.resourceId"
             :items="selectedEvent.availableResources"
-            :disabled="uniqueAlreadyHasValue || !userCanEdit"
-            :readonly="uniqueAlreadyHasValue || !userCanEdit"
+            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
             :rules="getResourceRequirement()"
             label="Resource"
             item-text="name"
@@ -252,7 +252,7 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getEventCustomFieldReadOnly} from "@/services/customFieldService";
+import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import Attachments from '@/views/flow/components/Attachments'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -504,9 +504,14 @@ export default {
       return getEventCustomFieldReadOnly(this.$store, field)
         || !this.userCanEdit
     },
+    getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
+      // if events admin then they can edit any event fields, otherwise idk???
+      return getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
+        || !this.userCanEdit
+    },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match && field?.id != -1) {
+      if (!match && field?.id !== -1) {
         this.dirtyCfvs.push(field)
       }
     },
@@ -553,7 +558,6 @@ export default {
           //populate the event into the previous list so that it will be right if they click the X
           //get selected event index
           let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.selectedEvent.id)
-          console.log('randaLogger INDEX FACE: ', index)
           this.projectProcessStepEvents[index] = this.selectedEvent
         }
 

@@ -110,7 +110,7 @@ public class ProcessStepEventService {
     params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
     params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
     params.put("actionName", processStepEventAction.getActionName());
-    params.put("requireStartTime", null != processStepEventAction.getRequireStartTime() ? processStepEventAction.getRequireStartTime() : false);
+    params.put("requireStartTime", true); //we have changed to ALWAYS require start time
     params.put("requireEndTime", null != processStepEventAction.getRequireEndTime() ? processStepEventAction.getRequireEndTime() : false);
     params.put("requireResource", null != processStepEventAction.getRequireResource() ? processStepEventAction.getRequireResource() : false);
     params.put("alwaysEnabled", null != processStepEventAction.getAlwaysEnabled() ? processStepEventAction.getAlwaysEnabled() : false);

@@ -37,6 +37,20 @@ export function getEventCustomFieldReadOnly(store, field) {
   return readonly
 }
 
+export function getEventDefaultFieldReadOnly(store, whiteListedPositions, fieldReadOnlyValue) {
+  let readonly = false
+  console.log('randaLogger',whiteListedPositions)
+  if (whiteListedPositions?.length > 0) {
+    //do any of the user's active positions match the white listed positions
+    readonly = !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId))
+  } else if (fieldReadOnlyValue) {
+    //the field is marked as readonly but there are no whitelisted positions.  always readonly
+    readonly = true
+  }
+
+  return readonly
+}
+
 
 
 

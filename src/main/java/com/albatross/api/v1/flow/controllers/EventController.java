@@ -36,10 +36,10 @@ public class EventController {
     return eventService.getEvent(id);
   }
 
-  @PostMapping(value = "/{id}/saveResourceField/{resourceCustomFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveResourceField(@PathVariable Long id,
-                                @PathVariable Long resourceCustomFieldId) {
-    eventService.saveResourceField(id, resourceCustomFieldId);
+  @PostMapping(value = "/{id}/saveChangesToDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveChangesToDefaultFields(@PathVariable Long id,
+                                         @RequestBody Event event) {
+    eventService.saveChangesToDefaultFields(id, event);
   }
 
   @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -130,4 +130,11 @@ public class EventController {
     return new ResponseEntity<>(eventService.getAvailableOwners(eventId), HttpStatus.OK);
   }
 
+  //white list start, end or resource field
+  @PutMapping(value = "/{eventId}/saveWhiteListPositions/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveWhiteListPositions(@PathVariable Long eventId,
+                                     @PathVariable Long typeId,
+                                     @RequestBody List<WhiteListedPosition> whiteListedPositions) {
+    eventService.saveWhiteListPositions(eventId, typeId, whiteListedPositions);
+  }
 }

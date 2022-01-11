@@ -644,7 +644,6 @@ export default {
           //populate the event into the previous list so that it will be right if they click the X
           //get selected event index
           let index = this.projectProcessStepEvents.findIndex(ppse => ppse.id === this.selectedEvent.id)
-          console.log('randaLogger INDEX FACE: ', index)
           this.projectProcessStepEvents[index] = this.selectedEvent
         }
 

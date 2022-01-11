@@ -349,15 +349,25 @@ public class ProjectProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {
-      };
+      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "eventActions",
         new JsonCollectionDeserializer(eventActionsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef = new TypeReference<>() {
-      };
+      TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "availableResources",
         new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "startTimeWhiteListedPositions",
+        new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> endTimeWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "endTimeWhiteListedPositions",
+        new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> resourceWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "resourceWhiteListedPositions",
+        new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
     }
   }
 

@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class WhiteListedPosition {
 
-  private Long id, positionId, customFieldGroupAssignmentId;
+  private Long id, positionId, customFieldGroupAssignmentId, companyId, whiteListTypeId, eventId;
   private Boolean archived;
 
 }

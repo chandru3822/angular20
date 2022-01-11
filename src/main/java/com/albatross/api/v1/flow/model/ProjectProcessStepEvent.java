@@ -21,7 +21,8 @@ public class ProjectProcessStepEvent {
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions;
-  private Boolean archived;
+  private Boolean archived, startTimeReadOnly, endTimeReadOnly, resourceReadOnly;
+  private List<WhiteListedPosition> startTimeWhiteListedPositions, endTimeWhiteListedPositions, resourceWhiteListedPositions;
 
 
   @Data

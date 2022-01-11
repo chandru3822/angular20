@@ -4,7 +4,6 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -30,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,7 +38,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -209,6 +206,8 @@ public class ProjectService {
 
   public void deleteProject(Long projectId) {
     User user = securityService.getCurrentUser();
+    //todo: security: this is still a problem if the user doesn't have access to the specific company
+    securityService.validateUserFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROCESS_STEPS", List.of("ADMIN"));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
