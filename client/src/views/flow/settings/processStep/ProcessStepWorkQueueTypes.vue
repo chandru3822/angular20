@@ -155,7 +155,7 @@
         <v-card flat v-if="((processStep && processStep.workQueueTypes && processStep.workQueueTypes.length > 0)
                           || event && event.workQueueTypes && event.workQueueTypes.length > 0) && expandWqt">
           <v-data-table
-            :headers="headers"
+            :headers="displayedHeaders"
             :items="filterWorkQueueTypes()"
             single-expand
             :expanded.sync="expanded"
@@ -314,7 +314,7 @@
                           <span :class="{'bold': pss.isRoot}">{{ pss.processStepStatusType }}</span>
                         </span>
                 </td>
-                <td class="text-left">
+                <td class="text-left" v-if="showEventFields">
                         <span v-for="(pss, idx) in filterBy(item.eventStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': pss.isRoot}">{{ pss.eventStatusType }}</span>
@@ -422,8 +422,8 @@ export default {
         {text: 'Type', value: 'workQueueType', show: true},
         {text: 'Project Status', value: 'projectStatus', show: true},
         {text: 'Process Step Status', value: 'processStepStatus', show: true},
-        {text: 'Event Status', value: 'eventStatus', show: true},
-        {text: '', value: 'icons', show: false, width: '100px'},
+        {text: 'Event Status', value: 'eventStatus', show: this.event?.id},
+        {text: '', value: 'icons', show: true, width: '100px'},
       ],
       addNewType: false,
       newType: {},
@@ -443,7 +443,11 @@ export default {
       showEventFields: false
     }
   },
-  computed: {},
+  computed: {
+    displayedHeaders () {
+      return this.headers.filter(h => h.show)
+    }
+  },
   async created() {
     if (this.event?.id) {
       this.showEventFields = true
@@ -790,39 +794,43 @@ export default {
       }
     },
     prepTempEventStatuses(item, existingItem) {
-      //this is required so that selections made on one wqt are not auto-selected in other wqt's
-      item.tempEventStatuses = cloneDeep(this.combinedEventStatuses)
+      if(this.showEventFields) {
+        //this is required so that selections made on one wqt are not auto-selected in other wqt's
+        item.tempEventStatuses = cloneDeep(this.combinedEventStatuses)
 
-      if (existingItem) {
-        //if an existing item, then get a list of all the used root statuses and disable the ui as needed
-        let rootStatusesIdsUsed = []
-        item.eventStatuses.forEach(ps => {
-          if (ps.isRoot) {
-            rootStatusesIdsUsed.push(ps.eventStatusTypeId)
+        if (existingItem) {
+          //if an existing item, then get a list of all the used root statuses and disable the ui as needed
+          let rootStatusesIdsUsed = []
+          item.eventStatuses.forEach(ps => {
+            if (ps.isRoot) {
+              rootStatusesIdsUsed.push(ps.eventStatusTypeId)
+            }
+          })
+          //if there are root statuses being used then handle that shit
+          if (rootStatusesIdsUsed.length > 0) {
+            item.tempEventStatuses = item.tempEventStatuses.map(ts => ({
+              ...ts,
+              disabled: !ts.isRoot && rootStatusesIdsUsed.includes(ts.eventStatusTypeId)
+            }))
           }
-        })
-        //if there are root statuses being used then handle that shit
-        if (rootStatusesIdsUsed.length > 0) {
-          item.tempEventStatuses = item.tempEventStatuses.map(ts => ({
-            ...ts,
-            disabled: !ts.isRoot && rootStatusesIdsUsed.includes(ts.eventStatusTypeId)
-          }))
         }
       }
     },
     async getEventStatusTypesForWorkQueue() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequestWithParams(`/event/statusesForWqt`, {
-          params: {processStepId: this.processStepId, eventId: this.event.id}
-        })
-        this.combinedEventStatuses = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if(this.showEventFields) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data, status} = await getRequestWithParams(`/event/statusesForWqt`, {
+            params: {processStepId: this.processStepId, eventId: this.event.id}
+          })
+          this.combinedEventStatuses = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     //end event stuff
