@@ -282,7 +282,7 @@
   import {handleHidingGlobalLoader, followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
-  import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import {getAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
   import Links from '@/views/flow/components/Links'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -308,6 +308,7 @@
         snackbar: {},
         unsavedFieldsModal: false,
         fieldsSaving: false,
+        getStatusClass,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
         userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
@@ -387,9 +388,6 @@
     methods: {
       goToPath(path) {
         this.$router.push(path)
-      },
-      getStatusClass(rootTypeId) {
-        return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
       },
       async getAvailableStatuses() {
         if(this.processStep?.processStepId) {
@@ -646,24 +644,6 @@
 <style lang="scss" scoped>
   .process-step-header {
     border-bottom: solid 1px #EAEAF4;
-  }
-
-  .status-active {
-    color: green;
-    font-weight: normal;
-    font-size: 12px;
-  }
-
-  .status-complete {
-    color: cornflowerblue;
-    font-weight: normal;
-    font-size: 12px;
-  }
-
-  .status-cancelled {
-    color: darkred;
-    font-weight: normal;
-    font-size: 12px;
   }
 
   .process-step-name {

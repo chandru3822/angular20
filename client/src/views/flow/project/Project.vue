@@ -1,79 +1,64 @@
 <template>
   <div id="project-container">
-    <v-row v-if="!projectLoading && project && project.id" class="project-header">
-      <v-col cols="12">
-        <div>
-          {{ project.projectName }}
-        </div>
-        <div>
-          <v-select
+    <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
+      <v-toolbar-title class="app-title">
+        <div class="d-inline-block">{{ project.projectName }}{{project.projectStatusTypeId}}</div>
+        <div class="d-inline-block">
+          <v-autocomplete
+            class="ml-5"
             v-model="project.companyProjectStatusTypeId"
             :items="statuses"
             :readonly="!userCanEdit || projectStatusIsReadOnly()"
             :disabled="!userCanEdit || projectStatusIsReadOnly()"
             item-text="projectStatusType"
             item-value="id"
+            solo
+            dense
+            hide-details
+            :background-color="getStatusColor(project.projectStatusTypeId)"
             @change="updateStatus"
-            label="Project Stage"
           />
-          <div class="text-left project-stage"
-               v-if="Object.keys(project).length > 0 && project.companyProjectStatusTypeId !== null && statuses.length > 0">
-            Status: {{ projectStage }}
-          </div>
         </div>
-      </v-col>
-    </v-row>
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <div>
+          <v-btn color="#C4C4C4"
+                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+                 class="d-inline-block mt-3"
+                 @click="$router.push({name: 'projectAdmin', params: {projectId}})"
+          >
+            Project Admin
+          </v-btn>
+        </div>
+      </v-toolbar-items>
+    </v-toolbar>
     <v-row class="project-split-container">
       <v-col cols="3" class="white-bg">
-        Address: {{ project.street1 }} <br/>
-        Owner:
-        <div>
-          <v-row v-if="project.owner && project.owner.userId && !displayChangeOwner">
-            <v-avatar
-              :tile="false"
-              :size="40"
-              color="grey lighten-4"
-              class="account-img mr-4 mt-1"
-            >
-              <v-img name="accountImg" v-if="project.owner.presignedUrl"
-                     :src="project.owner.presignedUrl"></v-img>
-              <img v-else name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
-            </v-avatar>
-            <div class="d-inline-block">
-              {{ project.owner.fullName }} <br/>
-              {{ project.owner.position }} <br/>
-            </div>
-          </v-row>
-          <v-row>
-            <v-col class="pa-0">
-              <div v-if="project.owner && project.owner.userId && !displayChangeOwner">
-                {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
-              </div>
-
-              <div v-if="displayChangeOwner && !projectOwnerIsReadOnly()">
-                <v-autocomplete v-model="project.owner"
-                                :items="availableOwners"
-                                label="Select Owner"
-                                item-text="fullName"
-                                return-object
-                                autocomplete="off"
-                                @change="updateOwner"
-                                attach
-                >
-                </v-autocomplete>
-              </div>
-              <v-btn text x-small class="change-owner-button"
-                     v-if="!projectOwnerIsReadOnly()"
-                     @click="[displayChangeOwner = !displayChangeOwner, getOwners()]">
-                <span v-if="displayChangeOwner">cancel</span>
-                <span v-else-if="project.owner && project.owner.userId">change</span>
-                <span v-else>add owner</span>
-              </v-btn>
-            </v-col>
-          </v-row>
+        <v-toolbar flat>
+          <v-toolbar-title>Overview</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="" v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')">
+              Edit
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <div class="px-4">
+          Address: {{ project.street1 }} {{ project.city }} {{ project.stateAbbreviation }} <br/>
+          Contact: {{ formatPhoneNumber(project.mobile || project.phone) }} <br/>
+          Email: {{ project.email }} <br/>
+          Owner:
+          <div class="mb-3" v-if="project && project.owner">{{ project.owner.fullName }} - {{
+              project.owner.position
+            }}<br/>
+            {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+          </div>
+          <router-link :to="`/contact/${project.contactId}`">Go to contact</router-link>
+          <v-divider class="mt-5"></v-divider>
         </div>
-
         <ActiveProcessSteps :project="project"></ActiveProcessSteps>
+        <v-divider class="mt-5"></v-divider>
         <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
       </v-col>
       <v-col cols="5" class="router-view-column">
@@ -102,7 +87,7 @@ import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import UpcomingEvents from '@/views/flow/project/UpcomingEvents'
-import {getCompanyProjectStatusTypes} from "@/services/projectStatusTypeService"
+import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectStatusTypeService"
 
 export default {
   name: 'Project',
@@ -116,6 +101,7 @@ export default {
       snackbar: {},
       project: {},
       statuses: [],
+      getStatusColor,
       availableOwners: [],
       formatPhoneNumber,
       projectLoading: true,
@@ -223,12 +209,12 @@ export default {
   width: 100%;
   height: 100%;
   max-height: 100% !important;
-  padding: 0 12px !important;
+  padding: 0 !important;
   overflow: hidden;
 }
 
 .project-header {
-  background-color: #E3E3E3;
+  height: 64px;
 }
 
 .project-split-container {
