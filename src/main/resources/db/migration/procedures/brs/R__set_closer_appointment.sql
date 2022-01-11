@@ -171,7 +171,7 @@ BEGIN
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
                                                                           custom_field_group_assignment_id, int_value,
-                                                                          date_created, created_by_id, date_modified, created_by_id, archived)
+                                                                          date_created, created_by_id, date_modified, modified_by_id, archived)
                 VALUES (p_project_process_step_id, 7, v_user_position_id, now(), p_current_user_id, now(), p_current_user_id, false);
             end if;
 
