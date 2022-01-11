@@ -1,9 +1,9 @@
-package com.albatross.api.v1.flow.controllers;
+package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.WorkQueue;
 import com.albatross.api.v1.flow.model.WorkQueueOwner;
-import com.albatross.api.v1.flow.services.InstallerDashboardService;
+import com.albatross.api.v1.company.blueraven.services.InstallerDashboardService;
 import com.albatross.api.v1.flow.services.WorkQueueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

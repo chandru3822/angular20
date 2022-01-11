@@ -115,7 +115,8 @@ public class ProposalVersionService {
         ProposalFieldObjectType.class);
   }
 
-  public List<ProposalCustomValuesRow> resetProposalVersionByCustomFieldByObjectCode(Long versionId, String objectCode) {
+  public List<ProposalCustomValuesRow> resetProposalVersionByCustomFieldByObjectCode(
+      Long versionId, String objectCode) {
     sqlCache.update(
         "propTool.resetCustomFieldGroup", Map.of("versionId", versionId, "objectCode", objectCode));
     return getProposalCustomFieldValues(versionId, objectCode);
@@ -128,23 +129,26 @@ public class ProposalVersionService {
     final var currentUser = securityService.getCurrentUser();
     var rowId = group.rowId() != null ? group.rowId() : UUID.randomUUID();
 
-    for (ProposalCustomFieldValue proposalCustomFieldValue : group.values()) {
-      sqlCache.update(
-          "propTool.insertCustomValue",
-          Map.of(
-              "proposalVersionId",
-              versionId,
-              "groupUUID",
-              rowId,
-              "objectCode",
-              objectCode,
-              "value",
-              proposalCustomFieldValue.value().toString(),
-              "fieldId",
-              proposalCustomFieldValue.id(),
-              "currentUserId",
-              currentUser.getId()));
-    }
+    final var params =
+        group.values().stream()
+            .map(
+                proposalCustomFieldValue ->
+                    Map.of(
+                        "proposalVersionId",
+                        versionId,
+                        "groupUUID",
+                        rowId,
+                        "objectCode",
+                        objectCode,
+                        "value",
+                        proposalCustomFieldValue.value().toString(),
+                        "fieldId",
+                        proposalCustomFieldValue.id(),
+                        "currentUserId",
+                        currentUser.getId()))
+            .toList();
+
+    sqlCache.updateBatch("propTool.insertCustomValue", params);
 
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, rowId);
   }

@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,7 @@ public class SunpowerService {
   @Value(value = "${sunpower.api.host}")
   private String apiUrl;
 
-  public String saveLoanFields(InstallAgreementRepository.PropLogDetail propLogDetail, Long projectId, Long proposalNbr, String sendVia, boolean isUpdate) throws Exception {
+  public String saveLoanFields(InstallAgreementService.PropLogDetail propLogDetail, Long projectId, Long proposalNbr, String sendVia, boolean isUpdate) throws Exception {
     JSONObject jsonContact = new JSONObject();
     JSONArray projectsArray = new JSONArray();
     JSONArray applicantsArray = new JSONArray();
@@ -147,7 +146,13 @@ public class SunpowerService {
         setSunpowerUrl(projectId, proposalNbr, result);
       }
       else if (message.equals("Quote Updated")) {
-        result = "Customer application updated if applicable";
+        Optional<Object> sunpowerUrl = getSunpowerUrl(projectId);
+        if (sunpowerUrl.isPresent()) {
+          setSunpowerUrl(projectId, proposalNbr, sunpowerUrl.get().toString());
+          return sunpowerUrl.get().toString();
+        }
+
+        result = "Quote Updated";
       }
     }
     else {
@@ -199,6 +204,12 @@ public class SunpowerService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
     return sqlCache.get("installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
+  }
+
+  private Optional<Object> getSunpowerUrl(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    return sqlCache.get("installAgreement.getSunpowerUrlPerProject", params, new SingleColumnRowMapper<>(Object.class));
   }
 
   private void setSunpowerUrl(Long projectId, Long proposalNbr, String url) {

@@ -38,13 +38,13 @@
           <v-spacer v-if="!constants.IS_MOBILE"></v-spacer>
           <v-toolbar-items>
             <v-select
-                class="mt-4"
-                v-model="selectedObjectType"
-                :items="objectFilters"
-                label="Filter by Object Type"
-                item-text="objectType"
-                return-object
-                @input="changeSelectedObjectType()"
+              class="mt-4"
+              v-model="selectedObjectType"
+              :items="objectFilters"
+              label="Filter by Object Type"
+              item-text="objectType"
+              return-object
+              @input="changeSelectedObjectType()"
             ></v-select>
           </v-toolbar-items>
         </v-toolbar>
@@ -60,16 +60,16 @@
             ></v-text-field>
           </v-card-title>
           <v-data-table
-              :headers="headers"
-              :items="filterCustomFields()"
-              :fixed-header="true"
-              :items-per-page="25"
-              single-expand
-              :search="search"
-              hide-default-header
-              :footer-props="footerProps"
-              :expanded.sync="expanded"
-              class="elevation-1 mt-1"
+            :headers="headers"
+            :items="filterCustomFields()"
+            :fixed-header="true"
+            :items-per-page="25"
+            single-expand
+            :search="search"
+            hide-default-header
+            :footer-props="footerProps"
+            :expanded.sync="expanded"
+            class="elevation-1 mt-1"
           >
             <template #no-data>
               No available fields
@@ -80,9 +80,10 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr  :class="{'shaded-row': index % 2}">
-                <td class="text-left clickable" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], item.newFieldName = item.fieldName, selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
-                  {{item.custom ? 'Add New' : item.fieldName}}
+              <tr :class="{'shaded-row': index % 2}">
+                <td class="text-left clickable"
+                    @click="[expanded.includes(item) ? expanded = [] : expanded = [item], item.newFieldName = item.fieldName, selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
+                  {{ item.custom ? "Add New" : item.fieldName }}
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
@@ -93,9 +94,9 @@
                       <v-icon v-else>edit</v-icon>
                     </v-btn>
                     <v-dialog
-                        v-model="item.deleteConfirm"
-                        v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        width="500">
+                      v-model="item.deleteConfirm"
+                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      width="500">
                       <template v-slot:activator="{ on }">
                         <v-btn small text class="clickable" v-on="on">
                           <v-icon>delete</v-icon>
@@ -118,13 +119,13 @@
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn
-                              @click="item.deleteConfirm = false">
+                            @click="item.deleteConfirm = false">
                             No
                           </v-btn>
                           <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="deleteField(item)">
+                            color="primaryCustom"
+                            text
+                            @click="deleteField(item)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -135,92 +136,103 @@
               </tr>
             </template>
             <template #expanded-item="{ headers, item, index }">
-              <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-col class="flex-display pl-3 pr-3 justify" :class="{'shaded-row': selectedIndex % 2}">
+              <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': selectedIndex % 2}">
+                <v-col justify="center" class="flex-display pl-3 pr-3" :class="{'shaded-row': selectedIndex % 2}">
                   <v-card text class="text-center field-card one-hunned" flat
                           :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
                     <v-text-field
-                        label="Field Name"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        tabindex=1
-                        v-model="item.newFieldName"
-                    ></v-text-field>
+                      label="Field Name"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      tabindex="1"
+                      v-model="item.newFieldName"
+                    />
                     <div v-if="!apiPath" class="text-left read-only-label">
                       <label>Read-only:</label>
-                      <input type="checkbox" :readonly="!userCanEdit"
-                             :disabled="!userCanEdit" class="ml-2" v-model="item.readonly">
+                      <input type="checkbox"
+                             :readonly="!userCanEdit"
+                             :disabled="!userCanEdit"
+                             class="ml-2"
+                             v-model="item.readonly">
                     </div>
                     <v-autocomplete
-                        v-model="item.companyDataType"
-                        :items="filterDataTypes(item)"
-                        :disabled="!item.custom || !userCanEdit"
-                        :readonly="!item.custom || !userCanEdit"
-                        tabindex=2
-                        label="Data Type"
-                        item-text="companyDataType"
-                        item-value="id"
-                        autocomplete="off"
-                        return-object
-                        attach
-                    ></v-autocomplete>
-                    <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
+                      v-model="item.companyDataType"
+                      :items="filterDataTypes(item)"
+                      :disabled="!item.custom || !userCanEdit"
+                      :readonly="!item.custom || !userCanEdit"
+                      tabindex="2"
+                      label="Data Type"
+                      item-text="companyDataType"
+                      item-value="id"
+                      autocomplete="off"
+                      return-object
+                      attach
+                    />
+                    <div
+                      v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
                       <v-text-field
-                                    v-model="item.customFieldSqlKey"
-                                    label="SQL Key"
-                      ></v-text-field>
+                        v-model="item.customFieldSqlKey"
+                        label="SQL Key"
+                      />
                       <v-text-field
                         v-model="item.customFieldSqlReferenceTable"
                         label="SQL Reference Table"
-                      ></v-text-field>
+                      />
 
+                      <v-checkbox
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        v-model="item.lazyLoadValues"
+                        label="Lazy load values" />
                     </div>
 
                     <v-autocomplete v-if="item.companyDataType && item.companyDataType.systemList"
-                              v-model="item.companySystemListId"
-                              :items="systemLists"
-                              :disabled="!item.custom || !userCanEdit"
-                              :readonly="!item.custom || !userCanEdit"
-                              label="System List Type"
-                              item-text="systemList"
-                              item-value="companySystemListId"
-                              @change="getSystemListOptions(item.companySystemListId)"
+                                    v-model="item.companySystemListId"
+                                    :items="systemLists"
+                                    :disabled="!item.custom || !userCanEdit"
+                                    :readonly="!item.custom || !userCanEdit"
+                                    label="System List Type"
+                                    item-text="systemList"
+                                    item-value="companySystemListId"
+                                    @change="getSystemListOptions(item.companySystemListId)"
                                     attach
-                    ></v-autocomplete>
+                    />
 
-                    <v-autocomplete v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
-                              v-model="item.systemListOptionIds"
-                              :items="systemListOptions"
-                              multiple
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              label="System List Options"
-                              item-text="name"
-                              item-value="id"
-                                    attach
-                    ></v-autocomplete>
+                    <v-autocomplete
+                      v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
+                      v-model="item.systemListOptionIds"
+                      :items="systemListOptions"
+                      multiple
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      label="System List Options"
+                      item-text="name"
+                      item-value="id"
+                      attach
+                    />
 
                     <v-col class="options-container"
-                            v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
+                           v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
                       <div class="mb-2">
-                        Selectable Options<br/>
+                        Selectable Options<br />
                         Sort Alphabetically:
                         <input type="checkbox" class="ml-3" v-model="item.sortListValuesAlphabetically">
                       </div>
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
-                        <v-list v-for="(ddo, index2) in getLovValues(item.listOfValues, item.sortListValuesAlphabetically)"
-                                :class="{'shaded-row': selectedIndex % 2}"
-                                :key="index2">
+                        <v-list
+                          v-for="(ddo, index2) in getLovValues(item.listOfValues, item.sortListValuesAlphabetically)"
+                          :class="{'shaded-row': selectedIndex % 2}"
+                          :key="index2">
                           <v-list-item dense>
                             <v-list-item-content>
                               <v-text-field
-                                  class="one-hunned"
-                                  :readonly="!userCanEdit"
-                                  :disabled="!userCanEdit"
-                                  :placeholder="ddo.placeholder"
-                                  v-model="ddo.name">
+                                class="one-hunned"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
+                                :placeholder="ddo.placeholder"
+                                v-model="ddo.name">
                               </v-text-field>
                             </v-list-item-content>
                             <v-list-item-action class="grab" v-if="!item.sortListValuesAlphabetically">
@@ -233,7 +245,7 @@
                         </v-list>
                       </draggable>
                       <v-btn
-                          @click="addOption(item.listOfValues)">
+                        @click="addOption(item.listOfValues)">
                         Add Option
                       </v-btn>
                     </v-col>
@@ -247,7 +259,7 @@
                                     class="fix-opacity"
                                     v-model="ot.archived"
                                     :false-value="true" :true-value="false"
-                                    :label="ot.objectType"></v-checkbox>
+                                    :label="ot.objectType" />
                       </v-container>
                       <v-container>
                         <v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"
@@ -274,323 +286,331 @@
         </v-card>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
 <script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import cloneDeep from 'lodash.clonedeep'
-  import orderBy from 'lodash.orderby'
-  import draggable from 'vuedraggable'
+import { AppMutations } from "@/stores/AppStore";
+import Vue2Filters from "vue2-filters";
+import cloneDeep from "lodash.clonedeep";
+import orderBy from "lodash.orderby";
+import draggable from "vuedraggable";
 
-  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
+import {
+  getRequest,
+  getRequestWithParams,
+  getSnackbar,
+  handleHidingGlobalLoader,
+  postRequest,
+  putRequest
+} from "@/helpers/helpers";
+import constants from "@/helpers/constants";
 
-  export default {
-    name: 'CustomFields',
-    mixins: [Vue2Filters.mixin],
-    props: {
-      apiPath: {type: String}
-    },
-    components: {
-      draggable,
-    },
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        deleteError: false,
-        fieldsInUse: [],
-        selectedFieldId: null,
-        // this is used so the expanded row uses the full width...bug in vuetify
-        // headers: Array(2).fill({}),
-        headers: [
-          { text: 'Field Name', value: 'fieldName', showFilter: true },
-          { text: '', value: 'icons', showFilter: false },
-        ],
-        footerProps: {
-          'items-per-page-options': [25, 50]
-        },
-        addField: false,
-        search: '',
-        selectedIndex: null,
-        expanded: [],
-        customFields: [],
-        systemLists: [],
-        systemListOptions: [],
-        dataTypes: [],
+export default {
+  name: "CustomFields",
+  mixins: [Vue2Filters.mixin],
+  props: {
+    apiPath: { type: String }
+  },
+  components: {
+    draggable
+  },
+  data() {
+    return {
+      snackbar: {},
+      constants,
+      deleteError: false,
+      fieldsInUse: [],
+      selectedFieldId: null,
+      // this is used so the expanded row uses the full width...bug in vuetify
+      // headers: Array(2).fill({}),
+      headers: [
+        { text: "Field Name", value: "fieldName", showFilter: true },
+        { text: "", value: "icons", showFilter: false }
+      ],
+      footerProps: {
+        "items-per-page-options": [25, 50]
+      },
+      addField: false,
+      search: "",
+      selectedIndex: null,
+      expanded: [],
+      customFields: [],
+      systemLists: [],
+      systemListOptions: [],
+      dataTypes: [],
+      companyId: this.$store.state.user.details.companyId,
+      selectedObjectType: { id: -1, objectType: "All" },
+      customFieldObjectTypes: [],
+      objectFilters: [],
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
+      blankNewObject: {
+        id: -1,
+        fieldName: "",
+        custom: true,
+        createdById: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
-        selectedObjectType: {id: -1, objectType: 'All'},
-        customFieldObjectTypes: [],
-        objectFilters: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        blankNewObject: {
-          id: -1,
-          fieldName: '',
-          custom: true,
-          createdById: this.$store.state.user.details.id,
-          companyId: this.$store.state.user.details.companyId,
-          listOfValues: [],
-          customFieldObjectTypes: []
-        },
+        listOfValues: [],
+        customFieldObjectTypes: []
+      }
+    };
+  },
+  async created() {
+    await this.getCompanyDataTypes();
+    this.getCustomFieldObjectTypes();
+    this.getCustomFields();
+    this.getSystemLists();
+  },
+  methods: {
+    getLovValues(lovs, alphaSort) {
+      // return lovs
+      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
+    },
+    filterDataTypes(item) {
+      if (this.$store.getters.userHasFeature("SYSTEM")) {
+        return this.dataTypes;
+      } else {
+        // filter out the system item if not a system admin
+        return !item.custom ? this.dataTypes : this.dataTypes.filter(dt => {
+          return !dt.customBehavior;
+        });
       }
     },
-    async created() {
-      await this.getCompanyDataTypes()
-      this.getCustomFieldObjectTypes()
-      this.getCustomFields()
-      this.getSystemLists()
+    async getCustomFields() {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        const { data, status } = await getRequest(`/customField/getAll`, this.apiPath, null, []);
+        data?.forEach(d => {
+          d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId);
+        });
+        this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase());
+        this.customFields = cloneDeep(this.allCustomFields);
+        if (this.userCanEdit) {
+          this.customFields.unshift(cloneDeep(this.blankNewObject));
+        }
+        handleHidingGlobalLoader(this, status);
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false);
+      }
     },
-    methods: {
-      getLovValues(lovs, alphaSort) {
-        // return lovs
-        return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder)
-      },
-      filterDataTypes (item) {
-        if(this.$store.getters.userHasFeature('SYSTEM')) {
-          return this.dataTypes
-        } else {
-          // filter out the system item if not a system admin
-          return !item.custom ? this.dataTypes : this.dataTypes.filter(dt => {return !dt.customBehavior})
-        }
-      },
-      async getCustomFields() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/customField/getAll`, this.apiPath, null, [])
-          data?.forEach(d => {
-            d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
-          })
-          this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
-          this.customFields = cloneDeep(this.allCustomFields)
-          if(this.userCanEdit) {
-            this.customFields.unshift(cloneDeep(this.blankNewObject))
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getSystemLists() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/systemList`)
-          this.systemLists = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getSystemListOptions(listId) {
-        let match = this.systemLists.find(sl => sl.companySystemListId === listId)
-        if(listId && match?.hasSubOptions) {
+    async getSystemLists() {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        const { data, status } = await getRequest(`/systemList`);
+        this.systemLists = data;
+        handleHidingGlobalLoader(this, status);
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false);
+      }
+    },
+    async getSystemListOptions(listId) {
+      let match = this.systemLists.find(sl => sl.companySystemListId === listId);
+      if (listId && match?.hasSubOptions) {
 
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getRequestWithParams(`/systemList/${listId}/options`, {params: {
-                //well i named these poorly...
-                //  if a list itself has sub options it means they can select suboptions
-                // this parameter means whether to get the subOptions or not
+        this.$store.commit(AppMutations.SET_LOADING, true);
+        try {
+          const { data, status } = await getRequestWithParams(`/systemList/${listId}/options`, {
+            params: {
+              //well i named these poorly...
+              //  if a list itself has sub options it means they can select suboptions
+              // this parameter means whether to get the subOptions or not
               subOptions: false
-            }})
-            this.systemListOptions = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async getCustomFieldObjectTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath, null, [])
-          data?.forEach(d => d.archived = true)
-          this.customFieldObjectTypes = cloneDeep(data)
-          this.objectFilters = data
-          this.objectFilters.unshift({id: -2, objectType: 'Unassigned'})
-          this.objectFilters.unshift({id: -1, objectType: 'All'},)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCompanyDataTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/dataType/getCompanyDataTypes`)
-          this.dataTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteField(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, [])
-          if (data?.length > 0) {
-            item.deleteConfirm = false
-            this.deleteError = true
-            this.fieldsInUse = data
-            this.snackbar = getSnackbar('ERROR', 'Field Cannot Be Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            item.archived = true
-            this.fieldsInUse = []
-            this.customFields = this.customFields.filter((cf) => {
-              return cf.id !== item.id
-            })
-            this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Field')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      changeSelectedObjectType() {
-        if (this.selectedObjectType.id === -1) {
-          this.customFields = cloneDeep(this.allCustomFields)
-        } else if (this.selectedObjectType.id === -2) {
-          this.customFields = this.allCustomFields.filter(cf => {
-            return !cf.customFieldObjectTypes.some(cfot => (!cfot.archived && null != cfot.archived))
-          })
-        } else {
-          this.customFields = this.allCustomFields.filter(cf => {
-            const match = cf.customFieldObjectTypes.find(cfot => {
-              return cfot.objectTypeId === this.selectedObjectType.id && (!cfot.archived && null != cfot.archived)
-            })
-            return !!match
-          })
-        }
-        if(this.userCanEdit) {
-          this.customFields.unshift(cloneDeep(this.blankNewObject))
-        }
-      },
-      async saveChanges(editMode, object) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // woah @randa, wtf is this?
-          // the 'Add Field' row had to have an id in order to use it in the data table repeat.  remove the id here
-          object.id = object.id === -1 ? null : object.id
-
-          // set the display order to save to DB
-          object.listOfValues.forEach((ddo, idx) => {
-            ddo.displayOrder = idx
-          })
-
-          object.companyDataTypeId = object.companyDataType.id
-          object.modifiedById = this.$store.state.user.details.id
-
-          // set the values of customFieldObjectTypes to be saved in db
-          if(object.custom) {
-            object.customFieldObjectTypes = this.customFieldObjectTypes.filter(cfot => {
-              cfot.objectTypeId = cfot.id
-              return !cfot.archived
-            })
-          }
-
-          object.fieldName = object.newFieldName ?? object.fieldName
-          const {data, status} = await postRequest(`/customField`, object, this.apiPath)
-          data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
-          this.$set(object, 'listOfValues', data.listOfValues)
-
-          this.expanded = []
-          // if it was a new field, reset the first index, then push it to both arrays
-          if (null === object.id) {
-            if(this.userCanEdit) {
-              object = cloneDeep(this.blankNewObject)
-              this.customFields[0] = object
-              this.allCustomFields.push(data)
-              this.customFields.push(data)
-              this.customFieldObjectTypes.forEach(ot => {
-                ot.archived = true
-              })
             }
-          }
-
-          // re-sort in case the fieldName changed
-          this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
-          this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          });
+          this.systemListOptions = data;
+          handleHidingGlobalLoader(this, status);
         } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          console.error("*** ERROR ***", e);
+          this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+          this.$store.commit(AppMutations.SET_LOADING, false);
         }
-      },
-      addOption(options) {
-        options.push({placeholder: 'Enter New Option Name', archived: false})
-      },
-      invalid(item) {
-        // todo: use real form validation?
-        let invalidOptions = false
-        let invalidCustomSql = false
-        if ((item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.customBehavior) && !item.companyDataType.systemList) {
-          if (item.listOfValues && item.listOfValues.length === 0) {
-            invalidOptions = true
-          } else {
-            item.listOfValues.forEach(ddo => {
-              if (!ddo.name && !ddo.archived) {
-                invalidOptions = true
-              }
-            })
-          }
-        } else if (item.companyDataType?.customBehavior) {
-          if(!item.customFieldSqlKey || !item.customFieldSqlReferenceTable) {
-            invalidCustomSql = true
-          }
+      }
+    },
+    async getCustomFieldObjectTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        const { data, status } = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath, null, []);
+        data?.forEach(d => d.archived = true);
+        this.customFieldObjectTypes = cloneDeep(data);
+        this.objectFilters = data;
+        this.objectFilters.unshift({ id: -2, objectType: "Unassigned" });
+        this.objectFilters.unshift({ id: -1, objectType: "All" });
+        handleHidingGlobalLoader(this, status);
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false);
+      }
+    },
+    async getCompanyDataTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        const { data, status } = await getRequest(`/dataType/getCompanyDataTypes`);
+        this.dataTypes = data;
+        handleHidingGlobalLoader(this, status);
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false);
+      }
+    },
+    async deleteField(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        const { data, status } = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, []);
+        if (data?.length > 0) {
+          item.deleteConfirm = false;
+          this.deleteError = true;
+          this.fieldsInUse = data;
+          this.snackbar = getSnackbar("ERROR", "Field Cannot Be Deleted");
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        } else {
+          item.archived = true;
+          this.fieldsInUse = [];
+          this.customFields = this.customFields.filter((cf) => {
+            return cf.id !== item.id;
+          });
+          this.snackbar = getSnackbar("SUCCESS", "Field Deleted");
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
         }
-        return (!item.fieldName && !item.newFieldName) || !item.companyDataType || invalidOptions || invalidCustomSql
+        handleHidingGlobalLoader(this, status);
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Deleting Field");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false);
+      }
+    },
+    changeSelectedObjectType() {
+      if (this.selectedObjectType.id === -1) {
+        this.customFields = cloneDeep(this.allCustomFields);
+      } else if (this.selectedObjectType.id === -2) {
+        this.customFields = this.allCustomFields.filter(cf => {
+          return !cf.customFieldObjectTypes.some(cfot => (!cfot.archived && null != cfot.archived));
+        });
+      } else {
+        this.customFields = this.allCustomFields.filter(cf => {
+          const match = cf.customFieldObjectTypes.find(cfot => {
+            return cfot.objectTypeId === this.selectedObjectType.id && (!cfot.archived && null != cfot.archived);
+          });
+          return !!match;
+        });
+      }
+      if (this.userCanEdit) {
+        this.customFields.unshift(cloneDeep(this.blankNewObject));
+      }
+    },
+    async saveChanges(editMode, object) {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        // woah @randa, wtf is this?
+        // the 'Add Field' row had to have an id in order to use it in the data table repeat.  remove the id here
+        object.id = object.id === -1 ? null : object.id;
 
-      },
-      filterCustomFields () {
-        return this.customFields.filter(cf => { return !cf.archived})
-      },
+        // set the display order to save to DB
+        object.listOfValues.forEach((ddo, idx) => {
+          ddo.displayOrder = idx;
+        });
+
+        object.companyDataTypeId = object.companyDataType.id;
+        object.modifiedById = this.$store.state.user.details.id;
+
+        // set the values of customFieldObjectTypes to be saved in db
+        if (object.custom) {
+          object.customFieldObjectTypes = this.customFieldObjectTypes.filter(cfot => {
+            cfot.objectTypeId = cfot.id;
+            return !cfot.archived;
+          });
+        }
+
+        object.fieldName = object.newFieldName ?? object.fieldName;
+        const { data, status } = await postRequest(`/customField`, object, this.apiPath);
+        data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId);
+        this.$set(object, "listOfValues", data.listOfValues);
+
+        this.expanded = [];
+        // if it was a new field, reset the first index, then push it to both arrays
+        if (null === object.id) {
+          if (this.userCanEdit) {
+            object = cloneDeep(this.blankNewObject);
+            this.customFields[0] = object;
+            this.allCustomFields.push(data);
+            this.customFields.push(data);
+            this.customFieldObjectTypes.forEach(ot => {
+              ot.archived = true;
+            });
+          }
+        }
+
+        // re-sort in case the fieldName changed
+        this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase());
+        this.snackbar = getSnackbar("SUCCESS", "Saved Changes");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        handleHidingGlobalLoader(this, status);
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Saving Changes");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false);
+      }
+    },
+    addOption(options) {
+      options.push({ placeholder: "Enter New Option Name", archived: false });
+    },
+    invalid(item) {
+      // todo: use real form validation?
+      let invalidOptions = false;
+      let invalidCustomSql = false;
+      if ((item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.customBehavior) && !item.companyDataType.systemList) {
+        if (item.listOfValues && item.listOfValues.length === 0) {
+          invalidOptions = true;
+        } else {
+          item.listOfValues.forEach(ddo => {
+            if (!ddo.name && !ddo.archived) {
+              invalidOptions = true;
+            }
+          });
+        }
+      } else if (item.companyDataType?.customBehavior) {
+        if (!item.customFieldSqlKey || !item.customFieldSqlReferenceTable) {
+          invalidCustomSql = true;
+        }
+      }
+      return (!item.fieldName && !item.newFieldName) || !item.companyDataType || invalidOptions || invalidCustomSql;
+
+    },
+    filterCustomFields() {
+      return this.customFields.filter(cf => {
+        return !cf.archived;
+      });
     }
   }
+};
 </script>
 
 <style lang="scss">
-  #custom-field-container .v-data-table__wrapper {
-    height: calc(100vh - 350px);
-    min-height: 300px;
-  }
+#custom-field-container .v-data-table__wrapper {
+  height: calc(100vh - 350px);
+  min-height: 300px;
+}
 </style>
 
 <style scoped lang="scss">
+.read-only-label {
+  font-size: 16px;
+}
 
-  .read-only-label {
-    font-size: 16px;
-  }
-
-  .options-container {
-    text-align: left;
-    padding: 12px 0 !important;
-  }
-
-  .field-card {
-  }
+.options-container {
+  text-align: left;
+  padding: 12px 0 !important;
+}
 </style>
