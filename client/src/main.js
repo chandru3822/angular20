@@ -82,6 +82,9 @@ axios.interceptors.request.use((config) => {
 
   // if config.source passed in then use that
   let source = config.source
+  //dont cancel if override sent in
+  console.log('randaLoggerSkipCancel',config.skipCancel)
+  let skipCancel = config.skipCancel
 
   if (!source) {
     // if no source passed in, Generate cancel token source
@@ -90,7 +93,9 @@ axios.interceptors.request.use((config) => {
   }
 
   // Add to vuex to make cancellation available from anywhere
-  store.commit('ADD_CANCEL_TOKEN', source)
+  if(!skipCancel) {
+    store.commit('ADD_CANCEL_TOKEN', source)
+  }
   return config
 })
 

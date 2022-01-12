@@ -34,8 +34,6 @@ export default {
 .event-button {
   border: solid 1px #C4C4C4 !important;
   padding: 10px;
-  margin-left: 10px;
-  margin-right: 10px;
   margin-bottom: 10px;
 }
 </style>

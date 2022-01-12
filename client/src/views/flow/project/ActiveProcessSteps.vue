@@ -1,10 +1,10 @@
 <template>
 <v-row id="project-details-container" class="mt-2">
-  <v-col cols="12" lg="12" class="text-left pt-0">
+  <v-col cols="12" lg="12" class="text-left pt=-0">
     <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-row>
         <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Active Process Steps</v-toolbar-title>
+          <v-toolbar-title class="font-size-14">Active Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AddProcessStep
@@ -21,7 +21,7 @@
           <SpinnerInline :size="20" color="primaryCustom"/>
         </v-col>
 
-        <v-col cols="12" v-else class="pt-0">
+        <v-col cols="12" v-else class="py-0">
           <ActiveProjectProcessStepSnippet
             :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
             :projectId="projectId"
@@ -36,7 +36,7 @@
         cols="12"
         class="text-left pt-0"
       >
-        <router-link :to="`/project/${projectId}/processSteps`">View All</router-link>
+        <router-link class="font-size-10" :to="`/project/${projectId}/processSteps`">View All</router-link>
 
       </v-col>
     </v-fade-transition>

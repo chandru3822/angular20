@@ -82,10 +82,11 @@
     </v-dialog>
     <!--    end dialog -->
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
-      <v-toolbar-title class="app-title">
+      <v-toolbar-title class="app-title font-size-18">
         <div class="d-inline-block">{{ project.projectName }}</div>
         <div class="d-inline-block">
           <v-autocomplete
+            v-if="!statusesLoading && statuses.length > 0"
             class="ml-5"
             v-model="project.companyProjectStatusTypeId"
             :items="statuses"
@@ -122,7 +123,7 @@
         </v-btn>
         <div v-if="!collapseLeftSidebar">
           <v-toolbar flat>
-            <v-toolbar-title>Overview</v-toolbar-title>
+            <v-toolbar-title class="font-size-14">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <div class="pt-3">
@@ -135,21 +136,29 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <div class="px-4">
-            Address: {{ project.street1 }} {{ project.city }} {{ project.stateAbbreviation }} <br/>
-            Contact: {{ formatPhoneNumber(project.mobile || project.phone) }} <br/>
-            Email: {{ project.email }} <br/>
-            Owner:
-            <div class="mb-3" v-if="project && project.owner">{{ project.owner.fullName }} - {{
-                project.owner.position
-              }}<br/>
-              {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+          <div class="px-4 address-details">
+            <span class="project-detail-label">Address:</span>
+            <span class="project-detail-item">{{ project.street1 }} {{ project.city }} {{
+                project.stateAbbreviation
+              }}</span> <br/>
+            <span class="project-detail-label">Contact:</span>
+            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
+            <span class="project-detail-label">Email:</span>
+            <span class="project-detail-item">{{ project.email }}</span> <br/>
+            <div class="mb-3 mt-1">
+              <span class="vertical-top project-detail-label">Owner:</span>
+              <div class="d-inline-block project-detail-item" v-if="project && project.owner">
+                {{ project.owner.fullName }} - {{ project.owner.position }} <br/>
+                {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+              </div>
             </div>
-            <router-link :to="`/contact/${project.contactId}`">Go to contact</router-link>
+            <div>
+              <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
+            </div>
             <v-divider class="mt-5"></v-divider>
           </div>
           <ActiveProcessSteps :project="project"></ActiveProcessSteps>
-          <v-divider class="mt-5"></v-divider>
+          <v-divider class="mt-4"></v-divider>
           <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
         </div>
       </div>
@@ -159,7 +168,8 @@
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
         <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </div>
-      <div class="white-bg project-section" :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
+      <div class="white-bg project-section"
+           :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
         <div :class="{'text-right': !collapseRightSidebar}">
           <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
             <v-icon>mdi-menu</v-icon>
@@ -207,6 +217,7 @@ export default {
       //used for if the make edits then hit cancel
       tempProject: {},
       project: {},
+      statusesLoading: true,
       ownersLoading: true,
       statesLoading: true,
       countriesLoading: true,
@@ -256,9 +267,12 @@ export default {
     },
     getStatuses: async function () {
       try {
+        this.statusesLoading = true
         const {data} = await getCompanyProjectStatusTypes(this.projectId)
         this.statuses = data
+        this.statusesLoading = false
       } catch (e) {
+        this.statusesLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
@@ -383,6 +397,17 @@ export default {
   max-height: 100% !important;
   padding: 0 !important;
   overflow: hidden;
+}
+
+.project-detail-label {
+  font-size: 12px;
+  color: #9E9C9C;
+}
+
+.project-detail-item {
+  font-size: 12px;
+  color: #424242;
+  margin-left: 5px;
 }
 
 .project-header {
