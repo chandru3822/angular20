@@ -34,7 +34,7 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-row class="project-split-container">
-      <v-col cols="3" class="white-bg project-section">
+      <v-col cols="2" class="white-bg project-section">
         <v-btn fab small text @click="collapseSidebar = !collapseSidebar">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
@@ -68,7 +68,7 @@
       <v-col cols="5" class="router-view-column project-section">
           <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </v-col>
-      <v-col cols="4" class="white-bg project-section">
+      <v-col cols="5" class="white-bg project-section">
         <ProjectActivity></ProjectActivity>
       </v-col>
     </v-row>

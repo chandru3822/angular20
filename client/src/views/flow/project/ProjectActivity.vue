@@ -1,31 +1,38 @@
 <template>
-  <v-row id="project-activity-container" class="mt-2" grow>
-    <v-col cols="12" lg="12" class="pt-0 project-activity-content">
-      <div>Project Notes</div>
-        <div v-if="selectedOption === 0">
-          <Messaging :primaryId="projectId"/>
-        </div>
-        <div v-else-if="selectedOption === 1">
-          <ProjectNotes></ProjectNotes>
-        </div>
-        <div v-else>
-          <Attachments :projectId="projectId"/>
-        </div>
-
-      <v-bottom-navigation v-model="selectedOption"
-                           grow :value="selectedOption"
-                           color="primaryButton"
-                           class="override-primary-font-color">
-        <v-btn class="override-primary-font-color">
-          <v-icon class="override-primary-font-color">question_answer</v-icon>
-        </v-btn>
-        <v-btn class="override-primary-font-color">
-          <v-icon class="override-primary-font-color">article</v-icon>
-        </v-btn>
-        <v-btn class="override-primary-font-color">
-          <v-icon class="override-primary-font-color">folder</v-icon>
-        </v-btn>
-      </v-bottom-navigation>
+  <v-row id="project-activity-container" class="mt-2">
+    <v-col cols="12" lg="12" class="py-0">
+      <div v-if="selectedOption === 0" class="project-activity-content">
+        <Messaging :primaryId="projectId"/>
+      </div>
+      <div v-else-if="selectedOption === 1" class="project-activity-content">
+        <div>Project Notes</div>
+        <ProjectNotes></ProjectNotes>
+      </div>
+      <div v-else class="project-activity-content">
+        <Attachments :projectId="projectId"/>
+      </div>
+      <v-row
+          grow :value="selectedOption"
+          color="primaryButton"
+          class="section-footer"
+          cols="12"
+          fixed>
+        <v-col no-gutters cols="4">
+          <v-btn  @click="selectedOption = 0" class="section-footer-button">
+            <v-icon>question_answer</v-icon>
+          </v-btn>
+        </v-col>
+        <v-col no-gutters cols="4">
+          <v-btn  @click="selectedOption = 1" class="section-footer-button" cols="4">
+            <v-icon>article</v-icon>
+          </v-btn>
+        </v-col>
+        <v-col no-gutters cols="4">
+          <v-btn  @click="selectedOption = 2" class="section-footer-button" cols="4">
+            <v-icon>folder</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>
@@ -66,10 +73,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+#project-activity-container{
+  height: 100%;
+}
 .project-activity-content {
-  //display: flex;
-  //flex-direction: column;
-  //justify-content: space-between;
+  overflow-y: scroll;
+  width:100%;
+}
+
+.section-footer{
+  height: 48px;
+  background-color: white;
+  position: sticky;
+  bottom: 8px;
+}
+
+.section-footer-button {
+  width: 100%;
 }
 
 </style>

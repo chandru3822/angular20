@@ -1,7 +1,5 @@
 <template>
-<v-row id="project-notes-container">
-  <v-col cols="12" lg="12" class="text-left">
-    <v-card class="px-3 elevation-0 square-card notes-card">
+
     <NotesAndActivityContent
       ref="notes"
       :showNotes="true"
@@ -10,10 +8,8 @@
       :primaryId="parseInt(projectId)"
       type="Project"
     />
-    </v-card>
-  </v-col>
 
-</v-row>
+
 </template>
 
 <script>
@@ -59,14 +55,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#project-notes-container {
-  margin-top: -5px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 0;
-}
 
-.notes-card {
-  overflow: scroll;
-}
 </style>
