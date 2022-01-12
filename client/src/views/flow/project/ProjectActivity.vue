@@ -12,11 +12,11 @@
         <Attachments :projectId="projectId"/>
       </div>
       <v-row
-          grow :value="selectedOption"
+          :value="selectedOption"
           color="primaryButton"
           class="section-footer px-4"
           cols="12"
-          fixed>
+      >
         <v-col no-gutters cols="4" class="px-0">
           <v-btn text block elevation="0"  @click="selectedOption = 0" :dark = "selectedOption == 0" :class="{'section-selected': selectedOption==0}">
             <v-icon>mdi-forum-outline</v-icon>
@@ -39,8 +39,6 @@
 
 <script>
 
-import {handleHidingGlobalLoader, getRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
 import ProjectNotes from '@/views/flow/project/ProjectNotes'
@@ -78,6 +76,7 @@ export default {
   height: 100%;
 }
 .project-activity-content {
+  height: 800px;
   overflow-y: scroll;
   width:100%;
 }
