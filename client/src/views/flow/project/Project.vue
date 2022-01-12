@@ -426,8 +426,7 @@ export default {
 }
 
 .center-width-right-side-collapse {
-  //someone is going to have to explain to me why i cant do calc(80% - 104px)
-  width: calc(80% - 183px);
+  width: calc(75% - 104px);
   padding: 10px !important;
 }
 
