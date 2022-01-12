@@ -14,22 +14,22 @@
       <v-row
           grow :value="selectedOption"
           color="primaryButton"
-          class="section-footer"
+          class="section-footer px-4"
           cols="12"
           fixed>
-        <v-col no-gutters cols="4">
-          <v-btn  @click="selectedOption = 0" class="section-footer-button">
-            <v-icon>question_answer</v-icon>
+        <v-col no-gutters cols="4" class="px-0">
+          <v-btn text block elevation="0"  @click="selectedOption = 0" :dark = "selectedOption == 0" :class="{'section-selected': selectedOption==0}">
+            <v-icon>mdi-forum-outline</v-icon>
           </v-btn>
         </v-col>
-        <v-col no-gutters cols="4">
-          <v-btn  @click="selectedOption = 1" class="section-footer-button" cols="4">
-            <v-icon>article</v-icon>
+        <v-col no-gutters cols="4" class="px-0">
+          <v-btn text block elevation="0" @click="selectedOption = 1" :dark="selectedOption==1" :class="{'section-selected': selectedOption==1}">
+            <v-icon>mdi-text-long</v-icon>
           </v-btn>
         </v-col>
-        <v-col no-gutters cols="4">
-          <v-btn  @click="selectedOption = 2" class="section-footer-button" cols="4">
-            <v-icon>folder</v-icon>
+        <v-col no-gutters cols="4" class="px-0">
+          <v-btn text block elevation="0"  @click="selectedOption = 2" :dark="selectedOption==2" :class="{'section-selected': selectedOption==2}">
+            <v-icon>mdi-folder-outline</v-icon>
           </v-btn>
         </v-col>
       </v-row>
@@ -89,8 +89,12 @@ export default {
   bottom: -12px;
 }
 
-.section-footer-button {
-  width: 100%;
+.section-selected{
+  background-color: var(--v-primaryCustom-base) !important;
+}
+
+.section-not-selected {
+  background-color: white;
 }
 
 </style>
