@@ -105,10 +105,10 @@ public class WorkQueueService {
     String query = null;
     if((workQueueType.isPresent() && !workQueueType.get().getUseEventData()) || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
       //if the work queue type is not for event data OR it is for install crews, then keep doing the same thing
-      smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
+      query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
     } else {
       //this should only be called for wqt using event data
-      smartlistService.buildProcessStepSql(smartlist, fields, timezone, false);
+      query = smartlistService.buildProcessStepSql(smartlist, fields, timezone, false);
     }
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
@@ -147,7 +147,8 @@ public class WorkQueueService {
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
     String query;
     if(useEventData) {
-      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
+//      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
+      query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData);
     } else {
       query = smartlistService.buildSql(smartlist, fields);
     }

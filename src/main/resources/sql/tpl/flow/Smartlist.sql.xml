@@ -41,7 +41,55 @@ select
   ot.object_type,
   cot.object_type_id,
   ot1.object_type as view_object_type,
-  concat(u.first_name, ' ', u.last_name) as owner
+  concat(u.first_name, ' ', u.last_name) as owner,
+  coalesce((
+    select json_agg(psewqtpst.company_project_status_type_id)
+    from flow.process_step_event_work_queue_type_project_status_type psewqtpst
+    inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpst.process_step_event_work_queue_type_id
+    where psewqt.work_queue_type_id = s.work_queue_type_id and
+          psewqtpst.archived is not true and
+          psewqtpst.company_project_status_type_id is not null
+  ), '[]') as "workQueueTypeProjectStatus",
+  coalesce((
+    select json_agg(psewqtpst.project_status_type_id)
+    from flow.process_step_event_work_queue_type_project_status_type psewqtpst
+    inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpst.process_step_event_work_queue_type_id
+    where psewqt.work_queue_type_id = s.work_queue_type_id and
+          psewqtpst.archived is not true and
+          psewqtpst.project_status_type_id is not null
+  ), '[]') as "workQueueTypeProjectCategory",
+  coalesce((
+    select json_agg(psewqtpsst.company_process_step_status_type_id)
+    from flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst
+    inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+    where psewqt.work_queue_type_id = s.work_queue_type_id and
+          psewqtpsst.archived is not true and
+          psewqtpsst.company_process_step_status_type_id is not null
+  ), '[]') as "workQueueTypeProcessStepStatus",
+  coalesce((
+    select json_agg(psewqtpsst.process_step_status_type_id)
+    from flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst
+    inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+    where psewqt.work_queue_type_id = s.work_queue_type_id and
+          psewqtpsst.archived is not true and
+          psewqtpsst.process_step_status_type_id is not null
+  ), '[]') as "workQueueTypeProcessStepCategory",
+  coalesce((
+    select json_agg(psewqtest.company_event_status_type_id)
+    from flow.process_step_event_work_queue_type_event_status_type psewqtest
+    inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtest.process_step_event_work_queue_type_id
+    where psewqt.work_queue_type_id = s.work_queue_type_id and
+          psewqtest.archived is not true and
+          psewqtest.company_event_status_type_id is not null
+  ), '[]') as "workQueueTypeEventStatus",
+  coalesce((
+    select json_agg(psewqtest.event_status_type_id)
+    from flow.process_step_event_work_queue_type_event_status_type psewqtest
+    inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtest.process_step_event_work_queue_type_id
+    where psewqt.work_queue_type_id = s.work_queue_type_id and
+          psewqtest.archived is not true and
+          psewqtest.event_status_type_id is not null
+  ), '[]') as "workQueueTypeEventCategory"
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id

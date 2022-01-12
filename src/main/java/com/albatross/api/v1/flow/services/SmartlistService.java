@@ -52,16 +52,16 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
 
     if (securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN", "VIEW_ALL"))) {
-      return sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+      return sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), new SmartlistMapper<>(Smartlist.class, om));
     } else {
-      return sqlCache.query("smartlist.getOwnAndShared", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+      return sqlCache.query("smartlist.getOwnAndShared", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), new SmartlistMapper<>(Smartlist.class, om));
     }
   }
 
   public Smartlist getSmartlist(Long id) {
     User user = securityService.getCurrentUser();
     final boolean canViewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW_ALL"));
-    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId(), "canViewAll", canViewAll), Smartlist.class).orElse(null);
+    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId(), "canViewAll", canViewAll), new SmartlistMapper<>(Smartlist.class, om)).orElse(null);
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
@@ -145,7 +145,7 @@ public class SmartlistService {
 
   public boolean isNameUnique(String name) {
     User user = securityService.getCurrentUser();
-    List<Smartlist> smartlists = sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    List<Smartlist> smartlists = sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), new SmartlistMapper<>(Smartlist.class, om));
     for (Smartlist s: smartlists) {
       if (s.getName().trim().toLowerCase().equals(name.trim().toLowerCase())) {
         return false;
@@ -298,7 +298,7 @@ public class SmartlistService {
 
   public List<Smartlist> getSharedByType(Long objectTypeId) {
       User user = securityService.getCurrentUser();
-      return sqlCache.query("smartlist.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
+      return sqlCache.query("smartlist.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), new SmartlistMapper<>(Smartlist.class, om));
   }
 
   @Transactional
@@ -1575,6 +1575,7 @@ public class SmartlistService {
     projectsClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
     projectsClause.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id");
     projectsClause.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id");
+    projectsClause.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id");
 
     requirements.forEach(r -> {
 
@@ -2020,33 +2021,7 @@ public class SmartlistService {
 
       withClause.append("select ").append(selectFields);
 
-      StringBuilder fromClause = new StringBuilder(" from ");
-
-      if (smartlist.getObjectTypeId() == 4) {
-        fromClause.append(" flow.project_process_step ");
-      } else if (smartlist.getObjectTypeId() == 6) {
-        fromClause.append(" flow.project_process_step_event ");
-        fromClause.append(" inner join flow.process_step_event on flow.process_step_event.id = flow.project_process_step_event.process_step_event_id ");
-        fromClause.append(" inner join flow.event on flow.event.id = flow.process_step_event.event_id ");
-        fromClause.append(" inner join flow.project_process_step on flow.project_process_step.id = flow.project_process_step_event.project_process_step_id ");
-        fromClause.append(" inner join flow.company_event_status_type on company_event_status_type.id = flow.project_process_step_event.company_event_status_type_id ");
-        fromClause.append(" inner join flow.event_status_type on flow.event_status_type.id = flow.company_event_status_type.event_status_type_id ");
-      }
-
-      fromClause.append(" inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id");
-      fromClause.append(" inner join flow.process_step_status_type on flow.process_step_status_type.id = flow.company_process_step_status_type.process_step_status_type_id");
-      fromClause.append(" inner join flow.process_step on process_step.id = project_process_step.process_step_id and process_step.id = ").append(processStepId);
-      fromClause.append(" inner join \"projects\" on \"projects\".id = flow.project_process_step.project_id");
-      fromClause.append(" inner join flow.project on flow.project.id = \"projects\".id");
-      fromClause.append(" left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id");
-      fromClause.append(" left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id");
-      fromClause.append(" inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id");
-      fromClause.append(" inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id");
-      fromClause.append(" inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true");
-      fromClause.append(" left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id");
-      fromClause.append(" left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id");
-
-      withClause.append(fromClause);
+      withClause.append(addFromClause(smartlist.getObjectTypeId(), processStepId));
 
       StringBuilder valueJoins = new StringBuilder();
       psFields.forEach(f -> {
@@ -2376,6 +2351,42 @@ public class SmartlistService {
     query.delete(query.length() - 7, query.length());
 
     query.append(";");
+
+    return query.toString();
+  }
+
+  public String buildWorkQueueSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Boolean useEventData) {
+    var query = new StringBuilder();
+
+    query.append("select flow.project_process_step_event.id")
+         .append(addFromClause((useEventData) ? 6L : smartlist.getObjectTypeId(), null))
+
+          //join each value table
+
+
+         .append(" where ")
+
+         //omit archived items
+         .append("flow.project.archived is not true")
+         .append(" and ")
+         .append("flow.project_process_step.archived is not true")
+         .append(" and ")
+         .append("flow.project_process_step_event.archived is not true")
+         .append(" and ")
+
+          //project category and status
+         .append(String.format("(flow.company_project_status_type.id = any(array%s::int[]) or ", smartlist.getWorkQueueTypeProjectStatus()))
+         .append(String.format("flow.project_status_type.id = any(array%s::int[]))", smartlist.getWorkQueueTypeProjectCategory()))
+
+         //process step category and status
+         .append(" and ")
+         .append(String.format("(flow.company_process_step_status_type.id = any(array%s::int[]) or ", smartlist.getWorkQueueTypeProcessStepStatus()))
+         .append(String.format("flow.process_step_status_type.id = any(array%s::int[]))", smartlist.getWorkQueueTypeProcessStepCategory()))
+
+         //event category and status
+         .append(" and ")
+         .append(String.format("(flow.company_event_status_type.id = any(array%s::int[]) or ", smartlist.getWorkQueueTypeEventStatus()))
+         .append(String.format("flow.event_status_type.id = any(array%s::int[]))", smartlist.getWorkQueueTypeEventCategory()));
 
     return query.toString();
   }
@@ -2883,6 +2894,45 @@ public class SmartlistService {
     return join;
   }
 
+  private String addFromClause(Long smartlistObjectTypeId, Long processStepId) {
+    var join = " from";
+
+    if (smartlistObjectTypeId == 4) {
+      join += " flow.project_process_step";
+    } else if (smartlistObjectTypeId == 6) {
+      join += " flow.project_process_step_event";
+      join += " inner join flow.process_step_event on flow.process_step_event.id = flow.project_process_step_event.process_step_event_id ";
+      join += " inner join flow.event on flow.event.id = flow.process_step_event.event_id ";
+      join += " inner join flow.project_process_step on flow.project_process_step.id = flow.project_process_step_event.project_process_step_id ";
+      join += " inner join flow.company_event_status_type on company_event_status_type.id = flow.project_process_step_event.company_event_status_type_id ";
+      join += " inner join flow.event_status_type on flow.event_status_type.id = flow.company_event_status_type.event_status_type_id ";
+    }
+
+    join += " inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id";
+    join += " inner join flow.process_step_status_type on flow.process_step_status_type.id = flow.company_process_step_status_type.process_step_status_type_id";
+    join += " inner join flow.process_step on process_step.id = project_process_step.process_step_id";
+
+    if (processStepId != null) {
+      // event and PS smartlists
+      join += " and process_step.id = " + processStepId;
+      join += " inner join \"projects\" on \"projects\".id = flow.project_process_step.project_id";
+      join += " inner join flow.project on flow.project.id = \"projects\".id";
+    } else {
+      // workqueue smartlists
+      join += " inner join flow.project on flow.project.id = flow.project_process_step.project_id";
+    }
+
+    join += " left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id";
+    join += " left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id";
+    join += " inner join flow.company_project_status_type on flow.company_project_status_type.id = flow.project.company_project_status_type_id";
+    join += " inner join flow.project_status_type on flow.project_status_type.id = flow.company_project_status_type.project_status_type_id";
+    join += " inner join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true";
+    join += " left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id";
+    join += " left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id";
+
+    return join;
+  }
+
 //  private String getCfgaValueTable(List<SmartlistFieldAssignment> fields, Long cfgaId) {
 //    String table = "";
 //
@@ -2901,6 +2951,36 @@ public class SmartlistService {
 //    }
 //    return table;
 //  }
+
+  public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper om;
+
+    public SmartlistMapper(Class<T> mappedClass, ObjectMapper objectMaper) {
+      super(mappedClass);
+      this.om = objectMaper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Long>> workQueueTypeProjectStatus = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypeProjectStatus", new JsonCollectionDeserializer(workQueueTypeProjectStatus, om));
+
+      TypeReference<List<Long>> workQueueTypeProjectCategory = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypeProjectCategory", new JsonCollectionDeserializer(workQueueTypeProjectCategory, om));
+
+      TypeReference<List<Long>> workQueueTypeProcessStepStatus = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypeProcessStepStatus", new JsonCollectionDeserializer(workQueueTypeProcessStepStatus, om));
+
+      TypeReference<List<Long>> workQueueTypeProcessStepCategory = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypeProcessStepCategory", new JsonCollectionDeserializer(workQueueTypeProcessStepCategory, om));
+
+      TypeReference<List<Long>> workQueueTypeEventStatus = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypeEventStatus", new JsonCollectionDeserializer(workQueueTypeEventStatus, om));
+
+      TypeReference<List<Long>> workQueueTypeEventCategory = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypeEventCategory", new JsonCollectionDeserializer(workQueueTypeEventCategory, om));
+    }
+  }
 
   public static class SmartlistRequirementMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper om;
