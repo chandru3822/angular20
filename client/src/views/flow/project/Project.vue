@@ -139,7 +139,7 @@
     </v-toolbar>
     <v-row class="project-split-container">
       <div class="white-bg project-section"
-           :class="{'col-2': !collapseLeftSidebar, 'collapse-left text-center': collapseLeftSidebar}">
+           :class="{'col-3': !collapseLeftSidebar, 'collapse-left text-center': collapseLeftSidebar}">
         <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
@@ -201,7 +201,7 @@
         <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </div>
       <div class="white-bg project-section"
-           :class="{'col-5': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
+           :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
         <div :class="{'text-right': !collapseRightSidebar}">
           <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
             <v-icon>mdi-menu</v-icon>
