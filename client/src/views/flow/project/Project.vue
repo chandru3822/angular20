@@ -24,7 +24,7 @@
       </v-col>
     </v-row>
     <v-row class="project-split-container">
-      <v-col cols="3" class="white-bg">
+      <v-col cols="2" class="white-bg">
         Address: {{ project.street1 }} <br/>
         Owner:
         <div>
@@ -79,7 +79,7 @@
       <v-col cols="5" class="router-view-column">
         <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </v-col>
-      <v-col cols="4" class="white-bg">
+      <v-col cols="5" class="white-bg">
         <ProjectActivity></ProjectActivity>
       </v-col>
     </v-row>

@@ -1,8 +1,8 @@
 <template>
 <v-row id="project-notes-container">
   <v-col cols="12" lg="12" class="text-left">
-
-    <NotesAndActivity
+    <v-card class="px-3 elevation-0 square-card notes-card">
+    <NotesAndActivityContent
       ref="notes"
       :showNotes="true"
       :showActivity="false"
@@ -10,6 +10,7 @@
       :primaryId="parseInt(projectId)"
       type="Project"
     />
+    </v-card>
   </v-col>
 
 </v-row>
@@ -18,14 +19,13 @@
 <script>
 
 import {getRequestWithParams} from '@/helpers/helpers'
-import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
-
+import NotesAndActivityContent from "@/views/flow/components/NotesAndActivityContent";
 
 
 export default {
   name: 'ProjectNotes',
   components: {
-    NotesAndActivity,
+    NotesAndActivityContent,
   },
   data () {
     return {
@@ -64,5 +64,9 @@ export default {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.notes-card {
+  overflow: scroll;
 }
 </style>

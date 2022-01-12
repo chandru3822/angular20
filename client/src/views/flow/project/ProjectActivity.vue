@@ -1,24 +1,33 @@
 <template>
-<v-row id="project-activity-container" class="mt-2">
-  <v-col cols="12" lg="12" class="pt-0">
-      <v-row>
-        <div v-if="selectedOption === 1">
+  <v-row id="project-activity-container" class="mt-2" grow>
+    <v-col cols="12" lg="12" class="pt-0 project-activity-content">
+      <div>Project Notes</div>
+        <div v-if="selectedOption === 0">
           <Messaging :primaryId="projectId"/>
         </div>
-        <div v-else-if="selectedOption === 2">
+        <div v-else-if="selectedOption === 1">
           <ProjectNotes></ProjectNotes>
         </div>
         <div v-else>
           <Attachments :projectId="projectId"/>
         </div>
-    </v-row>
-    <v-row>
-      <v-btn @click="selectedOption = 1">sms</v-btn>
-      <v-btn @click="selectedOption = 2">notes</v-btn>
-      <v-btn @click="selectedOption = 3">docs</v-btn>
-    </v-row>
-  </v-col>
-</v-row>
+
+      <v-bottom-navigation v-model="selectedOption"
+                           grow :value="selectedOption"
+                           color="primaryButton"
+                           class="override-primary-font-color">
+        <v-btn class="override-primary-font-color">
+          <v-icon class="override-primary-font-color">question_answer</v-icon>
+        </v-btn>
+        <v-btn class="override-primary-font-color">
+          <v-icon class="override-primary-font-color">article</v-icon>
+        </v-btn>
+        <v-btn class="override-primary-font-color">
+          <v-icon class="override-primary-font-color">folder</v-icon>
+        </v-btn>
+      </v-bottom-navigation>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -57,6 +66,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.project-activity-content {
+  //display: flex;
+  //flex-direction: column;
+  //justify-content: space-between;
+}
 
 </style>
 
