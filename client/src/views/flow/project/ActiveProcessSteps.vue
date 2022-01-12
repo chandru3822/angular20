@@ -14,15 +14,6 @@
               :process-id="project.processId"
               @step-added="getProcessSteps"
             />
-            <v-btn
-              small
-              text
-              v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
-              class="d-inline-block"
-              @click="$router.push({name: 'projectAdmin', params: {projectId}})"
-            >
-              <v-icon>edit</v-icon>
-            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
 
@@ -43,9 +34,9 @@
     <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-col
         cols="12"
-        class="text-right pt-0"
+        class="text-left pt-0"
       >
-        <router-link :to="`/project/${projectId}/processSteps`">All process steps</router-link>
+        <router-link :to="`/project/${projectId}/processSteps`">View All</router-link>
 
       </v-col>
     </v-fade-transition>

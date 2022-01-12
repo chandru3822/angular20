@@ -4,7 +4,7 @@
     <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-row>
         <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Upcoming & Past Due Events</v-toolbar-title>
+          <v-toolbar-title>Upcoming Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
           </v-toolbar-items>
@@ -25,9 +25,9 @@
     <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-col
         cols="12"
-        class="text-right pt-0"
+        class="text-left pt-0"
       >
-        <router-link :to="`/project/${projectId}/events`">All events</router-link>
+        <router-link :to="`/project/${projectId}/events`">View All</router-link>
       </v-col>
     </v-fade-transition>
 

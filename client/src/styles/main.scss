@@ -215,6 +215,24 @@ label[for="adminOriginatorSelect"] {
   border-radius: 0 !important;
 }
 
+.status-active {
+  color: green;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.status-complete {
+  color: cornflowerblue;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.status-cancelled {
+  color: #8B0000;
+  font-weight: normal;
+  font-size: 12px;
+}
+
 .hr-non-transparent {
   border-color: #e0e1e2 !important;
 }

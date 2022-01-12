@@ -1,44 +1,17 @@
 <template>
 <v-row>
   <v-col cols="12" class="pt-0">
-    <v-card class="square-card">
-      <v-data-table
-        :headers="headers"
-        :items="events"
-        :fixed-header="true"
-        :items-per-page="-1"
-        id="qa-process-step-table"
-        hide-default-footer
-        disable-sort
-        class="elevation-0"
-      >
-        <template #no-data>
-          No upcoming or past due events
-        </template>
-
-        <template #no-results>
-          No upcoming or past due events
-        </template>
-
-        <template #item="{ item, index }">
-          <tr>
-            <td class="text-left" id="qa-event-link">
-              <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`">{{ item.id }}</router-link>
-            </td>
-            <td class="text-left" id="qa-event-name">{{item.eventName}}</td>
-            <td class="text-left" id="qa-event-start">{{ item.startTime | formatDate('timestamp') }}</td>
-            <td class="text-left">{{item.resource}}</td>
-            <td class="text-left" id="qa-event-status">{{item.eventStatusType}}</td>
-          </tr>
-        </template>
-
-      </v-data-table>
+    <v-card flat v-for="e in events" class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
+      {{ e.eventName }}
+      <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span>
     </v-card>
   </v-col>
 </v-row>
 </template>
 
 <script>
+import {getStatusClass} from '@/services/processStepStatusTypeService'
+
 export default {
   name: 'UpcomingEventSnippet',
   props: {
@@ -47,23 +20,22 @@ export default {
   },
   data () {
     return {
-      headers: [
-      {text: 'ID', value: 'id', show: true},
-      {text: 'Name', value: 'eventName', show: true},
-      {text: 'Start', value: 'startTime', show: true},
-      {text: 'Resource', value: 'resource', show: true},
-      {text: 'Status', value: 'companyEventStatusType', show: true},
-    ]
+      getStatusClass
     }
+  },
+  methods: {
+    goToPath(path) {
+      this.$router.push(path)
+    },
   }
 }
 </script>
 
 
 <style scoped lang="scss">
-.header {
-  background-color: #E6E6E9;
-  color: #1F3C73;
-  border-bottom: 1px solid #C7C7CC;
+.active-event-button {
+  border: solid 1px #C4C4C4;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 </style>

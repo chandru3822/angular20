@@ -264,8 +264,7 @@
     order by p.date_created desc
   ]]></project.generateReport>
 
-  <project.get>
-    <![CDATA[
+  <project.get><![CDATA[
       select
         p.id,
         p.street1,
@@ -273,10 +272,12 @@
         p.city,
         p.company_state_id,
         s.state,
+        s.abbreviation as state_abbreviation,
         p.postal_code,
         p.company_country_id,
         c.country,
         ct.phone,
+        ct.email,
         ct.mobile,
         p.contact_id,
         p.date_created,
@@ -305,6 +306,7 @@
         p.project_name,
         p.company_project_status_type_id,
         cpst.project_status_type,
+        cpst.project_status_type_id,
         cot.status_read_only,
         cot.owner_read_only,
         coalesce((
@@ -350,8 +352,7 @@
             then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else cp.company_id = :companyId end
             and p.archived is not true
-    ]]>
-  </project.get>
+  ]]></project.get>
 
   <project.update>
     update flow.project set

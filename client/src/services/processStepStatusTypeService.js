@@ -17,6 +17,10 @@ export async function getActiveAssignedToProcessStep(processStepId) {
   )
 }
 
+export function getStatusClass(rootTypeId) {
+  return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
+}
+
 export async function getAssignedToProcessStep(processStepId) {
   return await getRequest(
     `/processStep/status/company/assignedToProcessStep/${processStepId}`,
