@@ -93,6 +93,7 @@ axios.interceptors.request.use((config) => {
   }
 
   // Add to vuex to make cancellation available from anywhere
+  // todo: investigate using parent/child route detection instead of a param that gets passed in and always skipsCancel even if leaving the route tree
   if(!skipCancel) {
     store.commit('ADD_CANCEL_TOKEN', source)
   }

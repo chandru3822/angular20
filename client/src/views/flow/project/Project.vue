@@ -137,10 +137,13 @@
             </v-toolbar-items>
           </v-toolbar>
           <div class="px-4 address-details">
-            <span class="project-detail-label">Address:</span>
-            <span class="project-detail-item">{{ project.street1 }} {{ project.city }} {{
-                project.stateAbbreviation
-              }}</span> <br/>
+            <div class="mt-1">
+              <span class="vertical-top project-detail-label">Address:</span>
+              <div class="d-inline-block project-detail-item">
+                {{ project.street1 }} <br/>
+                {{ project.city }} {{project.stateAbbreviation }} {{project.postalCode}}
+              </div>
+            </div>
             <span class="project-detail-label">Contact:</span>
             <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
             <span class="project-detail-label">Email:</span>
