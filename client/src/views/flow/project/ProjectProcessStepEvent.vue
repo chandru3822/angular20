@@ -90,8 +90,8 @@
             <v-btn class="white--text mr-2 mb-2 save-btn"
                    @click="checkFieldsForUnique()"
                    :disabled="!userCanEdit"
-                   color="primaryButton"
-            >Save Fields
+                   color="primaryButton">
+              Save Fields
             </v-btn>
           </div>
         </v-toolbar-items>

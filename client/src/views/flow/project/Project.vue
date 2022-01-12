@@ -1,8 +1,89 @@
 <template>
   <div id="project-container">
+    <!--    modal for editing project fields -->
+    <v-dialog width="500" v-model="showEditProjectModal" content-class="square-card">
+      <v-card class="px-6 py-4 square-card">
+        <v-form ref="projectEditForm">
+          <v-card-title
+            color="blackText"
+            class="text-h6 text-capitalize pa-0 font-weight-bold"
+            primary-title>
+            Project Overview
+          </v-card-title>
+          <v-card-text class="pt-4 px-0">
+            <div v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')">
+              <v-text-field
+                v-model="tempProject.projectName"
+                label="Project Name"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempProject.street1"
+                label="Street"
+                @change="tempProject.reloadCoordinates = true"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempProject.city"
+                label="City"
+                @change="tempProject.reloadCoordinates = true"
+              ></v-text-field>
+              <v-text-field
+                type="text"
+                v-model="tempProject.postalCode"
+                counter
+                maxlength="10"
+                @keypress="isNumberOrHyphen"
+                :rules="postalCodeRules"
+                @change="tempProject.reloadCoordinates = true"
+                label="Postal Code"
+              ></v-text-field>
+              <v-autocomplete v-model="tempProject.companyStateId"
+                              :items="states"
+                              label="State"
+                              :loading="statesLoading"
+                              item-text="state"
+                              item-value="id"
+                              @input="tempProject.reloadCoordinates = true"
+              ></v-autocomplete>
+              <v-select v-model="tempProject.companyCountryId"
+                        :items="countries"
+                        label="Country"
+                        :loading="countriesLoading"
+                        @input="tempProject.reloadCoordinates = true"
+                        item-text="country"
+                        item-value="id"
+              ></v-select>
+            </div>
+            <v-autocomplete v-model="tempProject.owner"
+                            v-if="!projectOwnerFieldIsReadOnly()"
+                            :items="availableOwners"
+                            :loading="ownersLoading"
+                            label="Select Owner"
+                            item-text="fullName"
+                            return-object
+                            autocomplete="off">
+            </v-autocomplete>
+          </v-card-text>
+        </v-form>
+
+        <v-card-actions class="pa-0">
+          <v-btn @click="showEditProjectModal = false">
+            cancel
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primaryCustom"
+            class="white--text text-capitalize font-weight-bold"
+            :disabled="!project.projectName"
+            @click="validateForm()">
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!--    end dialog -->
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title">
-        <div class="d-inline-block">{{ project.projectName }}{{project.projectStatusTypeId}}</div>
+        <div class="d-inline-block">{{ project.projectName }}</div>
         <div class="d-inline-block">
           <v-autocomplete
             class="ml-5"
@@ -43,9 +124,14 @@
           <v-toolbar-title>Overview</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="" v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')">
-              Edit
-            </v-btn>
+            <div class="pt-3">
+              <v-btn
+                @click="[getStatesAndCountries(), getOwners(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+                v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+                      || !projectOwnerFieldIsReadOnly())">
+                Edit
+              </v-btn>
+            </div>
           </v-toolbar-items>
         </v-toolbar>
         <div class="px-4">
@@ -66,7 +152,7 @@
         <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
       </v-col>
       <v-col cols="5" class="router-view-column project-section">
-          <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
+        <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
       </v-col>
       <v-col cols="4" class="white-bg project-section">
         <ProjectActivity></ProjectActivity>
@@ -81,17 +167,21 @@ import {
   getRequest,
   putRequest,
   postRequest,
-  isNumberOrHyphen,
   logError,
   getRequestWithParams,
   getSnackbar,
-  formatPhoneNumber
+  formatPhoneNumber,
+  isNumberOrHyphen
 } from '@/helpers/helpers'
+import cloneDeep from 'lodash.clonedeep'
 import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import UpcomingEvents from '@/views/flow/project/UpcomingEvents'
 import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectStatusTypeService"
+import constants from "@/helpers/constants";
+import {getCompanyStates} from "@/services/stateService";
+import {getCountries} from "@/services/countryService";
 
 export default {
   name: 'Project',
@@ -103,12 +193,23 @@ export default {
   data() {
     return {
       snackbar: {},
+      cloneDeep,
+      //used for if the make edits then hit cancel
+      tempProject: {},
       project: {},
+      ownersLoading: true,
+      statesLoading: true,
+      countriesLoading: true,
       collapseSidebar: false,
+      showEditProjectModal: false,
       statuses: [],
       getStatusColor,
       availableOwners: [],
+      postalCodeRules: constants.POSTAL_CODE_RULES,
       formatPhoneNumber,
+      isNumberOrHyphen,
+      states: [],
+      countries: [],
       projectLoading: true,
       displayChangeOwner: false,
       projectId: parseInt(this.$route.params.projectId),
@@ -158,7 +259,7 @@ export default {
         return this.project.ownerReadOnly
       }
     },
-    projectOwnerIsReadOnly() {
+    projectOwnerFieldIsReadOnly() {
       if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
@@ -190,19 +291,74 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    getStatesAndCountries: function () {
+      // only load countries and states if they try to edit the project address and they haven't already been loaded
+      if (this.states.length === 0 || this.countries.length === 0) {
+        this.getCompanyStates()
+        this.getCountries()
+      }
+    },
+    getCompanyStates: async function () {
+      try {
+        this.statesLoading = true
+        const {data, status} = await getCompanyStates()
+        this.states = data
+        this.statesLoading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.statesLoading = false
+      }
+    },
+    getCountries: async function () {
+      try {
+        this.countriesLoading = true
+        const {data, status} = await getCountries()
+        this.countries = data
+        this.countriesLoading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.countriesLoading = false
+      }
+    },
+    validateForm() {
+      if (this.$refs.projectEditForm.validate()) {
+        //set project values if they hit save
+        this.project = cloneDeep(this.tempProject)
+        this.saveProjectAddressFields()
+        this.updateOwner()
+        this.showEditProjectModal = false
+      }
+    },
+    saveProjectAddressFields: async function () {
+      this.editAddress = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/project`, this.project)
+        this.snackbar = getSnackbar('SUCCESS', 'Project Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     getOwners: async function () {
-      if (this.displayChangeOwner) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/project/owners`)
-          this.availableOwners = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+      try {
+        this.ownersLoading = true
+        const {data, status} = await getRequest(`/project/owners`)
+        this.availableOwners = data
+        this.ownersLoading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.ownersLoading = false
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
   }
