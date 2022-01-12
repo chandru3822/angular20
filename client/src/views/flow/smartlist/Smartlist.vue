@@ -252,175 +252,22 @@
       </v-card>
     </v-col>
 
-    <v-col cols="12">
-      <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Columns</v-toolbar-title>
-        <v-spacer />
-        <v-toolbar-items>
-          <v-btn
-            v-if="!showNewFieldForm && canEdit"
-            text
-            :disabled="!smartlist.id"
-            @click="showNewFieldForm = true"
-          >
-            <v-icon>add</v-icon>
-            <template v-if="!constants.IS_MOBILE">Add Field</template>
-          </v-btn>
-
-          <v-btn
-            v-if="showNewFieldForm"
-            text
-            @click="resetNewFieldForm"
-          >
-            Cancel
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-
-      <v-card v-if="showNewFieldForm" class="elevation-1">
-        <v-col class="text-left">
-
-          <template v-if="smartlist.projectDetails === true">
-            <v-autocomplete
-              v-model="newField.projectDetailsColumn"
-              label="Field"
-              :items="filteredProjectDetailsColumns"
-              item-value="projectDetailsColumn"
-              item-text="name"
-              attach
-            />
-          </template>
-
-          <template v-else>
-            <v-autocomplete
-              v-model="newField.objectTypeId"
-              label="Object Type"
-              :items="filteredCompanyObjectTypes"
-              item-value="objectTypeId"
-              item-text="objectType"
-              @input="getAvailableFields"
-              attach
-            />
-
-            <v-autocomplete
-              v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
-              v-model="newField.processStepId"
-              label="Process Step"
-              :items="availableProcessSteps"
-              item-value="processStepId"
-              item-text="processStepName"
-              @input="calculateAvailableFields"
-              attach
-            />
-
-            <v-autocomplete
-              v-if="newField.objectTypeId !== null && newField.objectTypeId === 6"
-              v-model="newField.eventId"
-              label="Event"
-              :items="availableEvents"
-              item-value="eventId"
-              item-text="eventName"
-              @input="[calculateAvailableFields(), getProcessStepEvents()]"
-              attach
-            />
-
-            <v-autocomplete
-              v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId === 6 && newField.eventId) || (newField.objectTypeId != null && ![4, 6].includes(newField.objectTypeId))"
-              v-model="newField.selectedField"
-              label="Field"
-              :items="availableFields"
-              item-text="name"
-              return-object
-              attach
-            />
-
-            <v-autocomplete
-              v-if="newField.objectTypeId !== null && newField.objectTypeId === 6 && newField.eventId"
-              v-model="newField.processStepEventId"
-              label="Process Step"
-              :items="fetchedProcessStepEvents"
-              item-value="id"
-              item-text="processStepName"
-              attach
-            />
-          </template>
-
-          <v-btn
-            text
-            color="primaryCustom"
-            class="text-left"
-            :disabled="isNewFieldButtonDisabled"
-            @click="addNewField"
-          >
-            <v-icon>save</v-icon>
-            <span v-if="!constants.IS_MOBILE">Save</span>
-          </v-btn>
-        </v-col>
-      </v-card>
-
-        <v-list dense>
-          <v-list-item>
-            <v-list-item-action v-if="canEdit">
-              <v-icon></v-icon>
-            </v-list-item-action>
-
-            <v-list-item-content>
-              <v-row>
-                <v-col cols="1" class="text-left smartlist-field">Order</v-col>
-                <v-col cols="3" class="text-left smartlist-field">Field Name</v-col>
-                <v-col cols="4" class="text-left smartlist-field">Object Type</v-col>
-                <v-col cols="4" class="text-left smartlist-field">Process Step/Event Name</v-col>
-              </v-row>
-            </v-list-item-content>
-
-            <v-list-item-action>
-              <v-icon></v-icon>
-            </v-list-item-action>
-          </v-list-item>
-
-          <v-divider />
-          <v-divider />
-
-          <draggable
-            :disabled="!canEdit"
-            v-model="assignedFields"
-            @change="reorderFields"
-            group="assignedFields"
-          >
-
-            <v-list-item
-              :class="{grab: canEdit}"
-              v-for="(field, index) in assignedFields"
-              :key="field.id"
-            >
-
-              <v-list-item-action v-if="canEdit">
-                <v-icon>drag_handle</v-icon>
-              </v-list-item-action>
-
-              <v-list-item-content>
-                <v-row>
-                  <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
-                  <v-col cols="3" class="text-left">{{field.name}}</v-col>
-                  <v-col cols="4" class="text-left">{{field.objectType}}</v-col>
-                  <v-col cols="4" class="text-left">{{(field.objectTypeId === 6) ? field.eventName : field.processStepName}}</v-col>
-                </v-row>
-              </v-list-item-content>
-
-              <v-list-item-action class="clickable">
-                <v-icon v-if="canEdit" @click="deleteField(index)">delete</v-icon>
-                <v-icon v-else></v-icon>
-              </v-list-item-action>
-            </v-list-item>
-          </draggable>
-        </v-list>
-    </v-col>
+    <SmartlistColumn
+      v-if="smartlist.id"
+      :company-object-types="filteredCompanyObjectTypes"
+      :can-edit="canEdit"
+      :is-project-details="smartlist.projectDetails"
+      :project-details-columns="projectDetailsColumns"
+      :smartlist-id="$route.params.smartlistId"
+      :refresh="refreshData"
+      @refreshed="refreshData = false"
+    />
 
     <SmartlistRequirement
+      v-if="smartlist.id"
       :requirements="requirements"
       :company-object-types="filteredCompanyObjectTypes"
       :reset-form="resetRequirementForm"
-      :disabled="!smartlist.id"
       :can-edit="canEdit"
       :is-project-details="smartlist.projectDetails"
       :project-details-columns="filteredProjectDetailsRequirements"
@@ -510,16 +357,17 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
-import draggable from 'vuedraggable'
+
 import SmartlistRequirement from './SmartlistRequirement'
+import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
 
 export default {
   name: 'Smartlist',
   components: {
-    draggable,
-    SmartlistRequirement
+    SmartlistRequirement,
+    SmartlistColumn
   },
   data () {
     return {
@@ -530,18 +378,6 @@ export default {
       },
       companyObjectTypes: [],
       operations: [],
-      fetchedAvailableFields: [],
-      availableFields: [],
-      availableProcessSteps: [],
-      availableEvents: [],
-      fetchedProcessStepEvents: [],
-      newField: {},
-      showNewFieldForm: false,
-      newFieldTypes: [
-        {id: 1, name: 'Smartlist Field'},
-        {id: 2, name: 'Custom Field'}
-      ],
-      assignedFields: [],
       requirements: [],
       fetchedLogic: [],
       logic: [],
@@ -562,12 +398,12 @@ export default {
       sql: '',
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userId: this.$store.state.user.details.id,
+      refreshData: false
     }
   },
   created () {
     if (this.$route.params?.smartlistId !== "null") {
       this.getSmartlist()
-      this.getAssignedFields()
       this.getRequirements()
       this.getLogic()
       this.getProjectDetailsColumns()
@@ -576,9 +412,6 @@ export default {
     this.getCompanyObjectTypes()
   },
   computed: {
-    isNewFieldButtonDisabled () {
-      return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
-    },
     isProcessStepOrEvent () {
       return this.smartlist.companyObjectTypeId !== null && ([4,6].includes(this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.objectTypeId))
     },
@@ -591,10 +424,6 @@ export default {
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
-    },
-    filteredProjectDetailsColumns () {
-      const columnNames = this.assignedFields.map(f => f.projectDetailsColumn)
-      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
     },
     filteredProjectDetailsRequirements () {
       const columnNames = this.requirements.map(r => r.projectDetailsColumn)
@@ -625,16 +454,6 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getAssignedFields () {
-      try {
-        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/field`)
-        this.assignedFields = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching assigned fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
@@ -669,26 +488,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getAvailableFields () {
-      this.newField = {objectTypeId: this.newField.objectTypeId}
-      try {
-        const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newField.objectTypeId}`)
-        this.fetchedAvailableFields = data
-        if (this.newField.objectTypeId === 4) {
-          this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
-          this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
-        } else if (this.newField.objectTypeId === 6) {
-          this.availableEvents = data.reduce((fields, field) => (field.eventId ===  null || fields.find(f => f.eventName === field.eventName)) ? [...fields] : [...fields, field], [])
-          this.availableEvents = this.availableEvents.sort((a, b) => a.eventName.localeCompare(b.eventName))
-        } else {
-          this.calculateAvailableFields()
-        }
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
     async getProjectDetailsColumns () {
       try {
         const {data} = await getRequest(`/smartlist/availableProjectDetailsFields`)
@@ -709,43 +508,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getProcessStepEvents() {
-      try {
-        const {data} = await getRequest(`/event/${this.newField.eventId}/processStepEvents`)
-        this.fetchedProcessStepEvents = data
-        const psEventsForSelectedEvent = data.filter(pse => pse.eventId === this.newField.eventId)
-        //if this event is attached to only one process step, autoselect the process step event id
-        if (psEventsForSelectedEvent.length === 1) {
-          this.newField.processStepEventId = psEventsForSelectedEvent[0].id
-        }
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step events')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    calculateAvailableFields () {
-      this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
-      if (this.newField.objectTypeId === 4) {
-        this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
-      } else if (this.newField.objectTypeId === 6) {
-        this.availableFields = this.availableFields.filter(field => field.eventId === this.newField.eventId || field.smartlistFieldId !== null)
-      }
-
-      this.availableFields = this.availableFields.filter(f => {
-        if (f.customFieldGroupAssignmentId !== null) {
-          return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
-        } else {
-          if (this.newField.objectTypeId === 4) {
-            return !this.assignedFields.filter(a => a.processStepId === this.newField.processStepId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
-          } else if (this.newField.objectTypeId === 6) {
-            return !this.assignedFields.filter(a => a.eventId === this.newField.eventId).map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
-          } else {
-            return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
-          }
-        }
-      })
-    },
     async addSmartlist () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -762,27 +524,6 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async addNewField () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/field`, {
-          ...this.newField.selectedField,
-          smartlistId: this.smartlist.id,
-          displayOrder: this.assignedFields.length + 1,
-          processStepId: this.newField.processStepId || null,
-          projectDetailsColumn: this.newField.projectDetailsColumn,
-          processStepEventId: this.newField.processStepEventId || null
-        })
-        this.assignedFields.push(data)
-        this.resetNewFieldForm()
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -868,43 +609,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteField (fieldIndex) {
-
-      try {
-        const fieldToDelete = this.assignedFields[fieldIndex]
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/smartlist/${this.$route.params.smartlistId}/field/${fieldToDelete.id}`)
-        this.assignedFields.splice(fieldIndex, 1)
-        const {status} = await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async reorderFields ({moved}) {
-
-      // If a drag happened but order wasn't changed
-      if (moved.newIndex === moved.oldIndex) {
-        return
-      }
-      this.assignedFields.forEach((field, index) => field.displayOrder = index + 1)
-
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/smartlist/${this.$route.params.smartlistId}/order`, this.assignedFields)
-        handleHidingGlobalLoader(this, status)
-        return {status}
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error updating field order')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        return {status: 500}
-      }
-    },
     async deleteRequirement (requirement) {
       try {
         const deleteIndex = this.requirements.findIndex(r => r.id === requirement.id)
@@ -921,10 +625,6 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    resetNewFieldForm () {
-      this.showNewFieldForm = false
-      this.newField = {}
     },
     async runReport () {
       try {
@@ -954,7 +654,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {status} = await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
-        this.assignedFields = []
+        this.refreshData = true
         this.requirements = []
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -993,7 +693,7 @@ export default {
 
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
-        this.assignedFields = []
+        this.refreshData = true
         this.requirements = []
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -1066,20 +766,6 @@ export default {
 <style scoped lang="scss">
 
 @import "@/styles/main.scss";
-
-.smartlist-field {
-  font-size: 12px;
-  color: rgba(0,0,0,0.6);
-  font-weight: 700; line-height: 18px;
-}
-
-.v-list {
-  padding: 0 !important;
-}
-
-.v-list-item:nth-of-type(even) {
-  @extend .shaded-row;
-}
 
 ::v-deep {
   [v-cloak] {

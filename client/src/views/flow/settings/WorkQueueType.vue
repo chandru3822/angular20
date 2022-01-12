@@ -151,9 +151,7 @@
             </div>
 
             <v-btn
-              v-if="showNewFieldForm"
               text
-              @click="resetNewFieldForm"
             >
               Cancel
             </v-btn>
@@ -195,144 +193,21 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12" class="pt-0">
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Columns</v-toolbar-title>
-          <v-spacer/>
-          <v-toolbar-items>
-            <v-btn
-              v-if="!showNewFieldForm && (userCanEdit || userIsAdmin)"
-              text
-              @click="showNewFieldForm = true"
-            >
-              <v-icon>add</v-icon>
-              <template v-if="!constants.IS_MOBILE">Add Field</template>
-            </v-btn>
+      <SmartlistColumn
+        v-if="this.workQueueType.smartlistId"
+        :can-edit="true"
+        :smartlist-id="this.workQueueType.smartlistId"
+        :company-object-types="filteredCompanyObjectTypes"
+      />
 
-            <v-btn
-              v-if="showNewFieldForm"
-              text
-              @click="resetNewFieldForm"
-            >
-              Cancel
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-card v-if="showNewFieldForm" class="elevation-1">
-          <v-col class="text-left">
-
-            <template>
-              <v-autocomplete
-                v-model="newField.objectTypeId"
-                label="Object Type"
-                :items="companyObjectTypes"
-                item-value="objectTypeId"
-                item-text="objectType"
-                @input="getAvailableFields"
-                attach
-              />
-
-              <v-autocomplete
-                v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
-                v-model="newField.processStepId"
-                label="Process Step"
-                :items="availableProcessSteps"
-                item-value="processStepId"
-                item-text="processStepName"
-                @input="calculateAvailableFields"
-                attach
-              />
-
-              <v-autocomplete
-                v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
-                v-model="newField.selectedField"
-                label="Field"
-                :items="availableFields"
-                item-text="name"
-                return-object
-                attach
-              />
-            </template>
-
-            <v-btn
-              text
-              color="primaryCustom"
-              class="text-left"
-              :disabled="!newField.selectedField"
-              @click="addNewField"
-            >
-              <v-icon>save</v-icon>
-              <span v-if="!constants.IS_MOBILE">Save</span>
-            </v-btn>
-          </v-col>
-        </v-card>
-
-        <v-list dense>
-          <v-list-item>
-            <v-list-item-action v-if="userCanEdit || userIsAdmin">
-              <v-icon></v-icon>
-            </v-list-item-action>
-
-            <v-list-item-content>
-              <v-row>
-                <v-col cols="1" class="text-left smartlist-field">Order</v-col>
-                <v-col cols="3" class="text-left smartlist-field">Field Name</v-col>
-                <v-col cols="4" class="text-left smartlist-field">Object Type</v-col>
-                <v-col cols="4" class="text-left smartlist-field">Process Step Name</v-col>
-              </v-row>
-            </v-list-item-content>
-
-            <v-list-item-action>
-              <v-icon></v-icon>
-            </v-list-item-action>
-          </v-list-item>
-
-          <v-divider/>
-          <v-divider/>
-
-          <draggable
-            :disabled="!userCanEdit && !userIsAdmin"
-            v-model="assignedFields"
-            @change="reorderFields"
-            group="assignedFields"
-          >
-
-            <v-list-item
-              :class="{grab: userCanEdit || userIsAdmin}"
-              v-for="(field, index) in assignedFields"
-              :key="field.id"
-            >
-
-              <v-list-item-action v-if="userCanEdit || userIsAdmin">
-                <v-icon>drag_handle</v-icon>
-              </v-list-item-action>
-
-              <v-list-item-content>
-                <v-row>
-                  <v-col cols="1" class="text-left">{{ field.displayOrder }}</v-col>
-                  <v-col cols="3" class="text-left">{{ field.name }}</v-col>
-                  <v-col cols="4" class="text-left">{{ field.objectType }}</v-col>
-                  <v-col cols="4" class="text-left">{{ field.processStepName }}</v-col>
-                </v-row>
-              </v-list-item-content>
-
-              <v-list-item-action class="clickable">
-                <v-icon v-if="userCanDelete || userIsAdmin" @click="deleteField(index)">delete</v-icon>
-                <v-icon v-else></v-icon>
-              </v-list-item-action>
-            </v-list-item>
-          </draggable>
-        </v-list>
-
-        <v-btn color="primaryCustom" class="white--text build-sql" @click="buildSql"
-               v-if="is7oaksAdmin || userId === 2350555">
-          <div>BUILD SQL</div>
-          <div>(only 7oaks and Judson)</div>
-        </v-btn>
-        <div>
-          {{ sql }}
-        </div>
-      </v-col>
+      <v-btn color="primaryCustom" class="white--text build-sql" @click="buildSql"
+             v-if="is7oaksAdmin || userId === 2350555">
+        <div>BUILD SQL</div>
+        <div>(only 7oaks and Judson)</div>
+      </v-btn>
+      <div>
+        {{ sql }}
+      </div>
     </v-row>
 
   </v-container>
@@ -345,19 +220,26 @@ import orderBy from 'lodash.orderby'
 import Vue2Filters from 'vue2-filters'
 import {getWorkQueueCategories} from '@/services/workQueueService'
 import {
-  handleHidingGlobalLoader, getRequest, logError, deleteRequest, getMinMaxRule, getRequestWithParams,
-  putRequest, postRequest, getSnackbar
+  handleHidingGlobalLoader,
+  getRequest,
+  logError,
+  getMinMaxRule,
+  getRequestWithParams,
+  putRequest,
+  getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import draggable from 'vuedraggable'
-import ZonelessTimePickerInput from "./availability/ZonelessTimePickerInput";
+import ZonelessTimePickerInput from './availability/ZonelessTimePickerInput'
+import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
 
 export default {
   name: 'WorkQueueType',
   mixins: [Vue2Filters.mixin],
   components: {
     draggable,
-    ZonelessTimePickerInput
+    ZonelessTimePickerInput,
+    SmartlistColumn
   },
   data() {
     return {
@@ -365,16 +247,10 @@ export default {
       editType: false,
       editSchedule: false,
       constants,
-      newField: {},
-      showNewFieldForm: false,
       workQueueCategories: [],
       companyObjectTypes: [],
       durationTypes: [],
       expectedTargetRule: getMinMaxRule(0, 1),
-      fetchedAvailableFields: [],
-      assignedFields: [],
-      availableFields: [],
-      availableProcessSteps: [],
       workQueueTypeId: this.$route.params.id,
       workQueueType: {},
       sql: '',
@@ -417,15 +293,22 @@ export default {
       cardColorToggle: true
     }
   },
-  computed: {},
+  computed: {
+    filteredCompanyObjectTypes() {
+      let objectTypeIds = []
+      if (this.workQueueType.useEventData) {
+        objectTypeIds = [1,2,4,6]
+      } else {
+        objectTypeIds = [1,2,4]
+      }
+      return this.companyObjectTypes.filter(t => objectTypeIds.includes(t.objectTypeId))
+    }
+  },
   async created() {
     this.getWorkQueueCategories()
     this.getCompanyObjectTypes()
     this.getDurationTypes()
     await this.getWorkQueueType()
-    if (this.workQueueType?.smartlistId) {
-      this.getAssignedFields()
-    }
   },
   methods: {
     async buildSql() {
@@ -506,105 +389,6 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
-    },
-    resetNewFieldForm() {
-      this.showNewFieldForm = false
-      this.newField = {}
-    },
-    async getAvailableFields() {
-      this.newField = {objectTypeId: this.newField.objectTypeId}
-      try {
-        const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newField.objectTypeId}`)
-        this.fetchedAvailableFields = data
-        if (this.newField.objectTypeId === 4) {
-          this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
-          this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
-        } else {
-          this.calculateAvailableFields()
-        }
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    calculateAvailableFields() {
-      this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
-      if (this.newField.processStepId) {
-        this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
-      }
-
-      this.availableFields = this.availableFields.filter(f => {
-        if (f.customFieldGroupAssignmentId !== null) {
-          return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
-        } else {
-          return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
-        }
-      })
-    },
-    async addNewField() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlist/${this.workQueueType.smartlistId}/field`, {
-          ...this.newField.selectedField,
-          smartlistId: this.workQueueType.smartlistId,
-          displayOrder: this.assignedFields.length + 1,
-          processStepId: this.newField.processStepId || null,
-        })
-        this.assignedFields.push(data)
-        this.resetNewFieldForm()
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAssignedFields() {
-      try {
-        const {data} = await getRequest(`/smartlist/${this.workQueueType.smartlistId}/field`)
-        this.assignedFields = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching assigned fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async reorderFields({moved}) {
-
-      // If a drag happened but order wasn't changed
-      if (moved.newIndex === moved.oldIndex) {
-        return
-      }
-      this.assignedFields.forEach((field, index) => field.displayOrder = index + 1)
-
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/smartlist/${this.workQueueType.smartlistId}/order`, this.assignedFields)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error updating field order')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteField(fieldIndex) {
-
-      try {
-        const fieldToDelete = this.assignedFields[fieldIndex]
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/smartlist/${this.workQueueType.smartlistId}/field/${fieldToDelete.id}`)
-        this.assignedFields.splice(fieldIndex, 1)
-        const {status} = await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     validateSchedule() {
