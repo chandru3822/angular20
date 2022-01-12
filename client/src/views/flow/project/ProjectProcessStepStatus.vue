@@ -124,8 +124,10 @@ export default {
     async getCancelledStatuses() {
       if (this.cancelledCompanyStatuses?.length === 0) {
         try {
-          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(this.projectProcessStep.processStepId)
-          this.cancelledCompanyStatuses = data
+          if(this.projectProcessStep.processStepId) {
+            const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(this.projectProcessStep.processStepId)
+            this.cancelledCompanyStatuses = data
+          }
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')

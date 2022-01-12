@@ -55,5 +55,6 @@ export default {
 <style lang="scss">
 .action-button > .v-btn__content {
   color: white !important;
+  text-transform: none;
 }
 </style>

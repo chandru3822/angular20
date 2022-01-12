@@ -1,7 +1,8 @@
 <template>
   <v-card flat class="event-button" @click="goToPath(`/project/${projectId}/processStep/${event.projectProcessStepId}/event/${event.id}`)">
-    {{ event.eventName }}
-    <span :class="getStatusClass(event.eventStatusTypeId)">{{event.eventStatusType}}</span>
+    <span class="font-size-14">{{ event.eventName }}</span>
+    <span class="font-size-12 ml-2" :class="getStatusClass(event.eventStatusTypeId)">{{event.eventStatusType}}</span> <br>
+    <span class="event-resource" v-if="event.resource">{{ event.resource }}</span>
   </v-card>
 </template>
 
@@ -34,8 +35,10 @@ export default {
 .event-button {
   border: solid 1px #C4C4C4 !important;
   padding: 10px;
-  margin-left: 10px;
-  margin-right: 10px;
   margin-bottom: 10px;
+}
+.event-resource {
+  font-size: 12px;
+  color: #9E9C9C;
 }
 </style>

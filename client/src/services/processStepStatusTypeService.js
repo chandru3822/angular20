@@ -33,7 +33,7 @@ export async function getCancelledCompanyStatusTypesAssignedToProcessStep(
   processStepId
 ) {
   return await getRequestWithParams(
-    `/processStep/status/company/cancelledAssignedToProcessStep/${processStepId}`
+    `/processStep/status/company/cancelledAssignedToProcessStep/${processStepId}`, null, null, []
   )
 }
 

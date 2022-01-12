@@ -82,6 +82,8 @@ axios.interceptors.request.use((config) => {
 
   // if config.source passed in then use that
   let source = config.source
+  //dont cancel if override sent in
+  let skipCancel = config.skipCancel
 
   if (!source) {
     // if no source passed in, Generate cancel token source
@@ -90,7 +92,10 @@ axios.interceptors.request.use((config) => {
   }
 
   // Add to vuex to make cancellation available from anywhere
-  store.commit('ADD_CANCEL_TOKEN', source)
+  // todo: investigate using parent/child route detection instead of a param that gets passed in and always skipsCancel even if leaving the route tree
+  if(!skipCancel) {
+    store.commit('ADD_CANCEL_TOKEN', source)
+  }
   return config
 })
 

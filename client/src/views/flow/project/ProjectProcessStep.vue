@@ -1,5 +1,5 @@
 <template>
-  <v-main>
+  <v-main v-if="!processStepLoading">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -35,9 +35,9 @@
         </v-dialog>
       </v-col>
 
-      <v-col cols="12" class="py-0">
+      <v-col cols="12" class="pa-0">
         <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-          <v-toolbar-title class="px-5 process-step-name">
+          <v-toolbar-title class="process-step-name">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"
                   :class="getStatusClass(processStep.processStepStatusTypeId)">({{
@@ -51,7 +51,6 @@
               width="500">
               <template #activator="{ on }">
                 <v-checkbox
-                  class=""
                   v-on="on"
                   dense
                   v-model="processStep.main"
@@ -96,14 +95,16 @@
               <div v-if="processStep.owner && processStep.owner.userId">
                 <v-avatar
                   :tile="false"
-                  :size="25"
+                  :size="16"
                   color="grey lighten-4"
-                  class="account-img mr-2"
+                  class="account-img mr-2 owner-image"
                 >
                   <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
                 </v-avatar>
-                {{ processStep.owner.fullName }}<br/>
-                {{ processStep.owner.position }}
+                <div class="owner-info">
+                  {{ processStep.owner.fullName }}<br/>
+                  <span class="owner-position">{{ processStep.owner.position }}</span>
+                </div>
               </div>
             </div>
             <div v-if="displayChangeOwner">
@@ -114,6 +115,7 @@
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               return-object
+                              hide-details
                               autocomplete="off"
                               @change="updateOwner"
                               attach
@@ -133,8 +135,8 @@
           </div>
         </v-toolbar>
       </v-col>
-      <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature && !projectLoading">
-        <div>
+      <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature">
+        <div class="pps-subheader">
           All Events
           <v-autocomplete
             v-model="eventToAdd"
@@ -153,20 +155,18 @@
         />
       </v-col>
       <v-col cols="12" class="text-left pt-0">
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>
-            Actions
-            <v-btn
-              class="back-btn show-unperformable-actions-btn"
-              text
-              :ripple="false"
-              @click="showUnperformableActions = !showUnperformableActions"
-            >
-              {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
-            </v-btn>
-          </v-toolbar-title>
-        </v-toolbar>
-        <v-col v-for="action in filteredActions" :key="action.id" class="pt-0">
+        <div class="pps-subheader">
+          Actions
+          <v-btn
+            class="back-btn show-unperformable-actions-btn"
+            text
+            :ripple="false"
+            @click="showUnperformableActions = !showUnperformableActions"
+          >
+            {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
+          </v-btn>
+        </div>
+        <v-col v-for="action in filteredActions" :key="action.id" class="pt-0 px-0">
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
@@ -188,12 +188,14 @@
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
-      <v-btn class="one-hunned">
-        Upload Documents
-      </v-btn>
-      <v-col cols="12" class="text-left pt-0">
-        <v-col class="pt-0">
-          <v-toolbar color="transparent" class="elevation-0">
+      <v-col>
+        <v-btn class="one-hunned" color="#E3E3E3">
+          Upload Documents
+        </v-btn>
+      </v-col>
+      <v-col cols="12" class="text-left py-0 px-0">
+        <v-col class="pt-0 py-0">
+          <v-toolbar color="transparent" class="elevation-0 cfg-detail-header">
             <v-toolbar-title>
               Details/Custom Fields
             </v-toolbar-title>
@@ -217,7 +219,7 @@
           v-for="(cfg, index) in customFieldGroups"
           :key="index"
         >
-          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
             <v-toolbar-title>
               <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
               <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"
@@ -231,13 +233,15 @@
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-card class="pa-3 square-card">
+          <v-card class="pa-3">
             <CustomValueInput
               v-for="(field, idx) in cfg.customFieldValues"
               :key="idx"
+              :use-field-ancillary-name="true"
               :callback="populateDirtyCfvs"
               :readonly="getReadOnly(field)"
               :field="field"
+              :show-field-name="false"
             />
 
           </v-card>
@@ -325,7 +329,7 @@ export default {
       navigationOverride: false,
       notes: [],
       project: {},
-      projectLoading: true,
+      // projectLoading: true,
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
@@ -346,6 +350,7 @@ export default {
       this.projectProcessStepId = this.$route.params.processStepId
       this.getCustomFieldGroups()
       await this.getProcessStep()
+      await this.getProcessStepEvents()
       this.getAvailableOwners()
     },
   },
@@ -353,7 +358,7 @@ export default {
     this.getCustomFieldGroups()
     //per 9/24 request judson had us remove notes from process steps
     // this.getNotes()
-    this.getProject()
+    // this.getProject()
     await this.getProcessStep()
     await this.getProcessStepEvents()
     this.getAvailableOwners()
@@ -443,24 +448,24 @@ export default {
 
       }
     },
-    getProject: async function () {
-      try {
-        this.projectLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}`)
-        this.projectLoading = false
-        this.project = data
-        window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
-          : `${this.project.projectName}`
-      } catch (e) {
-        this.projectLoading = false
-        logError(e)
-      }
-    },
+    // getProject: async function () {
+    //   try {
+    //     this.projectLoading = true
+    //     const {data} = await getRequest(`/project/${this.projectId}`)
+    //     this.projectLoading = false
+    //     this.project = data
+    //     window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
+    //       : `${this.project.projectName}`
+    //   } catch (e) {
+    //     this.projectLoading = false
+    //     logError(e)
+    //   }
+    // },
     async getAvailableOwners() {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.processStep?.processStepProcessId) {
         try {
-          const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
+          const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`, null, [])
           this.availableOwners = data
 
           // this.$store.commit(AppMutations.SET_LOADING, false)
@@ -473,6 +478,7 @@ export default {
       }
     },
     async checkFields() {
+      //why is this still here?
       await this.updateFieldGroups()
     },
     async updateFieldGroups() {
@@ -485,6 +491,7 @@ export default {
         this.dirtyCfvs = []
         this.customFieldGroups = data
         await this.getProcessStep()
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
@@ -595,7 +602,7 @@ export default {
     getProcessStepEvents: async function () {
       //this gets the events assigned to the process step so we know which ADD buttons to show
       try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/event`)
+        const {data} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -613,12 +620,43 @@ export default {
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
 }
+.cfg-name-toolbar .v-toolbar__title {
+  font-size: 14px;
+}
+.cfg-detail-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.cfg-detail-header .v-toolbar__title {
+  font-size: 16px;
+}
 </style>
 <style lang="scss" scoped>
 .process-step-name {
   font-weight: bold;
-  font-size: 22px;
+  font-size: 16px;
   padding-top: 10px;
+}
+
+.owner-image {
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 5px;
+}
+
+.owner-info {
+  display: inline-block;
+  font-size: 14px;
+}
+
+.owner-position {
+  color: #9E9C9C;
+}
+
+.pps-subheader {
+  width: 186px;
+  margin-top: 20px;
+  font-weight: 600;
 }
 
 ::v-deep {
@@ -642,6 +680,7 @@ export default {
 
   .show-unperformable-actions-btn {
     margin-bottom: 2px;
+    margin-left: 10px;
     font-size: 12px;
   }
 }

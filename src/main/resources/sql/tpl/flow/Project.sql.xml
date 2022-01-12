@@ -286,6 +286,7 @@
         p.time_zone,
         p.latitude,
         p.longitude,
+        pst.project_status_type as "rootProjectStatusType",
         pro.process_name,
         p.contact_id,
         p.created_by_id,
@@ -347,6 +348,7 @@
       left join flow.company_country cc on cc.id = p.company_country_id
       left join flow.country c on c.id = cc.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+      inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
       where p.id = :projectId
         and case when :isParent
             then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))

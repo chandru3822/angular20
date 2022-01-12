@@ -7,91 +7,78 @@
 
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <div>
-          <v-autocomplete
-            v-model="selectedEvent.companyEventStatusTypeId"
-            :items="companyEventStatuses"
-            label="Event Status"
-            :disabled="!userCanManage"
-            item-text="eventStatusType"
-            item-value="id"
-          ></v-autocomplete>
-        </div>
-        <v-spacer></v-spacer>
         <v-toolbar-items>
-          <div>
-            <v-dialog
-              v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
-              v-model="selectedEvent.deleteConfirm"
-              width="500">
-              <template v-slot:activator="{ on }">
-                <v-btn text class="clickable" v-on="on">
-                  <v-icon>delete</v-icon>
+          <v-dialog
+            v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+            v-model="selectedEvent.deleteConfirm"
+            width="500">
+            <template v-slot:activator="{ on }">
+              <v-btn text small class="clickable" v-on="on">
+                <v-icon>delete</v-icon>
+              </v-btn>
+            </template>
+            <v-card>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title
+              >
+                Confirm
+              </v-card-title>
+
+              <v-card-text>
+                Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="selectedEvent.deleteConfirm = false">
+                  No
                 </v-btn>
-              </template>
-              <v-card>
-                <v-card-title
-                  class="headline grey lighten-2"
-                  primary-title
-                >
-                  Confirm
-                </v-card-title>
-
-                <v-card-text>
-                  Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
-                </v-card-text>
-
-                <v-divider></v-divider>
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    @click="selectedEvent.deleteConfirm = false">
-                    No
-                  </v-btn>
-                  <v-btn
-                    color="primaryCustom"
-                    text
-                    @click="[selectedEvent.archived = true, deleteEvent(selectedEvent.id)]">
-                    Yes
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </div>
+                <v-btn
+                  color="primaryCustom"
+                  text
+                  @click="[selectedEvent.archived = true, deleteEvent(selectedEvent.id)]">
+                  Yes
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-toolbar-items>
       </v-toolbar>
-      <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>
+      <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
+        <div class="action-subheader">
           Actions
-        </v-toolbar-title>
-      </v-toolbar>
-      <v-btn class="white--text save-btn mb-2 mr-2"
-             color="primaryButton"
-             :disabled="!action.canPerform"
-             @click="[attemptedAction = action, validateActionRequirements(action)]"
-             v-for="(action, i) in selectedEvent.eventActions"
-             :key="i">
-        {{ action.actionName }}
-      </v-btn>
+        </div>
+        <v-btn class="white--text save-btn mb-2 mr-2"
+               color="primaryButton"
+               :disabled="!action.canPerform"
+               @click="[attemptedAction = action, validateActionRequirements(action)]"
+               v-for="(action, i) in selectedEvent.eventActions"
+               :key="i">
+          {{ action.actionName }}
+        </v-btn>
+      </div>
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
-      <v-btn class="one-hunned">
+      <v-btn class="one-hunned mt-4" color="#E3E3E3">
         Upload Documents
       </v-btn>
-      <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar color="transparent" class="elevation-0 mt-4 cfg-detail-header">
         <v-toolbar-title>
           Details/Custom Fields
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <div>
-            <v-btn class="white--text mr-2 mb-2 save-btn"
+            <v-btn class="white--text mt-3"
                    @click="checkFieldsForUnique()"
                    :disabled="!userCanEdit"
-                   color="primaryButton"
-            >Save Fields
+                   color="primaryButton">
+              Save Fields
             </v-btn>
           </div>
         </v-toolbar-items>
@@ -103,6 +90,14 @@
       </v-card>
 
       <v-form ref="eventFieldForm" v-else>
+        <v-autocomplete
+          v-model="selectedEvent.companyEventStatusTypeId"
+          :items="companyEventStatuses"
+          label="Event Status"
+          :disabled="!userCanManage"
+          item-text="eventStatusType"
+          item-value="id"
+        ></v-autocomplete>
         <DatetimePickerInput
           v-model="selectedEvent.startTime"
           :timezone="this.timezone"
@@ -206,7 +201,7 @@
 
         <v-col
           v-if="selectedEvent && selectedEvent.id"
-          class="pt-0"
+          class="pt-0 px-0"
           v-for="(cfg, index) in selectedEvent.customFieldGroups"
           :key="cfg.id"
         >
@@ -222,7 +217,7 @@
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card flat class="pa-3">
+          <v-card class="pa-3">
             <CustomValueInput
               v-for="(field, idx) in cfg.customFieldValues"
               :key="idx"
@@ -230,11 +225,12 @@
               :callback="populateDirtyCfvs"
               :readonly="getReadOnly(field)"
               :field="field"
+              :use-field-ancillary-name="true"
+              :show-field-name="false"
             />
           </v-card>
         </v-col>
       </v-form>
-
 
 
     </div>
@@ -497,17 +493,17 @@ export default {
         this.dirtyCfvs.push(field)
       }
     },
-    getEventCfgs: async function (ppsEvent) {
-      try {
-        const {data} = await getRequest(`/customFieldValues/event/${ppsEvent.id}`)
-        this.selectedEvent.customFieldGroups = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+    // getEventCfgs: async function (ppsEvent) {
+    //   try {
+    //     const {data} = await getRequest(`/customFieldValues/event/${ppsEvent.id}`)
+    //     this.selectedEvent.customFieldGroups = data
+    //   } catch (e) {
+    //     console.error('*** ERROR ***', e)
+    //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //     this.$store.commit(AppMutations.SET_LOADING, false)
+    //   }
+    // },
     getEventDetails: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -521,6 +517,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    deleteEvent: async function (ppseId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
+        //go to the process step
+        this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -706,10 +715,30 @@ export default {
   width: 100%;
   white-space: normal;
 }
+
+.cfg-name-toolbar .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-name-toolbar .v-toolbar__title {
+  font-size: 14px;
+}
+
+.cfg-detail-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-detail-header .v-toolbar__title {
+  font-size: 16px;
+}
 </style>
 <style lang="scss" scoped>
-.events-container {
-
+.action-subheader {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 </style>

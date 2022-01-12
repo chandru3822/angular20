@@ -8,7 +8,7 @@
 >
 
   <template #activator="{on}">
-    <v-btn text class="" small v-on="on" @click="[ getSteps() ]">
+    <v-btn text class="" x-small v-on="on" @click="[ getSteps() ]">
       <v-icon>add</v-icon>
     </v-btn>
   </template>
@@ -131,11 +131,13 @@ export default {
       this.cancelledCompanyStatuses = []
       try {
         let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
-        this.fetchingStatuses = true
-        const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
-        this.cancelledCompanyStatuses = data
-        if(data?.length === 1) {
-          this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
+        if(stepId) {
+          this.fetchingStatuses = true
+          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
+          this.cancelledCompanyStatuses = data
+          if(data?.length === 1) {
+            this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
+          }
         }
       } catch (e) {
         logError(e)

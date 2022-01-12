@@ -38,7 +38,7 @@
                 color="primaryCustom"
                 class="white--text mt-3"
                 :disabled="fieldsSaving"
-                @click="[fieldsSaving = true, updateFieldGroups()]">Save Project Fields</v-btn>
+                @click="[fieldsSaving = true, updateFieldGroups()]">Save Fields</v-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>

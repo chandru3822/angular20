@@ -18,7 +18,7 @@
       :max-date="maxDate"
       :filled="filledStyle"
       :format="'MMMM DD, YYYY'"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       :readonly="readonly"
       @input="callback(field)"
@@ -32,7 +32,7 @@
       :filled="filledStyle"
       :required="required"
       :format="'MMMM DD, YYYY, h:mm A'"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       :readonly="readonly"
       @input="callback(field)"
@@ -42,7 +42,7 @@
       v-if="field.dataTypeId === 3"
       v-model="field.booleanValue"
       :required="required"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       :rules="getRequiredRule()"
       :filled="filledStyle"
@@ -59,7 +59,7 @@
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       type="number"
       v-model.number="field.numericValue"
@@ -76,7 +76,7 @@
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       v-model="field.textValue"
       @change="callback(field)"
@@ -88,7 +88,7 @@
       :required="required"
       :readonly="readonly"
       :disabled="readonly"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       placeholder=" "
       :filled="filledStyle"
@@ -110,7 +110,7 @@
       :filled="filledStyle"
       :rules="getRequiredRule()"
       :items="field.listOfValues"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       item-value="id"
       item-text="name"
@@ -129,7 +129,7 @@
       :readonly="readonly"
       :disabled="readonly"
       :rules="getRequiredRule()"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       v-model="field.intArrayValue"
       item-value="id"
@@ -147,7 +147,7 @@
       :readonly="readonly"
       :disabled="readonly"
       :items="field.listOfValues"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       :rules="getRequiredRule()"
       placeholder=" "
@@ -164,7 +164,7 @@
       :required="required"
       :clearable="!readonly"
       :items="field.listOfValues"
-      :label="hideLabel ? null : field.fieldName"
+      :label="getFieldName()"
       :hide-details="hideDetails"
       :readonly="readonly"
       :disabled="readonly"
@@ -195,6 +195,10 @@ export default {
       default: false
     },
     field: Object,
+    useFieldAncillaryName: {
+      type: Boolean,
+      default: false
+    },
     showFieldName: {
       type: Boolean,
       default: true
@@ -216,6 +220,19 @@ export default {
   components: {
     DatetimePickerInput
   },
+  computed: {
+    fieldAncillaryName() {
+      if(this.field.ancillaryCustomFieldHint) {
+        return this.field.fieldName + ' ' + this.field.ancillaryCustomFieldHint
+      } else if (this.field.useParentData) {
+        return this.field.fieldName + ' (Parent)'
+      } else if (this.field.ancillaryCustomFieldGroupAssignmentId) {
+        return this.field.fieldName + ' (Ancillary)'
+      } else {
+        return this.field.fieldName
+      }
+    },
+  },
   data () {
     return {
       requiredRules: constants.BASIC_REQUIRED_RULE,
@@ -229,6 +246,9 @@ export default {
     // }
   // },
   methods: {
+    getFieldName() {
+      return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
+    },
     getRequiredRule() {
       if(this.required) {
         return this.requiredRules
