@@ -115,48 +115,58 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-row class="project-split-container">
-      <v-col cols="3" class="white-bg project-section">
-        <v-btn fab small text @click="collapseSidebar = !collapseSidebar">
+      <div class="white-bg project-section"
+           :class="{'col-3': !collapseLeftSidebar, 'collapse-left text-center': collapseLeftSidebar}">
+        <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
-        <div v-if="collapseSidebar">will collapse later</div>
-        <v-toolbar flat>
-          <v-toolbar-title>Overview</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <div class="pt-3">
-              <v-btn
-                @click="[getStatesAndCountries(), getOwners(), tempProject = cloneDeep(project), showEditProjectModal = true]"
-                v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+        <div v-if="!collapseLeftSidebar">
+          <v-toolbar flat>
+            <v-toolbar-title>Overview</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <div class="pt-3">
+                <v-btn
+                  @click="[getStatesAndCountries(), getOwners(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+                  v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
                       || !projectOwnerFieldIsReadOnly())">
-                Edit
-              </v-btn>
+                  Edit
+                </v-btn>
+              </div>
+            </v-toolbar-items>
+          </v-toolbar>
+          <div class="px-4">
+            Address: {{ project.street1 }} {{ project.city }} {{ project.stateAbbreviation }} <br/>
+            Contact: {{ formatPhoneNumber(project.mobile || project.phone) }} <br/>
+            Email: {{ project.email }} <br/>
+            Owner:
+            <div class="mb-3" v-if="project && project.owner">{{ project.owner.fullName }} - {{
+                project.owner.position
+              }}<br/>
+              {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
             </div>
-          </v-toolbar-items>
-        </v-toolbar>
-        <div class="px-4">
-          Address: {{ project.street1 }} {{ project.city }} {{ project.stateAbbreviation }} <br/>
-          Contact: {{ formatPhoneNumber(project.mobile || project.phone) }} <br/>
-          Email: {{ project.email }} <br/>
-          Owner:
-          <div class="mb-3" v-if="project && project.owner">{{ project.owner.fullName }} - {{
-              project.owner.position
-            }}<br/>
-            {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+            <router-link :to="`/contact/${project.contactId}`">Go to contact</router-link>
+            <v-divider class="mt-5"></v-divider>
           </div>
-          <router-link :to="`/contact/${project.contactId}`">Go to contact</router-link>
+          <ActiveProcessSteps :project="project"></ActiveProcessSteps>
           <v-divider class="mt-5"></v-divider>
+          <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
         </div>
-        <ActiveProcessSteps :project="project"></ActiveProcessSteps>
-        <v-divider class="mt-5"></v-divider>
-        <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
-      </v-col>
-      <v-col cols="5" class="router-view-column project-section">
+      </div>
+      <div class="router-view-column project-section" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
+                                                                 'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
+                                                                 'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
+                                                                 'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
         <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
-      </v-col>
-      <v-col cols="4" class="white-bg project-section">
-        <ProjectActivity></ProjectActivity>
-      </v-col>
+      </div>
+      <div class="white-bg project-section" :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
+        <div :class="{'text-right': !collapseRightSidebar}">
+          <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
+        <ProjectActivity v-if="!collapseRightSidebar"></ProjectActivity>
+      </div>
     </v-row>
   </div>
 </template>
@@ -200,7 +210,8 @@ export default {
       ownersLoading: true,
       statesLoading: true,
       countriesLoading: true,
-      collapseSidebar: false,
+      collapseLeftSidebar: false,
+      collapseRightSidebar: false,
       showEditProjectModal: false,
       statuses: [],
       getStatusColor,
@@ -380,6 +391,10 @@ export default {
 
 .project-split-container {
   height: calc(100% - 50px);
+  max-width: 100%;
+  width: 100%;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
 
 .router-view-column {
@@ -393,6 +408,32 @@ export default {
 
 .white-bg {
   background-color: #fff;
+}
+
+.collapse-left {
+  width: 104px;
+  padding: 10px;
+}
+
+.collapse-right {
+  width: 104px;
+  padding: 10px;
+}
+
+.center-width-left-side-collapse {
+  width: calc(66.66% - 104px);
+  padding: 10px !important;
+}
+
+.center-width-right-side-collapse {
+  //someone is going to have to explain to me why i cant do calc(80% - 104px)
+  width: calc(80% - 183px);
+  padding: 10px !important;
+}
+
+.center-width-both-collapse {
+  width: calc(100% - 208px);
+  padding: 10px !important;
 }
 </style>
 
