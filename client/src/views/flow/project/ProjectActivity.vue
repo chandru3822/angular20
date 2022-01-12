@@ -83,10 +83,10 @@ export default {
 }
 
 .section-footer{
-  height: 48px;
+  height: fit-content;
   background-color: white;
   position: sticky;
-  bottom: 8px;
+  bottom: -12px;
 }
 
 .section-footer-button {
