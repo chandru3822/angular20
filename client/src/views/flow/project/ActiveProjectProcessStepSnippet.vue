@@ -1,6 +1,6 @@
 <template>
 <v-row>
-  <v-col cols="12" class="pt-0">
+  <v-col cols="12" class="pa-0">
     <v-card flat v-for="ps in steps" class="active-ps-button"
             @click="goToPath(`/project/${projectId}/processStep/${ps.projectProcessStepId}?processStepId=${ps.processStepId}&contactId=${contactId}`)">
       {{ ps.processStepName }}

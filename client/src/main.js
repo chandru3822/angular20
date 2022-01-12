@@ -83,7 +83,6 @@ axios.interceptors.request.use((config) => {
   // if config.source passed in then use that
   let source = config.source
   //dont cancel if override sent in
-  console.log('randaLoggerSkipCancel',config.skipCancel)
   let skipCancel = config.skipCancel
 
   if (!source) {

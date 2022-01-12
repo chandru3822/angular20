@@ -11,25 +11,33 @@
             Project Overview
           </v-card-title>
           <v-card-text class="pt-4 px-0">
-            <div v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')">
+            <div>
               <v-text-field
                 v-model="tempProject.projectName"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 label="Project Name"
               ></v-text-field>
               <v-text-field
                 v-model="tempProject.street1"
                 label="Street"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 @change="tempProject.reloadCoordinates = true"
               ></v-text-field>
               <v-text-field
                 v-model="tempProject.city"
                 label="City"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 @change="tempProject.reloadCoordinates = true"
               ></v-text-field>
               <v-text-field
                 type="text"
                 v-model="tempProject.postalCode"
                 counter
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 maxlength="10"
                 @keypress="isNumberOrHyphen"
                 :rules="postalCodeRules"
@@ -39,6 +47,8 @@
               <v-autocomplete v-model="tempProject.companyStateId"
                               :items="states"
                               label="State"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               :loading="statesLoading"
                               item-text="state"
                               item-value="id"
@@ -47,6 +57,8 @@
               <v-select v-model="tempProject.companyCountryId"
                         :items="countries"
                         label="Country"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         :loading="countriesLoading"
                         @input="tempProject.reloadCoordinates = true"
                         item-text="country"
@@ -54,14 +66,24 @@
               ></v-select>
             </div>
             <v-autocomplete v-model="tempProject.owner"
-                            v-if="!projectOwnerFieldIsReadOnly()"
+                            :readonly="projectOwnerFieldIsReadOnly()"
+                            :disabled="projectOwnerFieldIsReadOnly()"
                             :items="availableOwners"
                             :loading="ownersLoading"
-                            label="Select Owner"
+                            label="Project Owner"
                             item-text="fullName"
                             return-object
                             autocomplete="off">
             </v-autocomplete>
+            <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
+                          :items="statuses"
+                          :readonly="projectStatusIsReadOnly()"
+                          :disabled="projectStatusIsReadOnly()"
+                          :loading="statusesLoading"
+                          label="Project Stage"
+                          item-text="projectStatusType"
+                          item-value="id"
+                        />
           </v-card-text>
         </v-form>
 
@@ -83,24 +105,24 @@
     <!--    end dialog -->
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title font-size-18">
-        <div class="d-inline-block">{{ project.projectName }}</div>
-        <div class="d-inline-block">
-          <v-autocomplete
-            v-if="!statusesLoading && statuses.length > 0"
-            class="ml-5"
-            v-model="project.companyProjectStatusTypeId"
-            :items="statuses"
-            :readonly="!userCanEdit || projectStatusIsReadOnly()"
-            :disabled="!userCanEdit || projectStatusIsReadOnly()"
-            item-text="projectStatusType"
-            item-value="id"
-            solo
-            dense
-            hide-details
-            :background-color="getStatusColor(project.projectStatusTypeId)"
-            @change="updateStatus"
-          />
-        </div>
+        {{ project.projectName }}
+<!--        <div class="d-inline-block">-->
+<!--          <v-autocomplete-->
+<!--            v-if="!statusesLoading && statuses.length > 0"-->
+<!--            class="ml-5"-->
+<!--            v-model="project.companyProjectStatusTypeId"-->
+<!--            :items="statuses"-->
+<!--            :readonly="!userCanEdit || projectStatusIsReadOnly()"-->
+<!--            :disabled="!userCanEdit || projectStatusIsReadOnly()"-->
+<!--            item-text="projectStatusType"-->
+<!--            item-value="id"-->
+<!--            solo-->
+<!--            dense-->
+<!--            hide-details-->
+<!--            :background-color="getStatusColor(project.projectStatusTypeId)"-->
+<!--            @change="updateStatus"-->
+<!--          />-->
+<!--        </div>-->
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -121,22 +143,29 @@
         <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
-        <div v-if="!collapseLeftSidebar">
-          <v-toolbar flat>
+        <div v-if="!collapseLeftSidebar && project && project.id">
+          <v-toolbar flat class="project-section-header">
             <v-toolbar-title class="font-size-14">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <div class="pt-3">
                 <v-btn
-                  @click="[getStatesAndCountries(), getOwners(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+                  @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
                   v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-                      || !projectOwnerFieldIsReadOnly())">
+                      || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
                   Edit
                 </v-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <div class="px-4 address-details">
+          <div class="px-1 address-details">
+            <div>
+              <span class="vertical-top project-detail-label">Project Stage:</span>
+              <div class="d-inline-block project-detail-item" :style="{'color': getStatusColor(project.projectStatusTypeId)}">
+                {{ project.projectStatusType }} <br/>
+                ({{project.rootProjectStatusType}})
+              </div>
+            </div>
             <div class="mt-1">
               <span class="vertical-top project-detail-label">Address:</span>
               <div class="d-inline-block project-detail-item">
@@ -148,20 +177,20 @@
             <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
             <span class="project-detail-label">Email:</span>
             <span class="project-detail-item">{{ project.email }}</span> <br/>
-            <div class="mb-3 mt-1">
+            <div class="mt-1">
               <span class="vertical-top project-detail-label">Owner:</span>
               <div class="d-inline-block project-detail-item" v-if="project && project.owner">
                 {{ project.owner.fullName }} - {{ project.owner.position }} <br/>
                 {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
               </div>
             </div>
-            <div>
+            <div class="mt-3">
               <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
             </div>
             <v-divider class="mt-5"></v-divider>
           </div>
           <ActiveProcessSteps :project="project"></ActiveProcessSteps>
-          <v-divider class="mt-4"></v-divider>
+          <v-divider class=""></v-divider>
           <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
         </div>
       </div>
@@ -236,7 +265,6 @@ export default {
       states: [],
       countries: [],
       projectLoading: true,
-      displayChangeOwner: false,
       projectId: parseInt(this.$route.params.projectId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
@@ -244,7 +272,6 @@ export default {
   },
   created() {
     this.getProject()
-    this.getStatuses()
   },
   computed: {
     projectStage() {
@@ -284,7 +311,7 @@ export default {
       if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
-        return this.project.ownerReadOnly
+        return this.project.statusReadOnly
       }
     },
     projectOwnerFieldIsReadOnly() {
@@ -307,7 +334,6 @@ export default {
       }
     },
     updateOwner: async function () {
-      this.displayChangeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
@@ -356,8 +382,10 @@ export default {
       if (this.$refs.projectEditForm.validate()) {
         //set project values if they hit save
         this.project = cloneDeep(this.tempProject)
+        //these could be combined - just dont have time atm
         this.saveProjectAddressFields()
         this.updateOwner()
+        this.updateStatus()
         this.showEditProjectModal = false
       }
     },
@@ -392,6 +420,13 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.project-section-header .v-toolbar__content {
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
+</style>
 
 <style lang="scss" scoped>
 #project-container {

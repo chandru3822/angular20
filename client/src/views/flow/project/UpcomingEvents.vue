@@ -1,9 +1,9 @@
 <template>
-<v-row id="project-details-container" class="mt-2">
+<v-row id="project-details-container" class="">
   <v-col cols="12" lg="12" class="text-left pt-0">
     <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-row>
-        <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar color="transparent" flat class="project-section-header">
           <v-toolbar-title class="font-size-14">Upcoming Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -14,7 +14,7 @@
           <SpinnerInline :size="20" color="primaryCustom"/>
         </v-col>
 
-        <v-col cols="12" v-else class="pt-0">
+        <v-col cols="12" v-else class="pa-0">
           <UpcomingEventSnippet
             :events="getUpcomingEvents(events)"
             :projectId="projectId"/>
