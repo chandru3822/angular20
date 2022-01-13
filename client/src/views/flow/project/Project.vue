@@ -138,7 +138,7 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-row class="project-split-container">
-      <div class="white-bg project-section"
+      <div class="white-bg project-section overflow-y-auto"
            :class="{'col-3': !collapseLeftSidebar, 'collapse-left text-center': collapseLeftSidebar}">
         <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
           <v-icon>mdi-menu</v-icon>
@@ -196,7 +196,7 @@
                           :projectId="projectId"/>
         </div>
       </div>
-      <div class="router-view-column project-section" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
+      <div class="overflow-y-auto project-section" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
@@ -213,7 +213,7 @@
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <ProjectActivity v-if="!collapseRightSidebar"></ProjectActivity>
+        <ProjectActivity :is-collapsed="collapseRightSidebar" @openRight="collapseRightSidebar = false"></ProjectActivity>
       </div>
     </v-row>
   </div>
@@ -468,12 +468,11 @@ export default {
   margin-left: 0 !important;
 }
 
-.router-view-column {
+.overflow-y-auto {
   overflow: auto;
 }
 
 .project-section {
-  overflow: auto;
   max-height: calc(100% - 15px);
 }
 
