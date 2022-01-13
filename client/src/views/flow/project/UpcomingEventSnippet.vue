@@ -5,7 +5,8 @@
             :class="{'active-event': ppsEventId === e.id}"
             class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
       {{ e.eventName }}
-      <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span>
+      <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span> <br/>
+      <span class="event-resource" v-if="e.resource">{{ e.resource }}</span>
     </v-card>
   </v-col>
 </v-row>
@@ -49,5 +50,10 @@ export default {
   padding: 10px;
   margin-bottom: 10px;
   font-size: 14px;
+}
+
+.event-resource {
+  font-size: 12px;
+  color: #9E9C9C;
 }
 </style>

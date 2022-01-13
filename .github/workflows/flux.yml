@@ -2,11 +2,10 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
 name: Albatross Build [Flux]
-#turn off for now till we get the ui a little better _rn
-#on:
-#      push:
-#          branches:
-#              - "events"
+on:
+      push:
+          branches:
+              - "events"
 
 jobs:
     build:
