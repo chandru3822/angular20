@@ -106,23 +106,6 @@
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title font-size-18">
         {{ project.projectName }}
-<!--        <div class="d-inline-block">-->
-<!--          <v-autocomplete-->
-<!--            v-if="!statusesLoading && statuses.length > 0"-->
-<!--            class="ml-5"-->
-<!--            v-model="project.companyProjectStatusTypeId"-->
-<!--            :items="statuses"-->
-<!--            :readonly="!userCanEdit || projectStatusIsReadOnly()"-->
-<!--            :disabled="!userCanEdit || projectStatusIsReadOnly()"-->
-<!--            item-text="projectStatusType"-->
-<!--            item-value="id"-->
-<!--            solo-->
-<!--            dense-->
-<!--            hide-details-->
-<!--            :background-color="getStatusColor(project.projectStatusTypeId)"-->
-<!--            @change="updateStatus"-->
-<!--          />-->
-<!--        </div>-->
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -159,7 +142,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <div class="px-1 address-details">
-            <div>
+            <div v-if="!projectStatusLoading">
               <span class="vertical-top project-detail-label">Project Stage:</span>
               <div class="d-inline-block project-detail-item" :style="{'color': getStatusColor(project.projectStatusTypeId)}">
                 {{ project.projectStatusType }} <br/>
@@ -202,6 +185,7 @@
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
+                     @refresh-project-status="getUpdatedProjectStatus()"
                      ref="childComponent"
                      v-if="project && project.id" class="router-view"
                      :project="project"></router-view>
@@ -258,6 +242,7 @@ export default {
       updatePpsKey: 0,
       project: {},
       statusesLoading: true,
+      projectStatusLoading: false,
       ownersLoading: true,
       statesLoading: true,
       countriesLoading: true,
@@ -299,6 +284,25 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.projectLoading = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        logError(e)
+      }
+    },
+    getUpdatedProjectStatus: async function () {
+      //this gets called if an event gets run, in case it updated the project status
+      this.projectStatusLoading = true
+      try {
+        const {data, status} = await getRequest(`/project/${this.projectId}/status`)
+        if(data) {
+          console.log('mememe',data)
+          this.project.companyProjectStatusTypeId = data.companyProjectStatusTypeId
+          this.project.projectStatusType = data.projectStatusType
+          this.project.projectStatusTypeId = data.projectStatusTypeId
+          this.project.rootProjectStatusType = data.rootProjectStatusType
+        }
+        this.projectStatusLoading = false
+      } catch (e) {
+        this.projectStatusLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
       }

@@ -567,7 +567,9 @@ export default {
     },
     handleActionCompleted() {
       this.$emit('refresh-upcoming-pps')
-      this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
+      this.$emit('refresh-project-status')
+      //turn off re-route for now
+      // this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
     },
     handleOnCompleteError(actionId, errorMessage) {
       logError(`Failed to complete action with actionId: ${actionId}`)

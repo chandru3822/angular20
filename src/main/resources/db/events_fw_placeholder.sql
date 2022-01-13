@@ -113,6 +113,7 @@ CREATE TABLE if not exists flow.project_process_step_event_attachment
   date_modified                 timestamp without time zone,
   created_by_id                 integer not null,
   modified_by_id                integer,
+  archived                      boolean not null default false,
   constraint project_process_step_event_attachment_pk primary key (id),
   CONSTRAINT ppsea_attachment_id_fk FOREIGN KEY (attachment_id)
     REFERENCES flow.attachment (id) MATCH SIMPLE

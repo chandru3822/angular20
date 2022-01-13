@@ -690,6 +690,20 @@
     where id = :projectId
 ]]></project.updateStatus>
 
+  <project.getStatusDetails><![CDATA[
+    select row_to_json(details)
+    from (
+           select p.company_project_status_type_id as "companyProjectStatusTypeId",
+                  cpst.project_status_type         as "projectStatusType",
+                  cpst.project_status_type_id      as "projectStatusTypeId",
+                  pst.project_status_type          as "rootProjectStatusType"
+           from flow.project p
+                  inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+                  inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+           where p.id = :projectId
+         ) AS details
+]]></project.getStatusDetails>
+
   <project.updateGeoLocation><![CDATA[
     update flow.project
       set latitude = :latitude,

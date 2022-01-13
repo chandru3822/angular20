@@ -154,6 +154,11 @@ public class ProjectController {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @GetMapping(value = "/{projectId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getProjectStatusDetails(@PathVariable Long projectId) {
+    return projectService.getStatus(projectId);
+  }
+
   @GetMapping(value = "/generate", produces = "text/csv")
   public ResponseEntity<String> generateProjectSmartlist(@RequestParam String query) {
     String report = projectService.generateReport(query);
