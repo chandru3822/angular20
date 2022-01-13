@@ -140,14 +140,13 @@ raise notice '10';
 
 raise notice '11';
   with update_data as (
-    select ppsecfv.id as project_process_step_event_custom_field_value_id,
-           pd.id as project_details_id
-    from brs.project_details pd
-           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_id_ppsecfv_id
-    where pd.first_appointment_id is not null and first_appointment_id_ppsecfv_id is not null
+    select ppse.id as project_process_step_event_id,pd.id as project_details_id
+    from flow.project_process_step_event ppse
+           inner join brs.project_details pd on pd.first_appointment_id_ppse_id = ppse.project_process_step_id
+    where pd.first_appointment_id is not null and pd.first_appointment_id_ppse_id is not null
   )
   update brs.project_details pd2
-  set first_appointment_id_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+  set first_appointment_id_ppse_id = ud.project_process_step_event_id
   from update_data ud
   where ud.project_details_id = pd2.id;
 

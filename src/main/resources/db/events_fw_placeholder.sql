@@ -341,7 +341,7 @@ $$
   BEGIN
 
     ALTER TABLE brs.project_details
-      RENAME COLUMN first_appointment_id_pps_id TO first_appointment_id_ppsecfv_id;
+      RENAME COLUMN first_appointment_id_pps_id TO first_appointment_id_ppse_id;
   EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'first_appointment_id_pps_id does not exists';
   END;
