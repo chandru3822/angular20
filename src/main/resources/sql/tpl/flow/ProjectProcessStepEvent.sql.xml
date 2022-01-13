@@ -221,6 +221,7 @@
            inner join flow."user" u ON a.created_by_id = u.id
     where ppsa.project_process_step_event_id = :projectProcessStepEventId
       and a.archived is not true
+      and ppsa.archived is not true
     order by pps.main desc, pps.date_created desc
   ]]></projectProcessStepEvent.getProjectProcessStepEventAttachments>
 

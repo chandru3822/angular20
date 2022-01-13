@@ -81,12 +81,22 @@ public class ProjectController {
 
   @GetMapping(value = "/{projectId}/processSteps", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectProcessStep>> getProjectProcessSteps(@PathVariable Long projectId) {
-    return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId), HttpStatus.OK);
+    return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId, null), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/upcomingProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStep>> getUpcomingProjectProcessSteps(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId, 1L), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectProcessStepEvent>> getProjectEvents(@PathVariable Long projectId) {
-    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId), HttpStatus.OK);
+    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, null), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/upcomingEvents", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStepEvent>> getUpcomingProjectEvents(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, 1L), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -142,6 +152,11 @@ public class ProjectController {
   public ResponseEntity<Void> updateProjectStatus(@PathVariable Long projectId, @RequestBody Project project) {
       projectService.updateStatus(projectId, project.getCompanyProjectStatusTypeId());
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping(value = "/{projectId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getProjectStatusDetails(@PathVariable Long projectId) {
+    return projectService.getStatus(projectId);
   }
 
   @GetMapping(value = "/generate", produces = "text/csv")

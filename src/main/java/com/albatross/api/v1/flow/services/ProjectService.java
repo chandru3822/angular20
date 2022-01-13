@@ -442,24 +442,36 @@ public class ProjectService {
       sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
   }
 
+  public String getStatus(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    String results = sqlCache.queryForObject("project.getStatusDetails", params, String.class);
+    return results;
+  }
+
+
   private CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
     return sqlCache.get("project.getDefaultProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
   }
 
-  public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
+  public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId, Long statusTypeId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    return sqlCache.query("project.getProcessStepsByProjectId",
-      ImmutableMap.of("projectId", projectId,
-        "companyId", user.getCompanyId(),
-        "isParent", isParent,
-        "parentCompanyId", user.getHighestParentCompanyId()),
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    params.put("statusTypeId", statusTypeId);
+    params.put("isParent", isParent);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    return sqlCache.query("project.getProcessStepsByProjectId", params,
       new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId) {
-    return sqlCache.query("project.getEventsByProjectId",
-      ImmutableMap.of("projectId", projectId), ProjectProcessStepEvent.class);
+  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("statusTypeId", statusTypeId);
+    return sqlCache.query("project.getEventsByProjectId", params, ProjectProcessStepEvent.class);
   }
 
   public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {

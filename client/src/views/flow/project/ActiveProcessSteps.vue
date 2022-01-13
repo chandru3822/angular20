@@ -1,49 +1,49 @@
 <template>
-<v-row id="project-details-container" class="">
-  <v-col cols="12" lg="12" class="text-left pt-0">
-    <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-      <v-row>
-        <v-toolbar color="transparent" flat class="project-section-header">
-          <v-toolbar-title class="font-size-14">Active Process Steps</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <AddProcessStep
-              v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
-              class="d-inline-block"
-              :project-id="projectId"
-              :process-id="project.processId"
-              @step-added="getProcessSteps"
-            />
-          </v-toolbar-items>
-        </v-toolbar>
+  <v-row id="project-details-container" class="">
+    <v-col cols="12" lg="12" class="text-left pt-0">
+      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+        <v-row>
+          <v-toolbar color="transparent" flat class="project-section-header">
+            <v-toolbar-title class="font-size-14">Active Process Steps</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <AddProcessStep
+                v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
+                class="d-inline-block"
+                :project-id="projectId"
+                :process-id="project.processId"
+                @step-added="getProcessSteps"
+              />
+            </v-toolbar-items>
+          </v-toolbar>
 
-        <v-col cols="12" v-if="isProcessStepsLoading">
-          <SpinnerInline :size="20" color="primaryCustom"/>
-        </v-col>
+          <v-col cols="12" v-if="isProcessStepsLoading">
+            <SpinnerInline :size="20" color="primaryCustom"/>
+          </v-col>
 
-        <v-col cols="12" v-else class="py-0">
-          <ActiveProjectProcessStepSnippet
-            :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
-            :projectId="projectId"
-            :contactId="project.contactId"/>
+          <v-col cols="12" v-else class="py-0">
+            <ActiveProjectProcessStepSnippet
+              :steps="processSteps"
+              :projectId="projectId"
+              :contactId="project.contactId"/>
+          </v-col>
+        </v-row>
+      </v-col>
+
+
+      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+        <v-col
+          cols="12"
+          class="text-left pt-0"
+        >
+          <router-link class="font-size-10" :to="`/project/${projectId}/processSteps`">View All</router-link>
+
         </v-col>
-      </v-row>
+      </v-fade-transition>
+
     </v-col>
 
-
-    <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-      <v-col
-        cols="12"
-        class="text-left pt-0"
-      >
-        <router-link class="font-size-10" :to="`/project/${projectId}/processSteps`">View All</router-link>
-
-      </v-col>
-    </v-fade-transition>
-
-  </v-col>
-
-</v-row>
+  </v-row>
 </template>
 
 <script>
@@ -64,9 +64,15 @@ export default {
     AddProcessStep,
   },
   props: {
-    project: Object
+    project: Object,
+    updateKey: Number
   },
-  data () {
+  watch: {
+    updateKey: function () {
+      this.getProcessSteps()
+    },
+  },
+  data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
@@ -81,11 +87,11 @@ export default {
       companyId: this.$store.state.user.details.companyId,
     }
   },
-  created () {
+  created() {
     this.getProcessSteps()
   },
   computed: {
-    processStepsByName () {
+    processStepsByName() {
       const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
       return names.map(processStepName => {
@@ -97,19 +103,19 @@ export default {
     }
   },
   methods: {
-    filteredProcessSteps () {
-      return this.stepsSearch === '' ? this.processStepsByName : this.processStepsByName.filter(psn => psn.processStepName.toLowerCase().includes(this.stepsSearch.toLowerCase()) )
+    filteredProcessSteps() {
+      return this.stepsSearch === '' ? this.processStepsByName : this.processStepsByName.filter(psn => psn.processStepName.toLowerCase().includes(this.stepsSearch.toLowerCase()))
     },
     getProcessSteps: async function () {
       try {
-      this.isProcessStepsLoading = true
-       const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-       this.processSteps = data
-     } catch (e) {
-       logError(e)
-     } finally {
-       this.isProcessStepsLoading = false
-     }
+        this.isProcessStepsLoading = true
+        const {data} = await getRequest(`/project/${this.projectId}/upcomingProcessSteps`)
+        this.processSteps = data
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.isProcessStepsLoading = false
+      }
     },
   }
 }
@@ -126,9 +132,11 @@ export default {
 .project-header {
   border-bottom: solid 1px #EAEAF4
 }
+
 .project-title {
   font-size: 20px;
 }
+
 .project-subtitle {
   font-size: 15px;
 }
@@ -144,6 +152,7 @@ export default {
 .process-step-toolbar .v-toolbar__content {
   padding-left: 10px !important;
 }
+
 .manage-btn {
 
   margin-left: 12px;
