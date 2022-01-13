@@ -207,7 +207,7 @@
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <ProjectActivity v-if="!collapseRightSidebar"></ProjectActivity>
+        <ProjectActivity :is-collapsed="collapseRightSidebar" @openRight="collapseRightSidebar = false"></ProjectActivity>
       </div>
     </v-row>
   </div>
