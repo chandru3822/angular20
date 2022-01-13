@@ -566,6 +566,7 @@ export default {
       })
     },
     handleActionCompleted() {
+      this.$emit('refresh-upcoming-pps')
       this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
     },
     handleOnCompleteError(actionId, errorMessage) {

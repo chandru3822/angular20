@@ -189,16 +189,22 @@
             </div>
             <v-divider class="mt-5"></v-divider>
           </div>
-          <ActiveProcessSteps :project="project"></ActiveProcessSteps>
+          <ActiveProcessSteps :project="project" :update-key="updatePpsKey"></ActiveProcessSteps>
           <v-divider class=""></v-divider>
-          <UpcomingEvents v-if="userHasEventsFeature" :projectId="projectId"/>
+          <UpcomingEvents v-if="userHasEventsFeature"
+                          :update-key="updateEventKey"
+                          :projectId="projectId"/>
         </div>
       </div>
       <div class="router-view-column project-section" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
-        <router-view v-if="project && project.id" class="router-view" :project="project"></router-view>
+        <router-view @refresh-upcoming-events="updateEventKey++"
+                     @refresh-upcoming-pps="updatePpsKey++"
+                     ref="childComponent"
+                     v-if="project && project.id" class="router-view"
+                     :project="project"></router-view>
       </div>
       <div class="white-bg project-section"
            :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
@@ -248,6 +254,8 @@ export default {
       cloneDeep,
       //used for if the make edits then hit cancel
       tempProject: {},
+      updateEventKey: 0,
+      updatePpsKey: 0,
       project: {},
       statusesLoading: true,
       ownersLoading: true,

@@ -455,11 +455,13 @@ export default {
         }
 
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
-        //we dont need to update the data now that the page is reloading
-        // this.selectedEvent = data
-        // this.selectedEvent = data
-        //reload the page so we get the updated pps status stuff
-        this.$router.go(this.$router.currentRoute)
+        this.selectedEvent = data
+        this.snackbar = getSnackbar('SUCCESS', 'Action Performed')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        //calls fn that tells the upcoming events to update
+        this.$emit('refresh-upcoming-pps')
+        this.$emit('refresh-upcoming-events')
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
