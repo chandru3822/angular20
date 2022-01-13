@@ -351,7 +351,7 @@ export default {
       //will only be used if there is an error shown here
       this.saveErrorMsg = 'The following fields are required to perform the selected action.'
 
-      let requiredFields = action?.customFields?.filter(cf => cf.required) || []
+      let requiredFields = action?.requiredFields
       if ((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
         this.eventActionMissingRequirements = true
         document.getElementById('event-header').scrollIntoView()
