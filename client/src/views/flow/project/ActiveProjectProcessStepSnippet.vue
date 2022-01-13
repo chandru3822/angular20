@@ -1,7 +1,9 @@
 <template>
 <v-row>
   <v-col cols="12" class="pa-0">
-    <v-card flat v-for="ps in steps" class="active-ps-button"
+    <v-card flat v-for="ps in steps"
+            :class="{'active-ps': ppsId === ps.projectProcessStepId}"
+            class="active-ps-button"
             @click="goToPath(`/project/${projectId}/processStep/${ps.projectProcessStepId}?processStepId=${ps.processStepId}&contactId=${contactId}`)">
       {{ ps.processStepName }}
       <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
@@ -20,6 +22,11 @@ export default {
     steps: Array,
     contactId: Number
   },
+  computed: {
+    ppsId () {
+      return parseInt(this.$route.params.processStepId)
+    }
+  },
   data () {
     return {
       getStatusClass
@@ -35,6 +42,10 @@ export default {
 
 
 <style scoped lang="scss">
+.active-ps {
+  background-color: #C4C4C4;
+}
+
 .active-ps-button {
   border: solid 1px #C4C4C4;
   padding: 10px;

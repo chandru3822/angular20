@@ -51,16 +51,24 @@
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
         <div class="action-subheader">
           Actions
-        </div>
-        <v-btn class="white--text save-btn mb-2 mr-2"
-               color="primaryButton"
-               :disabled="!action.canPerform"
-               @click="[attemptedAction = action, validateActionRequirements(action)]"
-               v-for="(action, i) in selectedEvent.eventActions"
-               :key="i">
-          {{ action.actionName }}
+        <v-btn
+          class="back-btn show-unperformable-actions-btn"
+          text
+          :ripple="false"
+          @click="showUnperformableActions = !showUnperformableActions"
+        >
+          {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
         </v-btn>
       </div>
+      </div>
+      <v-col v-for="action in filteredActions" :key="action.id" class="pt-0 px-0">
+        <v-btn class="action-button"
+               color="primaryCustom"
+               :disabled="!action.canPerform"
+               @click="[attemptedAction = action, validateActionRequirements(action)]">
+          {{ action.actionName }}
+        </v-btn>
+      </v-col>
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
@@ -310,6 +318,7 @@ export default {
       showRoundRobin: false,
       uniqueAlreadyHasValue: false,
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
+      showUnperformableActions: false,
     }
   },
   async created() {
@@ -332,7 +341,19 @@ export default {
       this.getEventDetails()
     },
   },
-  computed: {},
+  computed: {
+    filteredActions() {
+      if (!this?.selectedEvent?.eventActions) {
+        return []
+      }
+
+      if (this.showUnperformableActions) {
+        return this.selectedEvent.eventActions
+      } else {
+        return this.selectedEvent.eventActions.filter(a => a.canPerform === true)
+      }
+    }
+  },
   methods: {
     closeEventWindow() {
       this.selectedEvent = {}
@@ -351,7 +372,7 @@ export default {
       //will only be used if there is an error shown here
       this.saveErrorMsg = 'The following fields are required to perform the selected action.'
 
-      let requiredFields = action?.customFields?.filter(cf => cf.required) || []
+      let requiredFields = action?.requiredFields
       if ((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
         this.eventActionMissingRequirements = true
         document.getElementById('event-header').scrollIntoView()
@@ -738,9 +759,35 @@ export default {
 </style>
 <style lang="scss" scoped>
 .action-subheader {
+  width: 186px;
   margin-top: 20px;
-  margin-bottom: 10px;
   font-weight: 600;
+}
+
+::v-deep {
+  .v-btn.back-btn {
+
+    text-transform: capitalize;
+    text-decoration: underline;
+
+    &:not(.v-btn--round) {
+      padding: 0;
+    }
+
+    &:hover:before {
+      opacity: 0 !important;
+    }
+
+    .v-btn__content {
+      justify-content: start;
+    }
+  }
+
+  .show-unperformable-actions-btn {
+    margin-bottom: 2px;
+    margin-left: 10px;
+    font-size: 12px;
+  }
 }
 
 </style>
