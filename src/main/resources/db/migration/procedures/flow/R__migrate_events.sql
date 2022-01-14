@@ -575,6 +575,14 @@ BEGIN
               v_resource_id, coalesce(v_event_status_type_id,5), v_start_date, v_end_date, 2350555)
       returning id into v_event_id;
 
+      insert into flow.project_process_step_event_attachment(attachment_id, project_process_step_event_id, date_created, date_modified, created_by_id, modified_by_id,archived)
+       (select ppsa.attachment_id,v_event_id,ppsa.date_created,ppsa.date_modified,ppsa.created_by_id,ppsa.modified_by_id,ppsa.archived
+         from flow.project_process_step_attachment ppsa
+         where ppsa.project_process_step_id = x.project_process_step_id);
+
+      update flow.project_process_step_attachment
+        set archived = true
+      where project_process_step_id = x.project_process_step_id;
 
       if x.process_step_id = 1 then
         perform flow.migrate_schedule_closer_appointment_to_events(v_event_id,
