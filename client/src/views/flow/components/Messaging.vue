@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-toolbar color="transparent" class="elevation-0">
+    <v-toolbar color="white" class="elevation-0">
       <v-toolbar-title>
-        Messaging
+        Project Communication
       </v-toolbar-title>
     </v-toolbar>
 
@@ -10,22 +10,24 @@
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
-          :participants="participants"
-          :onMessageWasSent="onMessageWasSent"
-          :messageList="messageList"
-          :newMessagesCount="newMessagesCount"
-          :isOpen="true"
-          :close="closeChat"
-          :open="openChat"
-          :showEmoji="false"
-          :showFile="true"
-          :showEdition="false"
-          :showDeletion="false"
-          :showCloseButton="false"
-          :showLauncher="false"
-          :colors="colors"
-          :alwaysScrollToBottom="true"
-          :messageStyling="messageStyling"/>
+            class="chat-container"
+            :participants="participants"
+            :onMessageWasSent="onMessageWasSent"
+            :messageList="messageList"
+            :newMessagesCount="newMessagesCount"
+            :isOpen="true"
+            :close="closeChat"
+            :open="openChat"
+            :showEmoji="false"
+            :showFile="true"
+            :showEdition="false"
+            :showDeletion="false"
+            :showCloseButton="false"
+            :showLauncher="false"
+            :showHeader="false"
+            :colors="colors"
+            :alwaysScrollToBottom="true"
+            :messageStyling="messageStyling"/>
       </template>
       <template v-slot:user-avatar="{ message, user }">
         <div class="message-avatar" v-if="message.type === 'text' && user && user.name">
@@ -222,8 +224,20 @@ export default {
 .sc-chat-window {
   position: unset !important;
   max-width: 100%;
-  width: 400px !important;
-  height: 100% !important;
+  width: 100% !important;
+  height: 95% !important;
   text-align: left !important;
+}
+
+.chat-container {
+  width:100%;
+}
+
+.sc-message{
+  width:100%;
+}
+
+.sc-message--avatar{
+  display: none;
 }
 </style>
