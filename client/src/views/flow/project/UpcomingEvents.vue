@@ -98,6 +98,7 @@ export default {
         this.upcomingEventsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/upcomingEvents`)
         this.events = data
+        console.log('randaLogger',this.events)
       } catch (e) {
         logError(e)
       } finally {

@@ -112,7 +112,6 @@ export default {
         this.isProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/upcomingProcessSteps`)
         this.processSteps = data
-        console.log('randaLogger',this.processSteps)
       } catch (e) {
         logError(e)
       } finally {

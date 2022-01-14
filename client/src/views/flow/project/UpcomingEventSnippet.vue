@@ -6,7 +6,15 @@
             class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
       {{ e.eventName }}
       <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span> <br/>
-      <div class="event-resource" v-if="e.resource">{{ e.resource }}</div>
+      <div class="event-resource" v-if="e.resource">
+        {{ e.resource }}
+        <div v-if="e.startTime">
+          {{ e.startTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
+          <span v-if="e.endTime">
+            - {{ e.endTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
+          </span>
+        </div>
+      </div>
     </v-card>
   </v-col>
 </v-row>
@@ -14,6 +22,7 @@
 
 <script>
 import {getStatusClass} from '@/services/processStepStatusTypeService'
+import moment from 'moment'
 
 export default {
   name: 'UpcomingEventSnippet',
@@ -24,7 +33,7 @@ export default {
   computed: {
     ppsEventId () {
       return parseInt(this.$route.params.ppsEventId)
-    }
+    },
   },
   data () {
     return {
