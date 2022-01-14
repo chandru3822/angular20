@@ -80,6 +80,8 @@ export function isNumberOrHyphen(val) {
 
 export function formatPhoneNumber(phoneNumberString) {
   let cleaned = ('' + phoneNumberString).replace(/\D/g, '')
+  //dont allow a 1 to be the first char
+  cleaned = cleaned.replace(/^1/, '')
   let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/)
   if (match) {
     return '(' + match[1] + ') ' + match[2] + '-' + match[3]
