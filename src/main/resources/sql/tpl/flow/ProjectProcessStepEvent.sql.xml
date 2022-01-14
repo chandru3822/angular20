@@ -102,11 +102,11 @@
                                            SELECT array_to_json(array_agg(row_to_json(psearf)))
                                            FROM (
                                                   select psearf.id,
-                                                         psearf.custom_field_group_assignment_id as "customFieldGroupAssignmentId"
+                                                         psearf.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                         cfga.custom_field_group_id as "customFieldGroupId",
+                                                         cfga.custom_field_id as "customFieldId"
                                                   from flow.process_step_event_action_field psearf
                                                          inner join flow.custom_field_group_assignment cfga on psearf.custom_field_group_assignment_id = cfga.id
-                                                         inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-                                                         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                                   where psearf.archived is false
                                                     and psearf.required is true
                                                     and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "requiredFields",
@@ -114,11 +114,11 @@
                                            SELECT array_to_json(array_agg(row_to_json(psearf)))
                                            FROM (
                                                   select psearf.id,
-                                                         psearf.custom_field_group_assignment_id as "customFieldGroupAssignmentId"
+                                                         psearf.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                         cfga.custom_field_group_id as "customFieldGroupId",
+                                                         cfga.custom_field_id as "customFieldId"
                                                   from flow.process_step_event_action_field psearf
                                                          inner join flow.custom_field_group_assignment cfga on psearf.custom_field_group_assignment_id = cfga.id
-                                                         inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-                                                         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                                   where psearf.archived is false
                                                     and psearf.required is false
                                                     and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "optionalFields"

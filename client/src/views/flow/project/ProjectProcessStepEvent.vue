@@ -62,7 +62,7 @@
       </div>
       </div>
       <v-col v-for="action in filteredActions" :key="action.id" class="pt-0 px-0">
-        <v-btn class="action-button"
+        <v-btn class="action-button white--text"
                color="primaryCustom"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
