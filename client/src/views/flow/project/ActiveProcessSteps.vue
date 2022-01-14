@@ -12,6 +12,7 @@
                 class="d-inline-block"
                 :project-id="projectId"
                 :process-id="project.processId"
+                :contact-id="project.contactId"
                 @step-added="getProcessSteps"
               />
             </v-toolbar-items>

@@ -565,7 +565,7 @@ export default {
       try {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
         this.selectedEvent = data
-
+        this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()

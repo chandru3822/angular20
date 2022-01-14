@@ -68,7 +68,8 @@ export default {
     },
     processId: {
       type: Number
-    }
+    },
+    contactId: Number
   },
 
   data () {
@@ -149,10 +150,11 @@ export default {
     },
     addStep: async function () {
       try {
+        let psId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
+        const {data, status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
           projectId: this.projectId,
-          processStepId: (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id,
+          processStepId: psId,
           main: true
         })
 
@@ -161,6 +163,8 @@ export default {
         this.displayDropdown = false
         handleHidingGlobalLoader(this, status)
         this.$emit('step-added')
+        //the data returned is the ppsId
+        this.$router.push(`/project/${this.projectId}/processStep/${data}?processStepId=${psId}&contactId=${this.contactId}`)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding new process step')
