@@ -71,6 +71,7 @@
                             :items="availableOwners"
                             :loading="ownersLoading"
                             label="Project Owner"
+                            clearable
                             item-text="fullName"
                             return-object
                             autocomplete="off">
