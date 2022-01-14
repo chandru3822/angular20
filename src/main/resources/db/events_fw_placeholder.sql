@@ -164,6 +164,12 @@ CREATE INDEX if not exists ppsea_process_step_event_action_id_idx ON
 
 create index if not exists ppsea_project_process_step_event_id_idx on flow.project_process_step_event_action (project_process_step_event_id);
 
+-- this table is already in prod and the values for require_start_time are supposed to be always true.  this is fixed in the code but we will need
+-- this in the script so it updates prod when that goes live
+update flow.process_step_event_action
+set require_start_time = true
+where require_end_time is false;
+
 -- todo: need to do this but dont do it until after the migration happens
 -- alter table flow.custom_field_group
 --   drop column if exists event_type_id;
