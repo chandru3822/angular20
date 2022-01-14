@@ -1,16 +1,18 @@
 <template>
   <v-row id="project-activity-container" class="mt-2">
     <v-col cols="12" lg="12" class="py-0">
-      <div v-show="!isCollapsed">
-        <div v-if="selectedOption === 0" class="project-activity-content">
-          <Messaging :primaryId="projectId"/>
-        </div>
-        <div v-else-if="selectedOption === 1" class="project-activity-content">
-          <div>Project Notes</div>
-          <ProjectNotes></ProjectNotes>
-        </div>
-        <div v-else class="project-activity-content">
-          <Attachments :projectId="projectId"/>
+      <div class="height-one-hunned">
+        <div v-show="!isCollapsed">
+          <div v-if="selectedOption === 0" class="project-activity-content">
+            <Messaging :primaryId="projectId"/>
+          </div>
+          <div v-else-if="selectedOption === 1" class="project-activity-content">
+            <div>Project Notes</div>
+            <ProjectNotes></ProjectNotes>
+          </div>
+          <div v-else class="project-activity-content">
+            <Attachments :projectId="projectId"/>
+          </div>
         </div>
       </div>
       <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>
@@ -21,17 +23,17 @@
           cols="12"
       >
         <v-col no-gutters :cols="isCollapsed ? 12 : 4" class="px-0">
-          <v-btn text block elevation="0"  @click="selectView(0)" :dark = "selectedOption == 0" :class="{'section-selected': selectedOption==0}">
+          <v-btn text block elevation="0"  @click="selectView(0)" :dark = "selectedOption === 0" :class="{'section-selected': selectedOption===0}">
             <v-icon>mdi-forum-outline</v-icon>
           </v-btn>
         </v-col>
         <v-col no-gutters :cols="isCollapsed ? 12 : 4" class="px-0">
-          <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption==1" :class="{'section-selected': selectedOption==1}">
+          <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption === 1" :class="{'section-selected': selectedOption===1}">
             <v-icon>mdi-text-long</v-icon>
           </v-btn>
         </v-col>
         <v-col no-gutters :cols="isCollapsed ? 12 : 4" class="px-0">
-          <v-btn text block elevation="0"  @click="selectView(2)" :dark="selectedOption==2" :class="{'section-selected': selectedOption==2}">
+          <v-btn text block elevation="0"  @click="selectView(2)" :dark="selectedOption === 2" :class="{'section-selected': selectedOption===2}">
             <v-icon>mdi-folder-outline</v-icon>
           </v-btn>
         </v-col>
