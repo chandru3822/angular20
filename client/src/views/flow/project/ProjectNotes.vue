@@ -1,5 +1,6 @@
 <template>
-
+  <div>
+    <div>Project Notes</div>
     <NotesAndActivityContent
       ref="notes"
       :showNotes="true"
@@ -8,7 +9,7 @@
       :primaryId="parseInt(projectId)"
       type="Project"
     />
-
+  </div>
 
 </template>
 

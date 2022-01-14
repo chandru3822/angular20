@@ -1,18 +1,11 @@
 <template>
-  <v-row id="project-activity-container" class="mt-2">
-    <v-col cols="12" lg="12" class="py-0">
-      <div class="height-one-hunned">
+  <v-row id="project-activity-container">
+    <v-col cols="12" lg="12" class="pb-0 pt-2 pr-0">
+      <div class="project-activity-inner-container">
         <div v-show="!isCollapsed">
-          <div v-if="selectedOption === 0" class="project-activity-content">
-            <Messaging :primaryId="projectId"/>
-          </div>
-          <div v-else-if="selectedOption === 1" class="project-activity-content">
-            <div>Project Notes</div>
-            <ProjectNotes></ProjectNotes>
-          </div>
-          <div v-else class="project-activity-content">
-            <Attachments :projectId="projectId"/>
-          </div>
+          <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
+          <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
+          <Attachments v-else :projectId="projectId"/>
         </div>
       </div>
       <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>
@@ -86,7 +79,14 @@ export default {
 
 #project-activity-container{
   height: 100%;
+  position: relative;
 }
+
+.project-activity-inner-container{
+  height: calc(100% - 80px);
+  overflow: auto;
+}
+
 .project-activity-content {
   min-height: 800px;
   overflow-y: scroll;
@@ -101,8 +101,10 @@ export default {
 .section-footer{
   height: fit-content;
   background-color: white;
-  position: sticky;
-  bottom: 0;
+  position: absolute;
+  width: 100%;
+  //i cant figure out why this has to be 15 instead of 0 but i am too angry now to care
+  bottom: 15px;
 }
 
 .section-selected{
