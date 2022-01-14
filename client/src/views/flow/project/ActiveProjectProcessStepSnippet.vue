@@ -8,6 +8,7 @@
       {{ ps.processStepName }}
       <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
       <div class="ps-owner" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>
+      <div style="font-weight: 600; color: rebeccapurple;">({{ ps.projectProcessStepId }})</div>
     </v-card>
   </v-col>
 </v-row>
