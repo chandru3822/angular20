@@ -6,7 +6,7 @@
             class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
       {{ e.eventName }}
       <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span> <br/>
-      <span class="event-resource" v-if="e.resource">{{ e.resource }}</span>
+      <div class="event-resource" v-if="e.resource">{{ e.resource }}</div>
     </v-card>
   </v-col>
 </v-row>

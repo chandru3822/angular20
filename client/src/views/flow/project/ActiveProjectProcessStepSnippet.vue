@@ -7,6 +7,7 @@
             @click="goToPath(`/project/${projectId}/processStep/${ps.projectProcessStepId}?processStepId=${ps.processStepId}&contactId=${contactId}`)">
       {{ ps.processStepName }}
       <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
+      <div class="ps-owner" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>
     </v-card>
   </v-col>
 </v-row>
@@ -53,4 +54,8 @@ export default {
   margin-bottom: 10px;
 }
 
+.ps-owner {
+  font-size: 12px;
+  color: #9E9C9C;
+}
 </style>
