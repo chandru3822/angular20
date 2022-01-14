@@ -61,14 +61,14 @@
         </v-btn>
       </div>
       </div>
-      <v-col v-for="action in filteredActions" :key="action.id" class="pt-0 px-0">
+      <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
         <v-btn class="action-button white--text"
                color="primaryCustom"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
           {{ action.actionName }}
         </v-btn>
-      </v-col>
+      </div>
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>

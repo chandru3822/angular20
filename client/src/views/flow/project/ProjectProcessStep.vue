@@ -148,11 +148,12 @@
             @input="addEvent()"
           ></v-autocomplete>
         </div>
-        <EventButton
-          v-for="e in processStep.projectProcessStepEvents"
-          :event="e"
-          :project-id="projectId"
-        />
+        <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block ma-1">
+          <EventButton
+            :event="e"
+            :project-id="projectId"
+          />
+        </div>
       </v-col>
       <v-col cols="12" class="text-left pt-0">
         <div class="pps-subheader">
@@ -166,7 +167,7 @@
             {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
           </v-btn>
         </div>
-        <v-col v-for="action in filteredActions" :key="action.id" class="pt-0 px-0">
+        <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
@@ -180,7 +181,7 @@
           >
             {{ action.actionName }}
           </v-btn>
-        </v-col>
+        </div>
 
         <v-row>
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
@@ -658,7 +659,7 @@ export default {
 
 .pps-subheader {
   width: 186px;
-  margin-top: 20px;
+  margin-top: 5px;
   font-weight: 600;
 }
 

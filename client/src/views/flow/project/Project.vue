@@ -106,7 +106,7 @@
     <!--    end dialog -->
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title font-size-18">
-        {{ project.projectName }}
+        <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
