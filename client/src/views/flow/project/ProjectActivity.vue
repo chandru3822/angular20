@@ -86,13 +86,13 @@ export default {
   height: 100%;
 }
 .project-activity-content {
-  height: 800px;
+  min-height: 800px;
   overflow-y: scroll;
   width:100%;
 }
 
 .project-activity-collapsed {
-  height: 600px;
+  min-height: 600px;
   width:100%;
 }
 
