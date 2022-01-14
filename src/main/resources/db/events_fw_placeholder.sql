@@ -3,6 +3,9 @@
 --get_project_process_step_event_requirements_with_values
 --get_availability_time_slots
 --pps_has_active_events
+--get_project_available_owners
+
+drop function if exists flow.get_project_available_owners(int, int, boolean);
 
 drop FUNCTION if  exists flow.set_closer_appointment(p_project_id integer,
                                                      p_current_user_id integer,

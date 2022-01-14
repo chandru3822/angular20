@@ -438,8 +438,10 @@ public class ProjectService {
     return attachmentService.findById(attachmentId);
   }
 
-  public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
-      sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
+  public String updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+      sqlCache.update("project.updateStatus",
+        Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
+      return getStatus(projectId);
   }
 
   public String getStatus(Long projectId) {

@@ -337,7 +337,15 @@ export default {
     updateStatus: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await postRequest(`/project/${this.projectId}/status`, this.project)
+        let params = {
+          companyProjectStatusTypeId: this.tempProject.companyProjectStatusTypeId
+        }
+        const {data, status} = await postRequest(`/project/${this.projectId}/status`, params)
+        console.log('randaLogger', data)
+        this.tempProject.companyProjectStatusTypeId = data.companyProjectStatusTypeId
+        this.tempProject.projectStatusType = data.projectStatusType
+        this.tempProject.projectStatusTypeId = data.projectStatusTypeId
+        this.tempProject.rootProjectStatusType = data.rootProjectStatusType
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -349,7 +357,8 @@ export default {
     updateOwner: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
+        console.log('randaLogger',this.project.owner)
+        const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -391,14 +400,15 @@ export default {
         this.countriesLoading = false
       }
     },
-    validateForm() {
+    async validateForm() {
       if (this.$refs.projectEditForm.validate()) {
-        //set project values if they hit save
-        this.project = cloneDeep(this.tempProject)
         //these could be combined - just dont have time atm
         this.saveProjectAddressFields()
         this.updateOwner()
-        this.updateStatus()
+        //have to wait for this one to complete or it doesn't have the right values to display fresh ones
+        await this.updateStatus()
+        //set project values if they hit save
+        this.project = cloneDeep(this.tempProject)
         this.showEditProjectModal = false
       }
     },
