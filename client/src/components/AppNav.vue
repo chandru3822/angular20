@@ -93,11 +93,11 @@
         </v-app-bar>
       </v-col>
     </v-row>
-    <div id="context-label"
-         @click="goToPath('/home')"
-         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">
-      {{selectedCompany.companyName}}
-    </div>
+<!--    <div id="context-label"-->
+<!--         @click="goToPath('/home')"-->
+<!--         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">-->
+<!--      {{selectedCompany.companyName}}-->
+<!--    </div>-->
   </div>
 </template>
 
