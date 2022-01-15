@@ -1,5 +1,5 @@
 <template>
-  <v-main class="events-container" v-if="selectedEvent && selectedEvent.id">
+  <v-main class="events-container" v-if="!eventDetailsLoading">
     <div>
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
         <v-toolbar-title>
@@ -243,6 +243,9 @@
 
     </div>
   </v-main>
+  <v-main v-else>
+    <SpinnerInline centered :size="50" color="primaryCustom"/>
+  </v-main>
 </template>
 
 <script>
@@ -258,7 +261,7 @@ import {
   postRequestWithRequestParams, deleteRequest
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import {getCompanyEventStatusTypes} from '@/services/eventStatusTypeService'
+import {getAssignedToEvent} from '@/services/eventStatusTypeService'
 import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import Attachments from '@/views/flow/components/Attachments'
@@ -266,13 +269,15 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: 'ProjectProcessStepEvent',
   components: {
     CustomValueInput,
     Attachments,
-    DatetimePickerInput
+    DatetimePickerInput,
+    SpinnerInline
   },
   props: {
     project: Object
@@ -319,12 +324,10 @@ export default {
       uniqueAlreadyHasValue: false,
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
       showUnperformableActions: false,
+      eventDetailsLoading: false
     }
   },
   async created() {
-    this.getCompanyEventStatusTypes()
-    this.userCanScheduleLeadAllocation()
-    this.userCanScheduleRemoteLeadAllocation()
     await this.getEventDetails()
   },
   watch: {
@@ -416,17 +419,14 @@ export default {
         await this.doEventAction(action)
       }
     },
-    async getCompanyEventStatusTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    async getStatusesAssignedToEvent() {
       try {
-        const {data} = await getCompanyEventStatusTypes()
+        const {data} = await getAssignedToEvent(this.selectedEvent.eventId)
         this.companyEventStatuses = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async userCanScheduleLeadAllocation() {
@@ -528,20 +528,23 @@ export default {
     //   }
     // },
     getEventDetails: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.eventDetailsLoading = true
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()
+          this.userCanScheduleLeadAllocation()
+          this.userCanScheduleRemoteLeadAllocation()
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        await this.getStatusesAssignedToEvent()
+        this.eventDetailsLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.eventDetailsLoading = false
       }
     },
     deleteEvent: async function (ppseId) {
