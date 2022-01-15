@@ -341,7 +341,6 @@ export default {
           companyProjectStatusTypeId: this.tempProject.companyProjectStatusTypeId
         }
         const {data, status} = await postRequest(`/project/${this.projectId}/status`, params)
-        console.log('randaLogger', data)
         this.tempProject.companyProjectStatusTypeId = data.companyProjectStatusTypeId
         this.tempProject.projectStatusType = data.projectStatusType
         this.tempProject.projectStatusTypeId = data.projectStatusTypeId
@@ -357,7 +356,6 @@ export default {
     updateOwner: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        console.log('randaLogger',this.project.owner)
         const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
