@@ -136,10 +136,14 @@ public class BlueravenCustomFieldService {
           HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
     } else {
       HashMap<String, Object> params = new HashMap<>();
-      params.put("lazyLoadValues", customField.getLazyLoadValues() != null && customField.getLazyLoadValues());
+      params.put(
+          "lazyLoadValues",
+          customField.getLazyLoadValues() != null && customField.getLazyLoadValues());
       params.put("fieldName", customField.getFieldName());
       params.put("sortListValuesAlphabetically", customField.getSortListValuesAlphabetically());
       params.put("systemListId", customField.getCompanySystemListId());
+      params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+      params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
       params.put(
           "systemListOptionIds",
           null == customField.getSystemListOptionIds()
@@ -149,7 +153,6 @@ public class BlueravenCustomFieldService {
       Long id = null;
       boolean doInsertAfterHandlingOtherScenarios = false;
       boolean insertParentRecordIfNeeded = false;
-      boolean insertSqlKey = false;
 
       if (null != customField.getId()) {
         // edit existing custom field
@@ -222,7 +225,9 @@ public class BlueravenCustomFieldService {
             sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
         params.put("createdById", user.trueUserId());
         params.put("companyDataTypeId", customField.getCompanyDataTypeId());
-        params.put("lazyLoadValues", customField.getLazyLoadValues() != null && customField.getLazyLoadValues());
+        params.put(
+            "lazyLoadValues",
+            customField.getLazyLoadValues() != null && customField.getLazyLoadValues());
 
         // insert new custom field with listOfValueId if needed
         id =
