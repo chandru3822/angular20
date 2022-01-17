@@ -132,14 +132,13 @@
             <v-toolbar-title class="font-size-14">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <div class="pt-3">
-                <v-btn
-                  @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
-                  v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-                      || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
-                  Edit
-                </v-btn>
-              </div>
+              <v-btn
+                text x-small
+                @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+                v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+                    || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
+                <v-icon>edit</v-icon>
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <div class="px-1 address-details">
