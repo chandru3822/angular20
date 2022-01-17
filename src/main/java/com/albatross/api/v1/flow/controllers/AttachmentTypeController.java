@@ -147,6 +147,12 @@ public class AttachmentTypeController {
     return new ResponseEntity<>(attachmentTypeService.getEventTypes(eventId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/eventAndPsTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<EventAttachmentType>> getEventAndPsTypes(@RequestParam Long psId,
+                                                                      @RequestParam Long eventId) {
+    return new ResponseEntity<>(attachmentTypeService.getEventAndPsTypes(psId, eventId), HttpStatus.OK);
+  }
+
   @PostMapping(value = "/eventType", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<EventAttachmentType> insertEventType(@RequestBody EventAttachmentType attachmentType) {
     return attachmentTypeService.insertEventType(attachmentType);

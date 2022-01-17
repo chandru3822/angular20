@@ -285,6 +285,7 @@ public class ProjectProcessStepEventService {
   public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
+    //there is currently no where in the UI where event attachments are not viewed side by side with ps attachments, so for now this actually returns both
     List<Attachment> attachments = sqlCache.query("projectProcessStepEvent.getProjectProcessStepEventAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
