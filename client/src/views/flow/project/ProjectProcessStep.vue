@@ -148,11 +148,12 @@
             @input="addEvent()"
           ></v-autocomplete>
         </div>
-        <EventButton
-          v-for="e in processStep.projectProcessStepEvents"
-          :event="e"
-          :project-id="projectId"
-        />
+        <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block ma-1">
+          <EventButton
+            :event="e"
+            :project-id="projectId"
+          />
+        </div>
       </v-col>
       <v-col cols="12" class="text-left pt-0">
         <div class="pps-subheader">
@@ -166,7 +167,7 @@
             {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
           </v-btn>
         </div>
-        <v-col v-for="action in filteredActions" :key="action.id" class="pt-0 px-0">
+        <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
@@ -180,7 +181,7 @@
           >
             {{ action.actionName }}
           </v-btn>
-        </v-col>
+        </div>
 
         <v-row>
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
@@ -264,6 +265,9 @@
       @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
     />
   </v-main>
+  <v-main v-else>
+    <SpinnerInline centered :size="50" color="primaryCustom"/>
+  </v-main>
 </template>
 
 <script>
@@ -286,8 +290,8 @@ import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import moment from 'moment-timezone'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+import SpinnerInline from '@/components/SpinnerInline'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -301,6 +305,7 @@ export default {
     CustomValueInput,
     DatetimePickerInput,
     ProjectProcessStepStatus,
+    SpinnerInline
   },
   data() {
     return {
@@ -339,7 +344,8 @@ export default {
       showUnperformableActions: false,
       processStepLoading: true,
       eventToAdd: {},
-      processStepEvents: []
+      processStepEvents: [],
+
     }
   },
   watch: {
@@ -348,20 +354,11 @@ export default {
       // reset the selected item
       this.processStepId = this.$route.query.processStepId
       this.projectProcessStepId = this.$route.params.processStepId
-      this.getCustomFieldGroups()
-      await this.getProcessStep()
-      await this.getProcessStepEvents()
-      this.getAvailableOwners()
+      await this.loadAllPageDetails()
     },
   },
   async created() {
-    this.getCustomFieldGroups()
-    //per 9/24 request judson had us remove notes from process steps
-    // this.getNotes()
-    // this.getProject()
-    await this.getProcessStep()
-    await this.getProcessStepEvents()
-    this.getAvailableOwners()
+    await this.loadAllPageDetails()
   },
   computed: {
     filteredActions() {
@@ -389,6 +386,12 @@ export default {
     }
   },
   methods: {
+    async loadAllPageDetails() {
+      this.processStepLoading = true
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents()]
+      await Promise.all(requests)
+      this.processStepLoading = false
+    },
     goToPath(path) {
       this.$router.push(path)
     },
@@ -406,33 +409,26 @@ export default {
       }
     },
     getProcessStep: async function () {
-      this.processStepLoading = true
       try {
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
-        this.processStepLoading = false
         this.getAvailableStatuses()
+        this.getAvailableOwners()
         window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
           : `${this.processStep.processStepName}`
         return {data, status}
       } catch (e) {
         logError(e)
-      } finally {
-        this.isProcessStepLoading = false
       }
     },
     async getCustomFieldGroups() {
-      //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
-      //this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
         this.customFieldGroups = data
-        // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getNotes() {
@@ -658,7 +654,7 @@ export default {
 
 .pps-subheader {
   width: 186px;
-  margin-top: 20px;
+  margin-top: 5px;
   font-weight: 600;
 }
 

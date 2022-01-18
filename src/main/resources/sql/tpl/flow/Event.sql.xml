@@ -333,6 +333,7 @@
   <event.updateCompanyStatus><![CDATA[
       update flow.company_event_status_type
     set event_status_type = :eventStatusType,
+        event_status_type_id = :rootEventStatusTypeId,
         modified_by_id = :currentUserId,
         display_order = :displayOrder,
         date_modified = now()

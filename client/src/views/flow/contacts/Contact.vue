@@ -315,10 +315,15 @@
         </div>
       </v-col>
       <v-col cols="12" md="6" class="text-left pa-0">
-        <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
-                          :notes="notes" :primaryId="parseInt(contactId)"
-                          type="Contact"
-        ></NotesAndActivity>
+        <v-toolbar color="transparent" class="elevation-0">
+          <v-toolbar-title>Notes</v-toolbar-title>
+        </v-toolbar>
+        <v-card class="square-card mx-4">
+          <NotesAndActivityContent ref="notes" :showNotes="true" :showActivity="false"
+                            :notes="notes" :primaryId="parseInt(contactId)"
+                            type="Contact"
+          ></NotesAndActivityContent>
+        </v-card>
 
         <Attachments :object-type-id="2" :contact-id="contactId"/>
       </v-col>
@@ -346,7 +351,7 @@
 import {AppMutations} from '@/stores/AppStore'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
+import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -368,7 +373,7 @@ export default {
   name: 'Contact',
   components: {
     CustomValueInput,
-    NotesAndActivity,
+    NotesAndActivityContent,
     DatetimePickerInput,
     Attachments
   },

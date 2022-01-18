@@ -306,6 +306,61 @@ values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 
     order by eat.display_order
   ]]></attachmentType.getEventTypes>
 
+  <attachmentType.getEventTypes><![CDATA[
+      select eat.id,
+       at.attachment_type,
+       eat.attachment_type_id,
+       eat.event_id,
+       eat.date_created,
+       eat.date_modified,
+       eat.created_by_id,
+       eat.modified_by_id,
+       eat.archived
+    from flow.event_attachment_type eat
+    inner join flow.attachment_type at on at.id = eat.attachment_type_id
+    where
+      eat.event_id = :eventId and
+      eat.archived is not true
+    order by eat.display_order
+  ]]></attachmentType.getEventTypes>
+
+  <attachmentType.getEventAndPsTypes><![CDATA[
+      select eat.id,
+           at.attachment_type,
+           eat.attachment_type_id,
+           eat.event_id,
+           null::int as process_step_id,
+           eat.date_created,
+           eat.date_modified,
+           eat.created_by_id,
+           eat.modified_by_id,
+           eat.archived,
+           eat.display_order
+    from flow.event_attachment_type eat
+           inner join flow.attachment_type at on at.id = eat.attachment_type_id
+    where
+        eat.event_id = :eventId and
+      eat.archived is not true
+    union all
+    select psat.id,
+           at.attachment_type,
+           psat.attachment_type_id,
+           null::int as event_id,
+           psat.process_step_id,
+           psat.date_created,
+           psat.date_modified,
+           psat.created_by_id,
+           psat.modified_by_id,
+           psat.archived,
+           psat.display_order
+    from flow.process_step_attachment_type psat
+           inner join flow.attachment_type at on at.id = psat.attachment_type_id
+    where
+        psat.process_step_id = :processStepId and
+      psat.archived is not true
+    order by display_order
+  ]]></attachmentType.getEventAndPsTypes>
+
   <attachmentType.getAvailableTypesForEvent><![CDATA[
     select at.*
       from flow.attachment_type at

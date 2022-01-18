@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{'elevation-1': bordered}">
       <v-toolbar flat dense color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
       </v-toolbar>
@@ -387,6 +387,7 @@ export default {
   props: {
     showNotes: Boolean,
     showActivity: Boolean,
+    bordered: Boolean,
     primaryId: Number,
     secondaryId: Number,
     installDashTile: String,

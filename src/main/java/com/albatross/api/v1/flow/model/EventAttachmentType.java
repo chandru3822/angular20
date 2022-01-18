@@ -13,7 +13,7 @@ import java.util.Date;
 @Setter
 public class EventAttachmentType {
 
-  private Long id, eventId, attachmentTypeId, createdById, modifiedById, companyId, displayOrder;
+  private Long id, eventId, attachmentTypeId, createdById, modifiedById, companyId, displayOrder, processStepId; //i needed the processStepId only and didn't want to make another object. sry.
   private String attachmentType;
   private Boolean archived, readOnly;
   private Date dateCreated, dateModified;

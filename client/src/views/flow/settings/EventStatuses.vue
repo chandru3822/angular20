@@ -6,9 +6,10 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newType = {}]"
+                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
+              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -22,7 +23,9 @@
                           item-value="id"
                           label="Select a Category"
                           item-text="eventStatusType"></v-autocomplete>
-          <v-btn :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">Save</v-btn>
+          <v-btn :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">
+            Save
+          </v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -54,7 +57,8 @@
                 item-text="eventStatusType"></v-autocomplete>
               <v-btn color="primaryCustom" dark class="white--text"
                      :disabled="!item.eventStatusType || !item.eventStatusTypeId"
-                     @click="saveType(item, false)">Save</v-btn>
+                     @click="saveType(item, false)">Save
+              </v-btn>
             </td>
           </template>
           <template #item="{ item, index }">
@@ -65,10 +69,10 @@
                 </v-btn>
               </td>
               <td class="text-left">
-                {{item.eventStatusType}}
+                {{ item.eventStatusType }}
               </td>
               <td class="text-left">
-                {{item.rootEventStatusType}}
+                {{ item.rootEventStatusType }}
               </td>
               <td class="text-right">
                 <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
@@ -124,182 +128,185 @@
 
 
 <script>
-  import { Actions } from '@/store'
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import draggable from 'vuedraggable'
-  import cloneDeep from 'lodash.clonedeep'
-  import Sortable from 'sortablejs'
+import {Actions} from '@/store'
+import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
+import draggable from 'vuedraggable'
+import cloneDeep from 'lodash.clonedeep'
+import Sortable from 'sortablejs'
 
-  import orderBy from 'lodash.orderby'
-  import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
+import orderBy from 'lodash.orderby'
+import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 
-  export default {
-    name: 'EventStatuses',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      draggable,
-    },
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        statusTypes: [],
-        expanded: [],
-        rootStatusTypes: [],
-        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-        savingTypeLogo: false,
-        headers: [
-          { text: null, value: 'draggable', width: '50px', show: true },
-          {text: 'Event Status', value: 'eventStatusType', show: true},
-          {text: 'Status', value: 'rootEventStatusType', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        addNew: false,
-        newType: {},
-        selectedStatusTypeId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+export default {
+  name: 'EventStatuses',
+  mixins: [Vue2Filters.mixin],
+  components: {
+    draggable,
+  },
+  data() {
+    return {
+      snackbar: {},
+      constants,
+      statusTypes: [],
+      expanded: [],
+      rootStatusTypes: [],
+      acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
+      savingTypeLogo: false,
+      headers: [
+        {text: null, value: 'draggable', width: '50px', show: true},
+        {text: 'Event Status', value: 'eventStatusType', show: true},
+        {text: 'Status', value: 'rootEventStatusType', show: true},
+        {text: '', value: 'icons', show: true},
+      ],
+      addNew: false,
+      newType: {},
+      selectedStatusTypeId: null,
+      userId: this.$store.state.user.details.id,
+      companyId: this.$store.state.user.details.companyId,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+    }
+  },
+  mounted() {
+    let table = document.querySelector('tbody')
+    const _self = this
+    Sortable.create(table, {
+      handle: '.handle',
+      onEnd({newIndex, oldIndex}) {
+        const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
+        _self.statusTypes.splice(newIndex, 0, rowSelected)
+        let statusTypesClone = cloneDeep(_self.statusTypes)
+        statusTypesClone.forEach((g, idx) => {
+          g.displayOrder = idx
+        })
+        _self.saveOrderChanges(statusTypesClone)
+      }
+    })
+  },
+  computed: {},
+  methods: {
+    async saveOrderChanges(types) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/event/companyStatuses`, types)
+        this.snackbar = getSnackbar('SUCCESS', 'Status Types Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Status Type Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    mounted() {
-      let table = document.querySelector('tbody')
-      const _self = this
-      Sortable.create(table, {
-        handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
-          const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
-          _self.statusTypes.splice(newIndex, 0, rowSelected)
-          let statusTypesClone = cloneDeep(_self.statusTypes)
-          statusTypesClone.forEach((g, idx) => {
-            g.displayOrder = idx
-          })
-          _self.saveOrderChanges(statusTypesClone)
-        }
-      })
-    },
-    computed: {
-    },
-    methods: {
-      async saveOrderChanges (types) {
+    async uploadFile(item, files, attachmentTypeId, sourceId, sizeLimit) {
+      try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/event/companyStatuses`, types)
-          this.snackbar = getSnackbar('SUCCESS', 'Status Types Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Status Type Changes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async uploadFile (item, files, attachmentTypeId, sourceId, sizeLimit) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: files[0],
-            sizeLimit,
-            attachmentTypeId,
-            sourceId,
-            callback: async (img, error) => {
-              if(error?.error) {
-                this.snackbar = getSnackbar('ERROR', error.errorMsg)
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              } else {
-                item.icon = img
+        await this.$store.dispatch(Actions.FILE_UPLOAD, {
+          file: files[0],
+          sizeLimit,
+          attachmentTypeId,
+          sourceId,
+          callback: async (img, error) => {
+            if (error?.error) {
+              this.snackbar = getSnackbar('ERROR', error.errorMsg)
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            } else {
+              item.icon = img
 
-                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              }
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteAttachment (item) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          await this.$store.dispatch(Actions.FILE_DELETE, {
-            id: item.icon.id,
-            callback: async (status) => {
-              item.icon = {}
-              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
-              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+              this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCompanyStatusTypes () {
+          }
+        })
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteAttachment(item) {
+      try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getCompanyEventStatusTypes()
-          this.statusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getEventStatusTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getEventStatusTypes()
-          this.rootStatusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteType (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/event/companyStatus/${item.id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveType (type, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await putRequest(`/event/companyStatus`, type)
+        await this.$store.dispatch(Actions.FILE_DELETE, {
+          id: item.icon.id,
+          callback: async (status) => {
+            item.icon = {}
+            // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
+            this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCompanyStatusTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCompanyEventStatusTypes()
+        this.statusTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getEventStatusTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getEventStatusTypes()
+        this.rootStatusTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteType(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/event/companyStatus/${item.id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveType(type, isNew) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/event/companyStatus`, type)
 
-          if(isNew) {
-            // add it to the records already on the screen
-            this.statusTypes.push(data)
-            this.statusTypes = orderBy(this.statusTypes, [s => s.eventStatusType.toLowerCase()])
+        if (isNew) {
+          // add it to the records already on the screen
+          this.statusTypes.push(data)
+          this.statusTypes = orderBy(this.statusTypes, [s => s.eventStatusType.toLowerCase()])
 
           // reset the new process fields
           this.addNew = false
           this.newType = {}
+        } else {
+          type.eventStatusTypeId = data.eventStatusTypeId
+          type.eventStatusType = data.eventStatusType
+          type.rootEventStatusType = data.rootEventStatusType
         }
         this.expanded = []
         this.selectedStatusTypeId = null
@@ -313,11 +320,13 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    filterEventStatuses () {
-      return this.statusTypes.filter(s => { return !s.archived})
+    filterEventStatuses() {
+      return this.statusTypes.filter(s => {
+        return !s.archived
+      })
     }
   },
-  async created () {
+  async created() {
     this.getCompanyStatusTypes()
     this.getEventStatusTypes()
   }

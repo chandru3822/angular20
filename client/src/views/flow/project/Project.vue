@@ -106,7 +106,7 @@
     <!--    end dialog -->
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title font-size-18">
-        {{ project.projectName }}
+        <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -132,14 +132,13 @@
             <v-toolbar-title class="font-size-14">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <div class="pt-3">
-                <v-btn
-                  @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
-                  v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-                      || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
-                  Edit
-                </v-btn>
-              </div>
+              <v-btn
+                text x-small
+                @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+                v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+                    || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
+                <v-icon>edit</v-icon>
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <div class="px-1 address-details">
@@ -341,7 +340,6 @@ export default {
           companyProjectStatusTypeId: this.tempProject.companyProjectStatusTypeId
         }
         const {data, status} = await postRequest(`/project/${this.projectId}/status`, params)
-        console.log('randaLogger', data)
         this.tempProject.companyProjectStatusTypeId = data.companyProjectStatusTypeId
         this.tempProject.projectStatusType = data.projectStatusType
         this.tempProject.projectStatusTypeId = data.projectStatusTypeId
@@ -357,7 +355,6 @@ export default {
     updateOwner: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        console.log('randaLogger',this.project.owner)
         const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {

@@ -103,9 +103,13 @@
                   <v-card class="wqt-notes-container">
                     <v-card-title class="primary-custom-bg white--text">{{ item['Project Name'] }} - {{item['Process Step Name']}}</v-card-title>
                     <v-card-text class="py-3">
-                      <NotesAndActivity
+                      <v-toolbar color="transparent" class="elevation-0">
+                        <v-toolbar-title>Notes</v-toolbar-title>
+                      </v-toolbar>
+                      <NotesAndActivityContent
                         :showNotes="true"
                         :showActivity="false"
+                        :bordered="true"
                         :notes="item.notes"
                         :is-wqt-note="true"
                         :primary-id="item.projectProcessStepId"
@@ -144,7 +148,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
-  import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+  import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent'
   import {DateTime} from 'luxon'
   import cloneDeep from 'lodash.clonedeep'
   import constants from '@/helpers/constants'
@@ -161,7 +165,7 @@
   export default {
     name: 'WorkQueueDrilldown',
     components: {
-      NotesAndActivity
+      NotesAndActivityContent
     },
     data() {
       return {

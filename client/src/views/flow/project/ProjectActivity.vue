@@ -83,7 +83,7 @@ export default {
 }
 
 .project-activity-inner-container{
-  height: calc(100% - 80px);
+  height: calc(100% - 150px);
   overflow: auto;
 }
 
