@@ -5,13 +5,26 @@
       <template v-slot:default="{ open }">
         <v-row no-gutters>
         {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
+          <v-spacer></v-spacer>
         <v-fade-transition leave-absolute>
-                <span
-                    v-if="open"
-                    key="0"
+          <v-col  v-if="open"
+                  key="0">
+            <v-row>
+                <v-btn
+                  v-if="!projectProcessStepId"
+                  @click.native.stop="toggleShowNonPrimary"
                 >
-                  Upload Show non-primary
-                </span>
+                  Show non-primary
+                </v-btn>
+              <v-file-input @click.native.stop=""
+                            hide-input
+                            dense
+                            multiple
+                            ref='fileInput'
+                            @change='uploadDocument'
+              ></v-file-input>
+            </v-row>
+          </v-col>
           <span
               v-else
               key="1"
@@ -22,7 +35,7 @@
       </template>
     </v-expansion-panel-header>
     <v-expansion-panel-content>
-        <AttachmentsTable :display-type="type" :attachments="attachments" :show-non-primary-docs="false"></AttachmentsTable>
+        <AttachmentsTable :display-type="type" :attachments="attachments" :show-non-primary-docs="showNonPrimaryDocs || !!projectProcessStepId"></AttachmentsTable>
     </v-expansion-panel-content>
   </v-expansion-panel>
 </v-expansion-panels>
@@ -30,7 +43,6 @@
 
 <script>
 import {
-  getFileIcon,
   getRequest,
   getRequestWithParams,
   getSnackbar,
@@ -109,6 +121,9 @@ export default {
 
   },
   methods: {
+    toggleShowNonPrimary(){
+      this.showNonPrimaryDocs = !this.showNonPrimaryDocs;
+    },
     async saveFilename(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

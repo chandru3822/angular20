@@ -5,7 +5,7 @@
         <div v-show="!isCollapsed">
           <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
           <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
-          <AttachmentsDropdown v-else :projectId="projectId"/>
+          <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId"/>
         </div>
       </div>
       <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>
@@ -56,6 +56,8 @@ export default {
   data () {
     return {
       projectId: parseInt(this.$route.params.projectId),
+      projectProcessStepId: parseInt(this.$route.params.processStepId),
+      projectProcessStepEventId: parseInt(this.$route.params.ppsEventId),
       selectedOption: 1
     }
   },
