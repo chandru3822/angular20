@@ -1,23 +1,24 @@
 <template>
-  <v-simple-table>
- <tbody>
-      <tr v-for="item in drillDownAttachments"  class="text-left"  :class="{'primary-row': item.main}" :key="item.processStepId">
-        <td class="text-left">
-          <v-btn
-              width="100%"
-              icon
-              text
-              :href="item.presignedUrl" class="type">
-            <v-icon large color="grey">
-              {{ getIconForFile(item) }}
-            </v-icon>
-          </v-btn>
-        </td>
-        <td>
-          {{item.editableName}}
-        </td>
-      </tr>
- </tbody>
+  <v-simple-table dense>
+    <tbody>
+    <tr v-for="item in drillDownAttachments"  class="text-left"  :class="{'primary-row': item.main}" :key="item.processStepId">
+      <td class="text-left">
+        <v-btn
+            width="100%"
+            icon
+            text
+            :href="item.presignedUrl" class="type">
+          <v-icon large color="grey">
+            {{ getIconForFile(item) }}
+          </v-icon>
+        </v-btn>
+      </td>
+      <td class="type text-left">
+        {{item.editableName}}
+      </td>
+      <td>{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</td>
+    </tr>
+    </tbody>
   </v-simple-table>
 </template>
 
@@ -54,5 +55,8 @@ export default {
 </script>
 
 <style scoped>
+.v-btn:before {
+  display: none;
+}
 
 </style>
