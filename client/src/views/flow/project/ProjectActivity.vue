@@ -5,7 +5,7 @@
         <div v-show="!isCollapsed">
           <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
           <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
-          <Attachments v-else :projectId="projectId"/>
+          <AttachmentsDropdown v-else :projectId="projectId"/>
         </div>
       </div>
       <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>
@@ -38,15 +38,15 @@
 <script>
 
 import SpinnerInline from '@/components/SpinnerInline'
-import Attachments from '@/views/flow/components/Attachments'
 import ProjectNotes from '@/views/flow/project/ProjectNotes'
 import Messaging from '@/views/flow/components/Messaging'
+import AttachmentsDropdown from "@/views/flow/components/AttachmentsDropdown";
 
 export default {
   name: 'ProjectActivity',
   components: {
     SpinnerInline,
-    Attachments,
+    AttachmentsDropdown,
     ProjectNotes,
     Messaging
   },
