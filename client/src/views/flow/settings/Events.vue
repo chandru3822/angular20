@@ -218,7 +218,7 @@ export default {
     async addEvent () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/event/${this.newEvent.id}`)
+        const {data} = await postRequest(`/event`, this.newEvent)
         this.$router.push({path: `/settings/event/${data.id}/customFieldGroups`})
         this.snackbar = getSnackbar('SUCCESS', 'Event Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
