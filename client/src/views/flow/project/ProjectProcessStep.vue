@@ -135,11 +135,15 @@
           </div>
         </v-toolbar>
       </v-col>
-      <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature">
+      <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature && (
+        (processStepEvents && processStepEvents.length > 0) ||
+        (processStep && processStep.projectProcessStepEvents && processStep.projectProcessStepEvents.length > 0)
+      )">
         <div class="pps-subheader">
           All Events
           <v-autocomplete
             v-model="eventToAdd"
+            v-if="processStepEvents && processStepEvents.length > 0"
             :items="processStepEvents"
             placeholder="Select Event to add"
             item-text="eventName"
@@ -588,7 +592,7 @@ export default {
     addEvent: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event`, this.eventToAdd)
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventToAdd.id}`)
         this.$router.push(`/project/${this.projectId}/processStep/${data.projectProcessStepId}/event/${data.id}`)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
