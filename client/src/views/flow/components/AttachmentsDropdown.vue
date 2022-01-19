@@ -21,7 +21,7 @@
                             dense
                             multiple
                             ref='fileInput'
-                            @change='uploadDocument'
+                            @change='uploadDocument($event, type.attachmentTypeId)'
               ></v-file-input>
             </v-row>
           </v-col>
