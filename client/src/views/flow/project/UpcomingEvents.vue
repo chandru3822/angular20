@@ -96,7 +96,7 @@ export default {
     getEvents: async function () {
       try {
         this.upcomingEventsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/upcomingEvents`)
+        const {data} = await getRequest(`/project/${this.projectId}/upcomingEvents`, null, [])
         this.events = data
       } catch (e) {
         logError(e)

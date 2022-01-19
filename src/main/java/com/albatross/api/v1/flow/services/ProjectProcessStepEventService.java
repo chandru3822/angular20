@@ -54,12 +54,11 @@ public class ProjectProcessStepEventService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
-  public Optional<ProjectProcessStepEvent> insertPpsEvent(Long projectProcessStepId, ProcessStepEvent processStepEvent) throws Exception {
+  public Optional<ProjectProcessStepEvent> insertPpsEvent(Long projectProcessStepId, Long processStepEventId) throws Exception {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    params.put("processStepEventId", processStepEvent.getId());
-    params.put("companyEventStatusTypeId", processStepEvent.getId());
+    params.put("processStepEventId", processStepEventId);
     params.put("createdById", user.getId());
 
     Long id = sqlCache.updateReturningId("projectProcessStepEvent.insertEvent", params, "id").longValue();

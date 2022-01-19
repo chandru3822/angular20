@@ -1,7 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.ProcessStepEvent;
 import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +22,10 @@ public class ProjectProcessStepEventController {
 
   private final ProjectProcessStepEventService projectProcessStepEventService;
 
-  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> insertPpsEvent(@PathVariable Long ppsId,
-                                                          @RequestBody ProcessStepEvent processStepEvent) throws Exception {
-    return projectProcessStepEventService.insertPpsEvent(ppsId, processStepEvent);
+                                                          @PathVariable Long processStepEventId) throws Exception {
+    return projectProcessStepEventService.insertPpsEvent(ppsId, processStepEventId);
   }
 
   @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -40,7 +39,7 @@ public class ProjectProcessStepEventController {
     projectProcessStepEventService.deletePpsEvent(eventId);
   }
 
-  @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long eventId,
                                                                @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
     return projectProcessStepEventService.savePpsEventDetails(eventId, ppsEvent);

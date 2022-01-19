@@ -566,7 +566,7 @@ export default {
       this.eventActionMissingRequirements = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
+        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
         this.selectedEvent = data
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
