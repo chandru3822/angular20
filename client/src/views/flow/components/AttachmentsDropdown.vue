@@ -35,7 +35,11 @@
       </template>
     </v-expansion-panel-header>
     <v-expansion-panel-content>
-        <AttachmentsTable :display-type="type" :attachments="attachments" :show-non-primary-docs="showNonPrimaryDocs || !!projectProcessStepId"></AttachmentsTable>
+        <AttachmentsTable
+            :display-type="type"
+            :attachments="attachments"
+            :show-non-primary-docs="showNonPrimaryDocs || !!projectProcessStepId"
+        ></AttachmentsTable>
     </v-expansion-panel-content>
   </v-expansion-panel>
 </v-expansion-panels>
@@ -62,11 +66,13 @@ export default {
   },
   data () {
     return {
+      processStepId: null,
+      projectProcessStepId: null,
+      eventId: null,
+      projectProcessStepEventId: null,
       attachmentTypes: [],
       attachments: [],
       dragTypeId: null,
-      typePath: null,
-      attachmentPath: null,
       error: {},
       renderTicker: 0,
       companyId: this.$store.state.user.details.companyId,
@@ -80,47 +86,59 @@ export default {
   },
   props: {
     projectId: Number,
-    processStepId: Number,
-    projectProcessStepId: Number,
-    eventId: Number,
-    projectProcessStepEventId: Number,
     objectTypeId: Number,
     userId: Number,
     contactId: Number,
     orgId: Number,
   },
+  watch: {
+    // whenever pps id changes, this function will run
+    '$route.params.processStepId': async function () {
+      // reset the selected item
+      this.processStepId = this.$route.query.processStepId
+      this.projectProcessStepId = parseInt(this.$route.params.processStepId)
+      this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId)
+      this.loadAllPageDetails()
+    },
+  },
   created () {
-    if (this.projectId) {
-      this.typePath = '/projectTypes'
-      this.attachmentPath = `/project/${this.projectId}/attachments`
-    } else if (this.processStepId) {
-      this.typePath = `/processStepTypes/${this.processStepId}`
-      this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
-    } else if (this.eventId) {
-      //todo: change to /eventAndPsTypes after endpoint added AND send projectProcessStepId and eventId as request params, use getRequestWithParams
-      this.typePath = `/eventTypes/${this.eventId}`
-      this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
-    } else if (this.objectTypeId === 3) {
-      //user
-      this.typePath = `/objectTypes/user`
-      this.attachmentPath = `/user/${this.userId}/attachments`
-    } else if (this.objectTypeId === 2) {
-      //contact
-      this.typePath = `/objectTypes/contact`
-      this.attachmentPath = `/contact/${this.contactId}/attachments`
-    } else if (this.objectTypeId === 5) {
-      //org
-      this.typePath = `/objectTypes/org`
-      this.attachmentPath = `/org/${this.orgId}/attachments`
-    }
-
-    this.fetchAttachmentTypes()
-    this.fetchAttachments()
+    this.projectProcessStepId = parseInt(this.$route.params.processStepId)
+    this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId)
+    this.loadAllPageDetails();
   },
   computed: {
 
   },
   methods: {
+    loadAllPageDetails() {
+      if (this.projectProcessStepEventId) {
+        console.log('ppsEventId: ' + this.projectProcessStepEventId)
+        this.typePath = `/eventAndPsTypes/${this.projectProcessStepEventId}`
+        this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
+      } else if (this.projectProcessStepId) {
+        console.log('ppsId: ' + this.projectProcessStepId)
+        this.typePath = `/typesForStep/${this.projectProcessStepId}`
+        this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+      } else if (this.projectId) {
+        this.typePath = '/projectTypes'
+        this.attachmentPath = `/project/${this.projectId}/attachments`
+      } else if (this.objectTypeId === 3) {
+        //user
+        this.typePath = `/objectTypes/user`
+        this.attachmentPath = `/user/${this.userId}/attachments`
+      } else if (this.objectTypeId === 2) {
+        //contact
+        this.typePath = `/objectTypes/contact`
+        this.attachmentPath = `/contact/${this.contactId}/attachments`
+      } else if (this.objectTypeId === 5) {
+        //org
+        this.typePath = `/objectTypes/org`
+        this.attachmentPath = `/org/${this.orgId}/attachments`
+      }
+
+      this.fetchAttachmentTypes()
+      this.fetchAttachments()
+    },
     toggleShowNonPrimary(){
       this.showNonPrimaryDocs = !this.showNonPrimaryDocs;
     },
@@ -172,7 +190,7 @@ export default {
     },
     getTypeCount: function(typeId) {
       try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived).length
+        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
       } catch {
         return 0
       }
