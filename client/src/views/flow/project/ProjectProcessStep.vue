@@ -160,7 +160,7 @@
         </div>
       </v-col>
       <v-col cols="12" class="text-left pt-0">
-        <div class="pps-subheader">
+        <div class="pps-subheader" v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
             class="back-btn show-unperformable-actions-btn"
