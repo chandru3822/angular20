@@ -1061,6 +1061,8 @@ update brs.project_detail_events_config
      from update_data ud)
   on conflict do nothing;
 
+  drop table if exists flow.migration_child_process_step;
+
 END
 $$
   LANGUAGE plpgsql VOLATILE
