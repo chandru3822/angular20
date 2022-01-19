@@ -328,6 +328,14 @@ BEGIN
     perform flow.migrate_fields_to_group(v_new_group_id_3365_SD, 19667, 4);
 
     perform flow.migrate_group_to_event(6347, p_event_type_id, 2);
+    perform flow.migrate_group_to_event(6656, p_event_type_id, 4);
+    perform flow.migrate_group_to_event(6662, p_event_type_id, 5);
+    perform flow.migrate_group_to_event(6664, p_event_type_id, 6);
+    perform flow.migrate_group_to_event(7056, p_event_type_id, 7);
+    perform flow.migrate_group_to_event(6348, p_event_type_id, 8);
+    perform flow.migrate_group_to_event(6654, p_event_type_id, 9);
+    perform flow.migrate_group_to_event(6358, p_event_type_id, 10);
+    perform flow.migrate_group_to_event(6655, p_event_type_id, 11);
     perform flow.migrate_fields_to_group(v_new_group_id_3365_IO, 20994, 1);
     perform flow.migrate_fields_to_group(v_new_group_id_3365_IO, 21504, 2);
     perform flow.migrate_fields_to_group(v_new_group_id_3365_IO, 22019, 3);

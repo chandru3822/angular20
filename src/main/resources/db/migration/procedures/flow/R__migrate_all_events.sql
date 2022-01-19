@@ -568,7 +568,7 @@ BEGIN
   raise notice 'starting installation process';
   perform flow.migrate_insert_new_group('Details', 1, null, v_installation_id);
   perform flow.migrate_insert_new_group('Outcome', 3, null, v_installation_id);
-  perform flow.migrate_insert_new_group('No-Show', 4, null, v_installation_id);
+  perform flow.migrate_insert_new_group('No-Show', 12, null, v_installation_id);
   perform flow.migrate_events(3365);
 
 

@@ -823,3 +823,133 @@ insert into flow.white_list_type(white_list_type, archived)
 insert into flow.white_list_type(white_list_type, archived)
   (select 'EVENT_RESOURCE_READ_ONLY', false
    where not exists (select id from flow.white_list_type where white_list_type = 'EVENT_RESOURCE_READ_ONLY'));
+
+
+CREATE TABLE if NOT EXISTS flow.migration_child_process_step
+(
+  id                            serial                                    not null,
+  project_process_id integer                                   not null,
+  process_step_ids  integer[]                                   not null,
+  CONSTRAINT migration_child_process_step_pk primary key (id)
+);
+
+
+
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(1,'{1,2}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(5,'{5,60,3346}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(98,'{98,99,3346}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(168,'{168,204,152,46}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(40,'{40,204,152,46}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(153,'{153,205,154,46}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3365,'{3365}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3383,'{3383}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(16,'{16,233,17}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(13,'{13,94,67}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(85,'{85,96,97}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3431,'{3431}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(129,'{129}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(138,'{138,210,139}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(146,'{146,214,147}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(140,'{140,211,141}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(144,'{144,213,145}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(142,'{142,212,143}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(148,'{148,149}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3414,'{3414}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3362,'{3362,3363,3364}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(134,'{134,208,135}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(28,'{28,239,137}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3487,'{3487}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3409,'{3409}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(54,'{54,104,55}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(2838,'{2838,2839,2840}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(2841,'{2841,2842,2843}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3091,'{3091}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3480,'{3480}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3441,'{3441}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(165,'{165,166,167}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(66,'{66,228,71}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3107,'{3107,3108,3109}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(192,'{192,193,194}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3103,'{3103,3104,3105}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3099,'{3099,3100,3101}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(196,'{196,234,197}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3359,'{3359}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3360,'{3360}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(44,'{44,156,157}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3479,'{3479}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(222,'{222,223}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(172,'{172,236,173}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3427,'{3427}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3428,'{3428}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3397,'{3397,3398}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3478,'{3478}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3395,'{3395}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3399,'{3399}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3471,'{3471}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3459,'{3459}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3470,'{3470}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3473,'{3473}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3472,'{3472}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3474,'{3474}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3391,'{3391}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(170,'{170,206,207,171}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(25,'{25,235,26}');

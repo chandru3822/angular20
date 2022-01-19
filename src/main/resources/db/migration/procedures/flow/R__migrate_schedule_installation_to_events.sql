@@ -10,6 +10,46 @@ BEGIN
                                                                      p_project_process_step_id,
                                                                      null);
 
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6656,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6662,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6664,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     7056,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6348,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6654,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6358,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
+  perform flow.migrate_project_process_step_event_custom_field_value(p_event_id,
+                                                                     6655,
+                                                                     p_project_process_step_id,
+                                                                     null);
+
 
   perform flow.migrate_project_process_step_event_custom_field_value(p_event_id, null, p_project_process_step_id,
                                                                      19661);

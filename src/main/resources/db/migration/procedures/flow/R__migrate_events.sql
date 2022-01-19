@@ -10,7 +10,12 @@ declare
   v_event_id      integer;
   v_event_type_id integer;
   v_event_status_type_id integer;
+  y integer;
+  p integer[];
+  v_first_row boolean default false;
+v_project_process_step_ids integer[];
 BEGIN
+  select process_step_ids into p from flow.migration_child_process_step where project_process_id = p_process_step_id;
 
   for x in select pps.id    project_process_step_id,
                   cfg.group_name,
@@ -574,15 +579,51 @@ BEGIN
                                             and e.temp_cfg_id = x.custom_field_group_id),
               v_resource_id, coalesce(v_event_status_type_id,5), v_start_date, v_end_date, 2350555)
       returning id into v_event_id;
+      v_project_process_step_ids = null;
+      v_first_row = true;
+      foreach y in array p
+        loop
+          if v_project_process_step_ids is null then
+            v_project_process_step_ids = array_agg(x.project_process_step_id);
+          else
+            select array_agg(id)
+            into v_project_process_step_ids
+            from flow.project_process_step
+            where parent_project_process_step_id = any(v_project_process_step_ids)
+            and process_step_id = y;
+          end if;
 
-      insert into flow.project_process_step_event_attachment(attachment_id, project_process_step_event_id, date_created, date_modified, created_by_id, modified_by_id,archived)
-       (select ppsa.attachment_id,v_event_id,ppsa.date_created,ppsa.date_modified,ppsa.created_by_id,ppsa.modified_by_id,ppsa.archived
-         from flow.project_process_step_attachment ppsa
-         where ppsa.project_process_step_id = x.project_process_step_id);
+          if v_project_process_step_ids is not null or array_length(v_project_process_step_ids, 1) > 0  then
+            insert into flow.project_process_step_event_attachment(attachment_id, project_process_step_event_id, date_created, date_modified, created_by_id, modified_by_id,archived)
+              (select ppsa.attachment_id,v_event_id,ppsa.date_created,ppsa.date_modified,ppsa.created_by_id,ppsa.modified_by_id,ppsa.archived
+               from flow.project_process_step_attachment ppsa
+                inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
+               where ppsa.project_process_step_id = any(v_project_process_step_ids)
+                and pps.process_step_id = y);
 
-      update flow.project_process_step_attachment
-        set archived = true
-      where project_process_step_id = x.project_process_step_id;
+            if v_first_row is false then
+              insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, date_created, date_modified, created_by_id, modified_by_id, archived)
+               (select ppsa.attachment_id,x.project_process_step_id,ppsa.date_created,ppsa.date_modified,ppsa.created_by_id,ppsa.modified_by_id,ppsa.archived
+                from flow.project_process_step_attachment ppsa
+                       inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
+                where ppsa.project_process_step_id = any(v_project_process_step_ids)
+                  and pps.process_step_id = y);
+
+              update flow.project_process_step_attachment
+              set archived = true
+              where project_process_step_id = any(v_project_process_step_ids);
+            end if;
+
+          end if;
+
+          v_first_row = false;
+        end loop;
+
+
+
+--       update flow.project_process_step_attachment
+--         set archived = true
+--       where project_process_step_id = x.project_process_step_id;
 
       if x.process_step_id = 1 then
         perform flow.migrate_schedule_closer_appointment_to_events(v_event_id,
