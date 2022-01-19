@@ -1063,6 +1063,14 @@ update brs.project_detail_events_config
 
   drop table if exists flow.migration_child_process_step;
 
+  update brs.project_detail_events_config
+  set update_first_value_only_id = 'ahj_inspection_start_time_ppse_id'
+  where update_first_value_only_id = 'ahj_inspection_start_time_ppscfv_id';
+
+  update brs.project_detail_events_config
+  set update_first_value_only_id = 'permit_pack_submittal_end_time_ppse_id'
+  where update_first_value_only_id = 'permit_pack_submittal_end_time_ppscfv_id';
+
 END
 $$
   LANGUAGE plpgsql VOLATILE
