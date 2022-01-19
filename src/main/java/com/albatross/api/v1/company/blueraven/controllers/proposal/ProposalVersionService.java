@@ -11,13 +11,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
 
-@Component
+@Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('PROPOSALS_ADMIN')")
 @RequiredArgsConstructor
 public class ProposalVersionService {
 
@@ -82,7 +84,6 @@ public class ProposalVersionService {
   }
 
   public Optional<ProposalVersion> getProposalVersion(Long id) {
-    //    final var currentUser = securityService.getCurrentUser();
     return sqlCache.get("propTool.findById", Map.of("id", id), ProposalVersion.class);
   }
 
