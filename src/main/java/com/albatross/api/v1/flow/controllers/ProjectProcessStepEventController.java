@@ -24,8 +24,8 @@ public class ProjectProcessStepEventController {
 
   @PostMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> insertPpsEvent(@PathVariable Long ppsId,
-                                                          @PathVariable Long processStepEventId) throws Exception {
-    return projectProcessStepEventService.insertPpsEvent(ppsId, processStepEventId);
+                                                          @PathVariable Long eventId) throws Exception {
+    return projectProcessStepEventService.insertPpsEvent(ppsId, eventId);
   }
 
   @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
