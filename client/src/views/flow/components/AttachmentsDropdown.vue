@@ -1,5 +1,6 @@
 <template>
 <v-expansion-panels accordion multiple>
+  <div v-if="!attachmentTypes.length">No attachments available</div>
   <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
     <v-expansion-panel-header>
       <template v-slot:default="{ open }">
