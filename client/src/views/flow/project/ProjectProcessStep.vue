@@ -199,7 +199,7 @@
         </v-btn>
       </v-col>
       <v-col cols="12" class="text-left py-0 px-0">
-        <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-bar mx-2">
+        <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar mx-2">
           <v-toolbar-title>
             Details/Custom Fields
           </v-toolbar-title>
@@ -632,12 +632,6 @@ export default {
 }
 .cfg-detail-header .v-toolbar__title {
   font-size: 16px;
-}
-.fixed-bar {
-  position: sticky;
-  position: -webkit-sticky; /* for Safari */
-  top: 0;
-  z-index: 999;
 }
 
 </style>

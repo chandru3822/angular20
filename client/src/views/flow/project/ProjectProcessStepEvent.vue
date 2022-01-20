@@ -1,5 +1,5 @@
 <template>
-  <v-main class="height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+  <v-main class="relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
     <div>
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
         <v-toolbar-title>
@@ -72,10 +72,10 @@
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
-      <v-btn class="one-hunned mt-4" color="#E3E3E3">
+      <v-btn class="one-hunned my-4" color="#E3E3E3">
         Upload Documents
       </v-btn>
-      <v-toolbar color="transparent" class="elevation-0 mt-4 cfg-detail-header">
+      <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar">
         <v-toolbar-title>
           Details/Custom Fields
         </v-toolbar-title>
