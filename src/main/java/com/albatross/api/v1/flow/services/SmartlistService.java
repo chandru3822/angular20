@@ -1777,7 +1777,7 @@ public class SmartlistService {
           final long systemListNumber = (r.getSystemListId() == 1 || r.getSystemListId() == 2) ? 1 : r.getSystemListId();
           final String systemListTable = "systemList_" + systemListNumber;
 
-          //Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates
+          //@TODO: Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates between fields/columns and requirements
           final String newValueTable = UUID.randomUUID().toString();
           projectsValueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable, newValueTable, newValueTable, r.getValueReferenceTable(), getReferenceColumn(r.getDataTypeId())));
           r.setValueReferenceTable(newValueTable);
@@ -2360,7 +2360,7 @@ public class SmartlistService {
     //default fields
     if (useEventData) {
       //event fields
-      query.append("flow.project_process_step_event.id, ")
+      query.append("flow.project.id, flow.project_process_step_event.id, ")
         .append("flow.event.event_name ");
     } else {
       //process step fields
@@ -2376,7 +2376,7 @@ public class SmartlistService {
       f.setPpsEventTable(UUID.randomUUID().toString());
       f.setUserPositionTable(UUID.randomUUID().toString());
 
-      //join value tables
+      //join value tables for every custom field, so we can assume they're going in following logic
       //if the field is a custom field
       if (f.getCustomFieldSqlKey() == null && f.getCustomFieldGroupAssignmentId() != null) {
         if (f.getObjectTypeId() == 1) {
@@ -2436,6 +2436,31 @@ public class SmartlistService {
       //if field is a smartlist system list field
       if (f.getSmartlistSystemListId() != null) {
 
+        //if field is process step status or category
+        if (f.getSmartlistSystemListId() == 2 || f.getSmartlistSystemListId() == 4) {
+
+          //check if process step is already joined
+          if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
+            //if the PS is already joined, use it
+            final String ppsTable = fields.stream()
+              .filter(field -> Objects.equals(field.getProcessStepId(), f.getProcessStepId()))
+              .map(SmartlistFieldAssignment::getPpsTable)
+              .findFirst()
+              .orElse(null);
+            f.setPpsTable(ppsTable);
+          } else {
+            query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+          }
+
+          if (Objects.equals(f.getReferenceTable(), "flow.company_process_step_status_type")) { //else if field is process step status
+            query.append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".%s ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), f.getPpsTable(), f.getJoinColumn()));
+          } else if (Objects.equals(f.getReferenceTable(), "flow.process_step_status_type")) { //else if field is process step category (root status)
+            final String companyStatusTable = UUID.randomUUID().toString();
+            //@TODO: The hardcoded "process_step_status_type_id" should come from the smartlist_field table, but isn't working here with the existing setup. Revisit
+            query.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id ", companyStatusTable, companyStatusTable, f.getPpsTable()))
+                 .append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".%s ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), companyStatusTable, "process_step_status_type_id"));
+          }
+        }
       } else if (f.getSmartlistFieldId() != null) { //else if field is smartlist system field
         if (f.getObjectTypeId() == 4) {
 
@@ -2504,11 +2529,21 @@ public class SmartlistService {
       } else {
         //if field is a custom field w/sql query
         if (f.getCustomFieldSqlKey() != null) {
+          //@TODO: implement
+        } else if (f.getCompanySystemListId() != null) { //else if custom field is system list
 
-        } else if (f.getCompanySystemListId() != null) { //else if field is system list
+          final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
+          final String systemListTable = "systemList_" + systemListNumber;
+          final String currentValueTable = (f.getObjectTypeId() == 6) ? f.getValueEventReferenceTable() : f.getValueReferenceTable();
+          final String newValueTable = UUID.randomUUID().toString();
+          //@TODO: Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates between fields/columns and requirements
+          query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable, newValueTable, newValueTable, currentValueTable, getReferenceColumn(f.getDataTypeId())));
 
-        } else {
-
+          if (f.getObjectTypeId() == 6) {
+            f.setValueEventReferenceTable(newValueTable);
+          } else {
+            f.setValueReferenceTable(newValueTable);
+          }
         }
       }
     }
