@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +20,7 @@ public class Smartlist {
 
   private Timestamp dateCreated, dateModified;
 
-  private List<Long> workQueueTypeProjectStatus, workQueueTypeProjectCategory, workQueueTypeProcessStepStatus, workQueueTypeProcessStepCategory,
-                     workQueueTypeEventStatus, workQueueTypeEventCategory;
+  //workQueueTypes is used only for workqueue generation
+  @JsonIgnore
+  private List<ProcessStepEventWorkQueueType> eventWorkQueueTypes;
 }
