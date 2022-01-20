@@ -1,5 +1,5 @@
 <template>
-  <v-main class="events-container" v-if="!eventDetailsLoading">
+  <v-main class="height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
     <div>
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
         <v-toolbar-title>

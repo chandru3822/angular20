@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="!processStepLoading">
+  <v-main v-if="!processStepLoading" class="height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -36,7 +36,7 @@
       </v-col>
 
       <v-col cols="12" class="pa-0">
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
+        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar toolbar-z-index-override mx-2">
           <v-toolbar-title class="process-step-name">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"
@@ -200,7 +200,7 @@
       </v-col>
       <v-col cols="12" class="text-left py-0 px-0">
         <v-col class="pt-0 py-0">
-          <v-toolbar color="transparent" class="elevation-0 cfg-detail-header">
+          <v-toolbar color="transparent" class="elevation-0 cfg-detail-header fixed-bar">
             <v-toolbar-title>
               Details/Custom Fields
             </v-toolbar-title>
@@ -637,6 +637,13 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.fixed-bar {
+  position: sticky;
+  position: -webkit-sticky; /* for Safari */
+  top: 0;
+  z-index: 999;
+}
+
 .process-step-name {
   font-weight: bold;
   font-size: 16px;
