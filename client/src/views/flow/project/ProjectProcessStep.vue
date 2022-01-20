@@ -542,6 +542,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+        this.$emit('refresh-upcoming-pps')
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
