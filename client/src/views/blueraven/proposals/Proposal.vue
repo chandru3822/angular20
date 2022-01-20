@@ -9,9 +9,7 @@
           <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
           <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
           <v-spacer></v-spacer>
-          <v-toolbar-items>
-
-          </v-toolbar-items>
+          <v-toolbar-items></v-toolbar-items>
         </v-toolbar>
       </v-col>
     </v-row>
@@ -23,7 +21,7 @@
             <v-card
                 flat
                 class="pt-0"
-                v-for="(cfg, index) in proposal.customFieldGroups"
+                v-for="(cfg, index) in sortedCustomFieldGroups"
                 :key="index"
             >
               <div class="configuration-group-title">{{cfg.groupName}}</div>
@@ -110,6 +108,20 @@ export default {
   created() {
     this.getProposalDetails()
   },
+  computed: {
+    sortedCustomFieldGroups(){
+      const customFieldGroups = [...this.proposal?.customFieldGroups]
+      return customFieldGroups.sort((cfg1, cfg2)=>{
+        if (cfg1.groupOrder < cfg2.groupOrder){
+          return -1
+        }
+        if (cfg1.groupOrder > cfg2.groupOrder){
+          return 1
+        }
+        return 0
+      })
+    }
+  },
   methods: {
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -173,7 +185,7 @@ tr:nth-of-type(even) {
 .configuration-container {
   position: relative;
   padding: 24px;
-  height: calc(100vh - 180px);
+  //height: calc(100vh - 180px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -192,7 +204,6 @@ tr:nth-of-type(even) {
 }
 
 .configuration-save-container {
-
   display: flex;
 }
 
