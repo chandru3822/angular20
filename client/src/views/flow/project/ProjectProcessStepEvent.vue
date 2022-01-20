@@ -1,5 +1,5 @@
 <template>
-  <v-main class="events-container" v-if="!eventDetailsLoading">
+  <v-main class="relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
     <div>
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
         <v-toolbar-title>
@@ -72,10 +72,10 @@
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
-      <v-btn class="one-hunned mt-4" color="#E3E3E3">
+      <v-btn class="one-hunned my-4" color="#E3E3E3">
         Upload Documents
       </v-btn>
-      <v-toolbar color="transparent" class="elevation-0 mt-4 cfg-detail-header">
+      <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar">
         <v-toolbar-title>
           Details/Custom Fields
         </v-toolbar-title>
@@ -257,7 +257,6 @@ import {
   getRequestWithParams,
   putRequest,
   postRequest,
-  scrollToTop,
   postRequestWithRequestParams, deleteRequest
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
@@ -270,6 +269,7 @@ import constants from '@/helpers/constants'
 import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -532,6 +532,12 @@ export default {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
+        //have to reset the pps stuff too in case they just go directly to the url
+        this.$store.commit(ProjectMutations.SET_PPS, {
+          projectProcessStepId: this.selectedEvent.projectProcessStepId,
+          processStepId: this.selectedEvent.processStepId,
+          processStepName: this.selectedEvent.processStepName})
+        this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()

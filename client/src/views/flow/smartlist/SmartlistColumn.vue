@@ -149,7 +149,7 @@
             <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
             <v-col cols="3" class="text-left">{{field.name}}</v-col>
             <v-col cols="4" class="text-left">{{field.objectType}}</v-col>
-            <v-col cols="4" class="text-left">{{(field.objectTypeId === 6) ? field.eventName : field.processStepName}}</v-col>
+            <v-col cols="4" class="text-left">{{(field.objectTypeId === 6) ? `${field.eventName} (${field.processStepName})` : field.processStepName}}</v-col>
           </v-row>
         </v-list-item-content>
 

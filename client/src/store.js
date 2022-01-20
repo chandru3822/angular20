@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
+import { ProjectStore } from '@/stores/ProjectStore'
 import { BrsStore } from '@/stores/BrsStore'
 import { AppStore } from '@/stores/AppStore'
 import constants from '@/helpers/constants'
@@ -43,7 +44,8 @@ const store = new Vuex.Store({
   modules: {
     user: UserStore,
     brs: BrsStore,
-    app: AppStore
+    app: AppStore,
+    project: ProjectStore
   },
   mutations: {
     ADD_CANCEL_TOKEN(state, token) {

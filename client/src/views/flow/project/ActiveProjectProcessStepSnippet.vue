@@ -40,6 +40,7 @@ export default {
   },
   methods: {
     goToPath(path) {
+      // this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
       this.$router.push(path)
     },
   }

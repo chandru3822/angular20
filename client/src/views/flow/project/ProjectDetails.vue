@@ -1,63 +1,70 @@
 <template>
-<v-row id="project-details-container" class="mt-2">
-  <v-col cols="12" lg="12" class="pt-0">
-    <v-tabs v-if="tabs.length > 0"
-            background-color="transparent"
-            v-model="selectedTab.uniqueIdentifier"
-            show-arrows>
-      <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-      <v-tab v-for="t in tabs" :key="t.id"
-             @click="selectedTab = t">
-        {{ t.tabName }}
-      </v-tab>
-    </v-tabs>
-    <v-tabs v-else background-color="transparent">
-      <v-tab>
-        Project Details
-      </v-tab>
-    </v-tabs>
-
-    <v-col v-if="isFieldsLoading">
-      <SpinnerInline :size="20" color="primaryCustom"/>
-    </v-col>
-
-    <div v-else>
-      <v-col
-        :class="{ 'mt-4': index !== 0 }"
-        class="py-0"
-        v-for="(group, index) in displayedGroups"
-        :key="index"
-      >
-        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-          <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
+  <div id="project-details-container" class="py-0">
+    <div class="pa-0 height-one-hunned">
+      <div class="project-header" v-if="!tabsLoading">
+        <v-tabs v-if="tabs.length > 0"
+                background-color="transparent"
+                v-model="selectedTab.uniqueIdentifier"
+                show-arrows>
+          <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
+          <v-tab v-for="t in tabs" :key="t.id"
+                 @click="tabSelection(t)">
+            {{ t.tabName }}
+          </v-tab>
+        </v-tabs>
+        <v-tabs v-else background-color="transparent">
+          <v-tab>
+            Project Details
+          </v-tab>
+        </v-tabs>
+        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-3" v-if="displayedGroups && displayedGroups.length > 0">
+          <v-toolbar-title>{{ displayedGroups[0].groupName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div>
               <v-btn
-                v-if="index === 0 && userCanEdit"
+                v-if="userCanEdit"
                 color="primaryCustom"
                 class="white--text mt-3"
                 :disabled="fieldsSaving"
-                @click="[fieldsSaving = true, updateFieldGroups()]">Save Fields</v-btn>
+                @click="[fieldsSaving = true, updateFieldGroups()]">Save Fields
+              </v-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card class="pa-4 text-left square-card">
-          <CustomValueInput
-            v-for="(field, idx) in group.customFieldValues"
-            :key="idx"
-            :callback="populateDirtyCfvs"
-            :readonly="getReadOnly(field)"
-            :showFieldName="false"
-            :field="field"
-          />
-        </v-card>
-      </v-col>
+      </div>
+      <div class="project-fields-container" ref="projectFieldsContainer">
+        <v-col v-if="isFieldsLoading">
+          <SpinnerInline :size="20" color="primaryCustom"/>
+        </v-col>
+
+        <div v-else>
+          <v-col
+            :class="{ 'mt-4': index !== 0 }"
+            class="py-0"
+            v-for="(group, index) in displayedGroups"
+            :key="index"
+          >
+            <v-toolbar color="transparent" class="elevation-0 process-step-toolbar"
+              v-if="index !== 0">
+              <v-toolbar-title>{{ group.groupName }}</v-toolbar-title>
+            </v-toolbar>
+            <v-card class="pa-4 text-left square-card">
+              <CustomValueInput
+                v-for="(field, idx) in group.customFieldValues"
+                :key="idx"
+                :callback="populateDirtyCfvs"
+                :readonly="getReadOnly(field)"
+                :showFieldName="false"
+                :field="field"
+              />
+            </v-card>
+          </v-col>
+        </div>
+      </div>
     </div>
 
-  </v-col>
-
-</v-row>
+  </div>
 </template>
 
 <script>
@@ -82,7 +89,7 @@ export default {
     SpinnerInline,
     CustomValueInput,
   },
-  data () {
+  data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
@@ -101,7 +108,7 @@ export default {
       companyId: this.$store.state.user.details.companyId,
     }
   },
-  created () {
+  created() {
     this.getProjectTabs()
     this.getProcessSteps()
     this.getFieldGroups()
@@ -110,10 +117,10 @@ export default {
     project: Object,
   },
   computed: {
-    displayedGroups () {
-      return this.selectedTab?.id ? this.customFieldGroups.filter(cfg => cfg.companyObjectTypeTabId === this.selectedTab.id ) : this.customFieldGroups
+    displayedGroups() {
+      return this.selectedTab?.id ? this.customFieldGroups.filter(cfg => cfg.companyObjectTypeTabId === this.selectedTab.id) : this.customFieldGroups
     },
-    processStepsByName () {
+    processStepsByName() {
       const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
       return names.map(processStepName => {
@@ -126,6 +133,11 @@ export default {
   },
 
   methods: {
+    tabSelection(t) {
+      this.selectedTab = t
+      this.$refs.projectFieldsContainer.scrollTop = 0
+      // this.$refs.projectFieldsContainer.$el.scrollTop = 0
+    },
     getProjectTabs: async function () {
       this.tabsLoading = true
       try {
@@ -146,14 +158,14 @@ export default {
     },
     getProcessSteps: async function () {
       try {
-      this.isProcessStepsLoading = true
-       const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-       this.processSteps = data
-     } catch (e) {
-       logError(e)
-     } finally {
-       this.isProcessStepsLoading = false
-     }
+        this.isProcessStepsLoading = true
+        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
+        this.processSteps = data
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.isProcessStepsLoading = false
+      }
     },
     getFieldGroups: async function () {
       try {
@@ -186,7 +198,7 @@ export default {
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if(!match) {
+      if (!match) {
         this.dirtyCfvs.push(field)
       }
     },
@@ -199,18 +211,26 @@ export default {
 
 <style lang="scss" scoped>
 #project-details-container {
-  margin-top: -15px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  max-height: 100%;
+  height: 100%;
+  position: relative;
 }
 
 .project-header {
-  border-bottom: solid 1px #EAEAF4
 }
+
+.project-fields-container {
+  overflow: auto;
+  height: calc(100% - 115px);
+  padding-bottom: 20px !important;
+}
+
 .project-title {
   font-size: 20px;
 }
+
 .project-subtitle {
   font-size: 15px;
 }
@@ -227,6 +247,7 @@ export default {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+
 .manage-btn {
 
   margin-left: 12px;
