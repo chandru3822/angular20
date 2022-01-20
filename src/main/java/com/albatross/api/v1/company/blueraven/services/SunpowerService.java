@@ -169,12 +169,20 @@ public class SunpowerService {
     JSONObject returnApplication = new JSONObject();
     returnApplication.put("type", "Sunpower");
 
+    // Check if their is a SunPower URL stored for this Project & Proposal Number
     Optional<Object> sunpowerUrl = getSunpowerUrl(projectId, proposalNbr);
     if (sunpowerUrl.isPresent()) {
       returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
     }
     else {
-      returnApplication.put("applicationUrl", "");
+      // Check if their is a SunPower URL stored for this Project (any Proposal Number)
+      Optional<Object> sunpowerUrlPerProject = getSunpowerUrl(projectId);
+      if (sunpowerUrlPerProject.isPresent()) {
+        returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
+      }
+      else {
+        returnApplication.put("applicationUrl", "");
+      }
     }
 
     return returnApplication;
