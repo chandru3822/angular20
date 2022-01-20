@@ -134,12 +134,14 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-row class="project-split-container">
-      <div class="white-bg project-section overflow-y-auto"
-           :class="{'col-3': !collapseLeftSidebar, 'collapse-left text-center': collapseLeftSidebar}">
-        <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
-          <v-icon>mdi-menu</v-icon>
-        </v-btn>
-        <div v-if="!collapseLeftSidebar && project && project.id">
+      <div class="white-bg project-section px-0"
+           :class="{'col-3': !collapseLeftSidebar, 'collapse-left': collapseLeftSidebar}">
+        <div class="left-expander-button">
+          <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
+        <div v-if="!collapseLeftSidebar && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat class="project-section-header">
             <v-toolbar-title class="font-size-14">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -192,7 +194,7 @@
                           :projectId="projectId"/>
         </div>
       </div>
-      <div class="overflow-y-auto project-section" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
+      <div class="project-section pt-0 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
@@ -511,7 +513,7 @@ export default {
 }
 
 .project-section {
-  max-height: calc(100% - 15px);
+  max-height: 100%;
 }
 
 .white-bg {
@@ -519,27 +521,31 @@ export default {
 }
 
 .collapse-left {
-  width: 104px;
-  padding: 10px;
+  width: 72px;
+  padding: 12px;
+}
+
+.left-expander-button {
+  margin-left: 12px;
 }
 
 .collapse-right {
-  width: 104px;
-  padding: 10px;
+  width: 72px;
+  padding: 12px;
 }
 
 .center-width-left-side-collapse {
-  width: calc(66.66% - 104px);
+  width: calc(66.66% - 72px);
   padding: 10px !important;
 }
 
 .center-width-right-side-collapse {
-  width: calc(75% - 104px);
+  width: calc(75% - 72px);
   padding: 10px !important;
 }
 
 .center-width-both-collapse {
-  width: calc(100% - 208px);
+  width: calc(100% - 144px);
   padding: 10px !important;
 }
 

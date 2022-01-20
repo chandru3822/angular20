@@ -45,6 +45,13 @@ body {
   font-weight: 600;
 }
 
+.fixed-toolbar {
+  position: sticky;
+  position: -webkit-sticky; /* for Safari */
+  top: 0;
+  z-index: 999;
+}
+
 .primary-custom-bg {
   background-color: var(--v-primaryCustom-base) ;
   border-color: var(--v-primaryCustom-base);

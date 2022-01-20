@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="!processStepLoading">
+  <v-main v-if="!processStepLoading" class="py-0 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -36,7 +36,7 @@
       </v-col>
 
       <v-col cols="12" class="pa-0">
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+        <v-toolbar color="transparent" class="elevation-0 mt-2 cfg-name-toolbar toolbar-z-index-override mx-2">
           <v-toolbar-title class="process-step-name">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"
@@ -199,25 +199,23 @@
         </v-btn>
       </v-col>
       <v-col cols="12" class="text-left py-0 px-0">
-        <v-col class="pt-0 py-0">
-          <v-toolbar color="transparent" class="elevation-0 cfg-detail-header">
-            <v-toolbar-title>
-              Details/Custom Fields
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <div>
-                <v-btn
-                  color="primaryCustom"
-                  class="white--text mt-3"
-                  :disabled="fieldsSaving"
-                  @click="[fieldsSaving = true, checkFields()]"
-                >Save Fields
-                </v-btn>
-              </div>
-            </v-toolbar-items>
-          </v-toolbar>
-        </v-col>
+        <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar mx-2">
+          <v-toolbar-title>
+            Details/Custom Fields
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <div>
+              <v-btn
+                color="primaryCustom"
+                class="white--text mt-3"
+                :disabled="fieldsSaving"
+                @click="[fieldsSaving = true, checkFields()]"
+              >Save Fields
+              </v-btn>
+            </div>
+          </v-toolbar-items>
+        </v-toolbar>
         <!--    process field groups-->
         <v-col
           class="pt-0"
@@ -635,6 +633,7 @@ export default {
 .cfg-detail-header .v-toolbar__title {
   font-size: 16px;
 }
+
 </style>
 <style lang="scss" scoped>
 .process-step-name {
