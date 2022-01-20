@@ -36,7 +36,7 @@
       </v-col>
 
       <v-col cols="12" class="pa-0">
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
           <v-toolbar-title class="process-step-name">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"

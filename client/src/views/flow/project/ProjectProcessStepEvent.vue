@@ -257,7 +257,6 @@ import {
   getRequestWithParams,
   putRequest,
   postRequest,
-  scrollToTop,
   postRequestWithRequestParams, deleteRequest
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
