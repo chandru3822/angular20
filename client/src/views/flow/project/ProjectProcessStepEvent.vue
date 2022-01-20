@@ -534,7 +534,10 @@ export default {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //have to reset the pps stuff too in case they just go directly to the url
-        this.$store.commit(ProjectMutations.SET_PPS, {projectProcessStepId: this.selectedEvent.projectProcessStepId, processStepName: this.selectedEvent.processStepName})
+        this.$store.commit(ProjectMutations.SET_PPS, {
+          projectProcessStepId: this.selectedEvent.projectProcessStepId,
+          processStepId: this.selectedEvent.processStepId,
+          processStepName: this.selectedEvent.processStepName})
         this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
