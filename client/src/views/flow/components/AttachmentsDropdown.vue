@@ -103,6 +103,7 @@ export default {
     },
   },
   created () {
+    this.processStepId = this.$route.query.processStepId
     this.projectProcessStepId = parseInt(this.$route.params.processStepId)
     this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId)
     this.loadAllPageDetails();
@@ -118,7 +119,7 @@ export default {
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
         console.log('ppsId: ' + this.projectProcessStepId)
-        this.typePath = `/typesForStep/${this.projectProcessStepId}`
+        this.typePath = `/processStepTypes/${this.processStepId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
       } else if (this.projectId) {
         this.typePath = '/projectTypes'
