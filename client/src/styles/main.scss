@@ -86,6 +86,10 @@ body {
   height: 45px !important;
 }
 
+.no-text-transform {
+  text-transform: none;
+}
+
 /* universally change the data-table footer height */
 .v-data-footer {
   height: 40px;

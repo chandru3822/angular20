@@ -123,9 +123,9 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div>
-          <v-btn color="#C4C4C4"
+          <v-btn color="#fff"
                  v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
-                 class="d-inline-block mt-3"
+                 class="d-inline-block mt-3 no-text-transform"
                  @click="$router.push({name: 'projectAdmin', params: {projectId}})"
           >
             Project Admin
