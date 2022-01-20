@@ -132,6 +132,7 @@ const store = new Vuex.Store({
     },
     [Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectProcessStepId, callback }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
+      console.log('we got here', projectProcessStepId)
       let reader = new FileReader()
       reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {

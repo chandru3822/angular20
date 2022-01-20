@@ -72,9 +72,17 @@
       <div class="error-text" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
-      <v-btn class="one-hunned my-4" color="#E3E3E3">
-        Upload Documents
-      </v-btn>
+      <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="my-2">
+        <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
+          Upload Documents
+        </v-btn>
+        <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+          <UploadDocumentModal @cancel="showUploadModal = false"
+                               :width="uploadModalWidth"
+                               :pps-event-id="ppsEventId"
+                               :attachment-types="attachmentTypes"></UploadDocumentModal>
+        </v-dialog>
+      </div>
       <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar">
         <v-toolbar-title>
           Details/Custom Fields
@@ -270,6 +278,7 @@ import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
+import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -277,7 +286,8 @@ export default {
     CustomValueInput,
     Attachments,
     DatetimePickerInput,
-    SpinnerInline
+    SpinnerInline,
+    UploadDocumentModal
   },
   props: {
     project: Object
@@ -286,6 +296,9 @@ export default {
     return {
       snackbar: {},
       selectedEvent: {},
+      showUploadModal: false,
+      uploadModalWidth: 400,
+      attachmentTypes: [],
       attemptedAction: {},
       companyEventStatuses: [],
       saveErrorMsg: '',
@@ -328,7 +341,7 @@ export default {
     }
   },
   async created() {
-    await this.getEventDetails()
+    await this.loadAllPageDetails()
   },
   watch: {
     eventActionMissingRequirements: function () {
@@ -358,6 +371,12 @@ export default {
     }
   },
   methods: {
+    async loadAllPageDetails() {
+      this.eventDetailsLoading = true
+      const requests = [this.getEventDetails(), this.getEventAttachmentTypes()]
+      await Promise.all(requests)
+      this.eventDetailsLoading = false
+    },
     closeEventWindow() {
       this.selectedEvent = {}
     },
@@ -528,7 +547,6 @@ export default {
     //   }
     // },
     getEventDetails: async function () {
-      this.eventDetailsLoading = true
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
@@ -545,7 +563,6 @@ export default {
           this.userCanScheduleRemoteLeadAllocation()
         }
         await this.getStatusesAssignedToEvent()
-        this.eventDetailsLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
@@ -737,6 +754,18 @@ export default {
         return !ppse.archived
       }) : []
     },
+    getEventAttachmentTypes: async function () {
+      //this gets the attachment types assigned to the process step so we know whether to show the upload button
+      try {
+        const {data} = await getRequest(`/attachmentType/eventTypesByPpsEventId/${this.ppsEventId}`, null, [])
+        this.attachmentTypes = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>

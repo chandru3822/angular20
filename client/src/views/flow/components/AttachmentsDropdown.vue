@@ -105,6 +105,12 @@ export default {
       // reset the selected item
       this.updateProcessStepAndEventIds()
       this.loadAllPageDetails()
+    },
+    // whenever the project store forces a reload - do this
+    '$store.state.project.forceReloadKey': async function () {
+      // reset the selected item
+      this.updateProcessStepAndEventIds()
+      this.loadAllPageDetails()
     }
   },
   created () {

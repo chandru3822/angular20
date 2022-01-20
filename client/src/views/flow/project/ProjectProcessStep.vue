@@ -193,10 +193,16 @@
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
-      <v-col>
-        <v-btn class="one-hunned" color="#E3E3E3">
+      <v-col v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0">
+        <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
           Upload Documents
         </v-btn>
+        <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+          <UploadDocumentModal @cancel="showUploadModal = false"
+                               :width="uploadModalWidth"
+                               :pps-id="parseInt(projectProcessStepId)"
+                               :attachment-types="attachmentTypes"></UploadDocumentModal>
+        </v-dialog>
       </v-col>
       <v-col cols="12" class="text-left py-0 px-0">
         <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar mx-2">
@@ -295,6 +301,7 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
+import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -308,7 +315,8 @@ export default {
     CustomValueInput,
     DatetimePickerInput,
     ProjectProcessStepStatus,
-    SpinnerInline
+    SpinnerInline,
+    UploadDocumentModal
   },
   data() {
     return {
@@ -316,6 +324,9 @@ export default {
       unsavedFieldsModal: false,
       fieldsSaving: false,
       getStatusClass,
+      showUploadModal: false,
+      uploadModalWidth: 400,
+      attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
@@ -391,7 +402,7 @@ export default {
   methods: {
     async loadAllPageDetails() {
       this.processStepLoading = true
-      const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents()]
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
       await Promise.all(requests)
       this.processStepLoading = false
     },
@@ -614,6 +625,18 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    getProcessStepAttachmentTypes: async function () {
+      //this gets the attachment types assigned to the process step so we know whether to show the upload button
+      try {
+        const {data} = await getRequest(`/attachmentType/processStepTypes/${this.processStepId}`, null, [])
+        this.attachmentTypes = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
 
   }
 }
