@@ -96,22 +96,29 @@ export default {
     // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
       // reset the selected item
-      this.processStepId = this.$route.query.processStepId
-      this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
-      this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
+      this.updateProcessStepAndEventIds()
       this.loadAllPageDetails()
     },
+    // whenever pps event id changes, this function will run
+    '$route.params.ppsEventId': async function () {
+      // reset the selected item
+      this.updateProcessStepAndEventIds()
+      this.loadAllPageDetails()
+    }
   },
   created () {
-    this.processStepId = this.$route.query.processStepId
-    this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
-    this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
+    this.updateProcessStepAndEventIds();
     this.loadAllPageDetails();
   },
   computed: {
 
   },
   methods: {
+    updateProcessStepAndEventIds(){
+      this.processStepId = this.$route.query.processStepId
+      this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
+      this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
+    },
     loadAllPageDetails() {
       if (this.projectProcessStepEventId) {
         console.log('ppsEventId: ' + this.projectProcessStepEventId)
