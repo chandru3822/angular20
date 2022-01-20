@@ -1,5 +1,5 @@
 <template>
-<v-expansion-panels accordion multiple>
+<v-expansion-panels accordion multiple v-if="!attachmentTypesLoading">
   <div v-if="!attachmentTypes.length">No attachments available</div>
   <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
     <v-expansion-panel-header>
@@ -74,6 +74,7 @@ export default {
       attachmentTypes: [],
       attachments: [],
       dragTypeId: null,
+      attachmentTypesLoading: true,
       error: {},
       renderTicker: 0,
       companyId: this.$store.state.user.details.companyId,
@@ -174,11 +175,13 @@ export default {
       }
     },
     fetchAttachmentTypes: async function () {
+      this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
           projectId: this.projectId,
           companyId: this.companyId
         }})
       this.attachmentTypes = data
+      this.attachmentTypesLoading = false
     },
     deleteAttachment: async function (id) {
       await deleteAttachment(id)
