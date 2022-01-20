@@ -41,6 +41,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ProjectNotes from '@/views/flow/project/ProjectNotes'
 import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsDropdown from "@/views/flow/components/AttachmentsDropdown";
+import {ProjectMutations} from '@/stores/ProjectStore'
 
 export default {
   name: 'ProjectActivity',
@@ -58,8 +59,9 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       projectProcessStepId: parseInt(this.$route.params.processStepId),
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId),
-      selectedOption: 1
-    }
+      selectedOption: null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab,
+
+  }
   },
   created () {
   },
@@ -68,6 +70,7 @@ export default {
 
   methods: {
     selectView: function(viewOption){
+      this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
       this.selectedOption = viewOption;
       if(this.isCollapsed){
         this.$emit('openRight');
