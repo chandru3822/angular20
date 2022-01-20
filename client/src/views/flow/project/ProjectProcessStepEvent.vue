@@ -1,5 +1,5 @@
 <template>
-  <v-main class="relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+  <v-main class="py-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
     <div>
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
         <v-toolbar-title>
@@ -51,15 +51,15 @@
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
         <div class="action-subheader">
           Actions
-        <v-btn
-          class="back-btn show-unperformable-actions-btn"
-          text
-          :ripple="false"
-          @click="showUnperformableActions = !showUnperformableActions"
-        >
-          {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
-        </v-btn>
-      </div>
+          <v-btn
+            class="back-btn show-unperformable-actions-btn"
+            text
+            :ripple="false"
+            @click="showUnperformableActions = !showUnperformableActions"
+          >
+            {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
+          </v-btn>
+        </div>
       </div>
       <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
         <v-btn class="action-button white--text"
@@ -554,7 +554,8 @@ export default {
         this.$store.commit(ProjectMutations.SET_PPS, {
           projectProcessStepId: this.selectedEvent.projectProcessStepId,
           processStepId: this.selectedEvent.processStepId,
-          processStepName: this.selectedEvent.processStepName})
+          processStepName: this.selectedEvent.processStepName
+        })
         this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
