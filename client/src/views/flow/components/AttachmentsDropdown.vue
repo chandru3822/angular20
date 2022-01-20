@@ -1,49 +1,51 @@
 <template>
-<v-expansion-panels accordion multiple>
-  <div v-if="!attachmentTypes.length">No attachments available</div>
-  <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
-    <v-expansion-panel-header>
-      <template v-slot:default="{ open }">
-        <v-row no-gutters>
-        {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
-          <v-spacer></v-spacer>
-        <v-fade-transition leave-absolute>
-          <v-col  v-if="open"
-                  key="0">
-            <v-row>
-                <v-btn
+  <v-expansion-panels accordion multiple>
+    <div v-if="!attachmentTypes.length">No attachments available</div>
+    <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
+      <v-expansion-panel-header class="expansion-panel-header">
+        <template v-slot:default="{ open }">
+          <v-row no-gutters class="align-center">
+            {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
+            <v-spacer></v-spacer>
+            <div class="expansion-panel-header-open" v-if="open"
+                 key="0">
+              <input
+                  id="fileInput"
+                  type="file"
+                  @change='uploadDocument($event.target.files, type.attachmentTypeId)'
+                  style="display: none"
+                  @click.stop=""
+                  ref='fileInput'
+              >
+              <v-btn @click.native.stop="selectFile" elevation="0" color="transparent" class="expansion-panel-btn">Upload</v-btn>
+
+              <v-btn
                   v-if="!projectProcessStepId"
                   @click.native.stop="toggleShowNonPrimary"
-                >
-                  Show non-primary
-                </v-btn>
-              <v-file-input @click.native.stop=""
-                            hide-input
-                            dense
-                            multiple
-                            ref='fileInput'
-                            @change='uploadDocument($event, type.attachmentTypeId)'
-              ></v-file-input>
-            </v-row>
-          </v-col>
-          <span
-              v-else
-              key="1"
-          >
+                  elevation="0"
+                  color="transparent"
+                  class="expansion-panel-btn"
+              >
+                Show non-primary
+              </v-btn>
+            </div>
+            <span
+                v-else
+                key="1"
+            >
                 </span>
-        </v-fade-transition>
-        </v-row>
-      </template>
-    </v-expansion-panel-header>
-    <v-expansion-panel-content>
+          </v-row>
+        </template>
+      </v-expansion-panel-header>
+      <v-expansion-panel-content>
         <AttachmentsTable
             :display-type="type"
             :attachments="attachments"
             :show-non-primary-docs="showNonPrimaryDocs || !!projectProcessStepId"
         ></AttachmentsTable>
-    </v-expansion-panel-content>
-  </v-expansion-panel>
-</v-expansion-panels>
+      </v-expansion-panel-content>
+    </v-expansion-panel>
+  </v-expansion-panels>
 </template>
 
 <script>
@@ -208,6 +210,9 @@ export default {
       let files = e.dataTransfer.files
       await this.uploadDocument(files, attachmentTypeId)
     },
+    selectFile: function(){
+      document.getElementById('fileInput')?.click();
+    },
     uploadDocument: async function (files, attachmentTypeId) {
       if (files?.length > 0) {
         try {
@@ -219,9 +224,9 @@ export default {
             let file = files[i];
             if (file && file.size > 0) {
               await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
-                null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
-                (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
-                   Actions.OBJECT_TYPE_FILE_UPLOAD, {
+                  null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
+                      (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
+                          Actions.OBJECT_TYPE_FILE_UPLOAD, {
                 file,
                 attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
                 projectId: this.projectId,
@@ -262,5 +267,24 @@ export default {
 </script>
 
 <style scoped>
+.expansion-panel-header{
+  background-color: #eeeeee;
+  font-size: 14px;
+  font-weight: bold;
+}
 
+.expansion-panel-header-open{
+  display: flex;
+  align-items: center;
+}
+
+.expansion-panel-input {
+}
+
+.expansion-panel-btn {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+  margin: 0;
+}
 </style>
