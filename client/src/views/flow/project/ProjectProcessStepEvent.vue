@@ -270,6 +270,7 @@ import constants from '@/helpers/constants'
 import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -532,6 +533,9 @@ export default {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
+        //have to reset the pps stuff too in case they just go directly to the url
+        this.$store.commit(ProjectMutations.SET_PPS, {projectProcessStepId: this.selectedEvent.projectProcessStepId, processStepName: this.selectedEvent.processStepName})
+        this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
           this.getRoundRobinNumDays()

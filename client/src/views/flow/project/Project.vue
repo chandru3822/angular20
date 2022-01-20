@@ -77,14 +77,14 @@
                             autocomplete="off">
             </v-autocomplete>
             <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
-                          :items="statuses"
-                          :readonly="projectStatusIsReadOnly()"
-                          :disabled="projectStatusIsReadOnly()"
-                          :loading="statusesLoading"
-                          label="Project Stage"
-                          item-text="projectStatusType"
-                          item-value="id"
-                        />
+                            :items="statuses"
+                            :readonly="projectStatusIsReadOnly()"
+                            :disabled="projectStatusIsReadOnly()"
+                            :loading="statusesLoading"
+                            label="Project Stage"
+                            item-text="projectStatusType"
+                            item-value="id"
+            />
           </v-card-text>
         </v-form>
 
@@ -107,6 +107,18 @@
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title font-size-18">
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+        <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+          <v-icon class="mx-5" size="12">mdi-arrow-right</v-icon>
+          <router-link class="breadcrumb" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}?processStepId=${$store.state.project.pps.processStepId}&contactId=${project.contactId}`">
+            {{$store.state.project.pps.processStepName}}
+          </router-link>
+        </span>
+        <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+          <v-icon class="mx-5" size="12">mdi-arrow-right</v-icon>
+          <router-link class="breadcrumb" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+            {{$store.state.project.ppsEvent.eventName}}
+          </router-link>
+        </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -144,16 +156,17 @@
           <div class="px-1 address-details">
             <div v-if="!projectStatusLoading">
               <span class="vertical-top project-detail-label">Project Stage:</span>
-              <div class="d-inline-block project-detail-item" :style="{'color': getStatusColor(project.projectStatusTypeId)}">
+              <div class="d-inline-block project-detail-item"
+                   :style="{'color': getStatusColor(project.projectStatusTypeId)}">
                 {{ project.projectStatusType }} <br/>
-                ({{project.rootProjectStatusType}})
+                ({{ project.rootProjectStatusType }})
               </div>
             </div>
             <div class="mt-1">
               <span class="vertical-top project-detail-label">Address:</span>
               <div class="d-inline-block project-detail-item">
                 {{ project.street1 }} <br/>
-                {{ project.city }} {{project.stateAbbreviation }} {{project.postalCode}}
+                {{ project.city }} {{ project.stateAbbreviation }} {{ project.postalCode }}
               </div>
             </div>
             <span class="project-detail-label">Contact:</span>
@@ -197,7 +210,8 @@
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <ProjectActivity :is-collapsed="collapseRightSidebar" @openRight="collapseRightSidebar = false"></ProjectActivity>
+        <ProjectActivity :is-collapsed="collapseRightSidebar"
+                         @openRight="collapseRightSidebar = false"></ProjectActivity>
       </div>
     </v-row>
   </div>
@@ -224,6 +238,7 @@ import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectSt
 import constants from "@/helpers/constants";
 import {getCompanyStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'Project',
@@ -264,7 +279,18 @@ export default {
     }
   },
   created() {
+    //have to reset this on creation in case there is already a state then they go to the project url directly
+    this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
+  },
+  watch: {
+    '$route.params.processStepId': async function () {
+      //when changing pps, the pps AND ppsEvent state need to be reset so we'll call the project reset for now
+      this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
+    },
+    '$route.params.ppsEventId': function () {
+      this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
+    },
   },
   computed: {
     projectStage() {
@@ -293,8 +319,8 @@ export default {
       this.projectStatusLoading = true
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/status`)
-        if(data) {
-          console.log('mememe',data)
+        if (data) {
+          console.log('mememe', data)
           this.project.companyProjectStatusTypeId = data.companyProjectStatusTypeId
           this.project.projectStatusType = data.projectStatusType
           this.project.projectStatusTypeId = data.projectStatusTypeId
@@ -515,6 +541,10 @@ export default {
 .center-width-both-collapse {
   width: calc(100% - 208px);
   padding: 10px !important;
+}
+
+.breadcrumb {
+  font-size: 12px;
 }
 </style>
 

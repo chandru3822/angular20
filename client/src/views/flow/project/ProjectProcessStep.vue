@@ -288,6 +288,7 @@ import {
 import ActionButton from './ActionButton'
 import EventButton from './EventButton'
 import {AppMutations} from '@/stores/AppStore'
+import {ProjectMutations} from '@/stores/ProjectStore'
 import {getAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
 import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
@@ -416,6 +417,7 @@ export default {
       try {
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+        this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
         this.getAvailableStatuses()
         this.getAvailableOwners()
         window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
