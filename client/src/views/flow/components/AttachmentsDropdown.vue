@@ -97,15 +97,15 @@ export default {
     '$route.params.processStepId': async function () {
       // reset the selected item
       this.processStepId = this.$route.query.processStepId
-      this.projectProcessStepId = parseInt(this.$route.params.processStepId)
-      this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId)
+      this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
+      this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
       this.loadAllPageDetails()
     },
   },
   created () {
     this.processStepId = this.$route.query.processStepId
-    this.projectProcessStepId = parseInt(this.$route.params.processStepId)
-    this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId)
+    this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
+    this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
     this.loadAllPageDetails();
   },
   computed: {
@@ -211,8 +211,10 @@ export default {
           for (let i = 0; i < files.length; ++i) {
             let file = files[i];
             if (file && file.size > 0) {
-              await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
-                  null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD : Actions.OBJECT_TYPE_FILE_UPLOAD, {
+              await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
+                null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
+                (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
+                   Actions.OBJECT_TYPE_FILE_UPLOAD, {
                 file,
                 attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
                 projectId: this.projectId,
