@@ -146,7 +146,13 @@ public class SunpowerService {
         setSunpowerUrl(projectId, proposalNbr, result);
       }
       else if (message.equals("Quote Updated")) {
-        result = "Customer application updated if applicable";
+        Optional<Object> sunpowerUrl = getSunpowerUrl(projectId);
+        if (sunpowerUrl.isPresent()) {
+          setSunpowerUrl(projectId, proposalNbr, sunpowerUrl.get().toString());
+          return sunpowerUrl.get().toString();
+        }
+
+        result = "Quote Updated";
       }
     }
     else {
@@ -163,12 +169,20 @@ public class SunpowerService {
     JSONObject returnApplication = new JSONObject();
     returnApplication.put("type", "Sunpower");
 
+    // Check if their is a SunPower URL stored for this Project & Proposal Number
     Optional<Object> sunpowerUrl = getSunpowerUrl(projectId, proposalNbr);
     if (sunpowerUrl.isPresent()) {
       returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
     }
     else {
-      returnApplication.put("applicationUrl", "");
+      // Check if their is a SunPower URL stored for this Project (any Proposal Number)
+      Optional<Object> sunpowerUrlPerProject = getSunpowerUrl(projectId);
+      if (sunpowerUrlPerProject.isPresent()) {
+        returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
+      }
+      else {
+        returnApplication.put("applicationUrl", "");
+      }
     }
 
     return returnApplication;
@@ -198,6 +212,12 @@ public class SunpowerService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
     return sqlCache.get("installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
+  }
+
+  private Optional<Object> getSunpowerUrl(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    return sqlCache.get("installAgreement.getSunpowerUrlPerProject", params, new SingleColumnRowMapper<>(Object.class));
   }
 
   private void setSunpowerUrl(Long projectId, Long proposalNbr, String url) {

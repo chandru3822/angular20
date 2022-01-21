@@ -3,34 +3,31 @@
     <template v-slot:default="dialog">
       <v-card>
         <v-toolbar color="primary" dark>
-          <v-btn
-            icon
-            dark
-            @click="closeDialog">
+          <v-btn icon dark @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>{{ title }}</v-toolbar-title>
         </v-toolbar>
         <v-card-text>
           <v-container>
-            <CustomValueInput v-for="field in fields"
-                              :callback="updateFieldValue"
-                              :key="field.id"
-                              :field="field"
-                              :hide-label="true"/>
+            <CustomValueInput
+              v-for="field in fields"
+              :callback="updateFieldValue"
+              :key="field.id"
+              :field="field"
+              :hide-label="true"
+              :api-path="apiPath"
+            />
           </v-container>
         </v-card-text>
         <v-card-actions class="justify-end">
+          <v-btn text @click="closeDialog">Close</v-btn>
           <v-btn
-            text
-            @click="closeDialog"
-          >Close
-          </v-btn>
-          <v-btn
+            :disabled="!Object.keys(dirtyCfvs).length"
             color="primaryButton"
             @click="save"
             dark
-          >Save
+            >Save
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -38,9 +35,8 @@
   </v-dialog>
 </template>
 <script>
-
-import Vue from "vue"
-import {getRequestWithParams} from "@/helpers/helpers"
+import Vue from 'vue'
+import { getRequestWithParams } from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
 const DATA_TYPES = {
@@ -50,40 +46,43 @@ const DATA_TYPES = {
   'timestamp': 'timestampValue',
   'integer': 'intValue',
   'system': 'intValue',
+  'system multiselect': 'intArrayValue',
   'integer array': 'intArrayValue',
   'boolean': 'booleanValue',
   'System List' : 'intValue'
 }
 
 const extractFieldData = (field) => {
-  const objVal = {type: field.dataType}
-
-  if (field.listOfValues?.length > 0) {
-    if (!field.allowMultiple) {
-      objVal.intValue = field.intValue
-      objVal.value = field.listOfValues.find(lov => lov.id === field.intValue)?.name
-    } else {
+  const objVal = { type: field.dataType }
+  if (field.hasListValues) {
+    if (field.allowMultiple) {
       objVal.intArrayValue = field.intArrayValue
-      objVal.value = field.listOfValues
-        ?.filter(lov => field.intArrayValue.includes(lov.id))
-        ?.map(lov => lov.name)
+      const newVals = field.listOfValues
+        ?.filter((lov) => field.intArrayValue.includes(lov.id))
+        ?.map((lov) => lov.name)
+      objVal.value = newVals
+    } else {
+      objVal.intValue = field.intValue
+      objVal.value = field.listOfValues.find(
+        (lov) => lov.id === field.intValue
+      )?.name
     }
   } else {
     objVal.value = field[DATA_TYPES[field.dataType]]
   }
 
-  return {id: field.id, value: objVal}
+  return { id: field.id, value: objVal }
 }
-
 
 export default {
   name: 'NewProposalValue',
   props: ['objectCode', 'editing', 'visible'],
-  components: {CustomValueInput},
+  components: { CustomValueInput },
   data() {
     return {
+      apiPath: 'blueraven',
       fields: [],
-      dirtyCfvs: {}
+      dirtyCfvs: {},
     }
   },
   watch: {
@@ -93,30 +92,42 @@ export default {
       } else {
         this.closeDialog()
       }
-    }
+    },
   },
   computed: {
     title() {
       return this.editing ? 'Edit Row' : 'Add Row'
-    }
+    },
   },
   methods: {
-
     async fetchObjectFields(objectCode) {
-      const {data} = await getRequestWithParams(`/customField/${objectCode}`, {}, 'blueraven')
+      const { data } = await getRequestWithParams(
+        `/customField/${objectCode}`,
+        {},
+        this.apiPath
+      )
       if (this.editing) {
-        this.fields = data?.map(field => {
-          let datatype = DATA_TYPES[field.dataType];
+        this.fields = data?.map((field) => {
+          const datatype = DATA_TYPES[field.dataType]
           if (!datatype) {
-            console.warn('Cant find datatype for', field.dataType, field.dataTypeId)
+            console.warn(
+              'Cant find datatype for',
+              field.dataType,
+              field.dataTypeId
+            )
           }
-          let aVal = undefined
-          if (this.editing[field.id] !== undefined) {
-            aVal = this.editing[field.id][datatype] ?? this.editing[field.id].value
+          const extra = {}
+          const editingElement = this.editing[field.id]
+          if (editingElement !== undefined) {
+            // exclude when values are lazy loaded so the entire object is replaced on save
+            if (!field.lazyLoadValues) {
+              extra[datatype] = editingElement[datatype] ?? editingElement.value
+            }
+            extra['values'] = editingElement.value
           }
           return {
             ...field,
-            [datatype]: aVal
+            ...extra,
           }
         })
       } else {
@@ -125,16 +136,19 @@ export default {
     },
 
     updateFieldValue(field) {
-      const {value, id} = extractFieldData(field)
+      const { value, id } = extractFieldData(field)
       if (value.value === undefined) {
         Vue.delete(this.dirtyCfvs, id)
       } else {
-        Vue.set(this.dirtyCfvs, id, {id, value})
+        Vue.set(this.dirtyCfvs, id, { id, value })
       }
     },
 
     save() {
-      this.$emit('save', {rowId: this.editing?.pk, values: Object.values(this.dirtyCfvs)})
+      this.$emit('save', {
+        rowId: this.editing?.pk,
+        values: Object.values(this.dirtyCfvs),
+      })
       this.closeDialog()
     },
 
@@ -146,7 +160,7 @@ export default {
 
     closeDialog() {
       this.$emit('input', false)
-    }
-  }
+    },
+  },
 }
 </script>

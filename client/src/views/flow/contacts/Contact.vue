@@ -245,6 +245,7 @@
                             label="E-Mail"
                             id="qa-email-field"
                             placeholder=" "
+                            :rules="emailRules"
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.email"></v-text-field>
@@ -396,6 +397,7 @@ export default {
       contact: {},
       postalCodeRules: constants.POSTAL_CODE_RULES,
       cityRules: constants.CITY_RULES,
+      emailRules: constants.EMAIL_RULES,
       addressRules: constants.ADDRESS_RULES,
       nameRules: constants.NAME_RULES,
       nameRequiredRules: constants.NAME_REQUIRED_RULES,

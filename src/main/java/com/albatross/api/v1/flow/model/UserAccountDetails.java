@@ -58,7 +58,7 @@ public class UserAccountDetails implements UserDetails {
 
         this.authorities = new HashSet<>();
         for (FeatureAccessControl fc : featureAccess) {
-            this.authorities.add(new SimpleGrantedAuthority(fc.getAccessCode()));
+            this.authorities.add(new SimpleGrantedAuthority(fc.getFeatureCode() + "_" + fc.getAccessCode()));
         }
     }
 

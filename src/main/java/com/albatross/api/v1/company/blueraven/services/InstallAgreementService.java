@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,9 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Service
+@RequiredArgsConstructor
 public class InstallAgreementService {
   private final SqlCache sqlCache;
 

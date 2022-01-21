@@ -456,8 +456,8 @@ values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 
   ]]></attachmentType.getEventType>
 
   <attachmentType.insertEventType><![CDATA[
-    insert into flow.event_attachment_type (attachment_type_id, event_id, created_by_id, date_created, display_order)
-    values (:attachmentTypeId, :eventId, :createdById, now(), (select coalesce(max(display_order) + 1, 0) from flow.event_attachment_type where event_id = :eventId and archived is not true))
+insert into flow.event_attachment_type (attachment_type_id, event_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+values (:attachmentTypeId, :eventId, (select coalesce(max(display_order) + 1, 0) from flow.event_attachment_type where event_id = :eventId and archived is not true), :createdById, now(), :createdById, now())
   ]]></attachmentType.insertEventType>
 
   <attachmentType.deleteEventType>

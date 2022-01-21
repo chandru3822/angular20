@@ -74,4 +74,22 @@ order by s.state
     from flow.state s
     order by s.state
   ]]></customFieldSql.flow.states>
+
+  <customFieldSql.flow.postalCodes><![CDATA[
+  select id,
+         postal_code                             as name,
+         concat_ws('/', place_name, admin_name1) as description
+  from flow.postal_code
+  order by postal_code asc
+  ]]></customFieldSql.flow.postalCodes>
+
+  <customFieldSql.flow.postalCodes.lazy><![CDATA[
+  select id,
+         postal_code                             as name,
+         concat_ws('/', place_name, admin_name1) as description
+  from flow.postal_code
+  where case when :query is not null then postal_code like :query || '%' else 1 = 1 end
+  order by postal_code asc
+  limit 50
+  ]]></customFieldSql.flow.postalCodes.lazy>
 </sql>

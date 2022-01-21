@@ -58,13 +58,11 @@ public class SecurityService implements UserDetailsService {
   }
 
   public User getUser(String username) {
-    User user = userService.findByUsernameIgnoreCase(username, null);
-    return user;
+    return userService.findByUsernameIgnoreCase(username, null);
   }
 
   public User getUserByUsernameOrEmail(String usernameOrEmail) {
-    User user = userService.findByUsernameOrEmailIgnoreCase(usernameOrEmail);
-    return user;
+    return userService.findByUsernameOrEmailIgnoreCase(usernameOrEmail);
   }
 
   public void updateLoginAttempts(int loginAttempts, Long userId) {
@@ -73,7 +71,7 @@ public class SecurityService implements UserDetailsService {
 
   public Optional<UserAccountDetails> getUserDetailsById(Long id) {
     Optional<User> user = findUserById(id);
-    if (!user.isPresent()) {
+    if (user.isEmpty()) {
       return Optional.empty();
     }
     List<FeatureAccessControl> results = getUserFeatureAccess(user.get().getId(), user.get().getCompanyId());
@@ -169,8 +167,7 @@ public class SecurityService implements UserDetailsService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", companyId);
-    List<FeatureAccessControl> results = sqlCache.query("feature.getAccessForUser", params, FeatureAccessControl.class);
-    return results;
+    return sqlCache.query("feature.getAccessForUser", params, FeatureAccessControl.class);
   }
 
   @SuppressWarnings("unchecked")
@@ -180,8 +177,7 @@ public class SecurityService implements UserDetailsService {
     params.put("userId", userId);
     params.put("companyId", companyId);
     params.put("trueUserId", trueUserId);
-    List<FeatureAccessControl> results = sqlCache.query("feature.getMasqueradedUserFeatureAccess", params, FeatureAccessControl.class);
-    return results;
+    return sqlCache.query("feature.getMasqueradedUserFeatureAccess", params, FeatureAccessControl.class);
   }
 
   public void updateUserPassword (Long userId, String newPassword) {
