@@ -1887,8 +1887,8 @@ public class SmartlistService {
         } else if (f.getSmartlistFieldId() != null) {
           if (f.getReferenceTable().equals("flow.user")) {
             final String joinUserPosition = UUID.randomUUID().toString();
-            valueJoins.append(String.format(" inner join flow.user_position \"%s\" on \"%s\".id = flow.project_process_step.%s ", joinUserPosition, joinUserPosition, f.getJoinColumn()));
-            valueJoins.append(String.format(" inner join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
+            valueJoins.append(String.format(" left join flow.user_position \"%s\" on \"%s\".id = flow.project_process_step.%s ", joinUserPosition, joinUserPosition, f.getJoinColumn()));
+            valueJoins.append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
             f.setUserPositionTable(joinUserPosition);
           }
         } else {
