@@ -82,7 +82,7 @@
                   <v-btn
                     color="primaryCustom"
                     text
-                    @click="[processStep.changeActiveConfirm = false, showMainDialog = true]">
+                    @click="updateMain(processStep.projectProcessStepId)">
                     Yes
                   </v-btn>
                 </v-card-actions>
@@ -448,9 +448,21 @@ export default {
     },
     async loadAllPageDetails() {
       this.processStepLoading = true
+      //if you add a new item to requests make sure it returns the request status
       const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
-      await Promise.all(requests)
-      this.processStepLoading = false
+      await Promise.all(requests).then((statusVals) => {
+        console.log('randaLogger',statusVals)
+        let success = true
+        statusVals.forEach(status => {
+          if (status !== 200) {
+            success = false
+          }
+        })
+        if (success) {
+          //this was causing issues if you moved too quickly between pps
+          this.processStepLoading = false
+        }
+      })
     },
     goToPath(path) {
       this.$router.push(path)
@@ -477,15 +489,17 @@ export default {
         this.getAvailableOwners()
         window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
           : `${this.processStep.processStepName}`
-        return {data, status}
+        // return {data, status}
+        return status
       } catch (e) {
         logError(e)
       }
     },
     async getCustomFieldGroups() {
       try {
-        const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
+        const {data, status} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
         this.customFieldGroups = data
+        return status
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
@@ -663,8 +677,9 @@ export default {
     getProcessStepEvents: async function () {
       //this gets the events assigned to the process step so we know which ADD buttons to show
       try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
+        const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
+        return status
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
@@ -675,8 +690,9 @@ export default {
     getProcessStepAttachmentTypes: async function () {
       //this gets the attachment types assigned to the process step so we know whether to show the upload button
       try {
-        const {data} = await getRequest(`/attachmentType/processStepTypes/${this.processStepId}`, null, [])
+        const {data, status} = await getRequest(`/attachmentType/processStepTypes/${this.processStepId}`, null, [])
         this.attachmentTypes = data
+        return status
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
