@@ -50,14 +50,28 @@
               <v-toolbar-title>{{ group.groupName }}</v-toolbar-title>
             </v-toolbar>
             <v-card class="pa-4 text-left square-card">
-              <CustomValueInput
-                v-for="(field, idx) in group.customFieldValues"
-                :key="idx"
-                :callback="populateDirtyCfvs"
-                :readonly="getReadOnly(field)"
-                :showFieldName="false"
-                :field="field"
-              />
+              <v-row>
+                <v-col :cols="splitValueColumns ? 6 : 12">
+                  <CustomValueInput
+                    v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
+                    :key="idx"
+                    :callback="populateDirtyCfvs"
+                    :readonly="getReadOnly(field)"
+                    :showFieldName="false"
+                    :field="field"
+                  />
+                </v-col>
+                <v-col cols="6" v-if="splitValueColumns">
+                  <CustomValueInput
+                    v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
+                    :key="idx"
+                    :callback="populateDirtyCfvs"
+                    :readonly="getReadOnly(field)"
+                    :showFieldName="false"
+                    :field="field"
+                  />
+                </v-col>
+              </v-row>
             </v-card>
           </v-col>
         </div>
@@ -115,6 +129,7 @@ export default {
   },
   props: {
     project: Object,
+    splitValueColumns: Boolean
   },
   computed: {
     displayedGroups() {
@@ -133,10 +148,18 @@ export default {
   },
 
   methods: {
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if(this.splitValueColumns) {
+        return values.filter(function(element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
     tabSelection(t) {
       this.selectedTab = t
       this.$refs.projectFieldsContainer.scrollTop = 0
-      // this.$refs.projectFieldsContainer.$el.scrollTop = 0
     },
     getProjectTabs: async function () {
       this.tabsLoading = true

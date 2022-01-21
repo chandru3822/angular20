@@ -243,15 +243,30 @@
           </v-toolbar>
 
           <v-card class="pa-3">
-            <CustomValueInput
-              v-for="(field, idx) in cfg.customFieldValues"
-              :key="idx"
-              :use-field-ancillary-name="true"
-              :callback="populateDirtyCfvs"
-              :readonly="getReadOnly(field)"
-              :field="field"
-              :show-field-name="false"
-            />
+            <v-row>
+              <v-col :cols="splitValueColumns ? 6 : 12">
+                <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                  :key="idx"
+                  :use-field-ancillary-name="true"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getReadOnly(field)"
+                  :field="field"
+                  :show-field-name="false"
+                />
+              </v-col>
+              <v-col cols="6">
+                <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                  :key="idx"
+                  :use-field-ancillary-name="true"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getReadOnly(field)"
+                  :field="field"
+                  :show-field-name="false"
+                />
+              </v-col>
+            </v-row>
 
           </v-card>
         </v-col>
@@ -307,6 +322,9 @@ const NEW_STATUS_TO_USE = {id: null}
 
 export default {
   name: 'ProjectProcessStep',
+  props: {
+    splitValueColumns: Boolean
+  },
   components: {
     ActionButton,
     EventButton,
@@ -400,6 +418,15 @@ export default {
     }
   },
   methods: {
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if (this.splitValueColumns) {
+        return values.filter(function (element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
     async loadAllPageDetails() {
       this.processStepLoading = true
       const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
@@ -647,13 +674,16 @@ export default {
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
 }
+
 .cfg-name-toolbar .v-toolbar__title {
   font-size: 14px;
 }
+
 .cfg-detail-header .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+
 .cfg-detail-header .v-toolbar__title {
   font-size: 16px;
 }

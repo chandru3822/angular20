@@ -234,8 +234,10 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-3">
+            <v-row>
+              <v-col :cols="splitValueColumns ? 6 : 12">
             <CustomValueInput
-              v-for="(field, idx) in cfg.customFieldValues"
+              v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
               :key="idx"
               :required="field.required && !eventSaveOverrideRequired"
               :callback="populateDirtyCfvs"
@@ -244,6 +246,20 @@
               :use-field-ancillary-name="true"
               :show-field-name="false"
             />
+              </v-col>
+              <v-col cols="6">
+                <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                  :key="idx"
+                  :required="field.required && !eventSaveOverrideRequired"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getReadOnly(field)"
+                  :field="field"
+                  :use-field-ancillary-name="true"
+                  :show-field-name="false"
+                />
+              </v-col>
+            </v-row>
           </v-card>
         </v-col>
       </v-form>
@@ -290,7 +306,8 @@ export default {
     UploadDocumentModal
   },
   props: {
-    project: Object
+    project: Object,
+    splitValueColumns: Boolean
   },
   data() {
     return {
@@ -371,6 +388,15 @@ export default {
     }
   },
   methods: {
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if (this.splitValueColumns) {
+        return values.filter(function (element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
     async loadAllPageDetails() {
       this.eventDetailsLoading = true
       const requests = [this.getEventDetails(), this.getEventAttachmentTypes()]

@@ -203,7 +203,9 @@
                      @refresh-project-status="getUpdatedProjectStatus()"
                      ref="childComponent"
                      v-if="project && project.id" class="router-view"
-                     :project="project"></router-view>
+                     :project="project"
+                     :split-value-columns="collapseLeftSidebar && collapseRightSidebar"
+        ></router-view>
       </div>
       <div class="white-bg project-section"
            :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
