@@ -207,9 +207,9 @@
                      :split-value-columns="collapseLeftSidebar && collapseRightSidebar"
         ></router-view>
       </div>
-      <div class="white-bg project-section"
+      <div class="white-bg project-section px-0"
            :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
-        <div :class="{'text-right': !collapseRightSidebar}">
+        <div class="right-expander-button">
           <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
@@ -528,7 +528,12 @@ export default {
 }
 
 .left-expander-button {
-  margin-left: 12px;
+  margin-left: 10px;
+}
+
+.right-expander-button {
+  margin-right: 10px;
+  text-align: right;
 }
 
 .collapse-right {
