@@ -1,6 +1,6 @@
 <template>
   <v-main class="py-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
-    <div>
+    <div v-if="selectedEvent.id">
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
         <v-toolbar-title>
           {{ selectedEvent.eventName }}
@@ -359,7 +359,7 @@ export default {
       uniqueAlreadyHasValue: false,
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
       showUnperformableActions: false,
-      eventDetailsLoading: false,
+      eventDetailsLoading: true,
       windowWidth: window.innerWidth,
       splitColumnMinWidth: 1700
     }
@@ -383,7 +383,7 @@ export default {
       // reset the selected item
       this.projectProcessStepId = parseInt(this.$route.params.processStepId)
       this.ppsEventId = parseInt(this.$route.params.ppsEventId)
-      this.getEventDetails()
+      this.loadAllPageDetails()
     },
   },
   computed: {
@@ -418,9 +418,24 @@ export default {
     },
     async loadAllPageDetails() {
       this.eventDetailsLoading = true
+      //if you add a new item to requests make sure it returns the request status
       const requests = [this.getEventDetails(), this.getEventAttachmentTypes()]
-      await Promise.all(requests)
-      this.eventDetailsLoading = false
+      try {
+        await Promise.all(requests).then((statusVals) => {
+          let success = true
+          statusVals.forEach(status => {
+            if(status !== 200) {
+              success = false
+            }
+          })
+          if(success) {
+            //this was causing issues if you moved too quickly between events
+            this.eventDetailsLoading = false
+          }
+        })
+      } catch(e) {
+        console.log('randaLogger',e)
+      }
     },
     closeEventWindow() {
       this.selectedEvent = {}
@@ -593,7 +608,7 @@ export default {
     // },
     getEventDetails: async function () {
       try {
-        const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
+        const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
         this.selectedEvent.allowAllUserDeletion = data.startTime === null
@@ -610,12 +625,15 @@ export default {
           this.userCanScheduleLeadAllocation()
           this.userCanScheduleRemoteLeadAllocation()
         }
-        await this.getStatusesAssignedToEvent()
+        //this was causing an error if you clicked too fast between events
+        if(data.id) {
+          await this.getStatusesAssignedToEvent()
+        }
+        return status
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.eventDetailsLoading = false
       }
     },
     deleteEvent: async function (ppseId) {
@@ -806,8 +824,9 @@ export default {
     getEventAttachmentTypes: async function () {
       //this gets the attachment types assigned to the process step so we know whether to show the upload button
       try {
-        const {data} = await getRequest(`/attachmentType/eventTypesByPpsEventId/${this.ppsEventId}`, null, [])
+        const {data, status} = await getRequest(`/attachmentType/eventTypesByPpsEventId/${this.ppsEventId}`, null, [])
         this.attachmentTypes = data
+        return status
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')

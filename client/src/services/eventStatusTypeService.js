@@ -14,7 +14,7 @@ export async function getAvailableForEvent(eventId) {
 }
 
 export async function getAssignedToEvent(eventId) {
-  return await getRequest(`/event/${eventId}/status`)
+  return await getRequest(`/event/${eventId}/status`, null, [])
 }
 
 export function getStatusClass(rootTypeId) {
