@@ -272,7 +272,6 @@ BEGIN
                                     inner join flow.system_list sl on sl.id = csl.system_list_id
                                WHERE ppse.project_process_step_id = pps.id
                                  and ppse.archived is not true
-                                 and ppse.start_time is not null
                               order by ppse.start_time, ppse.end_time, resource, e.event_name
                              ) events), '[]') AS "projectProcessStepEvents"
          from reqs, flow.project_process_step pps

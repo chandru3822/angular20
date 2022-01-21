@@ -6,8 +6,8 @@
             class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
       {{ e.eventName }}
       <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span> <br/>
-      <div class="event-resource" v-if="e.resource">
-        {{ e.resource }}
+      <div class="event-resource" v-if="e.resource || e.startTime">
+        <span v-if="e.resource">{{ e.resource }}</span>
         <div v-if="e.startTime">
           {{ e.startTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
           <span v-if="e.endTime">
