@@ -320,9 +320,12 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
-
     ProjectProcessStep pps = getProjectProcessStep(ppsId);
     ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
+    return getActionResult(actionId, action, pps);
+  }
+
+  public ProjectProcessStepAction getActionResult(Long actionId, ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
 
     List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
       .filter(step -> step.getProcessStepRequirementId() != null)
