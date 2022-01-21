@@ -792,7 +792,8 @@ export default {
         this.actionRequiresResource = false
         this.eventActionMissingRequirements = true
         this.saveErrorMsg = 'Start Time is required to save the event fields'
-        document.getElementById('event-header').scrollIntoView()
+        //dont do this for now. makes the page look weird after save
+        // document.getElementById('event-header').scrollIntoView()
       }
     },
     filterProjectProcessStepEvents() {
