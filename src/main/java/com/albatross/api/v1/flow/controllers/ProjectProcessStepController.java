@@ -44,7 +44,7 @@ public class ProjectProcessStepController {
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {
-        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), projectProcessStepId));
+        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), a, pps));
         index++;
       }
 

@@ -7,6 +7,7 @@ export const ProjectMutations = {
   RESET_PPS_EVENT_STATE: 'resetPpsEventState',
   SET_SELECTED_TAB: 'setSelectedTab',
   INCREMENT_RELOAD_KEY: 'updateReloadKey',
+  FLIP_MANUAL_COLUMN_SPLIT: 'flipManualColumnSplit',
 }
 
 export const ProjectStore = {
@@ -14,9 +15,12 @@ export const ProjectStore = {
     pps: null,
     ppsEvent: null,
     selectedTab: 1,
-    forceReloadKey: 0
+    forceReloadKey: 0,
+    manualColumnSplit: false
   },
   mutations: {
+    [ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT]: (state) => {
+      state.manualColumnSplit = !state.manualColumnSplit},
     [ProjectMutations.SET_SELECTED_TAB]: (state, selectedTab) => (state.selectedTab = selectedTab),
     [ProjectMutations.INCREMENT_RELOAD_KEY]: (state) => {
       state.forceReloadKey++

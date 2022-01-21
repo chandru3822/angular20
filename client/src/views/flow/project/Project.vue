@@ -116,7 +116,7 @@
         <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
           <v-icon class="mx-5" size="12">mdi-arrow-right</v-icon>
           <router-link class="breadcrumb" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-            {{$store.state.project.ppsEvent.eventName}}
+            {{$store.state.project.ppsEvent.eventName}} Event
           </router-link>
         </span>
       </v-toolbar-title>

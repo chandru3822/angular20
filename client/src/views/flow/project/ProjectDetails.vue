@@ -21,6 +21,11 @@
           <v-toolbar-title>{{ displayedGroups[0].groupName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+                   @click="setSplitColumnValue()">
+              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+              <v-icon v-else>mdi-menu</v-icon>
+            </v-btn>
             <div>
               <v-btn
                 v-if="userCanEdit"
@@ -51,7 +56,7 @@
             </v-toolbar>
             <v-card class="px-4 text-left square-card">
               <v-row>
-                <v-col :cols="splitValueColumns ? 6 : 12" class="pb-0 pt-2">
+                <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
                   <CustomValueInput
                     v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
                     :key="idx"
@@ -61,7 +66,7 @@
                     :field="field"
                   />
                 </v-col>
-                <v-col cols="6" v-if="splitValueColumns">
+                <v-col cols="6" v-if="columnSplit">
                   <CustomValueInput
                     v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
                     :key="idx"
@@ -93,7 +98,7 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
-
+import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
@@ -120,6 +125,8 @@ export default {
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
+      windowWidth: window.innerWidth,
+      splitColumnMinWidth: 1700
     }
   },
   created() {
@@ -127,11 +134,19 @@ export default {
     this.getProcessSteps()
     this.getFieldGroups()
   },
+  mounted() {
+    window.addEventListener('resize', () => {
+      this.windowWidth = window.innerWidth
+    })
+  },
   props: {
     project: Object,
     splitValueColumns: Boolean
   },
   computed: {
+    columnSplit() {
+      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
+    },
     displayedGroups() {
       return this.selectedTab?.id ? this.customFieldGroups.filter(cfg => cfg.companyObjectTypeTabId === this.selectedTab.id) : this.customFieldGroups
     },
@@ -148,8 +163,12 @@ export default {
   },
 
   methods: {
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+    },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if(this.splitValueColumns) {
+      if(this.columnSplit) {
         return values.filter(function(element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
