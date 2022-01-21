@@ -136,7 +136,7 @@
             </td>
           </tr>
           <tr class="text-left" :class="{'shaded-row': index % 2}" v-else>
-            <td class="py-2 pl-5">
+            <td class="py-2 note-column">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
                    @click="expanded=[item]" class="pl-4 note-see-comments clickable">
@@ -532,6 +532,11 @@ export default {
 .note-created-by {
   font-size: 11px;
   font-style: italic;
+}
+
+.note-column {
+  //maybe?
+  min-width: 200px;
 }
 
 .note-see-comments {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>Project Notes</div>
+    <div class="pl-4">Project Notes</div>
     <NotesAndActivityContent
       ref="notes"
       :showNotes="true"

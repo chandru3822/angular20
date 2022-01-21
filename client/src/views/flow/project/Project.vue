@@ -215,6 +215,7 @@
           </v-btn>
         </div>
         <ProjectActivity :is-collapsed="collapseRightSidebar"
+                         v-if="!projectLoading"
                          @openRight="collapseRightSidebar = false"></ProjectActivity>
       </div>
     </v-row>

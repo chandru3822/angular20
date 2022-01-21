@@ -1,36 +1,42 @@
 <template>
   <v-row id="project-activity-container" no-gutters>
     <v-col cols="12" lg="12" class="pb-0 pt-2 pr-0">
-      <div class="project-activity-inner-container">
+      <div class="project-activity-inner-container"
+        :style="{'height': isCollapsed ? 'calc(100% - 250px)' : 'calc(100vh - 225px)'}">
         <div v-show="!isCollapsed">
           <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
           <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
           <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId"/>
         </div>
       </div>
-      <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>
-      <v-row
-          :value="selectedOption"
-          color="primaryButton"
-          no-gutters
-          class="section-footer px-4 mb-2"
-      >
-        <v-col :cols="isCollapsed ? 12 : 4" class="px-0">
-          <v-btn text block elevation="0"  @click="selectView(0)" :dark = "selectedOption === 0" :class="{'section-selected': selectedOption===0}">
-            <v-icon>mdi-forum-outline</v-icon>
-          </v-btn>
-        </v-col>
-        <v-col :cols="isCollapsed ? 12 : 4" class="px-0">
-          <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption === 1" :class="{'section-selected': selectedOption===1}">
-            <v-icon>mdi-text-long</v-icon>
-          </v-btn>
-        </v-col>
-        <v-col :cols="isCollapsed ? 12 : 4" class="px-0">
-          <v-btn text block elevation="0"  @click="selectView(2)" :dark="selectedOption === 2" :class="{'section-selected': selectedOption===2}">
-            <v-icon>mdi-folder-outline</v-icon>
-          </v-btn>
-        </v-col>
-      </v-row>
+<!--      <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>-->
+      <div class="footer-container mb-3"
+           :style="{'width': isCollapsed ? '72px' : 'calc(100% - 30px)',
+                    'left': isCollapsed ? '0px' : '15px',}">
+        <v-row
+            :value="selectedOption"
+            color="primaryButton"
+            :style="{'flex-direction': isCollapsed ? 'column' : 'row',
+                      'width': isCollapsed ? 'calc(100% - 45px)' : '100%'}"
+            class="section-footer ma-0"
+        >
+          <v-col cols="4" class="px-0">
+            <v-btn text block elevation="0"  @click="selectView(0)" :dark = "selectedOption === 0" :class="{'section-selected': selectedOption===0}">
+              <v-icon>mdi-forum-outline</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption === 1" :class="{'section-selected': selectedOption===1}">
+              <v-icon>mdi-text-long</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text block elevation="0"  @click="selectView(2)" :dark="selectedOption === 2" :class="{'section-selected': selectedOption===2}">
+              <v-icon>mdi-folder-outline</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
     </v-col>
   </v-row>
 </template>
@@ -88,7 +94,6 @@ export default {
 }
 
 .project-activity-inner-container{
-  height: calc(100% - 150px);
   overflow: auto;
 }
 
@@ -98,19 +103,21 @@ export default {
   width:100%;
 }
 
-.project-activity-collapsed {
-  min-height: 600px;
-  width:100%;
-}
-
-.section-footer{
+.footer-container {
+  width: calc(100% - 30px);
   height: fit-content;
-  background-color: white;
-  position: absolute;
-  width: 100%;
-  left: 15px;
+  min-height: 65px;
+  //height: 65px;
   //i cant figure out why this has to be 15 instead of 0 but i am too angry now to care
   bottom: 15px;
+  position: absolute;
+}
+
+.section-footer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: white;
 }
 
 .section-selected{
