@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="height-one-hunned">
     <v-toolbar color="white" class="elevation-0">
       <v-toolbar-title>
         Project Communication
       </v-toolbar-title>
     </v-toolbar>
 
-    <v-row id="project-tabs" class="mb-2 message-container" justify="center" no-gutters>
+    <v-row id="project-tabs" class="message-container" justify="center" no-gutters>
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
@@ -55,6 +55,7 @@ export default {
   data() {
     return {
       snackbar: {},
+      currentUserFullName: this.$store.state.user.details.fullName,
       projectId: parseInt(this.$route.params.projectId),
       participants: [],
       messageList: [], // the list of the messages to show, can be paginated and adjusted dynamically
@@ -128,7 +129,7 @@ export default {
         await postRequest(`/communication/sendTextsForProject`, params)
 
         //dont add to the ui unless the message goes thru successfully
-        message.data.meta = moment().format('M/D/YYYY h:mm a')
+        message.data.meta = this.currentUserFullName + ' ' + moment().format('M/D/YYYY h:mm a')
         this.messageList = [...this.messageList, message]
         this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1
       } catch (e) {
@@ -171,7 +172,7 @@ export default {
 
         data.forEach(u => {
           let msgFrom = '';
-          if (u.fromPhone != null && u.fromPhone != '+18014480212') {
+          if (u.fromPhone != null && u.fromPhone !== '+18014480212') {
             msgFrom = u.contactId;
           } else {
             msgFrom = 'me';
@@ -186,7 +187,7 @@ export default {
                 file: {
                   name: u.message,
                   url: u.mediaUrls[0],
-                  meta: this.$filters.formatDate(u.created, 'timestamp')
+                  meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
                 }
               }
             }
@@ -196,7 +197,7 @@ export default {
               author: msgFrom,
               data: {
                 text: u.message,
-                meta: this.$filters.formatDate(u.created, 'timestamp')
+                meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
               }
             }
           }
@@ -218,19 +219,51 @@ export default {
 <style lang="scss">
 .message-container {
   min-height: 400px;
+  height: calc(100% - 65px);
   margin-top: 5px;
+}
+
+.sc-message-list {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  height: 100% !important;
+}
+
+.sc-message--content.sent .sc-message--meta {
+  text-align: right;
+}
+
+.sc-message--content.received .sc-message--meta {
+  text-align: left;
 }
 
 .sc-chat-window {
   position: unset !important;
   max-width: 100%;
   width: 100% !important;
-  height: 95% !important;
+  height: 100% !important;
+  max-height: unset !important;
   text-align: left !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.sc-user-input--text {
+  width: calc(100% - 100px);
+}
+
+.sc-user-input {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.sc-user-input--text {
+  border-bottom-left-radius: 0 !important;
 }
 
 .chat-container {
   width:100%;
+  height: 100%;
 }
 
 .sc-message{

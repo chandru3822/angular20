@@ -1,9 +1,8 @@
 <template>
   <v-row id="project-activity-container" no-gutters>
-    <v-col cols="12" lg="12" class="pb-0 pt-2 pr-0">
-      <div class="project-activity-inner-container"
-        :style="{'height': isCollapsed ? 'calc(100% - 250px)' : 'calc(100vh - 225px)'}">
-        <div v-show="!isCollapsed">
+    <v-col cols="12" lg="12" class="py-0 pr-0">
+      <div class="project-activity-inner-container">
+        <div v-show="!isCollapsed" :style="{'height': isCollapsed ? 'calc(100% - 250px)' : 'calc(100vh - 225px)'}">
           <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
           <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
           <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId"/>
