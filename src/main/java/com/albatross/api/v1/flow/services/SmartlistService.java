@@ -2301,7 +2301,7 @@ public class SmartlistService {
       }
 
       if (smartlist.getObjectTypeId() == 6) {
-        withClause.append(" and flow.project_process_step_event.start_time is not null and flow.project_process_step_event.end_time is not null");
+        withClause.append(" and flow.project_process_step_event.end_time is not null");
       }
 
       query.append(String.format("%s), ", withClause));
@@ -2554,7 +2554,6 @@ public class SmartlistService {
          .append("flow.project.archived is not true and ")
          .append("flow.project_process_step.archived is not true and ")
          .append("flow.project_process_step_event.archived is not true and ")
-         .append("flow.project_process_step_event.start_time is not null and ")
          .append("flow.project_process_step_event.end_time is not null");
 
 
@@ -2993,7 +2992,7 @@ public class SmartlistService {
    * @return a sql string snippet
    */
   private String joinPPsEventTable(String ppsEventTable, String ppsTable, Long processStepEventId) {
-    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".start_time is not null and \"%s\".end_time is not null ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable, ppsEventTable);
+    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".end_time is not null ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable);
   }
 
   /**
