@@ -237,6 +237,10 @@ export default {
   text-align: left;
 }
 
+.sc-message--meta, .sc-message--text-content {
+  margin-bottom: 5px !important;
+}
+
 .sc-chat-window {
   position: unset !important;
   max-width: 100%;
