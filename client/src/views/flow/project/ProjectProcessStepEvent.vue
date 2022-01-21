@@ -89,6 +89,11 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
+          <v-btn text v-if="windowWidth >= splitColumnMinWidth"
+                 @click="setSplitColumnValue()">
+            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+            <v-icon v-else>mdi-menu</v-icon>
+          </v-btn>
           <div>
             <v-btn class="white--text mt-3"
                    @click="checkFieldsForUnique()"
@@ -235,7 +240,7 @@
           </v-toolbar>
           <v-card class="px-4 square-card">
             <v-row>
-              <v-col :cols="splitValueColumns ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -247,7 +252,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6" v-if="splitValueColumns">
+              <v-col cols="6" v-if="columnSplit">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -354,11 +359,18 @@ export default {
       uniqueAlreadyHasValue: false,
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
       showUnperformableActions: false,
-      eventDetailsLoading: false
+      eventDetailsLoading: false,
+      windowWidth: window.innerWidth,
+      splitColumnMinWidth: 1700
     }
   },
   async created() {
     await this.loadAllPageDetails()
+  },
+  mounted() {
+    window.addEventListener('resize', () => {
+      this.windowWidth = window.innerWidth
+    })
   },
   watch: {
     eventActionMissingRequirements: function () {
@@ -375,6 +387,9 @@ export default {
     },
   },
   computed: {
+    columnSplit() {
+      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
+    },
     filteredActions() {
       if (!this?.selectedEvent?.eventActions) {
         return []
@@ -388,6 +403,10 @@ export default {
     }
   },
   methods: {
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+    },
     getCustomFieldValuesToDisplay(values, columnNum) {
       if (this.splitValueColumns) {
         return values.filter(function (element, index, values) {

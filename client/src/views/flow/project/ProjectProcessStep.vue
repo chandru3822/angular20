@@ -212,6 +212,11 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div>
+              <v-btn text v-if="windowWidth >= splitColumnMinWidth"
+                     @click="setSplitColumnValue()">
+                <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+                <v-icon v-else>mdi-menu</v-icon>
+              </v-btn>
               <v-btn
                 color="primaryCustom"
                 class="white--text mt-3"
@@ -244,7 +249,7 @@
 
           <v-card class="px-4 square-card">
             <v-row>
-              <v-col :cols="splitValueColumns ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -255,7 +260,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6"v-if="splitValueColumns">
+              <v-col cols="6" v-if="columnSplit">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -377,6 +382,8 @@ export default {
       processStepLoading: true,
       eventToAdd: {},
       processStepEvents: [],
+      windowWidth: window.innerWidth,
+      splitColumnMinWidth: 1700
 
     }
   },
@@ -389,10 +396,18 @@ export default {
       await this.loadAllPageDetails()
     },
   },
+  mounted() {
+    window.addEventListener('resize', () => {
+      this.windowWidth = window.innerWidth
+    })
+  },
   async created() {
     await this.loadAllPageDetails()
   },
   computed: {
+    columnSplit() {
+      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
+    },
     filteredActions() {
       if (!this?.processStep?.actions) {
         return []
@@ -418,6 +433,10 @@ export default {
     }
   },
   methods: {
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+    },
     getCustomFieldValuesToDisplay(values, columnNum) {
       if (this.splitValueColumns) {
         return values.filter(function (element, index, values) {
