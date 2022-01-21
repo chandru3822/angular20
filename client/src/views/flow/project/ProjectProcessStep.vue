@@ -242,9 +242,9 @@
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-card class="pa-3">
+          <v-card class="px-4 square-card">
             <v-row>
-              <v-col :cols="splitValueColumns ? 6 : 12">
+              <v-col :cols="splitValueColumns ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -255,7 +255,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6">
+              <v-col cols="6"v-if="splitValueColumns">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"

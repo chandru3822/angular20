@@ -49,9 +49,9 @@
               v-if="index !== 0">
               <v-toolbar-title>{{ group.groupName }}</v-toolbar-title>
             </v-toolbar>
-            <v-card class="pa-4 text-left square-card">
+            <v-card class="px-4 text-left square-card">
               <v-row>
-                <v-col :cols="splitValueColumns ? 6 : 12">
+                <v-col :cols="splitValueColumns ? 6 : 12" class="pb-0 pt-2">
                   <CustomValueInput
                     v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
                     :key="idx"
