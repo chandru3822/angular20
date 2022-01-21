@@ -168,7 +168,7 @@ export default {
     async fetchSmsData() {
       try {
         let messages = []
-        const {data} = await getRequest(`/sms/messages/${this.projectId}`)
+        const {data} = await getRequest(`/sms/messages/${this.projectId}`, null, [])
 
         data.forEach(u => {
           let msgFrom = '';
