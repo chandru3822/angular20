@@ -10,7 +10,7 @@ BEGIN
          inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
   where ppse.project_process_step_id = p_project_process_step_id
     and cest.event_status_type_id = 1 -- active
-    and ppse.start_time is not null; --kind of the same as archived...
+    and ppse.archived is false; --kind of the same as archived...
 
   return v_has_active_events;
 END

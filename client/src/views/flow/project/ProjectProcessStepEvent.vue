@@ -9,7 +9,7 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-dialog
-            v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
             v-model="selectedEvent.deleteConfirm"
             width="500">
             <template v-slot:activator="{ on }">
@@ -595,6 +595,8 @@ export default {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
+        //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
+        this.selectedEvent.allowAllUserDeletion = data.startTime === null
         //have to reset the pps stuff too in case they just go directly to the url
         this.$store.commit(ProjectMutations.SET_PPS, {
           projectProcessStepId: this.selectedEvent.projectProcessStepId,
