@@ -1,12 +1,10 @@
 <template>
   <small v-if="!drillDownAttachments.length" small >No attachments available</small>
 
-  <v-simple-table v-else dense :key="renderTicker">
-    <tbody>
-    <tr v-for="item in drillDownAttachments"  class="text-left"  :class="{'primary-row': item.main}" :key="item.processStepId">
-      <td class="text-left">
+  <v-container v-else dense :key="renderTicker">
+    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
+      <v-col class="text-left pa-1 flex-grow-3">
         <v-btn
-            width="100%"
             icon
             text
             :href="item.presignedUrl" class="type">
@@ -14,8 +12,6 @@
             {{ getIconForFile(item) }}
           </v-icon>
         </v-btn>
-      </td>
-      <td class="type text-left">
         <a v-if="!item.edit" :href="item.presignedUrl"
            class="type link text-center">
           {{ item.editableName }}
@@ -24,26 +20,26 @@
             v-else
             hide-details
             label="Filename"
-            class="my-2"
+            class="my-2 flex-grow-2 text-field"
             v-model="item.editableName"
         ></v-text-field>
-      </td>
-      <td>{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</td>
-      <td class="text-right">
-        <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
+      </v-col>
+      <v-col small class="text-right px-1 flex-grow-2 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
+      <v-col class="text-right pa-0">
+        <v-btn v-if="!item.edit" dense small text class="px-0" @click="[item.edit = true, renderTicker++]">
           <v-icon>edit</v-icon>
         </v-btn>
-        <v-btn small text v-if="item.edit" @click="saveFilename(item)">
-          <v-icon>save</v-icon>
-        </v-btn>
-        <v-btn small text v-if="item.edit" @click="[item.edit = false, renderTicker++]">
+        <v-btn v-if="item.edit" dense text small class="px-0" @click="[item.edit = false, renderTicker++]">
           cancel
+        </v-btn>
+        <v-btn  v-if="item.edit" dense small text class="px-0" @click="saveFilename(item)">
+          <v-icon>save</v-icon>
         </v-btn>
         <v-dialog
             v-model="item.deleteConfirm"
             width="500">
           <template #activator="{ on }">
-            <v-btn small text v-on="on">
+            <v-btn small text v-on="on" class="px-0">
               <v-icon>delete</v-icon>
             </v-btn>
           </template>
@@ -75,10 +71,9 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-      </td>
-    </tr>
-    </tbody>
-  </v-simple-table>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -144,5 +139,26 @@ export default {
 </script>
 
 <style scoped>
+.attachment {
+  display: flex;
+  justify-content: space-between;
+}
+
+.text-left{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.text-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.attachment-info {
+  font-size: 14px;
+  color: #A5A5A5;
+
+}
 
 </style>
