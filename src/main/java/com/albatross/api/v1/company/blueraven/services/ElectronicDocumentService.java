@@ -15,22 +15,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Service
+@RequiredArgsConstructor
 public class ElectronicDocumentService {
   private final SqlCache sqlCache;
 
-  @Autowired
-  private PandaDocService pandaDocService;
+  private final PandaDocService pandaDocService;
 
-  @Autowired
-  private SecurityService securityService;
+  private final SecurityService securityService;
 
   private final int PERMITTING_DOC_TYPE = 0;
   private final int UTILITY_DOC_TYPE = 1;
