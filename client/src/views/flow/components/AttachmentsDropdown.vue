@@ -17,7 +17,7 @@
                   @click.stop=""
                   ref='fileInput'
               >
-              <v-btn @click.native.stop="selectFile" elevation="0" color="transparent" class="expansion-panel-btn">Upload</v-btn>
+              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile" elevation="0" color="transparent" class="expansion-panel-btn">Upload</v-btn>
 
               <v-btn
                   v-if="!projectProcessStepId"
@@ -53,11 +53,9 @@ import {
   getRequest,
   getRequestWithParams,
   getSnackbar,
-  handleHidingGlobalLoader, logError,
-  putRequest
+  logError
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
-import {deleteAttachment} from "@/services/attachmentService";
 import orderBy from "lodash.orderby";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
@@ -160,28 +158,7 @@ export default {
     toggleShowNonPrimary(){
       this.showNonPrimaryDocs = !this.showNonPrimaryDocs;
     },
-    async saveFilename(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let newFileName = item.editableName
-        if(item.fileExtension) {
-          newFileName += '.' + item.fileExtension
-        }
-        item.filename = newFileName
-        const {data, status} = await putRequest(`/attachment/${item.id}`, item)
-        item.presignedUrl = data.presignedUrl
-        item.edit = false
-        this.renderTicker++
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+
     fetchAttachmentTypes: async function () {
       this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
@@ -190,9 +167,6 @@ export default {
         }})
       this.attachmentTypes = data
       this.attachmentTypesLoading = false
-    },
-    deleteAttachment: async function (id) {
-      await deleteAttachment(id)
     },
     fetchAttachments: async function () {
       const {data} = await getRequest(this.attachmentPath, null, [])
@@ -277,7 +251,6 @@ export default {
 
 <style scoped>
 .expansion-panel-header{
-  background-color: #eeeeee;
   font-size: 14px;
   font-weight: bold;
 }
@@ -285,9 +258,6 @@ export default {
 .expansion-panel-header-open{
   display: flex;
   align-items: center;
-}
-
-.expansion-panel-input {
 }
 
 .expansion-panel-btn {
