@@ -211,12 +211,12 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+                   @click="setSplitColumnValue()">
+              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+              <v-icon v-else>mdi-menu</v-icon>
+            </v-btn>
             <div>
-              <v-btn text v-if="windowWidth >= splitColumnMinWidth"
-                     @click="setSplitColumnValue()">
-                <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-                <v-icon v-else>mdi-menu</v-icon>
-              </v-btn>
               <v-btn
                 color="primaryCustom"
                 class="white--text mt-3"
@@ -247,7 +247,7 @@
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-card class="px-4 square-card">
+          <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
               <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
@@ -438,7 +438,7 @@ export default {
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.splitValueColumns) {
+      if (this.columnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });

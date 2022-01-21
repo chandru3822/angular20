@@ -21,7 +21,7 @@
           <v-toolbar-title>{{ displayedGroups[0].groupName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="windowWidth >= splitColumnMinWidth"
+            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
               <v-icon v-else>mdi-menu</v-icon>
