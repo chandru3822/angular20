@@ -22,15 +22,15 @@
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
           <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)" class="pt-0">
-            <v-select attach v-model="state"
+            <v-autocomplete attach v-model="state"
                       :items="states"
                       label="State"
                       return-object
                       item-text="state"
                       item-value="id"
-            ></v-select>
+            ></v-autocomplete>
 
-            <v-select attach v-model="selectedEventTypes"
+            <v-autocomplete attach v-model="selectedEventTypes"
                       :items="eventTypes"
                       label="Event"
                       item-text="eventName"
@@ -54,9 +54,9 @@
                     class="primary--text text-caption"
                 >{{ selectedEventTypes.length }} selected</span>
               </template>
-            </v-select>
+            </v-autocomplete>
 
-            <v-select v-model="selectedEventStatusType"
+            <v-autocomplete v-model="selectedEventStatusType"
                       :items="eventStatusTypes"
                       label="Event Step Status"
                       clearable
@@ -66,7 +66,7 @@
                       return-object
             />
 
-            <v-select attach v-model="selectedProcessStepStatusType"
+            <v-autocomplete attach v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Process Step Status"
                       clearable
@@ -141,6 +141,15 @@
                     </v-btn>
                   </template>
                   <span>Go to Process Step</span>
+                </v-tooltip>
+                <v-tooltip top v-if="$store.getters.userHasFeature('EVENTS')">
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on"
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}/event/${selectedProject.projectProcessStepEventId}`">
+                      <v-icon>mdi-chevron-triple-right</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Go to Event</span>
                 </v-tooltip>
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
