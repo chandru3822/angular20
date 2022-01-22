@@ -572,6 +572,20 @@ public class GenesysService {
     return null;
   }
 
+  private String getTextelContactListName(String leadLevel) {
+    if (leadLevel.equals("1")) {
+      return "Level1SMS";
+    } else if (leadLevel.equals("2")) {
+      return "Level2SMS";
+    } else if (leadLevel.equals("3")) {
+      return "Level3SMS";
+    } else if (leadLevel.equals("10")) {
+      return "Level10SMS";
+    }
+
+    return null;
+  }
+
   private HashSet<String> getContactListNameCron(String leadLevel) {
     if (leadLevel.equals("1")) {
       return new HashSet<>() {
@@ -674,6 +688,7 @@ public class GenesysService {
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
     contactListNames.add(getContactListOldName(leadLevel));
     contactListNames.add(getContactListName(leadLevel));
+    contactListNames.add(getTextelContactListName(leadLevel));
     contactListNames.addAll(getContactListNameCron(leadLevel));
 
     for (ContactList cl : contactListEntity.getEntities()) {
