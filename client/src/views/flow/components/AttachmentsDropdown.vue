@@ -128,11 +128,9 @@ export default {
     },
     loadAllPageDetails() {
       if (this.projectProcessStepEventId) {
-        console.log('ppsEventId: ' + this.projectProcessStepEventId)
         this.typePath = `/eventAndPsTypes/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
-        console.log('ppsId: ' + this.projectProcessStepId)
         this.typePath = `/processStepTypes/${this.processStepId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
       } else if (this.projectId) {

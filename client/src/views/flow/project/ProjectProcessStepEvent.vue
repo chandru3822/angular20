@@ -435,6 +435,7 @@ export default {
         })
       } catch(e) {
         console.log('randaLogger',e)
+
       }
     },
     closeEventWindow() {

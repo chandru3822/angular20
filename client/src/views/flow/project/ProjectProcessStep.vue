@@ -82,7 +82,7 @@
                   <v-btn
                     color="primaryCustom"
                     text
-                    @click="updateMain(processStep.projectProcessStepId)">
+                    @click="[processStep.changeActiveConfirm = false, processStep.main = true, showMainDialog = true]">
                     Yes
                   </v-btn>
                 </v-card-actions>
@@ -281,9 +281,8 @@
     </v-row>
 
     <ProjectProcessStepStatus
-      v-if="!isProcessStepLoading"
       :show-dialog="showMainDialog"
-      :project-id="parseInt(projectId)"
+      :project-id="projectId"
       :project-process-step="processStep"
       :available-process-step-statuses="availableProcessStepStatuses"
       :limit-to-active="false"
@@ -451,7 +450,6 @@ export default {
       //if you add a new item to requests make sure it returns the request status
       const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
       await Promise.all(requests).then((statusVals) => {
-        console.log('randaLogger',statusVals)
         let success = true
         statusVals.forEach(status => {
           if (status !== 200) {
@@ -616,7 +614,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
-        const {status} = await this.getProcessStep()
+        const status = await this.getProcessStep()
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
