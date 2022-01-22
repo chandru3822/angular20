@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -92,7 +96,7 @@ public class ScheduleService {
   }
 
   // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
-  public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
+  public Page<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
@@ -105,8 +109,12 @@ public class ScheduleService {
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    params.put("search", esp.getSearch());
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProjects", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
-    return results;
+    Integer total = 10000; //todo come back and check later
+    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
   public List<ListOfValue> getAvailableProjectResource(ScheduleController.ResourceRequest req) {

@@ -129,13 +129,16 @@
               <v-toolbar-items>
                 <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" :to="`/project/${selectedProject.projectId}/details`"><v-icon>mdi-chevron-right</v-icon></v-btn>
+                    <v-btn x-small text v-on="on"
+                           target="_blank"
+                           :to="`/project/${selectedProject.projectId}/details`"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
                 <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
+                           target="_blank"
                            :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}?processStepId=${selectedProject.processStepId}&contactId=${selectedProject.contactId}`">
                       <v-icon>mdi-chevron-double-right</v-icon>
                     </v-btn>
@@ -145,6 +148,7 @@
                 <v-tooltip top v-if="$store.getters.userHasFeature('EVENTS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
+                           target="_blank"
                            :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}/event/${selectedProject.projectProcessStepEventId}`">
                       <v-icon>mdi-chevron-triple-right</v-icon>
                     </v-btn>
@@ -261,6 +265,8 @@
           </div>
           <v-text-field
             v-model="projectFilter"
+            @input="filterProjects()"
+            @click:clear="filterProjects()"
             class="square-card"
             prepend-inner-icon="search"
             label="Filter"
@@ -272,11 +278,13 @@
               :headers="headers"
               :items="projects"
               :search="projectFilter"
-              :fixed-header="true"
+              fixed-header
               :mobile-breakpoint="0"
               :footer-props="footerProps"
               :options.sync="options"
+              disable-sort
               v-model="selectedRows"
+              :server-items-length="totalProjects"
               item-key="projectProcessStepEventId"
               :show-select="true"
               :item-selected="(item, value) => this.zoomToMap(item, value)"
@@ -316,9 +324,10 @@
   import {getEventTypes} from '@/services/scheduleService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-
+  import axios from 'axios'
   import constants from "@/helpers/constants";
   import {getEventStatusTypes} from "@/services/eventStatusTypeService";
+  import debounce from 'lodash.debounce'
 
   export default {
     name: 'Schedule',
@@ -329,6 +338,7 @@
     },
     data() {
       return {
+        initialLoad: true,
         snackbar: {},
         showFilters: true,
         listLoading: false,
@@ -352,6 +362,7 @@
         processStepStatusTypes: [],
         selectedProcessStepStatusType: {},
         eventTypes: [],
+        totalProjects: 0,
         //used for multi select
         selectedEventTypes: [],
         //used for single select
@@ -388,6 +399,13 @@
       }
     },
     watch: {
+      options: {
+        handler() {
+          if(!this.initialLoad) {
+            this.getProjects()
+          }
+        }
+      },
       search(val) {
         if(!val) {
           this.searchProject = {}
@@ -577,12 +595,26 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      filterProjects: debounce(function () {
+        //dont run if the other filters aren't filled in
+        if(this.selectedEventTypes && this.selectedEventTypes.length > 0 &&
+          this.state && this.selectedEventStatusType && this.selectedEventStatusType.id &&
+          this.selectedProcessStepStatusType && this.selectedProcessStepStatusType) {
 
+          //don't allow projectFilter to be null - causes issues
+          this.projectFilter = this.projectFilter || ''
+          this.getProjects()
+
+        }
+      }, 500),
       async getProjects(resetQuery) {
         if(resetQuery) {
           // todo: should we remove this.$route.query params if the button is clicked?
           // this.$route.query = {}
         }
+
+        const {page, itemsPerPage} = this.options
+
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
         localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
@@ -591,7 +623,16 @@
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
           try {
-            let params = {
+            if(this.source){
+              this.source.cancel();
+            }
+            const CancelToken = axios.CancelToken;
+            this.source = CancelToken.source();
+
+            const {data} = await postRequest(`/schedule/projects`, {
+              search: this.projectFilter,
+              source: this.source,
+              cancelToken: this.source.token,
               eventIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
               //old way
               // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
@@ -600,15 +641,17 @@
               eventStatusTypeId: this.selectedEventStatusType.id,
               companyStateId: this.state.id,
               startTime: this.startTime,
-              endTime: this.endTime
-            }
-
-            const {data} = await postRequest(`/schedule/projects`, params)
-            data.forEach(d => {
+              endTime: this.endTime,
+              page: page - 1,
+              size: itemsPerPage
+            })
+            this.projects = data.content || []
+            this.projects.forEach(d => {
               d.coordinates = [ d.longitude, d.latitude ]
             })
-            this.projects = data
+            this.totalProjects = data.totalElements
             this.listLoading = false
+            this.initialLoad = false
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
@@ -684,6 +727,10 @@
   #schedule-container .v-data-table__wrapper {
     height: calc(35vh);
     min-height: 300px;
+  }
+
+  #schedule-container .v-data-footer__pagination {
+    display: none !important;
   }
 
   #schedule-container .v-data-table td {
