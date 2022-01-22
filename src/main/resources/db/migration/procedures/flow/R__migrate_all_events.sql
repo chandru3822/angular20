@@ -1008,9 +1008,10 @@ insert into brs.project_detail_events_config(company_id, process_step_event_id, 
 update brs.project_detail_events_config
   set update_first_value_only_id = 'permit_pack_submittal_end_time_ppse_id'
   where update_first_value_only_id = 'permit_pack_submittal_end_time_ppsecfv_id';
-  update brs.project_detail_events_config
-  set update_first_value_only_id = 'ahj_inspection_start_time_ppse_id'
-  where update_first_value_only_id = 'ahj_inspection_start_time_ppsecfv_id';
+
+--   update brs.project_detail_events_config
+--   set update_first_value_only_id = 'ahj_inspection_start_time_ppse_id'
+--   where update_first_value_only_id = 'ahj_inspection_start_time_ppsecfv_id';
 
 
 
@@ -1063,13 +1064,25 @@ update brs.project_detail_events_config
 
   drop table if exists flow.migration_child_process_step;
 
-  update brs.project_detail_events_config
-  set update_first_value_only_id = 'ahj_inspection_start_time_ppse_id'
-  where update_first_value_only_id = 'ahj_inspection_start_time_ppscfv_id';
 
   update brs.project_detail_events_config
   set update_first_value_only_id = 'permit_pack_submittal_end_time_ppse_id'
   where update_first_value_only_id = 'permit_pack_submittal_end_time_ppscfv_id';
+
+  update brs.project_detail_events_config
+  set update_first_value_only = true,
+      update_first_value_only_id = 'permit_pack_submittal_start_time_ppse_id'
+  where field_to_update = 'permit_pack_submittal_start_time';
+
+  update brs.project_detail_events_config
+  set update_first_value_only = true,
+      update_first_value_only_id = 'permit_pack_submittal_resource_ppse_id'
+  where field_to_update = 'permit_pack_submittal_resource';
+
+  update brs.project_detail_events_config
+  set update_first_value_only = false,
+      update_first_value_only_id = null
+  where field_to_update = 'ahj_inspection_start_time';
 
 END
 $$

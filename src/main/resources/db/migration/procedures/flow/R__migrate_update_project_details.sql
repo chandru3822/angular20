@@ -2,58 +2,57 @@ CREATE OR REPLACE function flow.migrate_update_project_details()
   returns void as
 $$
 BEGIN
-raise notice '1';
-  with update_data as (
-    select ppsecfv.id as project_process_step_event_custom_field_value_id,
-           pd.id as project_details_id
-    from brs.project_details pd
-    inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.setter_milestone_pay_ppsecfv_id
-    where setter_milestone_pay is not null and setter_milestone_pay_ppsecfv_id is not null
-  )
-  update brs.project_details pd2
-  set setter_milestone_pay_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
-  from update_data ud
-  where ud.project_details_id = pd2.id;
 
-raise notice '2';
-  with update_data as (
-    select ppsecfv.id as project_process_step_event_custom_field_value_id,
-           pd.id as project_details_id
-    from brs.project_details pd
-           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_pitched_ppsecfv_id
-    where first_appointment_pitched is not null and first_appointment_pitched_ppsecfv_id is not null
-  )
-  update brs.project_details pd2
-  set first_appointment_pitched_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
-  from update_data ud
-  where ud.project_details_id = pd2.id;
+--   with update_data as (
+--     select ppsecfv.id as project_process_step_event_custom_field_value_id,
+--            pd.id as project_details_id
+--     from brs.project_details pd
+--     inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.setter_milestone_pay_ppsecfv_id
+--     where setter_milestone_pay is not null and setter_milestone_pay_ppsecfv_id is not null
+--   )
+--   update brs.project_details pd2
+--   set setter_milestone_pay_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+--   from update_data ud
+--   where ud.project_details_id = pd2.id;
 
 
-raise notice '3';
-  with update_data as (
-    select ppsecfv.id as project_process_step_event_custom_field_value_id,
-           pd.id as project_details_id
-    from brs.project_details pd
-           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_missed_ppsecfv_id
-    where first_appointment_missed is not null and first_appointment_missed_ppsecfv_id is not null
-  )
-  update brs.project_details pd2
-  set first_appointment_missed_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
-  from update_data ud
-  where ud.project_details_id = pd2.id;
+--   with update_data as (
+--     select ppsecfv.id as project_process_step_event_custom_field_value_id,
+--            pd.id as project_details_id
+--     from brs.project_details pd
+--            inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_pitched_ppsecfv_id
+--     where first_appointment_pitched is not null and first_appointment_pitched_ppsecfv_id is not null
+--   )
+--   update brs.project_details pd2
+--   set first_appointment_pitched_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+--   from update_data ud
+--   where ud.project_details_id = pd2.id;
 
-raise notice '4';
-  with update_data as (
-    select ppsecfv.id as project_process_step_event_custom_field_value_id,
-           pd.id as project_details_id
-    from brs.project_details pd
-           inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_not_pitched_or_missed_ppsecfv_id
-    where first_appointment_not_pitched_or_missed is not null and first_appointment_not_pitched_or_missed_ppsecfv_id is not null
-  )
-  update brs.project_details pd2
-  set first_appointment_not_pitched_or_missed_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
-  from update_data ud
-  where ud.project_details_id = pd2.id;
+
+--   with update_data as (
+--     select ppsecfv.id as project_process_step_event_custom_field_value_id,
+--            pd.id as project_details_id
+--     from brs.project_details pd
+--            inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_missed_ppsecfv_id
+--     where first_appointment_missed is not null and first_appointment_missed_ppsecfv_id is not null
+--   )
+--   update brs.project_details pd2
+--   set first_appointment_missed_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+--   from update_data ud
+--   where ud.project_details_id = pd2.id;
+
+
+--   with update_data as (
+--     select ppsecfv.id as project_process_step_event_custom_field_value_id,
+--            pd.id as project_details_id
+--     from brs.project_details pd
+--            inner join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.migrate_project_process_step_custom_field_value_id = pd.first_appointment_not_pitched_or_missed_ppsecfv_id
+--     where first_appointment_not_pitched_or_missed is not null and first_appointment_not_pitched_or_missed_ppsecfv_id is not null
+--   )
+--   update brs.project_details pd2
+--   set first_appointment_not_pitched_or_missed_ppsecfv_id = ud.project_process_step_event_custom_field_value_id
+--   from update_data ud
+--   where ud.project_details_id = pd2.id;
 
 raise notice '5';
   with update_data as (
@@ -150,19 +149,19 @@ raise notice '11';
   from update_data ud
   where ud.project_details_id = pd2.id;
 
-raise notice '12';
-  with update_data as (
-    select ppse2.id as project_process_step_event_id,
-           pd.id as project_details_id
-    from brs.project_details pd
-           inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.id = pd.ahj_inspection_start_time_ppse_id
-           inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = ppscfv.project_process_step_id
-    where pd.ahj_inspection_start_time is not null and ahj_inspection_start_time_ppse_id is not null
-  )
-  update brs.project_details pd2
-  set ahj_inspection_start_time_ppse_id = ud.project_process_step_event_id
-  from update_data ud
-  where ud.project_details_id = pd2.id;
+-- raise notice '12';
+--   with update_data as (
+--     select ppse2.id as project_process_step_event_id,
+--            pd.id as project_details_id
+--     from brs.project_details pd
+--            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.id = pd.ahj_inspection_start_time_ppse_id
+--            inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = ppscfv.project_process_step_id
+--     where pd.ahj_inspection_start_time is not null and ahj_inspection_start_time_ppse_id is not null
+--   )
+--   update brs.project_details pd2
+--   set ahj_inspection_start_time_ppse_id = ud.project_process_step_event_id
+--   from update_data ud
+--   where ud.project_details_id = pd2.id;
 
 raise notice '13';
   with update_data as (
