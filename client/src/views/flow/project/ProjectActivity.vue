@@ -8,7 +8,6 @@
           <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId"/>
         </div>
       </div>
-<!--      <v-row v-show="isCollapsed" class="project-activity-collapsed"></v-row>-->
       <div class="footer-container mb-3"
            :style="{'width': isCollapsed ? '72px' : 'calc(100% - 30px)',
                     'left': isCollapsed ? '0px' : '15px',}">
