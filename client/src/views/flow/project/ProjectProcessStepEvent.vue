@@ -554,7 +554,21 @@ export default {
         }
 
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
-        this.selectedEvent = data
+
+        this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+
+        if(data?.processStepStatusTypeId !== 1) {
+          //if ps root status is not active then go back to project screen
+          this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
+        } else if(data?.eventStatusTypeId !== 1) {
+          //if ps root status is active but event root status is not then go back to ps
+          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
+          this.$router.push(path)
+        } else {
+          //stay on the screen and refresh values
+          this.selectedEvent = data
+        }
         this.snackbar = getSnackbar('SUCCESS', 'Action Performed')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)

@@ -646,10 +646,11 @@ export default {
     handleActionCompleted(data) {
       this.$emit('refresh-upcoming-pps')
       this.$emit('refresh-project-status')
-      //turn off re-route for now
+
+      this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //if root status is not active then go back to project screen
       if(data?.processStepStatusTypeId !== 1) {
-        this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       } else {
         this.getProcessStep(false)
