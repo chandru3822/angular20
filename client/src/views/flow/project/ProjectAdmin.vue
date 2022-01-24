@@ -5,10 +5,10 @@
       <v-col cols="12" class="text-left pl-5">
         <div class="d-inline-block">
           <div class="project-title">
-            <router-link :to="`/project/${projectId}/details`">{{ contact.fullName}}</router-link>
+            <router-link :to="`/project/${projectId}/details`">{{ project.projectName}}</router-link>
           </div>
           <div class="project-subtitle">
-            {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
+            {{ project.street1 }} - {{ project.city }}, {{ project.state }}
           </div>
         </div>
         <v-dialog
@@ -99,7 +99,7 @@
         <template #item="{item: projectProcessStep}">
           <tr>
             <td class="text-left">
-              <router-link :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}?processStepId=${projectProcessStep.processStepId}&contactId=${contact.id}`">{{ projectProcessStep.projectProcessStepId }}</router-link>
+              <router-link :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}?processStepId=${projectProcessStep.processStepId}&contactId=${project.contactId}`">{{ projectProcessStep.projectProcessStepId }}</router-link>
             </td>
             <td class="text-left">{{projectProcessStep.processStepName}}</td>
             <td class="text-left">{{getOwnerName(projectProcessStep)}}</td>
@@ -246,7 +246,6 @@ export default {
       showPpsHistory: false,
       selectedPpsHistory: [],
       process: {},
-      contact: {},
       snackbar: {},
       deleteProjectConfirm: false,
       displayDropdown: false,
@@ -285,7 +284,6 @@ export default {
     },
   },
   async created () {
-    this.getContact()
     await this.getProject()
     this.getProcess()
     // await this.getAvailableStatuses()
@@ -332,14 +330,6 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
-      }
-    },
-    getContact: async function () {
-      try {
-        const{data} = await getRequest(`/contact/project/${this.projectId}`)
-        this.contact = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
       }
     },
     async getAvailableStatuses (pps) {

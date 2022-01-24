@@ -636,11 +636,18 @@ export default {
         followLink(link.url, this.projectId)
       })
     },
-    handleActionCompleted() {
+    handleActionCompleted(data) {
       this.$emit('refresh-upcoming-pps')
       this.$emit('refresh-project-status')
+      console.log('DATAME', data)
       //turn off re-route for now
-      // this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
+      if(data?.processStepStatusTypeId !== 1) {
+        this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
+      } else {
+        //need to refresh actions and events
+      }
     },
     handleOnCompleteError(actionId, errorMessage) {
       logError(`Failed to complete action with actionId: ${actionId}`)
