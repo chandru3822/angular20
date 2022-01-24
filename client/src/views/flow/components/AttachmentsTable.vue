@@ -2,7 +2,7 @@
   <small v-if="!drillDownAttachments.length" small >No attachments available</small>
 
   <v-container v-else dense :key="renderTicker">
-    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
+    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'shaded-row': item.main}" :key="item.processStepId">
       <v-col class="text-left pa-1 flex-grow-3">
         <v-btn
             icon
