@@ -149,6 +149,7 @@
             item-text="eventName"
             item-value="id"
             return-object
+            class="toolbar-z-index-override"
             @input="addEvent()"
           ></v-autocomplete>
         </div>

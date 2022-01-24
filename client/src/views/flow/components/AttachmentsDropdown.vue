@@ -21,12 +21,13 @@
 
               <v-btn
                   v-if="!projectProcessStepId"
-                  @click.native.stop="toggleShowNonPrimary"
+                  @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
                   elevation="0"
                   color="transparent"
                   class="expansion-panel-btn"
               >
-                Show non-primary
+                <span v-if="type.showNonPrimary">Hide non-primary</span>
+                <span v-else>Show non-primary</span>
               </v-btn>
             </div>
             <span
@@ -41,7 +42,7 @@
         <AttachmentsTable
             :display-type="type"
             :attachments="attachments"
-            :show-non-primary-docs="showNonPrimaryDocs || !!projectProcessStepId"
+            :show-non-primary-docs="type.showNonPrimary || !!projectProcessStepId"
         ></AttachmentsTable>
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -128,7 +129,7 @@ export default {
     },
     loadAllPageDetails() {
       if (this.projectProcessStepEventId) {
-        this.typePath = `/eventAndPsTypes/${this.projectProcessStepEventId}`
+        this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
         this.typePath = `/processStepTypes/${this.processStepId}`

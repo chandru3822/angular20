@@ -210,20 +210,28 @@ values (:attachmentTypeId, :processStepId, (select coalesce(max(display_order) +
   ]]></attachmentType.getProjectType>
 
   <attachmentType.getProjectTypes><![CDATA[
-    SELECT psat.id,
-       psat.attachment_type_id as "attachmentTypeId",
-       psat.created_by_id as "createdById",
-       psat.company_id as "companyId",
-       psat.modified_by_id as "modifiedById",
+    SELECT pat.id,
+       pat.attachment_type_id as "attachmentTypeId",
+       pat.created_by_id as "createdById",
+       pat.company_id as "companyId",
+       pat.modified_by_id as "modifiedById",
        at.attachment_type as "attachmentType",
-       psat.display_order as "displayOrder",
-       psat.archived,
-       psat.read_only
-    FROM flow.project_attachment_type psat
-           inner join flow.attachment_type at on at.id = psat.attachment_type_id
-    where psat.company_id = :companyId
-      and psat.archived is not true
-    order by psat.display_order
+       pat.display_order as "displayOrder",
+       pat.archived,
+       case when (select psat.id
+                    from flow.process_step_attachment_type psat
+                    inner join flow.process_step ps on psat.process_step_id = ps.id
+                    where psat.attachment_type_id = pat.attachment_type_id
+                      and psat.archived is false
+                      and ps.archived is false
+                    limit 1
+                  ) is null then false else true end as "includesPsType",
+       pat.read_only
+    FROM flow.project_attachment_type pat
+           inner join flow.attachment_type at on at.id = pat.attachment_type_id
+    where pat.company_id = :companyId
+      and pat.archived is not true
+    order by pat.display_order
   ]]></attachmentType.getProjectTypes>
 
   <attachmentType.insertProjectType><![CDATA[

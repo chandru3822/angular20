@@ -116,6 +116,11 @@ public class ProjectProcessStepEventService {
       return false;
     }
 
+    //Only perform event actions on active project process steps events
+    if (!event.getEventStatusTypeId().equals(com.albatross.api.v1.flow.enums.EventStatusType.ACTIVE.id)) {
+      return false;
+    }
+
     //if there is logic, then check it all bitch
     if (!action.getProcessStepEventLogicList().isEmpty()) {
 

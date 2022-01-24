@@ -1,5 +1,5 @@
 <template>
-  <v-row id="project-details-container" class="">
+  <v-row id="project-details-container" class="mb-4">
     <v-col cols="12" lg="12" class="text-left pt-0">
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>

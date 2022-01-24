@@ -444,7 +444,8 @@ export default {
       this.editAddress = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/project`, this.project)
+        //temp project holds all the changes in case they cancel. use those values
+        const {status} = await putRequest(`/project`, this.tempProject)
         this.snackbar = getSnackbar('SUCCESS', 'Project Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)

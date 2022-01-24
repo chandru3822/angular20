@@ -1,5 +1,5 @@
 <template>
-  <v-row id="project-details-container" class="mt-2">
+  <v-row no-gutters id="project-details-container" class="py-0 relative height-one-hunned overflow-y-auto">
     <v-col cols="12" lg="12" class="text-left pt-0">
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>

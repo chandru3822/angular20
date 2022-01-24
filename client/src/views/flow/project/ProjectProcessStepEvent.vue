@@ -458,7 +458,6 @@ export default {
       let requiredFields = action?.requiredFields
       if ((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
         this.eventActionMissingRequirements = true
-        document.getElementById('event-header').scrollIntoView()
       } else if (requiredFields.length > 0) {
         let fieldValueMissing = false
         this.selectedEvent?.customFieldGroups?.forEach(cfg => {
@@ -479,7 +478,6 @@ export default {
                 cf.required = true
                 fieldValueMissing = true
                 this.eventActionMissingRequirements = true
-                document.getElementById('event-header').scrollIntoView()
               }
             } else {
               cf.required = false
