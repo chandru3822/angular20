@@ -4,7 +4,7 @@
     <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
       <v-expansion-panel-header class="expansion-panel-header">
         <template v-slot:default="{ open }">
-          <v-row no-gutters class="align-center">
+          <v-row no-gutters class="align-center" :class="{'bold' : open}">
             {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
             <v-spacer></v-spacer>
             <div class="expansion-panel-header-open" v-if="open"
@@ -250,6 +250,9 @@ export default {
 <style scoped>
 .expansion-panel-header{
   font-size: 14px;
+}
+
+.bold {
   font-weight: bold;
 }
 
