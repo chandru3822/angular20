@@ -449,7 +449,7 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
       await Promise.all(requests).then((statusVals) => {
         let success = true
         statusVals.forEach(status => {
@@ -479,13 +479,20 @@ export default {
         }
       }
     },
-    getProcessStep: async function () {
+    getProcessStep: async function (reloadAll) {
       try {
+        this.processStepLoading = true
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
         this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
-        this.getAvailableStatuses()
-        this.getAvailableOwners()
+        if(reloadAll) {
+          //dont reload if only doing simple refresh
+          this.getAvailableStatuses()
+          this.getAvailableOwners()
+        } else {
+          //only set this to false when doing a simple refresh or else it will turn off loaders too soon
+          this.processStepLoading = false
+        }
         window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
           : `${this.processStep.processStepName}`
         // return {data, status}
@@ -560,7 +567,7 @@ export default {
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
-        await this.getProcessStep()
+        await this.getProcessStep(false)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
@@ -615,7 +622,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
-        const status = await this.getProcessStep()
+        const status = await this.getProcessStep(false)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -639,14 +646,13 @@ export default {
     handleActionCompleted(data) {
       this.$emit('refresh-upcoming-pps')
       this.$emit('refresh-project-status')
-      console.log('DATAME', data)
       //turn off re-route for now
       if(data?.processStepStatusTypeId !== 1) {
         this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       } else {
-        //need to refresh actions and events
+        this.getProcessStep(false)
       }
     },
     handleOnCompleteError(actionId, errorMessage) {
