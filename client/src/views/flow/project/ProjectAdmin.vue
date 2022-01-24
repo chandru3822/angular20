@@ -1,17 +1,14 @@
 <template>
-<v-row id="project-admin-container">
+<v-row id="project-admin-container" class="py-0">
   <v-col cols="12">
     <v-row class="project-header">
-      <v-col cols="12" class="text-left pl-5">
-        <div class="d-inline-block">
+      <v-col cols="12" class="text-left px-4 py-0">
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar mx-3">
           <div class="project-title">
             <router-link :to="`/project/${projectId}/details`">{{ project.projectName}}</router-link>
           </div>
-          <div class="project-subtitle">
-            {{ project.street1 }} - {{ project.city }}, {{ project.state }}
-          </div>
-        </div>
-        <v-dialog
+          <v-spacer></v-spacer>
+          <v-dialog
           class="d-inline-block"
           v-model="deleteProjectConfirm"
           width="500">
@@ -48,7 +45,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-
+        </v-toolbar>
       </v-col>
 
     </v-row>
@@ -473,7 +470,7 @@ export default {
   margin-top: -15px;
   padding-left: 0;
   padding-right: 0;
-  padding-top: 0;
+  padding-top: 0 !important;
 }
 
 .project-header {
@@ -481,11 +478,12 @@ export default {
 }
 
 .project-title {
-  font-size: 20px;
+  font-size: 18px;
 }
 
-.project-subtitle {
-  font-size: 15px;
+.process-step-toolbar .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 tr:nth-of-type(even) {
