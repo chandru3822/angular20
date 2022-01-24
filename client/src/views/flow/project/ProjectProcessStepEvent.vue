@@ -558,6 +558,12 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
+        //calls fn that tells the upcoming events to update
+        //we dont know if an event action will trigger other changes so we have to refresh everything all the time
+        this.$emit('refresh-project-status')
+        this.$emit('refresh-upcoming-pps')
+        this.$emit('refresh-upcoming-events')
+
         if(data?.processStepStatusTypeId !== 1) {
           //if ps root status is not active then go back to project screen
           this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
@@ -569,12 +575,8 @@ export default {
           //stay on the screen and refresh values
           this.selectedEvent = data
         }
-        this.snackbar = getSnackbar('SUCCESS', 'Action Performed')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
-        //calls fn that tells the upcoming events to update
-        this.$emit('refresh-upcoming-pps')
-        this.$emit('refresh-upcoming-events')
+
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
