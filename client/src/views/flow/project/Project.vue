@@ -325,7 +325,6 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/status`)
         if (data) {
-          console.log('mememe', data)
           this.project.companyProjectStatusTypeId = data.companyProjectStatusTypeId
           this.project.projectStatusType = data.projectStatusType
           this.project.projectStatusTypeId = data.projectStatusTypeId

@@ -232,6 +232,11 @@ public class ProjectProcessStepService {
     }
   }
 
+  public ProjectProcessStepStatus getProjectProcessStepStatus(Long stepId) {
+    Optional <ProjectProcessStepStatus> status = sqlCache.get("projectProcessStep.getStatus", Map.of("stepId", stepId), ProjectProcessStepStatus.class);
+    return status.orElse(null);
+  }
+
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
     var ppsId = this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId);
     if (performAutoTrigger) {

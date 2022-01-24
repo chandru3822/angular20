@@ -36,9 +36,9 @@ export default {
     completeAction: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/action/${this.actionResult.id}`)
-        if (status === 204) {
-          this.handleOnComplete()
+        const {data, status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/action/${this.actionResult.id}`)
+        if (status === 204 || status === 200) {
+          this.handleOnComplete(data)
         } else {
           this.handleOnCompleteError(this.actionResult.id)
         }
