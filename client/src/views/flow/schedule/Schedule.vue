@@ -268,6 +268,7 @@
             @input="filterProjects()"
             @click:clear="filterProjects()"
             class="square-card"
+            clearable
             prepend-inner-icon="search"
             label="Filter"
             solo

@@ -56,6 +56,8 @@ create index if not exists ppse_resource_id_idx
   on flow.project_process_step_event (resource_id);
 create index if not exists ppse_company_event_status_type_id_idx
   on flow.project_process_step_event (company_event_status_type_id);
+create index if not exists ppse_date_created_idx
+  on flow.project_process_step_event (date_created);
 
 CREATE TABLE if not exists flow.project_process_step_event_custom_field_value
 (
