@@ -116,9 +116,7 @@ export default {
   width: calc(100% - 30px);
   height: fit-content;
   min-height: 65px;
-  //height: 65px;
-  //i cant figure out why this has to be 15 instead of 0 but i am too angry now to care
-  bottom: 15px;
+  bottom: 5px;
   position: absolute;
 }
 
