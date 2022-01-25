@@ -1,11 +1,5 @@
 <template>
   <div class="height-one-hunned">
-    <v-toolbar color="white" class="elevation-0">
-      <v-toolbar-title>
-        Project Communication
-      </v-toolbar-title>
-    </v-toolbar>
-
     <v-row id="project-tabs" class="message-container" justify="center" no-gutters>
       <!-- MESSAGING TAB -->
       <template>
@@ -217,6 +211,11 @@ export default {
 </script>
 
 <style lang="scss">
+
+.sidebar-title {
+font-size: 16px;
+}
+
 .message-container {
   min-height: 400px;
   height: calc(100% - 65px);
