@@ -99,7 +99,6 @@ export default {
     }
   },
   mounted() {
-    console.log('DIALOG', this.showDialog)
     this.getCancelledStatuses()
   },
   watch: {
