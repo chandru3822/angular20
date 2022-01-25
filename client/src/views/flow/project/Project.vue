@@ -385,7 +385,8 @@ export default {
     updateOwner: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner || {userPositionId: null})
+        //we use tempProject to save values in case they cancel then it repopulates at the end
+        const {status} = await putRequest(`/project/${this.projectId}/owner`, this.tempProject.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
