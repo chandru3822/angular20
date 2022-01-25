@@ -74,6 +74,36 @@ public class ProjectProcessStepEventService {
     sqlCache.update("projectProcessStepEvent.delete", params, "id");
   }
 
+  public List<CompanyEventStatusType> getCancelledAssignedToPpsEvent(Long ppseId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ppseId", ppseId);
+
+    List<CompanyEventStatusType> results = sqlCache.query("projectProcessStepEvent.getCancelledAssignedToPpsEvent", params, CompanyEventStatusType.class);
+    return results;
+  }
+
+  public void setStatus(Long projectProcessStepEventId, Long companyEventStatusTypeId) throws Exception {
+    User user = securityService.getCurrentUser();
+    Optional<ProjectProcessStepEvent> pps = getPpsEvent(projectProcessStepEventId);
+
+    if (pps.isEmpty()) {
+      throw new RuntimeException("The given process step does not exist");
+    }
+
+    //dont change if already set to the same
+    ProjectProcessStepEvent ppse = pps.get();
+    if (ppse.getCompanyEventStatusTypeId().equals(companyEventStatusTypeId)) {
+      return;
+    }
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepEventId", projectProcessStepEventId);
+    params.put("companyEventStatusTypeId", companyEventStatusTypeId);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.update("projectProcessStepEvent.setStatus", params);
+  }
+
 
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long id) throws Exception {
     HashMap<String, Object> params = new HashMap<>();

@@ -204,6 +204,7 @@
        pse.event_id,
        e.event_name,
        ppse.company_event_status_type_id,
+       cest.event_status_type_id,
        sl.id as system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
        pps.id as project_process_step_id,
@@ -237,6 +238,7 @@
                                                         ) sys), '[]') else '[]' end as resources
 from flow.project_process_step_event ppse
        inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+       inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
        inner join flow.process_step ps on ps.id = pps.process_step_id
        inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
        inner join flow.project p on p.id = pps.project_id
@@ -259,7 +261,7 @@ where case when :isParent
   and pse.event_id = :eventId
   and case when :projectId::int is not null then pps.project_id = :projectId::int else 1=1 end
   and case when :processStepStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
-  and case when :eventStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
+  and case when :eventStatusTypeId::int is null then 1=1 else cest.event_status_type_id = :eventStatusTypeId::int end
 
   ]]></schedule.getProject>
 

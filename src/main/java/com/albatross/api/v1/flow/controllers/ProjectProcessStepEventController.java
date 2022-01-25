@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyEventStatusType;
 import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,11 @@ public class ProjectProcessStepEventController {
     projectProcessStepEventService.deletePpsEvent(eventId);
   }
 
+  @GetMapping(value = "/{eventId}/cancelledAssigned", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyEventStatusType> getCancelledAssignedToPpsEvent(@PathVariable Long eventId) {
+    return projectProcessStepEventService.getCancelledAssignedToPpsEvent(eventId);
+  }
+
   @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long eventId,
                                                                @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
@@ -60,15 +66,22 @@ public class ProjectProcessStepEventController {
 
   //action
   @PostMapping(value = "/{eventId}/action/{actionId}/perform", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> performStepEventAction (@PathVariable Long ppsId,
-                                                        @PathVariable Long eventId,
-                                                        @PathVariable Long actionId,
-                                                        @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
+  public ResponseEntity<Object> performStepEventAction(@PathVariable Long ppsId,
+                                                       @PathVariable Long eventId,
+                                                       @PathVariable Long actionId,
+                                                       @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
     //save the custom field values
     projectProcessStepEventService.savePpsEventDetails(eventId, ppsEvent);
 
     //do the action
     return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
+  }
+
+  @PostMapping(value = "/{eventId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public void updateProjectProcessStepEventStatus(@PathVariable Long ppsId,
+                                                                  @PathVariable Long eventId,
+                                                                  @RequestBody CompanyEventStatusType status) throws Exception {
+    projectProcessStepEventService.setStatus(eventId, status.getId());
   }
 
 }
