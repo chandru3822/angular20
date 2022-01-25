@@ -243,7 +243,7 @@
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card class="px-4 square-card"  v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+          <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
               <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
@@ -429,17 +429,17 @@ export default {
         await Promise.all(requests).then((statusVals) => {
           let success = true
           statusVals.forEach(status => {
-            if(status !== 200) {
+            if (status !== 200) {
               success = false
             }
           })
-          if(success) {
+          if (success) {
             //this was causing issues if you moved too quickly between events
             this.eventDetailsLoading = false
           }
         })
-      } catch(e) {
-        console.log('*** ERROR ***',e)
+      } catch (e) {
+        console.log('*** ERROR ***', e)
 
       }
     },
@@ -460,47 +460,50 @@ export default {
       //will only be used if there is an error shown here
       this.saveErrorMsg = 'Additional fields are required to perform the selected action.'
 
-      let requiredFields = action?.requiredFields
-      if ((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
+      let cfHasMissing = this.needsRequiredField(action.requiredFields)
+
+      if ((!this.selectedEvent.startTime) ||
+        (this.actionRequiresEnd && !this.selectedEvent.endTime) ||
+        (this.actionRequiresResource && !this.selectedEvent.resourceId) || cfHasMissing) {
+
         this.eventActionMissingRequirements = true
-      } else if (requiredFields.length > 0) {
-        let fieldValueMissing = false
-        this.selectedEvent?.customFieldGroups?.forEach(cfg => {
-          cfg?.customFieldValues?.forEach(cf => {
-            let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
-            if (match) {
-              if ( // check each data type to see if it has a value
-                (cf.dataTypeId === 1 && null == cf.dateValue) ||
-                (cf.dataTypeId === 2 && null == cf.timestampValue) ||
-                (cf.dataTypeId === 3 && null == cf.booleanValue) ||
-                (cf.dataTypeId === 4 && null == cf.numericValue) ||
-                (cf.dataTypeId === 5 && null == cf.textValue) ||
-                (cf.dataTypeId === 6 && null == cf.intValue) ||
-                (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
-                (cf.dataTypeId === 8 && null == cf.intValue) ||
-                (cf.dataTypeId === 9 && null == cf.intValue)
-              ) {
-                cf.required = true
-                fieldValueMissing = true
-                this.eventActionMissingRequirements = true
-              }
-            } else {
-              cf.required = false
-            }
-          })
-        })
-        //if there wasn't a match, or there was a match but no missing data, then run the event
-        if (!fieldValueMissing) {
-          this.eventActionMissingRequirements = false
-          //update the cfv's
-          await this.updateFieldGroups()
-          //then do the event action which will save the event details as well
-          await this.doEventAction(action)
-        }
+
       } else {
+        //if there wasn't a required field then run the event
+        await this.updateFieldGroups()
         this.eventActionMissingRequirements = false
         await this.doEventAction(action)
       }
+    },
+    needsRequiredField(requiredFields) {
+      let fieldValueMissing = false
+
+      this.selectedEvent?.customFieldGroups?.forEach(cfg => {
+        cfg?.customFieldValues?.forEach(cf => {
+          let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+          if (match) {
+            if ( // check each data type to see if it has a value
+              (cf.dataTypeId === 1 && null == cf.dateValue) ||
+              (cf.dataTypeId === 2 && null == cf.timestampValue) ||
+              (cf.dataTypeId === 3 && null == cf.booleanValue) ||
+              (cf.dataTypeId === 4 && null == cf.numericValue) ||
+              (cf.dataTypeId === 5 && null == cf.textValue) ||
+              (cf.dataTypeId === 6 && null == cf.intValue) ||
+              (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
+              (cf.dataTypeId === 8 && null == cf.intValue) ||
+              (cf.dataTypeId === 9 && null == cf.intValue)
+            ) {
+              cf.required = true
+              fieldValueMissing = true
+              this.eventActionMissingRequirements = true
+            }
+          } else {
+            cf.required = false
+          }
+        })
+      })
+      console.log('randaLogger',fieldValueMissing)
+      return fieldValueMissing
     },
     async getStatusesAssignedToEvent() {
       try {
@@ -569,10 +572,10 @@ export default {
         this.$emit('refresh-upcoming-pps')
         this.$emit('refresh-upcoming-events')
 
-        if(data?.processStepStatusTypeId !== 1) {
+        if (data?.processStepStatusTypeId !== 1) {
           //if ps root status is not active then go back to project screen
           this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
-        } else if(data?.eventStatusTypeId !== 1) {
+        } else if (data?.eventStatusTypeId !== 1) {
           //if ps root status is active but event root status is not then go back to ps
           let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
           this.$router.push(path)
@@ -628,7 +631,10 @@ export default {
     // },
     getEventDetails: async function () {
       try {
-        const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
+        const {
+          data,
+          status
+        } = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
         this.selectedEvent.allowAllUserDeletion = data.startTime === null
@@ -646,7 +652,7 @@ export default {
           this.userCanScheduleRemoteLeadAllocation()
         }
         //this was causing an error if you clicked too fast between events
-        if(data.id) {
+        if (data.id) {
           await this.getStatusesAssignedToEvent()
         }
         return status
