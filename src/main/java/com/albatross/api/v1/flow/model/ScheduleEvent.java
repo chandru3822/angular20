@@ -17,6 +17,7 @@ public class ScheduleEvent {
   private Long resourceId, companyId, systemListId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId, companyProcessStepStatusTypeId,
       startCustomFieldValueId, startCustomFieldGroupAssignmentId, endCustomFieldValueId, endCustomFieldGroupAssignmentId,
       resourceCustomFieldValueId, resourceCustomFieldGroupAssignmentId, contactId, eventId, projectProcessStepEventId, processStepEventId,
+      companyEventStatusTypeId, eventStatusTypeId,
     //this is annoying but in order to make loading events work for multiple userPositions for the same user we need to pass back the userId. or i am dumb and cant figure it out otherwise.
     userId;
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,

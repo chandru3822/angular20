@@ -434,7 +434,7 @@ export default {
           }
         })
       } catch(e) {
-        console.log('randaLogger',e)
+        console.log('*** ERROR ***',e)
 
       }
     },
@@ -626,6 +626,8 @@ export default {
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
+        console.log('randaLogger',this.selectedEvent)
+        console.log('ddd',data)
         this.selectedEvent.allowAllUserDeletion = data.startTime === null
         //have to reset the pps stuff too in case they just go directly to the url
         this.$store.commit(ProjectMutations.SET_PPS, {

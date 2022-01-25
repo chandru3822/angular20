@@ -645,7 +645,6 @@ export default {
     },
     async selectRequirementType() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      console.log('randaLogger',this.newRequirement.processStepRequirementTypeId)
       try {
         //1 == process step custom field, 2 == function,
         // 3 == project custom field, 4 == contact custom field

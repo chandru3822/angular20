@@ -103,21 +103,31 @@
             </v-autocomplete>
             <v-select attach v-model="searchEventType"
                       :items="eventTypes"
-                      label="Event Type"
-                      item-text="eventType"
+                      label="Event"
+                      item-text="eventName"
                       item-value="id"
                       return-object
             >
             </v-select>
+            <v-autocomplete v-model="searchEventStatusType"
+                            :items="eventStatusTypes"
+                            label="Event Step Status"
+                            clearable
+                            item-text="eventStatusType"
+                            item-value="id"
+                            return-object
+            />
             <v-select attach v-model="searchProcessStepStatusType"
                       :items="processStepStatusTypes"
-                      label="Status"
+                      label="Process Step Status"
                       item-text="processStepStatusType"
                       item-value="id"
                       return-object
             >
             </v-select>
-            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject || !searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text"
+                   :disabled="!searchProject || !searchProject.projectId
+                        || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -197,7 +207,6 @@
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
-                              attach
               />
               <v-btn color="primaryCustom"
                      class="white--text"
@@ -278,7 +287,6 @@
           <v-data-table
               :headers="headers"
               :items="projects"
-              :search="projectFilter"
               fixed-header
               :mobile-breakpoint="0"
               :footer-props="footerProps"
@@ -372,6 +380,7 @@
         //used for search
         searchEventType: {},
         searchProcessStepStatusType: {},
+        searchEventStatusType: {},
         searchProject: {},
         searchProjects: [],
         eventTypesChanged: false,
@@ -435,9 +444,9 @@
       this.getStatusTypes()
       this.getEventStatusTypes()
       this.getEventTypes()
-      if(this.$route.query && this.$route.query.projectProcessStepId) {
+      if(this.$route.query && this.$route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
-        this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
+        this.getSingleProject(null, null, null,null,null, parseInt(this.$route.query.projectProcessStepId))
       }
     },
     methods: {
@@ -689,21 +698,25 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventId, processStepStatusTypeId, projectProcessStepId) {
+      async getSingleProject(projectId, eventId, eventStatusTypId, processStepStatusTypeId, projectProcessStepId) {
         this.listLoading = true
         try {
           let params = {
             projectId,
             eventId,
             processStepStatusTypeId,
-            projectProcessStepId
+            projectProcessStepId,
+            eventStatusTypId
           }
 
-          const {data} = await postRequest(`/schedule/getProject`, params)
-          data.forEach(d => {
+          const {data} = await postRequest(`/schedule/getProject`, params, null, [])
+          this.projects = data
+          this.projects.forEach(d => {
             d.coordinates = [ d.longitude, d.latitude ]
           })
-          this.projects = data
+
+          this.totalProjects = this.projects.length
+          
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
