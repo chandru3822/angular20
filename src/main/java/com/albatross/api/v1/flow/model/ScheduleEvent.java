@@ -22,7 +22,7 @@ public class ScheduleEvent {
     userId;
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,
       state, processStepStatusType, startFieldName, endFieldName, resourceFieldName,
-      street1, city, stateAbbreviation, postalCode, phone, mobile, eventName;
+      street1, city, stateAbbreviation, postalCode, phone, mobile, eventName, eventStatusType, companyEventStatusType;
   private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly;
 
   private Double latitude, longitude;

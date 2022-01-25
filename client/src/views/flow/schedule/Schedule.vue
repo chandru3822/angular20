@@ -394,8 +394,8 @@
         headers: [
           {text: 'Project', value: 'projectName', show: true},
           {text: 'Process Step', value: 'processStepName', show: true},
-          {text: 'Status', value: 'processStepStatusType', show: true},
           {text: 'Event', value: 'eventName', show: true},
+          {text: 'Status', value: 'companyEventStatusType', show: true},
           {text: 'Work Date', value: 'start', show: true},
           {text: 'Resource', value: 'resourceName', show: true},
         ],
