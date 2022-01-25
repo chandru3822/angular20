@@ -374,7 +374,7 @@ $$
   BEGIN
 
     ALTER TABLE brs.project_details
-      RENAME COLUMN permit_pack_submittal_end_time_ppscfv_id TO permit_pack_submittal_end_time_ppse_id;
+      RENAME COLUMN permit_pack_submittal_end_time_ppscfv_id TO permit_pack_submittal_ppse_id;
   EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'permit_pack_submittal_end_time_ppscfv_id does not exists';
   END;
@@ -971,12 +971,6 @@ values(170,'{170,206,207,171}');
 insert into flow.migration_child_process_step(project_process_id, process_step_ids)
 values(25,'{25,235,26}');
 
-alter table brs.project_detail_events_config add column  if not exists  permit_pack_submittal_start_time_ppse_id integer;
-create index if not exists pdec_permit_pack_submittal_start_time_ppse_id_idx
-  on brs.project_detail_events_config (permit_pack_submittal_start_time_ppse_id);
-alter table brs.project_detail_events_config add column  if not exists  permit_pack_submittal_resource_ppse_id integer;
-create index if not exists pdec_permit_pack_submittal_resource_ppse_id_idx
-  on brs.project_detail_events_config (permit_pack_submittal_resource_ppse_id);
 
 alter table brs.project_details drop column if exists ahj_inspection_start_time_ppse_id;
 alter table brs.project_details drop column if exists first_appointment_missed_ppsecfv_id;

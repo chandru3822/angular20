@@ -804,6 +804,7 @@ declare
   v_sql1             text;
   v_resource_name    text;
   v_count            bigint;
+  v_value            text;
 BEGIN
 
   select count(1)
@@ -866,15 +867,24 @@ BEGIN
           end case;
         --raise notice 'v_sql % ',v_sql;
         if x.second_field_to_update is not null then
+          if x.second_field_to_update = 'site_survey_date' then
+            case when new.start_time is null then select 'null' into v_value; else select quote_literal(new.start_time) into v_value; end case;
+            v_value = '(' || v_value || '::timestamp at time zone ' || quote_literal('UTC') ||
+                      ' at time zone ' || quote_literal('US/Mountain') || ')::date';
+
+          else
+            v_value = v_resource_name;
+          end if;
+
           case when x.update_first_value_only is false then
             --  raise notice 'am I in the first case %',v_resource_name;
             v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
-                     v_resource_name ||
+                     v_value ||
                      $$ where project_id = $$ || v_project_id;
             else
               v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
-                       v_resource_name ||
-                       $$ where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
+                       v_value ||$$ , $$||x.update_first_value_only_id||$$ =  $1.id
+                        where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
                        $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
             end case;
           -- raise notice 'v_sql1 % ',v_sql1;
