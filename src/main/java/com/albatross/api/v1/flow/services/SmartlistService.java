@@ -2663,10 +2663,21 @@ public class SmartlistService {
     }
 
     for (SmartlistFieldAssignment f : fields) {
+      //if field is smartlist system list
       if (f.getSmartlistSystemListId() != null) {
+        final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
-      } else if (f.getProcessStepId() != null) {
+        if (List.of(1L, 3L, 5L).contains(f.getSmartlistSystemListId())) {
+          selectQuery.append(String.format("(select name from \"%s\" where \"%s\".id = %s.%s) as \"%s\", ", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn(), f.getId()));
+        } else if (List.of(2L, 4L).contains(f.getSmartlistSystemListId())) {
+          selectQuery.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), f.getReferenceColumn(), f.getId()));
+        }
+      } else if (f.getProcessStepId() != null) { //if field is process step or event
 
+        //if field is system list, PS owner, or event resource
+        if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user")) {
+          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
+        }
       } else if (f.getSystemListId() != null) {
 
       } else {
