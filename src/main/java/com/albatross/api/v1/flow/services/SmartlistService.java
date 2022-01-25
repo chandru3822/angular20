@@ -2674,8 +2674,8 @@ public class SmartlistService {
         }
       } else if (f.getProcessStepId() != null) { //if field is process step or event
 
-        //if field is system list
-        if (f.getSystemListId() != null) {
+        //if field is system list, PS owner, or event resource
+        if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user")) {
           selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
         }
       } else if (f.getSystemListId() != null) {
