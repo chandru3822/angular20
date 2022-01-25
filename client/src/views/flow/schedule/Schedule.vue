@@ -469,6 +469,8 @@
         }
       },
       validateSaveEvent () {
+        console.log('START',this.selectedProject.start)
+        console.log('ENd',this.selectedProject.end)
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
           || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
           //if all 3 fields are read only, dont let them save
