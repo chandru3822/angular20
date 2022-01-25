@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="pl-4 mb-4">Documents</div>
-    <v-expansion-panels accordion multiple v-if="!attachmentTypesLoading">
+    <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
     <div v-if="!attachmentTypes.length">No attachments available</div>
     <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
       <v-expansion-panel-header class="expansion-panel-header">
