@@ -85,6 +85,11 @@
       </div>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar">
         <v-toolbar-title>
+          <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                 class="px-0" target="_blank"
+                 :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+            <v-icon>mdi-calendar</v-icon>
+          </v-btn>
           Details/Custom Fields
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -626,8 +631,6 @@ export default {
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
-        console.log('randaLogger',this.selectedEvent)
-        console.log('ddd',data)
         this.selectedEvent.allowAllUserDeletion = data.startTime === null
         //have to reset the pps stuff too in case they just go directly to the url
         this.$store.commit(ProjectMutations.SET_PPS, {

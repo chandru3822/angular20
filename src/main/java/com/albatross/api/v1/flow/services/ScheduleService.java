@@ -139,7 +139,7 @@ public class ScheduleService {
     params.put("eventStatusTypeId", esp.getEventStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    params.put("projectProcessStepId", esp.getProjectProcessStepId());
+    params.put("projectProcessStepEventId", esp.getProjectProcessStepEventId());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }

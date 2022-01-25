@@ -447,9 +447,10 @@
       this.getStatusTypes()
       this.getEventStatusTypes()
       this.getEventTypes()
+      console.log('randaLogger', this.$route.query)
       if(this.$route.query && this.$route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
-        this.getSingleProject(null, null, null,null,null, parseInt(this.$route.query.projectProcessStepId))
+        this.getSingleProject(null, null, null,null, parseInt(this.$route.query.projectProcessStepEventId))
       }
     },
     methods: {
@@ -469,8 +470,6 @@
         }
       },
       validateSaveEvent () {
-        console.log('START',this.selectedProject.start)
-        console.log('ENd',this.selectedProject.end)
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
           || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
           //if all 3 fields are read only, dont let them save
@@ -703,17 +702,19 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepId) {
+      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
         this.listLoading = true
+        console.log('PPSEEVENETID',projectProcessStepEventId)
         try {
           let params = {
             projectId,
             eventId,
             processStepStatusTypeId,
-            projectProcessStepId,
+            projectProcessStepEventId,
             eventStatusTypeId
           }
 
+          //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
           const {data} = await postRequest(`/schedule/getProject`, params, null, [])
           this.projects = data
           this.projects.forEach(d => {

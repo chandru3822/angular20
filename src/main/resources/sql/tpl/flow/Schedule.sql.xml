@@ -261,7 +261,8 @@ where case when :isParent
            else ps.company_id = :companyId end
   and ps.archived is not true
   and pse.archived is not true
-  and pse.event_id = :eventId
+  and case when :eventId::int is not null then pse.event_id = :eventId::int else 1=1 end
+  and case when :projectProcessStepEventId::int is not null then ppse.id = :projectProcessStepEventId::int else 1=1 end
   and case when :projectId::int is not null then pps.project_id = :projectId::int else 1=1 end
   and case when :processStepStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
   and case when :eventStatusTypeId::int is null then 1=1 else cest.event_status_type_id = :eventStatusTypeId::int end
