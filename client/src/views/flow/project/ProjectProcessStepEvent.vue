@@ -83,7 +83,7 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </div>
-      <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar">
+      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar">
         <v-toolbar-title>
           Details/Custom Fields
         </v-toolbar-title>

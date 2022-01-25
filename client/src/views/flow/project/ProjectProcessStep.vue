@@ -205,29 +205,29 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </v-col>
-      <v-col cols="12" class="text-left py-0 px-0">
-        <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar mx-2">
-          <v-toolbar-title>
-            Details/Custom Fields
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                   @click="setSplitColumnValue()">
-              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-              <v-icon v-else>mdi-menu</v-icon>
+      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
+        <v-toolbar-title>
+          Details/Custom Fields
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+                 @click="setSplitColumnValue()">
+            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+            <v-icon v-else>mdi-menu</v-icon>
+          </v-btn>
+          <div>
+            <v-btn
+              color="primaryCustom"
+              class="white--text mt-3"
+              :disabled="fieldsSaving"
+              @click="[fieldsSaving = true, checkFields()]"
+            >Save Fields
             </v-btn>
-            <div>
-              <v-btn
-                color="primaryCustom"
-                class="white--text mt-3"
-                :disabled="fieldsSaving"
-                @click="[fieldsSaving = true, checkFields()]"
-              >Save Fields
-              </v-btn>
-            </div>
-          </v-toolbar-items>
-        </v-toolbar>
+          </div>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-col cols="12" class="text-left py-0 px-0">
         <!--    process field groups-->
         <v-col
           class="pt-0"

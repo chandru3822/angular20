@@ -66,7 +66,7 @@
                       return-object
             />
 
-            <v-autocomplete attach v-model="selectedProcessStepStatusType"
+            <v-autocomplete v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Process Step Status"
                       clearable
