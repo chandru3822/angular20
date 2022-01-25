@@ -233,7 +233,7 @@ import {
   getSnackbar,
   logError
 } from '@/helpers/helpers'
-import {getAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import {v4 as uuid} from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable'
@@ -341,7 +341,7 @@ export default {
     async getAvailableStatuses(pps) {
       this.showSelectedPps = false
       try {
-        const {data} = await getAssignedToProcessStep(pps.processStepId)
+        const {data} = await getCompanyAssignedToProcessStep(pps.processStepId)
         this.availableProcessStepStatuses = data
         if (this.availableProcessStepStatuses?.length > 0) {
           let match = this.availableProcessStepStatuses.find(status => status.id === pps.companyProcessStepStatusTypeId)

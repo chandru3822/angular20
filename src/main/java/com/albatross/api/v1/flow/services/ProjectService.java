@@ -438,17 +438,17 @@ public class ProjectService {
     return attachmentService.findById(attachmentId);
   }
 
-  public String updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+  public Optional<Project> updateStatus(Long projectId, Long companyProjectStatusTypeId) {
       sqlCache.update("project.updateStatus",
         Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
       return getStatus(projectId);
   }
 
-  public String getStatus(Long projectId) {
+  public Optional<Project> getStatus(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    String results = sqlCache.queryForObject("project.getStatusDetails", params, String.class);
-    return results;
+    Optional<Project> result = sqlCache.get("project.getStatusDetails", params, Project.class);
+    return result;
   }
 
 

@@ -325,7 +325,7 @@ import {
   postRequest,
   getSnackbar, logError
 } from '@/helpers/helpers'
-import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import {getCompanyAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessStepRequirements";
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
@@ -467,7 +467,7 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
       },
       async getCompanyProcessStepStatuses() {
         try {
-          const {data} = await getAssignedToProcessStep(this.processStepId)
+          const {data} = await getCompanyAssignedToProcessStep(this.processStepId)
           this.processStepStatuses = data
         } catch (e) {
           this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')

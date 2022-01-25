@@ -313,7 +313,7 @@ import ActionButton from './ActionButton'
 import EventButton from './EventButton'
 import {AppMutations} from '@/stores/AppStore'
 import {ProjectMutations} from '@/stores/ProjectStore'
-import {getAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
+import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
 import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -469,7 +469,7 @@ export default {
     async getAvailableStatuses() {
       if (this.processStep?.processStepId) {
         try {
-          const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
+          const {data} = await getCompanyAssignedToProcessStep(this.processStep.processStepId)
           // const {data} = await getRequest(`/processStep/status`)
           this.availableProcessStepStatuses = data
         } catch (e) {

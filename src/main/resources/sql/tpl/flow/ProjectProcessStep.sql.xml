@@ -177,7 +177,8 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
 ]]></projectProcessStep.getPrimaryByProjectId>
 
   <projectProcessStep.getPrimaryByReferenceProcessStepAndStatus><![CDATA[
-    select pps.*
+    select pps.*,
+           cpsst.process_step_status_type_id
     from flow.project_process_step pps
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
     where pps.project_id = (select pps2.project_id from flow.project_process_step pps2 where pps2.id = :ppsId)

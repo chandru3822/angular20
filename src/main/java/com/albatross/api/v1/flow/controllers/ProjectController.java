@@ -149,13 +149,13 @@ public class ProjectController {
   }
 
   @PostMapping(value = "/{projectId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public String updateProjectStatus(@PathVariable Long projectId, @RequestBody Project project) {
+  public Optional<Project> updateProjectStatus(@PathVariable Long projectId, @RequestBody Project project) {
     //changing this to return the status object cuz i neeeeeeeed it
     return projectService.updateStatus(projectId, project.getCompanyProjectStatusTypeId());
   }
 
   @GetMapping(value = "/{projectId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getProjectStatusDetails(@PathVariable Long projectId) {
+  public Optional<Project> getProjectStatusDetails(@PathVariable Long projectId) {
     return projectService.getStatus(projectId);
   }
 

@@ -762,7 +762,7 @@ import cloneDeep from 'lodash.clonedeep'
 import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {
   getActiveAssignedToProcessStep,
-  getAssignedToProcessStep,
+  getCompanyAssignedToProcessStep,
   getCancelledCompanyStatusTypesAssignedToProcessStep
 } from '@/services/processStepStatusTypeService'
 import {
@@ -1067,7 +1067,7 @@ export default {
     async getStatusTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getAssignedToProcessStep(this.processStepId)
+        const {data, status} = await getCompanyAssignedToProcessStep(this.processStepId)
         this.statusTypes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

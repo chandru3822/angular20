@@ -984,8 +984,18 @@ alter table brs.project_details drop column if exists first_appointment_not_pitc
 alter table brs.project_details drop column if exists first_appointment_pitched_ppsecfv_id;
 alter table brs.project_details drop column if exists setter_milestone_pay_ppsecfv_id;
 
+-- some new requirement types
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+  (select 'Process Step - Status Category'
+   where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Process Step Status Category'));
 
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+  (select 'Project - Status'
+   where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Project Status'));
 
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+  (select 'Project - Status Category'
+   where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Project Status Category'));
 
 
 

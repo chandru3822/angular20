@@ -72,9 +72,14 @@ public class ProcessStepStatusController {
     return processStepStatusService.getActiveAssignedToProcessStep(processStepId);
   }
 
-  @GetMapping(value = "/company/assignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getAssignedToStep(@PathVariable Long processStepId) {
+  @GetMapping(value = "/assignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepStatusType> getAssignedToStep(@PathVariable Long processStepId) {
     return processStepStatusService.getAssignedToStep(processStepId);
+  }
+
+  @GetMapping(value = "/company/assignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyProcessStepStatusType> getCompanyAssignedToStep(@PathVariable Long processStepId) {
+    return processStepStatusService.getCompanyAssignedToStep(processStepId);
   }
 
   @GetMapping(value = "/company/cancelledAssignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
