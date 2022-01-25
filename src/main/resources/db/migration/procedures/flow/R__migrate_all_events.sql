@@ -1083,6 +1083,14 @@ update brs.project_detail_events_config
   delete from brs.project_detail_events_config
   where field_to_update = 'closer_user_position_id';
 
+  update flow.custom_field_group_assignment cfga
+  set hidden = false
+  from flow.custom_field_group cfg
+         inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+  where cfg.id = cfga.custom_field_group_id
+    and cot.object_type_id = 6
+    and hidden is true;
+
 END
 $$
   LANGUAGE plpgsql VOLATILE
