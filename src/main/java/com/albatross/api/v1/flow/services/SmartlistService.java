@@ -2672,8 +2672,12 @@ public class SmartlistService {
         } else if (List.of(2L, 4L).contains(f.getSmartlistSystemListId())) {
           selectQuery.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), f.getReferenceColumn(), f.getId()));
         }
-      } else if (f.getProcessStepId() != null) {
+      } else if (f.getProcessStepId() != null) { //if field is process step or event
 
+        //if field is system list
+        if (f.getSystemListId() != null) {
+          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
+        }
       } else if (f.getSystemListId() != null) {
 
       } else {
