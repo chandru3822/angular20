@@ -36,5 +36,9 @@ public class SmartlistFieldAssignment {
 
   //These fields are used as table aliases for smartlist generation
   @JsonIgnore
-  private String valueReferenceTable, valueEventReferenceTable, ppsTable, ppsEventTable, userPositionTable;
+  private String valueReferenceTable, ppsTable, ppsEventTable, userPositionTable;
+
+  @Deprecated //@TODO: turns out this field wasn't needed. Remove it's use from `buildProcessStepSql` function
+  @JsonIgnore
+  private String valueEventReferenceTable;
 }
