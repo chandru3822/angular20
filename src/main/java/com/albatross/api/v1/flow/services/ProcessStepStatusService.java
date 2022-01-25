@@ -163,11 +163,19 @@ public class ProcessStepStatusService {
     return results;
   }
 
-  public List<CompanyProcessStepStatusType> getAssignedToStep(Long processStepId) {
+  public List<ProcessStepStatusType> getAssignedToStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
 
-    List<CompanyProcessStepStatusType> results = sqlCache.query("processStepStatus.getAssignedToStep", params, CompanyProcessStepStatusType.class);
+    List<ProcessStepStatusType> results = sqlCache.query("processStepStatus.getAssignedToStep", params, ProcessStepStatusType.class);
+    return results;
+  }
+
+  public List<CompanyProcessStepStatusType> getCompanyAssignedToStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<CompanyProcessStepStatusType> results = sqlCache.query("processStepStatus.getCompanyAssignedToStep", params, CompanyProcessStepStatusType.class);
     return results;
   }
 

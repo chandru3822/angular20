@@ -2355,13 +2355,42 @@ public class SmartlistService {
   }
 
   public String buildWorkQueueSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Boolean useEventData) {
-    var query = new StringBuilder().append("select ");
+
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+
+    //start of overall query
+    var query = new StringBuilder().append("with ")
+
+      // Get smartlist system lists
+      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
+
+      // Get tables for system lists
+      .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
+      .append("\"systemList_3\" as (select id, org_name::text as name from flow.org), ")
+      .append("\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
+
+    //add custom sql value tables
+    for (SmartlistFieldAssignment f : fields) {
+      if (f.getCustomFieldSqlKey() != null && query.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        query.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      }
+    }
+
+    //remove the extra ", "
+    query.delete(query.length() - 2, query.length());
+
+    query.append("select ");
 
     //default fields
     if (useEventData) {
       //event fields
-      query.append("flow.project.id, flow.project_process_step_event.id, ")
-        .append("flow.event.event_name ");
+      query.append("flow.project.id,")
+           .append("flow.project_process_step_event.id,")
+           .append("flow.event.event_name");
     } else {
       //process step fields
     }
@@ -2376,9 +2405,9 @@ public class SmartlistService {
       f.setPpsEventTable(UUID.randomUUID().toString());
       f.setUserPositionTable(UUID.randomUUID().toString());
 
-      //join value tables for every custom field, so we can assume they're going in following logic
+      //join value tables for every custom field, so the latter logic is able to assume everything is joined
       //if the field is a custom field
-      if (f.getCustomFieldSqlKey() == null && f.getCustomFieldGroupAssignmentId() != null) {
+      if (f.getCustomFieldGroupAssignmentId() != null) {
         if (f.getObjectTypeId() == 1) {
           query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.project"));
         } else if (f.getObjectTypeId() == 2) {
@@ -2480,6 +2509,11 @@ public class SmartlistService {
           //if field is the process step name
           if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
             query.append(String.format(" left join flow.process_step \"%s\" on \"%s\".id = \"%s\".process_step_id", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getPpsTable()));
+          } else if (Objects.equals(f.getReferenceTable(), "flow.user")) { //else if field is PS owner
+
+            final String newValueTable = UUID.randomUUID().toString();
+            query.append(String.format(" left join \"systemList_1\" \"%s\" on \"%s\".id = \"%s\".%s", newValueTable, newValueTable, f.getPpsTable(), f.getJoinColumn()));
+            f.setValueReferenceTable(newValueTable);
           }
         } else if (f.getObjectTypeId() == 6) {
 
@@ -2524,26 +2558,34 @@ public class SmartlistService {
             final String companyStatusTable = UUID.randomUUID().toString();
             query.append(String.format(" left join flow.company_event_status_type \"%s\" on \"%s\".id = \"%s\".company_event_status_type_id ", companyStatusTable, companyStatusTable, f.getPpsEventTable()))
                  .append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".%s ", f.getReferenceTable(), f.getValueEventReferenceTable(), f.getValueEventReferenceTable(), companyStatusTable, f.getJoinColumn()));
+          } else if (Objects.equals(f.getReferenceTable(), "flow.user")) { //else if field is event resource
+
+            final String newValueTable = UUID.randomUUID().toString();
+            query.append(String.format(" left join \"systemList_3\" \"%s\" on \"%s\".id = \"%s\".%s", newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
+            f.setValueEventReferenceTable(newValueTable);
           }
         }
       } else {
+
+        final String currentValueTable = (f.getObjectTypeId() == 6) ? f.getValueEventReferenceTable() : f.getValueReferenceTable();
+        final String newValueTable = UUID.randomUUID().toString();
+
         //if field is a custom field w/sql query
         if (f.getCustomFieldSqlKey() != null) {
-          //@TODO: implement
+
+          query.append(String.format(" left join \"%s\" \"%s\" on \"%s\" .id = \"%s\".int_value", f.getCustomFieldSqlKey(), newValueTable, newValueTable, currentValueTable));
         } else if (f.getCompanySystemListId() != null) { //else if custom field is system list
 
           final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
           final String systemListTable = "systemList_" + systemListNumber;
-          final String currentValueTable = (f.getObjectTypeId() == 6) ? f.getValueEventReferenceTable() : f.getValueReferenceTable();
-          final String newValueTable = UUID.randomUUID().toString();
           //@TODO: Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates between fields/columns and requirements
           query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable, newValueTable, newValueTable, currentValueTable, getReferenceColumn(f.getDataTypeId())));
+        }
 
-          if (f.getObjectTypeId() == 6) {
-            f.setValueEventReferenceTable(newValueTable);
-          } else {
-            f.setValueReferenceTable(newValueTable);
-          }
+        if (f.getObjectTypeId() == 6) {
+          f.setValueEventReferenceTable(newValueTable);
+        } else {
+          f.setValueReferenceTable(newValueTable);
         }
       }
     }

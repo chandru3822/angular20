@@ -66,7 +66,7 @@
                       return-object
             />
 
-            <v-autocomplete attach v-model="selectedProcessStepStatusType"
+            <v-autocomplete v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Process Step Status"
                       clearable
@@ -103,21 +103,31 @@
             </v-autocomplete>
             <v-select attach v-model="searchEventType"
                       :items="eventTypes"
-                      label="Event Type"
-                      item-text="eventType"
+                      label="Event"
+                      item-text="eventName"
                       item-value="id"
                       return-object
             >
             </v-select>
+            <v-autocomplete v-model="searchEventStatusType"
+                            :items="eventStatusTypes"
+                            label="Event Step Status"
+                            clearable
+                            item-text="eventStatusType"
+                            item-value="id"
+                            return-object
+            />
             <v-select attach v-model="searchProcessStepStatusType"
                       :items="processStepStatusTypes"
-                      label="Status"
+                      label="Process Step Status"
                       item-text="processStepStatusType"
                       item-value="id"
                       return-object
             >
             </v-select>
-            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject || !searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text"
+                   :disabled="!searchProject || !searchProject.projectId
+                        || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -169,7 +179,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
-                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
@@ -179,7 +189,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
-                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
@@ -192,25 +202,24 @@
                         return-object
                         clearable
                         item-text="name"
-                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
-                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
-                              attach
               />
               <v-btn color="primaryCustom"
                      class="white--text"
-                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                      @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
               <v-dialog
-                  v-if="selectedProject.processStepStatusTypeId === 2"
+                  v-if="selectedProject.eventStatusTypeId === 2"
                   v-model="selectedProject.unscheduleConfirm"
                   width="500">
                 <template #activator="{ on }">
                   <v-btn color="secondaryCustom"
                          class="ml-3"
-                         @click="getCancelledStatuses(selectedProject.processStepId)"
+                         @click="getCancelledCompanyEventStatuses"
                          v-on="on">Unschedule Event</v-btn>
                 </template>
                 <v-card>
@@ -221,14 +230,14 @@
                   </v-card-title>
 
                   <v-card-text class="pt-4">
-                    Are you sure you want to unschedule this event?
+                    Are you sure you want to remove this event from the schedule? This will cancel the event.
 
-                    <v-select attach :items="cancelledCompanyStatuses"
+                    <v-select attach :items="cancelledCompanyEventStatuses"
                               v-model="selectedProject.cancelledCompanyStatusType"
                               item-value="id"
                               return-object
-                              label="Status to set this process step to:"
-                              item-text="processStepStatusType"></v-select>
+                              label="Status to set this event to:"
+                              item-text="eventStatusType"></v-select>
 
                   </v-card-text>
 
@@ -244,7 +253,7 @@
                         :disabled="!selectedProject.cancelledCompanyStatusType || !selectedProject.cancelledCompanyStatusType.id"
                         color="primaryCustom"
                         text
-                        @click="cancelProjectProcessStep">
+                        @click="cancelProjectProcessStepEvent">
                       Yes
                     </v-btn>
                   </v-card-actions>
@@ -278,7 +287,6 @@
           <v-data-table
               :headers="headers"
               :items="projects"
-              :search="projectFilter"
               fixed-header
               :mobile-breakpoint="0"
               :footer-props="footerProps"
@@ -324,10 +332,13 @@
   import Calendar from './components/Calendar'
   import {getEventTypes} from '@/services/scheduleService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+  import { getStatusTypes } from '@/services/processStepStatusTypeService'
   import axios from 'axios'
   import constants from "@/helpers/constants";
-  import {getEventStatusTypes} from "@/services/eventStatusTypeService";
+  import {
+    getCancelledCompanyStatusTypesAssignedToPpsEvent,
+    getEventStatusTypes
+  } from "@/services/eventStatusTypeService";
   import debounce from 'lodash.debounce'
 
   export default {
@@ -355,7 +366,7 @@
         mapResources: [],
         selectedRows: [],
         selectedResources: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
         state: {},
         states: [],
         eventStatusTypes: [],
@@ -368,10 +379,11 @@
         selectedEventTypes: [],
         //used for single select
         selectedProject: {},
-        cancelledCompanyStatuses: [],
+        cancelledCompanyEventStatuses: [],
         //used for search
         searchEventType: {},
         searchProcessStepStatusType: {},
+        searchEventStatusType: {},
         searchProject: {},
         searchProjects: [],
         eventTypesChanged: false,
@@ -382,8 +394,8 @@
         headers: [
           {text: 'Project', value: 'projectName', show: true},
           {text: 'Process Step', value: 'processStepName', show: true},
-          {text: 'Status', value: 'processStepStatusType', show: true},
           {text: 'Event', value: 'eventName', show: true},
+          {text: 'Status', value: 'companyEventStatusType', show: true},
           {text: 'Work Date', value: 'start', show: true},
           {text: 'Resource', value: 'resourceName', show: true},
         ],
@@ -435,16 +447,16 @@
       this.getStatusTypes()
       this.getEventStatusTypes()
       this.getEventTypes()
-      if(this.$route.query && this.$route.query.projectProcessStepId) {
+      if(this.$route.query && this.$route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
-        this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
+        this.getSingleProject(null, null, null,null,null, parseInt(this.$route.query.projectProcessStepId))
       }
     },
     methods: {
-      getCancelledStatuses: async function (processStepId) {
+      getCancelledCompanyEventStatuses: async function () {
         try {
-          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(processStepId)
-          this.cancelledCompanyStatuses = data
+          const {data} = await getCancelledCompanyStatusTypesAssignedToPpsEvent(this.selectedProject.projectProcessStepId, this.selectedProject.projectProcessStepEventId)
+          this.cancelledCompanyEventStatuses = data
           if(data?.length === 1) {
             this.selectedProject.cancelledCompanyStatusType = data[0]
           }
@@ -457,6 +469,8 @@
         }
       },
       validateSaveEvent () {
+        console.log('START',this.selectedProject.start)
+        console.log('ENd',this.selectedProject.end)
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
           || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
           //if all 3 fields are read only, dont let them save
@@ -486,12 +500,12 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async cancelProjectProcessStep() {
+      async cancelProjectProcessStepEvent() {
         try {
-          const {status} = await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/status`, this.selectedProject.cancelledCompanyStatusType)
+          const {status} = await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/event/${this.selectedProject.projectProcessStepEventId}/status`, this.selectedProject.cancelledCompanyStatusType)
           // this.selectedProject.unscheduleConfirm = false
-          this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)
-          this.selectedProject.processStepStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
+          this.projects = this.projects.filter(p => p.projectProcessStepEventId !== this.selectedProject.projectProcessStepEventId)
+          this.selectedProject.eventStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
           handleHidingGlobalLoader(this, status)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -689,21 +703,25 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventId, processStepStatusTypeId, projectProcessStepId) {
+      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepId) {
         this.listLoading = true
         try {
           let params = {
             projectId,
             eventId,
             processStepStatusTypeId,
-            projectProcessStepId
+            projectProcessStepId,
+            eventStatusTypeId
           }
 
-          const {data} = await postRequest(`/schedule/getProject`, params)
-          data.forEach(d => {
+          const {data} = await postRequest(`/schedule/getProject`, params, null, [])
+          this.projects = data
+          this.projects.forEach(d => {
             d.coordinates = [ d.longitude, d.latitude ]
           })
-          this.projects = data
+
+          this.totalProjects = this.projects.length
+
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }

@@ -385,4 +385,34 @@
     order by psea.display_order
   ]]></projectProcessStepEvent.getPpsEventAction>
 
+  <projectProcessStepEvent.getCancelledAssignedToPpsEvent><![CDATA[
+        SELECT cest.id,
+               ppse.company_event_status_type_id as "companyEventStatusTypeId",
+               ppse.archived,
+               cest.event_status_type as "eventStatusType",
+               cest.event_status_type_id as "eventStatusTypeId",
+               cest.company_id as "companyId",
+               est.event_status_type as "rootEventStatusType"
+        FROM flow.project_process_step_event ppse
+          inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+          inner join flow.event e on pse.event_id = e.id
+          inner join flow.event_company_event_status_type ecest on e.id = ecest.event_id
+          inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+          inner join flow.event_status_type est on cest.event_status_type_id = est.id
+        WHERE ppse.id = :ppseId
+          AND ppse.archived is not true
+          and cest.archived is not true
+          AND cest.event_status_type_id = 3
+        order by cest.event_status_type
+
+  ]]></projectProcessStepEvent.getCancelledAssignedToPpsEvent>
+
+  <projectProcessStepEvent.setStatus><![CDATA[
+      update flow.project_process_step_event
+      set date_modified = now(),
+          modified_by_id = :userId,
+          company_event_status_type_id = :companyEventStatusTypeId
+      where id = :projectProcessStepEventId
+  ]]></projectProcessStepEvent.setStatus>
+
 </sql>

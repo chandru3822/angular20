@@ -136,6 +136,7 @@ public class ScheduleService {
     params.put("projectId", esp.getProjectId());
     params.put("eventId", esp.getEventId());
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
+    params.put("eventStatusTypeId", esp.getEventStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("projectProcessStepId", esp.getProjectProcessStepId());
@@ -166,6 +167,7 @@ public class ScheduleService {
       params.put("id", ev.getProjectProcessStepEventId());
       params.put("startTime", ev.getStart());
       params.put("endTime", ev.getEnd());
+      params.put("companyEventStatusTypeId", ev.getCompanyEventStatusTypeId());
       params.put("resourceId", ev.getResourceId());
       params.put("modifiedById", user.getId());
       //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird

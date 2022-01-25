@@ -23,6 +23,14 @@ export function getStatusClass(rootTypeId) {
 
 export async function getAssignedToProcessStep(processStepId) {
   return await getRequest(
+    `/processStep/status/assignedToProcessStep/${processStepId}`,
+    null,
+    []
+  )
+}
+
+export async function getCompanyAssignedToProcessStep(processStepId) {
+  return await getRequest(
     `/processStep/status/company/assignedToProcessStep/${processStepId}`,
     null,
     []

@@ -205,29 +205,29 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </v-col>
-      <v-col cols="12" class="text-left py-0 px-0">
-        <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar mx-2">
-          <v-toolbar-title>
-            Details/Custom Fields
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                   @click="setSplitColumnValue()">
-              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-              <v-icon v-else>mdi-menu</v-icon>
+      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
+        <v-toolbar-title>
+          Details/Custom Fields
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+                 @click="setSplitColumnValue()">
+            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+            <v-icon v-else>mdi-menu</v-icon>
+          </v-btn>
+          <div>
+            <v-btn
+              color="primaryCustom"
+              class="white--text mt-3"
+              :disabled="fieldsSaving"
+              @click="[fieldsSaving = true, checkFields()]"
+            >Save Fields
             </v-btn>
-            <div>
-              <v-btn
-                color="primaryCustom"
-                class="white--text mt-3"
-                :disabled="fieldsSaving"
-                @click="[fieldsSaving = true, checkFields()]"
-              >Save Fields
-              </v-btn>
-            </div>
-          </v-toolbar-items>
-        </v-toolbar>
+          </div>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-col cols="12" class="text-left py-0 px-0">
         <!--    process field groups-->
         <v-col
           class="pt-0"
@@ -313,7 +313,7 @@ import ActionButton from './ActionButton'
 import EventButton from './EventButton'
 import {AppMutations} from '@/stores/AppStore'
 import {ProjectMutations} from '@/stores/ProjectStore'
-import {getAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
+import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
 import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -449,7 +449,7 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStep(), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
       await Promise.all(requests).then((statusVals) => {
         let success = true
         statusVals.forEach(status => {
@@ -469,7 +469,7 @@ export default {
     async getAvailableStatuses() {
       if (this.processStep?.processStepId) {
         try {
-          const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
+          const {data} = await getCompanyAssignedToProcessStep(this.processStep.processStepId)
           // const {data} = await getRequest(`/processStep/status`)
           this.availableProcessStepStatuses = data
         } catch (e) {
@@ -479,13 +479,20 @@ export default {
         }
       }
     },
-    getProcessStep: async function () {
+    getProcessStep: async function (reloadAll) {
       try {
+        this.processStepLoading = true
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
         this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
-        this.getAvailableStatuses()
-        this.getAvailableOwners()
+        if(reloadAll) {
+          //dont reload if only doing simple refresh
+          this.getAvailableStatuses()
+          this.getAvailableOwners()
+        } else {
+          //only set this to false when doing a simple refresh or else it will turn off loaders too soon
+          this.processStepLoading = false
+        }
         window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
           : `${this.processStep.processStepName}`
         // return {data, status}
@@ -560,7 +567,7 @@ export default {
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
-        await this.getProcessStep()
+        await this.getProcessStep(false)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
@@ -615,7 +622,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
-        const status = await this.getProcessStep()
+        const status = await this.getProcessStep(false)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -639,14 +646,14 @@ export default {
     handleActionCompleted(data) {
       this.$emit('refresh-upcoming-pps')
       this.$emit('refresh-project-status')
-      console.log('DATAME', data)
-      //turn off re-route for now
+
+      this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //if root status is not active then go back to project screen
       if(data?.processStepStatusTypeId !== 1) {
-        this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       } else {
-        //need to refresh actions and events
+        this.getProcessStep(false)
       }
     },
     handleOnCompleteError(actionId, errorMessage) {

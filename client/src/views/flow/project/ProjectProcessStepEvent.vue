@@ -83,7 +83,7 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </div>
-      <v-toolbar color="secondary" class="elevation-0 cfg-detail-header fixed-toolbar">
+      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar">
         <v-toolbar-title>
           Details/Custom Fields
         </v-toolbar-title>
@@ -434,7 +434,7 @@ export default {
           }
         })
       } catch(e) {
-        console.log('randaLogger',e)
+        console.log('*** ERROR ***',e)
 
       }
     },
@@ -554,13 +554,29 @@ export default {
         }
 
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
-        this.selectedEvent = data
-        this.snackbar = getSnackbar('SUCCESS', 'Action Performed')
+
+        this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+
         //calls fn that tells the upcoming events to update
+        //we dont know if an event action will trigger other changes so we have to refresh everything all the time
+        this.$emit('refresh-project-status')
         this.$emit('refresh-upcoming-pps')
         this.$emit('refresh-upcoming-events')
+
+        if(data?.processStepStatusTypeId !== 1) {
+          //if ps root status is not active then go back to project screen
+          this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
+        } else if(data?.eventStatusTypeId !== 1) {
+          //if ps root status is active but event root status is not then go back to ps
+          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
+          this.$router.push(path)
+        } else {
+          //stay on the screen and refresh values
+          this.selectedEvent = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
@@ -610,6 +626,8 @@ export default {
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
+        console.log('randaLogger',this.selectedEvent)
+        console.log('ddd',data)
         this.selectedEvent.allowAllUserDeletion = data.startTime === null
         //have to reset the pps stuff too in case they just go directly to the url
         this.$store.commit(ProjectMutations.SET_PPS, {

@@ -487,8 +487,23 @@ create index pdec_process_step_event_id_idx
 create index pdec_company_id_idx
   on brs.project_detail_events_config (company_id);
 
-
 drop FUNCTION if exists brs.set_project_owner(int);
+-- @keller - if this function goes away then these records need to get archived
+
+update flow.process_step_action_company_function psacf
+  set archived = true
+from flow.company_function cf
+where cf.id = psacf.company_function_id
+and cf.db_function_id = 14;
+
+update flow.company_function
+  set archived = true
+where db_function_id = 14;
+
+update flow.db_function
+  set archived = true
+where id = 14;
+
 
 insert into flow.system_value(system_value, archived)
   (select 'Current Project Process Step Event ID', false
@@ -969,8 +984,18 @@ alter table brs.project_details drop column if exists first_appointment_not_pitc
 alter table brs.project_details drop column if exists first_appointment_pitched_ppsecfv_id;
 alter table brs.project_details drop column if exists setter_milestone_pay_ppsecfv_id;
 
+-- some new requirement types
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+  (select 'Process Step - Status Category'
+   where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Process Step Status Category'));
 
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+  (select 'Project - Status'
+   where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Project Status'));
 
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+  (select 'Project - Status Category'
+   where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Project Status Category'));
 
 
 

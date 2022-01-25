@@ -1,4 +1,4 @@
-import { getRequest } from '@/helpers/helpers'
+import {getRequest, getRequestWithParams} from '@/helpers/helpers'
 
 export async function getCompanyEventStatusTypes() {
   return await getRequest(`/event/companyStatus`)
@@ -19,4 +19,10 @@ export async function getAssignedToEvent(eventId) {
 
 export function getStatusClass(rootTypeId) {
   return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
+}
+
+export async function getCancelledCompanyStatusTypesAssignedToPpsEvent(ppsId, ppsEventId) {
+  return await getRequestWithParams(
+    `/projectProcessStep/${ppsId}/event/${ppsEventId}/cancelledAssigned`, null, null, []
+  )
 }

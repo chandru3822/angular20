@@ -228,13 +228,20 @@ select null as "smartlistFieldId",
 
 <smartlist.getAvailableFields><![CDATA[
 -- process steps without groups
-with psWithoutGroups as (
+with psWithGroups as (
   select distinct ps1.id
   from flow.process_step ps1
          inner join flow.custom_field_group cfg on cfg.process_step_id = ps1.id
   where ps1.archived is not true and
         cfg.archived is not true and
-        ps1.company_id = 3
+        ps1.company_id = :companyId
+), eventsWithGroups as (
+  select distinct e.id, e.event_name
+  from flow.event e
+         inner join flow.custom_field_group cfg on cfg.event_id = e.id
+  where e.archived is not true and
+        cfg.archived is not true and
+        e.company_id = :companyId
 )
 -- system fields
 select sf.id as "smartlistFieldId",
@@ -371,12 +378,40 @@ select null as "smartlistFieldId",
        null as "allowMultiple",
        null as "listOfValues"
 from flow.process_step ps
-left join psWithoutGroups on psWithoutGroups.id = ps.id
+left join psWithGroups on psWithGroups.id = ps.id
 where ps.archived is not true and
       ps.company_id = :companyId and
-      psWithoutGroups.id is null and
       -- include these results only if we're fetching process steps
-      true = case when :objectTypeId = 4 then true else false end
+      true = case when :objectTypeId = 4 then true else false end and
+      --exclude PS with CFGs since they're captured above
+      psWithGroups.id is null
+union
+-- events without CFGs
+select null as "smartlistFieldId",
+       null as "smartlistSystemListId",
+       null as "customFieldGroupAssignmentId",
+       null as "name",
+       null as "customFieldSqlKey",
+       null as "companySystemListId",
+       null as "systemListOptionIds",
+       null as "processStepId",
+       null as "processStepName",
+       e.id as "eventId",
+       e.event_name as "eventName",
+       null as "dataTypeId",
+       null as "hasListValues",
+       null as "allowMultiple",
+       null as "listOfValues"
+from flow.event e
+inner join flow.process_step_event pse on e.id = pse.event_id
+left join eventsWithGroups on eventsWithGroups.id = e.id
+where pse.archived is not true and
+      e.archived is not true and
+      e.company_id = :companyId and
+      -- include these results only if we're fetching events
+      true = case when :objectTypeId = 6 then true else false end and
+      --exclude events with CFGs since they're captured above
+      eventsWithGroups.id is null
 order by name,
          "processStepName",
          "eventName"

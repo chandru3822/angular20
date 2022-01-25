@@ -768,7 +768,6 @@
       handleEventClick (info) {
         if(info.event.title && !info.event.rendering) {
           let props = info.event.extendedProps
-          console.log('randaLogger', info.event.extendedProps)
           //open event clicks in new window every time so they dont have to keep reloading the calendar
           let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
           window.open(routerData.href, '_blank')
