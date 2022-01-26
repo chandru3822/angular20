@@ -205,6 +205,9 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </v-col>
+      <v-col cols="12" style="height: 0; padding: 0 !important;">
+      <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
+      </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title>
           Details/Custom Fields
