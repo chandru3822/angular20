@@ -171,7 +171,7 @@
                     <div
                       v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
 
-                      <div v-if="item.companyDataType.companyDataType === 'System Reference'">
+                      <div v-if="isSystemReference(item.companyDataType.companyDataType)">
                         <v-autocomplete
                           v-model="item.flowCustomFieldId"
                           :items="availableCustomFields"
@@ -390,6 +390,9 @@ export default {
     }
   },
   methods: {
+    isSystemReference (dataType){
+      return /System Reference/i.test(dataType)
+    },
     getLovValues(lovs, alphaSort) {
       // return lovs
       return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
@@ -623,7 +626,7 @@ export default {
             }
           });
         }
-      } else if (item.companyDataType?.customBehavior && item.companyDataType?.companyDataType !== 'System Reference') {
+      } else if (item.companyDataType?.customBehavior && !this.isSystemReference(item.companyDataType.companyDataType)) {
         if (!item.customFieldSqlKey || !item.customFieldSqlReferenceTable) {
           invalidCustomSql = true;
         }
