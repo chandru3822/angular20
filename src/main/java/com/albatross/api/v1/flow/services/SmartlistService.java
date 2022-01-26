@@ -2532,7 +2532,7 @@ public class SmartlistService {
             f.setValueReferenceTable(newValueTable);
           }
         }
-      } else {
+      } else {//else field is custom
 
         final String currentValueTable = f.getValueReferenceTable();
         final String newValueTable = UUID.randomUUID().toString();
@@ -2541,15 +2541,15 @@ public class SmartlistService {
         if (f.getCustomFieldSqlKey() != null) {
 
           query.append(String.format(" left join \"%s\" \"%s\" on \"%s\" .id = \"%s\".int_value", f.getCustomFieldSqlKey(), newValueTable, newValueTable, currentValueTable));
+          f.setValueReferenceTable(newValueTable);
         } else if (f.getCompanySystemListId() != null) { //else if custom field is system list
 
           final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
           final String systemListTable = "systemList_" + systemListNumber;
           //@TODO: Currently, we don't check if the system list is already joined on this cfgaId. We could do that to eliminate potential duplicates between fields/columns and requirements
           query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListTable, newValueTable, newValueTable, currentValueTable, getReferenceColumn(f.getDataTypeId())));
+          f.setValueReferenceTable(newValueTable);
         }
-
-        f.setValueReferenceTable(newValueTable);
       }
     }
 
@@ -2695,6 +2695,8 @@ public class SmartlistService {
           } else {
             selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
           }
+        } else {//else field is process step or event custom field
+          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getId(), f.getHasListValues()));
         }
       } else if (f.getSystemListId() != null) {
 
