@@ -2677,6 +2677,24 @@ public class SmartlistService {
         //if field is system list, PS owner, or event resource
         if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user")) {
           selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
+        } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
+                   Objects.equals(f.getReferenceTable(), "flow.process_step") ||
+                   Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
+                   Objects.equals(f.getReferenceTable(), "flow.event") ||
+                   Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
+                   Objects.equals(f.getReferenceTable(), "flow.event_status_type"))
+        {//else if field is process step or event system field
+          if (f.getDataTypeId() == 1) {
+            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+          } else if(f.getDataTypeId() == 2) {
+            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+          } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
+            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+          } else if (f.getDataTypeId() == 7) {
+            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+          } else {
+            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+          }
         }
       } else if (f.getSystemListId() != null) {
 
