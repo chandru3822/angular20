@@ -1,5 +1,6 @@
 insert into flow.company_data_type (company_id, company_data_type, data_type_id, allow_multiple, has_list_values)
-select 3, 'System Reference', 8, false, true;
+values (3, 'System Reference', 8, false, true),
+       (3, 'System Reference Multi-Select', 10, true, true);
 
 alter table brs.custom_field
   add column if not exists flow_custom_field_id int
