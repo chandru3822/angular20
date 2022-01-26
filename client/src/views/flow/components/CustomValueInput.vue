@@ -48,6 +48,7 @@
       :rules="getRequiredRule()"
       :filled="filledStyle"
       :disabled="readonly"
+      :readonly="readonly"
       :ripple="false"
       @change="callback(field)"
     />
@@ -57,6 +58,7 @@
       text
       :required="required"
       :readonly="readonly"
+      :disabled="readonly"
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"

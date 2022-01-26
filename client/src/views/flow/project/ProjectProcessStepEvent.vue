@@ -102,7 +102,7 @@
           <div>
             <v-btn class="white--text mt-3"
                    @click="checkFieldsForUnique()"
-                   :disabled="!userCanEdit"
+                   :disabled="!userCanEdit || getReadOnly()"
                    color="primaryButton">
               Save Fields
             </v-btn>
@@ -604,12 +604,17 @@ export default {
     },
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
-      return getEventCustomFieldReadOnly(this.$store, field)
-        || !this.userCanEdit
+      let fieldReadOnly = false
+      if(null != field) {
+        fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
+      }
+      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !==1 ))
+        || fieldReadOnly || !this.userCanEdit
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
       // if events admin then they can edit any event fields, otherwise idk???
-      return getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
+      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+        || getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
         || !this.userCanEdit
     },
     populateDirtyCfvs(field) {

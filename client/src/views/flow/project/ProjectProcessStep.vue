@@ -143,7 +143,7 @@
           All Events
           <v-autocomplete
             v-model="eventToAdd"
-            v-if="processStepEvents && processStepEvents.length > 0"
+            v-if="userCanAddEvents && processStepEvents && processStepEvents.length > 0"
             :items="processStepEvents"
             placeholder="Select Event to add"
             item-text="eventName"
@@ -220,7 +220,7 @@
             <v-btn
               color="primaryCustom"
               class="white--text mt-3"
-              :disabled="fieldsSaving"
+              :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
             >Save Fields
             </v-btn>
@@ -317,7 +317,7 @@ import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/proces
 import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
-import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import {getCustomFieldReadOnly, getEventCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
@@ -351,6 +351,7 @@ export default {
       uploadModalWidth: 400,
       attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+      userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
       userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
@@ -634,8 +635,12 @@ export default {
     },
     getReadOnly: function (field) {
       // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
+      let fieldReadOnly = false
+      if(null != field) {
+        fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
+      }
       return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
-        || getCustomFieldReadOnly(this.$store, field)
+        || fieldReadOnly
         || !this.userCanEdit
     },
     followMultipleLinks(action) {
