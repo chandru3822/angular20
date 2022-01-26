@@ -22,6 +22,17 @@
   /*color: #1F3C73 !important;*/
 }
 
+.theme--light.v-input--is-disabled i,
+.theme--light.v-input--is-disabled label{
+  color: #9E9E9E !important;
+}
+
+//.theme--light.error--text i,
+//.theme--light.error--text label,
+.theme--light.error--text div .v-messages__message {
+  color: red !important;
+}
+
 @font-face {
   font-family: "Congrats";
   src: local("Congrats"),
