@@ -69,9 +69,6 @@
           {{ action.actionName }}
         </v-btn>
       </div>
-      <div class="error-text" v-if="eventActionMissingRequirements">
-        {{ this.saveErrorMsg }}
-      </div>
       <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="my-2">
         <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
           Upload Documents
@@ -83,32 +80,37 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </div>
-      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar">
-        <v-toolbar-title>
-          <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
-                 class="px-0" target="_blank"
-                 :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-            <v-icon>mdi-calendar</v-icon>
-          </v-btn>
-          Details/Custom Fields
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                 @click="setSplitColumnValue()">
-            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-            <v-icon v-else>mdi-menu</v-icon>
-          </v-btn>
-          <div>
-            <v-btn class="white--text mt-3"
-                   @click="checkFieldsForUnique()"
-                   :disabled="!userCanEdit || getReadOnly()"
-                   color="primaryButton">
-              Save Fields
+      <div class="cfg-detail-header fixed-toolbar">
+        <v-toolbar flat color="secondary">
+          <v-toolbar-title>
+            <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                   class="px-0" target="_blank"
+                   :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+              <v-icon>mdi-calendar</v-icon>
             </v-btn>
-          </div>
-        </v-toolbar-items>
-      </v-toolbar>
+            Details/Custom Fields
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+                   @click="setSplitColumnValue()">
+              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+              <v-icon v-else>mdi-menu</v-icon>
+            </v-btn>
+            <div>
+              <v-btn class="white--text mt-3"
+                     @click="checkFieldsForUnique()"
+                     :disabled="!userCanEdit || getReadOnly()"
+                     color="primaryButton">
+                Save Fields
+              </v-btn>
+            </div>
+          </v-toolbar-items>
+        </v-toolbar>
+        <div class="error-text pb-4" v-if="eventActionMissingRequirements">
+          {{ this.saveErrorMsg }}
+        </div>
+      </div>
       <v-card class="pa-4 square-card mb-2"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
         A state and postal code are required on the project to continue with scheduling. Please return to the
@@ -502,7 +504,7 @@ export default {
           }
         })
       })
-      console.log('randaLogger',fieldValueMissing)
+      console.log('randaLogger', fieldValueMissing)
       return fieldValueMissing
     },
     async getStatusesAssignedToEvent() {
@@ -605,10 +607,10 @@ export default {
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
       let fieldReadOnly = false
-      if(null != field) {
+      if (null != field) {
         fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
       }
-      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !==1 ))
+      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
         || fieldReadOnly || !this.userCanEdit
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
@@ -895,6 +897,14 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.cfg-detail-header {
+  background-color: var(--v-secondary-base) !important;
+  margin-left: -10px;
+  margin-right: -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .action-subheader {
   width: 186px;
   margin-top: 20px;
