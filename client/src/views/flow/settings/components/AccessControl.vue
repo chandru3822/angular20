@@ -170,7 +170,6 @@ export default {
         // select all
         this.companyFeatureList.forEach(cfl => {
           cfl.accessControl.forEach(ac => {
-            debugger
             if(ac.usedByFeature) {
               //if ac was not enabled, set dirty value to true
               if (!ac.enabled) {
@@ -185,7 +184,6 @@ export default {
         // deselect all
         this.companyFeatureList.forEach(cfl => {
           cfl.accessControl.forEach(ac => {
-            debugger
             if(ac.usedByFeature) {
               //if ac was already enabled, set dirty value to true
               if(ac.enabled) {

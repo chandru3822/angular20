@@ -18,6 +18,7 @@
       :prepend-icon="hidePrependIcon ? '' : 'event'"
       :append-icon="showAppendIcon ? 'event' : ''"
       readonly
+      class="datetime-picker-input"
       clear-icon="mdi-close-circle"
       :clearable="!readonly"
       :disabled="readonly"
@@ -236,3 +237,9 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.datetime-picker-input label, .datetime-picker-input input {
+  z-index: 0;
+}
+</style>
