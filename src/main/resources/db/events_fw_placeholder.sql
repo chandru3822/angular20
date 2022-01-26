@@ -992,4 +992,5 @@ insert into flow.process_step_requirement_type(process_step_requirement_type)
    where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Project Status Category'));
 
 
-
+alter table flow.project_process_step_event add column if not exists cancelled_date timestamp;
+alter table flow.project_process_step_event add column if not exists completed_date timestamp;

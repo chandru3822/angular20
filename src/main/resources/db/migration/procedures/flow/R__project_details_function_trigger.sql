@@ -805,7 +805,25 @@ declare
   v_resource_name    text;
   v_count            bigint;
   v_value            text;
+  v_event_status_type_id integer;
 BEGIN
+
+  select est.id
+  into v_event_status_type_id
+  from flow.company_event_status_type cest
+  inner join flow.event_status_type est on cest.event_status_type_id = est.id
+  where cest.id = new.company_event_status_type_id;
+
+  if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
+    new.cancelled_date = null;
+    new.completed_date = now();
+  elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
+    new.cancelled_date = now();
+    new.completed_date = null;
+  else
+    new.completed_date = null;
+    new.cancelled_date = null;
+  end if;
 
   select count(1)
   into v_count
