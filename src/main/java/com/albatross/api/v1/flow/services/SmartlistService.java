@@ -2698,8 +2698,6 @@ public class SmartlistService {
         } else {//else field is process step or event custom field
           selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getId(), f.getHasListValues()));
         }
-      } else if (f.getSystemListId() != null) {
-
       } else {
         //if field is custom sql
         if (f.getCustomFieldSqlKey() != null) {
