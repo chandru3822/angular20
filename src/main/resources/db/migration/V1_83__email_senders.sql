@@ -17,7 +17,7 @@ CREATE TABLE if not exists brs.email_sender
 );
 
 INSERT INTO brs.email_sender (email_address)
-(select 'test.peterson@blueravensolar.com' where not exists (select id from brs.email_sender where email_address = 'test.peterson@blueravensolar.com'));
+(select 'ben.peterson@blueravensolar.com' where not exists (select id from brs.email_sender where email_address = 'ben.peterson@blueravensolar.com'));
 
 INSERT INTO brs.email_sender (email_address)
 (select 'brs.operations@blueravensolar.com' where not exists (select id from brs.email_sender where email_address = 'brs.operations@blueravensolar.com'));
