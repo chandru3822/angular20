@@ -6,6 +6,7 @@ import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +33,7 @@ public class BlueravenCustomFieldService {
   private final ObjectMapper om;
   private final SqlArrayService sqlArrayService;
   private final SystemListService systemListService;
+  private final CustomFieldService customFieldService;
 
   public List<CustomField> getAllCustomFields() {
     User user = securityService.getCurrentUser();
@@ -60,7 +62,7 @@ public class BlueravenCustomFieldService {
 
                 if (!cf.getLazyLoadValues()) {
                   final List<ListOfValue> values = getListOfValues(cf, currentUser, Map.of());
-                  if (!values.isEmpty()) {
+                  if (values != null && !values.isEmpty()) {
                     cf.setListOfValues(values);
                   }
                 }
@@ -101,6 +103,11 @@ public class BlueravenCustomFieldService {
       return systemListService.getSystemListOptionsForCompany(
           cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
     }
+
+    if (cf.getFlowCustomFieldId() != null){
+      return customFieldService.getCustomFieldListOfValues(cf.getFlowCustomFieldId());
+    }
+
     return List.of();
   }
 
@@ -126,6 +133,7 @@ public class BlueravenCustomFieldService {
     params.put("systemListId", customField.getCompanySystemListId());
     params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
     params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
+    params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
     params.put(
         "systemListOptionIds",
         null == customField.getSystemListOptionIds()
@@ -210,6 +218,7 @@ public class BlueravenCustomFieldService {
       params.put(
           "lazyLoadValues",
           customField.getLazyLoadValues() != null && customField.getLazyLoadValues());
+      params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
 
       // insert new custom field with listOfValueId if needed
       id = sqlCache.updateReturningId("blueravenCustomField.insertField", params, "id").longValue();

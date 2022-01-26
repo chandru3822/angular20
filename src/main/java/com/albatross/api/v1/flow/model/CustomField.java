@@ -30,7 +30,8 @@ public class CustomField {
       customFieldObjectTypeId,
       dataTypeId,
       companySystemListId,
-      scheduleFieldTypeId;
+      scheduleFieldTypeId,
+      flowCustomFieldId;
   private List<Long> systemListOptionIds;
   private String fieldName,
       fieldCode,
@@ -66,7 +67,7 @@ public class CustomField {
       return true;
     }
 
-    return this.companySystemListId != null;
+    return this.companySystemListId != null || this.flowCustomFieldId != null;
   }
 
   public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {

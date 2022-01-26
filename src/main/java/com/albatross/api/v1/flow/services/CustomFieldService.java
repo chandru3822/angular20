@@ -2,10 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,12 +35,15 @@ public class CustomFieldService {
     return result.orElse(null);
   }
 
-  public List<CustomField> getAllCustomFields() {
+  public List<CustomField> getAllCustomFields(CustomFiledFilterCriteria criteria) {
     User user = securityService.getCurrentUser();
+    final Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("hasListValues", criteria.hasListValues());
+    params.put("query", criteria.query());
+
     return sqlCache.query(
-        "customField.getAll",
-        Map.of("companyId", user.getCompanyId()),
-        new CustomField.CustomFieldMapper<>(CustomField.class, om));
+        "customField.getAll", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 
   /*
@@ -247,6 +246,10 @@ public class CustomFieldService {
   }
 
   private List<ListOfValue> getListOfValues(CustomField cf, User user) {
+    if (cf.getListOfValues() != null && !cf.getListOfValues().isEmpty()) {
+      return cf.getListOfValues();
+    }
+
     if (null != cf.getCustomFieldSqlKey()) {
       String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
       if (null != sql) {
