@@ -62,6 +62,7 @@
           type="number"
           v-model.number="field.numericValue"
           @change="callback(field)"
+          autocomplete="off"
         />
 
         <v-textarea
@@ -77,6 +78,7 @@
           :hide-details="hideDetails"
           v-model="field.textValue"
           @change="callback(field)"
+          autocomplete="off"
         />
 
         <v-text-field
@@ -92,6 +94,7 @@
           type="number"
           v-model.number="field.intValue"
           @change="callback(field)"
+          autocomplete="off"
         />
 
         <v-autocomplete
@@ -111,6 +114,7 @@
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -138,6 +142,7 @@
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -164,6 +169,7 @@
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -190,6 +196,7 @@
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
