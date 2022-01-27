@@ -210,7 +210,7 @@
       </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title>
-          Details/Custom Fields
+          Process Step Details
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>

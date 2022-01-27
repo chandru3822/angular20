@@ -447,7 +447,6 @@
       this.getStatusTypes()
       this.getEventStatusTypes()
       this.getEventTypes()
-      console.log('randaLogger', this.$route.query)
       if(this.$route.query && this.$route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
         this.getSingleProject(null, null, null,null, parseInt(this.$route.query.projectProcessStepEventId))

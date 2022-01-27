@@ -135,7 +135,7 @@
     </v-toolbar>
     <v-row class="project-split-container">
       <div class="white-bg project-section px-0"
-           :class="{'col-3': !collapseLeftSidebar, 'collapse-left': collapseLeftSidebar}">
+           :class="{'col-2': !collapseLeftSidebar, 'collapse-left': collapseLeftSidebar}">
         <div class="left-expander-button">
           <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
             <v-icon>mdi-menu</v-icon>
@@ -208,7 +208,9 @@
         ></router-view>
       </div>
       <div class="white-bg project-section px-0"
-           :class="{'col-4': !collapseRightSidebar, 'collapse-right text-center': collapseRightSidebar}">
+           :class="{'col-5': !collapseRightSidebar && !collapseLeftSidebar,
+                    'right-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
+                    'collapse-right text-center': collapseRightSidebar}">
         <div class="right-expander-button">
           <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
             <v-icon>mdi-menu</v-icon>
@@ -544,12 +546,17 @@ export default {
 }
 
 .center-width-left-side-collapse {
-  width: calc(66.66% - 72px);
+  width: calc(50% - 36px);
+  padding: 10px !important;
+}
+
+.right-width-left-side-collapse {
+  width: calc(50% - 36px);
   padding: 10px !important;
 }
 
 .center-width-right-side-collapse {
-  width: calc(75% - 72px);
+  width: calc(83.33% - 72px);
   padding: 10px !important;
 }
 

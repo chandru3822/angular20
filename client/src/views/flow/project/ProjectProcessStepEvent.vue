@@ -88,7 +88,7 @@
                    :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
               <v-icon>mdi-calendar</v-icon>
             </v-btn>
-            Details/Custom Fields
+            Event Details
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -504,7 +504,6 @@ export default {
           }
         })
       })
-      console.log('randaLogger', fieldValueMissing)
       return fieldValueMissing
     },
     async getStatusesAssignedToEvent() {
