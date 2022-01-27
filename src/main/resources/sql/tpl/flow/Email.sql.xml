@@ -62,4 +62,16 @@
         ]]>
 	</email.getSendersByCompanyId>
 
+	<email.saveFromAddress>
+		<![CDATA[
+		INSERT INTO flow.email_sender(email_address, company_id, created_by_id, is_default)
+		VALUES ((select :emailAddress where not exists (select id from flow.email_sender where email_address = :emailAddress)),
+	    :companyId, :createdById, :isDefault)
+		]]>
+	</email.saveFromAddress>
+
+	<email.deleteEmailAddress><![CDATA[
+        update flow.email_sender set archived = true, date_modified = now() where id = :id
+    ]]></email.deleteEmailAddress>
+
 </sql>

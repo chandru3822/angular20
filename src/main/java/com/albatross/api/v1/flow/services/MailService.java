@@ -225,6 +225,22 @@ public class MailService {
         }
     }
 
+    public void saveFromEmailAddress(EmailSender emailAddress) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("emailAddress", emailAddress.getEmailAddress());
+      params.put("companyId", emailAddress.getCompanyId());
+      params.put("createdById", emailAddress.getCreatedById());
+      params.put("isDefault", emailAddress.isDefault());
+
+      sqlCache.update("email.saveFromAddress", params);
+    }
+
+    public void deleteFromEmailAddress(Long emailAddressId) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", emailAddressId);
+      sqlCache.update("email.deleteEmailAddress", params);
+    }
+
   private Session getSession() {
     Properties props = new Properties();
     props.put("mail.transport.protocol", "smtp");
