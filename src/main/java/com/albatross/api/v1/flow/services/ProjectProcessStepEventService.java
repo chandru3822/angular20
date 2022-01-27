@@ -206,8 +206,10 @@ public class ProjectProcessStepEventService {
 
       sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
 
-      //the fields sent in here are the dirty fields, save those
-      customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
+      if(null != saveEvent.getCustomFieldValues() && !saveEvent.getCustomFieldValues().isEmpty()) {
+        //the fields sent in here are the dirty fields, save those
+        customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
+      }
 
       return getPpsEvent(saveEvent.getId());
     }
