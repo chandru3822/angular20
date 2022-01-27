@@ -472,7 +472,6 @@ export default {
 
       } else {
         //if there wasn't a required field then run the event
-        await this.updateFieldGroups()
         this.eventActionMissingRequirements = false
         await this.doEventAction(action)
       }
@@ -556,10 +555,12 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
+          id: this.selectedEvent.id,
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
-          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId
+          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
+          customFieldValues: this.dirtyCfvs
         }
 
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
@@ -682,12 +683,20 @@ export default {
       }
     },
     async saveEventDetails() {
-      let isNewEvent = this.selectedEvent.isNew
       this.eventSaveOverrideRequired = true
       this.eventActionMissingRequirements = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
+        let params = {
+          id: this.selectedEvent.id,
+          startTime: this.selectedEvent.startTime,
+          endTime: this.selectedEvent.endTime,
+          resourceId: this.selectedEvent.resourceId,
+          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
+          customFieldValues: this.dirtyCfvs
+        }
+        console.log('randaLogger',params)
+        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
         this.selectedEvent = data
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
@@ -700,26 +709,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async updateFieldGroups() {
-      if (this.dirtyCfvs?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.processStep.customFieldGroups = this.customFieldGroups
-        try {
-          // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
-          // save dirty custom field values
-          this.$refs.eventFieldForm.resetValidation()
-          const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
       }
     },
     async getAvailableTimeSlots(remote) {
@@ -836,7 +825,6 @@ export default {
         }
         if (validSave) {
           this.saveEventDetails()
-          this.updateFieldGroups()
         }
       } else {
         //only startTime is required to save fields
