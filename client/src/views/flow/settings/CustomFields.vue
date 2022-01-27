@@ -13,12 +13,10 @@
               {{ item.objectType }} <span v-if="item.processStepName">{{item.processStepName}}</span>{{ item.groupName }} - {{ item.fieldName}}
             </v-list-item-content>
           </v-list>
-
         </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-
           <v-btn
             color="primaryCustom"
             text
@@ -137,7 +135,7 @@
             </template>
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': selectedIndex % 2}">
-                <v-col justify="center" class="flex-display pl-3 pr-3" :class="{'shaded-row': selectedIndex % 2}">
+                <v-col class="flex-display pl-3 pr-3 justify" :class="{'shaded-row': selectedIndex % 2}">
                   <v-card text class="text-center field-card one-hunned" flat
                           :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
@@ -169,43 +167,65 @@
                       return-object
                       attach
                     />
+
                     <div
                       v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
-                      <v-text-field
-                        v-model="item.customFieldSqlKey"
-                        label="SQL Key"
-                      />
-                      <v-text-field
-                        v-model="item.customFieldSqlReferenceTable"
-                        label="SQL Reference Table"
-                      />
 
-                      <v-checkbox
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        v-model="item.lazyLoadValues"
-                        label="Lazy load values" />
+                      <div v-if="isSystemReference(item.companyDataType.companyDataType)">
+                        <v-autocomplete
+                          v-model="item.flowCustomFieldId"
+                          :items="availableCustomFields"
+                          :search-input.sync="customFieldQuery"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Flow System Field"
+                          item-text="fieldName"
+                          item-value="id"
+                          hide-no-data
+                          cache-items
+                          clearable
+                        />
+                        <span v-if="item.flowCustomFieldId">Tied to Flow Custom Field ID#{{item.flowCustomFieldId}}</span>
+                      </div>
+
+                      <div v-else>
+                        <v-text-field
+                          v-model="item.customFieldSqlKey"
+                          label="SQL Key"
+                        />
+                        <v-text-field
+                          v-model="item.customFieldSqlReferenceTable"
+                          label="SQL Reference Table"
+                        />
+
+                        <v-checkbox
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          v-model="item.lazyLoadValues"
+                          label="Lazy load values" />
+                      </div>
                     </div>
 
-                    <v-autocomplete v-if="item.companyDataType && item.companyDataType.systemList"
-                                    v-model="item.companySystemListId"
-                                    :items="systemLists"
-                                    :disabled="!item.custom || !userCanEdit"
-                                    :readonly="!item.custom || !userCanEdit"
-                                    label="System List Type"
-                                    item-text="systemList"
-                                    item-value="companySystemListId"
-                                    @change="getSystemListOptions(item.companySystemListId)"
-                                    attach
+                    <v-autocomplete
+                      v-if="item.companyDataType && item.companyDataType.systemList"
+                      v-model="item.companySystemListId"
+                      :items="systemLists"
+                      :disabled="!item.custom || !userCanEdit"
+                      :readonly="!item.custom || !userCanEdit"
+                      label="System List Type"
+                      item-text="systemList"
+                      item-value="companySystemListId"
+                      @change="getSystemListOptions(item.companySystemListId)"
+                      attach
                     />
 
                     <v-autocomplete
                       v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
                       v-model="item.systemListOptionIds"
                       :items="systemListOptions"
-                      multiple
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
+                      multiple
                       label="System List Options"
                       item-text="name"
                       item-value="id"
@@ -213,7 +233,7 @@
                     />
 
                     <v-col class="options-container"
-                           v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
+                           v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList && !item.companyDataType.customBehavior">
                       <div class="mb-2">
                         Selectable Options<br />
                         Sort Alphabetically:
@@ -294,6 +314,7 @@ import { AppMutations } from "@/stores/AppStore";
 import Vue2Filters from "vue2-filters";
 import cloneDeep from "lodash.clonedeep";
 import orderBy from "lodash.orderby";
+import debounce from "lodash.debounce";
 import draggable from "vuedraggable";
 
 import {
@@ -335,6 +356,8 @@ export default {
       search: "",
       selectedIndex: null,
       expanded: [],
+      customFieldQuery: "",
+      availableCustomFields: [],
       customFields: [],
       systemLists: [],
       systemListOptions: [],
@@ -361,7 +384,15 @@ export default {
     this.getCustomFields();
     this.getSystemLists();
   },
+  watch: {
+    customFieldQuery(val){
+      val && this.debounceFindCustomFields(val)
+    }
+  },
   methods: {
+    isSystemReference (dataType){
+      return /System Reference/i.test(dataType)
+    },
     getLovValues(lovs, alphaSort) {
       // return lovs
       return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
@@ -374,6 +405,21 @@ export default {
         return !item.custom ? this.dataTypes : this.dataTypes.filter(dt => {
           return !dt.customBehavior;
         });
+      }
+    },
+    debounceFindCustomFields: debounce(function(query){
+      this.findCustomFields(query)
+    }, 250),
+
+    async findCustomFields(query){
+      try {
+        const { data } = await getRequestWithParams(`/customField/getAll`,{
+          params: { query, hasListValues: true }
+        }, null, []);
+        this.availableCustomFields = data
+      }catch (e){
+        this.availableCustomFields = []
+        console.error(e)
       }
     },
     async getCustomFields() {
@@ -580,7 +626,7 @@ export default {
             }
           });
         }
-      } else if (item.companyDataType?.customBehavior) {
+      } else if (item.companyDataType?.customBehavior && !this.isSystemReference(item.companyDataType.companyDataType)) {
         if (!item.customFieldSqlKey || !item.customFieldSqlReferenceTable) {
           invalidCustomSql = true;
         }

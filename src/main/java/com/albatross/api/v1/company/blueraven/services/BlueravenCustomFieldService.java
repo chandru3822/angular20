@@ -1,6 +1,5 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomField;
@@ -10,12 +9,9 @@ import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.albatross.api.v1.flow.services.SystemListService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -37,13 +33,14 @@ public class BlueravenCustomFieldService {
   private final ObjectMapper om;
   private final SqlArrayService sqlArrayService;
   private final SystemListService systemListService;
+  private final CustomFieldService customFieldService;
 
   public List<CustomField> getAllCustomFields() {
     User user = securityService.getCurrentUser();
     return sqlCache.query(
         "blueravenCustomField.getAll",
         Map.of("companyId", user.getCompanyId()),
-        new CustomFieldMapper<>(CustomField.class, om));
+        new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 
   public List<CustomField> findCustomFieldsByObjectCode(String code) {
@@ -53,7 +50,8 @@ public class BlueravenCustomFieldService {
     final Map<String, Object> params =
         Map.of("companyId", currentUser.getCompanyId(), "objectCode", code);
 
-    final var customFieldBeanPropertyRowMapper = new CustomFieldMapper<>(CustomField.class, om);
+    final var customFieldBeanPropertyRowMapper =
+        new CustomField.CustomFieldMapper<>(CustomField.class, om);
     return sqlCache
         .query("blueravenCustomField.getByObjectCode", params, customFieldBeanPropertyRowMapper)
         .stream()
@@ -64,7 +62,7 @@ public class BlueravenCustomFieldService {
 
                 if (!cf.getLazyLoadValues()) {
                   final List<ListOfValue> values = getListOfValues(cf, currentUser, Map.of());
-                  if (!values.isEmpty()) {
+                  if (values != null && !values.isEmpty()) {
                     cf.setListOfValues(values);
                   }
                 }
@@ -75,7 +73,7 @@ public class BlueravenCustomFieldService {
 
   public List<ListOfValue> getCustomFieldListOfValues(Long id, String query) {
     final var currentUser = securityService.getCurrentUser();
-    final CustomField customFieldById = findCustomFieldById(id);
+    final var customFieldById = findCustomFieldById(id);
     if (customFieldById == null) {
       throw new RuntimeException("Blueraven custom field id=" + id + " not found!");
     }
@@ -105,6 +103,11 @@ public class BlueravenCustomFieldService {
       return systemListService.getSystemListOptionsForCompany(
           cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
     }
+
+    if (cf.getFlowCustomFieldId() != null){
+      return customFieldService.getCustomFieldListOfValues(cf.getFlowCustomFieldId());
+    }
+
     return List.of();
   }
 
@@ -115,7 +118,7 @@ public class BlueravenCustomFieldService {
         sqlCache.get(
             "blueravenCustomField.getOne",
             Map.of("id", id),
-            new CustomFieldService.CustomFieldMapper<>(CustomField.class, om));
+            new CustomField.CustomFieldMapper<>(CustomField.class, om));
     return result.orElse(null);
   }
 
@@ -130,6 +133,7 @@ public class BlueravenCustomFieldService {
     params.put("systemListId", customField.getCompanySystemListId());
     params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
     params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
+    params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
     params.put(
         "systemListOptionIds",
         null == customField.getSystemListOptionIds()
@@ -214,6 +218,7 @@ public class BlueravenCustomFieldService {
       params.put(
           "lazyLoadValues",
           customField.getLazyLoadValues() != null && customField.getLazyLoadValues());
+      params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
 
       // insert new custom field with listOfValueId if needed
       id = sqlCache.updateReturningId("blueravenCustomField.insertField", params, "id").longValue();
@@ -266,36 +271,6 @@ public class BlueravenCustomFieldService {
     } else if (null != cfot.getArchived() && !cfot.getArchived()) {
       // do not need to insert new row if it is archived / not selected
       sqlCache.update("blueravenCustomField.insertCustomFieldObjectType", params);
-    }
-  }
-
-  public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public CustomFieldMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef =
-          new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "customFieldObjectTypes",
-          new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
-
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, objectMapper));
-
-      TypeReference<List<Long>> systemListOptionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "systemListOptionIds",
-          new JsonCollectionDeserializer(systemListOptionsRef, objectMapper));
     }
   }
 }

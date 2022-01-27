@@ -107,9 +107,19 @@
                                case when cf.sort_list_values_alphabetically is false then lv.display_order end
                           ) rows), '[]') AS list_of_values
     from flow.custom_field cf
+    inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
     where cf.company_id = :companyId
       and cf.archived is not true
-    order by cf.field_name
+      and (case
+               when :hasListValues::boolean is true then cdt.has_list_values is true
+               when :hasListValues::boolean is false then cdt.has_list_values is false
+               else 1 = 1
+        end)
+      and (case
+               when :query::varchar is not null then lower(field_name) like lower(:query::varchar) || '%'
+               else 1 = 1
+        end)
+    order by cf.field_name;
   ]]></customField.getAll>
 
   <customField.getGroupsUsingField><![CDATA[
