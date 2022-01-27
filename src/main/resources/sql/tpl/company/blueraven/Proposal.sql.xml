@@ -56,7 +56,7 @@
                                 INNER JOIN flow.project_process_step_attachment src ON src.attachment_id = a.id
                                 INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
                          WHERE src.project_process_step_id = pps.id
-                           AND at.id in (934,935)
+                           AND at.id in ( select id from flow.company_configuration_value where company_id = 3 and code = 'AURORA_ATTACHMENT_TYPE_IDS' and archived is false)
                            AND a.archived IS NOT TRUE
                          order by at.id, a.date_created
                        ) rows), '[]') AS attachments
@@ -102,7 +102,7 @@
                                       INNER JOIN flow.project_process_step_attachment src ON src.attachment_id = a.id
                                       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
                                WHERE src.project_process_step_id = pps.id
-                                 AND at.id in (934,935)
+                                 AND at.id in ( select id from flow.company_configuration_value where company_id = 3 and code = 'AURORA_ATTACHMENT_TYPE_IDS' and archived is false)
                                  AND a.archived IS NOT TRUE
                                order by at.id, a.date_created
                              ) rows), '[]') AS attachments
