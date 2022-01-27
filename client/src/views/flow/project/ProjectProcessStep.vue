@@ -90,7 +90,7 @@
             </v-dialog>
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <div>
+          <v-toolbar-items class="owner-toolbar-items">
             <div v-if="!displayChangeOwner">
               <div v-if="processStep.owner && processStep.owner.userId">
                 <v-avatar
@@ -110,6 +110,7 @@
             <div v-if="displayChangeOwner">
               <v-autocomplete v-model="processStep.owner"
                               :items="availableOwners"
+                              class="mt-1"
                               label="Select Owner"
                               item-text="fullName"
                               :readonly="!userCanEdit"
@@ -122,17 +123,20 @@
               >
               </v-autocomplete>
             </div>
-            <v-btn text x-small v-if="userCanEdit" class="change-owner-button"
-                   @click="displayChangeOwner = !displayChangeOwner">
-              <span v-if="displayChangeOwner">cancel</span>
-              <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
-              <span v-else>add owner</span>
-            </v-btn>
-            <v-btn text x-small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
-                   class="change-owner-button" @click="removeOwner">
-              remove
-            </v-btn>
-          </div>
+            <div>
+              <v-btn text small v-if="userCanEdit" class="change-owner-button"
+                     :class="{'mt-2': displayChangeOwner}"
+                     @click="displayChangeOwner = !displayChangeOwner">
+                <span v-if="displayChangeOwner">cancel</span>
+                <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
+                <span v-else>add owner</span>
+              </v-btn>
+              <v-btn text small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
+                     class="change-owner-button" @click="removeOwner">
+                remove
+              </v-btn>
+            </div>
+          </v-toolbar-items>
         </v-toolbar>
       </v-col>
       <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature && (
@@ -744,6 +748,10 @@ export default {
   font-size: 16px;
 }
 
+.owner-toolbar-items {
+  flex-direction: column;
+  text-align: right;
+}
 </style>
 <style lang="scss" scoped>
 .process-step-name {
