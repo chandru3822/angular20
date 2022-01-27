@@ -35,4 +35,14 @@
     where id = :id
   ]]></email.markProcessed>
 
+	<email.getDefaultSenderByCompanyId>
+		<![CDATA[
+            select
+       			email_address
+            from flow.email_sender
+            where is_default = true
+            and company_id = :companyId
+		]]>
+	</email.getDefaultSenderByCompanyId>
+
 </sql>

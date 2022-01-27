@@ -1,12 +1,13 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.User;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -31,6 +32,7 @@ public class MailService {
   private final PropertiesConfiguration propConfig;
   private final ThreadPoolTaskExecutor taskExecutor;
   private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   public void sendMessage(
       String to,
@@ -54,7 +56,7 @@ public class MailService {
     Session session = getSession();
 
     if (null == sentByEmail) {
-      sentByEmail = "support@blueravensolar.com";
+    	sentByEmail = getDefaultSenderEmailAddress();
     }
 
     try {
@@ -143,7 +145,7 @@ public class MailService {
 
               String from = message.getFrom();
               if (null == from) {
-                from = "support@blueravensolar.com";
+                from = getDefaultSenderEmailAddress();
               }
 
               final InternetAddress fromAddress =
@@ -262,4 +264,17 @@ public class MailService {
 
     sqlCache.update("email.insert", params);
   }
+
+    private String getDefaultSenderEmailAddress() {
+        User user = securityService.getCurrentUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("companyId", user.getCompanyId());
+
+        String defaultEmail = sqlCache.queryForObject("email.getDefaultSenderByCompanyId", params, String.class);
+        if(null == defaultEmail){
+            throw new RuntimeException("SentByEmail cannot be null");
+        }
+        return defaultEmail;
+
+    }
 }
