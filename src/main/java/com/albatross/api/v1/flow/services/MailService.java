@@ -4,6 +4,7 @@ import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.EmailSender;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
@@ -212,6 +213,18 @@ public class MailService {
     return counter.get();
   }
 
+    public List<EmailSender> getEmailSenders() {
+        Long companyId = getCompanyIdFromUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("companyId", companyId);
+        try {
+            return sqlCache.query("email.getSendersByCompanyId", null, EmailSender.class);
+        }
+        catch (Exception e){
+            return null;
+        }
+    }
+
   private Session getSession() {
     Properties props = new Properties();
     props.put("mail.transport.protocol", "smtp");
@@ -266,9 +279,9 @@ public class MailService {
   }
 
     private String getDefaultSenderEmailAddress() {
-        User user = securityService.getCurrentUser();
+        Long companyId = getCompanyIdFromUser();
         HashMap<String, Object> params = new HashMap<>();
-        params.put("companyId", user.getCompanyId());
+        params.put("companyId", companyId);
 
         String defaultEmail = sqlCache.queryForObject("email.getDefaultSenderByCompanyId", params, String.class);
         if(null == defaultEmail){
@@ -276,5 +289,11 @@ public class MailService {
         }
         return defaultEmail;
 
+    }
+
+    private Long getCompanyIdFromUser() {
+        User user = securityService.getCurrentUser();
+        Long companyId = null == user ? 3 : user.getCompanyId(); //sitewide admin doesn't necessarily have user for current company
+       return companyId;
     }
 }

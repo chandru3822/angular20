@@ -45,4 +45,21 @@
 		]]>
 	</email.getDefaultSenderByCompanyId>
 
+	<email.getSendersByCompanyId>
+		<![CDATA[
+            SELECT
+                   ems.id,
+                   ems.email_address,
+                   ems.date_modified,
+                   ems.modified_by_id as "modifiedById",
+                   ems.date_created,
+                   ems.created_by_id as "createdById",
+                   ems.archived
+            FROM flow.email_sender ems
+            WHERE archived is not true
+            AND company_id = :companyId
+            ORDER BY ems.email_address
+        ]]>
+	</email.getSendersByCompanyId>
+
 </sql>

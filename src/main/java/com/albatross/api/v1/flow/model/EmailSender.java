@@ -1,4 +1,4 @@
-package com.albatross.api.v1.company.blueraven.models;
+package com.albatross.api.v1.flow.model;
 
 import lombok.Data;
 
@@ -14,4 +14,6 @@ public class EmailSender {
     private Boolean archived;
     private Date dateCreated, dateModified;
     private Long createdById, modifiedById;
+    private Long companyId;
+    private boolean isDefault;
 }

@@ -1,6 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.EmailSender;
+import com.albatross.api.v1.flow.model.EmailSender;
 import com.albatross.api.v1.company.blueraven.services.EmailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

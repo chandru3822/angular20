@@ -981,7 +981,7 @@
       },
       async getEmailSenders() {
         try {
-          const {data} = await getRequest(`/emailSender`, 'blueraven')
+          const {data} = await getRequest(`/emailAddress`, null)
           this.fromEmails = data.map(e => e.emailAddress)
         } catch (e) {
           console.error('*** ERROR ***', e)
