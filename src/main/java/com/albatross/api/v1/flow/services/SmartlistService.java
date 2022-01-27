@@ -1978,7 +1978,7 @@ public class SmartlistService {
             } else if (f.getObjectTypeId() == 6) {
               valueTable = f.getValueEventReferenceTable();
             }
-            selectFields.append(addSelectCustomField(f.getDataTypeId(), valueTable, f.getId(), f.getHasListValues()));
+            selectFields.append(addSelectCustomField(f.getDataTypeId(), valueTable, f.getId().toString(), f.getHasListValues()));
           }
         } else if (f.getSystemListId() != null) {
           //system list fields
@@ -2668,15 +2668,15 @@ public class SmartlistService {
         final String smartlistSystemListTable = "smartlistSystemList_" + f.getSmartlistSystemListId();
 
         if (List.of(1L, 3L, 5L).contains(f.getSmartlistSystemListId())) {
-          selectQuery.append(String.format("(select name from \"%s\" where \"%s\".id = %s.%s) as \"%s\", ", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn(), f.getId()));
+          selectQuery.append(String.format("(select name from \"%s\" where \"%s\".id = %s.%s) as \"%s\", ", smartlistSystemListTable, smartlistSystemListTable, f.getJoinTable(), f.getJoinColumn(), f.getName()));
         } else if (List.of(2L, 4L).contains(f.getSmartlistSystemListId())) {
-          selectQuery.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), f.getReferenceColumn(), f.getId()));
+          selectQuery.append(String.format("\"%s\".%s as \"%s\", ", f.getValueReferenceTable(), f.getReferenceColumn(), f.getName()));
         }
       } else if (f.getProcessStepId() != null) { //if field is process step or event
 
         //if field is system list, PS owner, or event resource
         if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user")) {
-          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
+          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
         } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
                    Objects.equals(f.getReferenceTable(), "flow.process_step") ||
                    Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
@@ -2685,43 +2685,43 @@ public class SmartlistService {
                    Objects.equals(f.getReferenceTable(), "flow.event_status_type"))
         {//else if field is process step or event system field
           if (f.getDataTypeId() == 1) {
-            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if(f.getDataTypeId() == 2) {
-            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
-            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if (f.getDataTypeId() == 7) {
-            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else {
-            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           }
         } else {//else field is process step or event custom field
-          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getId(), f.getHasListValues()));
+          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getName(), f.getHasListValues()));
         }
       } else {
         //if field is custom sql
         if (f.getCustomFieldSqlKey() != null) {
-          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
+          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
         } else { //else field is project or contact
 
           //if field is system
           if (f.getCustomFieldGroupAssignmentId() != null) {
             if (f.getDataTypeId() == 1) {
-              selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+              selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else if(f.getDataTypeId() == 2) {
-              selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+              selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else if (f.getDataTypeId() == 6 && f.getHasListValues()) {
-              selectQuery.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+              selectQuery.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else if (f.getDataTypeId() == 7) {
-              selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(\"%s\".%s)), ',')) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+              selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(\"%s\".%s)), ',')) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else {
-              selectQuery.append(String.format(" \"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+              selectQuery.append(String.format(" \"%s\".%s as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             }
           } else {
             if (Objects.equals(f.getReferenceTable(), "flow.project_user") || Objects.equals(f.getReferenceTable(), "flow.contact_user")) {
-              selectQuery.append(String.format("%s as \"%s\", ", f.getReferenceColumn(), f.getId()));
+              selectQuery.append(String.format("%s as \"%s\", ", f.getReferenceColumn(), f.getName()));
             } else {
-              selectQuery.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              selectQuery.append(String.format("%s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
             }
           }
         }
@@ -3063,7 +3063,7 @@ public class SmartlistService {
    * @return a sql snippet
    */
   //@TODO: This function name is no bueno. Needs some love
-  private String addSelectCustomField(Long dataTypeId, String valueTable, Long fieldLabel, Boolean hasListValues) {
+  private String addSelectCustomField(Long dataTypeId, String valueTable, String fieldLabel, Boolean hasListValues) {
     var select = "";
     if (dataTypeId == 1) {
       select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
