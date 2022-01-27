@@ -168,12 +168,12 @@ raise notice '13';
     select ppse2.id as project_process_step_event_id,
            pd.id as project_details_id
     from brs.project_details pd
-           inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.id = pd.permit_pack_submittal_end_time_ppse_id
+           inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.id = pd.permit_pack_submittal_ppse_id
            inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = ppscfv.project_process_step_id
-    where pd.permit_pack_submittal_end_time is not null and permit_pack_submittal_end_time_ppse_id is not null
+    where pd.permit_pack_submittal_end_time is not null and pd.permit_pack_submittal_ppse_id is not null
   )
   update brs.project_details pd2
-  set permit_pack_submittal_end_time_ppse_id = ud.project_process_step_event_id
+  set permit_pack_submittal_ppse_id = ud.project_process_step_event_id
   from update_data ud
   where ud.project_details_id = pd2.id;
 
