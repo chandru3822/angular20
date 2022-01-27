@@ -191,22 +191,26 @@ public class ProjectProcessStepEventService {
   }
 
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long eventId, ProjectProcessStepEventController.SaveEventRequest saveEvent) throws Exception {
-    User currentUser = securityService.getCurrentUser();
+    if(null != saveEvent.getStartTime() && null != saveEvent.getEndTime() && (saveEvent.getEndTime().before(saveEvent.getStartTime()) || saveEvent.getEndTime().equals(saveEvent.getStartTime()))  ) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start Time must be before End Time", new Exception());
+    } else {
+      User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", eventId);
-    params.put("startTime", saveEvent.getStartTime());
-    params.put("endTime", saveEvent.getEndTime());
-    params.put("resourceId", saveEvent.getResourceId());
-    params.put("companyEventStatusTypeId", saveEvent.getCompanyEventStatusTypeId());
-    params.put("modifiedById", currentUser.getId());
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", eventId);
+      params.put("startTime", saveEvent.getStartTime());
+      params.put("endTime", saveEvent.getEndTime());
+      params.put("resourceId", saveEvent.getResourceId());
+      params.put("companyEventStatusTypeId", saveEvent.getCompanyEventStatusTypeId());
+      params.put("modifiedById", currentUser.getId());
 
-    sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+      sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
 
-    //the fields sent in here are the dirty fields, save those
-    customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
+      //the fields sent in here are the dirty fields, save those
+      customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
 
-    return getPpsEvent(saveEvent.getId());
+      return getPpsEvent(saveEvent.getId());
+    }
   }
 
   public Optional<ProcessStepEventAction> getPpsEventAction(Long ppsEventId, Long actionId) throws Exception {

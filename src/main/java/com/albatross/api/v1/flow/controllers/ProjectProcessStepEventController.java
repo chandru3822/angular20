@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,7 +90,7 @@ public class ProjectProcessStepEventController {
   @Data
   public static class SaveEventRequest {
     private Long id, resourceId, companyEventStatusTypeId;
-    private String startTime, endTime;
+    private Timestamp startTime, endTime;
     private List<CustomFieldValue> customFieldValues;
   }
 

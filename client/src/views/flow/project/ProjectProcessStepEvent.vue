@@ -695,7 +695,6 @@ export default {
           companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
           customFieldValues: this.dirtyCfvs
         }
-        console.log('randaLogger',params)
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
         this.selectedEvent = data
         this.$emit('refresh-upcoming-events')
@@ -705,7 +704,7 @@ export default {
         }
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Default Fields')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -798,42 +797,44 @@ export default {
       }
     },
     async checkFieldsForUnique() {
-      if (null != this.selectedEvent.startTime) {
-        let validSave = true
-        let resource = null
-        if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
-          let startTime = this.selectedEvent.startTime
-          let endTime = this.selectedEvent.endTime
-          resource = this.selectedEvent.resourceId
-          if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
-            this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.fieldsSaving = false
-            validSave = false
-          } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-            this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.fieldsSaving = false
-            validSave = false
-          } else if (startTime && endTime && !resource) {
-            //resource required if times are saving
-            this.snackbar = getSnackbar('ERROR', 'Resource is required')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.fieldsSaving = false
-            validSave = false
-          }
+      let validSave = true
+      let startTime = this.selectedEvent.startTime
+      let endTime = this.selectedEvent.endTime
+
+      //if is for closer appt
+      if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
+        if (!startTime || !endTime || !this.selectedEvent.resourceId) {
+          validSave = false
+          this.eventActionMissingRequirements = true
+          this.actionRequiresEnd = !endTime
+          this.actionRequiresResource = !this.selectedEvent.resourceId
+          this.saveErrorMsg = 'Additional fields are required to save this event.'
+        } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+          validSave = false
+          this.eventActionMissingRequirements = true
+          this.saveErrorMsg = 'End time must be after start time'
         }
-        if (validSave) {
-          this.saveEventDetails()
+      } else if (null != this.selectedEvent.startTime) {
+        //for all other types just compare start to end if end not null
+        if (startTime && endTime && !moment(endTime).isAfter(startTime)){
+          validSave = false
+          this.eventActionMissingRequirements = true
+          this.saveErrorMsg = 'End time must be after start time'
         }
       } else {
         //only startTime is required to save fields
+        validSave = false
         this.actionRequiresEnd = false
         this.actionRequiresResource = false
-        this.eventActionMissingRequirements = true
         this.saveErrorMsg = 'Start Time is required to save the event fields'
         //dont do this for now. makes the page look weird after save
         // document.getElementById('event-header').scrollIntoView()
+      }
+
+      //after everything, only save if valid
+      if (validSave) {
+        this.eventActionMissingRequirements = false
+        this.saveEventDetails()
       }
     },
     filterProjectProcessStepEvents() {
