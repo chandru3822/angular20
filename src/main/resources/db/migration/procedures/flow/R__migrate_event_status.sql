@@ -9,7 +9,7 @@ CREATE OR REPLACE function flow.migrate_event_status(p_project_process_step_id i
             process_event_status_id integer,
             cancel_timestamp        timestamp,
             complete_timestamp      timestamp,
-            scheduled_timestamp      timestamp
+            scheduled_timestamp     timestamp
           )
 as
 $$
@@ -34,7 +34,26 @@ declare
   v_complete_timestamp2                   timestamp;
   v_complete_timestamp3                   timestamp;
   v_complete_timestamp4                   timestamp;
+  v_process_step_id                       integer;
+  v_online_timestamp_value                timestamp;
 BEGIN
+  v_online_timestamp_value = null;
+  select process_step_id
+  into v_process_step_id
+  from flow.project_process_step
+  where id = p_project_process_step_id;
+
+  if v_process_step_id in (13, 3099, 3395) then
+    select timestamp_value
+    into v_online_timestamp_value
+    from flow.project_process_step_custom_field_value
+    where project_process_step_id = p_project_process_step_id
+      and custom_field_group_assignment_id in (20917, 19108, 19201)
+    limit 1;
+
+  end if;
+
+
   select id
   into v_company_event_status_type_id_pending
   from flow.company_event_status_type
@@ -108,8 +127,11 @@ BEGIN
   --   raise notice 'second child=%',v_company_status_id2;
 --   raise notice 'third child=%',v_company_status_id3;
 --   raise notice 'fourth child=%',v_company_status_id4;
-
-  if v_company_status_id1 = 3 then
+  if v_online_timestamp_value is not null and v_online_timestamp_value < now() then
+    v_process_event_status_id = v_company_event_status_type_id_complete;
+  elsif v_online_timestamp_value is not null and v_online_timestamp_value > now() then
+    v_process_event_status_id = v_company_event_status_type_id_pending;
+  elsif v_company_status_id1 = 3 then
     v_process_event_status_id = v_company_event_status_type_id_NCO;
     v_return_cancel_timestamp = v_cancel_timestamp;
     v_return_complete_timestamp = null;
@@ -130,7 +152,10 @@ BEGIN
         least(v_complete_timestamp1, v_complete_timestamp2, v_complete_timestamp3, v_complete_timestamp4);
     end if;
   end if;
-  return query select v_process_event_status_id, v_return_cancel_timestamp, v_return_complete_timestamp,v_complete_timestamp1;
+  return query select v_process_event_status_id,
+                      v_return_cancel_timestamp,
+                      v_return_complete_timestamp,
+                      v_complete_timestamp1;
 
 end
 

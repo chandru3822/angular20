@@ -107,6 +107,7 @@ BEGIN
           where project_process_step_id = x.project_process_step_id
             and custom_field_group_assignment_id in (20917, 19108, 19201)
           limit 1;
+
         end if;
         if x.process_step_id = 1 then
           select process_event_status_id,cancel_timestamp,complete_timestamp,scheduled_timestamp
@@ -184,7 +185,7 @@ BEGIN
         elsif x.process_step_id = 13 then
           select process_event_status_id,cancel_timestamp,complete_timestamp,scheduled_timestamp
           into v_event_status_type_id,v_cancelled_date,v_completed_date,v_scheduled_timestamp
-          from flow.migrate_event_status(x.project_process_step_id, x.project_id, v_start_date,
+          from flow.migrate_event_status(x.project_process_step_id, x.project_id, coalesce(v_start_date,v_online_timestamp_value),
                                          v_end_date,
                                          13, 94,
                                          67,
@@ -400,7 +401,7 @@ BEGIN
         elsif x.process_step_id = 3099 then
           select process_event_status_id,cancel_timestamp,complete_timestamp,scheduled_timestamp
           into v_event_status_type_id,v_cancelled_date,v_completed_date,v_scheduled_timestamp
-          from flow.migrate_event_status(x.project_process_step_id, x.project_id, v_start_date,
+          from flow.migrate_event_status(x.project_process_step_id, x.project_id, coalesce(v_start_date,v_online_timestamp_value),
                                          v_end_date,
                                          3099, 3100,
                                          3101,
@@ -497,7 +498,7 @@ BEGIN
         elsif x.process_step_id = 3395 then
           select process_event_status_id,cancel_timestamp,complete_timestamp,scheduled_timestamp
           into v_event_status_type_id,v_cancelled_date,v_completed_date,v_scheduled_timestamp
-          from flow.migrate_event_status(x.project_process_step_id, x.project_id, v_start_date,
+          from flow.migrate_event_status(x.project_process_step_id, x.project_id, coalesce(v_start_date,v_online_timestamp_value),
                                          v_end_date,
                                          3395, 0,
                                          0,
