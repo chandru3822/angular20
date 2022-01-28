@@ -807,7 +807,7 @@ declare
   v_value            text;
   v_event_status_type_id integer;
 BEGIN
-
+  raise notice '1';
   select est.id
   into v_event_status_type_id
   from flow.company_event_status_type cest
@@ -815,19 +815,27 @@ BEGIN
   where cest.id = new.company_event_status_type_id;
 
   if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
-    new.cancelled_date = null;
-    new.completed_date = now();
+    update flow.project_process_step_event
+    set cancelled_date = null,
+        completed_date = now()
+    where id = new.id;
   elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
-    new.cancelled_date = now();
-    new.completed_date = null;
+    update flow.project_process_step_event
+    set cancelled_date = now(),
+        completed_date = null
+    where id = new.id;
   else
-    new.completed_date = null;
-    new.cancelled_date = null;
+    update flow.project_process_step_event
+    set cancelled_date = null,
+        completed_date = null
+    where id = new.id;
   end if;
 
-  if ((new.start_time is not null and (TG_OP = 'INSERT')) or
-     (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE'))) then
-    new.event_scheduled_date = now();
+  if (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE')) then
+    update flow.project_process_step_event
+    set scheduled_date = now()
+    where id = new.id;
+
   end if;
 
   select count(1)
@@ -967,14 +975,14 @@ BEGIN
   end if;
 
 
-  RETURN NULL;
+  RETURN new;
 END
 $body$
   LANGUAGE plpgsql;
 
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 CREATE TRIGGER update_events_trg
-  after INSERT or update
+  after INSERT or update OF company_event_status_type_id,start_time,end_time,resource_id
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_events();
