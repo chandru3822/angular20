@@ -994,3 +994,4 @@ insert into flow.process_step_requirement_type(process_step_requirement_type)
 
 alter table flow.project_process_step_event add column if not exists cancelled_date timestamp;
 alter table flow.project_process_step_event add column if not exists completed_date timestamp;
+alter table flow.project_process_step_event add column if not exists scheduled_date timestamp;

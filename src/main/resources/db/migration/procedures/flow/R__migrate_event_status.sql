@@ -8,7 +8,8 @@ CREATE OR REPLACE function flow.migrate_event_status(p_project_process_step_id i
           (
             process_event_status_id integer,
             cancel_timestamp        timestamp,
-            complete_timestamp      timestamp
+            complete_timestamp      timestamp,
+            scheduled_timestamp      timestamp
           )
 as
 $$
@@ -129,7 +130,7 @@ BEGIN
         least(v_complete_timestamp1, v_complete_timestamp2, v_complete_timestamp3, v_complete_timestamp4);
     end if;
   end if;
-  return query select v_process_event_status_id, v_return_cancel_timestamp, v_return_complete_timestamp;
+  return query select v_process_event_status_id, v_return_cancel_timestamp, v_return_complete_timestamp,v_complete_timestamp1;
 
 end
 

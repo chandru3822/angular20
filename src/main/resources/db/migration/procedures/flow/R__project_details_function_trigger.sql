@@ -825,6 +825,11 @@ BEGIN
     new.cancelled_date = null;
   end if;
 
+  if ((new.start_time is not null and (TG_OP = 'INSERT')) or
+     (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE'))) then
+    new.event_scheduled_date = now();
+  end if;
+
   select count(1)
   into v_count
   from flow.project_process_step_event ppse2
@@ -937,17 +942,19 @@ BEGIN
            inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
     where up.id = new.resource_id;
 
-    update brs.project_details
-    set first_appointment         = new.start_time,
-        first_appointment_ppse_id = new.id
-    where project_id = v_project_id
-      and (first_appointment is null or
-           (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
-    update brs.project_details
-    set closer_user_id          = v_user_id,
-        closer_name             = v_closer_name,
-        closer_user_position_id = v_user_position_id
-    where project_id = v_project_id;
+    if new.start_time is not null and new.end_time is not null and new.resource_id is not null then
+      update brs.project_details
+      set first_appointment         = new.start_time,
+          first_appointment_ppse_id = new.id
+      where project_id = v_project_id
+        and (first_appointment is null or
+             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
+      update brs.project_details
+      set closer_user_id          = v_user_id,
+          closer_name             = v_closer_name,
+          closer_user_position_id = v_user_position_id
+      where project_id = v_project_id;
+    end if;
   end if;
 
   if ((old.resource_id is null and new.resource_id is not null) or
