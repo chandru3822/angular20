@@ -200,7 +200,7 @@ public class CustomFieldValueController {
     return ResponseEntity.ok(result.toString());
   }
 
-  @PostMapping(value = "/api/v1/flow/customFieldValues/event/{projectProcessStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/event/{projectProcessStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> updateEventCustomFieldValues(@RequestBody List<CustomFieldValue> values,
                                                              @PathVariable Long projectProcessStepEventId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepEventId, ObjectType.EVENT.textValue());
