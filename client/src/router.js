@@ -592,6 +592,17 @@ const router = new Router({
                       return accessDenied()
                     }
                   },
+                },
+          {
+                  path: 'email',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                    if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                      return import (/* webpackChunkName: "company" */ './views/flow/settings/defaults/EmailSettings.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  },
                 }
               ]
             }, {

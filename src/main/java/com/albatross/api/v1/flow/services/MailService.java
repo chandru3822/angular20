@@ -230,7 +230,7 @@ public class MailService {
       params.put("emailAddress", emailAddress.getEmailAddress());
       params.put("companyId", emailAddress.getCompanyId());
       params.put("createdById", emailAddress.getCreatedById());
-      params.put("isDefault", emailAddress.isDefault());
+      params.put("isDefault", emailAddress.getIsDefault());
 
       sqlCache.update("email.saveFromAddress", params);
     }

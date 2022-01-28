@@ -37,6 +37,11 @@
             label: 'Configurations',
             path: `/settings/company/configurations`,
             display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+          },
+          {
+            label: 'Email',
+            path: `/settings/company/email`,
+            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
           }
         ]
       }

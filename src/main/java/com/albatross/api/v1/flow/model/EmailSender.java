@@ -11,9 +11,10 @@ import java.util.Date;
 public class EmailSender {
     private Long id;
     private String emailAddress;
+    private String senderName;
     private Boolean archived;
     private Date dateCreated, dateModified;
     private Long createdById, modifiedById;
     private Long companyId;
-    private boolean isDefault;
+    private Boolean isDefault;
 }

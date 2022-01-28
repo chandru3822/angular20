@@ -54,7 +54,8 @@
                    ems.modified_by_id as "modifiedById",
                    ems.date_created,
                    ems.created_by_id as "createdById",
-                   ems.archived
+                   ems.archived,
+                   ems.is_default as "isDefault"
             FROM flow.email_sender ems
             WHERE archived is not true
             AND company_id = :companyId
