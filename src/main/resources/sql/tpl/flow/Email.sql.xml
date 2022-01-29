@@ -51,6 +51,7 @@
                    ems.id,
                    ems.email_address,
                    ems.sender_name,
+                   ems.company_id,
                    ems.date_modified,
                    ems.modified_by_id as "modifiedById",
                    ems.date_created,

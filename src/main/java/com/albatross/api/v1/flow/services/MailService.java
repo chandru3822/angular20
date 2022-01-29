@@ -215,6 +215,10 @@ public class MailService {
 
     public List<EmailSender> getEmailSenders() {
         Long companyId = getCompanyIdFromUser();
+        return getEmailSenders(companyId);
+    }
+
+    public List<EmailSender> getEmailSenders(Long companyId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("companyId", companyId);
         try {
@@ -242,11 +246,12 @@ public class MailService {
         params.put("emailAddress", emailAddress.getEmailAddress());
         params.put("modifiedBy", emailAddress.getModifiedById());
         params.put("isDefault", emailAddress.getIsDefault());
+        params.put("companyId", emailAddress.getCompanyId());
         sqlCache.update("email.updateEmailAddress", params);
         if (updateDefault){
             sqlCache.update("email.changeDefaultAddress", params);
         }
-        return this.getEmailSenders();
+        return this.getEmailSenders(emailAddress.getCompanyId());
         //todo: this function makes three separate database calls; I don't know if that's optimized, so let me know if we need to change this
     }
 
@@ -324,6 +329,6 @@ public class MailService {
 
     private Long getCompanyIdFromUser() {
         User user = securityService.getCurrentUser();
-        return null == user ? 3 : user.getCompanyId(); //sitewide admin doesn't necessarily have user for current company
+        return null == user ? 3 : user.getCompanyId(); //todo: sitewide admin doesn't necessarily have user for current company, so we need to figure out how to get the right id
     }
 }
