@@ -47,7 +47,7 @@
                 <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="index === editIndex">
+                <v-btn small text @click="updateEmailAddress(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
                 <v-btn small text @click="editIndex = null" v-if="index === editIndex">
@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import {getRequest, getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers";
+import {getRequest, putRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 
 export default {
@@ -80,7 +80,8 @@ export default {
       ],
       emailValues: [],
       companyId: this.$store.state.user.details.companyId,
-      editIndex: null
+      editIndex: null,
+      confirmChangeDefault: false
     }
   },
   async created() {
@@ -96,6 +97,20 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateEmailAddress(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: this.confirmChangeDefault})
+        this.emailValues = data;
+        this.editIndex = null
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Email Address')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

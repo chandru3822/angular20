@@ -50,6 +50,7 @@
             SELECT
                    ems.id,
                    ems.email_address,
+                   ems.sender_name,
                    ems.date_modified,
                    ems.modified_by_id as "modifiedById",
                    ems.date_created,
@@ -70,6 +71,26 @@
 	    :companyId, :createdById, :isDefault)
 		]]>
 	</email.saveFromAddress>
+
+	<email.updateEmailAddress>
+		<![CDATA[
+		update flow.email_sender
+		set sender_name = :senderName, email_address = :emailAddress, modified_by_id = :modifiedBy, date_modified = now()
+		where id = :id
+		]]>
+	</email.updateEmailAddress>
+
+	<email.changeDefaultAddress>
+		<![CDATA[
+		update flow.email_sender
+    		set is_default =
+		case
+			when id = :id then true
+			when id != :id then false
+		end
+		where company_id = :companyId;
+		]]>
+	</email.changeDefaultAddress>
 
 	<email.deleteEmailAddress><![CDATA[
         update flow.email_sender set archived = true, date_modified = now() where id = :id

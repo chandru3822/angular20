@@ -218,7 +218,7 @@ public class MailService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("companyId", companyId);
         try {
-            return sqlCache.query("email.getSendersByCompanyId", null, EmailSender.class);
+            return sqlCache.query("email.getSendersByCompanyId", params, EmailSender.class);
         }
         catch (Exception e){
             return null;
@@ -233,6 +233,21 @@ public class MailService {
       params.put("isDefault", emailAddress.getIsDefault());
 
       sqlCache.update("email.saveFromAddress", params);
+    }
+
+    public List<EmailSender> updateSenderEmailAddress(EmailSender emailAddress, boolean updateDefault){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", emailAddress.getId());
+        params.put("senderName", emailAddress.getSenderName());
+        params.put("emailAddress", emailAddress.getEmailAddress());
+        params.put("modifiedBy", emailAddress.getModifiedById());
+        params.put("isDefault", emailAddress.getIsDefault());
+        sqlCache.update("email.updateEmailAddress", params);
+        if (updateDefault){
+            sqlCache.update("email.changeDefaultAddress", params);
+        }
+        return this.getEmailSenders();
+        //todo: this function makes three separate database calls; I don't know if that's optimized, so let me know if we need to change this
     }
 
     public void deleteFromEmailAddress(Long emailAddressId) {
@@ -309,7 +324,6 @@ public class MailService {
 
     private Long getCompanyIdFromUser() {
         User user = securityService.getCurrentUser();
-        Long companyId = null == user ? 3 : user.getCompanyId(); //sitewide admin doesn't necessarily have user for current company
-       return companyId;
+        return null == user ? 3 : user.getCompanyId(); //sitewide admin doesn't necessarily have user for current company
     }
 }

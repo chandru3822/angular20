@@ -24,6 +24,11 @@ public class EmailAddressController {
         mailService.saveFromEmailAddress(emailSenderAddress);
     }
 
+    @PutMapping(value="/updateEmailAddress")
+    public List<EmailSender> updateSenderEmailAddress (@RequestBody EmailSender emailSenderAddress, @RequestParam boolean updateDefault) {
+        return mailService.updateSenderEmailAddress(emailSenderAddress, updateDefault);
+    }
+
     @PutMapping(value="/archiveEmailAddress")
     public void deleteFromEmailAddress(@RequestBody Long emailSenderId) {
         mailService.deleteFromEmailAddress(emailSenderId);
