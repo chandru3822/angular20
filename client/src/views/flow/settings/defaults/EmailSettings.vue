@@ -23,6 +23,7 @@
             <v-text-field text
                           type="text"
                           placeholder="Sender Name"
+                          :error="!newEmail.senderName && displayErrors"
                           v-model="newEmail.senderName">
             </v-text-field>
           </v-col>
@@ -30,6 +31,7 @@
             <v-text-field text
                           type="text"
                           placeholder="Email Address"
+                          :error="!newEmail.emailAddress && displayErrors"
                           v-model="newEmail.emailAddress">
             </v-text-field>
           </v-col>
@@ -119,7 +121,8 @@ export default {
       editIndex: null,
       confirmChangeDefault: false,
       newEmail: {},
-      addNew: false
+      addNew: false,
+      displayErrors: false
     }
   },
   async created() {
@@ -157,6 +160,12 @@ export default {
     async addEmail() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        if(!this.newEmail.emailAddress || !this.newEmail.senderName ) {
+          this.displayErrors = true;
+          throw {data: false};
+        } else {
+          this.displayErrors = false;
+        }
         this.newEmail.companyId=this.companyId;
         const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', this.newEmail, {updateDefault: this.confirmChangeDefault})
         this.emailValues = data;
@@ -164,7 +173,9 @@ export default {
         this.addNew = false;
         handleHidingGlobalLoader(this, status)
       } catch (e) {
-        console.error('*** ERROR ***', e)
+        if(e.data != false) {
+          console.error('*** ERROR ***', e)
+        }
         this.snackbar = getSnackbar('ERROR', 'Error Adding Email Address')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
