@@ -213,11 +213,6 @@ public class MailService {
     return counter.get();
   }
 
-    public List<EmailSender> getEmailSenders() {
-        Long companyId = getCompanyIdFromUser();
-        return getEmailSenders(companyId);
-    }
-
     public List<EmailSender> getEmailSenders(Long companyId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("companyId", companyId);

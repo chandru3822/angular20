@@ -63,7 +63,13 @@
 </template>
 
 <script>
-import {getRequest, putRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers";
+import {
+  getRequest,
+  putRequestWithRequestParams,
+  getSnackbar,
+  handleHidingGlobalLoader,
+  getRequestWithParams
+} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 
 export default {
@@ -91,7 +97,7 @@ export default {
     async getEmailSenders() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/emailAddress`, null)
+        const {data, status} = await getRequest(`/emailAddress/${this.companyId}`, null)
         this.emailValues = data;
         handleHidingGlobalLoader(this, status)
       } catch (e) {

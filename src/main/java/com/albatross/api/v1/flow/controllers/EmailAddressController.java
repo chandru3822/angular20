@@ -14,9 +14,9 @@ public class EmailAddressController {
     @Autowired
     private MailService mailService;
 
-    @GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<EmailSender> getEmailSenders() throws Exception {
-        return mailService.getEmailSenders();
+    @GetMapping(value="/{companyId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<EmailSender> getEmailSenders( @PathVariable Long companyId) throws Exception {
+        return mailService.getEmailSenders(companyId);
     }
 
     @PostMapping(value="/saveEmailAddress")
