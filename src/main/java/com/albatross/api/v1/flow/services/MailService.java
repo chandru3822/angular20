@@ -224,14 +224,21 @@ public class MailService {
         }
     }
 
-    public void saveFromEmailAddress(EmailSender emailAddress) {
+    public List<EmailSender> saveFromEmailAddress(EmailSender emailAddress, boolean updateDefault) {
       HashMap<String, Object> params = new HashMap<>();
-      params.put("emailAddress", emailAddress.getEmailAddress());
-      params.put("companyId", emailAddress.getCompanyId());
-      params.put("createdById", emailAddress.getCreatedById());
-      params.put("isDefault", emailAddress.getIsDefault());
+        User user = securityService.getCurrentUser();
+        params.put("emailAddress", emailAddress.getEmailAddress());
+        params.put("senderName", emailAddress.getSenderName());
+        params.put("companyId", emailAddress.getCompanyId());
+      params.put("createdById", user.getId());
 
-      sqlCache.update("email.saveFromAddress", params);
+      Long id = sqlCache.updateReturningId("email.saveFromAddress", params, "id").longValue();
+        if (updateDefault){
+            params.put("isDefault", emailAddress.getIsDefault());
+            params.put("id", id);
+            sqlCache.update("email.changeDefaultAddress", params);
+        }
+        return this.getEmailSenders(emailAddress.getCompanyId());
     }
 
     public List<EmailSender> updateSenderEmailAddress(EmailSender emailAddress, boolean updateDefault){

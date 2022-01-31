@@ -20,8 +20,8 @@ public class EmailAddressController {
     }
 
     @PostMapping(value="/saveEmailAddress")
-    public void saveFromEmailAddress(@RequestBody EmailSender emailSenderAddress) {
-        mailService.saveFromEmailAddress(emailSenderAddress);
+    public List<EmailSender> saveFromEmailAddress(@RequestBody EmailSender emailSenderAddress, @RequestParam boolean updateDefault) {
+        return mailService.saveFromEmailAddress(emailSenderAddress, updateDefault);
     }
 
     @PutMapping(value="/updateEmailAddress")

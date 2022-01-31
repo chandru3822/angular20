@@ -67,9 +67,9 @@
 
 	<email.saveFromAddress>
 		<![CDATA[
-		INSERT INTO flow.email_sender(email_address, company_id, created_by_id, is_default)
-		VALUES ((select :emailAddress where not exists (select id from flow.email_sender where email_address = :emailAddress)),
-	    :companyId, :createdById, :isDefault)
+		INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id, date_created)
+		select :emailAddress, :senderName, :companyId, :createdById, now()
+		where not exists(select id from flow.email_sender where email_address = :emailAddress)
 		]]>
 	</email.saveFromAddress>
 

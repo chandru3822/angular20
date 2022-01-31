@@ -4,11 +4,40 @@
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">Email Settings</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text v-if="addNew" @click="addEmail()">
+              <v-icon>save</v-icon>
+            </v-btn>
+            <v-btn text @click="[addNew = !addNew, newEmail = {}]">
+              <span>{{addNew ? 'Cancel' : 'Add New'}}</span>
+            </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
       </v-col>
     </v-row>
-    <v-form ref="emailSettingsForm" v-model="validForm">
-      <v-col cols="12">
+    <v-col cols="12">
+      <v-form v-if="addNew" ref="emailSettingsForm" v-model="validForm">
+        <v-row>
+          <v-col>
+            <v-text-field text
+                          type="text"
+                          placeholder="Sender Name"
+                          v-model="newEmail.senderName">
+            </v-text-field>
+          </v-col>
+          <v-col>
+            <v-text-field text
+                          type="text"
+                          placeholder="Email Address"
+                          v-model="newEmail.emailAddress">
+            </v-text-field>
+          </v-col>
+          <v-col>
+            <v-checkbox v-model="newEmail.isDefault" label="Default" @click="confirmChangeDefault = true"></v-checkbox>
+          </v-col>
+        </v-row>
+      </v-form>
         <v-data-table
             :headers="headers"
             :items="emailValues"
@@ -58,7 +87,7 @@
           </template>
         </v-data-table>
       </v-col>
-    </v-form>
+
   </v-container>
 </template>
 
@@ -66,6 +95,7 @@
 import {
   getRequest,
   putRequestWithRequestParams,
+  postRequestWithRequestParams,
   getSnackbar,
   handleHidingGlobalLoader,
   getRequestWithParams
@@ -82,12 +112,14 @@ export default {
         {text: 'Sender Name', value: 'name', show: true},
         {text: 'Email Address', value: 'value', show: true},
         {text: 'Default', value: 'isDefault', show: true},
-        {text: null, value: 'icons', show: true}
+        {text: null, value: 'icons', show: true, sortable: false}
       ],
       emailValues: [],
       companyId: this.$store.state.user.details.companyId,
       editIndex: null,
-      confirmChangeDefault: false
+      confirmChangeDefault: false,
+      newEmail: {},
+      addNew: false
     }
   },
   async created() {
@@ -120,6 +152,24 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+
+    async addEmail() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newEmail.companyId=this.companyId;
+        const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', this.newEmail, {updateDefault: this.confirmChangeDefault})
+        this.emailValues = data;
+        this.newEmail = null;
+        this.addNew = false;
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Email Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+
     }
   }
 }
