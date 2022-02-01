@@ -257,9 +257,10 @@ public class MailService {
         //todo: this function makes three separate database calls; I don't know if that's optimized, so let me know if we need to change this
     }
 
-    public void deleteFromEmailAddress(Long emailAddressId) {
+    public void deleteFromEmailAddress(Long emailAddressId, Long userId) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", emailAddressId);
+      params.put("modifiedBy", userId);
       sqlCache.update("email.deleteEmailAddress", params);
     }
 

@@ -30,7 +30,7 @@ public class EmailAddressController {
     }
 
     @PutMapping(value="/archiveEmailAddress")
-    public void deleteFromEmailAddress(@RequestBody Long emailSenderId) {
-        mailService.deleteFromEmailAddress(emailSenderId);
+    public void deleteFromEmailAddress(@RequestBody EmailSender emailSenderAddress) {
+        mailService.deleteFromEmailAddress(emailSenderAddress.getId(), emailSenderAddress.getModifiedById());
     }
 }

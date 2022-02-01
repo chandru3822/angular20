@@ -94,7 +94,7 @@
 	</email.changeDefaultAddress>
 
 	<email.deleteEmailAddress><![CDATA[
-        update flow.email_sender set archived = true, date_modified = now() where id = :id
+        update flow.email_sender set archived = true, modified_by_id = :modifiedBy, date_modified = now() where id = :id
     ]]></email.deleteEmailAddress>
 
 </sql>

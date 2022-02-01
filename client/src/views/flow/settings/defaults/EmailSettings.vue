@@ -84,6 +84,7 @@
                 <v-btn small text @click="editIndex = null" v-if="index === editIndex">
                   cancel
                 </v-btn>
+                <v-btn small text v-if="index !== editIndex" @click="deleteEmailAddress(item)" :disabled="item.isDefault"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -96,11 +97,11 @@
 <script>
 import {
   getRequest,
+  putRequest,
   putRequestWithRequestParams,
   postRequestWithRequestParams,
   getSnackbar,
-  handleHidingGlobalLoader,
-  getRequestWithParams
+  handleHidingGlobalLoader
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 
@@ -118,6 +119,7 @@ export default {
       ],
       emailValues: [],
       companyId: this.$store.state.user.details.companyId,
+      userId: this.$store.state.user.details.id,
       editIndex: null,
       confirmChangeDefault: false,
       newEmail: {},
@@ -145,6 +147,8 @@ export default {
     async updateEmailAddress(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        item.modifiedById = this.userId;
+        item.companyId = this.companyId;
         const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: this.confirmChangeDefault})
         this.emailValues = data;
         this.editIndex = null
@@ -166,6 +170,7 @@ export default {
         } else {
           this.displayErrors = false;
         }
+        this.newEmail.createdById = this.userId;
         this.newEmail.companyId=this.companyId;
         const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', this.newEmail, {updateDefault: this.confirmChangeDefault})
         this.emailValues = data;
@@ -180,7 +185,27 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
 
+    async deleteEmailAddress(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        if(item.isDefault || this.confirmChangeDefault){
+          throw {data: false}
+        }
+        item.modifiedById = this.userId;
+        const {status} = await putRequest('/emailAddress/archiveEmailAddress', item)
+        this.emailValues.splice(this.emailValues.indexOf(item), 1);//remove deleted address from list
+        this.editIndex = null
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        if(e.data != false) {
+          console.error('*** ERROR ***', e)
+        }
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Email Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }
