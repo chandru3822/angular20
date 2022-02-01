@@ -69,9 +69,6 @@
           {{ action.actionName }}
         </v-btn>
       </div>
-      <div class="error-text" v-if="eventActionMissingRequirements">
-        {{ this.saveErrorMsg }}
-      </div>
       <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="my-2">
         <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
           Upload Documents
@@ -83,27 +80,37 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </div>
-      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar">
-        <v-toolbar-title>
-          Details/Custom Fields
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                 @click="setSplitColumnValue()">
-            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-            <v-icon v-else>mdi-menu</v-icon>
-          </v-btn>
-          <div>
-            <v-btn class="white--text mt-3"
-                   @click="checkFieldsForUnique()"
-                   :disabled="!userCanEdit"
-                   color="primaryButton">
-              Save Fields
+      <div class="cfg-detail-header fixed-toolbar">
+        <v-toolbar flat color="secondary">
+          <v-toolbar-title>
+            <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                   class="px-0" target="_blank"
+                   :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+              <v-icon>mdi-calendar</v-icon>
             </v-btn>
-          </div>
-        </v-toolbar-items>
-      </v-toolbar>
+            Event Details
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+                   @click="setSplitColumnValue()">
+              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+              <v-icon v-else>mdi-menu</v-icon>
+            </v-btn>
+            <div>
+              <v-btn class="white--text mt-3"
+                     @click="checkFieldsForUnique()"
+                     :disabled="!userCanEdit || getReadOnly()"
+                     color="primaryButton">
+                Save Fields
+              </v-btn>
+            </div>
+          </v-toolbar-items>
+        </v-toolbar>
+        <div class="error-text pb-4" v-if="eventActionMissingRequirements">
+          {{ this.saveErrorMsg }}
+        </div>
+      </div>
       <v-card class="pa-4 square-card mb-2"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
         A state and postal code are required on the project to continue with scheduling. Please return to the
@@ -238,7 +245,7 @@
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card class="px-4 square-card"  v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+          <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
               <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
@@ -424,17 +431,17 @@ export default {
         await Promise.all(requests).then((statusVals) => {
           let success = true
           statusVals.forEach(status => {
-            if(status !== 200) {
+            if (status !== 200) {
               success = false
             }
           })
-          if(success) {
+          if (success) {
             //this was causing issues if you moved too quickly between events
             this.eventDetailsLoading = false
           }
         })
-      } catch(e) {
-        console.log('*** ERROR ***',e)
+      } catch (e) {
+        console.log('*** ERROR ***', e)
 
       }
     },
@@ -455,47 +462,48 @@ export default {
       //will only be used if there is an error shown here
       this.saveErrorMsg = 'Additional fields are required to perform the selected action.'
 
-      let requiredFields = action?.requiredFields
-      if ((this.actionRequiresStart && !this.selectedEvent.startTime) || (this.actionRequiresEnd && !this.selectedEvent.endTime) || (this.actionRequiresResource && !this.selectedEvent.resourceId)) {
+      let cfHasMissing = this.needsRequiredField(action.requiredFields)
+
+      if ((!this.selectedEvent.startTime) ||
+        (this.actionRequiresEnd && !this.selectedEvent.endTime) ||
+        (this.actionRequiresResource && !this.selectedEvent.resourceId) || cfHasMissing) {
+
         this.eventActionMissingRequirements = true
-      } else if (requiredFields.length > 0) {
-        let fieldValueMissing = false
-        this.selectedEvent?.customFieldGroups?.forEach(cfg => {
-          cfg?.customFieldValues?.forEach(cf => {
-            let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
-            if (match) {
-              if ( // check each data type to see if it has a value
-                (cf.dataTypeId === 1 && null == cf.dateValue) ||
-                (cf.dataTypeId === 2 && null == cf.timestampValue) ||
-                (cf.dataTypeId === 3 && null == cf.booleanValue) ||
-                (cf.dataTypeId === 4 && null == cf.numericValue) ||
-                (cf.dataTypeId === 5 && null == cf.textValue) ||
-                (cf.dataTypeId === 6 && null == cf.intValue) ||
-                (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
-                (cf.dataTypeId === 8 && null == cf.intValue) ||
-                (cf.dataTypeId === 9 && null == cf.intValue)
-              ) {
-                cf.required = true
-                fieldValueMissing = true
-                this.eventActionMissingRequirements = true
-              }
-            } else {
-              cf.required = false
-            }
-          })
-        })
-        //if there wasn't a match, or there was a match but no missing data, then run the event
-        if (!fieldValueMissing) {
-          this.eventActionMissingRequirements = false
-          //update the cfv's
-          await this.updateFieldGroups()
-          //then do the event action which will save the event details as well
-          await this.doEventAction(action)
-        }
+
       } else {
+        //if there wasn't a required field then run the event
         this.eventActionMissingRequirements = false
         await this.doEventAction(action)
       }
+    },
+    needsRequiredField(requiredFields) {
+      let fieldValueMissing = false
+
+      this.selectedEvent?.customFieldGroups?.forEach(cfg => {
+        cfg?.customFieldValues?.forEach(cf => {
+          let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+          if (match) {
+            if ( // check each data type to see if it has a value
+              (cf.dataTypeId === 1 && null == cf.dateValue) ||
+              (cf.dataTypeId === 2 && null == cf.timestampValue) ||
+              (cf.dataTypeId === 3 && null == cf.booleanValue) ||
+              (cf.dataTypeId === 4 && null == cf.numericValue) ||
+              (cf.dataTypeId === 5 && null == cf.textValue) ||
+              (cf.dataTypeId === 6 && null == cf.intValue) ||
+              (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
+              (cf.dataTypeId === 8 && null == cf.intValue) ||
+              (cf.dataTypeId === 9 && null == cf.intValue)
+            ) {
+              cf.required = true
+              fieldValueMissing = true
+              this.eventActionMissingRequirements = true
+            }
+          } else {
+            cf.required = false
+          }
+        })
+      })
+      return fieldValueMissing
     },
     async getStatusesAssignedToEvent() {
       try {
@@ -547,10 +555,12 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
+          id: this.selectedEvent.id,
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
-          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId
+          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
+          customFieldValues: this.dirtyCfvs
         }
 
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
@@ -564,10 +574,10 @@ export default {
         this.$emit('refresh-upcoming-pps')
         this.$emit('refresh-upcoming-events')
 
-        if(data?.processStepStatusTypeId !== 1) {
+        if (data?.processStepStatusTypeId !== 1) {
           //if ps root status is not active then go back to project screen
           this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
-        } else if(data?.eventStatusTypeId !== 1) {
+        } else if (data?.eventStatusTypeId !== 1) {
           //if ps root status is active but event root status is not then go back to ps
           let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
           this.$router.push(path)
@@ -596,12 +606,17 @@ export default {
     },
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
-      return getEventCustomFieldReadOnly(this.$store, field)
-        || !this.userCanEdit
+      let fieldReadOnly = false
+      if (null != field) {
+        fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
+      }
+      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+        || fieldReadOnly || !this.userCanEdit
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
       // if events admin then they can edit any event fields, otherwise idk???
-      return getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
+      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+        || getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
         || !this.userCanEdit
     },
     populateDirtyCfvs(field) {
@@ -623,11 +638,12 @@ export default {
     // },
     getEventDetails: async function () {
       try {
-        const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
+        const {
+          data,
+          status
+        } = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
         this.selectedEvent = data
         //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
-        console.log('randaLogger',this.selectedEvent)
-        console.log('ddd',data)
         this.selectedEvent.allowAllUserDeletion = data.startTime === null
         //have to reset the pps stuff too in case they just go directly to the url
         this.$store.commit(ProjectMutations.SET_PPS, {
@@ -643,7 +659,7 @@ export default {
           this.userCanScheduleRemoteLeadAllocation()
         }
         //this was causing an error if you clicked too fast between events
-        if(data.id) {
+        if (data.id) {
           await this.getStatusesAssignedToEvent()
         }
         return status
@@ -667,12 +683,19 @@ export default {
       }
     },
     async saveEventDetails() {
-      let isNewEvent = this.selectedEvent.isNew
       this.eventSaveOverrideRequired = true
       this.eventActionMissingRequirements = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, this.selectedEvent)
+        let params = {
+          id: this.selectedEvent.id,
+          startTime: this.selectedEvent.startTime,
+          endTime: this.selectedEvent.endTime,
+          resourceId: this.selectedEvent.resourceId,
+          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
+          customFieldValues: this.dirtyCfvs
+        }
+        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
         this.selectedEvent = data
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
@@ -681,30 +704,10 @@ export default {
         }
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Default Fields')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async updateFieldGroups() {
-      if (this.dirtyCfvs?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.processStep.customFieldGroups = this.customFieldGroups
-        try {
-          // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
-          // save dirty custom field values
-          this.$refs.eventFieldForm.resetValidation()
-          const {data} = await postRequest(`/customFieldValues/event/${this.selectedEvent.id}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
       }
     },
     async getAvailableTimeSlots(remote) {
@@ -794,43 +797,44 @@ export default {
       }
     },
     async checkFieldsForUnique() {
-      if (null != this.selectedEvent.startTime) {
-        let validSave = true
-        let resource = null
-        if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
-          let startTime = this.selectedEvent.startTime
-          let endTime = this.selectedEvent.endTime
-          resource = this.selectedEvent.resourceId
-          if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
-            this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.fieldsSaving = false
-            validSave = false
-          } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-            this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.fieldsSaving = false
-            validSave = false
-          } else if (startTime && endTime && !resource) {
-            //resource required if times are saving
-            this.snackbar = getSnackbar('ERROR', 'Resource is required')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.fieldsSaving = false
-            validSave = false
-          }
+      let validSave = true
+      let startTime = this.selectedEvent.startTime
+      let endTime = this.selectedEvent.endTime
+
+      //if is for closer appt
+      if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
+        if (!startTime || !endTime || !this.selectedEvent.resourceId) {
+          validSave = false
+          this.eventActionMissingRequirements = true
+          this.actionRequiresEnd = !endTime
+          this.actionRequiresResource = !this.selectedEvent.resourceId
+          this.saveErrorMsg = 'Additional fields are required to save this event.'
+        } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+          validSave = false
+          this.eventActionMissingRequirements = true
+          this.saveErrorMsg = 'End time must be after start time'
         }
-        if (validSave) {
-          this.saveEventDetails()
-          this.updateFieldGroups()
+      } else if (null != this.selectedEvent.startTime) {
+        //for all other types just compare start to end if end not null
+        if (startTime && endTime && !moment(endTime).isAfter(startTime)){
+          validSave = false
+          this.eventActionMissingRequirements = true
+          this.saveErrorMsg = 'End time must be after start time'
         }
       } else {
         //only startTime is required to save fields
+        validSave = false
         this.actionRequiresEnd = false
         this.actionRequiresResource = false
-        this.eventActionMissingRequirements = true
         this.saveErrorMsg = 'Start Time is required to save the event fields'
         //dont do this for now. makes the page look weird after save
         // document.getElementById('event-header').scrollIntoView()
+      }
+
+      //after everything, only save if valid
+      if (validSave) {
+        this.eventActionMissingRequirements = false
+        this.saveEventDetails()
       }
     },
     filterProjectProcessStepEvents() {
@@ -881,6 +885,14 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.cfg-detail-header {
+  background-color: var(--v-secondary-base) !important;
+  margin-left: -10px;
+  margin-right: -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .action-subheader {
   width: 186px;
   margin-top: 20px;

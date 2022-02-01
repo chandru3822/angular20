@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
@@ -32,10 +33,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-
-//@TODO: Had to make private functions public in this class to be able to unit test due to this issue. https://github.com/powermock/powermock/issues/929
-// I don't like it and would rather have them be private. Change back if/when possible
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -193,20 +190,29 @@ public class ProjectProcessStepEventService {
     return true;
   }
 
-  public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long eventId, ProjectProcessStepEvent ppsEvent) throws Exception {
-    User currentUser = securityService.getCurrentUser();
+  public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long eventId, ProjectProcessStepEventController.SaveEventRequest saveEvent) throws Exception {
+    if(null != saveEvent.getStartTime() && null != saveEvent.getEndTime() && (saveEvent.getEndTime().before(saveEvent.getStartTime()) || saveEvent.getEndTime().equals(saveEvent.getStartTime()))  ) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start Time must be before End Time", new Exception());
+    } else {
+      User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", eventId);
-    params.put("startTime", ppsEvent.getStartTime());
-    params.put("endTime", ppsEvent.getEndTime());
-    params.put("resourceId", ppsEvent.getResourceId());
-    params.put("companyEventStatusTypeId", ppsEvent.getCompanyEventStatusTypeId());
-    params.put("modifiedById", currentUser.getId());
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", eventId);
+      params.put("startTime", saveEvent.getStartTime());
+      params.put("endTime", saveEvent.getEndTime());
+      params.put("resourceId", saveEvent.getResourceId());
+      params.put("companyEventStatusTypeId", saveEvent.getCompanyEventStatusTypeId());
+      params.put("modifiedById", currentUser.getId());
 
-    sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+      sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
 
-    return getPpsEvent(ppsEvent.getId());
+      if(null != saveEvent.getCustomFieldValues() && !saveEvent.getCustomFieldValues().isEmpty()) {
+        //the fields sent in here are the dirty fields, save those
+        customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
+      }
+
+      return getPpsEvent(saveEvent.getId());
+    }
   }
 
   public Optional<ProcessStepEventAction> getPpsEventAction(Long ppsEventId, Long actionId) throws Exception {

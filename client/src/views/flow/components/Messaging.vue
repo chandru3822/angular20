@@ -218,7 +218,7 @@ font-size: 16px;
 
 .message-container {
   min-height: 400px;
-  height: calc(100% - 65px);
+  height: calc(100% - 10px);
   margin-top: 5px;
 }
 

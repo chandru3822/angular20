@@ -90,7 +90,7 @@
             </v-dialog>
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <div>
+          <v-toolbar-items class="owner-toolbar-items">
             <div v-if="!displayChangeOwner">
               <div v-if="processStep.owner && processStep.owner.userId">
                 <v-avatar
@@ -110,6 +110,7 @@
             <div v-if="displayChangeOwner">
               <v-autocomplete v-model="processStep.owner"
                               :items="availableOwners"
+                              class="mt-1"
                               label="Select Owner"
                               item-text="fullName"
                               :readonly="!userCanEdit"
@@ -122,17 +123,20 @@
               >
               </v-autocomplete>
             </div>
-            <v-btn text x-small v-if="userCanEdit" class="change-owner-button"
-                   @click="displayChangeOwner = !displayChangeOwner">
-              <span v-if="displayChangeOwner">cancel</span>
-              <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
-              <span v-else>add owner</span>
-            </v-btn>
-            <v-btn text x-small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
-                   class="change-owner-button" @click="removeOwner">
-              remove
-            </v-btn>
-          </div>
+            <div>
+              <v-btn text small v-if="userCanEdit" class="change-owner-button"
+                     :class="{'mt-2': displayChangeOwner}"
+                     @click="displayChangeOwner = !displayChangeOwner">
+                <span v-if="displayChangeOwner">cancel</span>
+                <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
+                <span v-else>add owner</span>
+              </v-btn>
+              <v-btn text small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
+                     class="change-owner-button" @click="removeOwner">
+                remove
+              </v-btn>
+            </div>
+          </v-toolbar-items>
         </v-toolbar>
       </v-col>
       <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature && (
@@ -143,7 +147,7 @@
           All Events
           <v-autocomplete
             v-model="eventToAdd"
-            v-if="processStepEvents && processStepEvents.length > 0"
+            v-if="userCanAddEvents && processStepEvents && processStepEvents.length > 0"
             :items="processStepEvents"
             placeholder="Select Event to add"
             item-text="eventName"
@@ -205,9 +209,12 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </v-col>
+      <v-col cols="12" style="height: 0; padding: 0 !important;">
+      <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
+      </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title>
-          Details/Custom Fields
+          Process Step Details
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -220,7 +227,7 @@
             <v-btn
               color="primaryCustom"
               class="white--text mt-3"
-              :disabled="fieldsSaving"
+              :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
             >Save Fields
             </v-btn>
@@ -317,7 +324,7 @@ import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/proces
 import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
-import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import {getCustomFieldReadOnly, getEventCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
@@ -351,6 +358,7 @@ export default {
       uploadModalWidth: 400,
       attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+      userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
       userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
@@ -634,8 +642,12 @@ export default {
     },
     getReadOnly: function (field) {
       // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
+      let fieldReadOnly = false
+      if(null != field) {
+        fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
+      }
       return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
-        || getCustomFieldReadOnly(this.$store, field)
+        || fieldReadOnly
         || !this.userCanEdit
     },
     followMultipleLinks(action) {
@@ -736,6 +748,10 @@ export default {
   font-size: 16px;
 }
 
+.owner-toolbar-items {
+  flex-direction: column;
+  text-align: right;
+}
 </style>
 <style lang="scss" scoped>
 .process-step-name {

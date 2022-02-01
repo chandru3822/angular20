@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -17,7 +18,8 @@ public class ProjectProcessStepEvent {
   private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId, companyProcessStepStatusTypeId,
     eventId, resourceId, uniqueBehaviorTypeId, eventStatusTypeId, rootProjectProcessStepStatusTypeId, //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
     processStepId, projectId;
-  private String eventName, eventStatusType, startTime, endTime, resource, processStepName, lastUpdated, dateCreated;
+  private String eventName, eventStatusType, resource, processStepName, lastUpdated, dateCreated;
+  private Timestamp startTime, endTime;
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions;

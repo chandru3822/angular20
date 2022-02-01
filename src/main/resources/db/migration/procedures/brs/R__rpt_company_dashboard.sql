@@ -31,21 +31,11 @@ BEGIN
                              partner_target
 
                       from (
-                             with first_appointment as (
-                               select pps.project_id,
-                                      min(ppse.date_created) date_created
-                               from flow.project_process_step pps
-                               inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
-                               where pps.process_step_id = 1
-                                -- and pps.process_step_complete_date is not null
-                               group by pps.project_id
-                             )
                              select 'First Time Appointments Created' as name,
                                     1                                 as milestone_type_id,
                                     (select count(1) as company_count
                                      from brs.project_details pd
-                                            inner join first_appointment fa on fa.project_id = pd.project_id
-                                     where ((fa.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                     where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                        and pd.company_id = v_company_id
                                        and pd.archived is false
                                     )                                 as company_count,

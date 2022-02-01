@@ -22,6 +22,7 @@
       :label="getFieldName()"
       :hide-details="hideDetails"
       :readonly="readonly"
+      :custom-class="readonly ? 'error--text' : ''"
       @input="callback(field)"
     />
 
@@ -36,6 +37,7 @@
       :label="getFieldName()"
       :hide-details="hideDetails"
       :readonly="readonly"
+      :custom-class="readonly ? 'error--text' : ''"
       @input="callback(field)"
     />
 
@@ -48,6 +50,8 @@
       :rules="getRequiredRule()"
       :filled="filledStyle"
       :disabled="readonly"
+      :readonly="readonly"
+      :class="{'error--text': readonly}"
       :ripple="false"
       @change="callback(field)"
     />
@@ -57,6 +61,8 @@
       text
       :required="required"
       :readonly="readonly"
+      :disabled="readonly"
+      :class="{'error--text': readonly}"
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"
@@ -74,6 +80,7 @@
       :required="required"
       :readonly="readonly"
       :disabled="readonly"
+      :class="{'error--text': readonly}"
       placeholder=" "
       :rules="getRequiredRule()"
       :filled="filledStyle"
@@ -89,6 +96,7 @@
       :required="required"
       :readonly="readonly"
       :disabled="readonly"
+      :class="{'error--text': readonly}"
       :label="getFieldName()"
       :hide-details="hideDetails"
       placeholder=" "
@@ -108,6 +116,7 @@
       :clearable="!readonly"
       :readonly="readonly"
       :disabled="readonly"
+      :class="{'error--text': readonly}"
       :loading="isLoading"
       placeholder=" "
       :filled="filledStyle"
@@ -141,6 +150,7 @@
           :clearable="!readonly"
           :readonly="readonly"
           :disabled="readonly"
+          :class="{'error--text': readonly}"
           :rules="getRequiredRule()"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -167,6 +177,7 @@
           :filled="filledStyle"
           :readonly="readonly"
           :disabled="readonly"
+          :class="{'error--text': readonly}"
           :items="field.listOfValues"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -198,6 +209,7 @@
           :hide-details="hideDetails"
           :readonly="readonly"
           :disabled="readonly"
+          :class="{'error--text': readonly}"
           :rules="getRequiredRule()"
           placeholder=" "
           item-value="id"

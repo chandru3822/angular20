@@ -320,10 +320,10 @@ where ot.id = :objectTypeId and
       cfga.archived is not true and
       cfg.archived is not true
 union
--- Not 100% sure, but currently returns no rows for any object type. seems like PS which aren't in the above query?
+-- PSs with CFGs but only ancillary fields
 select null as "smartlistFieldId",
        null as "smartlistSystemListId",
-       cfga.id as "customFieldGroupAssignmentId",
+       null as "customFieldGroupAssignmentId",
        null as "name",
        null as "customFieldSqlKey",
        null as "companySystemListId",
@@ -334,32 +334,33 @@ select null as "smartlistFieldId",
        null as "eventName",
        null as "dataTypeId",
        null as "hasListValues",
-       cdt.allow_multiple as "allowMultiple",
+       null as "allowMultiple",
        null as "listOfValues"
-from flow.custom_field_group_assignment cfga
-inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+from flow.process_step ps
+inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
+inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-inner join flow.process_step ps on ps.id = cfg.process_step_id
-inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-where cot.object_type_id = :objectTypeId and
-      cot.company_id = :companyId and
-      cfga.ancillary_custom_field_group_assignment_id is not null and
+where cfg.archived is not true and
+      ps.archived is not true and
       cfga.archived is not true and
-      cfg.archived is not true and
+      cfga.ancillary_custom_field_group_assignment_id is not null and
+      cot.company_id = :companyId and
+      cot.object_type_id = :objectTypeId and
+      -- include these results only if we're fetching process steps
+      true = case when :objectTypeId = 4 then true else false end and
       not exists (
-        select ps1.id
-         from  flow.custom_field_group_assignment cfga1
-         inner join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
-         inner join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
-         inner join flow.process_step ps1 on ps1.id = cfg1.process_step_id
-         where cot1.object_type_id = :objectTypeId and
-               cot1.company_id = :companyId and
-               cfga1.ancillary_custom_field_group_assignment_id is null and
-               cfga1.archived is not true and
-               cfg1.archived is not true and
-               ps1.id = ps.id
-    )
+        select distinct(ps1.id)
+        from  flow.custom_field_group_assignment cfga1
+            inner join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
+            inner join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
+            inner join flow.process_step ps1 on ps1.id = cfg1.process_step_id
+        where cot1.object_type_id = :objectTypeId and
+              cot1.company_id = :companyId and
+              cfga1.ancillary_custom_field_group_assignment_id is null and
+              cfga1.archived is not true and
+              cfg1.archived is not true and
+              ps1.id = ps.id
+      )
 union
 -- PSs without CFGs
 select null as "smartlistFieldId",

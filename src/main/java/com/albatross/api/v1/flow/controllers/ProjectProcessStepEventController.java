@@ -2,8 +2,10 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyEventStatusType;
+import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +50,8 @@ public class ProjectProcessStepEventController {
 
   @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long eventId,
-                                                               @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
-    return projectProcessStepEventService.savePpsEventDetails(eventId, ppsEvent);
+                                                               @RequestBody SaveEventRequest saveEvent) throws Exception {
+    return projectProcessStepEventService.savePpsEventDetails(eventId, saveEvent);
   }
 
   @GetMapping(value = "/{projectProcessStepEventId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -69,9 +72,9 @@ public class ProjectProcessStepEventController {
   public ResponseEntity<Object> performStepEventAction(@PathVariable Long ppsId,
                                                        @PathVariable Long eventId,
                                                        @PathVariable Long actionId,
-                                                       @RequestBody ProjectProcessStepEvent ppsEvent) throws Exception {
-    //save the custom field values
-    projectProcessStepEventService.savePpsEventDetails(eventId, ppsEvent);
+                                                       @RequestBody SaveEventRequest saveEvent) throws Exception {
+    //save the custom field values and default values
+    projectProcessStepEventService.savePpsEventDetails(eventId, saveEvent);
 
     //do the action
     return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
@@ -82,6 +85,13 @@ public class ProjectProcessStepEventController {
                                                                   @PathVariable Long eventId,
                                                                   @RequestBody CompanyEventStatusType status) throws Exception {
     projectProcessStepEventService.setStatus(eventId, status.getId());
+  }
+
+  @Data
+  public static class SaveEventRequest {
+    private Long id, resourceId, companyEventStatusTypeId;
+    private Timestamp startTime, endTime;
+    private List<CustomFieldValue> customFieldValues;
   }
 
 }

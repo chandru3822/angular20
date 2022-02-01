@@ -374,7 +374,7 @@ $$
   BEGIN
 
     ALTER TABLE brs.project_details
-      RENAME COLUMN permit_pack_submittal_end_time_ppscfv_id TO permit_pack_submittal_end_time_ppse_id;
+      RENAME COLUMN permit_pack_submittal_end_time_ppscfv_id TO permit_pack_submittal_ppse_id;
   EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'permit_pack_submittal_end_time_ppscfv_id does not exists';
   END;
@@ -594,7 +594,7 @@ values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, nu
        (91, 'Event Created', 'flow.project_process_step_event', 'date_created', 99999999, 3, null, null, null),
        (91, 'Event Start Time', 'flow.project_process_step_event', 'start_time', 99999999, 3, null, null, null),
        (91, 'Event End Time', 'flow.project_process_step_event', 'end_time', 99999999, 3, null, null, null),
-       (91, 'Event Resource', 'flow.user', 'concat(\"%s\".first_name, '' '', \"%s\".last_name)', 99999999, 7, 'flow.project_process_step_event', 'resource_id', null),
+       (91, 'Event Resource', 'flow.org', 'org_name', 99999999, 7, 'flow.project_process_step_event', 'resource_id', null),
        (91, 'Event Status', 'flow.company_event_status_type', 'event_status_type', 99999999, 7, 'flow.project_process_step_event', 'company_event_status_type_id', null),
        (91, 'Event Category', 'flow.event_status_type', 'event_status_type', 99999999, 7, 'flow.company_event_status_type', 'event_status_type_id', null);
 -- END SMARTLIST STUFF
@@ -971,12 +971,6 @@ values(170,'{170,206,207,171}');
 insert into flow.migration_child_process_step(project_process_id, process_step_ids)
 values(25,'{25,235,26}');
 
-alter table brs.project_detail_events_config add column  if not exists  permit_pack_submittal_start_time_ppse_id integer;
-create index if not exists pdec_permit_pack_submittal_start_time_ppse_id_idx
-  on brs.project_detail_events_config (permit_pack_submittal_start_time_ppse_id);
-alter table brs.project_detail_events_config add column  if not exists  permit_pack_submittal_resource_ppse_id integer;
-create index if not exists pdec_permit_pack_submittal_resource_ppse_id_idx
-  on brs.project_detail_events_config (permit_pack_submittal_resource_ppse_id);
 
 alter table brs.project_details drop column if exists ahj_inspection_start_time_ppse_id;
 alter table brs.project_details drop column if exists first_appointment_missed_ppsecfv_id;
@@ -998,4 +992,6 @@ insert into flow.process_step_requirement_type(process_step_requirement_type)
    where not exists (select id from flow.process_step_requirement_type where process_step_requirement_type = 'Project Status Category'));
 
 
-
+alter table flow.project_process_step_event add column if not exists cancelled_date timestamp;
+alter table flow.project_process_step_event add column if not exists completed_date timestamp;
+alter table flow.project_process_step_event add column if not exists scheduled_date timestamp;

@@ -804,7 +804,39 @@ declare
   v_sql1             text;
   v_resource_name    text;
   v_count            bigint;
+  v_value            text;
+  v_event_status_type_id integer;
 BEGIN
+  raise notice '1';
+  select est.id
+  into v_event_status_type_id
+  from flow.company_event_status_type cest
+  inner join flow.event_status_type est on cest.event_status_type_id = est.id
+  where cest.id = new.company_event_status_type_id;
+
+  if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
+    update flow.project_process_step_event
+    set cancelled_date = null,
+        completed_date = now()
+    where id = new.id;
+  elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
+    update flow.project_process_step_event
+    set cancelled_date = now(),
+        completed_date = null
+    where id = new.id;
+  else
+    update flow.project_process_step_event
+    set cancelled_date = null,
+        completed_date = null
+    where id = new.id;
+  end if;
+
+  if (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE')) then
+    update flow.project_process_step_event
+    set scheduled_date = now()
+    where id = new.id;
+
+  end if;
 
   select count(1)
   into v_count
@@ -866,15 +898,24 @@ BEGIN
           end case;
         --raise notice 'v_sql % ',v_sql;
         if x.second_field_to_update is not null then
+          if x.second_field_to_update = 'site_survey_date' then
+            case when new.start_time is null then select 'null' into v_value; else select quote_literal(new.start_time) into v_value; end case;
+            v_value = '(' || v_value || '::timestamp at time zone ' || quote_literal('UTC') ||
+                      ' at time zone ' || quote_literal('US/Mountain') || ')::date';
+
+          else
+            v_value = v_resource_name;
+          end if;
+
           case when x.update_first_value_only is false then
             --  raise notice 'am I in the first case %',v_resource_name;
             v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
-                     v_resource_name ||
+                     v_value ||
                      $$ where project_id = $$ || v_project_id;
             else
               v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
-                       v_resource_name ||
-                       $$ where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
+                       v_value ||$$ , $$||x.update_first_value_only_id||$$ =  $1.id
+                        where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
                        $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
             end case;
           -- raise notice 'v_sql1 % ',v_sql1;
@@ -909,17 +950,19 @@ BEGIN
            inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
     where up.id = new.resource_id;
 
-    update brs.project_details
-    set first_appointment         = new.start_time,
-        first_appointment_ppse_id = new.id
-    where project_id = v_project_id
-      and (first_appointment is null or
-           (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
-    update brs.project_details
-    set closer_user_id          = v_user_id,
-        closer_name             = v_closer_name,
-        closer_user_position_id = v_user_position_id
-    where project_id = v_project_id;
+    if new.start_time is not null and new.end_time is not null and new.resource_id is not null then
+      update brs.project_details
+      set first_appointment         = new.start_time,
+          first_appointment_ppse_id = new.id
+      where project_id = v_project_id
+        and (first_appointment is null or
+             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
+      update brs.project_details
+      set closer_user_id          = v_user_id,
+          closer_name             = v_closer_name,
+          closer_user_position_id = v_user_position_id
+      where project_id = v_project_id;
+    end if;
   end if;
 
   if ((old.resource_id is null and new.resource_id is not null) or
@@ -932,14 +975,14 @@ BEGIN
   end if;
 
 
-  RETURN NULL;
+  RETURN new;
 END
 $body$
   LANGUAGE plpgsql;
 
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 CREATE TRIGGER update_events_trg
-  after INSERT or update
+  after INSERT or update OF company_event_status_type_id,start_time,end_time,resource_id
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_events();
