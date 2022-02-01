@@ -644,7 +644,7 @@ export default {
       // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
       let fieldReadOnly = false
       if(null != field) {
-        fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
+        fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
       }
       return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
         || fieldReadOnly
