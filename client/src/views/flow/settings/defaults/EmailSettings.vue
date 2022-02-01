@@ -40,7 +40,7 @@
             </v-text-field>
           </v-col>
           <v-col>
-            <v-checkbox v-model="newEmail.isDefault" label="Default" @click="confirmChangeDefault = true"></v-checkbox>
+            <v-checkbox v-model="newEmail.checked" :value="newEmail.isDefault" label="Default"></v-checkbox>
           </v-col>
         </v-row>
       </v-form>
@@ -76,7 +76,7 @@
               </td>
               <td>
                 <v-icon v-show="item.isDefault" v-if="index !== editIndex" class="centered">mdi-check</v-icon>
-                <v-checkbox v-if="index == editIndex" v-model="item.isDefault" label="Default" @click="confirmChangeDefault = true"></v-checkbox>
+                <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" label="Default"></v-checkbox>
               </td>
               <td>
                 <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
@@ -88,13 +88,47 @@
                 <v-btn small text v-if="index === editIndex" @click="clearChangeToDefault(item)">
                   cancel
                 </v-btn>
-                <v-btn small text v-if="index !== editIndex" @click="deleteEmailAddress(item)" :disabled="item.isDefault"><v-icon>delete</v-icon></v-btn>
+
+                <v-dialog
+                    v-if="index !== editIndex"
+                    v-model="item.deleteConfirm"
+                    width="500">
+                  <template #activator="{ on }">
+                    <v-btn small text v-on="on" :disabled="item.isDefault">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                        class="text-h5 grey lighten-2"
+                        primary-title>
+                      Confirm
+                    </v-card-title>
+                    <v-card-text>
+                      Are you sure you want to delete this Email Address: <strong>{{ item.emailAddress }}</strong>?
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                          @click="item.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="deleteEmailAddress(item)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
-
   </v-container>
 </template>
 
@@ -125,7 +159,6 @@ export default {
       companyId: this.$store.state.user.details.companyId,
       userId: this.$store.state.user.details.id,
       editIndex: null,
-      confirmChangeDefault: false,
       newEmail: {},
       addNew: false,
       displayErrors: false
@@ -140,6 +173,7 @@ export default {
       try {
         const {data, status} = await getRequest(`/emailAddress/${this.companyId}`, null)
         this.emailValues = data;
+        this.emailValues.map( email => email.checked = email.isDefault)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -149,18 +183,17 @@ export default {
       }
     },
     clearChangeToDefault(item) {
-      if(this.confirmChangeDefault){
-        item.isDefault = !item.isDefault
-        this.confirmChangeDefault = false
-      }
-      this.editIndex = null
+        item.checked = item.isDefault;
+        this.editIndex = null
     },
     async updateEmailAddress(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         item.modifiedById = this.userId;
         item.companyId = this.companyId;
-        const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: this.confirmChangeDefault})
+        const confirmChangeDefault = (item.checked !== item.isDefault)
+        item.isDefault = item.checked;
+        const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: confirmChangeDefault})
         this.emailValues = data;
         this.editIndex = null
         handleHidingGlobalLoader(this, status)
@@ -179,9 +212,11 @@ export default {
         if(!this.addFormValid) {
           throw {data: false};
         }
+        const makeDefault = this.newEmail.checked
+        this.newEmail.isDefault = makeDefault;
         this.newEmail.createdById = this.userId;
         this.newEmail.companyId=this.companyId;
-        const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', this.newEmail, {updateDefault: this.confirmChangeDefault})
+        const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', this.newEmail, {updateDefault: makeDefault})
         this.emailValues = data;
         this.newEmail = null;
         this.addNew = false;
@@ -199,7 +234,7 @@ export default {
     async deleteEmailAddress(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        if(item.isDefault || this.confirmChangeDefault){
+        if(item.isDefault){
           throw {data: false}
         }
         item.modifiedById = this.userId;
