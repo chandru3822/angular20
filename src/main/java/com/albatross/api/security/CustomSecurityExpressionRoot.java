@@ -51,6 +51,15 @@ public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
     return false;
   }
 
+  public boolean hasRootLevelAccess() {
+    final var principal = this.getPrincipal();
+    if (principal instanceof final UserAccountDetails details) {
+      return details.getHighestCompanyId().equals(SYS_ADMIN_ID);
+    }
+
+    return false;
+  }
+
   @Override
   public Object getFilterObject() {
     return this.filterObject;

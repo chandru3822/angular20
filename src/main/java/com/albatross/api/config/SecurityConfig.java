@@ -77,6 +77,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .antMatchers("/webhook/verse/**").permitAll()
       // export the endpoint for automating s3 uploads of mobile builds from fast lane
       .antMatchers("/api/v1/flow/app/addAttachmentRecord").permitAll()
+      // export the endpoint for mobile to call to ensure the app_attachment table is present in stage and flux before they do a build
+      .antMatchers("/api/v1/flow/app/fixTable").permitAll()
       .anyRequest().authenticated()
       .and()
       .exceptionHandling()

@@ -7,9 +7,13 @@ import com.albatross.api.v1.flow.services.AppService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +24,8 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/flow/app")
 public class AppController {
 
+  @Value(value = "${app.env}")
+  private String environment;
 
   private final AppService appService;
 
@@ -98,5 +104,25 @@ public class AppController {
                                @RequestParam MultipartFile attachment) throws IOException {
 
     appService.uploadApp(versionNumber, buildNumber, AppType.ANDROID.id, attachment, null);
+  }
+
+  //these 2 endpoints are to help mobile with stage builds after a data dump from prod and we dropped the entire schema and lost everything from flow.app_attachment
+  @RequestMapping(method = RequestMethod.POST, value = "/fixTable")
+  public void fixMissingAppTable() {
+    if(null != environment && (environment.equals("stage") || environment.equals("flux"))) {
+      appService.fixMissingAppTable();
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not available.", new Exception());
+    }
+  }
+
+  @PreAuthorize("hasRootLevelAccess()")
+  @RequestMapping(method = RequestMethod.POST, value = "/fixData")
+  public void fixMissingAppData(@RequestParam(required = false) Integer limit) {
+    if(null != environment && (environment.equals("stage") || environment.equals("flux"))) {
+      appService.fixMissingAppData(limit);
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not available.", new Exception());
+    }
   }
 }
