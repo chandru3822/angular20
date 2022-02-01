@@ -1,7 +1,10 @@
-CREATE OR REPLACE function flow.migrate_event_status(p_project_process_step_id integer, p_project_id integer,
+drop function if exists flow.migrate_event_status(integer,  integer,  timestamp,  timestamp,  integer,  integer,  integer,  integer);
+CREATE OR REPLACE function flow.migrate_event_status(p_project_process_step_id integer,
+                                                     p_project_id integer,
                                                      p_start_time timestamp,
                                                      p_end_time timestamp,
-                                                     p_child1 integer, p_child2 integer default 0,
+                                                     p_child1 integer,
+                                                     p_child2 integer default 0,
                                                      p_child3 integer default 0,
                                                      p_child4 integer default 0)
   returns table
