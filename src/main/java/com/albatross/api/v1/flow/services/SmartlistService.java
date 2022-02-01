@@ -398,8 +398,9 @@ public class SmartlistService {
           f.setName(f.getName().substring(0, 60) + "...");
         }
 
-        if (f.getObjectTypeId() == 4) {
-          final String append = String.format(" (%s)", f.getProcessStepId());
+        if (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6) {
+          final Long appendId = (f.getObjectTypeId() == 4) ? f.getProcessStepId() : f.getEventId();
+          final String append = String.format(" (%s)", appendId);
           if (f.getName().length() + append.length() > 63) {
             f.setName(f.getName().substring(0, f.getName().length() - append.length() - 3) + append + "...");
           } else {
@@ -2313,7 +2314,7 @@ public class SmartlistService {
 
       psField.ifPresent(f -> fromClause.append(String.format("\"%s%s\"", f.getProcessStepName(), f.getProcessStepId())));
 
-      query.append(fromClause.toString()).append(" union ");
+      query.append(fromClause).append(" union ");
     });
 
     // remove comma and space from with clause
