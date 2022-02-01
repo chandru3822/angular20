@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Email Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="addNew" @click="addEmail()">
+            <v-btn text v-if="addNew" @click="addEmail()" :disabled="!addFormValid">
               <v-icon>save</v-icon>
             </v-btn>
             <v-btn text @click="[addNew = !addNew, newEmail = {}]">
@@ -17,22 +17,26 @@
       </v-col>
     </v-row>
     <v-col cols="12">
-      <v-form v-if="addNew" ref="emailSettingsForm" v-model="validForm">
+      <v-form v-if="addNew" ref="emailSettingsForm" v-model="addFormValid">
         <v-row>
           <v-col>
             <v-text-field text
                           type="text"
                           placeholder="Sender Name"
-                          :error="!newEmail.senderName && displayErrors"
-                          v-model="newEmail.senderName">
+                          :rules="[v => !!v || 'Sender name is required']"
+                          v-model="newEmail.senderName"
+                          required
+            >
             </v-text-field>
           </v-col>
           <v-col>
             <v-text-field text
                           type="text"
                           placeholder="Email Address"
-                          :error="!newEmail.emailAddress && displayErrors"
-                          v-model="newEmail.emailAddress">
+                          :rules="[v => !!v || 'Email address is required']"
+                          v-model="newEmail.emailAddress"
+                          required
+            >
             </v-text-field>
           </v-col>
           <v-col>
@@ -81,7 +85,7 @@
                 <v-btn small text @click="updateEmailAddress(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small text @click="editIndex = null" v-if="index === editIndex">
+                <v-btn small text v-if="index === editIndex" @click="clearChangeToDefault(item)">
                   cancel
                 </v-btn>
                 <v-btn small text v-if="index !== editIndex" @click="deleteEmailAddress(item)" :disabled="item.isDefault"><v-icon>delete</v-icon></v-btn>
@@ -110,7 +114,7 @@ export default {
 
   data() {
     return {
-      validForm: false,
+      addFormValid: false,
       headers: [
         {text: 'Sender Name', value: 'name', show: true},
         {text: 'Email Address', value: 'value', show: true},
@@ -144,6 +148,13 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    clearChangeToDefault(item) {
+      if(this.confirmChangeDefault){
+        item.isDefault = !item.isDefault
+        this.confirmChangeDefault = false
+      }
+      this.editIndex = null
+    },
     async updateEmailAddress(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -164,11 +175,9 @@ export default {
     async addEmail() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        if(!this.newEmail.emailAddress || !this.newEmail.senderName ) {
-          this.displayErrors = true;
+        this.$refs.emailSettingsForm.validate();
+        if(!this.addFormValid) {
           throw {data: false};
-        } else {
-          this.displayErrors = false;
         }
         this.newEmail.createdById = this.userId;
         this.newEmail.companyId=this.companyId;
