@@ -827,10 +827,13 @@ export default {
         validSave = false
         this.actionRequiresEnd = false
         this.actionRequiresResource = false
+        this.eventActionMissingRequirements = true
         this.saveErrorMsg = 'Start Time is required to save the event fields'
         //dont do this for now. makes the page look weird after save
         // document.getElementById('event-header').scrollIntoView()
       }
+
+      console.log('randaLogger',this.saveErrorMsg)
 
       //after everything, only save if valid
       if (validSave) {
