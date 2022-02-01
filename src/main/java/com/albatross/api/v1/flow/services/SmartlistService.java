@@ -2626,9 +2626,11 @@ public class SmartlistService {
     //default fields
     if (useEventData) {
       //event fields
-      selectQuery.append("flow.project.id,")
-        .append("flow.project_process_step_event.id,")
-        .append("flow.event.event_name, ");
+      selectQuery.append("flow.project_process_step_event.id as \"Event ID\", ")
+        .append("flow.event.event_name \"Event\", ")
+        .append("flow.process_step.process_step_name as \"Process Step\", ")
+        .append("flow.project.id as \"Project ID\", ")
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
     } else {
       //process step fields
     }
