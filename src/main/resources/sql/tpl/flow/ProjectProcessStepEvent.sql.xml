@@ -75,6 +75,8 @@
                                     psea.archived,
                                     psea.always_enabled as "alwaysEnabled",
                                     psea.multiple_uses as "multipleUses",
+                                    psea.hide_from_web as "hideFromWeb",
+                                    psea.hide_from_mobile as "hideFromMobile",
                                     case when
                                            (select id
                                             from flow.project_process_step_event_action ppsea

@@ -64,6 +64,7 @@
       <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
         <v-btn class="action-button white--text"
                color="primaryCustom"
+               v-if="!action.hideFromWeb"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
           {{ action.actionName }}

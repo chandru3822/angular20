@@ -13,12 +13,23 @@
               <input
                   id="fileInput"
                   type="file"
+                  multiple
+                  :accept="acceptedFileTypes"
                   @change='uploadDocument($event.target.files, type.attachmentTypeId)'
                   style="display: none"
                   @click.stop=""
                   ref='fileInput'
               >
-              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile" elevation="0" color="transparent" class="expansion-panel-btn">Upload</v-btn>
+              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile"
+                     @dragenter="dragTypeId=type.attachmentTypeId"
+                     @dragleave="dragTypeId=null"
+                     @dragend="dragTypeId=null"
+                     :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
+                     @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
+                     @dragover.prevent="dragTypeId=type.attachmentTypeId"
+                     elevation="0" color="transparent" class="expansion-panel-btn upload-button">
+                Upload
+              </v-btn>
 
               <v-btn
                   v-if="!projectProcessStepId"
@@ -62,6 +73,7 @@ import {AppMutations} from "@/stores/AppStore";
 import orderBy from "lodash.orderby";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
+import constants from "@/helpers/constants";
 
 export default {
   name: "AttachmentsDropdown",
@@ -80,6 +92,7 @@ export default {
       attachmentTypesLoading: true,
       error: {},
       renderTicker: 0,
+      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       companyId: this.$store.state.user.details.companyId,
       headers: [
         { text: null, value: 'fileIcon', show: true },
@@ -269,5 +282,9 @@ export default {
   font-weight: bold;
   text-transform: capitalize;
   margin: 0;
+}
+
+.file-hover {
+  background: #EEF0F4 !important;
 }
 </style>

@@ -143,6 +143,14 @@
                     <td class="pt-3">Allow Multiple Uses</td>
                     <td class="pt-3"><input type="checkbox" class="ml-2" v-model="action.multipleUses"></td>
                   </tr>
+                  <tr>
+                    <td>Hide From Web</td>
+                    <td><input type="checkbox" class="ml-2" v-model="action.hideFromWeb"></td>
+                  </tr>
+                  <tr>
+                    <td>Hide From Mobile</td>
+                    <td><input type="checkbox" class="ml-2" v-model="action.hideFromMobile"></td>
+                  </tr>
                 </table>
               </v-card>
 

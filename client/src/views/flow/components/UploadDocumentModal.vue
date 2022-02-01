@@ -11,6 +11,7 @@
         <div class="documents-list-inner">
           <v-row class="d-flex justify-start">
             <input type="file"
+                   multiple
                    :accept="acceptedFileTypes"
                    @change="uploadDocument($event.target.files, clickedTypeId)"
                    ref="hiddenFileInput" style="display: none">

@@ -1,5 +1,5 @@
 <template>
-  <small v-if="!drillDownAttachments.length" small >No attachments available</small>
+  <small v-if="!drillDownAttachments.length" small class="pl-3">No attachments available</small>
 
   <v-container v-else dense :key="renderTicker">
     <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'shaded-row': item.main}" :key="item.processStepId">
