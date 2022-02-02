@@ -245,7 +245,6 @@
                             label="E-Mail"
                             id="qa-email-field"
                             placeholder=" "
-                            :rules="emailRules"
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.email"></v-text-field>
