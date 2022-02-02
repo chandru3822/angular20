@@ -108,7 +108,7 @@ public class WorkQueueService {
       query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
     } else {
       //this should only be called for wqt using event data
-      query = smartlistService.buildProcessStepSql(smartlist, fields, timezone, false);
+      query = smartlistService.buildWorkQueueSql(smartlist, fields, true);
     }
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
