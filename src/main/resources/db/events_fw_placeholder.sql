@@ -517,20 +517,54 @@ where process_step_id = 1
   and archived is false;
 
 -- add the db function that checks for active events on a pps
+-- insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+--   select 'flow.pps_has_active_events', 3, 1, 'Project Process Step has Active Events', 'Checks to see if a project process step has any active events assigned to it.'
+--    where not exists (select id from flow.db_function where function_name = 'flow.pps_has_active_events');
+-- ;
+--
+-- insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+-- select (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 'Project Process Step ID', 0,
+--     6, 1, 3
+--       where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_active_events')
+--         and parameter_name = 'Project Process Step ID');
+--
+-- insert into flow.company_function(company_function_name, db_function_id, company_id)
+-- select 'Project Process Step has Active Events', (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 3
+-- where not exists (select id from flow.company_function where company_function_name = 'Project Process Step has Active Events');
+
+-- add the db function that checks for pps events of a certain type
 insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
-  select 'flow.pps_has_active_events', 3, 1, 'Project Process Step has Active Events', 'Checks to see if a project process step has any active events assigned to it.'
-   where not exists (select id from flow.db_function where function_name = 'flow.pps_has_active_events');
+  select 'flow.pps_has_events_in_selected_status', 3, 1, 'Project Process Step has Events In Selected Statuses', 'Checks to see if a project process step has any events of specific types.'
+   where not exists (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status');
 ;
 
 insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
-select (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 'Project Process Step ID', 0,
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Project Process Step ID', 0,
     6, 1, 3
-      where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_active_events')
+      where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
         and parameter_name = 'Project Process Step ID');
 
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Company Event Status Type IDs (comma separate)', 1,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
+                                                           and parameter_name = 'Company Event Status Type IDs (comma separate)');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Event Status Category IDs (comma separate)', 2,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
+                                                           and parameter_name = 'Event Status Category IDs (comma separate)');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Event ID', 3,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
+                                                           and parameter_name = 'Event ID');
+
 insert into flow.company_function(company_function_name, db_function_id, company_id)
-select 'Project Process Step has Active Events', (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 3
-where not exists (select id from flow.company_function where company_function_name = 'Project Process Step has Active Events');
+select 'Process Step has Events In Selected Statuses', (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Process Step has Events In Selected Statuses');
 
 -- SMARTLIST STUFF
 alter table if exists flow.smartlist_field_assignment
