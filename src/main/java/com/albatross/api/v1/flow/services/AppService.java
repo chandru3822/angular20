@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -241,6 +242,61 @@ public class AppService {
     newApp.setS3Key(key);
 
     insertAttachmentRecord(newApp, currentUser);
+  }
+
+  public void fixMissingAppTable() {
+    //this will create the flow.app_attachment table if it is not already present
+    sqlCache.update("app.createMissingTable", Collections.emptyMap());
+  }
+
+  public void fixMissingAppData(Integer limit) {
+    //this will grab the most recent builds from s3 and populate the app_attachment table.  used when the s3 upload succeeded but the request to add to app_attachment failed.
+    //although this shouldn't happen much anymore since it only failed when the app_attachment table was missing and mobile is going to be calling the fixTable endpoint
+    //whenever they do a build in stage so that it should never fail again.
+    String appPrefix = "Albatross@uat";
+    //if no limit passed in(0) then make it 5
+    int appLimit = (null == limit) ? 5 : (Math.min(limit, 20));
+
+    //insert records for ios
+    insertAppAttachmentRecordsFromS3(true, "blueraven/apps/ios/com.myblueraven.albatross/",
+      "application/octet-stream", ".plist", appPrefix, appLimit );
+
+    //insert records for android
+    insertAppAttachmentRecordsFromS3(true, "blueraven/app/android/com.myblueraven.albatross/",
+      "application/vnd.android.package-archive", ".apk", appPrefix, appLimit );
+
+  }
+
+  public void insertAppAttachmentRecordsFromS3(boolean isIos, String pathPrefix, String contentType, String fileSuffix, String appPrefix, int limit) {
+    ListObjectsV2Request req = new ListObjectsV2Request()
+      .withBucketName(storageBucket)
+      .withPrefix(pathPrefix);
+
+    List<S3ObjectSummary> objectSummaries = s3.listObjectsV2(req).getObjectSummaries();
+    objectSummaries = objectSummaries.stream()
+                                     .filter(os -> os.getKey().contains(appPrefix) && os.getKey().contains(fileSuffix))
+                                     .sorted(Comparator.comparing(S3ObjectSummary::getLastModified).reversed())
+                                     .limit(limit)
+                                     .collect(Collectors.toList());
+
+    //this gets a list of all app attachments from s3 with the name "stage" (env) in them
+    for (S3ObjectSummary objectSummary : objectSummaries) {
+      String key = objectSummary.getKey();
+      String filename = key.substring(key.lastIndexOf("/") + 1);
+      String buildNumber = filename.substring(filename.lastIndexOf("-") + 1, filename.lastIndexOf("."));
+      String versionNumber = filename.substring(filename.indexOf("-") + 1, filename.lastIndexOf("-"));
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("appTypeId", (isIos ? 1 : 3));
+      params.put("fileName", filename);
+      params.put("contentType", contentType);
+      params.put("s3key", key);
+      params.put("size", objectSummary.getSize());
+      params.put("versionNumber", versionNumber);
+      params.put("buildNumber", Integer.valueOf(buildNumber));
+
+      sqlCache.update("app.insertMissingAppRecord", params);
+    }
   }
 
   public String uploadToS3(User currentUser, String keyPattern, MultipartFile attachment) throws IOException {
