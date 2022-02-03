@@ -30,7 +30,9 @@ BEGIN
                   cfg.id as custom_field_group_id,
                   e.id   as event_type_id,
                   e.event_name,
-                  pps.date_created
+                  pps.date_created,
+                  pps.modified_by_id,
+                  pps.date_modified
            from flow.custom_field_group cfg
                   inner join flow.process_step ps on ps.id = cfg.process_step_id
                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
@@ -590,7 +592,8 @@ BEGIN
         end if;
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id,
                                                     resource_id, company_event_status_type_id,
-                                                    start_time, end_time, created_by_id,cancelled_date,completed_date,scheduled_date)
+                                                    start_time, end_time, created_by_id,cancelled_date,completed_date,scheduled_date,
+                                                    date_created,date_modified,modified_by_id)
         values (x.project_process_step_id, (select pse.id
                                             from flow.process_step_event pse
                                                    inner join flow.event e on pse.event_id = e.id
@@ -598,7 +601,7 @@ BEGIN
                                               and e.temp_cfg_id = x.custom_field_group_id),
                 v_resource_id, coalesce(v_event_status_type_id, 5), coalesce(
                   coalesce(coalesce(v_start_date, v_online_timestamp_value), v_created_start_time), x.date_created),
-                v_end_date, 2350555,v_cancelled_date,v_completed_date,v_scheduled_timestamp)
+                v_end_date, 2350555,v_cancelled_date,v_completed_date,v_scheduled_timestamp,x.date_created,x.date_modified,x.modified_by_id)
         returning id into v_event_id;
         v_project_process_step_ids = null;
         v_first_row = true;

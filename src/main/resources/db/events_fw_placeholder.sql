@@ -566,6 +566,37 @@ insert into flow.company_function(company_function_name, db_function_id, company
 select 'Process Step has Events In Selected Statuses', (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 3
 where not exists (select id from flow.company_function where company_function_name = 'Process Step has Events In Selected Statuses');
 
+
+-- add the db function that checks for pps event custom field value
+insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+select 'flow.check_pps_has_event_with_value', 3, 1, 'Project Process Step has Event With Custom Field Value', 'Checks to see if a project process step has any events with a specific value assigned to a specific custom field group assignment.'
+where not exists (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value');
+;
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 'Project Process Step ID', 0,
+       6, 1, 3
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value')
+                                                           and parameter_name = 'Project Process Step ID');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 'Custom Field Group Assignment ID', 1,
+       6, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value')
+                                                           and parameter_name = 'Custom Field Group Assignment ID');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 'Value to Check For', 2,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value')
+                                                           and parameter_name = 'Value to Check For');
+
+insert into flow.company_function(company_function_name, db_function_id, company_id)
+select 'Process Step has Event With Custom Field Value', (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Process Step has Event With Custom Field Value');
+
+
+
 -- SMARTLIST STUFF
 alter table if exists flow.smartlist_field_assignment
 add if not exists process_step_event_id int;

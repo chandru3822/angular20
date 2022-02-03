@@ -15,6 +15,10 @@
           </span>
         </div>
       </div>
+      <div class="font-size-10"
+           v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
+        {{ e.id }}
+      </div>
     </v-card>
   </v-col>
 </v-row>

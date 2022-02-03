@@ -2,7 +2,19 @@
   <v-card flat class="event-button" @click="goToPath(`/project/${projectId}/processStep/${event.projectProcessStepId}/event/${event.id}`)">
     <span class="font-size-14">{{ event.eventName }}</span>
     <span class="font-size-12 ml-2" :class="getStatusClass(event.eventStatusTypeId)">{{event.eventStatusType}}</span> <br>
-    <span class="event-resource" v-if="event.resource">{{ event.resource }}</span>
+    <div class="event-resource" v-if="event.resource || event.startTime">
+      <span v-if="event.resource">{{ event.resource }}</span>
+      <div v-if="event.startTime">
+        {{ event.startTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
+        <span v-if="event.endTime">
+            - {{ event.endTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
+          </span>
+      </div>
+    </div>
+    <div class="font-size-10"
+         v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
+      {{ event.id }}
+    </div>
   </v-card>
 </template>
 
