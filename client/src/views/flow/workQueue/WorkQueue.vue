@@ -45,7 +45,6 @@
                            :value="2"
                            :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
                 </v-radio-group>
-                <span @click="trackButton" class="learn-span">Learn more about work queue metrics</span>
               </div>
             </v-col>
             <v-col cols="12" md="6" class="py-0 future-follow-ups-column">
@@ -287,13 +286,6 @@ export default {
     getBorder(wq) {
       return `solid 1px ${wq.color}`
     },
-    trackButton(){
-      this.$gtag.event('learn-work-queue-metrics', {
-        event_category: 'click',
-        event_label: 'Learn About Work Queue Metrics'
-      })
-      this.showMetricsDialog = true
-    }
   },
 
 }
