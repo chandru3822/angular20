@@ -1,5 +1,6 @@
 package com.albatross.api;
 
+import com.albatross.api.v1.flow.model.Attachment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,6 +27,11 @@ public class PublicController {
                                    @PathVariable UUID uuid,
                                    HttpServletResponse response) throws IOException {
     publicService.loadPublicAttachment(id, uuid, response);
+  }
+
+  @GetMapping(value = "/maintenanceAttachments")
+  public List<Attachment> loadMaintenanceAttachments() {
+    return publicService.loadMaintenanceAttachments();
   }
 
 }
