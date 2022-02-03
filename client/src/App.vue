@@ -54,7 +54,7 @@
       return {
         hideHeader: this.$store.state.user.hideHeader || false,
         hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
-        noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword'],
+        noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance'],
         showMobileBanner: false,
         dismissMobileToolbar: false
       }
