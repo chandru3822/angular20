@@ -134,7 +134,7 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-row class="project-split-container">
-      <div class="white-bg project-section px-0"
+      <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !collapseLeftSidebar, 'collapse-left': collapseLeftSidebar}">
         <div class="left-expander-button">
           <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
@@ -207,7 +207,7 @@
                      :split-value-columns="collapseLeftSidebar && collapseRightSidebar"
         ></router-view>
       </div>
-      <div class="white-bg project-section px-0"
+      <div class="white-bg project-section px-0 right-panel"
            :class="{'col-5': !collapseRightSidebar && !collapseLeftSidebar,
                     'right-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                     'collapse-right text-center': collapseRightSidebar}">
@@ -520,6 +520,15 @@ export default {
 
 .project-section {
   max-height: 100%;
+}
+
+.project-section.left-panel {
+  //border-right: 1px solid #C4C4C4;
+  box-shadow: 1px 0px 1px #C4C4C4;
+}
+
+.project-section.right-panel {
+  box-shadow: -1px 0px 1px #C4C4C4;
 }
 
 .white-bg {
