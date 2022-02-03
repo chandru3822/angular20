@@ -116,6 +116,8 @@ axios.interceptors.response.use(
             ? 'User Unauthorized'
             : 'Unknown Error'
         if(VUE_APP_MAINTENANCE_MODE && status === 403) {
+          //if we dont remove the store item then a logged in user who USED to have permission will still have permission later
+          localStorage.removeItem('store')
           router.push({ name: 'siteUnderMaintenance' })
         } else {
           localStorage.removeItem('store')
