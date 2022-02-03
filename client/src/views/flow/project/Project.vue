@@ -207,7 +207,7 @@
                      :split-value-columns="collapseLeftSidebar && collapseRightSidebar"
         ></router-view>
       </div>
-      <div class="white-bg project-section px-0 right-panel"
+      <div class="white-bg project-section px-0"
            :class="{'col-5': !collapseRightSidebar && !collapseLeftSidebar,
                     'right-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                     'collapse-right text-center': collapseRightSidebar}">
@@ -525,10 +525,6 @@ export default {
 .project-section.left-panel {
   //border-right: 1px solid #C4C4C4;
   box-shadow: 1px 0px 1px #C4C4C4;
-}
-
-.project-section.right-panel {
-  box-shadow: -1px 0px 1px #C4C4C4;
 }
 
 .white-bg {
