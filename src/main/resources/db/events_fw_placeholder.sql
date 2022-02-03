@@ -1060,3 +1060,40 @@ insert into flow.process_step_requirement_type(process_step_requirement_type)
 alter table flow.project_process_step_event add column if not exists cancelled_date timestamp;
 alter table flow.project_process_step_event add column if not exists completed_date timestamp;
 alter table flow.project_process_step_event add column if not exists scheduled_date timestamp;
+
+
+insert into flow.feature(feature_name, feature_code, feature_path, is_system)
+(select 'Maintenance Mode', 'MAINTENANCE_MODE', null, true
+  where not exists (select id from flow.feature where feature_code = 'MAINTENANCE_MODE'));
+
+insert into flow.company_feature(feature_name, company_id, feature_id, home_page, hidden)
+  (select 'Maintenance Mode', 3, (select id from flow.feature where feature_code = 'MAINTENANCE_MODE'), false, true
+   where not exists (select id from flow.company_feature where feature_name = 'Maintenance Mode'));
+
+insert into flow.feature_access_control(feature_id, access_control_id, created_by_id)
+(select (select id from flow.feature where feature_code = 'MAINTENANCE_MODE'), 5, 2417170
+where not exists (select id from flow.feature_access_control
+  where feature_id = (select id from flow.feature where feature_code = 'MAINTENANCE_MODE')
+  and access_control_id = 5));
+
+-- add all 7oaks employees permission to maintenance mode
+insert into flow.user_feature_access_control(user_id, company_feature_id, access_control_id, enabled)
+select u.id, 398, 5, true
+from flow."user" u
+where email in (
+'mandy@7oaksgroup.com',
+'scott.humes+rick@7oaksgroup.com',
+'john@7oaksgroup.com',
+'kory@calmes.org',
+'michael.meyers@xomly.com',
+'randa@randa.com',
+'kellersk@7oaksgroup.com',
+'kaleb@7oaksgroup.com',
+'jacey@7oaksgroup.com',
+'jessica@7oaksgroup.com'
+  )
+and not exists (
+  select id from flow.user_feature_access_control ufac
+  where ufac.user_id = u.id and ufac.access_control_id = 5 and ufac.company_feature_id = 398
+  )
+;
