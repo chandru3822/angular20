@@ -26,6 +26,11 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "forgotPassword" */'./views/ForgotPassword.vue')
     },
     {
+      path: '/siteUnderMaintenance',
+      name: 'siteUnderMaintenance',
+      component: () => import(/* webpackChunkName: "forgotPassword" */'./views/SiteUnderMaintenance.vue')
+    },
+    {
       path: '/passwordReset/:uuid?',
       name: 'forgotPasswordReset',
       component: ForgotPasswordReset,
@@ -1518,6 +1523,10 @@ async function getUser() {
 }
 
 function accessDenied() {
-  return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+  if(process.env.VUE_MAINTENANCE_MODE) {
+    return import(/* webpackChunkName: "accessDenied" */ './views/SiteUnderMaintenance.vue')
+  } else {
+    return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+  }
 }
 

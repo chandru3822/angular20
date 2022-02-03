@@ -4,12 +4,14 @@ import com.albatross.api.security.LoginSuccessHandler;
 import com.albatross.api.security.jwt.JwtAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -31,6 +33,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   private final JwtAuthenticationProvider jwtAuth;
 
+  @Value(value = "${app.maintenanceMode:false}")
+  private Boolean maintenanceMode;
+
   @Bean
   public LoginSuccessHandler loginSuccessHandler() {
     return new LoginSuccessHandler();
@@ -46,10 +51,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true);
     configuration.setAllowedOriginPatterns(
-        List.of(
-            "http://localhost:[*]",
-            "https://*.myblueraven.com",
-            "https://blueraven-excel-data-addon.netlify.app"));
+      List.of(
+        "http://localhost:[*]",
+        "https://*.myblueraven.com",
+        "https://blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowedMethods(List.of("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -59,7 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    http
+    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http
       .sessionManagement()
       .sessionCreationPolicy(STATELESS)
       .and()
@@ -78,9 +83,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       // export the endpoint for automating s3 uploads of mobile builds from fast lane
       .antMatchers("/api/v1/flow/app/addAttachmentRecord").permitAll()
       // export the endpoint for mobile to call to ensure the app_attachment table is present in stage and flux before they do a build
-      .antMatchers("/api/v1/flow/app/fixTable").permitAll()
-      .anyRequest().authenticated()
-      .and()
+      .antMatchers("/api/v1/flow/app/fixTable").permitAll();
+
+      if(maintenanceMode) {
+        //have to allow access to br endpoints so that ContactLeadController endpoints dont fail suddenly
+        registry.antMatchers("/api/v1/company/blueraven/contact**").permitAll();
+        registry.anyRequest().hasAnyAuthority("MAINTENANCE_MODE_ADMIN");
+      } else {
+        registry.anyRequest().authenticated();
+      }
+
+      registry.and()
       .exceptionHandling()
       .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
       .and()
