@@ -77,6 +77,27 @@
       order by a.date_created desc
   ]]></attachment.getAttachmentsByType>
 
+  <attachment.getAttachmentsByTypeNoSource><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.uuid,
+      a.show,
+      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      a.date_created,
+      a.date_modified,
+      a.archived
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
+    WHERE at.id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+      order by a.date_created desc
+  ]]></attachment.getAttachmentsByTypeNoSource>
+
   <attachment.getAttachmentBySourceAndType><![CDATA[
     SELECT
       a.id,
