@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="!processStepLoading" class="py-0 relative height-one-hunned overflow-y-auto">
+  <v-main v-if="!processStepLoading" class="py-0 pt-6 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -35,7 +35,7 @@
         </v-dialog>
       </v-col>
 
-      <v-col cols="12" class="pa-0">
+      <v-col cols="12" class="pb-4">
         <v-toolbar color="transparent" class="elevation-0 mt-2 cfg-name-toolbar toolbar-z-index-override mx-2">
           <v-toolbar-title class="process-step-name albatross-header-2">
             {{ processStep.processStepName }}
@@ -139,7 +139,7 @@
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
-      <v-col cols="12" class="text-left pt-0" v-if="userHasEventsFeature && (
+      <v-col cols="12" class="text-left pt-2 pb-4" v-if="userHasEventsFeature && (
         (processStepEvents && processStepEvents.length > 0) ||
         (processStep && processStep.projectProcessStepEvents && processStep.projectProcessStepEvents.length > 0)
       )">
@@ -153,18 +153,19 @@
             item-text="eventName"
             item-value="id"
             return-object
-            class="toolbar-z-index-override"
+            dense
+            class="toolbar-z-index-override mt-2"
             @input="addEvent()"
           ></v-autocomplete>
         </div>
-        <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block ma-1">
+        <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block mr-4 mt-2">
           <EventButton
             :event="e"
             :project-id="projectId"
           />
         </div>
       </v-col>
-      <v-col cols="12" class="text-left pt-0">
+      <v-col cols="12" class="text-left pt-4">
         <div class="pps-subheader albatross-header-3" v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
