@@ -18,7 +18,7 @@
           </v-tab>
         </v-tabs>
         <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-3" v-if="displayedGroups && displayedGroups.length > 0">
-          <v-toolbar-title class="albatross-header-2">{{ displayedGroups[0].groupName }}</v-toolbar-title>
+          <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
@@ -50,8 +50,7 @@
             v-for="(group, index) in displayedGroups"
             :key="index"
           >
-            <v-toolbar color="transparent" class="elevation-0 process-step-toolbar"
-              v-if="index !== 0">
+            <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
               <v-toolbar-title class="albatross-header-3">{{ group.groupName }}</v-toolbar-title>
             </v-toolbar>
             <v-card class="px-4 text-left square-card">
