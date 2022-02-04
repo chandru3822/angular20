@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +34,12 @@ public class PublicService {
     } else {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Request", new Exception());
     }
+  }
+
+
+  public List<Attachment> loadMaintenanceAttachments() {
+    List<Attachment> results = attachmentService.getAttachmentsByTypeWithoutSource(938L);
+    return results;
   }
 
 }

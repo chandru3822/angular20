@@ -292,6 +292,15 @@ export default {
           this.$store.commit(AppMutations.SET_LOADING, false)
           return
         }
+
+        if (!this.requestItem.email) {
+          console.error('*** ERROR ***', 'Error: Unable to generate Finance application without Email Address')
+          this.snackbar = getSnackbar('ERROR', 'Unable to generate Finance application without Email Address')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return
+        }
+
         const {
           data,
           status
