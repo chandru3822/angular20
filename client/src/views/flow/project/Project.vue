@@ -196,7 +196,7 @@
                           class="mx-2"/>
         </div>
       </div>
-      <div class="project-section pt-0 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
+      <div class="project-section pt-1 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
@@ -522,6 +522,7 @@ export default {
 
 .project-section {
   max-height: 100%;
+  padding-top: 24px;
 }
 
 .project-section.left-panel {

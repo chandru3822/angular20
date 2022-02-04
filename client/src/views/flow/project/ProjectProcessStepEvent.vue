@@ -1,8 +1,8 @@
 <template>
-  <v-main class="py-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+  <v-main class="py-0 px-6 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
     <div v-if="selectedEvent.id">
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
-        <v-toolbar-title>
+        <v-toolbar-title class="albatross-header-2">
           {{ selectedEvent.eventName }}
 
         </v-toolbar-title>
@@ -49,7 +49,7 @@
         </v-toolbar-items>
       </v-toolbar>
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
-        <div class="action-subheader">
+        <div class="action-subheader albatross-header-3">
           Actions
           <v-btn
             class="back-btn show-unperformable-actions-btn"
@@ -81,9 +81,9 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </div>
-      <div class="cfg-detail-header fixed-toolbar">
+      <div class="fixed-toolbar">
         <v-toolbar flat color="secondary">
-          <v-toolbar-title>
+          <v-toolbar-title class="albatross-header-3" >
             <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
                    class="px-0" target="_blank"
                    :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
@@ -96,7 +96,7 @@
             <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-              <v-icon v-else>mdi-menu</v-icon>
+              <v-icon v-else>mdi-format-align-justify</v-icon>
             </v-btn>
             <div>
               <v-btn class="white--text mt-3"
@@ -235,7 +235,7 @@
           :key="cfg.id"
         >
           <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-            <v-toolbar-title>
+            <v-toolbar-title class="albatross-header-4">
               <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
               <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
               <!--                <v-icon>mdi-calendar</v-icon>-->
@@ -881,9 +881,7 @@ export default {
   padding-right: 0 !important;
 }
 
-.cfg-detail-header .v-toolbar__title {
-  font-size: 16px;
-}
+
 </style>
 <style lang="scss" scoped>
 .cfg-detail-header {
@@ -897,7 +895,6 @@ export default {
 .action-subheader {
   width: 186px;
   margin-top: 20px;
-  font-weight: 600;
 }
 
 ::v-deep {
