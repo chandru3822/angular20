@@ -76,6 +76,10 @@ constants.NAME_REQUIRED_RULES = [
 constants.BASIC_REQUIRED_RULE = [
   v => !!v || 'Field is required'
 ]
+constants.BASIC_ARRAY_REQUIRED_RULE = [
+  v => !!v || 'Field is required',
+  v => (!v || (v && v.length !== 0)) || 'Field is required LENGTH'
+]
 constants.USERNAME_RULES = [
   v => !!v || 'Username is required',
   v => !!v && v.length >= 3 || 'Must be at least 3 characters'
