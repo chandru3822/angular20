@@ -155,7 +155,7 @@
           :readonly="readonly"
           :disabled="readonly"
           :class="{'error--text': readonly}"
-          :rules="getRequiredRule()"
+          :rules="getRequiredRule(field.dataTypeId)"
           :label="getFieldName()"
           :hide-details="hideDetails"
           item-value="id"
@@ -314,6 +314,7 @@ export default {
       search: null,
       isLoading: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
+      arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value
     }
   },
@@ -335,8 +336,10 @@ export default {
     getFieldName() {
       return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
     },
-    getRequiredRule() {
-      if (this.required) {
+    getRequiredRule(dataTypeId) {
+      if (this.required && [7,10].includes(dataTypeId)) {
+        return this.arrayRequiredRules
+      } else if (this.required) {
         return this.requiredRules
       }
     },

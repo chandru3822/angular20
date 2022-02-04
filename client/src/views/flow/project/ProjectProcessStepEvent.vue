@@ -442,7 +442,7 @@ export default {
           }
         })
       } catch (e) {
-        console.log('*** ERROR ***', e)
+        console.error('*** ERROR ***', e)
 
       }
     },
@@ -464,7 +464,6 @@ export default {
       this.saveErrorMsg = 'Additional fields are required to perform the selected action.'
 
       let cfHasMissing = this.needsRequiredField(action.requiredFields)
-
       if ((!this.selectedEvent.startTime) ||
         (this.actionRequiresEnd && !this.selectedEvent.endTime) ||
         (this.actionRequiresResource && !this.selectedEvent.resourceId) || cfHasMissing) {
@@ -491,7 +490,7 @@ export default {
               (cf.dataTypeId === 4 && null == cf.numericValue) ||
               (cf.dataTypeId === 5 && null == cf.textValue) ||
               (cf.dataTypeId === 6 && null == cf.intValue) ||
-              (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
+              (cf.dataTypeId === 7 && (null == cf.intArrayValue || cf.intArrayValue.length === 0)) ||
               (cf.dataTypeId === 8 && null == cf.intValue) ||
               (cf.dataTypeId === 9 && null == cf.intValue)
             ) {
@@ -832,8 +831,6 @@ export default {
         //dont do this for now. makes the page look weird after save
         // document.getElementById('event-header').scrollIntoView()
       }
-
-      console.log('randaLogger',this.saveErrorMsg)
 
       //after everything, only save if valid
       if (validSave) {
