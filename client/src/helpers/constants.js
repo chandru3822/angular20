@@ -78,7 +78,7 @@ constants.BASIC_REQUIRED_RULE = [
 ]
 constants.BASIC_ARRAY_REQUIRED_RULE = [
   v => !!v || 'Field is required',
-  v => (!v || (v && v.length !== 0)) || 'Field is required LENGTH'
+  v => (!v || (v && v.length !== 0)) || 'Field is required'
 ]
 constants.USERNAME_RULES = [
   v => !!v || 'Username is required',
