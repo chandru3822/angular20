@@ -4,7 +4,7 @@
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="font-size-14">Active Process Steps</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Active Process Steps</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <AddProcessStep
@@ -37,7 +37,7 @@
           cols="12"
           class="text-left pt-0"
         >
-          <router-link class="font-size-10" :to="`/project/${projectId}/processSteps`">View All</router-link>
+          <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
 
         </v-col>
       </v-fade-transition>

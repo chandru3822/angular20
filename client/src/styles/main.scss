@@ -91,6 +91,7 @@ body {
   max-height: 100vh;
   overflow: hidden;
 }
+
 .app-button{
   padding: 0 5px;
   border-radius: 3px;
@@ -261,19 +262,19 @@ label[for="adminOriginatorSelect"] {
 .status-active {
   color: green;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .status-complete {
   color: cornflowerblue;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .status-cancelled {
   color: #8B0000;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .hr-non-transparent {
@@ -388,3 +389,49 @@ label[for="adminOriginatorSelect"] {
   }
 
 }
+
+
+//Global Styles
+//there may be a better way to do this, but I wanted to at least get something going here
+.albatross-header-1 {
+  font-weight: normal;
+  font-size: 1.5rem;
+}
+.albatross-header-2 {
+  font-weight: normal;
+  font-size: 1.25rem;
+}
+.albatross-header-3 {
+  font-weight: normal;
+  font-size: 1.125rem;
+}
+.albatross-header-4 {
+  font-weight: normal;
+  font-size: 1rem;
+
+}.albatross-header-5 {
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+//eventually this should be our default body font size/weight, rendering this class unnecessary
+.albatross-body-1 {
+  font-weight: normal;
+  font-size: 1rem;
+}
+//
+.albatross-body-2,
+  .albatross-body-2.status-cancelled,
+  .albatross-body-2.status-complete,
+  .albatross-body-2.status-active
+  //ideally, the status classes would only change the color, but this is for
+  // the intermediate time so we don't break things already using status classes
+{
+  font-weight: normal;
+  font-size: 0.875rem;
+}
+.albatross-body-3 {
+  font-weight: normal;
+  font-size: 0.75rem;
+}
+

@@ -213,7 +213,7 @@
       <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
       </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
-        <v-toolbar-title>
+        <v-toolbar-title class="albatross-header-3">
           Process Step Details
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -755,8 +755,8 @@ export default {
 </style>
 <style lang="scss" scoped>
 .process-step-name {
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: normal;
+  font-size: 1.25rem;
   padding-top: 10px;
 }
 
