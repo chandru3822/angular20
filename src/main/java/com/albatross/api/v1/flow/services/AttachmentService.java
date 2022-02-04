@@ -177,6 +177,26 @@ public class AttachmentService {
   }
 
   /**
+   * Find Attachments by attachment type that dont have a source id. used more for system level type stuff
+   *
+   * @param attachmentTypeId ID of the attachmentType
+   * @return
+   */
+  public List<Attachment> getAttachmentsByTypeWithoutSource(Long attachmentTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("attachmentTypeId", attachmentTypeId);
+
+    List<Attachment> attachments = sqlCache.query("attachment.getAttachmentsByTypeNoSource", params, Attachment.class);
+    attachments.forEach(attachment -> {
+      setAttachmentUrl(storageBucket, attachment);
+      setAttachmentPresignedUrl(storageBucket, attachment);
+      setAttachmentPublicUrl(attachment);
+    });
+
+    return attachments;
+  }
+
+  /**
    * Find Attachment by source Id and source type Id, using a custom S3 bucket name - limit 1.
    *
    * @param sourceId ID of the source
