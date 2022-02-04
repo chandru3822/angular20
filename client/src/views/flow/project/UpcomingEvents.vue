@@ -4,7 +4,7 @@
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="font-size-14">Upcoming Events</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Upcoming Events</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
             </v-toolbar-items>
@@ -26,7 +26,7 @@
       <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-col
           cols="12"
-          class="text-left pt-0 font-size-10"
+          class="text-left pt-0 albatross-body-3"
         >
           <router-link :to="`/project/${projectId}/events`">View All</router-link>
         </v-col>

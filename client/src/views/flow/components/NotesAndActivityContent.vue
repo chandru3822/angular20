@@ -1,7 +1,7 @@
 <template>
   <div :class="{'elevation-1': bordered}">
       <v-toolbar flat dense color="white" class="elevation-0">
-        <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
+        <v-toolbar-title class="albatross-header-4">Leave a note:</v-toolbar-title>
       </v-toolbar>
       <v-divider></v-divider>
       <v-card class="px-3 elevation-0 square-card overflow-y-auto">

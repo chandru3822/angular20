@@ -1,7 +1,7 @@
 <template>
   <v-row id="project-activity-container" no-gutters>
     <v-col cols="12" lg="12" class="py-0 pr-0">
-      <div v-show="!isCollapsed" class="sidebar-title pl-4 mb-3">{{sidebarTitle}}</div>
+      <div v-show="!isCollapsed" class="albatross-header-3 pl-4 mb-3">{{sidebarTitle}}</div>
       <div class="project-activity-inner-container">
         <div v-show="!isCollapsed" :style="{'height': isCollapsed ? 'calc(100% - 250px)' : 'calc(100vh - 240px)'}">
           <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>

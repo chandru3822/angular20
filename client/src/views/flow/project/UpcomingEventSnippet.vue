@@ -3,7 +3,7 @@
   <v-col cols="12" class="pt-0">
     <v-card flat v-for="e in events"
             :class="{'active-event': ppsEventId === e.id}"
-            class="active-event-button" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
+            class="active-event-button albatross-body-1" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
       {{ e.eventName }}
       <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span> <br/>
       <div class="event-resource" v-if="e.resource || e.startTime">
@@ -15,7 +15,7 @@
           </span>
         </div>
       </div>
-      <div class="font-size-10"
+      <div class="albatross-body-3"
            v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
         {{ e.id }}
       </div>
@@ -62,11 +62,10 @@ export default {
   border: solid 1px #C4C4C4;
   padding: 10px;
   margin-bottom: 10px;
-  font-size: 14px;
 }
 
 .event-resource {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #9E9C9C;
 }
 </style>

@@ -143,7 +143,7 @@
         </div>
         <div v-if="!collapseLeftSidebar && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat class="project-section-header">
-            <v-toolbar-title class="font-size-14">Overview</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
