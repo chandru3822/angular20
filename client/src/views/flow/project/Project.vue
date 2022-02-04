@@ -104,6 +104,7 @@
       </v-card>
     </v-dialog>
     <!--    end dialog -->
+
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title font-size-18">
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
@@ -155,7 +156,7 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <div class="px-1 address-details">
+          <div class="mx-4 address-details">
             <div v-if="!projectStatusLoading">
               <span class="vertical-top project-detail-label">Project Stage:</span>
               <div class="d-inline-block project-detail-item"
@@ -185,13 +186,14 @@
             <div class="mt-3">
               <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
             </div>
-            <v-divider class="mt-6"></v-divider>
           </div>
-          <ActiveProcessSteps :project="project" :update-key="updatePpsKey"></ActiveProcessSteps>
-          <v-divider class=""></v-divider>
+          <v-divider class="mt-6 mx-5"></v-divider>
+          <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
+          <v-divider></v-divider>
           <UpcomingEvents v-if="userHasEventsFeature"
                           :update-key="updateEventKey"
-                          :projectId="projectId"/>
+                          :projectId="projectId"
+                          class="mx-2"/>
         </div>
       </div>
       <div class="project-section pt-0 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
@@ -523,7 +525,6 @@ export default {
 }
 
 .project-section.left-panel {
-  //border-right: 1px solid #C4C4C4;
   box-shadow: 1px 0px 1px #C4C4C4;
 }
 
