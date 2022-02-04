@@ -164,7 +164,7 @@
                 ({{ project.rootProjectStatusType }})
               </div>
             </div>
-            <div class="mt-1">
+            <div class="mt-2">
               <span class="vertical-top project-detail-label">Address:</span>
               <div class="d-inline-block project-detail-item">
                 {{ project.street1 }} <br/>
@@ -175,7 +175,7 @@
             <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
             <span class="project-detail-label">Email:</span>
             <span class="project-detail-item">{{ project.email }}</span> <br/>
-            <div class="mt-1">
+            <div class="mt-2">
               <span class="vertical-top project-detail-label">Owner:</span>
               <div class="d-inline-block project-detail-item" v-if="project && project.owner">
                 {{ project.owner.fullName }} - {{ project.owner.position }} <br/>
@@ -185,7 +185,7 @@
             <div class="mt-3">
               <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
             </div>
-            <v-divider class="mt-5"></v-divider>
+            <v-divider class="mt-6"></v-divider>
           </div>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey"></ActiveProcessSteps>
           <v-divider class=""></v-divider>
@@ -497,7 +497,7 @@ export default {
 }
 
 .project-detail-item {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: #424242;
   margin-left: 5px;
 }
