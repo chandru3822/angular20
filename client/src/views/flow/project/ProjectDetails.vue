@@ -24,7 +24,7 @@
             <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-              <v-icon v-else>mdi-menu</v-icon>
+              <v-icon v-else>mdi-format-align-justify</v-icon>
             </v-btn>
             <div>
               <v-btn
