@@ -48,6 +48,7 @@
           </v-dialog>
         </v-toolbar-items>
       </v-toolbar>
+      <div class="pb-4">
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
         <div class="action-subheader albatross-header-3">
           Actions
@@ -62,7 +63,7 @@
         </div>
       </div>
       <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
-        <v-btn class="action-button white--text"
+        <v-btn class="action-button white--text text-capitalize"
                color="primaryCustom"
                v-if="!action.hideFromWeb"
                :disabled="!action.canPerform"
@@ -70,8 +71,9 @@
           {{ action.actionName }}
         </v-btn>
       </div>
-      <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="my-2">
-        <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
+      </div>
+      <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="mb-2">
+        <v-btn class="one-hunned text-capitalize" color="#E3E3E3" @click="showUploadModal = true">
           Upload Documents
         </v-btn>
         <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
