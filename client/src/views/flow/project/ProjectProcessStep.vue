@@ -37,7 +37,7 @@
 
       <v-col cols="12" class="pa-0">
         <v-toolbar color="transparent" class="elevation-0 mt-2 cfg-name-toolbar toolbar-z-index-override mx-2">
-          <v-toolbar-title class="process-step-name">
+          <v-toolbar-title class="process-step-name albatross-header-2">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"
                   :class="getStatusClass(processStep.processStepStatusTypeId)">({{
@@ -143,7 +143,7 @@
         (processStepEvents && processStepEvents.length > 0) ||
         (processStep && processStep.projectProcessStepEvents && processStep.projectProcessStepEvents.length > 0)
       )">
-        <div class="pps-subheader">
+        <div class="pps-subheader albatross-header-3">
           All Events
           <v-autocomplete
             v-model="eventToAdd"
@@ -165,7 +165,7 @@
         </div>
       </v-col>
       <v-col cols="12" class="text-left pt-0">
-        <div class="pps-subheader" v-if="processStep && processStep.actions && processStep.actions.length > 0">
+        <div class="pps-subheader albatross-header-3" v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
             class="back-btn show-unperformable-actions-btn"
@@ -778,7 +778,6 @@ export default {
 .pps-subheader {
   width: 186px;
   margin-top: 5px;
-  font-weight: 600;
 }
 
 ::v-deep {

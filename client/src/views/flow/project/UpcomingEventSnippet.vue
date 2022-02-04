@@ -1,32 +1,21 @@
 <template>
 <v-row>
   <v-col cols="12" class="pt-0">
-    <v-card flat v-for="e in events"
-            :class="{'active-event': ppsEventId === e.id}"
-            class="active-event-button albatross-body-1" @click="goToPath(`/project/${projectId}/processStep/${e.projectProcessStepId}/event/${e.id}`)">
-      {{ e.eventName }}
-      <span :class="getStatusClass(e.eventStatusTypeId)">{{e.eventStatusType}}</span> <br/>
-      <div class="event-resource" v-if="e.resource || e.startTime">
-        <span v-if="e.resource">{{ e.resource }}</span>
-        <div v-if="e.startTime">
-          {{ e.startTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
-          <span v-if="e.endTime">
-            - {{ e.endTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
-          </span>
-        </div>
-      </div>
-      <div class="albatross-body-3"
-           v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
-        {{ e.id }}
-      </div>
-    </v-card>
+    <div v-for="e in events"
+    >
+      <EventButton
+          :event="e"
+          :project-id="projectId"
+          :pps-event-id="ppsEventId"
+      />
+    </div>
   </v-col>
 </v-row>
 </template>
 
 <script>
 import {getStatusClass} from '@/services/processStepStatusTypeService'
-import moment from 'moment'
+import EventButton from "@/views/flow/project/EventButton";
 
 export default {
   name: 'UpcomingEventSnippet',
@@ -34,6 +23,7 @@ export default {
     projectId: Number,
     events: Array
   },
+
   computed: {
     ppsEventId () {
       return parseInt(this.$route.params.ppsEventId)
@@ -48,15 +38,15 @@ export default {
     goToPath(path) {
       this.$router.push(path)
     },
+  },
+  components: {
+    EventButton
   }
 }
 </script>
 
 
 <style scoped lang="scss">
-.active-event {
-  background-color: #C4C4C4;
-}
 
 .active-event-button {
   border: solid 1px #C4C4C4;

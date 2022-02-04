@@ -50,7 +50,7 @@ export default {
 
 <style scoped lang="scss">
 .active-ps {
-  background-color: #C4C4C4;
+  background-color: #EEEEEE;
 }
 
 .active-ps-button {

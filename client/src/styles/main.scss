@@ -397,7 +397,9 @@ label[for="adminOriginatorSelect"] {
   font-weight: normal;
   font-size: 1.5rem;
 }
-.albatross-header-2 {
+.albatross-header-2,
+.v-toolbar__title.albatross-header-2 //to override vuetify styling
+{
   font-weight: normal;
   font-size: 1.25rem;
 }
