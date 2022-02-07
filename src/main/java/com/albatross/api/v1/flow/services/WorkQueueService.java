@@ -109,6 +109,28 @@ public class WorkQueueService {
     } else {
       //this should only be called for wqt using event data
       query = smartlistService.buildWorkQueueSql(smartlist, fields, true);
+
+      //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
+      //add default fields to fields list
+      var defaultFields = new ArrayList<SmartlistFieldAssignment>();
+      var eventId = new SmartlistFieldAssignment();
+      eventId.setName("Event ID");
+      defaultFields.add(eventId);
+      var event = new SmartlistFieldAssignment();
+      event.setName("Event Name");
+      defaultFields.add(event);
+      var psName = new SmartlistFieldAssignment();
+      psName.setName("Process Step Name");
+      defaultFields.add(psName);
+      var projectId = new SmartlistFieldAssignment();
+      projectId.setName("Project ID");
+      defaultFields.add(projectId);
+      var daysInQueue = new SmartlistFieldAssignment();
+      daysInQueue.setName("Days In Queue");
+      defaultFields.add(daysInQueue);
+
+      defaultFields.addAll(fields);
+      fields = defaultFields;
     }
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
@@ -149,6 +171,28 @@ public class WorkQueueService {
     if(useEventData) {
 //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
       query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData);
+
+      //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
+      //add default fields to fields list
+      var defaultFields = new ArrayList<SmartlistFieldAssignment>();
+      var eventId = new SmartlistFieldAssignment();
+      eventId.setName("Event ID");
+      defaultFields.add(eventId);
+      var event = new SmartlistFieldAssignment();
+      event.setName("Event Name");
+      defaultFields.add(event);
+      var psName = new SmartlistFieldAssignment();
+      psName.setName("Process Step Name");
+      defaultFields.add(psName);
+      var projectId = new SmartlistFieldAssignment();
+      projectId.setName("Project ID");
+      defaultFields.add(projectId);
+      var daysInQueue = new SmartlistFieldAssignment();
+      daysInQueue.setName("Days In Queue");
+      defaultFields.add(daysInQueue);
+
+      defaultFields.addAll(fields);
+      fields = defaultFields;
     } else {
       query = smartlistService.buildSql(smartlist, fields);
     }

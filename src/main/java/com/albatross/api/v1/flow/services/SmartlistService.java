@@ -417,7 +417,11 @@ public class SmartlistService {
     if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId() && !smartlist.isProjectDetails()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
+      if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L) {
+        query = buildWorkQueueSql(smartlist, fields, true);
+      } else {
+        query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
+      }
     }
 
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
@@ -425,7 +429,7 @@ public class SmartlistService {
     if (results.isEmpty()) {
       return writeEmptyCsv(fields);
     } else {
-      return writeCsv(results, fields, null != smartlist.getWorkQueueTypeId());
+      return writeCsv(results, fields, null != smartlist.getWorkQueueTypeId(), smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L);
     }
   }
 
@@ -2271,10 +2275,6 @@ public class SmartlistService {
         withClause.append(" and flow.project_process_step.main is true");
       }
 
-      if (smartlist.getObjectTypeId() == 6) {
-        withClause.append(" and flow.project_process_step_event.start_time is not null");
-      }
-
       query.append(String.format("%s), ", withClause));
     }
 
@@ -2530,8 +2530,7 @@ public class SmartlistService {
       //omit archived items
       .append("flow.project.archived is not true and ")
       .append("flow.project_process_step.archived is not true and ")
-      .append("flow.project_process_step_event.archived is not true and ")
-      .append("flow.project_process_step_event.start_time is not null");
+      .append("flow.project_process_step_event.archived is not true");
 
 
     //apply statuses/categories for any attached work queue types
@@ -2596,44 +2595,8 @@ public class SmartlistService {
     }
 
     //every table with a value we need is now joined
-    //build the "with" and "select" clauses
-    var selectQuery = new StringBuilder().append("with ")
-
-      // Get smartlist system lists
-      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
-
-      // Get tables for system lists
-      .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
-      .append("\"systemList_3\" as (select id, org_name::text as name from flow.org), ")
-      .append("\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
-
-    //add custom sql value tables
-    for (SmartlistFieldAssignment f : fields) {
-      if (f.getCustomFieldSqlKey() != null && selectQuery.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        selectQuery.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
-      }
-    }
-
-    //remove the extra ", "
-    selectQuery.delete(selectQuery.length() - 2, selectQuery.length());
-
-    selectQuery.append("select ");
-
-    //default fields
-    if (useEventData) {
-      //event fields
-      selectQuery.append("flow.project_process_step_event.id as \"Event ID\", ")
-        .append("flow.event.event_name \"Event\", ")
-        .append("flow.process_step.process_step_name as \"Process Step\", ")
-        .append("flow.project.id as \"Project ID\", ")
-        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
-    } else {
-      //process step fields
-    }
+    //build the "select" clause from smartlist fields
+    var selectQuery = new StringBuilder();
 
     for (SmartlistFieldAssignment f : fields) {
       //if field is smartlist system list
@@ -2701,62 +2664,128 @@ public class SmartlistService {
       }
     }
 
+    if (!fields.isEmpty()) {
+      //remove the extra ", "
+      selectQuery.delete(selectQuery.length() - 2, selectQuery.length());
+    }
+
+    //build the "with" and "select" clause from default fields
+    var defaultFields = new StringBuilder().append("with ")
+
+      // Get smartlist system lists
+      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
+
+      // Get tables for system lists
+      .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
+      .append("\"systemList_3\" as (select id, org_name::text as name from flow.org), ")
+      .append("\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
+
+
+    //add custom sql value tables
+    for (SmartlistFieldAssignment f : fields) {
+      if (f.getCustomFieldSqlKey() != null && selectQuery.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        defaultFields.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      }
+    }
+
     //remove the extra ", "
-    selectQuery.delete(selectQuery.length() - 2, selectQuery.length());
+    defaultFields.delete(defaultFields.length() - 2, defaultFields.length());
+
+    //default fields
+    if (useEventData) {
+      //event fields
+      defaultFields.append(" select flow.project_process_step_event.id as \"Event ID\", ")
+        .append("flow.event.event_name \"Event Name\", ")
+        .append("flow.process_step.process_step_name as \"Process Step Name\", ")
+        .append("flow.project.id as \"Project ID\", ")
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
+
+    } else {
+      //process step fields
+      defaultFields.append(" select ");
+    }
+
+    if (fields.isEmpty()) {
+      //remove the extra ", "
+      defaultFields.delete(defaultFields.length() - 2, defaultFields.length());
+    }
+
+
 
     //combine the query clauses and add the finishing semicolon
-    return selectQuery.append(query).append(";").toString();
+    return defaultFields.append(selectQuery).append(query).append(";").toString();
   }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist) throws JsonProcessingException {
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist, Boolean useEventData) throws JsonProcessingException {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     if(workQueueSmartlist) {
-      //add extra headers to the beginning if wq smartlist
-      String[] wqHeaders = {
-        "Active Process Steps",
-        "Owner",
-        "State Abbreviation",
-        "Days In Queue",
-        "Process Step Status Type",
-        "Process Step Name",
-        "Project Name",
-      };
-      for(String header : wqHeaders) {
-        SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
-        sfa.setName(header);
-        headers.add(0, sfa);
+      if (useEventData) {
+        //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
+        //add default fields to fields list
+        var defaultFields = new ArrayList<SmartlistFieldAssignment>();
+        var eventId = new SmartlistFieldAssignment();
+        eventId.setName("Event ID");
+        defaultFields.add(eventId);
+        var event = new SmartlistFieldAssignment();
+        event.setName("Event Name");
+        defaultFields.add(event);
+        var psName = new SmartlistFieldAssignment();
+        psName.setName("Process Step Name");
+        defaultFields.add(psName);
+        var projectId = new SmartlistFieldAssignment();
+        projectId.setName("Project ID");
+        defaultFields.add(projectId);
+        var daysInQueue = new SmartlistFieldAssignment();
+        daysInQueue.setName("Days In Queue");
+        defaultFields.add(daysInQueue);
+
+        defaultFields.addAll(headers);
+        headers = defaultFields;
+      } else {
+        //add extra headers to the beginning if wq smartlist
+        String[] wqHeaders = {
+          "Active Process Steps",
+          "Owner",
+          "State Abbreviation",
+          "Days In Queue",
+          "Process Step Status Type",
+          "Process Step Name",
+          "Project Name",
+        };
+        for(String header : wqHeaders) {
+          SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
+          sfa.setName(header);
+          headers.add(0, sfa);
+        }
+
+        //add most recent note header to the end after all the custom fields
+
+        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
+        sfa3.setName("Next Follow-up Date");
+        headers.add(sfa3);
+
+        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
+        sfa4.setName("Note Content");
+        headers.add(sfa4);
+
+        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
+        sfa5.setName("Note Created By");
+        headers.add(sfa5);
       }
-
-      //add most recent note header to the end after all the custom fields
-//      SmartlistFieldAssignment sfa2 = new SmartlistFieldAssignment();
-//      sfa2.setName("Note Created At");
-//      headers.add(sfa2);
-
-      SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
-      sfa3.setName("Next Follow-up Date");
-      headers.add(sfa3);
-
-      SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
-      sfa4.setName("Note Content");
-      headers.add(sfa4);
-
-      SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
-      sfa5.setName("Note Created By");
-      headers.add(sfa5);
-
     }
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
     for (int i = 0; i < data.size(); i++) {
       Map<String, Object> r = data.get(i);
 
-//      for (String field : dateFields) {
-//        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
-//      }
       r.remove("project_id");
       r.remove("contact_id");
-      if(workQueueSmartlist) {
+      if(workQueueSmartlist && !useEventData) {
         r.remove("processStepId");
         r.remove("projectProcessStepId");
         r.remove("workQueueType");
@@ -2768,7 +2797,6 @@ public class SmartlistService {
         r.remove("contactId");
         r.remove("lastUpdated");
         r.remove("Owning Positions");
-//        r.remove("Active Process Steps");
 
         //handle notes
         PGobject notesArray = ((PGobject) r.get("Notes"));
@@ -2787,19 +2815,13 @@ public class SmartlistService {
         r.remove("Notes");
       }
 
-//      HashMap<String, Object> test = new HashMap<>();
-//      test.put("processStepId", r.get("processStepId"));
-//      data.set(i, test);
       data.set(i, r);
     }
-
-//    headers.remove(1);
-//    headers.get(0).setName("processStepId");
 
     for (SmartlistFieldAssignment f : headers) {
       String headerName = f.getName();
       //if it is a work queue smartlist the custom columns have the process step name in them so this part has to be different
-      if(workQueueSmartlist && null != f.getProcessStepName()) {
+      if(workQueueSmartlist && !useEventData && null != f.getProcessStepName()) {
         headerName = f.getProcessStepName() + " - " + f.getName();
         if (headerName.length() > 63) {
           headerName = headerName.substring(0, 63);
@@ -3079,7 +3101,7 @@ public class SmartlistService {
    * @return a sql string snippet
    */
   private String joinPPsEventTable(String ppsEventTable, String ppsTable, Long processStepEventId) {
-    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".start_time is not null ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable);
+    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".process_step_event_id != flow.process_step_event.id ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable);
   }
 
   /**
@@ -3096,8 +3118,7 @@ public class SmartlistService {
     var join = "";
     var baseObjectTable = "";
     var baseJoinColumn = "";
-    var joinWithObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ";
-    var joinWithoutObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ";
+
     boolean isUUID;
 
     try {
@@ -3107,24 +3128,39 @@ public class SmartlistService {
       isUUID = false;
     }
 
-    if (objectTypeId == 1) {
-      baseObjectTable = "project";
-      baseJoinColumn = "project_id";
-    } else if (objectTypeId == 2) {
-      baseObjectTable = "contact";
-      baseJoinColumn = "contact_id";
-    } else if (objectTypeId == 4) {
-      baseObjectTable = "project_process_step";
-      baseJoinColumn = "project_process_step_id";
-    } else if (objectTypeId == 6) {
+    if (objectTypeId == 6) {
       baseObjectTable = "project_process_step_event";
       baseJoinColumn = "project_process_step_event_id";
-    }
 
-    if (isUUID) {
-      join = String.format(joinWithObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      //not sure we actually need to check for objectTable being a uuid here. I think on an event field, we will always pass in a uuid
+      var casePart = "";
+      if (isUUID) {
+        casePart = String.format("case when \"%s\".process_step_event_id != flow.process_step_event.id then \"%s\".id else flow.project_process_step_event.id end", objectTable, objectTable);
+        join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".custom_field_group_assignment_id = %s and \"%s\".%s = %s ", baseObjectTable, valueTable, valueTable, cfgaId, valueTable, baseJoinColumn, casePart);
+      } else {
+        join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ",  baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      }
+
     } else {
-      join = String.format(joinWithoutObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      var joinWithObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ";
+      var joinWithoutObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ";
+
+      if (objectTypeId == 1) {
+        baseObjectTable = "project";
+        baseJoinColumn = "project_id";
+      } else if (objectTypeId == 2) {
+        baseObjectTable = "contact";
+        baseJoinColumn = "contact_id";
+      } else if (objectTypeId == 4) {
+        baseObjectTable = "project_process_step";
+        baseJoinColumn = "project_process_step_id";
+      }
+
+      if (isUUID) {
+        join = String.format(joinWithObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      } else {
+        join = String.format(joinWithoutObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      }
     }
     return join;
   }
