@@ -2271,10 +2271,6 @@ public class SmartlistService {
         withClause.append(" and flow.project_process_step.main is true");
       }
 
-      if (smartlist.getObjectTypeId() == 6) {
-        withClause.append(" and flow.project_process_step_event.start_time is not null");
-      }
-
       query.append(String.format("%s), ", withClause));
     }
 
@@ -2530,8 +2526,7 @@ public class SmartlistService {
       //omit archived items
       .append("flow.project.archived is not true and ")
       .append("flow.project_process_step.archived is not true and ")
-      .append("flow.project_process_step_event.archived is not true and ")
-      .append("flow.project_process_step_event.start_time is not null");
+      .append("flow.project_process_step_event.archived is not true");
 
 
     //apply statuses/categories for any attached work queue types
@@ -2596,44 +2591,8 @@ public class SmartlistService {
     }
 
     //every table with a value we need is now joined
-    //build the "with" and "select" clauses
-    var selectQuery = new StringBuilder().append("with ")
-
-      // Get smartlist system lists
-      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
-
-      // Get tables for system lists
-      .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
-      .append("\"systemList_3\" as (select id, org_name::text as name from flow.org), ")
-      .append("\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
-
-    //add custom sql value tables
-    for (SmartlistFieldAssignment f : fields) {
-      if (f.getCustomFieldSqlKey() != null && selectQuery.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        selectQuery.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
-      }
-    }
-
-    //remove the extra ", "
-    selectQuery.delete(selectQuery.length() - 2, selectQuery.length());
-
-    selectQuery.append("select ");
-
-    //default fields
-    if (useEventData) {
-      //event fields
-      selectQuery.append("flow.project_process_step_event.id as \"Event ID\", ")
-        .append("flow.event.event_name \"Event\", ")
-        .append("flow.process_step.process_step_name as \"Process Step\", ")
-        .append("flow.project.id as \"Project ID\", ")
-        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
-    } else {
-      //process step fields
-    }
+    //build the "select" clause from smartlist fields
+    var selectQuery = new StringBuilder();
 
     for (SmartlistFieldAssignment f : fields) {
       //if field is smartlist system list
@@ -2701,11 +2660,60 @@ public class SmartlistService {
       }
     }
 
+    if (!fields.isEmpty()) {
+      //remove the extra ", "
+      selectQuery.delete(selectQuery.length() - 2, selectQuery.length());
+    }
+
+    //build the "with" and "select" clause from default fields
+    var defaultFields = new StringBuilder().append("with ")
+
+      // Get smartlist system lists
+      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
+
+      // Get tables for system lists
+      .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
+      .append("\"systemList_3\" as (select id, org_name::text as name from flow.org), ")
+      .append("\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
+
+
+    //add custom sql value tables
+    for (SmartlistFieldAssignment f : fields) {
+      if (f.getCustomFieldSqlKey() != null && selectQuery.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        defaultFields.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      }
+    }
+
     //remove the extra ", "
-    selectQuery.delete(selectQuery.length() - 2, selectQuery.length());
+    defaultFields.delete(defaultFields.length() - 2, defaultFields.length());
+
+    //default fields
+    if (useEventData) {
+      //event fields
+      defaultFields.append(" select flow.project_process_step_event.id as \"Event ID\", ")
+        .append("flow.event.event_name \"Event Name\", ")
+        .append("flow.process_step.process_step_name as \"Process Step Name\", ")
+        .append("flow.project.id as \"Project ID\", ")
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
+
+    } else {
+      //process step fields
+      defaultFields.append(" select ");
+    }
+
+    if (fields.isEmpty()) {
+      //remove the extra ", "
+      defaultFields.delete(defaultFields.length() - 2, defaultFields.length());
+    }
+
+
 
     //combine the query clauses and add the finishing semicolon
-    return selectQuery.append(query).append(";").toString();
+    return defaultFields.append(selectQuery).append(query).append(";").toString();
   }
 
   private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist) throws JsonProcessingException {
@@ -3079,7 +3087,7 @@ public class SmartlistService {
    * @return a sql string snippet
    */
   private String joinPPsEventTable(String ppsEventTable, String ppsTable, Long processStepEventId) {
-    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".start_time is not null ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable);
+    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".process_step_event_id != flow.process_step_event.id ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable);
   }
 
   /**
@@ -3096,8 +3104,7 @@ public class SmartlistService {
     var join = "";
     var baseObjectTable = "";
     var baseJoinColumn = "";
-    var joinWithObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ";
-    var joinWithoutObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ";
+
     boolean isUUID;
 
     try {
@@ -3107,24 +3114,39 @@ public class SmartlistService {
       isUUID = false;
     }
 
-    if (objectTypeId == 1) {
-      baseObjectTable = "project";
-      baseJoinColumn = "project_id";
-    } else if (objectTypeId == 2) {
-      baseObjectTable = "contact";
-      baseJoinColumn = "contact_id";
-    } else if (objectTypeId == 4) {
-      baseObjectTable = "project_process_step";
-      baseJoinColumn = "project_process_step_id";
-    } else if (objectTypeId == 6) {
+    if (objectTypeId == 6) {
       baseObjectTable = "project_process_step_event";
       baseJoinColumn = "project_process_step_event_id";
-    }
 
-    if (isUUID) {
-      join = String.format(joinWithObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      //not sure we actually need to check for objectTable being a uuid here. I think on an event field, we will always pass in a uuid
+      var casePart = "";
+      if (isUUID) {
+        casePart = String.format("case when \"%s\".process_step_event_id != flow.process_step_event.id then \"%s\".id else flow.project_process_step_event.id end", objectTable, objectTable);
+        join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".custom_field_group_assignment_id = %s and \"%s\".%s = %s ", baseObjectTable, valueTable, valueTable, cfgaId, valueTable, baseJoinColumn, casePart);
+      } else {
+        join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ",  baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      }
+
     } else {
-      join = String.format(joinWithoutObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      var joinWithObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ";
+      var joinWithoutObjectTableQuotes = " left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ";
+
+      if (objectTypeId == 1) {
+        baseObjectTable = "project";
+        baseJoinColumn = "project_id";
+      } else if (objectTypeId == 2) {
+        baseObjectTable = "contact";
+        baseJoinColumn = "contact_id";
+      } else if (objectTypeId == 4) {
+        baseObjectTable = "project_process_step";
+        baseJoinColumn = "project_process_step_id";
+      }
+
+      if (isUUID) {
+        join = String.format(joinWithObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      } else {
+        join = String.format(joinWithoutObjectTableQuotes, baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
+      }
     }
     return join;
   }
