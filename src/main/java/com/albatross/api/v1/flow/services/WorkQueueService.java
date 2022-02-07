@@ -190,6 +190,9 @@ public class WorkQueueService {
       var daysInQueue = new SmartlistFieldAssignment();
       daysInQueue.setName("Days In Queue");
       defaultFields.add(daysInQueue);
+
+      defaultFields.addAll(fields);
+      fields = defaultFields;
     } else {
       query = smartlistService.buildSql(smartlist, fields);
     }

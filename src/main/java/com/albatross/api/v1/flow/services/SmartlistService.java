@@ -417,7 +417,11 @@ public class SmartlistService {
     if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId() && !smartlist.isProjectDetails()) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
+      if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L) {
+        query = buildWorkQueueSql(smartlist, fields, true);
+      } else {
+        query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
+      }
     }
 
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
@@ -425,7 +429,7 @@ public class SmartlistService {
     if (results.isEmpty()) {
       return writeEmptyCsv(fields);
     } else {
-      return writeCsv(results, fields, null != smartlist.getWorkQueueTypeId());
+      return writeCsv(results, fields, null != smartlist.getWorkQueueTypeId(), smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L);
     }
   }
 
@@ -2716,55 +2720,72 @@ public class SmartlistService {
     return defaultFields.append(selectQuery).append(query).append(";").toString();
   }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist) throws JsonProcessingException {
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist, Boolean useEventData) throws JsonProcessingException {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     if(workQueueSmartlist) {
-      //add extra headers to the beginning if wq smartlist
-      String[] wqHeaders = {
-        "Active Process Steps",
-        "Owner",
-        "State Abbreviation",
-        "Days In Queue",
-        "Process Step Status Type",
-        "Process Step Name",
-        "Project Name",
-      };
-      for(String header : wqHeaders) {
-        SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
-        sfa.setName(header);
-        headers.add(0, sfa);
+      if (useEventData) {
+        //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
+        //add default fields to fields list
+        var defaultFields = new ArrayList<SmartlistFieldAssignment>();
+        var eventId = new SmartlistFieldAssignment();
+        eventId.setName("Event ID");
+        defaultFields.add(eventId);
+        var event = new SmartlistFieldAssignment();
+        event.setName("Event Name");
+        defaultFields.add(event);
+        var psName = new SmartlistFieldAssignment();
+        psName.setName("Process Step Name");
+        defaultFields.add(psName);
+        var projectId = new SmartlistFieldAssignment();
+        projectId.setName("Project ID");
+        defaultFields.add(projectId);
+        var daysInQueue = new SmartlistFieldAssignment();
+        daysInQueue.setName("Days In Queue");
+        defaultFields.add(daysInQueue);
+
+        defaultFields.addAll(headers);
+        headers = defaultFields;
+      } else {
+        //add extra headers to the beginning if wq smartlist
+        String[] wqHeaders = {
+          "Active Process Steps",
+          "Owner",
+          "State Abbreviation",
+          "Days In Queue",
+          "Process Step Status Type",
+          "Process Step Name",
+          "Project Name",
+        };
+        for(String header : wqHeaders) {
+          SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
+          sfa.setName(header);
+          headers.add(0, sfa);
+        }
+
+        //add most recent note header to the end after all the custom fields
+
+        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
+        sfa3.setName("Next Follow-up Date");
+        headers.add(sfa3);
+
+        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
+        sfa4.setName("Note Content");
+        headers.add(sfa4);
+
+        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
+        sfa5.setName("Note Created By");
+        headers.add(sfa5);
       }
-
-      //add most recent note header to the end after all the custom fields
-//      SmartlistFieldAssignment sfa2 = new SmartlistFieldAssignment();
-//      sfa2.setName("Note Created At");
-//      headers.add(sfa2);
-
-      SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
-      sfa3.setName("Next Follow-up Date");
-      headers.add(sfa3);
-
-      SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
-      sfa4.setName("Note Content");
-      headers.add(sfa4);
-
-      SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
-      sfa5.setName("Note Created By");
-      headers.add(sfa5);
-
     }
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
     for (int i = 0; i < data.size(); i++) {
       Map<String, Object> r = data.get(i);
 
-//      for (String field : dateFields) {
-//        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
-//      }
       r.remove("project_id");
       r.remove("contact_id");
-      if(workQueueSmartlist) {
+      if(workQueueSmartlist && !useEventData) {
         r.remove("processStepId");
         r.remove("projectProcessStepId");
         r.remove("workQueueType");
@@ -2776,7 +2797,6 @@ public class SmartlistService {
         r.remove("contactId");
         r.remove("lastUpdated");
         r.remove("Owning Positions");
-//        r.remove("Active Process Steps");
 
         //handle notes
         PGobject notesArray = ((PGobject) r.get("Notes"));
@@ -2795,19 +2815,13 @@ public class SmartlistService {
         r.remove("Notes");
       }
 
-//      HashMap<String, Object> test = new HashMap<>();
-//      test.put("processStepId", r.get("processStepId"));
-//      data.set(i, test);
       data.set(i, r);
     }
-
-//    headers.remove(1);
-//    headers.get(0).setName("processStepId");
 
     for (SmartlistFieldAssignment f : headers) {
       String headerName = f.getName();
       //if it is a work queue smartlist the custom columns have the process step name in them so this part has to be different
-      if(workQueueSmartlist && null != f.getProcessStepName()) {
+      if(workQueueSmartlist && !useEventData && null != f.getProcessStepName()) {
         headerName = f.getProcessStepName() + " - " + f.getName();
         if (headerName.length() > 63) {
           headerName = headerName.substring(0, 63);
