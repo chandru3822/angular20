@@ -502,6 +502,7 @@ export default {
   font-size: 0.875rem;
   color: #424242;
   margin-left: 5px;
+  overflow-wrap: break-word;
 }
 
 .project-header {
