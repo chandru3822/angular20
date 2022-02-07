@@ -143,7 +143,7 @@
           </v-btn>
         </div>
         <div v-if="!collapseLeftSidebar && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
-          <v-toolbar flat class="project-section-header">
+          <v-toolbar flat>
             <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -187,7 +187,7 @@
               <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
             </div>
           </div>
-          <v-divider class="mt-6 mx-5"></v-divider>
+          <v-divider class="mt-6"></v-divider>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
           <v-divider></v-divider>
           <UpcomingEvents v-if="userHasEventsFeature"
@@ -479,8 +479,8 @@ export default {
 
 <style lang="scss">
 .project-section-header .v-toolbar__content {
-  padding-left: 5px !important;
-  padding-right: 5px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 </style>
 
