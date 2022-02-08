@@ -6,7 +6,7 @@
           <v-btn text small :to="`/workQueue`" class="mr-3" color="primaryCustom">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <v-toolbar-title class="app-title" v-if="masterResults.length > 0">{{ masterResults[0].workQueueType }}
+          <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -23,12 +23,17 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <div v-if="noResults && !dataLoading" class="one-hunned text-center mt-5">
+          No results found
+        </div>
         <v-data-table
+          v-else
           :headers="filterHeaders()"
           :items="results"
           :fixed-header="true"
           :loading="dataLoading"
           :options.sync="options"
+          item-key="projectProcessStepEventId"
           :footer-props="footerProps"
           class="elevation-1 mt-1"
           id="wq-drilldown-table"
@@ -79,7 +84,15 @@
                 {{ item['Active Process Steps'] }}
               </td>
               <td v-for="c in customColumns">
-                {{ getColumnValue(item, c) }}
+                <a v-if="!useProcessStepHeaders && c.name === 'Project Name'">
+                  <v-btn text small
+                         :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
+                    {{ item['Project Name'] }}
+                  </v-btn>
+                </a>
+                <div v-else>
+                  {{ getColumnValue(item, c) }}
+                </div>
               </td>
               <td class="note-created-at" v-if="useProcessStepHeaders">
                 {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
@@ -163,7 +176,7 @@ import {
   getRequestWithParams,
   postRequest,
   getSnackbar,
-  logError
+  logError, getRequest
 } from '@/helpers/helpers'
 
 export default {
@@ -187,6 +200,7 @@ export default {
       userFullName: this.$store.state.user.details.fullName,
       showPropCustom: false,
       dataLoading: true,
+      workQueue: {},
       workQueueTypeId: this.$route.params.id,
       userPositionId: this.$route.query.upId,
       smartlistId: this.$route.query.smartlistId,
@@ -197,6 +211,7 @@ export default {
       masterResults: [],
       customColumns: [],
       useProcessStepHeaders: false,
+      noResults: true,
       totalItems: 0,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],
@@ -222,9 +237,23 @@ export default {
   async created() {
     this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqDrilldownFollowUps')) || false
+    this.getWorkQueueName()
     await this.getWorkDetails()
   },
   methods: {
+    async getWorkQueueName () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
+        this.workQueue = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     filterFutureFollowUps() {
       localStorage.setItem('hideFutureWqDrilldownFollowUps', JSON.stringify(this.hideFutureFollowUps))
       if (this.hideFutureFollowUps) {
@@ -256,7 +285,7 @@ export default {
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
-        saveAs(blob, `${this.results[0].workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+        saveAs(blob, `${this.workQueue.workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
@@ -293,20 +322,24 @@ export default {
         // this.totalItems = data.totalElements
         this.results = data?.data || []
 
+        this.noResults = this.results?.length === 0
+        this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
+
         //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
-        // this.results.forEach(r => {
-        //   r.showNotesModal = false
-        //   r.notes = JSON.parse(r['Notes'])
-        //   r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
-        //   r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
-        //   r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
-        //   r.firstNoteContent = r.notes[0]?.note,
-        //   // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
-        //   r.owningPositions = JSON.parse(r['Owning Positions'])
-        // })
+        if(this.useProcessStepHeaders) {
+          this.results.forEach(r => {
+            r.showNotesModal = false
+            r.notes = JSON.parse(r['Notes'])
+            r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
+            r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
+            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
+            r.firstNoteContent = r.notes[0]?.note,
+            // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
+            r.owningPositions = JSON.parse(r['Owning Positions'])
+          })
+        }
 
         this.masterResults = cloneDeep(this.results)
-        this.useProcessStepHeaders = this.masterResults.length === 0 || this.masterResults[0].owningPositions !== undefined
         if (this.useProcessStepHeaders) {
           this.headers = [
             {text: 'Project', value: 'Project Name', show: true},

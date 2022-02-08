@@ -2699,9 +2699,11 @@ public class SmartlistService {
     if (useEventData) {
       //event fields
       defaultFields.append(" select ")
-        .append("flow.project.id as \"Project ID\", ")
         .append("flow.project.project_name as \"Project Name\", ")
         .append("flow.event.event_name \"Event Name\", ")
+        .append("flow.project_process_step_event.id \"projectProcessStepEventId\", ")
+        .append("flow.project_process_step.id \"projectProcessStepId\", ")
+        .append("flow.project.id as \"projectId\", ")
         .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
         .append("flow.process_step.process_step_name as \"Process Step Name\", ")
         .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
@@ -2729,7 +2731,7 @@ public class SmartlistService {
     if(workQueueSmartlist) {
       if (useEventData) {
         //add default fields to fields list
-        var defaultFields = getEvenWorkqueueDefaultFields();
+        var defaultFields = getEventWorkqueueDefaultFields();
         defaultFields.addAll(headers);
         headers = defaultFields;
       } else {
@@ -3190,11 +3192,8 @@ public class SmartlistService {
     return join;
   }
 
-  public List<SmartlistFieldAssignment> getEvenWorkqueueDefaultFields() {
+  public List<SmartlistFieldAssignment> getEventWorkqueueDefaultFields() {
     var defaultFields = new ArrayList<SmartlistFieldAssignment>();
-    var projectId = new SmartlistFieldAssignment();
-    projectId.setName("Project ID");
-    defaultFields.add(projectId);
     var projectName = new SmartlistFieldAssignment();
     projectName.setName("Project Name");
     defaultFields.add(projectName);

@@ -111,7 +111,7 @@ public class WorkQueueService {
       query = smartlistService.buildWorkQueueSql(smartlist, fields, true);
 
       //add default fields to fields list
-      var defaultFields = smartlistService.getEvenWorkqueueDefaultFields();
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields();
       defaultFields.addAll(fields);
       fields = defaultFields;
     }
@@ -156,7 +156,7 @@ public class WorkQueueService {
       query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData);
 
       //add default fields to fields list
-      var defaultFields = smartlistService.getEvenWorkqueueDefaultFields();
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields();
       defaultFields.addAll(fields);
       fields = defaultFields;
     } else {
