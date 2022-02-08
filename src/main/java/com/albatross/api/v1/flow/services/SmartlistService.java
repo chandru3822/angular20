@@ -2773,34 +2773,40 @@ public class SmartlistService {
 
       r.remove("project_id");
       r.remove("contact_id");
-      if(workQueueSmartlist && !useEventData) {
-        r.remove("processStepId");
-        r.remove("projectProcessStepId");
-        r.remove("workQueueType");
-        r.remove("workQueueTypeId");
-        r.remove("processStepWorkQueueTypeId");
-        r.remove("projectId");
-        r.remove("projectStatusTypeId");
-        r.remove("companyProjectStatusTypeId");
-        r.remove("contactId");
-        r.remove("lastUpdated");
-        r.remove("Owning Positions");
-
-        //handle notes
-        PGobject notesArray = ((PGobject) r.get("Notes"));
-        TypeReference<List<Note>> notesRef = new TypeReference<>() {};
-        List<Note> notes = om.readValue(notesArray.getValue(), notesRef);
-        if(notes.size() > 0) {
-          Note firstNote = notes.get(0);
-          r.put("Next Follow-up Date", firstNote.getFollowUpDate());
-          r.put("Note Content", firstNote.getNote());
-          r.put("Note Created By", firstNote.getCreatedBy());
+      if(workQueueSmartlist) {
+        if (useEventData) {
+          r.remove("projectProcessStepEventId");
+          r.remove("projectProcessStepId");
+          r.remove("projectId");
         } else {
-          r.put("Next Follow-up Date", null);
-          r.put("Note Content", null);
-          r.put("Note Created By", null);
+          r.remove("processStepId");
+          r.remove("projectProcessStepId");
+          r.remove("workQueueType");
+          r.remove("workQueueTypeId");
+          r.remove("processStepWorkQueueTypeId");
+          r.remove("projectId");
+          r.remove("projectStatusTypeId");
+          r.remove("companyProjectStatusTypeId");
+          r.remove("contactId");
+          r.remove("lastUpdated");
+          r.remove("Owning Positions");
+
+          //handle notes
+          PGobject notesArray = ((PGobject) r.get("Notes"));
+          TypeReference<List<Note>> notesRef = new TypeReference<>() {};
+          List<Note> notes = om.readValue(notesArray.getValue(), notesRef);
+          if(notes.size() > 0) {
+            Note firstNote = notes.get(0);
+            r.put("Next Follow-up Date", firstNote.getFollowUpDate());
+            r.put("Note Content", firstNote.getNote());
+            r.put("Note Created By", firstNote.getCreatedBy());
+          } else {
+            r.put("Next Follow-up Date", null);
+            r.put("Note Content", null);
+            r.put("Note Created By", null);
+          }
+          r.remove("Notes");
         }
-        r.remove("Notes");
       }
 
       data.set(i, r);
