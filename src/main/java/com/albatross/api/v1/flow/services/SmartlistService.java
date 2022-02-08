@@ -2698,10 +2698,13 @@ public class SmartlistService {
     //default fields
     if (useEventData) {
       //event fields
-      defaultFields.append(" select flow.project_process_step_event.id as \"Event ID\", ")
-        .append("flow.event.event_name \"Event Name\", ")
-        .append("flow.process_step.process_step_name as \"Process Step Name\", ")
+      defaultFields.append(" select ")
         .append("flow.project.id as \"Project ID\", ")
+        .append("flow.project.project_name as \"Project Name\", ")
+        .append("flow.event.event_name \"Event Name\", ")
+        .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
+        .append("flow.process_step.process_step_name as \"Process Step Name\", ")
+        .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
         .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
 
     } else {
@@ -2728,18 +2731,24 @@ public class SmartlistService {
         //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
         //add default fields to fields list
         var defaultFields = new ArrayList<SmartlistFieldAssignment>();
-        var eventId = new SmartlistFieldAssignment();
-        eventId.setName("Event ID");
-        defaultFields.add(eventId);
-        var event = new SmartlistFieldAssignment();
-        event.setName("Event Name");
-        defaultFields.add(event);
-        var psName = new SmartlistFieldAssignment();
-        psName.setName("Process Step Name");
-        defaultFields.add(psName);
         var projectId = new SmartlistFieldAssignment();
         projectId.setName("Project ID");
         defaultFields.add(projectId);
+        var projectName = new SmartlistFieldAssignment();
+        projectName.setName("Project Name");
+        defaultFields.add(projectName);
+        var event = new SmartlistFieldAssignment();
+        event.setName("Event Name");
+        defaultFields.add(event);
+        var eventStatus = new SmartlistFieldAssignment();
+        eventStatus.setName("Event Status");
+        defaultFields.add(eventStatus);
+        var psName = new SmartlistFieldAssignment();
+        psName.setName("Process Step Name");
+        defaultFields.add(psName);
+        var psStatus = new SmartlistFieldAssignment();
+        psStatus.setName("Process Step Status");
+        defaultFields.add(psStatus);
         var daysInQueue = new SmartlistFieldAssignment();
         daysInQueue.setName("Days In Queue");
         defaultFields.add(daysInQueue);
