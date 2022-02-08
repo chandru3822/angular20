@@ -1,7 +1,7 @@
 <template>
   <div id="project-admin-container">
     <v-toolbar flat color="#E3E3E3" class="project-header">
-      <div class="project-title">
+      <div class="app-title albatross-header-1">
         <router-link :to="`/project/${projectId}/details`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
@@ -485,10 +485,6 @@ export default {
 .project-header {
   border-bottom: solid 1px #EAEAF4;
   height: 64px;
-}
-
-.project-title {
-  font-size: 18px;
 }
 
 .process-step-toolbar .v-toolbar__content {
