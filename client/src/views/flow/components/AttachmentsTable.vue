@@ -39,7 +39,7 @@
             v-model="item.deleteConfirm"
             width="500">
           <template #activator="{ on }">
-            <v-btn small text v-on="on" class="px-0">
+            <v-btn small text v-on="on" class="px-0" v-if="!item.edit">
               <v-icon>delete</v-icon>
             </v-btn>
           </template>
