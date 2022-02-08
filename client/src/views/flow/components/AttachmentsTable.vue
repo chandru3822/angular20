@@ -37,34 +37,28 @@
         </v-btn>
         <v-dialog
             v-model="item.deleteConfirm"
-            width="500">
+            width="400"
+        class="albatross-body-1">
           <template #activator="{ on }">
             <v-btn small text v-on="on" class="px-0" v-if="!item.edit">
               <v-icon>delete</v-icon>
             </v-btn>
           </template>
           <v-card>
-            <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-              Confirm
-            </v-card-title>
-
             <v-card-text class="pt-4">
-              Are you sure you want to delete <strong>{{item.filename}}</strong>?
+              Are you sure you want to delete {{item.filename}}?
             </v-card-text>
-
-            <v-divider></v-divider>
-
             <v-card-actions>
-              <v-spacer></v-spacer>
               <v-btn
+                  class="elevation-0 text-capitalize"
                   @click="item.deleteConfirm = false">
                 No
               </v-btn>
+              <v-spacer></v-spacer>
               <v-btn
                   color="primaryCustom"
-                  text
+                  dark
+                  class="elevation-0 text-capitalize"
                   @click="[item.archived = true, deleteAttachment(item.id)]">
                 Yes
               </v-btn>
