@@ -65,7 +65,7 @@
                     :field="field"
                   />
                 </v-col>
-                <v-col cols="6" v-if="columnSplit">
+                <v-col cols="6" v-if="columnSplit" class="pb-0 pt-2">
                   <CustomValueInput
                     v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
                     :key="idx"
