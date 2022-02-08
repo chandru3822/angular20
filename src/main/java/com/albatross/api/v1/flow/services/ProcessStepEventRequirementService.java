@@ -177,7 +177,7 @@ public class ProcessStepEventRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
+      TypeReference<List<EventRequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
         new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
