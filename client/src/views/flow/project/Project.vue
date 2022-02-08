@@ -106,17 +106,17 @@
     <!--    end dialog -->
 
     <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
-      <v-toolbar-title class="app-title font-size-18">
+      <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
         <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
-          <v-icon class="mx-5" size="12">mdi-arrow-right</v-icon>
-          <router-link class="breadcrumb" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}?processStepId=${$store.state.project.pps.processStepId}&contactId=${project.contactId}`">
+          <v-icon class="mx-4" size="14">mdi-chevron-right</v-icon>
+          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}?processStepId=${$store.state.project.pps.processStepId}&contactId=${project.contactId}`" :class="{'font-weight-bold' : !$store.state.project.ppsEvent.id}">
             {{$store.state.project.pps.processStepName}}
           </router-link>
         </span>
         <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
-          <v-icon class="mx-5" size="12">mdi-arrow-right</v-icon>
-          <router-link class="breadcrumb" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+          <v-icon class="mx-4" size="14">mdi-chevron-right</v-icon>
+          <router-link class="breadcrumb albatross-body-2 font-weight-bold" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
             {{$store.state.project.ppsEvent.eventName}} Event
           </router-link>
         </span>
@@ -482,6 +482,12 @@ export default {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+
+.app-title, .breadcrumb {
+  a {
+    text-decoration-line: none;
+  }
+}
 </style>
 
 <style lang="scss" scoped>
@@ -573,8 +579,5 @@ export default {
   padding: 10px !important;
 }
 
-.breadcrumb {
-  font-size: 12px;
-}
 </style>
 
