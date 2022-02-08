@@ -110,31 +110,8 @@ public class WorkQueueService {
       //this should only be called for wqt using event data
       query = smartlistService.buildWorkQueueSql(smartlist, fields, true);
 
-      //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
       //add default fields to fields list
-      var defaultFields = new ArrayList<SmartlistFieldAssignment>();
-      var projectId = new SmartlistFieldAssignment();
-      projectId.setName("Project ID");
-      defaultFields.add(projectId);
-      var projectName = new SmartlistFieldAssignment();
-      projectName.setName("Project Name");
-      defaultFields.add(projectName);
-      var event = new SmartlistFieldAssignment();
-      event.setName("Event Name");
-      defaultFields.add(event);
-      var eventStatus = new SmartlistFieldAssignment();
-      eventStatus.setName("Event Status");
-      defaultFields.add(eventStatus);
-      var psName = new SmartlistFieldAssignment();
-      psName.setName("Process Step Name");
-      defaultFields.add(psName);
-      var psStatus = new SmartlistFieldAssignment();
-      psStatus.setName("Process Step Status");
-      defaultFields.add(psStatus);
-      var daysInQueue = new SmartlistFieldAssignment();
-      daysInQueue.setName("Days In Queue");
-      defaultFields.add(daysInQueue);
-
+      var defaultFields = smartlistService.getEvenWorkqueueDefaultFields();
       defaultFields.addAll(fields);
       fields = defaultFields;
     }
@@ -178,31 +155,8 @@ public class WorkQueueService {
 //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
       query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData);
 
-      //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
       //add default fields to fields list
-      var defaultFields = new ArrayList<SmartlistFieldAssignment>();
-      var projectId = new SmartlistFieldAssignment();
-      projectId.setName("Project ID");
-      defaultFields.add(projectId);
-      var projectName = new SmartlistFieldAssignment();
-      projectName.setName("Project Name");
-      defaultFields.add(projectName);
-      var event = new SmartlistFieldAssignment();
-      event.setName("Event Name");
-      defaultFields.add(event);
-      var eventStatus = new SmartlistFieldAssignment();
-      eventStatus.setName("Event Status");
-      defaultFields.add(eventStatus);
-      var psName = new SmartlistFieldAssignment();
-      psName.setName("Process Step Name");
-      defaultFields.add(psName);
-      var psStatus = new SmartlistFieldAssignment();
-      psStatus.setName("Process Step Status");
-      defaultFields.add(psStatus);
-      var daysInQueue = new SmartlistFieldAssignment();
-      daysInQueue.setName("Days In Queue");
-      defaultFields.add(daysInQueue);
-
+      var defaultFields = smartlistService.getEvenWorkqueueDefaultFields();
       defaultFields.addAll(fields);
       fields = defaultFields;
     } else {
