@@ -35,8 +35,9 @@
                   v-if="!projectProcessStepId"
                   @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
                   elevation="0"
-                  color="transparent"
+
                   class="expansion-panel-btn"
+                  :disabled="getNonPrimaryCount(type.attachmentTypeId) == 0"
               >
                 <span v-if="type.showNonPrimary">Hide non-primary</span>
                 <span v-else>Show non-primary</span>
@@ -203,6 +204,13 @@ export default {
         return 0
       }
     },
+    getNonPrimaryCount: function(typeId) {
+      try {
+        return this.attachments?.filter(a => a.attachmentTypeId === typeId && !a.archived && !a.main).length || 0
+      } catch {
+        return 0
+      }
+    },
     addDragDocument: async function (e, attachmentTypeId) {
       let files = e.dataTransfer.files
       await this.uploadDocument(files, attachmentTypeId)
@@ -286,5 +294,9 @@ export default {
 
 .file-hover {
   background: #EEF0F4 !important;
+}
+
+.theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
+  background-color: transparent !important;
 }
 </style>
