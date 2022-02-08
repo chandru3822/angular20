@@ -656,6 +656,8 @@ export default {
           processStepId: this.selectedEvent.processStepId,
           processStepName: this.selectedEvent.processStepName
         })
+        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
+          : `${this.selectedEvent.eventName}`
         this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId

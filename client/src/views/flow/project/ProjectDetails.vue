@@ -129,6 +129,7 @@ export default {
     }
   },
   created() {
+    window.document.title = `${this.project.projectName} - Project Details`
     this.getProjectTabs()
     this.getProcessSteps()
     this.getFieldGroups()

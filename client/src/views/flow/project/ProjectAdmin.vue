@@ -300,6 +300,7 @@ export default {
       try {
         const {data} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        window.document.title = `${this.project.projectName} - Admin`
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching project')

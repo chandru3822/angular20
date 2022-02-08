@@ -153,6 +153,7 @@ export default {
         this.isProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.processSteps = data
+        window.document.title = `${this.project.projectName} - Process Steps`
       } catch (e) {
         logError(e)
       } finally {

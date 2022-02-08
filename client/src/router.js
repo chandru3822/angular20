@@ -1110,7 +1110,6 @@ const router = new Router({
         {
           path: '/project/:projectId',
           name: 'project',
-          meta: {title: 'Albatross - Project'},
           component: () => {
             if (store.getters.userHasFeature('PROJECTS')) {
               return import (/* webpackChunkName: "project" */ './views/flow/project/Project.vue')
@@ -1121,7 +1120,6 @@ const router = new Router({
           children: [{
             path: 'details',
             name: 'projectDetails',
-            meta: {title: 'Albatross - Project Details'},
             // component: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue')
             components: {
               default: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue'),
@@ -1170,7 +1168,6 @@ const router = new Router({
         },        {
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
-          meta: {title: 'Albatross - Projects'},
           component: () => {
             if (store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')) {
               return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')

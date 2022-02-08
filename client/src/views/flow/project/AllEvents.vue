@@ -145,6 +145,7 @@ export default {
         this.upcomingEventsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/events`)
         this.events = data
+        window.document.title = `${this.project.projectName} - Events`
       } catch (e) {
         logError(e)
       } finally {

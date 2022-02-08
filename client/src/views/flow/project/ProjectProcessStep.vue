@@ -336,7 +336,8 @@ const NEW_STATUS_TO_USE = {id: null}
 export default {
   name: 'ProjectProcessStep',
   props: {
-    splitValueColumns: Boolean
+    splitValueColumns: Boolean,
+    project: Object
   },
   components: {
     ActionButton,
@@ -379,8 +380,6 @@ export default {
       toPath: null,
       navigationOverride: false,
       notes: [],
-      project: {},
-      // projectLoading: true,
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
@@ -534,19 +533,6 @@ export default {
 
       }
     },
-    // getProject: async function () {
-    //   try {
-    //     this.projectLoading = true
-    //     const {data} = await getRequest(`/project/${this.projectId}`)
-    //     this.projectLoading = false
-    //     this.project = data
-    //     window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
-    //       : `${this.project.projectName}`
-    //   } catch (e) {
-    //     this.projectLoading = false
-    //     logError(e)
-    //   }
-    // },
     async getAvailableOwners() {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.processStep?.processStepProcessId) {
