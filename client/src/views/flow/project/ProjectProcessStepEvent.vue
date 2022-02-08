@@ -84,13 +84,8 @@
         </v-dialog>
       </div>
       <div class="fixed-toolbar">
-        <v-toolbar flat color="secondary">
+        <v-toolbar flat color="secondary" class="cfg-name-toolbar">
           <v-toolbar-title class="albatross-header-3" >
-            <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
-                   class="px-0" target="_blank"
-                   :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-              <v-icon>mdi-calendar</v-icon>
-            </v-btn>
             Event Details
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -121,6 +116,14 @@
       </v-card>
 
       <v-form ref="eventFieldForm" v-else>
+        <div class="albatross-header-4 d-flex align-baseline">Overview
+        <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                                                         class="px-0 d-flex align-baseline" target="_blank"
+                                                         :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+              <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span><v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
+            </v-btn>
+        </div>
+        <v-card class="square-card px-4 pt-4 mt-4">
         <v-autocomplete
           v-model="selectedEvent.companyEventStatusTypeId"
           :items="companyEventStatuses"
@@ -229,7 +232,7 @@
           </v-card-text>
 
         </div>
-
+        </v-card>
         <v-col
           v-if="selectedEvent && selectedEvent.id"
           class="pt-0 px-0"
@@ -886,12 +889,21 @@ export default {
 
 </style>
 <style lang="scss" scoped>
+
 .cfg-detail-header {
   background-color: var(--v-secondary-base) !important;
   margin-left: -10px;
   margin-right: -10px;
   padding-left: 10px;
   padding-right: 10px;
+}
+.scheduler-button-text {
+  text-transform: capitalize;
+  text-decoration: underline;
+}
+.scheduler-button-icon {
+ text-decoration: none;
+  font-size: 12px;
 }
 
 .action-subheader {
