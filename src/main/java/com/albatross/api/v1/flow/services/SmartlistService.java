@@ -2728,31 +2728,8 @@ public class SmartlistService {
 
     if(workQueueSmartlist) {
       if (useEventData) {
-        //@todo: There are definitely better ways to add the default event workqueue fields. This is to get it working
         //add default fields to fields list
-        var defaultFields = new ArrayList<SmartlistFieldAssignment>();
-        var projectId = new SmartlistFieldAssignment();
-        projectId.setName("Project ID");
-        defaultFields.add(projectId);
-        var projectName = new SmartlistFieldAssignment();
-        projectName.setName("Project Name");
-        defaultFields.add(projectName);
-        var event = new SmartlistFieldAssignment();
-        event.setName("Event Name");
-        defaultFields.add(event);
-        var eventStatus = new SmartlistFieldAssignment();
-        eventStatus.setName("Event Status");
-        defaultFields.add(eventStatus);
-        var psName = new SmartlistFieldAssignment();
-        psName.setName("Process Step Name");
-        defaultFields.add(psName);
-        var psStatus = new SmartlistFieldAssignment();
-        psStatus.setName("Process Step Status");
-        defaultFields.add(psStatus);
-        var daysInQueue = new SmartlistFieldAssignment();
-        daysInQueue.setName("Days In Queue");
-        defaultFields.add(daysInQueue);
-
+        var defaultFields = getEvenWorkqueueDefaultFields();
         defaultFields.addAll(headers);
         headers = defaultFields;
       } else {
@@ -3211,6 +3188,33 @@ public class SmartlistService {
     join += " left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id";
 
     return join;
+  }
+
+  public List<SmartlistFieldAssignment> getEvenWorkqueueDefaultFields() {
+    var defaultFields = new ArrayList<SmartlistFieldAssignment>();
+    var projectId = new SmartlistFieldAssignment();
+    projectId.setName("Project ID");
+    defaultFields.add(projectId);
+    var projectName = new SmartlistFieldAssignment();
+    projectName.setName("Project Name");
+    defaultFields.add(projectName);
+    var event = new SmartlistFieldAssignment();
+    event.setName("Event Name");
+    defaultFields.add(event);
+    var eventStatus = new SmartlistFieldAssignment();
+    eventStatus.setName("Event Status");
+    defaultFields.add(eventStatus);
+    var psName = new SmartlistFieldAssignment();
+    psName.setName("Process Step Name");
+    defaultFields.add(psName);
+    var psStatus = new SmartlistFieldAssignment();
+    psStatus.setName("Process Step Status");
+    defaultFields.add(psStatus);
+    var daysInQueue = new SmartlistFieldAssignment();
+    daysInQueue.setName("Days In Queue");
+    defaultFields.add(daysInQueue);
+
+    return defaultFields;
   }
 
 //  private String getCfgaValueTable(List<SmartlistFieldAssignment> fields, Long cfgaId) {
