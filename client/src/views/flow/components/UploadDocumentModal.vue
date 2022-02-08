@@ -3,7 +3,7 @@
     <v-form ref="uploadDocumentForm" class="one-hunned">
       <v-card-title
         color="blackText"
-        class="text-h6 text-capitalize pa-0 font-weight-bold"
+        class="albatross-header-3 text-capitalize pa-0"
         primary-title>
         Select Folder
       </v-card-title>
@@ -36,8 +36,7 @@
       </v-card-text>
       <v-card-actions class="upload-actions">
         <v-btn
-          color="grey"
-          text
+            class="elevation-0 text-capitalize"
           @click="$emit('cancel')"
         >
           Close

@@ -6,7 +6,7 @@
         <v-form ref="projectEditForm">
           <v-card-title
             color="blackText"
-            class="text-h6 text-capitalize pa-0 font-weight-bold"
+            class="albatross-header-3 text-capitalize pa-0"
             primary-title>
             Project Overview
           </v-card-title>
@@ -89,7 +89,7 @@
         </v-form>
 
         <v-card-actions class="pa-0">
-          <v-btn @click="showEditProjectModal = false">
+          <v-btn @click="showEditProjectModal = false" class="text-capitalize">
             cancel
           </v-btn>
           <v-spacer></v-spacer>
