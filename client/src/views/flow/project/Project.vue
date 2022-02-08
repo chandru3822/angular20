@@ -89,7 +89,7 @@
         </v-form>
 
         <v-card-actions class="pa-0">
-          <v-btn @click="showEditProjectModal = false">
+          <v-btn @click="showEditProjectModal = false" class="text-capitalize">
             cancel
           </v-btn>
           <v-spacer></v-spacer>
