@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="!processStepLoading" class="py-0 pt-6 px-6 relative height-one-hunned overflow-y-auto">
+  <v-main v-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -36,7 +36,7 @@
       </v-col>
 
       <v-col cols="12" class="pb-4">
-        <v-toolbar color="transparent" class="elevation-0 mt-2 cfg-name-toolbar toolbar-z-index-override mx-2">
+        <v-toolbar color="transparent" class="elevation-0 mt-6 cfg-name-toolbar toolbar-z-index-override mx-2">
           <v-toolbar-title class="process-step-name albatross-header-2">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"
