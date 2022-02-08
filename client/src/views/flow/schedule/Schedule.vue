@@ -86,6 +86,7 @@
                             :items="searchProjects"
                             :search-input.sync="search"
                             item-text="projectName"
+                            :key="0"
                             prepend-icon="search"
                             text
                             label="Search for project..."

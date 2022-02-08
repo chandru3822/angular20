@@ -289,6 +289,7 @@ where case when :isParent
           and (concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
                   OR p.id::text = :search OR p.project_name ILIKE '%' || :search || '%')
         order by c.first_name, c.last_name
+        limit 100
   ]]></schedule.searchProjectsByName>
 
 </sql>
