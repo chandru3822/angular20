@@ -35,8 +35,8 @@
         </v-dialog>
       </v-col>
 
-      <v-col cols="12" class="pb-4">
-        <v-toolbar color="transparent" class="elevation-0 mt-6 cfg-name-toolbar toolbar-z-index-override mx-2">
+      <v-col cols="12" class="pb-4 pt-6">
+        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
           <v-toolbar-title class="process-step-name albatross-header-2">
             {{ processStep.processStepName }}
             <span v-if="processStep.processStepStatusTypeId"
@@ -746,7 +746,6 @@ export default {
 .process-step-name {
   font-weight: normal;
   font-size: 1.25rem;
-  padding-top: 10px;
 }
 
 .owner-image {
