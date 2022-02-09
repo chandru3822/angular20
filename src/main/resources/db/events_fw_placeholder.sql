@@ -676,6 +676,21 @@ set archived = true
 from offendingRequirements
 where sr.id = offendingRequirements.id;
 
+-- archive smartlist field assignments that used to belong to PSs but will now belong to events (start times, end times, and resource fields)
+update flow.smartlist_field_assignment
+set archived = true
+where id = any(
+  select distinct(sfa.id)
+  from flow.smartlist s
+         inner join flow.smartlist_field_assignment sfa on sfa.smartlist_id = s.id
+         inner join flow.custom_field_group_assignment cfga on cfga.id = sfa.custom_field_group_assignment_id
+         inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+         inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+         inner join flow.user u on s.owner_id = u.id
+  where to_tsvector(cf.field_name) @@ to_tsquery('resource | time') and s.archived is not true and sfa.archived is not true
+)
+returning id;
+
 --system fields
 insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, created_by_id, company_data_type_id, join_table, join_column, smartlist_system_list_id)
 values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, null, null, null),
