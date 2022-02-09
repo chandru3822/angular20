@@ -111,13 +111,13 @@ public class BlueravenProposalService {
     }
 
     // save custom field data for description and due date
-    // cfgaId for description field on proposal = 22592
-    params.put("cfgaId", 22592);
+    // cfgaId for description field on proposal = 22679
+    params.put("cfgaId", 22679);
     params.put("value", description);
     sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
 
-    // cfgaId for due date field on proposal = 22591
-    params.put("cfgaId", 22591);
+    // cfgaId for due date field on proposal = 22678
+    params.put("cfgaId", 22678);
     params.put("value", dueDate);
     sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
 
