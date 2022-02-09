@@ -404,7 +404,7 @@
             Non Standard Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <div v-for="item in getCustomFieldsForGroup(40)" :key="item.id">
+            <div v-for="item in getCustomFieldsForGroup(42)" :key="item.id">
               <CustomValueInput
                 :callback="(item) => updateDirtyValue(item)"
                 :readonly="!userCanEdit"
