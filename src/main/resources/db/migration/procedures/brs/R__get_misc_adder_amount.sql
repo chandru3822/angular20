@@ -1,3 +1,5 @@
+drop function if exists  brs.get_misc_adder_amount(
+  p_system_size numeric);
 CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount(
   p_system_size numeric)
   returns numeric
@@ -31,6 +33,8 @@ BEGIN
         v_amount = coalesce(v_amount,0) + v_adder_amount;
       elsif v_unit_type_id = 460 then
         v_amount = coalesce(v_amount,0) + v_adder_amount * p_system_size * 1000;
+      elsif v_unit_type_id = 458 then
+        --percent of total  total_system_cost*rebate_amount
       end if;
   end loop;
 
