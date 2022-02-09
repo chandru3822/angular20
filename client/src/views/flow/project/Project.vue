@@ -190,7 +190,7 @@
           <v-divider class="mt-6"></v-divider>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
           <v-divider class="mb-3"></v-divider>
-          <UpcomingEvents v-if="userHasEventsFeature"
+          <ActiveEvents v-if="userHasEventsFeature"
                           :update-key="updateEventKey"
                           :projectId="projectId"
                           class="mx-2"/>
@@ -242,7 +242,7 @@ import cloneDeep from 'lodash.clonedeep'
 import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
-import UpcomingEvents from '@/views/flow/project/UpcomingEvents'
+import ActiveEvents from '@/views/flow/project/ActiveEvents'
 import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
 import {getCompanyStates} from "@/services/stateService";
@@ -254,7 +254,7 @@ export default {
   components: {
     ProjectActivity,
     ActiveProcessSteps,
-    UpcomingEvents
+    ActiveEvents
   },
   data() {
     return {
