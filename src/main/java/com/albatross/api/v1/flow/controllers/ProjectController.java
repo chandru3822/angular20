@@ -94,7 +94,7 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, null), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/{projectId}/upcomingEvents", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{projectId}/activeEvents", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectProcessStepEvent>> getUpcomingProjectEvents(@PathVariable Long projectId) {
     return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, 1L), HttpStatus.OK);
   }

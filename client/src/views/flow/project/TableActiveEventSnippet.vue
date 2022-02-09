@@ -40,7 +40,7 @@
 
 <script>
 export default {
-  name: 'UpcomingEventSnippet',
+  name: 'TableActiveEventSnippet',
   props: {
     projectId: Number,
     events: Array

@@ -18,7 +18,7 @@ import {getStatusClass} from '@/services/processStepStatusTypeService'
 import EventButton from "@/views/flow/project/EventButton";
 
 export default {
-  name: 'UpcomingEventSnippet',
+  name: 'ActiveEventSnippet',
   props: {
     projectId: Number,
     events: Array
