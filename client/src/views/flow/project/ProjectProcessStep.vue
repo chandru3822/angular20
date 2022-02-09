@@ -653,6 +653,8 @@ export default {
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       } else {
         this.getProcessStep(false)
+        //have to reload the custom field groups as well in case the action populated something
+        this.getCustomFieldGroups()
       }
     },
     handleOnCompleteError(actionId, errorMessage) {

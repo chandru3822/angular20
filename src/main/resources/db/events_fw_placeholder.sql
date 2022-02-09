@@ -600,6 +600,25 @@ insert into flow.company_function(company_function_name, db_function_id, company
 select 'Process Step has Event With Custom Field Value', (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 3
 where not exists (select id from flow.company_function where company_function_name = 'Process Step has Event With Custom Field Value');
 
+-- add function for proposal due date work queue
+insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+select 'brs.populate_proposal_due_date', null, 2, 'Populate Proposal Due Date', 'Checks for Closer Appointment Event on itself and uses the start time as the proposal due date.'
+where not exists (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date');
+;
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date'), 'Project ID', 0,
+       6, 1, 2
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date')
+                                                           and parameter_name = 'Project ID');
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date'), 'Project Process Step ID', 1,
+       6, 1, 3
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date')
+                                                           and parameter_name = 'Project Process Step ID');
+insert into flow.company_function(company_function_name, db_function_id, company_id)
+select 'Populate Proposal Due Date', (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Populate Proposal Due Date');
+
 
 
 -- SMARTLIST STUFF
