@@ -688,8 +688,7 @@ where id = any(
          inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
          inner join flow.user u on s.owner_id = u.id
   where to_tsvector(cf.field_name) @@ to_tsquery('resource | time') and s.archived is not true and sfa.archived is not true
-)
-returning id;
+);
 
 --system fields
 insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, created_by_id, company_data_type_id, join_table, join_column, smartlist_system_list_id)
