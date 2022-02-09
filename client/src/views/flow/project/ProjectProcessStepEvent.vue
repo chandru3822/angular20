@@ -3,8 +3,8 @@
     <div v-if="selectedEvent.id">
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
-          {{ selectedEvent.eventName }}
-
+          {{ selectedEvent.eventName}}
+          <span :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{selectedEvent.eventStatusType}})</span> <br>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -313,6 +313,8 @@ import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
+import {getStatusClass} from '@/services/eventStatusTypeService'
+
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -374,7 +376,8 @@ export default {
       showUnperformableActions: false,
       eventDetailsLoading: true,
       windowWidth: window.innerWidth,
-      splitColumnMinWidth: 1700
+      splitColumnMinWidth: 1700,
+      getStatusClass
     }
   },
   async created() {
