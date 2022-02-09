@@ -94,7 +94,6 @@ export default {
           for (let i = 0; i < files.length; ++i) {
             let file = files[i];
             if (file && file.size > 0) {
-              console.log('PPS', this.ppsId)
               await this.$store.dispatch(null != this.ppsId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
                 null != this.ppsEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD : Actions.OBJECT_TYPE_FILE_UPLOAD, {
                 file,

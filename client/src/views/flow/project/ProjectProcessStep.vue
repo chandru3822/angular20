@@ -27,7 +27,7 @@
               <v-btn
                 color="primaryCustom"
                 text
-                @click="[navigationOverride = true, goToPath(toPath)]">
+                @click="[navigationOverride = true, goToPath(toPath, query)]">
                 Yes
               </v-btn>
             </v-card-actions>
@@ -378,6 +378,7 @@ export default {
       isProcessStepLoading: true,
       dirtyCfvs: [],
       toPath: null,
+      query: {},
       navigationOverride: false,
       notes: [],
       displayChangeOwner: false,
@@ -428,15 +429,27 @@ export default {
       }
     }
   },
-  beforeRouteLeave(to, from, next) {
-    // called when the route that renders this component is about to
-    // be navigated away from.
-    // has access to `this` component instance.
+  beforeRouteUpdate(to, from, next) {
+    // called when the route that renders this component is about to be updated via router-view update
     if (this.navigationOverride || this.dirtyCfvs.length === 0) {
-      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
       next()
     } else {
       this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to be navigated away from.
+    if (this.navigationOverride || this.dirtyCfvs.length === 0) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
       this.unsavedFieldsModal = true
     }
   },
@@ -471,8 +484,10 @@ export default {
         }
       })
     },
-    goToPath(path) {
-      this.$router.push(path)
+    goToPath(path, query) {
+      //reset these values so the next screen works if also a pps
+      this.unsavedFieldsModal = false
+      this.$router.push({ path, query })
     },
     async getAvailableStatuses() {
       if (this.processStep?.processStepId) {

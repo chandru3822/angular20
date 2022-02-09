@@ -704,7 +704,6 @@
       },
       async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
         this.listLoading = true
-        console.log('PPSEEVENETID',projectProcessStepEventId)
         try {
           let params = {
             projectId,
