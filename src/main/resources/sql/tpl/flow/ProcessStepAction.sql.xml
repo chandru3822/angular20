@@ -79,7 +79,7 @@
                                                      dfp.db_function_id as "dbFunctionId",
                                                      dfp.parameter_name as "parameterName",
                                                      dfp.data_type_id as "dataTypeId",
-                                                     apdv.db_function_param_id as "dbFunctionParamId",
+                                                     dfp.id as "dbFunctionParamId",
                                                      apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                      apdv.dynamic_value as "dynamicValue"
                                               from flow.db_function_param dfp
@@ -307,7 +307,7 @@
                                     dfp.db_function_id as "dbFunctionId",
                                     dfp.parameter_name as "parameterName",
                                     dfp.data_type_id as "dataTypeId",
-                                    apdv.db_function_param_id as "dbFunctionParamId",
+                                    dfp.id as "dbFunctionParamId",
                                     apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                     apdv.dynamic_value as "dynamicValue"
                              from flow.db_function_param dfp
@@ -372,7 +372,7 @@ select
       dfp.db_function_id as "dbFunctionId",
       dfp.parameter_name as "parameterName",
       dfp.data_type_id as "dataTypeId",
-      apdv.db_function_param_id as "dbFunctionParamId",
+      dfp.id as "dbFunctionParamId",
       apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
       apdv.dynamic_value as "dynamicValue"
     from flow.db_function_param dfp
