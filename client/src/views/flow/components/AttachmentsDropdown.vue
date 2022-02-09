@@ -32,12 +32,11 @@
               </v-btn>
 
               <v-btn
-                  v-if="!projectProcessStepId"
+                  v-if="!projectProcessStepId && getNonPrimaryCount(type.attachmentTypeId) != 0"
                   @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
                   elevation="0"
 
                   class="expansion-panel-btn"
-                  :disabled="getNonPrimaryCount(type.attachmentTypeId) == 0"
               >
                 <span v-if="type.showNonPrimary">Hide non-primary</span>
                 <span v-else>Show non-primary</span>

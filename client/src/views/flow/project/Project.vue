@@ -189,7 +189,7 @@
           </div>
           <v-divider class="mt-6"></v-divider>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
-          <v-divider></v-divider>
+          <v-divider class="mb-3"></v-divider>
           <UpcomingEvents v-if="userHasEventsFeature"
                           :update-key="updateEventKey"
                           :projectId="projectId"
