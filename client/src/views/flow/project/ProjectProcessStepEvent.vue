@@ -1,7 +1,7 @@
 <template>
-  <v-main class="py-0 px-6 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
     <div v-if="selectedEvent.id">
-      <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
+      <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
           {{ selectedEvent.eventName }}
 
@@ -48,7 +48,7 @@
           </v-dialog>
         </v-toolbar-items>
       </v-toolbar>
-      <div class="pb-4">
+      <div class="pb-4 px-6">
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
         <div class="action-subheader albatross-header-3">
           Actions
@@ -72,7 +72,7 @@
         </v-btn>
       </div>
       </div>
-      <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="mb-2">
+      <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="mb-2 px-6">
         <v-btn class="one-hunned text-capitalize" color="#E3E3E3" @click="showUploadModal = true">
           Upload Documents
         </v-btn>
@@ -83,9 +83,9 @@
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
       </div>
-      <div class="fixed-toolbar">
-        <v-toolbar flat color="secondary" class="cfg-name-toolbar">
-          <v-toolbar-title class="albatross-header-3" >
+      <div class="fixed-toolbar padding-left-1">
+        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-6">
+          <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -115,7 +115,7 @@
         project screen and update.
       </v-card>
 
-      <v-form ref="eventFieldForm" v-else>
+      <v-form ref="eventFieldForm" class="px-6" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
         <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
                                                          class="px-0 d-flex align-baseline" target="_blank"
@@ -911,6 +911,10 @@ export default {
 .action-subheader {
   width: 186px;
   margin-top: 20px;
+}
+
+.padding-left-1 {
+  padding-left: 1px; //keeps the Event Details toolbar from covering the border on the left panel
 }
 
 ::v-deep {
