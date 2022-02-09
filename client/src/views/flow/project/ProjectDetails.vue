@@ -17,7 +17,7 @@
             Project Details
           </v-tab>
         </v-tabs>
-        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-3" v-if="displayedGroups && displayedGroups.length > 0">
+        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6" v-if="displayedGroups && displayedGroups.length > 0">
           <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -38,7 +38,7 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
-      <div class="project-fields-container" ref="projectFieldsContainer">
+      <div class="project-fields-container px-3" ref="projectFieldsContainer">
         <v-col v-if="isFieldsLoading">
           <SpinnerInline :size="20" color="primaryCustom"/>
         </v-col>
