@@ -6,7 +6,6 @@
       <EventButton
           :event="e"
           :project-id="projectId"
-          :pps-event-id="ppsEventId"
       />
     </div>
   </v-col>
@@ -24,11 +23,7 @@ export default {
     events: Array
   },
 
-  computed: {
-    ppsEventId () {
-      return parseInt(this.$route.params.ppsEventId)
-    },
-  },
+  computed: {},
   data () {
     return {
       getStatusClass

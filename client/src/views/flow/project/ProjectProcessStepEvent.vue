@@ -1,5 +1,35 @@
 <template>
   <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="text-h5 grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved fields. Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath, query)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <div v-if="selectedEvent.id">
       <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
@@ -131,6 +161,7 @@
           :disabled="!userCanManage"
           item-text="eventStatusType"
           item-value="id"
+          @input="defaultValuesChanged = true"
         ></v-autocomplete>
         <DatetimePickerInput
           v-model="selectedEvent.startTime"
@@ -141,6 +172,7 @@
           :type="'timestamp'"
           :format="'MMMM DD, YYYY, h:mm A'"
           label="Start Time"
+          :change-callback="() => { this.defaultValuesChanged = true}"
         />
         <DatetimePickerInput
           v-model="selectedEvent.endTime"
@@ -151,6 +183,7 @@
           :type="'timestamp'"
           :format="'MMMM DD, YYYY, h:mm A'"
           label="End Time"
+          :change-callback="() => { this.defaultValuesChanged = true}"
         />
         <v-autocomplete
           v-if="selectedEvent && selectedEvent.availableResources"
@@ -162,6 +195,7 @@
           label="Resource"
           item-text="name"
           item-value="id"
+          @input="defaultValuesChanged = true"
         ></v-autocomplete>
 
         <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
@@ -335,6 +369,11 @@ export default {
       selectedEvent: {},
       showUploadModal: false,
       uploadModalWidth: 400,
+      defaultValuesChanged: false,
+      unsavedFieldsModal: false,
+      navigationOverride: false,
+      toPath: null,
+      query: {},
       attachmentTypes: [],
       attemptedAction: {},
       companyEventStatuses: [],
@@ -383,6 +422,30 @@ export default {
   async created() {
     await this.loadAllPageDetails()
   },
+  beforeRouteUpdate(to, from, next) {
+    // called when the route that renders this component is about to be updated via router-view update
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.defaultValuesChanged)) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to be navigated away from.
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.defaultValuesChanged)) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
   mounted() {
     window.addEventListener('resize', () => {
       this.windowWidth = window.innerWidth
@@ -419,6 +482,10 @@ export default {
     }
   },
   methods: {
+    goToPath(path, query) {
+      this.unsavedFieldsModal = false
+      this.$router.push({ path, query })
+    },
     setSplitColumnValue() {
       //flip the flag
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
@@ -706,6 +773,7 @@ export default {
           customFieldValues: this.dirtyCfvs
         }
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
+        this.dirtyCfvs = []
         this.selectedEvent = data
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
@@ -845,6 +913,7 @@ export default {
       //after everything, only save if valid
       if (validSave) {
         this.eventActionMissingRequirements = false
+        this.defaultValuesChanged = false
         this.saveEventDetails()
       }
     },

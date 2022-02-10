@@ -49,6 +49,11 @@ export default {
 
 
 <style scoped lang="scss">
+//removes the blue-ish effect after you click one of these
+.active-ps:focus::before {
+  opacity: 0;
+}
+
 .active-ps {
   background-color: #EEEEEE;
 }
