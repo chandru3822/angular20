@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class AhjPermitDetail extends AhjPermit {
     private List<AhjLink> submissionLinks, followUpLinks;
-    private List<AhjChecklistItem> submissionChecklist, revisionChecklist, asBuiltChecklist;
+    private List<AhjChecklistItem> submissionChecklist, revisionChecklist, asBuiltChecklist, nonStandardChecklist;
     private List<AhjNote> notes;
     private List<AhjContact> submissionContacts, followUpContacts, printLocations;
     private List<User> servicingFots;

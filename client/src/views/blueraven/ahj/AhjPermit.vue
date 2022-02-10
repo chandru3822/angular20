@@ -398,6 +398,60 @@
             </v-card>
           </v-card-text>
         </v-card>
+
+        <v-card>
+          <v-card-title class="primaryCustom white--text font-weight-bold">
+            Non Standard Submission Details
+          </v-card-title>
+          <v-card-text class="mt-4">
+            <div v-for="item in getCustomFieldsForGroup(42)" :key="item.id">
+              <CustomValueInput
+                :callback="(item) => updateDirtyValue(item)"
+                :readonly="!userCanEdit"
+                :showFieldName="false"
+                :field="item"
+                :filled-style="true"
+              />
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                            label="Other Value"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            filled
+                            class="other-field"
+              ></v-text-field>
+            </div>
+            <AhjChecklist v-if="dataReady"
+                          title="Non Standard Submission Checklist"
+                          :checklistTypeId="14"
+                          :itemId="ahjPermit.id"
+                          :user-can-edit="userCanEdit"
+                          :itemType="itemType"
+                          :ahjId="ahjId"
+                          :checklist-items="ahjPermit.nonStandardChecklist"
+                          :isNested="true"
+            ></AhjChecklist>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                Non Standard Submission Instructions
+                <v-btn text x-small fab @click="editNonStandardSubmissionInstruction = !editNonStandardSubmissionInstruction">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.nonStandardNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editNonStandardSubmissionInstruction"
+                            :disabled="!userCanEdit || !editNonStandardSubmissionInstruction"
+                            filled
+                            auto-grow
+                            class="override-readonly-font-color"
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
+          </v-card-text>
+        </v-card>
       </v-col>
 
       <!-- FOURTH COLUMN -->
@@ -727,6 +781,7 @@
       editRevisionSubmissionInstruction: false,
       editSubmissionInstruction: false,
       editAsBuiltSubmissionInstruction: false,
+      editNonStandardSubmissionInstruction: false,
       editDeliveryInstruction: false,
       editApprovalInstructions: false,
       editBrsTechnicianPermitPickupAndDeliveryInstructions: false,
@@ -737,6 +792,7 @@
         submissionChecklist: [],
         revisionChecklist: [],
         asBuiltChecklist: [],
+        nonStandardChecklist: [],
         submissionLinks: [],
         followUpLinks: [],
         submissionContacts: [],
