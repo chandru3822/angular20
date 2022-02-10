@@ -751,6 +751,7 @@ export default {
       try {
         await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
         //go to the process step
+        this.$emit('refresh-upcoming-events')
         this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`)
       } catch (e) {
         console.error('*** ERROR ***', e)
