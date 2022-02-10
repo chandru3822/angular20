@@ -48,7 +48,7 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.date_value = p_value_to_check::date
@@ -61,7 +61,7 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.timestamp_value = p_value_to_check::timestamp
@@ -74,7 +74,7 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.boolean_value = p_value_to_check::boolean
@@ -87,7 +87,7 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.numeric_value = p_value_to_check::numeric
@@ -100,7 +100,7 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.text_value = p_value_to_check
@@ -113,7 +113,7 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.int_value = p_value_to_check::integer
