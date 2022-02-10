@@ -92,19 +92,14 @@
           <v-spacer></v-spacer>
           <v-toolbar-items class="owner-toolbar-items">
             <div v-if="!displayChangeOwner">
-              <div v-if="processStep.owner && processStep.owner.userId">
-                <v-avatar
-                  :tile="false"
-                  :size="16"
-                  color="grey lighten-4"
-                  class="account-img mr-2 owner-image"
-                >
-                  <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
-                </v-avatar>
+              <div v-if="processStep.owner && processStep.owner.userId" class="d-flex flex-row align-center">
+                <div class="d-flex flex-column">
                 <div class="owner-info">
                   {{ processStep.owner.fullName }}<br/>
-                  <span class="owner-position">{{ processStep.owner.position }}</span>
+                  <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
                 </div>
+                </div>
+                <v-btn v-if="userCanEdit" small icon class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
               </div>
             </div>
             <div v-if="displayChangeOwner">
@@ -124,16 +119,11 @@
               </v-autocomplete>
             </div>
             <div>
-              <v-btn text small v-if="userCanEdit" class="change-owner-button"
+              <v-btn text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
                      :class="{'mt-2': displayChangeOwner}"
                      @click="displayChangeOwner = !displayChangeOwner">
                 <span v-if="displayChangeOwner">cancel</span>
-                <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
                 <span v-else>add owner</span>
-              </v-btn>
-              <v-btn text small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
-                     class="change-owner-button" @click="removeOwner">
-                remove
               </v-btn>
             </div>
           </v-toolbar-items>
@@ -769,6 +759,10 @@ export default {
   display: inline-block;
   vertical-align: top;
   margin-top: 5px;
+}
+
+owner-toolbar-tools {
+  display: flex;
 }
 
 .owner-info {
