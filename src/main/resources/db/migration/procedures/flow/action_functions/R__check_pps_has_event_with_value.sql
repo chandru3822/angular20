@@ -28,7 +28,8 @@ BEGIN
            inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
            inner join flow.custom_field cf on cfga.custom_field_id = cf.id
            inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-    where pps.id = p_project_process_step_id;
+    where pps.id = p_project_process_step_id
+    and cfga.id = p_cfga;
 
     -- 1,date
     -- 2,timestamp
@@ -123,6 +124,7 @@ BEGIN
       --currently not going to code to work for multi-selects
 
     end if;
+    return v_request_is_valid;
   else
     return false;
   end if;
