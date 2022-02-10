@@ -32,11 +32,15 @@ export default {
   props: {
     projectId: Number,
     event: Object,
-    ppsEventId: Number
+  },
+  computed: {
+    ppsEventId () {
+      return parseInt(this.$route.params.ppsEventId)
+    }
   },
   data() {
     return {
-      getStatusClass
+      getStatusClass,
     }
   },
   methods: {
@@ -48,8 +52,13 @@ export default {
 </script>
 
 <style lang="scss">
+//removes the blue-ish effect after you click one of these
+.active-event:focus::before {
+  opacity: 0;
+}
+
 .active-event {
-  background-color: #EEEEEE;
+  background-color: #EEEEEE !important;
 }
 
 .event-button {

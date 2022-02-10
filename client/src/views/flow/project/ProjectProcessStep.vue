@@ -695,6 +695,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventToAdd.id}`)
+        this.$emit('refresh-upcoming-events')
         this.$router.push(`/project/${this.projectId}/processStep/${data.projectProcessStepId}/event/${data.id}`)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
