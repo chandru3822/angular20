@@ -577,6 +577,7 @@ export default {
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        this.$emit('refresh-upcoming-pps')
         await this.getProcessStep(false)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
