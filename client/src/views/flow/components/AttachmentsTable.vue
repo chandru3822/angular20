@@ -2,8 +2,8 @@
   <small v-if="!drillDownAttachments.length" small class="pl-3">No attachments available</small>
 
   <v-container v-else dense :key="renderTicker">
-    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'shaded-row': item.main}" :key="item.processStepId">
-      <v-col class="text-left pa-1 flex-grow-3">
+    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
+      <v-col cols="5" class="text-left pa-1">
         <v-btn
             icon
             text
@@ -13,18 +13,18 @@
           </v-icon>
         </v-btn>
         <a v-if="!item.edit" :href="item.presignedUrl"
-           class="type link text-center">
+           class="type link text-left text-decoration-none">
           {{ item.editableName }}
         </a>
         <v-text-field
             v-else
             hide-details
             label="Filename"
-            class="my-2 flex-grow-2 text-field"
+            class="my-2 text-field"
             v-model="item.editableName"
         ></v-text-field>
       </v-col>
-      <v-col small class="text-right px-1 flex-grow-2 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
+      <v-col small class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
       <v-col class="text-right pa-0">
         <v-btn v-if="!item.edit" dense small text class="px-0" @click="[item.edit = true, renderTicker++]">
           <v-icon>edit</v-icon>
@@ -151,8 +151,12 @@ export default {
 
 .attachment-info {
   font-size: 14px;
-  color: #A5A5A5;
+  color: #5E636D;
 
+}
+
+.primary-row{
+  background-color: #ebf5ff !important;
 }
 
 </style>
