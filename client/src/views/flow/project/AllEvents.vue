@@ -4,7 +4,7 @@
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>Active Events</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
             </v-toolbar-items>

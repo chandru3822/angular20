@@ -51,7 +51,7 @@
             :key="index"
           >
             <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-              <v-toolbar-title class="albatross-header-3">{{ group.groupName }}</v-toolbar-title>
+              <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
             </v-toolbar>
             <v-card class="px-4 text-left square-card">
               <v-row>
