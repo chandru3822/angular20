@@ -122,6 +122,21 @@
             ORDER BY ac.display_order) checklist
           ), '[]'
         ) AS asBuiltChecklist,
+      coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(checklist)))
+                 FROM (
+                        SELECT
+                          ac.id,
+                          ac.description,
+                          ac.display_order AS "displayOrder"
+                        FROM brs.ahj_checklist ac
+                               INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+                        WHERE ac.archived IS FALSE
+                          AND ac.checklist_type_id = 14
+                          AND apc.ahj_permit_id = p.id
+                        ORDER BY ac.display_order) checklist
+               ), '[]'
+        ) AS nonStandardChecklist,
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(links)))
           FROM (
@@ -247,6 +262,7 @@
           submission_note = :submissionNote,
           revision_note = :revisionNote,
           as_built_note = :asBuiltNote,
+          non_standard_note = :nonStandardNote,
           delivery_note = :deliveryNote
       WHERE id = :id
     ]]>
@@ -281,6 +297,7 @@
           submission_note = :submissionNote,
           revision_note = :revisionNote,
           as_built_note = :asBuiltNote,
+          non_standard_note = :nonStandardNote,
           delivery_note = :deliveryNote
       WHERE ahj_id IN (:ahjIds)
     ]]>
