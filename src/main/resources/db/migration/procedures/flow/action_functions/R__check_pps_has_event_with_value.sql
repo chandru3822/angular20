@@ -24,13 +24,10 @@ BEGIN
 
     select cdt.data_type_id
     into v_data_type_id
-    from flow.project_process_step pps
-           inner join flow.custom_field_group cfg on cfg.process_step_id = pps.process_step_id
-           inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+    from flow.custom_field_group_assignment cfga
            inner join flow.custom_field cf on cfga.custom_field_id = cf.id
            inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-    where pps.id = p_project_process_step_id
-    and cfga.id = p_cfga;
+    where cfga.id = p_cfga;
 
     -- 1,date
     -- 2,timestamp
