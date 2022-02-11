@@ -1,6 +1,6 @@
 <template>
   <div v-if="loadComplete">
-    <v-row>
+    <v-row class="toolbar-z-index-override">
       <v-col
         v-if="VUE_APP_ENV === 'uat'"
         cols="12"
@@ -93,11 +93,11 @@
         </v-app-bar>
       </v-col>
     </v-row>
-    <div id="context-label"
-         @click="goToPath('/home')"
-         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">
-      {{selectedCompany.companyName}}
-    </div>
+<!--    <div id="context-label"-->
+<!--         @click="goToPath('/home')"-->
+<!--         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">-->
+<!--      {{selectedCompany.companyName}}-->
+<!--    </div>-->
   </div>
 </template>
 

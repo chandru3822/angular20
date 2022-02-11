@@ -1,0 +1,142 @@
+<template>
+  <v-row id="project-activity-container" no-gutters>
+    <v-col cols="12" lg="12" class="py-0 pr-0">
+      <div v-show="!isCollapsed" class="albatross-header-3 pl-4 mb-3">{{sidebarTitle}}</div>
+      <div class="project-activity-inner-container">
+        <div v-show="!isCollapsed" :style="{'height': isCollapsed ? 'calc(100% - 250px)' : 'calc(100vh - 17rem)'}">
+          <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
+          <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
+          <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId"/>
+        </div>
+      </div>
+      <div class="footer-container mb-6"
+           :style="{'width': isCollapsed ? '72px' : 'calc(100% - 30px)',
+                    'left': isCollapsed ? '0px' : '15px',}">
+        <v-row
+            :value="selectedOption"
+            color="primaryButton"
+            :style="{'flex-direction': isCollapsed ? 'column' : 'row',
+                      'width': isCollapsed ? 'calc(100% - 45px)' : '100%'}"
+            class="section-footer ma-0"
+        >
+          <v-col cols="4" class="px-0">
+            <v-btn text block elevation="0"  @click="selectView(0)" :dark = "selectedOption === 0" :class="{'section-selected': selectedOption===0}">
+              <v-icon>mdi-forum-outline</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption === 1" :class="{'section-selected': selectedOption===1}">
+              <v-icon>mdi-text-long</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text block elevation="0"  @click="selectView(2)" :dark="selectedOption === 2" :class="{'section-selected': selectedOption===2}">
+              <v-icon>mdi-folder-outline</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
+    </v-col>
+  </v-row>
+</template>
+
+<script>
+
+import SpinnerInline from '@/components/SpinnerInline'
+import ProjectNotes from '@/views/flow/project/ProjectNotes'
+import Messaging from '@/views/flow/components/Messaging'
+import AttachmentsDropdown from "@/views/flow/components/AttachmentsDropdown";
+import {ProjectMutations} from '@/stores/ProjectStore'
+
+export default {
+  name: 'ProjectActivity',
+  components: {
+    SpinnerInline,
+    AttachmentsDropdown,
+    ProjectNotes,
+    Messaging
+  },
+  props: {
+    isCollapsed: Boolean
+  },
+  data () {
+    return {
+      projectId: parseInt(this.$route.params.projectId),
+      projectProcessStepId: parseInt(this.$route.params.processStepId),
+      projectProcessStepEventId: parseInt(this.$route.params.ppsEventId),
+      selectedOption: null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab,
+
+  }
+  },
+  created () {
+  },
+  computed: {
+    sidebarTitle(){
+      switch (this.selectedOption){
+        case 0:
+          return "Project Communication"
+        case 1:
+          return "Project Notes"
+        case 2:
+          return "Documents"
+      }
+    }
+  },
+
+  methods: {
+    selectView: function(viewOption){
+      this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
+      this.selectedOption = viewOption;
+      if(this.isCollapsed){
+        this.$emit('openRight');
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+
+#project-activity-container{
+  height: 100%;
+  position: relative;
+}
+
+.project-activity-inner-container{
+  overflow: auto;
+}
+
+.project-activity-content {
+  min-height: 800px;
+  overflow-y: scroll;
+  width:100%;
+}
+
+.footer-container {
+  width: calc(100% - 30px);
+  height: fit-content;
+  min-height: 65px;
+  bottom: 5px;
+  position: absolute;
+}
+
+.section-footer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: white;
+}
+
+.section-selected{
+  background-color: var(--v-primaryCustom-base) !important;
+}
+
+.section-not-selected {
+  background-color: white;
+}
+
+</style>
+
+<style lang="scss">
+
+</style>

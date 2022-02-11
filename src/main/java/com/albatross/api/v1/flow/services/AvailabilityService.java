@@ -4,7 +4,6 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
@@ -615,6 +614,7 @@ public class AvailabilityService {
       params.put("projectId", request.getProjectId());
       params.put("userId", user.trueUserId());
       params.put("projectProcessStepId", request.getProjectProcessStepId());
+      params.put("projectProcessStepEventId", request.getProjectProcessStepEventId());
       params.put("appointmentTime", request.getAppointmentTime());
       params.put("users", sqlArrayService.createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
@@ -656,9 +656,7 @@ public class AvailabilityService {
 
             communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
           }
-          //i need these back the same way we get them for normal cfgs on the frontend
-          List<CustomFieldGroup> cfgs = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROCESS_STEP.textValue(), request.getProjectProcessStepId());
-          return ResponseEntity.ok(cfgs);
+          return ResponseEntity.ok(results.get(0));
         } else {
           //todo: handle other types of errors from function
           // Appointment no longer available. Please select another time.

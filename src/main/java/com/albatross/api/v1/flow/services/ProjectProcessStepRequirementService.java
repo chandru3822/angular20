@@ -26,11 +26,20 @@ public class ProjectProcessStepRequirementService {
   private final ObjectMapper om;
 
   public List<ProjectProcessStepRequirement> getByProjectProcessStepId(Long projectProcessStepId, List<Long> requirementIds) {
+    return getByProjectProcessStepId(projectProcessStepId, requirementIds, false);
+  }
+
+  public List<ProjectProcessStepRequirement> getByProjectProcessStepId(Long projectProcessStepId, List<Long> requirementIds, Boolean getEventRequirements) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("requirementIds", "{" + requirementIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + "}");
 
-    List<ProjectProcessStepRequirement> requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+    List<ProjectProcessStepRequirement> requirements;
+    if(getEventRequirements) {
+       requirements = sqlCache.query("processStepRequirement.getEventActionRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+    } else {
+      requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+    }
 
     // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
     for (ProjectProcessStepRequirement req : requirements) {

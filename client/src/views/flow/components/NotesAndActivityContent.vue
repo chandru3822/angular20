@@ -1,19 +1,15 @@
 <template>
-  <v-col>
-    <v-toolbar color="transparent" class="elevation-0">
-      <v-toolbar-title>Notes</v-toolbar-title>
-    </v-toolbar>
-    <v-card class="square-card mx-4">
+  <div :class="{'elevation-1': bordered}">
       <v-toolbar flat dense color="white" class="elevation-0">
-        <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
+        <v-toolbar-title class="albatross-header-4">Leave a note:</v-toolbar-title>
       </v-toolbar>
       <v-divider></v-divider>
-      <v-card class="px-3 elevation-0 square-card">
+      <v-card class="px-3 elevation-0 square-card overflow-y-auto">
         <Mentionable
-          :keys="['@']"
-          :items="users"
-          offset="6"
-          insert-space
+            :keys="['@']"
+            :items="users"
+            offset="6"
+            insert-space
         >
           <v-textarea class="py-2" hide-details
                       auto-grow
@@ -40,15 +36,15 @@
         <div class="follow-up-reminder" v-if="isWqtNote">
           <label class="mr-3">Set follow-up reminder for: </label>
           <DatetimePickerInput
-            v-model="note.followUpDate"
-            :timezone="timezone"
-            :type="'date'"
-            :outlined="'outlined'"
-            :format="'MM/DD/YYYY'"
-            placeholder="Choose Date"
-            :hide-details="true"
-            :show-append-icon="true"
-            :hide-prepend-icon="true"
+              v-model="note.followUpDate"
+              :timezone="timezone"
+              :type="'date'"
+              :outlined="'outlined'"
+              :format="'MM/DD/YYYY'"
+              placeholder="Choose Date"
+              :hide-details="true"
+              :show-append-icon="true"
+              :hide-prepend-icon="true"
           />
         </div>
         <div class="text-left mb-2 mt-5">
@@ -65,15 +61,15 @@
 
       <v-spacer></v-spacer>
       <v-data-table
-        :headers="displayedHeaders"
-        :items="filterNotes()"
-        :items-per-page="-1"
-        single-expand
-        item-key="id"
-        disable-sort
-        :expanded.sync="expanded"
-        hide-default-footer
-        class="elevation-0 mt-1"
+          :headers="displayedHeaders"
+          :items="filterNotes()"
+          :items-per-page="-1"
+          single-expand
+          item-key="id"
+          disable-sort
+          :expanded.sync="expanded"
+          hide-default-footer
+          class="elevation-0 mt-1"
       >
 
         <template #no-data>
@@ -87,10 +83,10 @@
           <tr class="text-left" :class="{'shaded-row': index % 2}" v-if="item.edit">
             <td class="py-2 pl-5" colspan="3">
               <Mentionable
-                :keys="['@']"
-                :items="users"
-                offset="6"
-                insert-space
+                  :keys="['@']"
+                  :items="users"
+                  offset="6"
+                  insert-space
               >
                 <v-textarea class="py-2" hide-details
                             auto-grow
@@ -116,15 +112,15 @@
               <div class="follow-up-reminder" v-if="isWqtNote">
                 <label class="mr-3">Set follow-up reminder for: </label>
                 <DatetimePickerInput
-                  v-model="item.followUpDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :outlined="'outlined'"
-                  :format="'MM/DD/YYYY'"
-                  placeholder="Choose Date"
-                  :hide-details="true"
-                  :show-append-icon="true"
-                  :hide-prepend-icon="true"
+                    v-model="item.followUpDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :outlined="'outlined'"
+                    :format="'MM/DD/YYYY'"
+                    placeholder="Choose Date"
+                    :hide-details="true"
+                    :show-append-icon="true"
+                    :hide-prepend-icon="true"
                 />
               </div>
               <div class="text-left mb-2">
@@ -140,7 +136,7 @@
             </td>
           </tr>
           <tr class="text-left" :class="{'shaded-row': index % 2}" v-else>
-            <td class="py-2 pl-5">
+            <td class="py-2 note-column">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
                    @click="expanded=[item]" class="pl-4 note-see-comments clickable">
@@ -175,9 +171,9 @@
                     <v-list-item-title>Edit Note</v-list-item-title>
                   </v-list-item>
                   <v-dialog
-                    v-if="item.createdById === userId || $store.getters.isFullAdmin"
-                    v-model="item.deleteConfirm"
-                    width="500">
+                      v-if="item.createdById === userId || $store.getters.isFullAdmin"
+                      v-model="item.deleteConfirm"
+                      width="500">
                     <template #activator="{ on }">
                       <v-list-item v-on="on">
                         <v-list-item-title>Delete Note</v-list-item-title>
@@ -185,8 +181,8 @@
                     </template>
                     <v-card>
                       <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
+                          class="text-h5 grey lighten-2"
+                          primary-title>
                         Confirm
                       </v-card-title>
 
@@ -199,13 +195,13 @@
                       <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn
-                          @click="item.deleteConfirm = false">
+                            @click="item.deleteConfirm = false">
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deleteNote(item, false)">
+                            color="primaryCustom"
+                            text
+                            @click="deleteNote(item, false)">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -222,10 +218,10 @@
           <td :colspan="headers.length" class="py-4 px-10">
             <div v-if="item.showReply">
               <Mentionable
-                :keys="['@']"
-                :items="users"
-                offset="6"
-                insert-space
+                  :keys="['@']"
+                  :items="users"
+                  offset="6"
+                  insert-space
               >
                 <v-textarea solo v-model="item.reply"
                             hide-details
@@ -263,10 +259,10 @@
             <div v-for="(cn, index) in filterBy(item.childNotes, false, 'archived')" :key="index">
               <div v-if="cn.edit">
                 <Mentionable
-                  :keys="['@']"
-                  :items="users"
-                  offset="6"
-                  insert-space
+                    :keys="['@']"
+                    :items="users"
+                    offset="6"
+                    insert-space
                 >
                   <v-textarea class="py-2" hide-details
                               auto-grow
@@ -328,9 +324,9 @@
                         <v-list-item-title>Edit Comment</v-list-item-title>
                       </v-list-item>
                       <v-dialog
-                        v-if="cn.createdById === userId || $store.getters.isFullAdmin"
-                        v-model="cn.deleteConfirm"
-                        width="500">
+                          v-if="cn.createdById === userId || $store.getters.isFullAdmin"
+                          v-model="cn.deleteConfirm"
+                          width="500">
                         <template #activator="{ on }">
                           <v-list-item v-on="on">
                             <v-list-item-title>Delete Comment</v-list-item-title>
@@ -338,8 +334,8 @@
                         </template>
                         <v-card>
                           <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title>
+                              class="text-h5 grey lighten-2"
+                              primary-title>
                             Confirm
                           </v-card-title>
 
@@ -352,13 +348,13 @@
                           <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
-                              @click="cn.deleteConfirm = false">
+                                @click="cn.deleteConfirm = false">
                               No
                             </v-btn>
                             <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="deleteNote(cn, true, item)">
+                                color="primaryCustom"
+                                text
+                                @click="deleteNote(cn, true, item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -373,13 +369,8 @@
             </div>
           </td>
         </template>
-
       </v-data-table>
-
-
-    </v-card>
-
-  </v-col>
+  </div>
 </template>
 
 <script>
@@ -390,12 +381,13 @@ import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 
 export default {
-  name: 'NotesAndActivity',
+  name: 'NotesAndActivityContent',
   components: {Mentionable, DatetimePickerInput},
   mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,
     showActivity: Boolean,
+    bordered: Boolean,
     primaryId: Number,
     secondaryId: Number,
     installDashTile: String,
@@ -512,7 +504,7 @@ export default {
       }
     },
     filterNotes() {
-      return this.notes.filter(n => {
+      return this.notes?.filter(n => {
         return !n.archived
       })
     },
@@ -540,6 +532,11 @@ export default {
 .note-created-by {
   font-size: 11px;
   font-style: italic;
+}
+
+.note-column {
+  //maybe?
+  min-width: 200px;
 }
 
 .note-see-comments {

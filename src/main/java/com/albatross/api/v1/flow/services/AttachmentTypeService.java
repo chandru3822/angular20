@@ -302,6 +302,26 @@ public class AttachmentTypeService {
     return sqlCache.query("attachmentType.getEventTypes", params, EventAttachmentType.class);
   }
 
+  public List<EventAttachmentType> getEventTypesByPpsEventId(Long ppsEventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ppsEventId", ppsEventId);
+    return sqlCache.query("attachmentType.getEventTypesByPpsEventId", params, EventAttachmentType.class);
+  }
+
+  public List<EventAttachmentType> getEventAndPsTypes(Long psId, Long eventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    params.put("psId", psId);
+    return sqlCache.query("attachmentType.getEventAndPsTypes", params, EventAttachmentType.class);
+  }
+
+  public List<EventAttachmentType> getEventAndPsTypesByPpsEventId(Long ppsEventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ppsEventId", ppsEventId);
+    return sqlCache.query("attachmentType.getEventAndPsTypesByPpsEventId", params, EventAttachmentType.class);
+  }
+
+
   public List<AttachmentType> getAvailableTypesForEvent(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

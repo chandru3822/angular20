@@ -28,7 +28,7 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getProjectsForProcess(processId), HttpStatus.OK);
   }
 
-  @GetMapping(value= "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Page<Project>> searchProjects(@RequestParam String query,
                                                       @RequestParam(required = false) Long companyProjectStatusTypeId,
                                                       @RequestParam(required = false) String overrideType,
@@ -38,12 +38,12 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.searchProjects(query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, pageable), HttpStatus.OK);
   }
 
-  @PostMapping(value= "/search/density", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/search/density", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProjectDensityResult> getProjectsInGeoArea(@RequestBody DensitySearch search) {
     return projectService.getProjectsInGeoArea(search);
   }
 
-  @GetMapping(value= "/countsByStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/countsByStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectStatusCount>> projectCountsByStatus(@RequestParam(required = false) String overrideType) {
     return new ResponseEntity<List<ProjectStatusCount>>(projectService.projectCountsByStatus(overrideType), HttpStatus.OK);
   }
@@ -81,7 +81,22 @@ public class ProjectController {
 
   @GetMapping(value = "/{projectId}/processSteps", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectProcessStep>> getProjectProcessSteps(@PathVariable Long projectId) {
-    return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId), HttpStatus.OK);
+    return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId, null), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/upcomingProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStep>> getUpcomingProjectProcessSteps(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId, 1L), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStepEvent>> getProjectEvents(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, null), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/activeEvents", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectProcessStepEvent>> getUpcomingProjectEvents(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, 1L), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -92,15 +107,15 @@ public class ProjectController {
 
   @PostMapping(value = "/{projectId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Attachment> uploadProjectAttachment(@PathVariable Long projectId,
-                                                   @RequestParam Long attachmentTypeId,
-                                                   @RequestParam("file") MultipartFile file) throws IOException {
+                                                            @RequestParam Long attachmentTypeId,
+                                                            @RequestParam("file") MultipartFile file) throws IOException {
     return new ResponseEntity<>(projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
   }
 
   //status stuff
   @GetMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(@RequestParam(required = false) Long projectId) {
-      return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
+    return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/statusesForWqt", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -134,9 +149,14 @@ public class ProjectController {
   }
 
   @PostMapping(value = "/{projectId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateProjectStatus(@PathVariable Long projectId, @RequestBody Project project) {
-      projectService.updateStatus(projectId, project.getCompanyProjectStatusTypeId());
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  public Optional<Project> updateProjectStatus(@PathVariable Long projectId, @RequestBody Project project) {
+    //changing this to return the status object cuz i neeeeeeeed it
+    return projectService.updateStatus(projectId, project.getCompanyProjectStatusTypeId());
+  }
+
+  @GetMapping(value = "/{projectId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Project> getProjectStatusDetails(@PathVariable Long projectId) {
+    return projectService.getStatus(projectId);
   }
 
   @GetMapping(value = "/generate", produces = "text/csv")

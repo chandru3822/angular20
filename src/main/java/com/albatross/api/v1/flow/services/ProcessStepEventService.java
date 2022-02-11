@@ -115,6 +115,8 @@ public class ProcessStepEventService {
     params.put("requireResource", null != processStepEventAction.getRequireResource() ? processStepEventAction.getRequireResource() : false);
     params.put("alwaysEnabled", null != processStepEventAction.getAlwaysEnabled() ? processStepEventAction.getAlwaysEnabled() : false);
     params.put("multipleUses", null != processStepEventAction.getMultipleUses() ? processStepEventAction.getMultipleUses() : false);
+    params.put("hideFromWeb", null != processStepEventAction.getHideFromWeb() ? processStepEventAction.getHideFromWeb() : false);
+    params.put("hideFromMobile", null != processStepEventAction.getHideFromMobile() ? processStepEventAction.getHideFromMobile() : false);
     params.put("userId", currentUser.trueUserId());
     params.put("processStepEventId", eventId);
 
@@ -226,6 +228,10 @@ public class ProcessStepEventService {
       TypeReference<List<ProcessStepEventAction>> processStepEventActionRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepEventActions",
         new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
+
+      TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "workQueueTypes",
+        new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
     }
   }
 

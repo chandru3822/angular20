@@ -30,7 +30,7 @@ BEGIN
                                 pd.source_name,
                                 pd.system_size,
                                 pd.primary_financier_name              financier,
-                                ppscfv.timestamp_value                 appointment_date,
+                                ppse.start_time                 appointment_date,
                                 pd.cancelled_date
                          from brs.project_details pd
                                   inner join flow.project p on p.id = pd.project_id
@@ -44,12 +44,11 @@ BEGIN
                                   left outer join flow.state s on s.id = cs.state_id
                                   inner join flow.project_process_step pps
                                              on pps.project_id = pd.project_id and pps.process_step_id = 1
-                                  inner join flow.project_process_step_custom_field_value ppscfv
-                                             on ppscfv.project_process_step_id = pps.id
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                         where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                                  inner join flow.project_process_step_event ppse
+                                             on ppse.project_process_step_id = pps.id
+                         where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                            and pd.company_id = v_company_id
-                         order by owner_name, ppscfv.timestamp_value
+                         order by owner_name, ppse.start_time
                      ) as funnel_rows;
 
             --Cancelled in advance
@@ -67,7 +66,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -81,21 +80,17 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      inner join flow.project_process_step_event ppse
+                                                 on ppse.project_process_step_id = pps.id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 4 --Cancelled
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Ineligible for solar
@@ -113,7 +108,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -127,21 +122,17 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      inner join flow.project_process_step_event ppse
+                                                 on ppse.project_process_step_id = pps.id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Total Eligible Planned Appointments
@@ -159,7 +150,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -173,21 +164,17 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      inner join flow.project_process_step_event ppse
+                                                 on ppse.project_process_step_id = pps.id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or ppscfv1.int_value not in (4, 59, 61, 16685))
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Rescheduled
@@ -204,17 +191,14 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from flow.project_process_step pps
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on ppscfv.project_process_step_id = pps.id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      inner join flow.project_process_step_event ppse
+                                                 on ppse.project_process_step_id = pps.id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       inner join brs.project_details pd on pd.project_id = pps.project_id
@@ -229,11 +213,10 @@ BEGIN
                                       left outer join flow.state s on s.id = cs.state_id
                              where pps.process_step_id = 1
                                and ppscfv1.int_value = 15327 --Closer Appointment Details
-                               and ppscfv.custom_field_group_assignment_id = 5
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
                                and pd.company_id = v_company_id
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Homeowner no show
@@ -251,7 +234,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -265,23 +248,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
-                                                   ppscfv1.custom_field_group_assignment_id = 4
-                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      inner join flow.project_process_step_event_custom_field_value ppscfv
+                                                 on pps.id = ppscfv.project_process_step_event_id and
+                                                    ppscfv.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv.int_value
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
-                               and ppscfv1.int_value = 56 --Not Pitched: No Show
+                               and ppscfv.int_value = 56 --Not Pitched: No Show
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Homeowner no show (checked-in)
@@ -299,7 +278,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -313,26 +292,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 56
                                and --Not Pitched: No Show
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Closer missed appointment
@@ -350,7 +322,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -364,23 +336,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.process_step_event_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 3 --Missed
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Closer missed appointment (checked-in)
@@ -398,7 +366,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -412,27 +380,20 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 3
                                and --Missed
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Turned away at the door
@@ -450,7 +411,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -464,23 +425,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 58 --Not Pitched: Other
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name,ppse.start_time
                          ) as funnel_rows;
 
             --Turned away at the door (checked-in)
@@ -498,7 +455,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -512,27 +469,20 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 58
                                and --Not Pitched: Other
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --No utility bill
@@ -550,7 +500,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -564,23 +514,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --No utility bill (checked-in)
@@ -598,7 +544,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -612,27 +558,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 57
                                and --Not Pitched: No Utility Bill
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Non-dispositioned appointments
@@ -650,7 +588,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -664,23 +602,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
-                                                               ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                                                               ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Non-dispositioned appointments (checked-in)
@@ -698,7 +632,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -712,27 +646,20 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
-                                                               ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                                                               ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
-                               and ppscfv2.timestamp_value is not null
+                               and ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Yet to occur
@@ -750,7 +677,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -764,25 +691,21 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
                                     (4, 59, 61, 56, 3, 58, 57, 60, 2, 1139, 1140, 16685, 15327))
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') >
                                    (now() at time zone 'US/Mountain')
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Yet to occur (checked-in)
@@ -800,7 +723,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -814,29 +737,22 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
                                     (4, 59, 61, 56, 3, 58, 57, 60, 2, 1139, 1140, 16685, 15327))
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') >
                                    (now() at time zone 'US/Mountain')
-                               and ppscfv2.timestamp_value is not null
+                               and ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Pitched
@@ -854,7 +770,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -868,17 +784,13 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
@@ -900,7 +812,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -914,24 +826,17 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
-                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                             where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
@@ -1495,7 +1400,7 @@ BEGIN
                                 pd.source_name,
                                 pd.system_size,
                                 pd.primary_financier_name              financier,
-                                ppscfv.timestamp_value                 appointment_date,
+                                ppse2.start_time                 appointment_date,
                                 pd.cancelled_date
                          from brs.project_details pd
                                   inner join flow.project p on p.id = pd.project_id
@@ -1509,15 +1414,13 @@ BEGIN
                                   left outer join flow.state s on s.id = cs.state_id
                                   inner join flow.project_process_step pps on pps.project_id = pd.project_id
                              and pps.process_step_id = 1
-                                  inner join flow.project_process_step_custom_field_value ppscfv
-                                             on ppscfv.project_process_step_id = pps.id
-                                                 and ppscfv.custom_field_group_assignment_id = 5
+                                  inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = pps.id
                          where pps.process_step_id = 1
                            and up.user_id = any (p_user_ids)
                            and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                           and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                           and ((ppse2.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                            and pd.company_id = v_company_id
-                         order by owner_name, ppscfv.timestamp_value
+                         order by owner_name, ppse2.start_time
                      ) as funnel_rows;
 
             --Cancelled in advance
@@ -1535,7 +1438,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1549,23 +1452,19 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 4 --Cancelled
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Ineligible for solar
@@ -1583,7 +1482,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1597,24 +1496,20 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Total Eligible Planned Appointments
@@ -1632,7 +1527,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1646,24 +1541,21 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id and
+                                                   pps.process_step_id = 2
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or ppscfv1.int_value not in (4, 59, 61, 16685))
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Rescheduled
@@ -1681,7 +1573,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1695,25 +1587,20 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where pps.process_step_id = 1
                                and ppscfv1.int_value = 15327 --Closer Appointment Details
-                               and ppscfv.custom_field_group_assignment_id = 5
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
 
                                and up.user_id = any (p_user_ids)
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Homeowner no show
@@ -1731,7 +1618,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1745,26 +1632,22 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 56 --Not Pitched: No Show
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Homeowner no show (checked-in)
@@ -1782,7 +1665,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1796,30 +1679,23 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 56
                                and --Not Pitched: No Show
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name,ppse.start_time
                          ) as funnel_rows;
 
             --Closer missed appointment
@@ -1837,7 +1713,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1851,26 +1727,22 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 3 --Missed
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Closer missed appointment (checked-in)
@@ -1888,7 +1760,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1902,30 +1774,23 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 3
                                and --Missed
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Turned away at the door
@@ -1943,7 +1808,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -1957,26 +1822,22 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 58 --Not Pitched: Other
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Turned away at the door (checked-in)
@@ -1994,7 +1855,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2008,30 +1869,23 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 58
                                and --Not Pitched: Other
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --No utility bill
@@ -2049,7 +1903,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2063,26 +1917,22 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --No utility bill (checked-in)
@@ -2100,7 +1950,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2114,30 +1964,23 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 57
                                and --Not Pitched: No Utility Bill
-                                 ppscfv2.timestamp_value is not null
+                               ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Non-dispositioned appointments
@@ -2155,7 +1998,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2169,26 +2012,22 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
-                                                               ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                                                               ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Non-dispositioned appointments (checked-in)
@@ -2206,7 +2045,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2220,30 +2059,23 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
-                                                               ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
+                                                               ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') <
                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
-                               and ppscfv2.timestamp_value is not null
+                               and ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Yet to occur
@@ -2261,7 +2093,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2275,28 +2107,24 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
                                     (4, 59, 61, 56, 3, 58, 57, 60, 2, 1139, 1140, 16685, 15327))
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') >
                                    (now() at time zone 'US/Mountain')
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Yet to occur (checked-in)
@@ -2314,7 +2142,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name              financier,
-                                    ppscfv.timestamp_value                 appointment_date,
+                                    ppse.start_time                 appointment_date,
                                     pd.cancelled_date,
                                     lov.name                               appointment_outcome
                              from brs.project_details pd
@@ -2328,32 +2156,25 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
                                     (4, 59, 61, 56, 3, 58, 57, 60, 2, 1139, 1140, 16685, 15327))
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >
                                    (now() at time zone 'US/Mountain')
-                               and ppscfv2.timestamp_value is not null
+                               and ppse.start_time is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, ppscfv.timestamp_value
+                             order by owner_name, ppse.start_time
                          ) as funnel_rows;
 
             --Pitched
@@ -2385,19 +2206,15 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
@@ -2433,22 +2250,15 @@ BEGIN
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
-                                      left join flow.project_process_step pps2
-                                                on pps.id = pps2.parent_project_process_step_id and
-                                                   pps2.process_step_id = 2
-                                      inner join flow.project_process_step_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_id and
-                                                    ppscfv.custom_field_group_assignment_id = 5
-                                      left join flow.project_process_step_custom_field_value ppscfv1
-                                                on pps2.id = ppscfv1.project_process_step_id and
+                                      left join flow.project_process_step_event ppse
+                                                on pps.id = ppse.project_process_step_id
+                                      left join flow.project_process_step_event_custom_field_value ppscfv1
+                                                on ppse.id = ppscfv1.project_process_step_event_id and
                                                    ppscfv1.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
-                                      left join flow.project_process_step_custom_field_value ppscfv2
-                                                on pps2.id = ppscfv2.project_process_step_id and
-                                                   ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
                                and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)

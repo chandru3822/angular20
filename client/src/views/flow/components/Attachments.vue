@@ -198,6 +198,8 @@ export default {
     projectId: Number,
     processStepId: Number,
     projectProcessStepId: Number,
+    eventId: Number,
+    projectProcessStepEventId: Number,
     objectTypeId: Number,
     userId: Number,
     contactId: Number,
@@ -207,9 +209,12 @@ export default {
     if (this.projectId) {
       this.typePath = '/projectTypes'
       this.attachmentPath = `/project/${this.projectId}/attachments`
-    } else if (this.projectProcessStepId) {
+    } else if (this.processStepId) {
       this.typePath = `/processStepTypes/${this.processStepId}`
       this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+    } else if (this.eventId) {
+      this.typePath = `/eventTypes/${this.eventId}`
+      this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
     } else if (this.objectTypeId === 3) {
       //user
       this.typePath = `/objectTypes/user`
@@ -322,6 +327,7 @@ export default {
                 contactId: this.contactId,
                 orgId: this.orgId,
                 objectTypeId: this.objectTypeId,
+                projectProcessStepEventId: this.projectProcessStepEventId,
                 callback: this.uploadCallback
               })
             }

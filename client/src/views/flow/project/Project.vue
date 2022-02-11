@@ -1,259 +1,229 @@
 <template>
-  <v-row id="project-container" v-if="!projectLoading && project && project.id">
-    <v-dialog width="500" v-model="unsavedFieldsModal">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
+  <div id="project-container">
+    <!--    modal for editing project fields -->
+    <v-dialog width="500" v-model="showEditProjectModal" content-class="square-card">
+      <v-card class="px-6 py-4 square-card">
+        <v-form ref="projectEditForm">
+          <v-card-title
+            color="blackText"
+            class="albatross-header-3 text-capitalize pa-0"
+            primary-title>
+            Project Overview
+          </v-card-title>
+          <v-card-text class="pt-4 px-0">
+            <div>
+              <v-text-field
+                v-model="tempProject.projectName"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Project Name"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempProject.street1"
+                label="Street"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                @change="tempProject.reloadCoordinates = true"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempProject.city"
+                label="City"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                @change="tempProject.reloadCoordinates = true"
+              ></v-text-field>
+              <v-text-field
+                type="text"
+                v-model="tempProject.postalCode"
+                counter
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                maxlength="10"
+                @keypress="isNumberOrHyphen"
+                :rules="postalCodeRules"
+                @change="tempProject.reloadCoordinates = true"
+                label="Postal Code"
+              ></v-text-field>
+              <v-autocomplete v-model="tempProject.companyStateId"
+                              :items="states"
+                              label="State"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              :loading="statesLoading"
+                              item-text="state"
+                              item-value="id"
+                              @input="tempProject.reloadCoordinates = true"
+              ></v-autocomplete>
+              <v-select v-model="tempProject.companyCountryId"
+                        :items="countries"
+                        label="Country"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        :loading="countriesLoading"
+                        @input="tempProject.reloadCoordinates = true"
+                        item-text="country"
+                        item-value="id"
+              ></v-select>
+            </div>
+            <v-autocomplete v-model="tempProject.owner"
+                            :readonly="projectOwnerFieldIsReadOnly()"
+                            :disabled="projectOwnerFieldIsReadOnly()"
+                            :items="availableOwners"
+                            :loading="ownersLoading"
+                            label="Project Owner"
+                            clearable
+                            item-text="fullName"
+                            return-object
+                            autocomplete="off">
+            </v-autocomplete>
+            <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
+                            :items="statuses"
+                            :readonly="projectStatusIsReadOnly()"
+                            :disabled="projectStatusIsReadOnly()"
+                            :loading="statusesLoading"
+                            label="Project Stage"
+                            item-text="projectStatusType"
+                            item-value="id"
+            />
+          </v-card-text>
+        </v-form>
 
-        <v-card-text class="pt-4">
-          You have unsaved {{ getDirtyText() }}. <br/>
-          Are you sure you want to continue without saving?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
+        <v-card-actions class="pa-0">
+          <v-btn @click="showEditProjectModal = false" class="text-capitalize">
+            cancel
+          </v-btn>
           <v-spacer></v-spacer>
           <v-btn
-            @click="unsavedFieldsModal = false">
-            No
-          </v-btn>
-          <v-btn
             color="primaryCustom"
-            text
-            @click="[navigationOverride = true, goToPath(toPath)]">
-            Yes
+            class="white--text text-capitalize font-weight-bold"
+            :disabled="!project.projectName"
+            @click="validateForm()">
+            Save
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!--    end dialog -->
 
-    <v-col cols="12" class="py-0">
-      <v-row>
-        <v-col cols="12" class="pb-0">
-          <v-row class="project-header">
-            <v-col cols="5" class="text-left pl-5">
-              <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
-              <div class="project-title">
-                <router-link v-if="$store.getters.userHasFeature('CONTACTS')"
-                             :to="`/contact/${project.contactId}`">
-                  {{ project.projectName }} <span v-if="project.mobile">- {{ formatPhoneNumber(project.mobile) }}</span>
-                </router-link>
-                <span v-else>{{ project.projectName }}</span>
-                <br/>
-                <span
-                  class="project-created">Created By: {{
-                    project.createdBy
-                  }} - {{ project.dateCreated | formatDate('timestamp') }}</span>
-              </div>
-              <div class="project-subtitle">
-                <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{
-                    project.state
-                  }} {{ project.postalCode }}</span>
-                <div v-else-if="userCanEdit" class="mt-4">
-                  <v-form ref="projectEditForm">
-                    <v-text-field
-                      v-model="project.projectName"
-                      label="Project Name"
-                    ></v-text-field>
-                    <v-text-field
-                      v-model="project.street1"
-                      label="Street"
-                      @change="project.reloadCoordinates = true"
-                    ></v-text-field>
-                    <v-text-field
-                      v-model="project.city"
-                      label="City"
-                      @change="project.reloadCoordinates = true"
-                    ></v-text-field>
-                    <v-text-field
-                      type="text"
-                      v-model="project.postalCode"
-                      counter
-                      maxlength="10"
-                      @keypress="isNumberOrHyphen"
-                      :rules="postalCodeRules"
-                      @change="project.reloadCoordinates = true"
-                      label="Postal Code"
-                    ></v-text-field>
-                    <v-select attach v-model="project.companyStateId"
-                              :items="states"
-                              label="State"
-                              item-text="state"
-                              item-value="id"
-                              @input="project.reloadCoordinates = true"
-                    ></v-select>
-                    <v-select attach v-model="project.companyCountryId"
-                              :items="countries"
-                              label="Country"
-                              @input="project.reloadCoordinates = true"
-                              item-text="country"
-                              item-value="id"
-                    ></v-select>
-                  </v-form>
-                </div>
-                <v-btn x-small text v-if="userCanEdit"
-                       @click="[editAddress = !editAddress, getStatesAndCountries()]">
-                  <span v-if="editAddress">Cancel</span>
-                  <v-icon v-else>edit</v-icon>
-                </v-btn>
-                <v-btn small color="primaryCustom"
-                       :disabled="!project.projectName"
-                       class="white--text" v-if="editAddress" @click="validateForm">
-                  Save
-                </v-btn>
-              </div>
-            </v-col>
-            <v-col cols="4" class="lead-owner pb-2 text-right">
-              <div class="d-inline-block mr-4" v-if="project.companyId !== this.companyId">
-                <v-avatar
-                  :tile="false"
-                  :size="25"
-                  color="#D6D6D6"
-                  class="account-img mr-2"
-                >
-                  <v-icon color="white" size="20">mdi-office-building</v-icon>
-                </v-avatar>
-                <span>{{ project.companyName }}</span><br/>
-                <span class="project-company-subheader">Company</span>
-              </div>
-              <div class="d-inline-block">
-                <div>
-                  <v-row v-if="project.owner && project.owner.userId && !displayChangeOwner">
-                    <v-avatar
-                      :tile="false"
-                      :size="40"
-                      color="grey lighten-4"
-                      class="account-img mr-4 mt-1"
-                    >
-                      <v-img name="accountImg" v-if="project.owner.presignedUrl"
-                             :src="project.owner.presignedUrl"></v-img>
-                      <img v-else name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
-                    </v-avatar>
-                    <div class="d-inline-block">
-                      {{ project.owner.fullName }} <br/>
-                      {{ project.owner.position }} <br/>
-                    </div>
-                  </v-row>
-                  <v-row>
-                    <v-col class="pa-0">
-                      <div  v-if="project.owner && project.owner.userId && !displayChangeOwner">
-                        {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
-                      </div>
-
-                      <div v-if="displayChangeOwner && !projectOwnerIsReadOnly()">
-                        <v-autocomplete v-model="project.owner"
-                                        :items="availableOwners"
-                                        label="Select Owner"
-                                        item-text="fullName"
-                                        return-object
-                                        autocomplete="off"
-                                        @change="updateOwner"
-                                        attach
-                        >
-                        </v-autocomplete>
-                      </div>
-                      <v-btn text x-small class="change-owner-button"
-                             v-if="!projectOwnerIsReadOnly()"
-                             @click="[displayChangeOwner = !displayChangeOwner, getOwners()]">
-                        <span v-if="displayChangeOwner">cancel</span>
-                        <span v-else-if="project.owner && project.owner.userId">change</span>
-                        <span v-else>add owner</span>
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </div>
-              </div>
-
-            </v-col>
-            <v-col cols="3" class="pb-2 text-right">
-              <v-select
-                v-model="project.companyProjectStatusTypeId"
-                :items="statuses"
-                :readonly="!userCanEdit || projectStatusIsReadOnly()"
-                :disabled="!userCanEdit || projectStatusIsReadOnly()"
-                item-text="projectStatusType"
-                item-value="id"
-                @change="updateStatus"
-                label="Project Stage"
-              />
-              <div class="text-left project-stage"
-                   v-if="Object.keys(project).length > 0 && project.companyProjectStatusTypeId !== null && statuses.length > 0">
-                Status: {{ projectStage }}
-              </div>
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-      <v-divider></v-divider>
-      <v-row>
-        <v-col cols="12" md="6">
-          <!-- this v-model crap makes absolutely no sense to me but this is working so i am pushing it up -->
-          <v-tabs v-if="tabs.length > 0"
-                  background-color="transparent"
-                  v-model="selectedTab.uniqueIdentifier"
-                  show-arrows>
-            <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-            <v-tab v-for="t in tabs" :key="t.id"
-                   @click="selectedTab = t">
-              {{ t.tabName }}
-            </v-tab>
-          </v-tabs>
-          <v-tabs v-else background-color="transparent">
-            <v-tab>
-              Project Details
-            </v-tab>
-          </v-tabs>
-          <ProjectDetails ref="projectDetails" :project="project" :selected-tab="selectedTab"></ProjectDetails>
-
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-toolbar flat dense class="app-toolbar" color="transparent">
+    <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
+      <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
+        <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+        <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+          <v-icon class="mx-4" size="14">mdi-chevron-right</v-icon>
+          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}?processStepId=${$store.state.project.pps.processStepId}&contactId=${project.contactId}`" :class="{'font-weight-bold' : !$store.state.project.ppsEvent.id}">
+            {{$store.state.project.pps.processStepName}}
+          </router-link>
+        </span>
+        <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+          <v-icon class="mx-4" size="14">mdi-chevron-right</v-icon>
+          <router-link class="breadcrumb albatross-body-2 font-weight-bold" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+            {{$store.state.project.ppsEvent.eventName}} Event
+          </router-link>
+        </span>
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <div>
+          <v-btn color="#fff"
+                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+                 class="mt-3 no-text-transform"
+                 :to="`/projectAdmin/${projectId}`"
+          >
+            Project Admin
+          </v-btn>
+        </div>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-row class="project-split-container">
+      <div class="white-bg project-section px-0 left-panel"
+           :class="{'col-2': !collapseLeftSidebar, 'collapse-left': collapseLeftSidebar}">
+        <div class="left-expander-button">
+          <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
+        <div v-if="!collapseLeftSidebar && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
+          <v-toolbar flat>
+            <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
-              <v-tabs background-color="transparent">
-                <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-                <v-tab @click="secondaryTab = 1">
-                  Process Steps
-                </v-tab>
-                <v-tab @click="secondaryTab = 2">
-                  Notes
-                </v-tab>
-                <v-tab @click="secondaryTab = 3">
-                  Communication
-                </v-tab>
-              </v-tabs>
+            <v-toolbar-items>
+              <v-btn
+                text x-small
+                @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+                v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+                    || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
+                <v-icon>edit</v-icon>
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <ActiveProcessSteps v-if="secondaryTab === 1" :project="project"></ActiveProcessSteps>
-          <ProjectNotes ref="projectNotes" v-if="secondaryTab === 2"></ProjectNotes>
-          <Messaging v-if="secondaryTab === 3" :primaryId="parseInt(projectId)"/>
-        </v-col>
-      </v-row>
-
-
-    </v-col>
-
-  </v-row>
-  <v-row align="center" justify="center" v-else-if="!projectLoading">
-    <v-col cols="12" sm="8">
-      <v-card color="secondaryMaster" class="elevation-12 pb-5">
-        <v-toolbar dark color="red">
-          <v-toolbar-title>Error</v-toolbar-title>
-        </v-toolbar>
-        <v-card-text class="login-card-text">
-          This project either doesn't exist or you don't have access to it in this context.
-        </v-card-text>
-        <v-card-actions class="justify-center">
-          <v-btn to="/projects">Click here to go back to Projects</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+          <div class="mx-4 address-details">
+            <div v-if="!projectStatusLoading">
+              <span class="vertical-top project-detail-label">Project Stage:</span>
+              <div class="d-inline-block project-detail-item"
+                   :style="{'color': getStatusColor(project.projectStatusTypeId)}">
+                {{ project.projectStatusType }} <br/>
+                ({{ project.rootProjectStatusType }})
+              </div>
+            </div>
+            <div class="mt-2">
+              <span class="vertical-top project-detail-label">Address:</span>
+              <div class="d-inline-block project-detail-item">
+                {{ project.street1 }} <br/>
+                {{ project.city }} {{ project.stateAbbreviation }} {{ project.postalCode }}
+              </div>
+            </div>
+            <span class="project-detail-label">Contact:</span>
+            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
+            <span class="project-detail-label">Email:</span>
+            <span class="project-detail-item">{{ project.email }}</span> <br/>
+            <div class="mt-2">
+              <span class="vertical-top project-detail-label">Owner:</span>
+              <div class="d-inline-block project-detail-item" v-if="project && project.owner">
+                {{ project.owner.fullName }} - {{ project.owner.position }} <br/>
+                {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+              </div>
+            </div>
+            <div class="mt-3">
+              <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
+            </div>
+          </div>
+          <v-divider class="mt-6"></v-divider>
+          <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
+          <v-divider class="mb-3"></v-divider>
+          <ActiveEvents v-if="userHasEventsFeature"
+                          :update-key="updateEventKey"
+                          :projectId="projectId"
+                          class="mx-2"/>
+        </div>
+      </div>
+      <div class="project-section center-panel pt-1 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
+                                                                 'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
+                                                                 'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
+                                                                 'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
+        <router-view @refresh-upcoming-events="updateEventKey++"
+                     @refresh-upcoming-pps="updatePpsKey++"
+                     @refresh-project-status="getUpdatedProjectStatus()"
+                     ref="childComponent"
+                     v-if="project && project.id" class="router-view"
+                     :project="project"
+                     :split-value-columns="collapseLeftSidebar && collapseRightSidebar"
+        ></router-view>
+      </div>
+      <div class="white-bg project-section px-0"
+           :class="{'col-5': !collapseRightSidebar && !collapseLeftSidebar,
+                    'right-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
+                    'collapse-right text-center': collapseRightSidebar}">
+        <div class="right-expander-button">
+          <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
+        <ProjectActivity :is-collapsed="collapseRightSidebar"
+                         v-if="!projectLoading"
+                         @openRight="collapseRightSidebar = false"></ProjectActivity>
+      </div>
+    </v-row>
+  </div>
 </template>
 
 <script>
@@ -262,88 +232,74 @@ import {
   getRequest,
   putRequest,
   postRequest,
-  isNumberOrHyphen,
   logError,
   getRequestWithParams,
   getSnackbar,
-  formatPhoneNumber
+  formatPhoneNumber,
+  isNumberOrHyphen
 } from '@/helpers/helpers'
+import cloneDeep from 'lodash.clonedeep'
 import {AppMutations} from '@/stores/AppStore'
-import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-import ProjectDetails from '@/views/flow/project/ProjectDetails'
+import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
-import ProjectNotes from '@/views/flow/project/ProjectNotes'
-import Messaging from '@/views/flow/components/Messaging'
-import constants from '@/helpers/constants'
-import {getCountries} from '@/services/countryService'
-import {getCompanyStates} from '@/services/stateService'
+import ActiveEvents from '@/views/flow/project/ActiveEvents'
+import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectStatusTypeService"
+import constants from "@/helpers/constants";
+import {getCompanyStates} from "@/services/stateService";
+import {getCountries} from "@/services/countryService";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'Project',
   components: {
-    ProjectDetails,
+    ProjectActivity,
     ActiveProcessSteps,
-    ProjectNotes,
-    Messaging
+    ActiveEvents
   },
   data() {
     return {
       snackbar: {},
-      tabs: [],
-      tabsLoading: true,
-      selectedTab: {},
-      secondaryTab: 1,
-      isNumberOrHyphen,
-      menuOpen: false,
-      constants,
+      cloneDeep,
+      //used for if the make edits then hit cancel
+      tempProject: {},
+      updateEventKey: 0,
+      updatePpsKey: 0,
+      project: {},
+      statusesLoading: true,
+      projectStatusLoading: false,
+      ownersLoading: true,
+      statesLoading: true,
+      countriesLoading: true,
+      collapseLeftSidebar: false,
+      collapseRightSidebar: false,
+      showEditProjectModal: false,
+      statuses: [],
+      getStatusColor,
+      availableOwners: [],
       postalCodeRules: constants.POSTAL_CODE_RULES,
       formatPhoneNumber,
-      projectId: parseInt(this.$route.params.projectId),
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      displayChangeOwner: false,
-      availableOwners: [],
-      editAddress: false,
-      statuses: [],
-      project: {},
+      isNumberOrHyphen,
       states: [],
-      unsavedFieldsModal: false,
-      toPath: null,
-      navigationOverride: false,
-      hasDirtyNotes: false,
-      dirtyFieldsCount: null,
       countries: [],
       projectLoading: true,
-      breadcrumbs: [
-        {
-          text: 'Back to Projects',
-          disabled: false,
-          exact: true,
-          to: `/projects`
-        },
-      ]
+      projectId: parseInt(this.$route.params.projectId),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
+      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
     }
   },
   created() {
+    //have to reset this on creation in case there is already a state then they go to the project url directly
+    this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
-    this.getStatuses()
-    this.getProjectTabs()
   },
-  beforeRouteLeave(to, from, next) {
-    // has to get the dirty fields count from the child component then do the route nav protection here in the parent
-    this.dirtyFieldsCount = this.$refs.projectDetails.getDirtyFieldsCount()
-
-    if (typeof this.$refs.projectNotes?.hasDirtyNotes === 'function') {
-      this.hasDirtyNotes = this.$refs.projectNotes.hasDirtyNotes()
-    }
-
-    if (this.navigationOverride || (this.dirtyFieldsCount === 0 && !this.hasDirtyNotes)) {
-      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
-      next()
-    } else {
-      this.toPath = to.path
-      this.unsavedFieldsModal = true
-    }
+  watch: {
+    '$route.params.processStepId': async function () {
+      //when changing pps, the pps AND ppsEvent state need to be reset so we'll call the project reset for now
+      this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
+    },
+    '$route.params.ppsEventId': function () {
+      this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
+    },
   },
   computed: {
     projectStage() {
@@ -351,53 +307,8 @@ export default {
     }
   },
   mounted() {
-    // Navigate to the Communication tab if coming from SMS Queue screen
-    if (this.$route.query.secondaryTab != null && parseInt(this.$route.query.secondaryTab) == 3) {
-      this.secondaryTab = 3
-    }
   },
   methods: {
-    getDirtyText() {
-      return this.hasDirtyNotes && this.dirtyFieldsCount > 0 ?
-        'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
-    },
-    goToPath(path) {
-      this.$router.push(path)
-    },
-    projectOwnerIsReadOnly() {
-      if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
-      } else {
-        return this.project.ownerReadOnly
-      }
-    },
-    projectStatusIsReadOnly() {
-      if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
-      } else {
-        return this.project.ownerReadOnly
-      }
-    },
-    validateForm() {
-      if (this.$refs.projectEditForm.validate()) {
-        this.saveProjectAddress()
-      }
-    },
-    getProjectTabs: async function () {
-      this.tabsLoading = true
-      try {
-        let params = {
-          projectId: parseInt(this.projectId)
-        }
-        const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
-        this.tabs = data
-        this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.tabsLoading = false
-      }
-    },
     getProject: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -412,32 +323,61 @@ export default {
         logError(e)
       }
     },
-    updateOwner: async function () {
-      this.displayChangeOwner = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    getUpdatedProjectStatus: async function () {
+      //this gets called if an event gets run, in case it updated the project status
+      this.projectStatusLoading = true
       try {
-        const {status} = await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await getRequest(`/project/${this.projectId}/status`)
+        if (data) {
+          this.project.companyProjectStatusTypeId = data.companyProjectStatusTypeId
+          this.project.projectStatusType = data.projectStatusType
+          this.project.projectStatusTypeId = data.projectStatusTypeId
+          this.project.rootProjectStatusType = data.rootProjectStatusType
+        }
+        this.projectStatusLoading = false
       } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.projectStatusLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
+        logError(e)
       }
     },
     getStatuses: async function () {
       try {
+        this.statusesLoading = true
         const {data} = await getCompanyProjectStatusTypes(this.projectId)
         this.statuses = data
+        this.statusesLoading = false
       } catch (e) {
+        this.statusesLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    projectStatusIsReadOnly() {
+      if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
+        return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+      } else {
+        return this.project.statusReadOnly
+      }
+    },
+    projectOwnerFieldIsReadOnly() {
+      if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
+        return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+      } else {
+        return this.project.ownerReadOnly
       }
     },
     updateStatus: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await postRequest(`/project/${this.projectId}/status`, this.project)
+        let params = {
+          companyProjectStatusTypeId: this.tempProject.companyProjectStatusTypeId
+        }
+        const {data, status} = await postRequest(`/project/${this.projectId}/status`, params)
+        this.tempProject.companyProjectStatusTypeId = data.companyProjectStatusTypeId
+        this.tempProject.projectStatusType = data.projectStatusType
+        this.tempProject.projectStatusTypeId = data.projectStatusTypeId
+        this.tempProject.rootProjectStatusType = data.rootProjectStatusType
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -446,15 +386,15 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    saveProjectAddress: async function () {
-      this.editAddress = false
+    updateOwner: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/project`, this.project)
+        //we use tempProject to save values in case they cancel then it repopulates at the end
+        const {status} = await putRequest(`/project/${this.projectId}/owner`, this.tempProject.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -467,76 +407,179 @@ export default {
       }
     },
     getCompanyStates: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.statesLoading = true
         const {data, status} = await getCompanyStates()
         this.states = data
-        handleHidingGlobalLoader(this, status)
+        this.statesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.statesLoading = false
       }
     },
     getCountries: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.countriesLoading = true
         const {data, status} = await getCountries()
         this.countries = data
-        handleHidingGlobalLoader(this, status)
+        this.countriesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.countriesLoading = false
+      }
+    },
+    async validateForm() {
+      if (this.$refs.projectEditForm.validate()) {
+        //these could be combined - just dont have time atm
+        this.saveProjectAddressFields()
+        this.updateOwner()
+        //have to wait for this one to complete or it doesn't have the right values to display fresh ones
+        await this.updateStatus()
+        //set project values if they hit save
+        this.project = cloneDeep(this.tempProject)
+        this.showEditProjectModal = false
+      }
+    },
+    saveProjectAddressFields: async function () {
+      this.editAddress = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //temp project holds all the changes in case they cancel. use those values
+        const {status} = await putRequest(`/project`, this.tempProject)
+        this.snackbar = getSnackbar('SUCCESS', 'Project Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     getOwners: async function () {
-      if(this.displayChangeOwner) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/project/owners`)
-          this.availableOwners = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+      try {
+        this.ownersLoading = true
+        const {data, status} = await getRequest(`/project/owners`)
+        this.availableOwners = data
+        this.ownersLoading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.ownersLoading = false
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
   }
 }
 </script>
 
+<style lang="scss">
+.project-section-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.app-title, .breadcrumb {
+  a {
+    text-decoration-line: none;
+  }
+}
+</style>
+
 <style lang="scss" scoped>
 #project-container {
-  margin-top: -15px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 100% !important;
+  padding: 0 !important;
+  overflow: hidden;
 }
 
-.project-created {
+.project-detail-label {
   font-size: 12px;
-  color: grey;
-  font-style: italic;
+  color: #9E9C9C;
 }
 
-.project-company-subheader {
-  font-size: 12px;
+.project-detail-item {
+  font-size: 0.875rem;
+  margin-left: 5px;
+  overflow-wrap: break-word;
 }
 
-.project-stage {
-  font-size: 12px;
-  margin-top: -10px;
+.project-header {
+  height: 64px;
 }
 
-.change-owner-button {
-  text-decoration: underline;
-  text-transform: lowercase;
+.project-split-container {
+  height: calc(100% - 50px);
+  max-width: 100%;
+  width: 100%;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
+
+.overflow-y-auto {
+  overflow: auto;
+}
+
+.project-section {
+  max-height: 100%;
+  padding-top: 24px;
+}
+
+.project-section.left-panel,
+.project-section.center-panel {
+  //box-shadow: 1px 0px 1px #C4C4C4;
+  //the way the center and right panels sit on each other the box shadow just wasn't working - going to try this border and see if they care
+  border-right: solid #C4C4C4 1px;
+}
+
+.white-bg {
+  background-color: #fff;
+}
+
+.collapse-left {
+  width: 72px;
+  padding: 12px;
+}
+
+.left-expander-button {
+  margin-left: 10px;
+}
+
+.right-expander-button {
+  margin-right: 10px;
+  text-align: right;
+}
+
+.collapse-right {
+  width: 72px;
+  padding: 12px;
+}
+
+.center-width-left-side-collapse {
+  width: calc(50% - 36px);
+  padding: 10px !important;
+}
+
+.right-width-left-side-collapse {
+  width: calc(50% - 36px);
+  padding: 10px !important;
+}
+
+.center-width-right-side-collapse {
+  width: calc(83.33% - 72px);
+  padding: 10px !important;
+}
+
+.center-width-both-collapse {
+  width: calc(100% - 144px);
+  padding: 10px !important;
+}
+
 </style>
 

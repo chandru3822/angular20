@@ -12,7 +12,7 @@ import java.util.List;
 public class SMSQueueItem {
 
     private Long id, userId, recipient_type_id;
-    private String firstName, lastName, fullName, email, message;
+    private String firstName, lastName, fullName, full_name, email, message;  //wtf why do i have to add full_name to get the value?
     private String messageGroup, messageSid, messageStatus, fromPhone, toPhone, errorMessage, projectStatus;
     private List<String> mediaUrls;
     private boolean priority, messageRead;

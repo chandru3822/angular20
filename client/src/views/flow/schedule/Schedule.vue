@@ -22,18 +22,18 @@
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
           <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)" class="pt-0">
-            <v-select attach v-model="state"
+            <v-autocomplete attach v-model="state"
                       :items="states"
                       label="State"
                       return-object
                       item-text="state"
                       item-value="id"
-            ></v-select>
+            ></v-autocomplete>
 
-            <v-select attach v-model="selectedEventTypes"
+            <v-autocomplete attach v-model="selectedEventTypes"
                       :items="eventTypes"
-                      label="Event Type"
-                      item-text="eventType"
+                      label="Event"
+                      item-text="eventName"
                       item-value="id"
                       return-object
                       clearable
@@ -46,7 +46,7 @@
               >
                 <div v-if="index === 0 && selectedEventTypes.length < 3">
                   <v-chip small v-for="sp in selectedEventTypes">
-                    <span>{{ sp.eventType }}</span>
+                    <span>{{ sp.eventName }}</span>
                   </v-chip>
                 </div>
                 <span
@@ -54,11 +54,21 @@
                     class="primary--text text-caption"
                 >{{ selectedEventTypes.length }} selected</span>
               </template>
-            </v-select>
+            </v-autocomplete>
 
-            <v-select attach v-model="selectedProcessStepStatusType"
+            <v-autocomplete v-model="selectedEventStatusType"
+                      :items="eventStatusTypes"
+                      label="Event Step Status"
+                      clearable
+                      item-text="eventStatusType"
+                      item-value="id"
+                      :disabled="selectedEventTypes.length === 0"
+                      return-object
+            />
+
+            <v-autocomplete v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
-                      label="Status"
+                      label="Process Step Status"
                       clearable
                       item-text="processStepStatusType"
                       item-value="id"
@@ -66,8 +76,9 @@
                       return-object
             />
             <v-btn color="primaryCustom" class="white--text"
-                   :disabled="!selectedEventTypes || selectedEventTypes.length === 0
-                   || !state || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
+                   :disabled="!selectedEventTypes || selectedEventTypes.length === 0 || !state
+                   || !selectedEventStatusType || !selectedEventStatusType.id
+                   || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
                    @click="getProjects(true)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
@@ -75,6 +86,7 @@
                             :items="searchProjects"
                             :search-input.sync="search"
                             item-text="projectName"
+                            :key="0"
                             prepend-icon="search"
                             text
                             label="Search for project..."
@@ -92,21 +104,31 @@
             </v-autocomplete>
             <v-select attach v-model="searchEventType"
                       :items="eventTypes"
-                      label="Event Type"
-                      item-text="eventType"
+                      label="Event"
+                      item-text="eventName"
                       item-value="id"
                       return-object
             >
             </v-select>
+            <v-autocomplete v-model="searchEventStatusType"
+                            :items="eventStatusTypes"
+                            label="Event Step Status"
+                            clearable
+                            item-text="eventStatusType"
+                            item-value="id"
+                            return-object
+            />
             <v-select attach v-model="searchProcessStepStatusType"
                       :items="processStepStatusTypes"
-                      label="Status"
+                      label="Process Step Status"
                       item-text="processStepStatusType"
                       item-value="id"
                       return-object
             >
             </v-select>
-            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject || !searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text"
+                   :disabled="!searchProject || !searchProject.projectId
+                        || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -118,18 +140,31 @@
               <v-toolbar-items>
                 <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" :to="`/project/${selectedProject.projectId}/details`"><v-icon>mdi-chevron-right</v-icon></v-btn>
+                    <v-btn x-small text v-on="on"
+                           target="_blank"
+                           :to="`/project/${selectedProject.projectId}/details`"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
                 <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
+                           target="_blank"
                            :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}?processStepId=${selectedProject.processStepId}&contactId=${selectedProject.contactId}`">
                       <v-icon>mdi-chevron-double-right</v-icon>
                     </v-btn>
                   </template>
                   <span>Go to Process Step</span>
+                </v-tooltip>
+                <v-tooltip top v-if="$store.getters.userHasFeature('EVENTS')">
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on"
+                           target="_blank"
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}/event/${selectedProject.projectProcessStepEventId}`">
+                      <v-icon>mdi-chevron-triple-right</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Go to Event</span>
                 </v-tooltip>
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
@@ -140,21 +175,22 @@
               </v-toolbar-items>
             </v-toolbar>
             <div class="pa-3">
-              <div class="map-field-label">{{selectedProject.startFieldName || 'Start Time'}}</div>
+              <h4>{{selectedProject.eventName}}</h4>
+              <div class="map-field-label">Event Start Time</div>
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
-                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
                 @input="validateSaveEvent()"
               />
-              <div class="map-field-label mt-3">{{selectedProject.endFieldName || 'End Time'}}</div>
+              <div class="map-field-label mt-3">Event End Time</div>
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
-                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
@@ -167,25 +203,24 @@
                         return-object
                         clearable
                         item-text="name"
-                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
-                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
-                              attach
               />
               <v-btn color="primaryCustom"
                      class="white--text"
-                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                      @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
               <v-dialog
-                  v-if="selectedProject.processStepStatusTypeId === 2"
+                  v-if="selectedProject.eventStatusTypeId === 2"
                   v-model="selectedProject.unscheduleConfirm"
                   width="500">
                 <template #activator="{ on }">
                   <v-btn color="secondaryCustom"
                          class="ml-3"
-                         @click="getCancelledStatuses(selectedProject.processStepId)"
+                         @click="getCancelledCompanyEventStatuses"
                          v-on="on">Unschedule Event</v-btn>
                 </template>
                 <v-card>
@@ -196,14 +231,14 @@
                   </v-card-title>
 
                   <v-card-text class="pt-4">
-                    Are you sure you want to unschedule this event?
+                    Are you sure you want to remove this event from the schedule? This will cancel the event.
 
-                    <v-select attach :items="cancelledCompanyStatuses"
+                    <v-select attach :items="cancelledCompanyEventStatuses"
                               v-model="selectedProject.cancelledCompanyStatusType"
                               item-value="id"
                               return-object
-                              label="Status to set this process step to:"
-                              item-text="processStepStatusType"></v-select>
+                              label="Status to set this event to:"
+                              item-text="eventStatusType"></v-select>
 
                   </v-card-text>
 
@@ -219,7 +254,7 @@
                         :disabled="!selectedProject.cancelledCompanyStatusType || !selectedProject.cancelledCompanyStatusType.id"
                         color="primaryCustom"
                         text
-                        @click="cancelProjectProcessStep">
+                        @click="cancelProjectProcessStepEvent">
                       Yes
                     </v-btn>
                   </v-card-actions>
@@ -240,7 +275,10 @@
           </div>
           <v-text-field
             v-model="projectFilter"
+            @input="filterProjects()"
+            @click:clear="filterProjects()"
             class="square-card"
+            clearable
             prepend-inner-icon="search"
             label="Filter"
             solo
@@ -250,13 +288,14 @@
           <v-data-table
               :headers="headers"
               :items="projects"
-              :search="projectFilter"
-              :fixed-header="true"
+              fixed-header
               :mobile-breakpoint="0"
               :footer-props="footerProps"
               :options.sync="options"
+              disable-sort
               v-model="selectedRows"
-              item-key="projectProcessStepId"
+              :server-items-length="totalProjects"
+              item-key="projectProcessStepEventId"
               :show-select="true"
               :item-selected="(item, value) => this.zoomToMap(item, value)"
               :toggle-select-all="(value) => this.zoomToMap(value)"
@@ -294,9 +333,14 @@
   import Calendar from './components/Calendar'
   import {getEventTypes} from '@/services/scheduleService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { getStatusTypes, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-
+  import { getStatusTypes } from '@/services/processStepStatusTypeService'
+  import axios from 'axios'
   import constants from "@/helpers/constants";
+  import {
+    getCancelledCompanyStatusTypesAssignedToPpsEvent,
+    getEventStatusTypes
+  } from "@/services/eventStatusTypeService";
+  import debounce from 'lodash.debounce'
 
   export default {
     name: 'Schedule',
@@ -307,6 +351,7 @@
     },
     data() {
       return {
+        initialLoad: true,
         snackbar: {},
         showFilters: true,
         listLoading: false,
@@ -322,20 +367,24 @@
         mapResources: [],
         selectedRows: [],
         selectedResources: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
         state: {},
         states: [],
+        eventStatusTypes: [],
+        selectedEventStatusType: {},
         processStepStatusTypes: [],
         selectedProcessStepStatusType: {},
         eventTypes: [],
+        totalProjects: 0,
         //used for multi select
         selectedEventTypes: [],
         //used for single select
         selectedProject: {},
-        cancelledCompanyStatuses: [],
+        cancelledCompanyEventStatuses: [],
         //used for search
         searchEventType: {},
         searchProcessStepStatusType: {},
+        searchEventStatusType: {},
         searchProject: {},
         searchProjects: [],
         eventTypesChanged: false,
@@ -346,7 +395,8 @@
         headers: [
           {text: 'Project', value: 'projectName', show: true},
           {text: 'Process Step', value: 'processStepName', show: true},
-          {text: 'Status', value: 'processStepStatusType', show: true},
+          {text: 'Event', value: 'eventName', show: true},
+          {text: 'Status', value: 'companyEventStatusType', show: true},
           {text: 'Work Date', value: 'start', show: true},
           {text: 'Resource', value: 'resourceName', show: true},
         ],
@@ -363,6 +413,13 @@
       }
     },
     watch: {
+      options: {
+        handler() {
+          if(!this.initialLoad) {
+            this.getProjects()
+          }
+        }
+      },
       search(val) {
         if(!val) {
           this.searchProject = {}
@@ -386,19 +443,21 @@
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
       this.selectedProcessStepStatusType = JSON.parse(localStorage.getItem('scheduleProcessStepStatusType')) || {}
+      this.selectedEventStatusType = JSON.parse(localStorage.getItem('scheduleEventStatusType')) || {}
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
+      this.getEventStatusTypes()
       this.getEventTypes()
-      if(this.$route.query && this.$route.query.projectProcessStepId) {
-        //projectId, eventTypeId, processStepStatusTypeId
-        this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
+      if(this.$route.query && this.$route.query.projectProcessStepEventId) {
+        //projectId, eventId, processStepStatusTypeId
+        this.getSingleProject(null, null, null,null, parseInt(this.$route.query.projectProcessStepEventId))
       }
     },
     methods: {
-      getCancelledStatuses: async function (processStepId) {
+      getCancelledCompanyEventStatuses: async function () {
         try {
-          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(processStepId)
-          this.cancelledCompanyStatuses = data
+          const {data} = await getCancelledCompanyStatusTypesAssignedToPpsEvent(this.selectedProject.projectProcessStepId, this.selectedProject.projectProcessStepEventId)
+          this.cancelledCompanyEventStatuses = data
           if(data?.length === 1) {
             this.selectedProject.cancelledCompanyStatusType = data[0]
           }
@@ -440,12 +499,12 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async cancelProjectProcessStep() {
+      async cancelProjectProcessStepEvent() {
         try {
-          const {status} = await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/status`, this.selectedProject.cancelledCompanyStatusType)
+          const {status} = await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/event/${this.selectedProject.projectProcessStepEventId}/status`, this.selectedProject.cancelledCompanyStatusType)
           // this.selectedProject.unscheduleConfirm = false
-          this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)
-          this.selectedProject.processStepStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
+          this.projects = this.projects.filter(p => p.projectProcessStepEventId !== this.selectedProject.projectProcessStepEventId)
+          this.selectedProject.eventStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
           handleHidingGlobalLoader(this, status)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -498,6 +557,19 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getEventStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getEventStatusTypes()
+          this.eventStatusTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getStatusTypes() {
         try {
           //the old way
@@ -537,36 +609,63 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      filterProjects: debounce(function () {
+        //dont run if the other filters aren't filled in
+        if(this.selectedEventTypes && this.selectedEventTypes.length > 0 &&
+          this.state && this.selectedEventStatusType && this.selectedEventStatusType.id &&
+          this.selectedProcessStepStatusType && this.selectedProcessStepStatusType) {
 
+          //don't allow projectFilter to be null - causes issues
+          this.projectFilter = this.projectFilter || ''
+          this.getProjects()
+
+        }
+      }, 500),
       async getProjects(resetQuery) {
         if(resetQuery) {
           // todo: should we remove this.$route.query params if the button is clicked?
           // this.$route.query = {}
         }
+
+        const {page, itemsPerPage} = this.options
+
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
         localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
+        localStorage.setItem('scheduleEventStatusType', JSON.stringify(this.selectedEventStatusType))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
           try {
-            let params = {
-              eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
+            if(this.source){
+              this.source.cancel();
+            }
+            const CancelToken = axios.CancelToken;
+            this.source = CancelToken.source();
+
+            const {data} = await postRequest(`/schedule/projects`, {
+              search: this.projectFilter,
+              source: this.source,
+              cancelToken: this.source.token,
+              eventIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
               //old way
               // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
               // new way:
               processStepStatusTypeId: this.selectedProcessStepStatusType.id,
+              eventStatusTypeId: this.selectedEventStatusType.id,
               companyStateId: this.state.id,
               startTime: this.startTime,
-              endTime: this.endTime
-            }
-
-            const {data} = await postRequest(`/schedule/projects`, params)
-            data.forEach(d => {
+              endTime: this.endTime,
+              page: page - 1,
+              size: itemsPerPage
+            })
+            this.projects = data.content || []
+            this.projects.forEach(d => {
               d.coordinates = [ d.longitude, d.latitude ]
             })
-            this.projects = data
+            this.totalProjects = data.totalElements
             this.listLoading = false
+            this.initialLoad = false
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
@@ -603,21 +702,26 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId) {
+      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
         this.listLoading = true
         try {
           let params = {
             projectId,
-            eventTypeId,
+            eventId,
             processStepStatusTypeId,
-            projectProcessStepId
+            projectProcessStepEventId,
+            eventStatusTypeId
           }
 
-          const {data} = await postRequest(`/schedule/getProject`, params)
-          data.forEach(d => {
+          //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
+          const {data} = await postRequest(`/schedule/getProject`, params, null, [])
+          this.projects = data
+          this.projects.forEach(d => {
             d.coordinates = [ d.longitude, d.latitude ]
           })
-          this.projects = data
+
+          this.totalProjects = this.projects.length
+
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
@@ -642,6 +746,10 @@
   #schedule-container .v-data-table__wrapper {
     height: calc(35vh);
     min-height: 300px;
+  }
+
+  #schedule-container .v-data-footer__pagination {
+    display: none !important;
   }
 
   #schedule-container .v-data-table td {

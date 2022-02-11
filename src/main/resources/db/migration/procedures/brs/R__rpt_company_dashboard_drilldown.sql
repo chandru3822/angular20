@@ -16,28 +16,20 @@ BEGIN
     case when p_milestone_type_id = 1 then
         RETURN QUERY select coalesce(coalesce(array_to_json(array_agg(row_to_json(funnel_rows))),'[]'),'[]')
                      from (
-                              with first_appointment as (
-                                  select pps.project_id,
-                                         min(pps.process_step_complete_date) date_created
-                                  from flow.project_process_step pps
-                                  where pps.process_step_id = 1
-                                    and pps.process_step_complete_date is not null
-                                  group by pps.project_id
-                              )
+
                               select concat(c.first_name, ' ', c.last_name) customer_name,
                                      pd.project_id,
                                      s.abbreviation                         state,
                                      pd.source_name,
-                                     fa.date_created             as         date_value,
+                                     pd.first_appointment             as         date_value,
                                      'Appointments Created Date' as         date_label,
                                      'timestamp' as date_type
                               from brs.project_details pd
-                                       inner join first_appointment fa on fa.project_id = pd.project_id
                                        inner join flow.project p on p.id = pd.project_id
                                        inner join flow.contact c on c.id = p.contact_id
                                        left outer join flow.company_state cs on cs.id = c.company_state_id
                                        left outer join flow.state s on s.id = cs.state_id
-                              where ((fa.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                              where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                 and pd.archived is false
                                 and case
                                         when p_company_id is not null and p_company_id != 2 and p_company_id != 2

@@ -6,7 +6,6 @@
     <v-toolbar-items>
       <v-btn
         v-if="!showNewRequirementForm && canEdit"
-        :disabled="disabled"
         @click="showNewRequirementForm = true"
         text
       >
@@ -67,7 +66,22 @@
         />
 
         <v-autocomplete
-          v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId !== 4 && newRequirement.objectTypeId != null)"
+          v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 6"
+          v-model="newRequirement.eventId"
+          label="Event"
+          :items="availableEvents"
+          item-value="eventId"
+          item-text="eventName"
+          @input="[
+            resetNewProcessStep(),
+            calculateAvailableFields(),
+            getProcessStepEvents()
+          ]"
+          attach
+        />
+
+        <v-autocomplete
+          v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId === 6 && newRequirement.eventId) || (newRequirement.objectTypeId != null && ![4, 6].includes(newRequirement.objectTypeId))"
           v-model="newRequirement.selectedField"
           label="Field"
           :items="availableFields"
@@ -80,10 +94,18 @@
             getDataTypeRequirements(newRequirement.selectedField.dataTypeId),
             getProcessStepFieldData(),
             checkSmartlistSystemList(),
-            getContactOwners(),
-            getProcessStepOwners(),
-            getProjectOwners()
+            getSystemFieldListOfValues()
           ]"
+        />
+
+        <v-autocomplete
+          v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 6 && newRequirement.eventId"
+          v-model="newRequirement.processStepEventId"
+          label="Process Step"
+          :items="fetchedProcessStepEvents"
+          item-value="id"
+          item-text="processStepName"
+          attach
         />
       </template>
 
@@ -187,7 +209,7 @@
         <td class="text-left" style="width: 65px">{{requirement.displayOrder}}</td>
         <td class="text-left">{{requirement.name}}</td>
         <td class="text-left">{{requirement.objectType}}</td>
-        <td class="text-left">{{requirement.processStepName}}</td>
+        <td class="text-left">{{(requirement.objectTypeId === 6) ? requirement.eventName : requirement.processStepName}}</td>
         <td class="text-left">{{requirement.operatorType}}</td>
         <td class="text-left">
           <template v-if="requirement.requirementValue">{{requirement.requirementValue}}</template>
@@ -263,10 +285,30 @@
             />
 
             <v-autocomplete
+              v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 6"
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Event"
+              item-text="eventName"
+              disabled
+              attach
+            />
+
+            <v-autocomplete
               v-model="expandedRequirement"
               :items="[expandedRequirement]"
               label="Field"
               item-text="name"
+              disabled
+              attach
+            />
+
+            <v-autocomplete
+              v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 6"
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Process Step"
+              item-text="processStepName"
               disabled
               attach
             />
@@ -366,6 +408,7 @@ const newRequirementStructure = {
   selectedField: null,
   objectTypeId: null,
   processStepId: null,
+  eventId: null,
   operatorTypeId: null,
   dataTypeRequirementId: null,
   requirementValue: null,
@@ -396,10 +439,6 @@ export default {
       type: Boolean,
       default: false
     },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
     canEdit: {
       type: Boolean,
       default: false
@@ -422,13 +461,15 @@ export default {
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
+      availableEvents: [],
+      fetchedProcessStepEvents: [],
       operators: [],
       dataTypeRequirements: [],
       headers: [
         {text: 'ID', value: 'displayOrder'},
         {text: 'Field Name', value: 'name'},
         {text: 'Object Type', value: 'objectType'},
-        {text: 'Process Step Name', value: 'processStepName'},
+        {text: 'Process Step/Event Name', value: 'processStepName'},
         {text: 'Operator', value: 'operatorType'},
         {text: 'Value', value: 'requirementValue'},
         {text: null, value: 'actions'}
@@ -449,13 +490,13 @@ export default {
       },
       projectStatusTypes: [],
       companyProjectStatusTypes: [],
-      processStepStatusTypes: [],
-      companyProcessStepStatusTypes: []
+      // processStepStatusTypes: [],
+      // companyProcessStepStatusTypes: []
     }
   },
   created () {
     this.getProjectStatusTypes()
-    this.getProcessStepStatusTypes()
+    // this.getProcessStepStatusTypes()
   },
   updated () {
     if (this.resetForm) {
@@ -504,6 +545,9 @@ export default {
         if (this.newRequirement.objectTypeId === 4) {
           this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
           this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
+        } else if (this.newRequirement.objectTypeId === 6) {
+          this.availableEvents = data.reduce((fields, field) => (field.eventId ===  null || fields.find(f => f.eventName === field.eventName)) ? [...fields] : [...fields, field], [])
+          this.availableEvents = this.availableEvents.sort((a, b) => a.eventName.localeCompare(b.eventName))
         } else {
           this.calculateAvailableFields()
         }
@@ -545,46 +589,64 @@ export default {
         }
       }
     },
-    async getContactOwners () {
-      // @TODO It's bad this checks for the field name since it might change. Make better
-      if (this.newRequirement.objectTypeId === 2 && this.newRequirement.selectedField.name === 'Contact Owner') {
-        try {
-          const {data} = await getRequest(`/contact/owners`)
-          //do i just filter here when there are dupes?
+    async getSystemFieldListOfValues() {
+      const selectedFieldName = this.newRequirement.selectedField.name
 
-          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+      // @TODO It's bad these check for the field name since it might change. Make better
+      if ([1,2,4].includes(this.newRequirement.objectTypeId)) {
+
+        //if this isn't one of the specific system fields we need, bail
+        if (!['Project Owner','Contact Owner','Process Step Owner'].includes(selectedFieldName)) {
+          return
+        }
+
+        try {
+          let results
+          if (selectedFieldName === 'Project Owner') {
+            const {data} = await getRequest(`/project/owners`)
+            results = data
+          } else if (selectedFieldName === 'Contact Owner') {
+            const {data} = await getRequest(`/contact/owners`)
+            results = data
+          } else if (selectedFieldName === 'Process Step Owner' && this.newRequirement.processStepId !== null) {
+            const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
+            results = data
+          }
+
+          this.newRequirement.selectedField.listOfValues = results.map(o => ({id: o.userPositionId, name: o.fullName}))
           this.newRequirement.selectedField.hasListValues = true
+          this.newRequirement.isCustomValue = true
         } catch (e) {
           logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
+          this.snackbar = getSnackbar('ERROR', 'Error fetching available values')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-      }
-    },
-    async getProcessStepOwners () {
-      // @TODO It's bad this checks for the field name since it might change. Make better
-      if (this.newRequirement.processStepId !== null && this.newRequirement.selectedField.name === 'Process Step Owner') {
-        try {
-          const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
-          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
-          this.newRequirement.selectedField.hasListValues = true
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else if (this.newRequirement.eventId !== null) {
+
+        //if this isn't one of the specific system fields we need, bail
+        if (!['Event Resource','Event Status','Event Category'].includes(selectedFieldName)) {
+          return
         }
-      }
-    },
-    async getProjectOwners () {
-      // @TODO It's bad this checks for the field name since it might change. Make better
-      if (this.newRequirement.objectTypeId === 1 && this.newRequirement.selectedField.name === 'Project Owner') {
+
         try {
-          const {data} = await getRequest(`/project/owners`)
-          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          let results
+          if (selectedFieldName === 'Event Resource') {
+            const {data} = await getRequest(`/event/${this.newRequirement.eventId}/owners`)
+            results = data
+          } else if (selectedFieldName === 'Event Status') {
+            const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovStatus`)
+            results = data
+          } else if (selectedFieldName === 'Event Category') {
+            const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovCategory`)
+            results = data
+          }
+
+          this.newRequirement.selectedField.listOfValues = results
           this.newRequirement.selectedField.hasListValues = true
+          this.newRequirement.isCustomValue = true
         } catch (e) {
           logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching project owners')
+          this.snackbar = getSnackbar('ERROR', 'Error fetching available values')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
@@ -600,14 +662,62 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getProcessStepStatusTypes () {
+    // async getProcessStepStatusTypes () {
+    //   try {
+    //     const [result, companyResult] = await Promise.all([getRequest(`/processStep/status`), getRequest(`/processStep/status/company`)])
+    //     this.processStepStatusTypes = result.data
+    //     this.companyProcessStepStatusTypes = companyResult.data
+    //   } catch (e) {
+    //     logError(e)
+    //     this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //   }
+    // },
+    async getEventStatuses() {
+      if (this.newRequirement.eventId) {
+        try {
+          const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovStatus`)
+
+          //find the event status field and insert statues
+          const fieldIndex = this.fetchedAvailableFields.findIndex(f => f.name === 'Event Status')
+          this.fetchedAvailableFields[fieldIndex].hasListValues = true
+          this.fetchedAvailableFields[fieldIndex].listOfValues = data
+
+          this.calculateAvailableFields()
+        } catch(e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching event statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getEventCategories() {
+      if (this.newRequirement.eventId) {
+        try {
+          const {data} = await getRequest(`/event/${this.newRequirement.eventId}/lovCategory`)
+
+          //find the event category field and insert categories
+
+          // calculateAvailableFields()
+        } catch(e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching event categories')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getProcessStepEvents() {
       try {
-        const [result, companyResult] = await Promise.all([getRequest(`/processStep/status`), getRequest(`/processStep/status/company`)])
-        this.processStepStatusTypes = result.data
-        this.companyProcessStepStatusTypes = companyResult.data
+        const {data} = await getRequest(`/event/${this.newRequirement.eventId}/processStepEvents`)
+        this.fetchedProcessStepEvents = data
+        const psEventsForSelectedEvent = data.filter(pse => pse.eventId === this.newRequirement.eventId)
+        //if this event is attached to only one process step, autoselect the process step event id
+        if (psEventsForSelectedEvent.length === 1) {
+          this.newRequirement.processStepEventId = psEventsForSelectedEvent[0].id
+        }
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
@@ -616,7 +726,8 @@ export default {
       this.$emit('input', {
         ...this.newRequirement,
         ...this.newRequirement.selectedField,
-        'processStepId': this.newRequirement.processStepId
+        processStepId: this.newRequirement.processStepId,
+        processStepEventId: this.newRequirement.processStepEventId
       })
     },
     updateRequirement (requirement) {
@@ -638,6 +749,8 @@ export default {
       this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
       if (this.newRequirement.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newRequirement.processStepId || field.smartlistFieldId !== null)
+      } else if (this.newRequirement.eventId) {
+        this.availableFields = this.availableFields.filter(field => field.eventId === this.newRequirement.eventId || field.smartlistFieldId !== null)
       }
     },
     resetRequirementForm () {

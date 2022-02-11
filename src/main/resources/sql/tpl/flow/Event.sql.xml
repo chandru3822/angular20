@@ -9,29 +9,32 @@
 
   <event.get><![CDATA[
     select e.id,
-       event_name,
-       resource_custom_field_id,
-       company_id,
-       archived,
-       coalesce((
-          SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
-          FROM (
-                   SELECT ecest.id,
-                         ecest.event_id as "eventId",
-                         ecest.company_event_status_type_id as "companyEventStatusTypeId",
-                         ecest.archived,
-                         e2.event_name as "eventName",
-                         cest.event_status_type as "eventStatusType",
-                         cest.event_status_type_id as "eventStatusTypeId",
-                         cest.company_id as "companyId",
-                         est.event_status_type as "rootEventStatusType"
-                  FROM flow.event_company_event_status_type ecest
-                         inner join flow.event e2 on ecest.event_id = e2.id
-                         inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
-                         inner join flow.event_status_type est on cest.event_status_type_id = est.id
-                  WHERE ecest.event_id = e.id AND ecest.archived is not true
-                  order by cest.event_status_type) companyEventStatusTypes), '[]') AS "companyEventStatusTypes",
-       coalesce((
+           event_name,
+           resource_custom_field_id,
+           company_id,
+           start_time_read_only,
+           end_time_read_only,
+           resource_read_only,
+           archived,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
+                      FROM (
+                             SELECT ecest.id,
+                                    ecest.event_id as "eventId",
+                                    ecest.company_event_status_type_id as "companyEventStatusTypeId",
+                                    ecest.archived,
+                                    e2.event_name as "eventName",
+                                    cest.event_status_type as "eventStatusType",
+                                    cest.event_status_type_id as "eventStatusTypeId",
+                                    cest.company_id as "companyId",
+                                    est.event_status_type as "rootEventStatusType"
+                             FROM flow.event_company_event_status_type ecest
+                                    inner join flow.event e2 on ecest.event_id = e2.id
+                                    inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+                                    inner join flow.event_status_type est on cest.event_status_type_id = est.id
+                             WHERE ecest.event_id = e.id AND ecest.archived is not true
+                             order by cest.event_status_type) companyEventStatusTypes), '[]') AS "companyEventStatusTypes",
+           coalesce((
                       SELECT array_to_json(array_agg(row_to_json(cfGroups)))
                       FROM (
                              SELECT cfg.id,
@@ -143,7 +146,43 @@
                              FROM flow.custom_field_group cfg
                                     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                              WHERE cfg.event_id = e.id AND cfg.archived is not true
-                             order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
+                             order by cfg.group_order) cfGroups), '[]') AS custom_field_groups,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                      FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 6
+                               and wlp.event_id = e.id
+                               AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                      FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 7
+                               and wlp.event_id = e.id
+                               AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                      FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 8
+                               and wlp.event_id = e.id
+                               AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
     from flow.event e
     where e.id = :id
   ]]></event.get>
@@ -156,13 +195,16 @@
       where id = :eventId
   ]]></event.delete>
 
-  <event.saveResourceField><![CDATA[
+  <event.saveChangesToDefaultFields><![CDATA[
       update flow.event
       set modified_by_id = :modifiedById,
           date_modified = now(),
-          resource_custom_field_id = :resourceCustomFieldId
+          resource_custom_field_id = :resourceCustomFieldId,
+          start_time_read_only = :startTimeReadOnly,
+          end_time_read_only = :endTimeReadOnly,
+          resource_read_only = :resourceReadOnly
       where id = :id
-  ]]></event.saveResourceField>
+  ]]></event.saveChangesToDefaultFields>
 
   <event.update><![CDATA[
       update flow.event
@@ -186,6 +228,70 @@
     where pst.archived is not true
     order by pst.event_status_type
   ]]></event.getStatuses>
+
+  <event.getStatusesForWqt><![CDATA[
+    select
+      null::int as id,
+      'Category' as header,
+      null::int as "eventStatusTypeId",
+      null::int as "companyEventStatusTypeId",
+      false as archived,
+      null::text as "uniqueText",
+      null::text as "group",
+      false as is_root,
+      null::text as event_status_type,
+      null::text as root_event_status_type,
+      0 as display_sort
+    union all
+    select
+      null::int as id,
+      null::text as header,
+      est.id as "eventStatusTypeId",
+      null::int as "companyEventStatusTypeId",
+      est.archived,
+      concat(est.event_status_type, 'EST')::text as "uniqueText",
+      'Category' as "group",
+      true as is_root,
+      est.event_status_type,
+      est.event_status_type as root_event_status_type,
+      1 as display_sort
+    from flow.event_status_type est
+    where est.archived is not true
+    union all
+    select
+      null::int as id,
+      'Event Status' as header,
+      null::int as "eventStatusTypeId",
+      null::int as "companyEventStatusTypeId",
+      false as archived,
+      null::text as "uniqueText",
+      null::text as "group",
+      false as is_root,
+      null::text as event_status_type,
+      null::text as root_event_status_type,
+      2 as display_sort
+    union all
+    select
+      null::int as id,
+      null::text as header,
+      est.id as "eventStatusTypeId",
+      cest.id as "companyEventStatusTypeId",
+      cest.archived,
+      concat(cest.event_status_type, 'CEST')::text as "uniqueText",
+      'Event' as "group",
+      false as is_root,
+      cest.event_status_type,
+      est.event_status_type as root_event_status_type,
+      3 as display_sort
+    from flow.event_company_event_status_type ecest
+           inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+           inner join flow.event_status_type est on est.id = cest.event_status_type_id
+    where cest.company_id = :companyId
+      and cest.archived is not true
+      and ecest.archived is not true
+      and ecest.event_id = :eventId
+    order by display_sort, root_event_status_type, event_status_type
+]]></event.getStatusesForWqt>
 
   <event.getAssignedStatuses><![CDATA[
     select
@@ -230,6 +336,7 @@
   <event.updateCompanyStatus><![CDATA[
       update flow.company_event_status_type
     set event_status_type = :eventStatusType,
+        event_status_type_id = :rootEventStatusTypeId,
         modified_by_id = :currentUserId,
         display_order = :displayOrder,
         date_modified = now()
@@ -295,4 +402,92 @@
       order by cest.event_status_type
   ]]></event.availableStatusesForEvent>
 
+  <event.getProcessStepEventsByEventId><![CDATA[
+    select pse.id,
+           pse.process_step_id,
+           pse.initial_company_event_status_type_id,
+           cest.event_status_type as initial_event_status_type,
+           pse.event_id,
+           pse.archived,
+           e.event_name,
+           ps.process_step_name,
+           pse.display_order
+    from flow.process_step_event pse
+    inner join flow.event e on pse.event_id = e.id
+    inner join flow.process_step ps on ps.id = pse.process_step_id
+    left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
+    where pse.event_id = :eventId and
+          e.resource_custom_field_id is not null and
+          pse.archived is not true
+    order by pse.display_order
+  ]]></event.getProcessStepEventsByEventId>
+
+  <event.getAvailableOwners><![CDATA[
+with customField as (
+  select cf.id,
+         cf.company_system_list_id,
+         cf.system_list_option_ids
+  from flow.custom_field cf
+         inner join flow.event e on e.resource_custom_field_id = cf.id
+  where e.id = :eventId
+)
+select o.*
+from customField, flow.get_system_list_options(:companyId::int, customField.company_system_list_id::int, true, customField.system_list_option_ids::int[]) o
+]]></event.getAvailableOwners>
+
+  <event.getAssignedEventStatusesByListOfValue><![CDATA[
+select cest.id,
+       cest.event_status_type as name
+from flow.event_company_event_status_type ecest
+inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+WHERE ecest.event_id = :eventId and
+      cest.company_id = :companyId and
+      ecest.archived is not true
+order by cest.event_status_type
+]]></event.getAssignedEventStatusesByListOfValue>
+
+  <event.getAssignedEventCategoriesByListOfValue><![CDATA[
+select est.id,
+       est.event_status_type as name
+from flow.event_company_event_status_type ecest
+inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+inner join flow.event_status_type est on cest.event_status_type_id = est.id
+WHERE ecest.event_id = :eventId and
+      cest.company_id = :companyId and
+      ecest.archived is not true
+order by cest.event_status_type
+]]></event.getAssignedEventCategoriesByListOfValue>
+
+  <event.archiveWhiteListPositions><![CDATA[
+    update flow.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where event_id = :eventId
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
+  ]]></event.archiveWhiteListPositions>
+
+  <event.archiveUnusedWhiteListPositions><![CDATA[
+    update flow.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where event_id = :eventId
+      and position_id not in (:positionIdsUsed)
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
+  ]]></event.archiveUnusedWhiteListPositions>
+
+  <event.insertWhiteListPosition><![CDATA[
+    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified, event_id)
+    select :positionId, null, :whiteListTypeId, :companyId, :userId, now(), :userId, now(), :eventId
+    where not exists (  select id
+                        from flow.white_listed_position
+                        where event_id = :eventId
+                          and position_id = :positionId
+                          and company_id = :companyId
+                          and white_list_type_id = :whiteListTypeId
+                           and archived is not true)
+  ]]></event.insertWhiteListPosition>
 </sql>

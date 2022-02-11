@@ -8,7 +8,7 @@
 >
 
   <template #activator="{on}">
-    <v-btn text class="" small v-on="on" @click="[ getSteps() ]">
+    <v-btn text class="" x-small v-on="on" @click="[ getSteps() ]">
       <v-icon>add</v-icon>
     </v-btn>
   </template>
@@ -68,7 +68,8 @@ export default {
     },
     processId: {
       type: Number
-    }
+    },
+    contactId: Number
   },
 
   data () {
@@ -131,11 +132,13 @@ export default {
       this.cancelledCompanyStatuses = []
       try {
         let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
-        this.fetchingStatuses = true
-        const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
-        this.cancelledCompanyStatuses = data
-        if(data?.length === 1) {
-          this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
+        if(stepId) {
+          this.fetchingStatuses = true
+          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
+          this.cancelledCompanyStatuses = data
+          if(data?.length === 1) {
+            this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
+          }
         }
       } catch (e) {
         logError(e)
@@ -147,10 +150,11 @@ export default {
     },
     addStep: async function () {
       try {
+        let psId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
+        const {data, status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
           projectId: this.projectId,
-          processStepId: (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id,
+          processStepId: psId,
           main: true
         })
 
@@ -159,6 +163,8 @@ export default {
         this.displayDropdown = false
         handleHidingGlobalLoader(this, status)
         this.$emit('step-added')
+        //the data returned is the ppsId
+        this.$router.push(`/project/${this.projectId}/processStep/${data}?processStepId=${psId}&contactId=${this.contactId}`)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding new process step')

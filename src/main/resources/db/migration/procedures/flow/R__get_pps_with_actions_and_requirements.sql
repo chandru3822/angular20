@@ -237,7 +237,43 @@ BEGIN
                 where psa.process_step_id = ps.id and
                     psa.archived is not true
                  order by psa.display_order
-            ) a), '[]') as "actions"
+            ) a), '[]') as "actions",
+             coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(events)))
+                        FROM (
+                               SELECT ppse.id,
+                                      ppse.archived,
+                                      ppse.process_step_event_id as "processStepEventId",
+                                      ppse.company_event_status_type_id as "companyEventStatusTypeId",
+                                      cest.event_status_type as "eventStatusType",
+                                      cest.event_status_type_id as "eventStatusTypeId",
+                                      ppse.created_by_id as "createdById",
+                                      ppse.start_time as "startTime",
+                                      ppse.end_time as "endTime",
+                                      ppse.resource_id as "resourceId",
+                                      e.start_time_read_only as "startTimeReadOnly",
+                                      e.end_time_read_only as "endTimeReadOnly",
+                                      e.resource_read_only as "resourceReadOnly",
+                                      pps.project_id as "projectId",
+                                      pps.id as "projectProcessStepId",
+                                      case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
+                                      ppse.modified_by_id as "modifiedById",
+                                      pse.event_id as "eventId",
+                                      e.event_name as "eventName"
+                               FROM flow.project_process_step_event ppse
+                                    inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+                                    inner join flow.event e on pse.event_id = e.id
+                                    inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+                                    left join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+                                    left join flow.user_position up on up.id = ppse.resource_id
+                                    left join flow.user u on u.id = up.user_id
+                                    left join flow.org o on o.id = ppse.resource_id
+                                    inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+                                    inner join flow.system_list sl on sl.id = csl.system_list_id
+                               WHERE ppse.project_process_step_id = pps.id
+                                 and ppse.archived is not true
+                              order by ppse.start_time, ppse.end_time, resource, e.event_name
+                             ) events), '[]') AS "projectProcessStepEvents"
          from reqs, flow.project_process_step pps
                         inner join flow.process_step ps on ps.id = pps.process_step_id
                         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id

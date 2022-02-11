@@ -179,10 +179,13 @@
           </div>
         </v-col>
         <v-col cols="12" md="6" class="text-left pa-0">
-          <NotesAndActivity ref="notes" :showNotes="true" :showActivity="false"
+          <v-toolbar color="transparent" class="elevation-0">
+            <v-toolbar-title>Notes</v-toolbar-title>
+          </v-toolbar>
+          <NotesAndActivityContent ref="notes" :showNotes="true" :showActivity="false"
                             :notes="notes" :primaryId="parseInt(userId)"
                             type="User"
-          ></NotesAndActivity>
+          ></NotesAndActivityContent>
 
           <Attachments :object-type-id="3" :user-id="userId" />
         </v-col>
@@ -198,7 +201,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-  import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
+  import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import cloneDeep from 'lodash.clonedeep'
@@ -208,7 +211,7 @@
     name: 'User',
     components: {
       CustomValueInput,
-      NotesAndActivity,
+      NotesAndActivityContent,
       Attachments
     },
     data () {

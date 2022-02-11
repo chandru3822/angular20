@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
+import { ProjectStore } from '@/stores/ProjectStore'
 import { BrsStore } from '@/stores/BrsStore'
 import { AppStore } from '@/stores/AppStore'
 import constants from '@/helpers/constants'
@@ -19,6 +20,7 @@ export const Actions = {
   FILE_GET_LIST: 'fileGetList',
   PROJECT_FILE_UPLOAD: 'projectFileUpload',
   PROJECT_PROCESS_STEP_FILE_UPLOAD: 'projectProcessStepFileUpload',
+  PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD: 'projectProcessStepEVENTFileUpload',
   OBJECT_TYPE_FILE_UPLOAD: 'objectTypeFileUpload',
 }
 
@@ -42,7 +44,8 @@ const store = new Vuex.Store({
   modules: {
     user: UserStore,
     brs: BrsStore,
-    app: AppStore
+    app: AppStore,
+    project: ProjectStore
   },
   mutations: {
     ADD_CANCEL_TOKEN(state, token) {
@@ -140,6 +143,31 @@ const store = new Vuex.Store({
 
           try {
             const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/attachment`, formData)
+
+            const {status} = resp
+            if (status === 200) {
+              callback(resp.data)
+            }
+          } catch(e) {
+            callback(null, e)
+          }
+        }
+      })
+      reader.readAsArrayBuffer(file)
+    },
+    [Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectProcessStepId, projectProcessStepEventId, callback }) => {
+      // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
+      let reader = new FileReader()
+      reader.addEventListener('loadend', async function (e) {
+        if (file.size > constants.MAX_FILE_SIZE) {
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
+        } else {
+          let formData = new FormData()
+          formData.append('file', file)
+          formData.append('attachmentTypeId', attachmentTypeId)
+
+          try {
+            const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/event/${projectProcessStepEventId}/attachment`, formData)
 
             const {status} = resp
             if (status === 200) {
