@@ -136,13 +136,13 @@
     </v-toolbar>
     <v-row class="project-split-container">
       <div class="white-bg project-section px-0 left-panel"
-           :class="{'col-2': !collapseLeftSidebar, 'collapse-left': collapseLeftSidebar}">
-        <div class="left-expander-button">
-          <v-btn small text @click="collapseLeftSidebar = !collapseLeftSidebar">
+           :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
+        <div class="left-expander-button" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
+          <v-btn small text @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <div v-if="!collapseLeftSidebar && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
+        <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat>
             <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -196,31 +196,24 @@
                           class="mx-2"/>
         </div>
       </div>
-      <div class="project-section center-panel pt-1 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
-                                                                 'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
-                                                                 'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
-                                                                 'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
+      <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
+                                                                 'center-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
+                                                                 'center-width-right-side-collapse': !$store.state.project.leftSideSplit && $store.state.project.rightSideSplit,
+                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
                      @refresh-project-status="getUpdatedProjectStatus()"
                      ref="childComponent"
                      v-if="project && project.id" class="router-view"
                      :project="project"
-                     :split-value-columns="collapseLeftSidebar && collapseRightSidebar"
         ></router-view>
       </div>
       <div class="white-bg project-section px-0"
-           :class="{'col-5': !collapseRightSidebar && !collapseLeftSidebar,
-                    'right-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
-                    'collapse-right text-center': collapseRightSidebar}">
-        <div class="right-expander-button">
-          <v-btn small text @click="collapseRightSidebar = !collapseRightSidebar">
-            <v-icon>mdi-menu</v-icon>
-          </v-btn>
-        </div>
-        <ProjectActivity :is-collapsed="collapseRightSidebar"
-                         v-if="!projectLoading"
-                         @openRight="collapseRightSidebar = false"></ProjectActivity>
+           :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
+                    'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
+                    'collapse-right text-center': $store.state.project.rightSideSplit}">
+        <ProjectActivity v-if="!projectLoading"
+                         @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
       </div>
     </v-row>
   </div>
@@ -270,8 +263,6 @@ export default {
       ownersLoading: true,
       statesLoading: true,
       countriesLoading: true,
-      collapseLeftSidebar: false,
-      collapseRightSidebar: false,
       showEditProjectModal: false,
       statuses: [],
       getStatusColor,
@@ -309,6 +300,13 @@ export default {
   mounted() {
   },
   methods: {
+    collapseSide(side) {
+      if(side === 'left') {
+        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+      } else {
+        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+      }
+    },
     getProject: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -551,9 +549,8 @@ export default {
   margin-left: 10px;
 }
 
-.right-expander-button {
-  margin-right: 10px;
-  text-align: right;
+.title-collapsed {
+  margin-top: 12px;
 }
 
 .collapse-right {
@@ -568,7 +565,7 @@ export default {
 
 .right-width-left-side-collapse {
   width: calc(50% - 36px);
-  padding: 10px !important;
+  padding: 24px 10px 10px 10px !important;
 }
 
 .center-width-right-side-collapse {

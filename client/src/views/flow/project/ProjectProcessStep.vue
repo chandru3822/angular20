@@ -212,8 +212,7 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                 @click="setSplitColumnValue()">
+          <v-btn text @click="setSplitColumnValue()">
             <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
             <v-icon v-else>mdi-format-align-justify</v-icon>
           </v-btn>
@@ -251,7 +250,7 @@
 
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
-              <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -262,7 +261,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6" v-if="columnSplit" class="pb-0 pt-2">
+              <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -329,7 +328,6 @@ const NEW_STATUS_TO_USE = {id: null}
 export default {
   name: 'ProjectProcessStep',
   props: {
-    splitValueColumns: Boolean,
     project: Object
   },
   components: {
@@ -384,8 +382,8 @@ export default {
       processStepLoading: true,
       eventToAdd: {},
       processStepEvents: [],
-      windowWidth: window.innerWidth,
-      splitColumnMinWidth: 1700
+      // windowWidth: window.innerWidth,
+      // splitColumnMinWidth: 1700
 
     }
   },
@@ -399,17 +397,14 @@ export default {
     },
   },
   mounted() {
-    window.addEventListener('resize', () => {
-      this.windowWidth = window.innerWidth
-    })
+    // window.addEventListener('resize', () => {
+    //   this.windowWidth = window.innerWidth
+    // })
   },
   async created() {
     await this.loadAllPageDetails()
   },
   computed: {
-    columnSplit() {
-      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
-    },
     filteredActions() {
       if (!this?.processStep?.actions) {
         return []
@@ -452,7 +447,7 @@ export default {
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.columnSplit) {
+      if (this.$store.state.project.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
