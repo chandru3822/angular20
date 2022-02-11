@@ -30,11 +30,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div v-if="selectedEvent.id">
-      <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar px-6" id="event-header">
+    <div v-if="selectedEvent.id" class="pt-6">
+      <v-toolbar color="transparent" height="auto"
+                 class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
-          {{ selectedEvent.eventName}}
-          <span :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{selectedEvent.eventStatusType}})</span> <br>
+          <div>{{ selectedEvent.eventName}}</div>
+          <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{selectedEvent.eventStatusType}})</div> <br>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -43,7 +44,7 @@
             v-model="selectedEvent.deleteConfirm"
             width="500">
             <template v-slot:activator="{ on }">
-              <v-btn text small class="clickable" v-on="on">
+              <v-btn text small class="clickable mt-1" v-on="on">
                 <v-icon>delete</v-icon>
               </v-btn>
             </template>
@@ -957,6 +958,11 @@ export default {
   //max-width: 100%;
   width: 100%;
   white-space: normal;
+}
+
+#event-header .v-toolbar__content {
+  display: flex;
+  align-items: flex-start;
 }
 
 .cfg-name-toolbar .v-toolbar__content {

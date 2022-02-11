@@ -36,13 +36,15 @@
       </v-col>
 
       <v-col cols="12" class="pb-4 pt-6">
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
+        <v-toolbar color="transparent" height="auto"
+                   id="pps-toolbar"
+                   class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
           <v-toolbar-title class="process-step-name albatross-header-2">
-            {{ processStep.processStepName }}
-            <span v-if="processStep.processStepStatusTypeId"
+            <div>{{ processStep.processStepName }}</div>
+            <div v-if="processStep.processStepStatusTypeId"
                   :class="getStatusClass(processStep.processStepStatusTypeId)">({{
                 processStep.processStepStatusType
-              }})</span>
+              }})</div>
             <!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
             <!--                    size="20" color="green">mdi-circle-slice-8-->
             <!--            </v-icon>-->
@@ -732,8 +734,14 @@ export default {
 </script>
 
 <style lang="scss">
+#pps-toolbar .v-toolbar__content {
+  display: flex;
+  align-items: flex-start;
+}
+
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .cfg-name-toolbar .v-toolbar__title {
