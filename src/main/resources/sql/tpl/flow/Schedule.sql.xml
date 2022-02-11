@@ -47,7 +47,7 @@
                              where pps.project_id = :projectId
                                and pps.archived is not true
                                and pps.main is true
-                               and ppse.start_time is not null
+                               and ppse.archived is not true
                              order by start_time, end_time
                            ) steps), '[]') AS "events"
     from flow.project p
@@ -110,6 +110,7 @@
     where  ppse.start_time is not null
       and ppse.end_time is not null
       and p.archived is false
+      and ppse.archived is not true
       and ppse.resource_id is not null
       and case when :startTime::timestamp is not null and :endTime::timestamp is not null
                  then ppse.start_time between :startTime::timestamp and :endTime::timestamp OR
@@ -266,6 +267,7 @@ where case when :isParent
            else ps.company_id = :companyId end
   and ps.archived is not true
   and pse.archived is not true
+  and ppse.archived is not true
   and case when :eventId::int is not null then pse.event_id = :eventId::int else 1=1 end
   and case when :projectProcessStepEventId::int is not null then ppse.id = :projectProcessStepEventId::int else 1=1 end
   and case when :projectId::int is not null then pps.project_id = :projectId::int else 1=1 end

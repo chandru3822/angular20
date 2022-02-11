@@ -128,6 +128,8 @@ public class ProjectProcessStepEventService {
           action.setCanPerform(canPerformEventAction(event, action, requirements));
         }
       }
+    } else {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }
     return result;
   }

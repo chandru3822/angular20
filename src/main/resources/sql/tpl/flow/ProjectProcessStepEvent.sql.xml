@@ -28,6 +28,7 @@
              inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
              inner join flow.event e on pse.event_id = e.id
       where ppse.id = :id
+        and ppse.archived is false
   ]]></projectProcessStepEvent.getBasic>
 
   <projectProcessStepEvent.get><![CDATA[
@@ -184,7 +185,7 @@
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
     where ppse.id = :id
-
+      and ppse.archived is false
   ]]></projectProcessStepEvent.get>
 
   <projectProcessStepEvent.savePpsEventDetails><![CDATA[

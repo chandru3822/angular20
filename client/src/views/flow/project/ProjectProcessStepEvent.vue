@@ -743,7 +743,8 @@ export default {
         return status
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        let msg = e?.data?.message || 'Error Retrieving Details'
+        this.snackbar = getSnackbar('ERROR', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
