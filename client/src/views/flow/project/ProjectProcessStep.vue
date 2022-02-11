@@ -659,6 +659,8 @@ export default {
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       //if root status is not active then go back to project screen
       if(data?.processStepStatusTypeId !== 1) {
+        //just in case something wasn't saved before running this action then still allow the nav
+        this.navigationOverride = true
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       } else {
         this.getProcessStep(false)
