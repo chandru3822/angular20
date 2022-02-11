@@ -1,5 +1,5 @@
 <template>
-  <small v-if="!drillDownAttachments.length" small class="pl-3">No attachments available</small>
+  <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
 
   <v-container v-else dense :key="renderTicker" id="attachment-table">
     <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
@@ -176,4 +176,7 @@ export default {
   background-color: #ebf5ff !important;
 }
 
+.no-attach {
+  color: var(--v-primaryText-base);
+}
 </style>
