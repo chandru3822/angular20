@@ -21,9 +21,9 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr>
+            <tr class="clickable" @click="goToPath(`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`)">
               <td class="text-left" id="qa-event-link">
-                <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`">{{ item.id }}</router-link>
+                {{ item.id }}
               </td>
               <td class="text-left" id="qa-event-name">{{item.eventName}}</td>
               <td class="text-left" id="qa-event-start">{{ item.startTime | formatDate('timestamp') }}</td>
@@ -55,6 +55,11 @@ export default {
         {text: 'Status', value: 'companyEventStatusType', show: true},
       ]
     }
+  },
+  methods: {
+    goToPath(path) {
+      this.$router.push(path)
+    },
   }
 }
 </script>

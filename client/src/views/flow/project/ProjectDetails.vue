@@ -228,6 +228,8 @@ export default {
         }
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)

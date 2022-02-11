@@ -109,6 +109,7 @@
         <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
           <UploadDocumentModal @cancel="showUploadModal = false"
                                :width="uploadModalWidth"
+                               :show-success-snackbar="true"
                                :pps-event-id="ppsEventId"
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
@@ -135,9 +136,9 @@
             </div>
           </v-toolbar-items>
         </v-toolbar>
-        <div class="error-text pb-4" v-if="eventActionMissingRequirements">
-          {{ this.saveErrorMsg }}
-        </div>
+      </div>
+      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
+        {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
@@ -368,7 +369,7 @@ export default {
       snackbar: {},
       selectedEvent: {},
       showUploadModal: false,
-      uploadModalWidth: 400,
+      uploadModalWidth: 600,
       defaultValuesChanged: false,
       unsavedFieldsModal: false,
       navigationOverride: false,
@@ -776,6 +777,8 @@ export default {
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
         this.dirtyCfvs = []
         this.selectedEvent = data
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId

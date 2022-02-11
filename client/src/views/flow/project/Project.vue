@@ -196,7 +196,7 @@
                           class="mx-2"/>
         </div>
       </div>
-      <div class="project-section pt-1 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
+      <div class="project-section center-panel pt-1 px-0" :class="{'col-5': !collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-left-side-collapse': collapseLeftSidebar && !collapseRightSidebar,
                                                                  'center-width-right-side-collapse': !collapseLeftSidebar && collapseRightSidebar,
                                                                  'center-width-both-collapse': collapseLeftSidebar && collapseRightSidebar}">
@@ -531,8 +531,11 @@ export default {
   padding-top: 24px;
 }
 
-.project-section.left-panel {
-  box-shadow: 1px 0px 1px #C4C4C4;
+.project-section.left-panel,
+.project-section.center-panel {
+  //box-shadow: 1px 0px 1px #C4C4C4;
+  //the way the center and right panels sit on each other the box shadow just wasn't working - going to try this border and see if they care
+  border-right: solid #C4C4C4 1px;
 }
 
 .white-bg {

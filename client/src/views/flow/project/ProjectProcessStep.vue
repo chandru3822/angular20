@@ -196,6 +196,7 @@
         <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
           <UploadDocumentModal @cancel="showUploadModal = false"
                                :width="uploadModalWidth"
+                               :show-success-snackbar="true"
                                :pps-id="parseInt(projectProcessStepId)"
                                :attachment-types="attachmentTypes"></UploadDocumentModal>
         </v-dialog>
@@ -347,7 +348,7 @@ export default {
       fieldsSaving: false,
       getStatusClass,
       showUploadModal: false,
-      uploadModalWidth: 400,
+      uploadModalWidth: 600,
       attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
@@ -569,6 +570,8 @@ export default {
         this.customFieldGroups = data
         this.$emit('refresh-upcoming-pps')
         await this.getProcessStep(false)
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
