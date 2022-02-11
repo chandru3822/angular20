@@ -91,6 +91,7 @@ public class AhjPermitService {
     params.put("submissionNote", permit.getSubmissionNote());
     params.put("revisionNote", permit.getRevisionNote());
     params.put("asBuiltNote", permit.getAsBuiltNote());
+    params.put("nonStandardNote", permit.getNonStandardNote());
     params.put("deliveryNote", permit.getDeliveryNote());
 
     if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState()) {
@@ -200,6 +201,9 @@ public class AhjPermitService {
         new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "asBuiltChecklist",
+        new JsonCollectionDeserializer(itemRef, objectMapper));
+
+      bw.registerCustomEditor(List.class, "nonStandardChecklist",
         new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "notes",
