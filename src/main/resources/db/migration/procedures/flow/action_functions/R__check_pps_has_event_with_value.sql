@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION flow.check_pps_has_event_with_value(p_project_process
 $BODY$
 declare
   v_request_is_valid boolean;
+  v_function_result boolean default false;
   v_data_type_id     int;
 BEGIN
 
@@ -54,7 +55,7 @@ BEGIN
                        and ppsecfv.date_value = p_value_to_check::date
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 2 then
       select case
                when (select ppsecfv.id
@@ -67,7 +68,7 @@ BEGIN
                        and ppsecfv.timestamp_value = p_value_to_check::timestamp
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 3 then
       select case
                when (select ppsecfv.id
@@ -80,7 +81,7 @@ BEGIN
                        and ppsecfv.boolean_value = p_value_to_check::boolean
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 4 then
       select case
                when (select ppsecfv.id
@@ -93,7 +94,7 @@ BEGIN
                        and ppsecfv.numeric_value = p_value_to_check::numeric
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 5 then
       select case
                when (select ppsecfv.id
@@ -106,7 +107,7 @@ BEGIN
                        and ppsecfv.text_value = p_value_to_check
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 6 then
       select case
                when (select ppsecfv.id
@@ -119,12 +120,12 @@ BEGIN
                        and ppsecfv.int_value = p_value_to_check::integer
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
       --             elsif v_data_type_id = 7 then
       --currently not going to code to work for multi-selects
 
     end if;
-    return v_request_is_valid;
+    return v_function_result;
   else
     return false;
   end if;
