@@ -651,9 +651,13 @@ export default {
         this.$emit('refresh-upcoming-events')
 
         if (data?.processStepStatusTypeId !== 1) {
+          //set navigation override so we dont get the unsaved fields popup
+          this.navigationOverride = true
           //if ps root status is not active then go back to project screen
           this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
         } else if (data?.eventStatusTypeId !== 1) {
+          //set navigation override so we dont get the unsaved fields popup
+          this.navigationOverride = true
           //if ps root status is active but event root status is not then go back to ps
           let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
           this.$router.push(path)
