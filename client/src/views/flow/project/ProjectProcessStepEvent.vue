@@ -752,8 +752,10 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
-        //go to the process step
+        //set navigation override so that if there were unsaved fields it won't ask you to try and save
+        this.navigationOverride = true
         this.$emit('refresh-upcoming-events')
+        //go to the process step
         this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`)
       } catch (e) {
         console.error('*** ERROR ***', e)
