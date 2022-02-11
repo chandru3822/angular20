@@ -650,6 +650,8 @@ export default {
         this.$emit('refresh-upcoming-pps')
         this.$emit('refresh-upcoming-events')
 
+        //set this because running an action also saves fields so it needs to be reset
+        this.defaultValuesChanged = false
         if (data?.processStepStatusTypeId !== 1) {
           //set navigation override so we dont get the unsaved fields popup
           this.navigationOverride = true
