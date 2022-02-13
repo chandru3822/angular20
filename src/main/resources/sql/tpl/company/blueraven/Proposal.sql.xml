@@ -211,7 +211,7 @@
                                                                                       lov.display_order
                                                                                from flow.list_of_value lov
                                                                                where lov.parent_id is not null
-                                                                                 and lov.parent_id = cf.list_of_value_id
+                                                                                 and lov.parent_id = flowCf.list_of_value_id
                                                                                  and lov.archived is not true
                                                                              ) listOfValues),
                                                                       '[]')                                                     AS "listOfValues"
