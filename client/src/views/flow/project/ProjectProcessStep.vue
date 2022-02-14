@@ -191,18 +191,6 @@
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
-      <v-col v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0">
-        <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
-          Upload Documents
-        </v-btn>
-        <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-          <UploadDocumentModal @cancel="showUploadModal = false"
-                               :width="uploadModalWidth"
-                               :show-success-snackbar="true"
-                               :pps-id="parseInt(projectProcessStepId)"
-                               :attachment-types="attachmentTypes"></UploadDocumentModal>
-        </v-dialog>
-      </v-col>
       <v-col cols="12" style="height: 0; padding: 0 !important;">
       <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
       </v-col>
@@ -212,14 +200,24 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="setSplitColumnValue()">
-            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-            <v-icon v-else>mdi-format-align-justify</v-icon>
+          <v-btn text @click="setSplitColumnValue()" class="px-0">
+            <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+            <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
+          <v-btn v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+            <v-icon class="px-0">mdi-upload</v-icon>
+          </v-btn>
+          <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+            <UploadDocumentModal @cancel="showUploadModal = false"
+                                 :width="uploadModalWidth"
+                                 :show-success-snackbar="true"
+                                 :pps-id="parseInt(projectProcessStepId)"
+                                 :attachment-types="attachmentTypes"></UploadDocumentModal>
+          </v-dialog>
           <div>
             <v-btn
               color="primaryCustom"
-              class="white--text mt-3"
+              class="white--text mt-3 ml-2"
               :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
             >Save Fields
