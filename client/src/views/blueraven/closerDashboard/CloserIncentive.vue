@@ -113,7 +113,7 @@
           <div id="progress-bar">
             <div v-for="i in incentive_constants.totalPointsPossible" class="progress-bar-segment"></div>
             <div id="progress-bar-fill"
-                 :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px',
+                 :style="{borderRadius: progressBarIsFull ? '3px' : '3px 8px 8px 3px',
                           width: this.percentAchieved + '%'}"></div>
           </div>
         </div>
@@ -643,7 +643,7 @@
       position: absolute;
       top: 0.02em;
       z-index: 1;
-      background: linear-gradient(to right, #164761, #2C8EC2);
+      background: #1D9ADD;
       transition: width 1s ease-out;
       opacity: 0.9;
       border-radius: 4px 0 0 4px;
@@ -652,7 +652,7 @@
     }
 
     .progress-bar-segment {
-      background-color: #D8D8D8;
+      background-color: white;
       border: 0.02em solid black;
       width: 12.5%;
     }
