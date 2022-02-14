@@ -4,31 +4,7 @@
     <v-row justify="center" no-gutters>
       <v-col cols="12" id="incentive-container" class="justify-end">
         <div id="milestones-container">
-          <div id="aim-high-phase" class="milestone"
-               :class="{'active-milestone': is_q1,
-                        'align-items-center': windowInnerWidth < 1135,
-                        'align-items-flex-start': windowInnerWidth >= 1135
-                        }"
-               @click="milestoneDrilldown(1)">
-            <span class="milestone-top-label">{{ incentive_constants.firstMilestone }}</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                :class="this.getMilestoneMedal(this.q1_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ fdcCounts.q1 }} FDC</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
-                  <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
-                  <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
-          </div>
+          <incentive-milestone></incentive-milestone>
 
           <div id="fly-phase" class="milestone"
                :class="{'active-milestone': is_q2,
@@ -120,56 +96,6 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
-      <v-card>
-        <v-card-title class="mb-1">
-          <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
-        </v-card-title>
-
-        <v-card-text>
-          <v-data-table
-            id="drilldown-table"
-            :headers="headers"
-            :items="drilldownData"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            fixed-header
-            dense
-            hide-default-footer
-            class="elevation-1"
-          >
-            <template v-if="drilldownData.length > 0" #item="{ item, index }">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
-                <td class="text-left"><a :href="'/project/' + item.id">{{ item.id || '' }}</a></td>
-                <td class="text-left">{{ item.source_name || '' }}</td>
-                <td class="text-left">{{ item.system_size || '' }}</td>
-                <td class="text-left">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
-              </tr>
-            </template>
-
-            <template #no-data>
-              <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
-                Data is not yet available for the selected quarter.
-              </div>
-              <div v-else class="my-3">
-                No data is available for the selected quarter.
-              </div>
-            </template>
-          </v-data-table>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="closeMilestoneDialog">
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
     <!---------------------------------- INCENTIVE TAB END ---------------------------------->
   </v-container>
 </template>
@@ -182,10 +108,12 @@
   import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
+  import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
 
   export default {
     name: 'closerIncentive',
     components: {
+      IncentiveMilestone,
       SpinnerInline,
     },
     data () {
