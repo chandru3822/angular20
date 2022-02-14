@@ -193,7 +193,7 @@
       set resource_id = :resourceId::int,
           start_time = :startTime::timestamp,
           end_time = :endTime::timestamp,
-          company_event_status_type_id = :companyEventStatusTypeId,
+          company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
           modified_by_id = :modifiedById::int,
           date_modified = now()
     where id = :id
