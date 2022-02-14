@@ -215,7 +215,7 @@ public class ProjectProcessStepEventService {
         customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
       }
 
-      return getPpsEvent(saveEvent.getId());
+      return getPpsEvent(eventId);
     }
   }
 
