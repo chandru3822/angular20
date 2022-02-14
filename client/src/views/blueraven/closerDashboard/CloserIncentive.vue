@@ -2,8 +2,7 @@
   <v-container id="closer-dash-container" class="incentive-tab-override">
     <!--------------------------------- INCENTIVE TAB START --------------------------------->
     <v-row justify="center" no-gutters>
-      <v-col cols="12" id="incentive-container">
-        <img id="incentive-banner" src="../../../assets/blueraven/top_gun_white.svg" alt="incentive competition banner">
+      <v-col cols="12" id="incentive-container" class="justify-end">
         <div id="milestones-container">
           <div id="aim-high-phase" class="milestone"
                :class="{'active-milestone': is_q1,
@@ -11,7 +10,7 @@
                         'align-items-flex-start': windowInnerWidth >= 1135
                         }"
                @click="milestoneDrilldown(1)">
-            <span class="milestone-top-label">Aim High</span>
+            <span class="milestone-top-label">{{ incentive_constants.firstMilestone }}</span>
             <div class="milestone-content mt-1">
               <div class="milestone-content-left-side"
                 :class="this.getMilestoneMedal(this.q1_points)"></div>
@@ -37,7 +36,7 @@
                         'align-items-flex-end': is_q1,
                         'align-items-flex-start': is_q3 || is_q4}"
                @click="milestoneDrilldown(2)">
-            <span class="milestone-top-label">Fly</span>
+            <span class="milestone-top-label">{{ incentive_constants.secondMilestone }}</span>
             <div class="milestone-content mt-1">
               <div class="milestone-content-left-side"
                    :class="this.getMilestoneMedal(this.q2_points)"></div>
@@ -63,7 +62,7 @@
                         'align-items-flex-end': is_q1 || is_q2,
                         'align-items-flex-start': is_q4}"
                @click="milestoneDrilldown(3)">
-            <span class="milestone-top-label">Fight</span>
+            <span class="milestone-top-label">{{incentive_constants.thirdMilestone}}</span>
             <div class="milestone-content mt-1">
               <div class="milestone-content-left-side"
                    :class="this.getMilestoneMedal(this.q3_points)"></div>
@@ -88,7 +87,7 @@
                         'align-items-center': windowInnerWidth < 1135,
                         'align-items-flex-end': windowInnerWidth >= 1135}"
                @click="milestoneDrilldown(4)">
-            <span class="milestone-top-label">Win</span>
+            <span class="milestone-top-label">{{ incentive_constants.fourthMilestone }}</span>
             <div class="milestone-content mt-1">
               <div class="milestone-content-left-side"
                    :class="this.getMilestoneMedal(this.q4_points)"></div>
@@ -110,29 +109,13 @@
         </div>
 
         <div id="progress-bar-container">
-          <span>Cumulative Point Total</span>
+          <span>Yearly Point Total</span>
           <div id="progress-bar">
-            <div id="first-segment" class="progress-bar-segment"></div>
-            <div id="second-segment" class="progress-bar-segment"></div>
-            <div id="third-segment" class="progress-bar-segment"></div>
-            <div id="fourth-segment" class="progress-bar-segment"></div>
-            <div id="fifth-segment" class="progress-bar-segment"></div>
-            <div id="sixth-segment" class="progress-bar-segment"></div>
-            <div id="seventh-segment" class="progress-bar-segment"></div>
-            <div id="eighth-segment" class="progress-bar-segment"></div>
-            <div id="ninth-segment" class="progress-bar-segment"></div>
+            <div v-for="i in incentive_constants.totalPointsPossible" class="progress-bar-segment"></div>
             <div id="progress-bar-fill"
                  :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px',
                           width: this.percentAchieved + '%'}"></div>
           </div>
-        </div>
-
-        <div id="milestone-medals-container">
-          <div class="milestone-medal a-10-level"></div>
-          <div class="milestone-medal f-14-level"></div>
-          <div class="milestone-medal fa-18-level"></div>
-          <div class="milestone-medal f-22-level"></div>
-          <div class="milestone-medal f-35-level"></div>
         </div>
       </v-col>
     </v-row>
@@ -195,6 +178,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import constants from '@/helpers/constants'
+  import incentive_constants from './incentive_constants'
   import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
@@ -208,6 +192,7 @@
       return {
         snackbar: {},
         constants,
+        incentive_constants,
         milestoneDialog: false,
         currentUserId: null,
         selectedQuarter: 1,
@@ -283,7 +268,7 @@
             this.q4_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q4)
 
             // Fill progress bar based on closer's points for the year
-            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 9) * 100
+            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / this.incentive_constants.totalPointsPossible) * 100
             this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
             this.progressBarIsFull = this.percentAchieved === 100
 
@@ -340,17 +325,17 @@
       getLowerMilestoneLabel (fdcCount) {
         switch (true) {
           case fdcCount >= 10 && fdcCount < 12:
-            return (12 - fdcCount) + ' FDC to get to Tomcat'
+            return (12 - fdcCount) + ` FDC to ${incentive_constants.secondMilestone}`
           case fdcCount >= 12 && fdcCount < 15:
-            return (15 - fdcCount) + ' FDC to get to Hornet'
+            return (15 - fdcCount) + ` FDC to ${incentive_constants.thirdMilestone}`
           case fdcCount >= 15 && fdcCount < 18:
-            return (18 - fdcCount) + ' FDC to get to Raptor'
+            return (18 - fdcCount) + ` FDC to ${incentive_constants.fourthMilestone}`
           case fdcCount >= 18 && fdcCount < 24:
             return (24 - fdcCount) + ' FDC to get to Lightning'
           case fdcCount >= 24:
             return 'Lightning Achieved'
           default:
-            return (10 - fdcCount) + ' FDC to get to Warthog'
+            return (10 - fdcCount) + ` FDC to ${incentive_constants.firstMilestone}`
         }
       },
 
@@ -433,7 +418,7 @@
   }
 
   #incentive-container {
-    background: black url("../../../assets/blueraven/title_pilot.jpg") no-repeat fixed center;
+    background: black url("../../../assets/blueraven/Ravens_Cup_Albatross.svg") no-repeat fixed center;
     background-size: cover;
     display: flex;
     flex-flow: column nowrap;
@@ -633,7 +618,7 @@
     display: flex;
     flex-flow: column nowrap;
     justify-content: space-between;
-    margin: 30px auto;
+    margin: 30px auto 120px auto;
     width: calc(100% - 50px);
     height: 37px;
 
@@ -669,32 +654,17 @@
     .progress-bar-segment {
       background-color: #D8D8D8;
       border: 0.02em solid black;
-      width: 11.11%;
+      width: 12.5%;
     }
 
-    #first-segment {
+    .progress-bar-segment:first-child {
       border-radius: 4px 0 0 4px;
       border: 0.03em solid black;
     }
 
-    #ninth-segment {
+    .progress-bar-segment:last-child {
       border-radius: 0 4px 4px 0;
       border: 0.03em solid black;
-    }
-  }
-
-  #milestone-medals-container {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 30px;
-    width: 60%;
-    height: 50px;
-
-    .milestone-medal {
-      width: 18%;
-      min-height: 100%;
     }
   }
 
@@ -755,7 +725,7 @@
 
   @media (min-width: 737px) {
     #incentive-container {
-      background: black url("../../../assets/blueraven/title_pilot.jpg") no-repeat scroll center -50px;
+      background: black url("../../../assets/blueraven/Ravens_Cup_Albatross.svg") no-repeat scroll center -50px;
       background-size: cover;
 
       #incentive-banner {
