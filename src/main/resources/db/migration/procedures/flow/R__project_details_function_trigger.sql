@@ -807,7 +807,6 @@ declare
   v_value            text;
   v_event_status_type_id integer;
 BEGIN
-  raise notice '1';
   select est.id
   into v_event_status_type_id
   from flow.company_event_status_type cest
