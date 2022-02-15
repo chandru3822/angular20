@@ -25,9 +25,9 @@ BEGIN
     IF(v_due_date is not null)
       THEN
         --for flux
-        perform flow.set_pps_cfv(p_project_id, 99999999, 22851::integer, v_due_date::text);
+--         perform flow.set_pps_cfv(p_project_id, 99999999, 22851::integer, v_due_date::text);
         --for prod
---         perform flow.set_pps_cfv(p_project_id, 99999999, 22680::integer, v_due_date::text);
+        perform flow.set_pps_cfv(p_project_id, 99999999, 22680::integer, v_due_date::text);
     END IF;
 
 
