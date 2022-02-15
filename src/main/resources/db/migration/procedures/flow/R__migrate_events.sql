@@ -585,6 +585,14 @@ BEGIN
                                          25, 235,
                                          26,
                                          0);
+        elsif x.process_step_id = 3494 then
+          select process_event_status_id,cancel_timestamp,complete_timestamp,scheduled_timestamp
+          into v_event_status_type_id,v_cancelled_date,v_completed_date,v_scheduled_timestamp
+          from flow.migrate_event_status(x.project_process_step_id, x.project_id, v_start_date,
+                                         v_end_date,
+                                         3494, 0,
+                                         0,
+                                         0);
         end if;
         v_created_start_time = null;
         if v_start_date is null and v_end_date is not null then
@@ -841,6 +849,9 @@ BEGIN
                                                                                  x.project_process_step_id);
         elsif x.process_step_id = 25 then
           perform flow.migrate_schedule_inhouse_mpu_permit_submission_to_events(v_event_id,
+                                                                                x.project_process_step_id);
+        elsif x.process_step_id = 3494 then
+          perform flow.migrate_schedule_roof_assessment_to_events(v_event_id,
                                                                                 x.project_process_step_id);
         end if;
 
