@@ -163,7 +163,15 @@ BEGIN
       update brs.set_closer_appointment_audit
       set closer_selected = true
       where id = v_set_closer_appointment_audit_id;
-      return query select true::boolean,
+      --set the proposal due date on the process step to the start time
+      perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::int, p_appointment_start_time::text);
+      --also change the status of the event to pending
+      update flow.project_process_step_event
+        set company_event_status_type_id = 7
+      where id = p_project_process_step_event_id;
+
+      --then return
+             return query select true::boolean,
                           v_user_id::integer,
                           p_appointment_start_time::timestamp,
                           (p_appointment_start_time +

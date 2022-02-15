@@ -29,7 +29,7 @@ export function getMinMaxRule (min, max) {
 export function getFileIcon(file) {
   switch (file.fileExtension) {
     case 'pdf':
-      return 'mdi-file-pdf-outline'
+      return 'mdi-file'
     case 'doc':
     case 'docx':
       return 'mdi-file-word'
