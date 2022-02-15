@@ -66,6 +66,7 @@ declare
   v_retrofit_site_survey_id                integer;
   v_additional_inspection_customer_id      integer;
   v_inhouse_mpu_permit_submission_id       integer;
+  v_roof_assessment_id                     integer;
 BEGIN
 
   select id
@@ -351,6 +352,11 @@ BEGIN
   into v_inhouse_mpu_permit_submission_id
   from flow.event
   where temp_cfg_id = 42;
+
+  select id
+  into v_roof_assessment_id
+  from flow.event
+  where temp_cfg_id = 7036;
 
 
   drop trigger if exists update_events_trg on flow.project_process_step_event;
@@ -953,6 +959,8 @@ BEGIN
 
   perform flow.migrate_events(25);
 
+  raise notice 'starting roof assessment';
+  perform flow.migrate_events(3494);
 
   --this updates all project_details
   raise notice 'starting update project details';

@@ -1073,6 +1073,8 @@ insert into flow.migration_child_process_step(project_process_id, process_step_i
 values(170,'{170,206,207,171}');
 insert into flow.migration_child_process_step(project_process_id, process_step_ids)
 values(25,'{25,235,26}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3494,'{3494}');
 
 
 alter table brs.project_details drop column if exists ahj_inspection_start_time_ppse_id;

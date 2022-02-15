@@ -6,6 +6,7 @@
       :notes="notes"
       :primaryId="parseInt(projectId)"
       type="Project"
+      class="px-2"
     />
 
 </template>

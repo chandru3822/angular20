@@ -1824,6 +1824,12 @@ BEGIN
     set timestamp_value = (ud.date_value::timestamp at time zone 'US/Mountain')::timestamp
     from update_data ud
     where ud.id = ppsecfv.id;
+
+  elsif p_process_step_id = 3494 then
+    perform flow.migrate_group_to_event(7037, p_event_type_id, 1);
+    perform flow.migrate_group_to_event(7038, p_event_type_id, 2);
+    perform flow.migrate_group_to_event(7039, p_event_type_id, 3);
+
   end if;
 
 END

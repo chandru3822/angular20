@@ -203,6 +203,8 @@ public class ProjectProcessStepEventService {
       params.put("startTime", saveEvent.getStartTime());
       params.put("endTime", saveEvent.getEndTime());
       params.put("resourceId", saveEvent.getResourceId());
+
+      //mobile is not going to allow them to save this field so in the sql we check if this value is null and we don't do anything if it is.
       params.put("companyEventStatusTypeId", saveEvent.getCompanyEventStatusTypeId());
       params.put("modifiedById", currentUser.getId());
 
@@ -213,7 +215,7 @@ public class ProjectProcessStepEventService {
         customFieldValueService.updateCustomFieldValues(saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
       }
 
-      return getPpsEvent(saveEvent.getId());
+      return getPpsEvent(eventId);
     }
   }
 

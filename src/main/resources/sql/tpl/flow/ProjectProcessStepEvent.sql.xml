@@ -193,7 +193,7 @@
       set resource_id = :resourceId::int,
           start_time = :startTime::timestamp,
           end_time = :endTime::timestamp,
-          company_event_status_type_id = :companyEventStatusTypeId,
+          company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
           modified_by_id = :modifiedById::int,
           date_modified = now()
     where id = :id
@@ -234,34 +234,6 @@
       where ppsa.project_process_step_event_id = :projectProcessStepEventId
         and a.archived is not true
         and ppsa.archived is not true
-      union all
-      select
-        a.id,
-        a.size,
-        a.uuid,
-        a.date_created,
-        a.date_modified,
-        a.filename,
-        a.attachment_type_id,
-        a.content_type,
-        a.s3_key,
-        a.archived,
-        substring(filename, '\.([^\.]+)$') as file_extension,
-        ps.process_step_name,
-        null::int as project_process_step_event_id,
-        ppsa.project_process_step_id,
-        pps.main,
-        concat(u.first_name, ' ', u.last_name) AS uploadedBy
-      from flow.project_process_step_attachment ppsa
-             inner join flow.attachment a on a.id = ppsa.attachment_id
-             inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
-             inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
-             inner join flow.process_step ps on ps.id = pps.process_step_id
-             inner join flow."user" u ON a.created_by_id = u.id
-      where ppse.id = :projectProcessStepEventId
-        and a.archived is not true
-        and ppsa.archived is not true
-      order by main desc, date_created desc
   ]]></projectProcessStepEvent.getProjectProcessStepEventAttachments>
 
   <projectProcessStepEvent.addAttachment><![CDATA[
