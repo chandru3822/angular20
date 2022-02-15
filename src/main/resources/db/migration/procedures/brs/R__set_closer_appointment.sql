@@ -20,8 +20,6 @@ AS
 $BODY$
 declare
   v_user_id                                     integer;
-  v_project_process_step_id                     integer;
-  v_project_process_step_custom_field_value_id  integer;
   v_user_full_name                              text;
   v_user_email                                  text;
   v_user_position_id                            integer;
@@ -165,10 +163,18 @@ BEGIN
       where id = v_set_closer_appointment_audit_id;
       --set the proposal due date on the process step to the start time
       perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::int, p_appointment_start_time::text);
-      --also change the status of the event to pending
+      --change the status of the event to pending
       update flow.project_process_step_event
         set company_event_status_type_id = 7
       where id = p_project_process_step_event_id;
+      --change the status of the project process step to Pending Event
+      update flow.project_process_step
+      set company_process_step_status_type_id = 76
+      where id = p_project_process_step_id;
+      --change the status of the project to appointment scheduled
+      update flow.project
+        set company_project_status_type_id = 61
+      where id = p_project_id;
 
       --then return
              return query select true::boolean,
