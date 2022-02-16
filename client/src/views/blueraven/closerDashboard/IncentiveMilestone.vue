@@ -8,7 +8,7 @@
          @click="milestoneDrilldown(currentQuarter)">
       <span class="milestone-top-label">{{ upperLabel }}</span>
       <div class="milestone-content mt-1" :class="colorClass">
-        <div class="milestone-content-left-side no-medal"></div>
+        <div class="milestone-content-left-side"><trophy-dynamic :color="colorClass"></trophy-dynamic></div>
         <div class="milestone-content-right-side">
           <span class="milestone-top-right-label" :class="colorClass">{{ milestoneGoal }} FDC</span>
         </div>
@@ -75,8 +75,10 @@ import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {AppMutations} from "@/stores/AppStore";
 import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
+import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
 export default {
   name: "IncentiveMilestone",
+  components: {TrophyDynamic},
   props: {
     milestoneLevel: MilestoneEnum,
     currentQuarterCount: Number,
