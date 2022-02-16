@@ -4,84 +4,93 @@
     <v-row justify="center" no-gutters>
       <v-col cols="12" id="incentive-container" class="justify-end">
         <div id="milestones-container">
-          <incentive-milestone></incentive-milestone>
+          <incentive-milestone
+              :milestone-level="MilestoneEnum.LEVEL1"
+              :currentQuarterCount = "currentQuarterCount"
+              :milestone-goal="incentive_constants.firstMilestoneGoalCloser"
+              :milestone-label="incentive_constants.firstMilestone"
+              :milestone-units="incentive_constants.milestoneUnitsCloser"
+          ></incentive-milestone>
+          <incentive-milestone :milestone-level="MilestoneEnum.LEVEL2" :currentQuarterCount = "currentQuarterCount" :milestone-goal="incentive_constants.secondMilestoneGoalCloser" :milestone-label="incentive_constants.secondMilestone"></incentive-milestone>
+          <incentive-milestone :milestone-level="MilestoneEnum.LEVEL3" :currentQuarterCount = "currentQuarterCount" :milestone-goal="incentive_constants.thirdMilestoneGoalCloser" :milestone-label="incentive_constants.thirdMilestone"></incentive-milestone>
+          <incentive-milestone :milestone-level="MilestoneEnum.LEVEL4" :currentQuarterCount = "currentQuarterCount" :milestone-goal="incentive_constants.fourthMilestoneGoalCloser" :milestone-label="incentive_constants.fourthMilestone"></incentive-milestone>
 
-          <div id="fly-phase" class="milestone"
-               :class="{'active-milestone': is_q2,
-                        'align-items-center': windowInnerWidth < 1135 || is_q2,
-                        'align-items-flex-end': is_q1,
-                        'align-items-flex-start': is_q3 || is_q4}"
-               @click="milestoneDrilldown(2)">
-            <span class="milestone-top-label">{{ incentive_constants.secondMilestone }}</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q2_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ fdcCounts.q2 }} FDC</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">
-                  <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>
-                  <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q2_lower_label }}</span>
-          </div>
+<!--          <div id="fly-phase" class="milestone"-->
+<!--               :class="{'active-milestone': is_q2,-->
+<!--                        'align-items-center': windowInnerWidth < 1135 || is_q2,-->
+<!--                        'align-items-flex-end': is_q1,-->
+<!--                        'align-items-flex-start': is_q3 || is_q4}"-->
+<!--               @click="milestoneDrilldown(2)">-->
+<!--            <span class="milestone-top-label">{{ incentive_constants.secondMilestone }}</span>-->
+<!--            <div class="milestone-content mt-1">-->
+<!--              <div class="milestone-content-left-side"-->
+<!--                   :class="this.getMilestoneMedal(this.q2_points)"></div>-->
+<!--              <div class="milestone-content-right-side">-->
+<!--                <span class="milestone-top-right-label">{{ fdcCounts.q2 }} FDC</span>-->
+<!--                <div class="milestone-stars-container"-->
+<!--                     :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">-->
+<!--                  <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q2_points > 2" class="milestone-star"-->
+<!--                          :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>-->
+<!--                  <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <span class="milestone-bottom-label">{{ q2_lower_label }}</span>-->
+<!--          </div>-->
 
-          <div id="fight-phase" class="milestone"
-               :class="{'active-milestone': is_q3,
-                        'align-items-center': windowInnerWidth < 1135 || is_q3,
-                        'align-items-flex-end': is_q1 || is_q2,
-                        'align-items-flex-start': is_q4}"
-               @click="milestoneDrilldown(3)">
-            <span class="milestone-top-label">{{incentive_constants.thirdMilestone}}</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q3_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ fdcCounts.q3 }} FDC</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">
-                  <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>
-                  <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q3_lower_label }}</span>
-          </div>
+<!--          <div id="fight-phase" class="milestone"-->
+<!--               :class="{'active-milestone': is_q3,-->
+<!--                        'align-items-center': windowInnerWidth < 1135 || is_q3,-->
+<!--                        'align-items-flex-end': is_q1 || is_q2,-->
+<!--                        'align-items-flex-start': is_q4}"-->
+<!--               @click="milestoneDrilldown(3)">-->
+<!--            <span class="milestone-top-label">{{incentive_constants.thirdMilestone}}</span>-->
+<!--            <div class="milestone-content mt-1">-->
+<!--              <div class="milestone-content-left-side"-->
+<!--                   :class="this.getMilestoneMedal(this.q3_points)"></div>-->
+<!--              <div class="milestone-content-right-side">-->
+<!--                <span class="milestone-top-right-label">{{ fdcCounts.q3 }} FDC</span>-->
+<!--                <div class="milestone-stars-container"-->
+<!--                     :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">-->
+<!--                  <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q3_points > 2" class="milestone-star"-->
+<!--                          :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>-->
+<!--                  <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <span class="milestone-bottom-label">{{ q3_lower_label }}</span>-->
+<!--          </div>-->
 
-          <div id="win-phase" class="milestone"
-               :class="{'active-milestone': is_q4,
-                        'align-items-center': windowInnerWidth < 1135,
-                        'align-items-flex-end': windowInnerWidth >= 1135}"
-               @click="milestoneDrilldown(4)">
-            <span class="milestone-top-label">{{ incentive_constants.fourthMilestone }}</span>
-            <div class="milestone-content mt-1">
-              <div class="milestone-content-left-side"
-                   :class="this.getMilestoneMedal(this.q4_points)"></div>
-              <div class="milestone-content-right-side">
-                <span class="milestone-top-right-label">{{ fdcCounts.q4 }} FDC</span>
-                <div class="milestone-stars-container"
-                     :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">
-                  <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 2" class="milestone-star"
-                          :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>
-                  <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>
-                  <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>
-                </div>
-              </div>
-            </div>
-            <span class="milestone-bottom-label">{{ q4_lower_label }}</span>
-          </div>
+<!--          <div id="win-phase" class="milestone"-->
+<!--               :class="{'active-milestone': is_q4,-->
+<!--                        'align-items-center': windowInnerWidth < 1135,-->
+<!--                        'align-items-flex-end': windowInnerWidth >= 1135}"-->
+<!--               @click="milestoneDrilldown(4)">-->
+<!--            <span class="milestone-top-label">{{ incentive_constants.fourthMilestone }}</span>-->
+<!--            <div class="milestone-content mt-1">-->
+<!--              <div class="milestone-content-left-side"-->
+<!--                   :class="this.getMilestoneMedal(this.q4_points)"></div>-->
+<!--              <div class="milestone-content-right-side">-->
+<!--                <span class="milestone-top-right-label">{{ fdcCounts.q4 }} FDC</span>-->
+<!--                <div class="milestone-stars-container"-->
+<!--                     :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">-->
+<!--                  <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q4_points > 2" class="milestone-star"-->
+<!--                          :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>-->
+<!--                  <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>-->
+<!--                  <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <span class="milestone-bottom-label">{{ q4_lower_label }}</span>-->
+<!--          </div>-->
         </div>
 
         <div id="progress-bar-container">
@@ -105,6 +114,7 @@
   import moment from 'moment'
   import constants from '@/helpers/constants'
   import incentive_constants from './incentive_constants'
+  import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
   import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
@@ -121,17 +131,10 @@
         snackbar: {},
         constants,
         incentive_constants,
+        MilestoneEnum,
         milestoneDialog: false,
         currentUserId: null,
         selectedQuarter: 1,
-        headers: [
-          { text: '', value: '', show: true, sortable: false },
-          { text: 'Name', value: 'customer_name', show: true },
-          { text: 'Project ID', value: 'id', show: true },
-          { text: 'Source', value: 'source_name', show: true },
-          { text: 'System Size', value: 'system_size', show: true },
-          { text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true }
-        ],
         drilldownData: [],
         incentiveDataLoaded: false,
         currentQuarter: moment().quarter(),
@@ -166,6 +169,18 @@
       milestoneDrilldownTitle () {
         return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Final Designs Completed - Q' + this.selectedQuarter
       },
+      currentQuarterCount () {
+        switch(this.currentQuarter){
+          case 4:
+            return this.fdcCounts.q4
+          case 3:
+            return this.fdcCounts.q3
+          case 2:
+            return this.fdcCounts.q2
+          default:
+            return this.fdcCounts.q1
+        }
+      }
     },
     watch: {},
     methods: {
@@ -188,12 +203,6 @@
             this.q2_points = this.calcPointsForQuarter(this.fdcCounts.q2, this.fdcCounts.q2QualificationMet)
             this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3, this.fdcCounts.q3QualificationMet)
             this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4, this.fdcCounts.q4QualificationMet)
-
-            // Get lower milestone labels
-            this.q1_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q1)
-            this.q2_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q2)
-            this.q3_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q3)
-            this.q4_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q4)
 
             // Fill progress bar based on closer's points for the year
             this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / this.incentive_constants.totalPointsPossible) * 100

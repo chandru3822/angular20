@@ -1,29 +1,19 @@
 <template>
   <div>
-    <div id="aim-high-phase" class="milestone"
+    <div :id="`phase-${milestoneLevel}`" class="milestone"
          :class="{
                         'align-items-center': windowInnerWidth < 1135,
                         'align-items-flex-start': windowInnerWidth >= 1135
                         }"
-         @click="milestoneDrilldown(1)">
-      <span class="milestone-top-label">{{ incentive_constants.firstMilestone }}</span>
-      <div class="milestone-content mt-1">
-        <div class="milestone-content-left-side"
-             :class="this.getMilestoneMedal(this.q1_points)"></div>
+         @click="milestoneDrilldown(currentQuarter)">
+      <span class="milestone-top-label">{{ upperLabel }}</span>
+      <div class="milestone-content mt-1" :class="colorClass">
+        <div class="milestone-content-left-side no-medal"></div>
         <div class="milestone-content-right-side">
-          <span class="milestone-top-right-label bronze">{{ fdcCounts.q1 }} FDC</span>
-          <div class="milestone-stars-container"
-               :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
-            <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
-            <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
-            <v-icon v-if="q1_points > 2" class="milestone-star"
-                    :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
-            <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
-            <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
-          </div>
+          <span class="milestone-top-right-label" :class="colorClass">{{ currentQuarterCount }} FDC</span>
         </div>
       </div>
-      <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
+      <span class="milestone-bottom-label">{{ lowerLabel }}</span>
     </div>
     <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
       <v-card>
@@ -81,14 +71,18 @@
 
 <script>
 import incentive_constants from "@/views/blueraven/closerDashboard/incentive_constants";
-import moment from "moment";
+import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getRequestWithParams, getSnackbar} from "@/helpers/helpers";
+import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 export default {
   name: "IncentiveMilestone",
   props: {
-
+    milestoneLevel: MilestoneEnum,
+    currentQuarterCount: Number,
+    milestoneGoal: Number,
+    milestoneLabel: String,
+    milestoneUnits: String,
   },
   data() {
     return {
@@ -105,137 +99,40 @@ export default {
         { text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true }
       ],
       drilldownData: [],
-      incentiveDataLoaded: false,
-      currentQuarter: moment().quarter(),
-      fdcCounts: {
-        q1: 0, q1QualificationMet: false,
-        q2: 0, q2QualificationMet: false,
-        q3: 0, q3QualificationMet: false,
-        q4: 0, q4QualificationMet: false
-      },
-      q1_points: 0,
-      q2_points: 0,
-      q3_points: 0,
-      q4_points: 0,
-      q1_medal_icon: '',
-      q2_medal_icon: '',
-      q3_medal_icon: '',
-      q4_medal_icon: '',
-      q1_lower_label: '',
-      q2_lower_label: '',
-      q3_lower_label: '',
-      q4_lower_label: ''
+      upperLabel: '',
+      lowerLabel:'',
+      innerLabel: ''
     }
   },
   computed: {
     windowInnerWidth () { return window.innerWidth},
-    is_q1 () { return this.currentQuarter === 1 },
-    is_q2 () { return this.currentQuarter === 2 },
-    is_q3 () { return this.currentQuarter === 3 },
-    is_q4 () { return this.currentQuarter === 4 },
     milestoneDrilldownTitle () {
       return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Final Designs Completed - Q' + this.selectedQuarter
     },
+    colorClass: function () {
+      return {
+        'bronze': this.milestoneLevel === MilestoneEnum.LEVEL1,
+        'silver': this.milestoneLevel === MilestoneEnum.LEVEL2,
+        'gold': this.milestoneLevel === MilestoneEnum.LEVEL3,
+        'platinum': this.milestoneLevel === MilestoneEnum.LEVEL4
+      }
+    }
   },
   methods: {
+    setLabels () {
+      const diff = this.milestoneGoal - this.currentQuarterCount
+
+      const r = this.currentQuarterCount >= this.milestoneGoal ? 0 : diff
+      this.upperLabel = this.milestoneLabel
+      this.lowerLabel =  `${r} ${this.milestoneUnits} to ${this.milestoneLabel}`
+      this.innerLabel = `${r === 0 ? this.milestoneGoal : this.currentQuarterCount} ${this.milestoneUnits}`
+    },
     resetScrollBarPosition () {
       // reset scroll bar position to top
       //document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
     },
 
-    /* INCENTIVE-RELATED CODE START */
-    async loadIncentive () {
-      this.incentiveDataLoaded = false
-
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        getRequest('/closerDashboard/getIncentiveFdcCounts', 'blueraven').then(res => {
-          this.fdcCounts = res.data
-
-          // Calculate points for each quarter
-          this.q1_points = this.calcPointsForQuarter(this.fdcCounts.q1, this.fdcCounts.q1QualificationMet)
-          this.q2_points = this.calcPointsForQuarter(this.fdcCounts.q2, this.fdcCounts.q2QualificationMet)
-          this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3, this.fdcCounts.q3QualificationMet)
-          this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4, this.fdcCounts.q4QualificationMet)
-
-          // Get lower milestone labels
-          this.q1_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q1)
-          this.q2_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q2)
-          this.q3_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q3)
-          this.q4_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q4)
-
-          // Fill progress bar based on closer's points for the year
-          this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / this.incentive_constants.totalPointsPossible) * 100
-          this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
-          this.progressBarIsFull = this.percentAchieved === 100
-
-          this.incentiveDataLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        })
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving incentive data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.incentiveDataLoaded = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-
-    calcPointsForQuarter (fdcCount, qualificationMetForQuarter) {
-      if (qualificationMetForQuarter) {
-        switch (true) {
-          case fdcCount >= 10 && fdcCount < 12:
-            return 1 // A-10
-          case fdcCount >= 12 && fdcCount < 15:
-            return 2 // F-14
-          case fdcCount >= 15 && fdcCount < 18:
-            return 3 // FA-18
-          case fdcCount >= 18 && fdcCount < 24:
-            return 4 // F-22
-          case fdcCount >= 24:
-            return 5 // F-35
-          default:
-            return 0 // No medal
-        }
-      } else {
-        return 0 // No medal
-      }
-    },
-
-    getMilestoneMedal (pointsEarned) {
-      switch (pointsEarned) {
-        case 1:
-          return 'a-10-level'
-        case 2:
-          return 'f-14-level'
-        case 3:
-          return 'fa-18-level'
-        case 4:
-          return 'f-22-level'
-        case 5:
-          return 'f-35-level'
-        default:
-          return 'no-medal'
-      }
-    },
-
-    getLowerMilestoneLabel (fdcCount) {
-      switch (true) {
-        case fdcCount >= 10 && fdcCount < 12:
-          return (12 - fdcCount) + ` FDC to ${incentive_constants.secondMilestone}`
-        case fdcCount >= 12 && fdcCount < 15:
-          return (15 - fdcCount) + ` FDC to ${incentive_constants.thirdMilestone}`
-        case fdcCount >= 15 && fdcCount < 18:
-          return (18 - fdcCount) + ` FDC to ${incentive_constants.fourthMilestone}`
-        case fdcCount >= 18 && fdcCount < 24:
-          return (24 - fdcCount) + ' FDC to get to Lightning'
-        case fdcCount >= 24:
-          return 'Lightning Achieved'
-        default:
-          return (10 - fdcCount) + ` FDC to ${incentive_constants.firstMilestone}`
-      }
-    },
-
+    /* Drilldown CODE START */
     async milestoneDrilldown (quarter) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -267,12 +164,13 @@ export default {
       this.milestoneDialog = false
       this.resetScrollBarPosition()
     },
-    /* INCENTIVE-RELATED CODE END */
+    /* Drilldown CODE END */
   },
+
   async created () {
     this.currentUserId = this.$store.state.user.details.id
+    this.setLabels()
 
-    await this.loadIncentive()
   }
 }
 </script>
@@ -288,29 +186,6 @@ export default {
 
 .align-items-flex-end {
   align-items: flex-end;
-}
-
-#closer-dash-container {
-  font-family: 'Roboto Condensed', sans-serif !important;
-  letter-spacing: 0.02em !important;
-  overflow: auto;
-}
-
-#closer-dash-container.incentive-tab-override {
-  padding: 0 !important;
-}
-
-#closer-dash-tabs.incentive-tab-overrides {
-  position: relative;
-  z-index: 1;
-  color: #fff;
-  margin-bottom: -30px !important;
-  padding-top: 8px;
-  padding-right: 15px;
-
-  .tab-separator {
-    border-color: #fff;
-  }
 }
 
 .milestone {
@@ -341,7 +216,6 @@ export default {
 
   .milestone-content {
     cursor: pointer;
-    border: 4px solid #B99A86;
     background-color: #191919;
     display: flex;
     flex-flow: row nowrap;
@@ -463,30 +337,6 @@ export default {
   background-size: contain;
 }
 
-.a-10-level {
-  background: url('../../../assets/blueraven/a10_warthog.png') no-repeat scroll center;
-  background-size: contain;
-}
-
-.f-14-level {
-  background: url('../../../assets/blueraven/f14_tomcat.png') no-repeat scroll center;
-  background-size: contain;
-}
-
-.fa-18-level {
-  background: url('../../../assets/blueraven/fa18_hornet.png') no-repeat scroll center;
-  background-size: contain;
-}
-
-.f-22-level {
-  background: url('../../../assets/blueraven/f22_raptor.png') no-repeat scroll center;
-  background-size: contain;
-}
-
-.f-35-level {
-  background: url('../../../assets/blueraven/f35_lightning.png') no-repeat scroll center;
-  background-size: contain;
-}
 
 .v-card__title {
   display: flex;
@@ -642,16 +492,12 @@ export default {
 
 @media (min-width: 1070px) {
 
-  #closer-dash-tabs .col-12 span {
-    font-size: 13px;
-  }
-
   .milestone {
     margin-bottom: 0;
   }
 
-  #aim-high-phase,
-  #fly-phase {
+  #phase-1,
+  #phase-2 {
     margin-bottom: 20px;
   }
 
@@ -666,8 +512,8 @@ export default {
 }
 
 @media (min-width: 1135px) {
-  #aim-high-phase,
-  #fly-phase {
+  #phase-1,
+  #phase-2 {
     margin-bottom: 0;
   }
 
@@ -699,24 +545,33 @@ export default {
 }
 
 @media (min-width: 1187px) {
-  #appts-to-fdc-pipeline-funnel-background {
-    border-top-width: 900px;
-  }
-
-  #appts-to-fdc-pipeline-container {
-    .funnel-container {
-      .funnel-table {
-        .checked-in-column-top {
-          padding: 17px 3px;
-        }
-      }
-    }
-  }
 }
-
+//color classes
 .bronze {
   color: #B99A86;
-  font-color: #B99A86;
 }
+.milestone-content.bronze {
+  border: 4px solid #B99A86;
+}
+.silver {
+  color: #A8A9AB;
+}
+.milestone-content.silver {
+  border: 4px solid #A8A9AB;
+}
+.gold {
+  color: #FFD700;
+}
+.milestone-content.gold {
+  border: 4px solid #FFD700;
+}
+.platinum {
+  color: #191919;
+}
+.milestone-content.platinum {
+  background-color: white;
+  border: 4px solid #191919;
+}
+
 </style>
 
