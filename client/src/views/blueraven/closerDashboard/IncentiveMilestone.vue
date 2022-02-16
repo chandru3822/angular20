@@ -10,7 +10,7 @@
       <div class="milestone-content mt-1" :class="colorClass">
         <div class="milestone-content-left-side no-medal"></div>
         <div class="milestone-content-right-side">
-          <span class="milestone-top-right-label" :class="colorClass">{{ currentQuarterCount }} FDC</span>
+          <span class="milestone-top-right-label" :class="colorClass">{{ milestoneGoal }} FDC</span>
         </div>
       </div>
       <span class="milestone-bottom-label">{{ lowerLabel }}</span>
