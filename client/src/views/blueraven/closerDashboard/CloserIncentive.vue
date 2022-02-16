@@ -11,9 +11,27 @@
               :milestone-label="incentive_constants.firstMilestone"
               :milestone-units="incentive_constants.milestoneUnitsCloser"
           ></incentive-milestone>
-          <incentive-milestone :milestone-level="MilestoneEnum.LEVEL2" :currentQuarterCount = "currentQuarterCount" :milestone-goal="incentive_constants.secondMilestoneGoalCloser" :milestone-label="incentive_constants.secondMilestone"></incentive-milestone>
-          <incentive-milestone :milestone-level="MilestoneEnum.LEVEL3" :currentQuarterCount = "currentQuarterCount" :milestone-goal="incentive_constants.thirdMilestoneGoalCloser" :milestone-label="incentive_constants.thirdMilestone"></incentive-milestone>
-          <incentive-milestone :milestone-level="MilestoneEnum.LEVEL4" :currentQuarterCount = "currentQuarterCount" :milestone-goal="incentive_constants.fourthMilestoneGoalCloser" :milestone-label="incentive_constants.fourthMilestone"></incentive-milestone>
+          <incentive-milestone
+              :milestone-level="MilestoneEnum.LEVEL2"
+              :currentQuarterCount = "currentQuarterCount"
+              :milestone-goal="incentive_constants.secondMilestoneGoalCloser"
+              :milestone-label="incentive_constants.secondMilestone"
+              :milestone-units="incentive_constants.milestoneUnitsCloser"
+          ></incentive-milestone>
+          <incentive-milestone
+              :milestone-level="MilestoneEnum.LEVEL3"
+              :currentQuarterCount = "currentQuarterCount"
+              :milestone-goal="incentive_constants.thirdMilestoneGoalCloser"
+              :milestone-label="incentive_constants.thirdMilestone"
+              :milestone-units="incentive_constants.milestoneUnitsCloser"
+          ></incentive-milestone>
+          <incentive-milestone
+              :milestone-level="MilestoneEnum.LEVEL4"
+              :currentQuarterCount = "currentQuarterCount"
+              :milestone-goal="incentive_constants.fourthMilestoneGoalCloser"
+              :milestone-label="incentive_constants.fourthMilestone"
+              :milestone-units="incentive_constants.milestoneUnitsCloser"
+          ></incentive-milestone>
 
 <!--          <div id="fly-phase" class="milestone"-->
 <!--               :class="{'active-milestone': is_q2,-->
