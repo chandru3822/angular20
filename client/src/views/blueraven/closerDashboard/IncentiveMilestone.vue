@@ -3,7 +3,8 @@
     <div :id="`phase-${milestoneLevel}`" class="milestone"
          :class="{
                         'align-items-center': windowInnerWidth < 1135,
-                        'align-items-flex-start': windowInnerWidth >= 1135
+                        'align-items-flex-start': windowInnerWidth >= 1135,
+                        'active-milestone': active
                         }"
          @click="milestoneDrilldown(currentQuarter)">
       <span class="milestone-top-label">{{ upperLabel }}</span>
@@ -118,6 +119,16 @@ export default {
         'gold': this.milestoneLevel === MilestoneEnum.LEVEL3,
         'platinum': this.milestoneLevel === MilestoneEnum.LEVEL4
       }
+    },
+    active () {
+      if(this.currentQuarterCount >= this.milestoneGoal && (
+          this.currentQuarterCount < this.getNextMilestoneGoal() ||
+          this.getNextMilestoneGoal() === undefined
+      )) {
+        return true;
+      }
+      return false;
+
     }
   },
   methods: {
@@ -128,6 +139,18 @@ export default {
       this.upperLabel = this.milestoneLabel
       this.lowerLabel =  `${r} ${this.milestoneUnits} to ${this.milestoneLabel}`
       this.innerLabel = `${r === 0 ? this.milestoneGoal : this.currentQuarterCount} ${this.milestoneUnits}`
+    },
+    getNextMilestoneGoal() {
+      switch (this.milestoneGoal){
+        case incentive_constants.firstMilestoneGoalCloser:
+          return incentive_constants.secondMilestoneGoalCloser
+        case incentive_constants.secondMilestoneGoalCloser:
+          return incentive_constants.thirdMilestoneGoalCloser
+        case incentive_constants.thirdMilestoneGoalCloser:
+          return incentive_constants.fourthMilestoneGoalCloser
+        default:
+          return undefined
+      }
     },
     resetScrollBarPosition () {
       // reset scroll bar position to top
