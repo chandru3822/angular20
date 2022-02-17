@@ -521,6 +521,10 @@ insert into flow.unique_behavior_type(unique_behavior_type, created_by_id)
 select 'REVIEW_INSTALLATION', 2417170
 WHERE not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'REVIEW_INSTALLATION');
 
+update flow.process_step_event
+  set unique_behavior_type_id = 3
+where process_step_id = 3365
+and event_id = 22;
 -- add the db function that checks for active events on a pps
 -- insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
 --   select 'flow.pps_has_active_events', 3, 1, 'Project Process Step has Active Events', 'Checks to see if a project process step has any active events assigned to it.'
