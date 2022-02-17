@@ -11,7 +11,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-switch
-              v-if="masterResults.length > 0"
+              v-if="masterResults.length > 0 && !workQueue.useEventData"
               v-model="hideFutureFollowUps"
               class="mx-2 mt-5 wq-follow-up-switch"
               label="Hide work with a next follow-up date in the future"
@@ -236,7 +236,7 @@ export default {
   computed: {},
   async created() {
     this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
-    this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqDrilldownFollowUps')) || false
+    this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
     this.getWorkQueueName()
     await this.getWorkDetails()
   },
@@ -255,7 +255,7 @@ export default {
       }
     },
     filterFutureFollowUps() {
-      localStorage.setItem('hideFutureWqDrilldownFollowUps', JSON.stringify(this.hideFutureFollowUps))
+      localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       if (this.hideFutureFollowUps) {
         this.filteredResults = cloneDeep(this.results)
         this.results = this.results.filter(r => {

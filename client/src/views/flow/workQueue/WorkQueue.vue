@@ -67,7 +67,9 @@
               Please select a Work Queue Category
             </v-card>
             <v-card flat tile v-for="wq in workQueues" class="flex-display card-main"
-                    :class="{'clickable': wq.workQueueCount > 0}"
+                    :class="{'clickable': wq.workQueueCount > 0,
+                             'light-border': !wq.useEventData,
+                             'dark-border': wq.useEventData}"
                     :key="wq.id"
                     width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
@@ -209,7 +211,6 @@ export default {
   methods: {
     goToRoute(changeRoute, routeName, params, query) {
       if(changeRoute) {
-        console.log('we tried')
         this.$router.push({name: routeName, params, query})
       }
     },
@@ -367,8 +368,15 @@ export default {
   margin-right: 24px;
   margin-left: 24px;
   margin-bottom: 32px;
-  border: 2px solid #DBE0E3;
   //box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark-border {
+  border: 2px solid darkgray;
+}
+
+.light-border {
+  border: 2px solid #DBE0E3;
 }
 
 .card-main:hover {
