@@ -9,7 +9,7 @@
          @click="milestoneDrilldown(currentQuarter)">
       <span class="milestone-top-label">{{ upperLabel }}</span>
       <div class="milestone-content mt-1" :class="colorClass">
-        <div class="milestone-content-left-side"><trophy-dynamic :color="colorClass"></trophy-dynamic></div>
+        <div class="milestone-content-left-side d-flex align-items-flex-end"><trophy-dynamic :color="colorClass" :active="active"></trophy-dynamic></div>
         <div class="milestone-content-right-side">
           <span class="milestone-top-right-label" :class="colorClass">{{ milestoneGoal }} FDC</span>
         </div>
@@ -220,21 +220,23 @@ export default {
   align-items: center;
   width: 100%;
   margin-top: 15px;
+  padding-left: 28px;
+  padding-right: 28px;
 
   .milestone-top-label {
     display: inline-block;
     text-align: center;
     color: #fff;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
-    width: 220px;
+    width: 156px;
   }
 
   .milestone-bottom-label {
     display: inline-block;
     text-align: center;
     color: #fff;
-    font-size: 10px;
+    font-size: 14px;
     margin-top: 3px;
     width: 220px;
   }
@@ -245,8 +247,8 @@ export default {
     display: flex;
     flex-flow: row nowrap;
     padding: calc(1em - 4px);
-    width: 220px;
-    height: 110px;
+    width: 156px;
+    height: 104px;
 
     .milestone-content-left-side {
       align-self: flex-end;
@@ -261,54 +263,11 @@ export default {
 
       .milestone-top-right-label {
         text-align: right;
-        font-size: 10px;
-      }
-
-      //.milestone-stars-container {
-      //  display: flex;
-      //  flex-flow: row wrap;
-      //  justify-content: center;
-      //  align-items: center;
-      //  align-content: center;
-      //  width: 100%;
-      //  height: 70%;
-      //
-      //  .milestone-star {
-      //    font-size: 22px;
-      //    color: rgba(255, 255, 255, 0.3) !important;
-      //    text-shadow: 0 0 0 rgba(255, 255, 255, 0.5);
-      //    background: #222 -webkit-gradient(linear, left top, right top, from(#222), to(#222), color-stop(0.5, #fff)) 0 0 no-repeat;
-      //    background-size: 25px;
-      //    -webkit-background-clip: text;
-      //    animation-name: shine;
-      //    animation-duration: 5s;
-      //    animation-iteration-count: infinite;
-      //  }
-      //
-      //  @keyframes shine {
-      //    0% {
-      //      background-position-x: -50px;
-      //    }
-      //    100% {
-      //      background-position-x: 50px;
-      //    }
-      //  }
-      //
-      //  .three-stars-padding-override {
-      //    padding: 0 20px;
-      //  }
-      //}
-
-      .four-stars-padding-override {
-        padding: 0 20px;
-      }
-
-      .five-stars-padding-override {
-        padding: 0 10px;
+        font-size: 14px;
       }
     }
   }
-
+}
   .active-milestone {
     .milestone-top-label,
     .milestone-bottom-label {
@@ -316,51 +275,27 @@ export default {
     }
 
     .milestone-top-label {
-      font-size: 13px;
+      font-size: 16px;
     }
 
     .milestone-bottom-label {
       font-weight: bold;
-      font-size: 11px;
+      font-size: 16px;
     }
 
     .milestone-content {
       border: 3px solid white;
-      width: 260px;
+      width: 180px;
       height: 130px;
 
       .milestone-content-right-side {
         .milestone-top-right-label {
           font-weight: bold;
-          font-size: 11px;
-        }
-
-        .milestone-stars-container {
-          .milestone-star {
-            font-size: 28px;
-          }
-
-          .three-stars-padding-override {
-            padding: 0 20px;
-          }
-        }
-
-        .four-stars-padding-override {
-          padding: 0 20px;
-        }
-
-        .five-stars-padding-override {
-          padding: 0 10px;
+          font-size: 14px;
         }
       }
     }
   }
-}
-
-.no-medal {
-  background: url('../../../assets/blueraven/trophy-small-bronze.svg') no-repeat scroll center;
-  background-size: contain;
-}
 
 
 .v-card__title {
@@ -405,7 +340,7 @@ export default {
   .milestone {
     margin-top: 0;
     margin-bottom: 10px;
-    width: 300px;
+
 
     .milestone-top-label,
     .milestone-bottom-label {
@@ -421,34 +356,16 @@ export default {
     }
 
     .milestone-content {
-      width: 200px;
-      height: 130px;
+      width: 156px;
+      height: 104px;
 
       .milestone-content-right-side {
         .milestone-top-right-label {
           font-size: 12px;
         }
-
-        .milestone-stars-container {
-          .milestone-star {
-            font-size: 26px;
-          }
-
-          .three-stars-padding-override {
-            padding: 0 10px;
-          }
-        }
-
-        .four-stars-padding-override {
-          padding: 0 10px;
-        }
-
-        .five-stars-padding-override {
-          padding: 0;
-        }
       }
     }
-
+  }
 
     .active-milestone {
       .milestone-top-label,
@@ -457,16 +374,16 @@ export default {
       }
 
       .milestone-top-label {
-        font-size: 15px;
+        font-size: 16px;
       }
 
       .milestone-bottom-label {
-        font-size: 14px;
+        font-size: 16px;
       }
 
       .milestone-content {
-        width: 240px;
-        height: 160px;
+        width: 180px;
+        height: 130px;
 
         .milestone-content-left-side {
           height: 100%;
@@ -474,30 +391,12 @@ export default {
 
         .milestone-content-right-side {
           .milestone-top-right-label {
-            font-size: 13px;
-          }
-
-          .milestone-stars-container {
-            .milestone-star {
-              font-size: 32px;
-            }
-
-            .three-stars-padding-override {
-              padding: 0 10px;
-            }
-          }
-
-          .four-stars-padding-override {
-            padding: 0 10px;
-          }
-
-          .five-stars-padding-override {
-            padding: 0;
+            font-size: 14px;
           }
         }
       }
     }
-  }
+
 
   #milestone-medals-container {
     width: 50%;
@@ -543,34 +442,30 @@ export default {
   }
 
   .milestone {
-    width: 250px;
 
     .milestone-top-label,
     .milestone-bottom-label {
-      width: 185px;
+      width: 156px;
     }
 
     .milestone-content {
-      width: 185px;
-      height: 120px;
+      width: 156px;
+      height: 104px;
     }
   }
 
   .active-milestone {
     .milestone-top-label,
     .milestone-bottom-label {
-      width: 210px;
     }
 
     .milestone-content {
-      width: 210px;
-      height: 140px;
+      width: 180px;
+      height: 130px;
     }
   }
 }
 
-@media (min-width: 1187px) {
-}
 //color classes
 .bronze {
   color: #B99A86;
