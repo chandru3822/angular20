@@ -70,7 +70,7 @@ BEGIN
   select id
   into v_company_event_status_type_id_NV
   from flow.company_event_status_type
-  where event_status_type = 'Needs Verification';
+  where event_status_type = 'Ready to Verify';
   select id
   into v_company_event_status_type_id_C
   from flow.company_event_status_type
