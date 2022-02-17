@@ -259,8 +259,12 @@ export default {
       if (this.hideFutureFollowUps) {
         this.filteredResults = cloneDeep(this.results)
         this.results = this.results.filter(r => {
-          let firstNoteFollowUp = r.notes[0]?.followUpDate
-          return firstNoteFollowUp === null || firstNoteFollowUp === undefined || new Date(firstNoteFollowUp) <= new Date()
+          if(r.notes && r.notes.length > 0) {
+            let firstNoteFollowUp = r.notes[0]?.followUpDate
+            return firstNoteFollowUp === null || firstNoteFollowUp === undefined || new Date(firstNoteFollowUp) <= new Date()
+          } else {
+            return true
+          }
         })
       } else {
         this.results = cloneDeep(this.filteredResults)
