@@ -2707,7 +2707,8 @@ public class SmartlistService {
         .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
         .append("flow.process_step.process_step_name as \"Process Step Name\", ")
         .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
-        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
+        .append("to_char(flow.project_process_step_event.start_time, 'YYYY-MM-DD HH:MI am') as \"Event Start Time\", ");
 
     } else {
       //process step fields
@@ -3218,6 +3219,9 @@ public class SmartlistService {
     var daysInQueue = new SmartlistFieldAssignment();
     daysInQueue.setName("Days In Queue");
     defaultFields.add(daysInQueue);
+    var eventStartTime = new SmartlistFieldAssignment();
+    eventStartTime.setName("Event Start Time");
+    defaultFields.add(eventStartTime);
 
     return defaultFields;
   }
