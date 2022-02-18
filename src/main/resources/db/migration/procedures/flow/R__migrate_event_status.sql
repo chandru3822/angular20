@@ -118,6 +118,17 @@ BEGIN
       and pps.parent_project_process_step_id = pps_id_2;
   end if;
 
+  if p_child3 is not null and p_child3 != 0 and p_child1 = 168 and v_company_status_id3 is null then
+    select psst.id, pps.id, coalesce(pps.process_step_complete_date, pps.date_modified)
+    into v_company_status_id3,pps_id_3,v_complete_timestamp3
+    from flow.project_process_step pps
+           inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+           inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+    where pps.project_id = p_project_id
+      and pps.process_step_id = p_child3
+      and pps.parent_project_process_step_id = p_project_process_step_id;
+  end if;
+
   if p_child4 is not null and p_child4 != 0 and pps_id_3 is not null then
     select psst.id, coalesce(pps.process_step_complete_date, pps.date_modified)
     into v_company_status_id4,v_complete_timestamp4
