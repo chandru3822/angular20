@@ -204,6 +204,7 @@ select wqt.id as work_queue_type_id,
          where wqt.id = pswqt.work_queue_type_id
            and pswqt.archived is not true
            and pps.archived is not true
+           and ppse.archived is not true
            and p.archived is not true
            and case
                  when :isParent then ps.company_id = any
