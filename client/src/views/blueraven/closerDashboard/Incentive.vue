@@ -5,30 +5,26 @@
         <incentive-milestone
             :milestone-level="MilestoneEnum.LEVEL1"
             :currentQuarterCount = "currentQuarterCount"
-            :milestone-goal="incentive_constants.firstMilestoneGoalCloser"
-            :milestone-label="incentive_constants.firstMilestone"
-            :milestone-units="incentive_constants.milestoneUnitsCloser"
+            :drilldown="dashboardType.drilldown"
+            :dashboard-type="dashboardType"
         ></incentive-milestone>
         <incentive-milestone
             :milestone-level="MilestoneEnum.LEVEL2"
             :currentQuarterCount = "currentQuarterCount"
-            :milestone-goal="incentive_constants.secondMilestoneGoalCloser"
-            :milestone-label="incentive_constants.secondMilestone"
-            :milestone-units="incentive_constants.milestoneUnitsCloser"
+            :dashboard-type="dashboardType"
+            :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
         <incentive-milestone
             :milestone-level="MilestoneEnum.LEVEL3"
             :currentQuarterCount = "currentQuarterCount"
-            :milestone-goal="incentive_constants.thirdMilestoneGoalCloser"
-            :milestone-label="incentive_constants.thirdMilestone"
-            :milestone-units="incentive_constants.milestoneUnitsCloser"
+            :dashboard-type="dashboardType"
+            :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
         <incentive-milestone
             :milestone-level="MilestoneEnum.LEVEL4"
             :currentQuarterCount = "currentQuarterCount"
-            :milestone-goal="incentive_constants.fourthMilestoneGoalCloser"
-            :milestone-label="incentive_constants.fourthMilestone"
-            :milestone-units="incentive_constants.milestoneUnitsCloser"
+            :dashboard-type="dashboardType"
+            :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
       </div>
 
@@ -48,7 +44,7 @@
 
 <script>
 import constants from '@/helpers/constants'
-import incentive_constants from './incentive_constants'
+import {incentive_constants, DashboardTypeEnum} from './incentive_constants'
 import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
 export default {
@@ -58,7 +54,8 @@ export default {
   },
   props: {
     currentQuarterCount: Number,
-    yearlyPointTotal: Number
+    yearlyPointTotal: Number,
+    dashboardType: DashboardTypeEnum
   },
   data () {
     return {

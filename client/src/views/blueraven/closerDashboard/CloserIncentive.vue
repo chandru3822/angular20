@@ -1,6 +1,6 @@
 <template>
   <v-container id="closer-dash-container" class="incentive-tab-override">
-    <Incentive :current-quarter-count="currentQuarterCount" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
+    <Incentive :dashboard-type="DashboardTypeEnum.CLOSER" :current-quarter-count="currentQuarterCount" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
   </v-container>
 </template>
 
@@ -9,6 +9,7 @@
   import { getRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import Incentive from "@/views/blueraven/closerDashboard/Incentive";
+  import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 
   export default {
     name: 'closerIncentive',
@@ -17,6 +18,7 @@
     },
     data () {
       return {
+        DashboardTypeEnum,
         snackbar: {},
         currentUserId: null,
         selectedQuarter: 1,

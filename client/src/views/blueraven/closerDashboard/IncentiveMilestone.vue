@@ -71,21 +71,22 @@
 </template>
 
 <script>
-import incentive_constants from "@/views/blueraven/closerDashboard/incentive_constants";
+import {DashboardTypeEnum, incentive_constants} from "@/views/blueraven/closerDashboard/incentive_constants";
 import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {AppMutations} from "@/stores/AppStore";
 import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
+import moment from "moment";
+
 export default {
   name: "IncentiveMilestone",
   components: {TrophyDynamic},
   props: {
     milestoneLevel: MilestoneEnum,
+    dashboardType: DashboardTypeEnum,
     currentQuarterCount: Number,
-    milestoneGoal: Number,
-    milestoneLabel: String,
-    milestoneUnits: String,
+    drilldown: Object
   },
   data() {
     return {
@@ -101,16 +102,25 @@ export default {
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true }
       ],
+      currentQuarter: moment().quarter(),
       drilldownData: [],
       upperLabel: '',
-      lowerLabel:'',
-      innerLabel: ''
+      lowerLabel:''
     }
   },
   computed: {
     windowInnerWidth () { return window.innerWidth},
     milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Final Designs Completed - Q' + this.selectedQuarter
+      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + this.drilldown.label + this.selectedQuarter
+    },
+    milestoneGoal () {
+      return this.dashboardType.milestoneGoalMap[this.milestoneLevel]
+    },
+    milestoneLabel () {
+      return this.incentive_constants.milestoneMap.get(this.milestoneLevel)
+    },
+    milestoneUnits () {
+      return this.dashboardType.milestoneUnits
     },
     colorClass: function () {
       return {
@@ -121,13 +131,11 @@ export default {
       }
     },
     active () {
-      if(this.currentQuarterCount >= this.milestoneGoal && (
+      return this.currentQuarterCount >= this.milestoneGoal && (
           this.currentQuarterCount < this.getNextMilestoneGoal() ||
           this.getNextMilestoneGoal() === undefined
-      )) {
-        return true;
-      }
-      return false;
+      );
+
 
     }
   },
@@ -138,16 +146,15 @@ export default {
       const r = this.currentQuarterCount >= this.milestoneGoal ? 0 : diff
       this.upperLabel = this.milestoneLabel
       this.lowerLabel =  `${r} ${this.milestoneUnits} to ${this.milestoneLabel}`
-      this.innerLabel = `${r === 0 ? this.milestoneGoal : this.currentQuarterCount} ${this.milestoneUnits}`
     },
     getNextMilestoneGoal() {
-      switch (this.milestoneGoal){
-        case incentive_constants.firstMilestoneGoalCloser:
-          return incentive_constants.secondMilestoneGoalCloser
-        case incentive_constants.secondMilestoneGoalCloser:
-          return incentive_constants.thirdMilestoneGoalCloser
-        case incentive_constants.thirdMilestoneGoalCloser:
-          return incentive_constants.fourthMilestoneGoalCloser
+      switch (this.milestoneLevel){
+        case MilestoneEnum.LEVEL1:
+          return this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]
+        case MilestoneEnum.LEVEL2:
+          return this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]
+        case MilestoneEnum.LEVEL3:
+          return this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]
         default:
           return undefined
       }
@@ -161,7 +168,7 @@ export default {
     async milestoneDrilldown (quarter) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams('/closerDashboard/finalDesignsCompletedDrilldown', {params: {quarter}}, 'blueraven')
+        const {data} = await getRequestWithParams(this.drilldown.path, {params: {quarter}}, 'blueraven')
         this.drilldownData = cloneDeep(data)
 
         if (this.drilldownData.length > 0) {

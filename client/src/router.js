@@ -326,9 +326,9 @@ const router = new Router({
               component: () => import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/SetterFunnel.vue')
             }, {
               path: 'incentive',
-              name: 'setterIncentive',
+              name: 'setterIncentive2',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/SetterIncentive.vue')
+              component: () => import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/SetterIncentive2.vue')
             }
           ]
         }, {
