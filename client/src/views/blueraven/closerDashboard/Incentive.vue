@@ -29,7 +29,9 @@
       </div>
 
       <div id="progress-bar-container">
-        <span>Yearly Point Total</span>
+        <div class="d-flex">
+          <span class="progress-bar-title">Yearly Point Total</span>
+        </div>
         <div id="progress-bar">
           <div v-for="i in incentive_constants.totalPointsPossible" class="progress-bar-segment"></div>
           <div id="progress-bar-fill"
@@ -47,6 +49,7 @@ import constants from '@/helpers/constants'
 import {incentive_constants, DashboardTypeEnum} from './incentive_constants'
 import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
+
 export default {
   name: "Incentive",
   components: {
@@ -76,6 +79,9 @@ export default {
       this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
       this.progressBarIsFull = this.percentAchieved === 100
     }
+  },
+  created() {
+    this.calcYearPercentage()
   }
 }
 </script>
@@ -101,167 +107,25 @@ export default {
   flex-flow: column nowrap;
   justify-content: center;
   width: 100%;
-
-  .milestone {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin-top: 15px;
-
-    .milestone-top-label {
-      display: inline-block;
-      text-align: center;
-      color: #fff;
-      font-size: 12px;
-      font-weight: bold;
-      width: 220px;
-    }
-
-    .milestone-bottom-label {
-      display: inline-block;
-      text-align: center;
-      color: #fff;
-      font-size: 10px;
-      margin-top: 3px;
-      width: 220px;
-    }
-
-    .milestone-content {
-      cursor: pointer;
-      border: 3px solid white;
-      display: flex;
-      flex-flow: row nowrap;
-      padding: 5px;
-      width: 220px;
-      height: 110px;
-
-      .milestone-content-left-side {
-        align-self: center;
-        width: 50%;
-        height: 80%;
-      }
-
-      .milestone-content-right-side {
-        display: flex;
-        flex-flow: column nowrap;
-        width: 50%;
-
-        .milestone-top-right-label {
-          color: white;
-          text-align: right;
-          font-size: 10px;
-        }
-
-        .milestone-stars-container {
-          display: flex;
-          flex-flow: row wrap;
-          justify-content: center;
-          align-items: center;
-          align-content: center;
-          width: 100%;
-          height: 70%;
-
-          .milestone-star {
-            font-size: 22px;
-            color: rgba(255, 255, 255, 0.3) !important;
-            text-shadow: 0 0 0 rgba(255, 255, 255, 0.5);
-            background: #222 -webkit-gradient(linear, left top, right top, from(#222), to(#222), color-stop(0.5, #fff)) 0 0 no-repeat;
-            background-size: 25px;
-            -webkit-background-clip: text;
-            animation-name: shine;
-            animation-duration: 5s;
-            animation-iteration-count: infinite;
-          }
-
-          @keyframes shine {
-            0% {
-              background-position-x: -50px;
-            }
-            100% {
-              background-position-x: 50px;
-            }
-          }
-
-          .three-stars-padding-override {
-            padding: 0 20px;
-          }
-        }
-
-        .four-stars-padding-override {
-          padding: 0 20px;
-        }
-
-        .five-stars-padding-override {
-          padding: 0 10px;
-        }
-      }
-    }
-  }
-
-  .active-milestone {
-    .milestone-top-label,
-    .milestone-bottom-label {
-      width: 260px;
-    }
-
-    .milestone-top-label {
-      font-size: 13px;
-    }
-
-    .milestone-bottom-label {
-      font-weight: bold;
-      font-size: 11px;
-    }
-
-    .milestone-content {
-      border: 3px solid white;
-      width: 260px;
-      height: 130px;
-
-      .milestone-content-right-side {
-        .milestone-top-right-label {
-          font-weight: bold;
-          font-size: 11px;
-        }
-
-        .milestone-stars-container {
-          .milestone-star {
-            font-size: 28px;
-          }
-
-          .three-stars-padding-override {
-            padding: 0 20px;
-          }
-        }
-
-        .four-stars-padding-override {
-          padding: 0 20px;
-        }
-
-        .five-stars-padding-override {
-          padding: 0 10px;
-        }
-      }
-    }
-  }
 }
 
 #progress-bar-container {
   display: flex;
   flex-flow: column nowrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin: 30px auto 120px auto;
   width: calc(100% - 50px);
-  height: 37px;
+  height: 20%;
 
   span {
     display: inline-block;
     text-align: left;
-    font-weight: bold;
-    font-size: 11px;
+    font-size: 16px;
     color: #fff;
+
+    &.progress-bar-title {
+      font-size: 20px;
+    }
   }
 
   #progress-bar {
@@ -282,13 +146,15 @@ export default {
     opacity: 0.9;
     border-radius: 4px 0 0 4px;
     width: 0;
-    height: 14px;
+    height: 100%;
   }
 
   .progress-bar-segment {
     background-color: white;
     border: 0.02em solid black;
     width: 12.5%;
+    height: 100%;
+
   }
 
   .progress-bar-segment:first-child {
@@ -303,20 +169,13 @@ export default {
 }
 
 @media (min-width: 500px) {
-  #progress-bar-container {
-    span {
-      font-size: 14px;
-    }
 
     #progress-bar {
       height: 17px;
     }
 
-    #progress-bar-fill {
-      height: 16px;
-    }
+
   }
-}
 
 @media (min-width: 737px) {
   #incentive-container {
@@ -343,9 +202,7 @@ export default {
       height: 20px;
     }
 
-    #progress-bar-fill {
-      height: 19px;
-    }
+
   }
 }
 
@@ -357,7 +214,7 @@ export default {
 
   #progress-bar-container {
     width: 65%;
-    height: 42px;
+    height: 20%;
   }
 
   #milestone-medals-container {
