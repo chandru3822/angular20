@@ -418,7 +418,7 @@ public class SmartlistService {
       query = buildProcessStepSql(smartlist, fields);
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L) {
-        query = buildWorkQueueSql(smartlist, fields, true);
+        query = buildWorkQueueSql(smartlist, fields, true, timezone);
       } else {
         query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, timezone, null, false);
       }
@@ -2325,7 +2325,7 @@ public class SmartlistService {
     return query.toString();
   }
 
-  public String buildWorkQueueSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Boolean useEventData) {
+  public String buildWorkQueueSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Boolean useEventData, String timezone) {
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
@@ -2645,7 +2645,11 @@ public class SmartlistService {
             if (f.getDataTypeId() == 1) {
               selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else if(f.getDataTypeId() == 2) {
-              selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
+              if (timezone != null) {
+                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
+              } else {
+                selectQuery.append(String.format(" to_char(\"%s\".%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
+              }
             } else if (f.getDataTypeId() == 6 && f.getHasListValues()) {
               selectQuery.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else if (f.getDataTypeId() == 7) {
@@ -2707,8 +2711,13 @@ public class SmartlistService {
         .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
         .append("flow.process_step.process_step_name as \"Process Step Name\", ")
         .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
-        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
-        .append("to_char(flow.project_process_step_event.start_time, 'YYYY-MM-DD HH:MI am') as \"Event Start Time\", ");
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
+
+        if (timezone != null) {
+          defaultFields.append(String.format("to_char(flow.project_process_step_event.start_time at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"Event Start Time\", ", timezone));
+        } else {
+          defaultFields.append("to_char(flow.project_process_step_event.start_time, 'MM/DD/YYYY HH:MI am') as \"Event Start Time\", ");
+        }
 
     } else {
       //process step fields
