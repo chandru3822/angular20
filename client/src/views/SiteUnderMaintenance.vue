@@ -11,7 +11,7 @@
               <router-link :to="`/login`">Back to Login</router-link>
               <div class="py-4 font-size-16">
                 Albatross is under maintenance. <br/><br/>
-                The site will be available again on Monday, Feb 14th.<br/><br/>
+                The site will be available again on the evening of Sunday, Feb 20th.<br/><br/>
 
                 If you’re a mobile user please watch your training video below:<br/><br/>
                 Setters: <a target="_blank" href="https://www.screencast.com/t/ciilzrVome">https://www.screencast.com/t/ciilzrVome</a><br/><br/>
