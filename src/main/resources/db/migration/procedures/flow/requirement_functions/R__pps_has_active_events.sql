@@ -1,0 +1,20 @@
+--this was replaced with a more generic function
+-- CREATE OR REPLACE FUNCTION flow.pps_has_active_events(p_project_process_step_id integer)
+--     returns boolean AS
+-- $BODY$
+-- declare
+--     v_has_active_events boolean;
+-- BEGIN
+--
+--   select count(1) > 0 into v_has_active_events
+--   from flow.project_process_step_event ppse
+--          inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+--   where ppse.project_process_step_id = p_project_process_step_id
+--     and cest.event_status_type_id = 1 -- active
+--     and ppse.archived is false; --kind of the same as archived...
+--
+--   return v_has_active_events;
+-- END
+-- $BODY$
+--     LANGUAGE plpgsql VOLATILE
+--                      COST 100;

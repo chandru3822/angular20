@@ -44,7 +44,7 @@ public class ProjectProcessStepController {
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {
-        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), projectProcessStepId));
+        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), a, pps));
         index++;
       }
 
@@ -89,7 +89,7 @@ public class ProjectProcessStepController {
   }
 
   @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
-  public ResponseEntity<Void> performAction(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
+  public ResponseEntity<ProjectProcessStepStatus> performAction(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
       ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(projectProcessStepId);
       ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
@@ -135,8 +135,8 @@ public class ProjectProcessStepController {
           projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
         }
       }
-
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      ProjectProcessStepStatus status = projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
+      return new ResponseEntity<>(status, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage = String.format("PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",  actionId, projectProcessStepId, e.getMessage());
       log.error(errMessage);

@@ -16,17 +16,16 @@ BEGIN
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                      from (
                               with project_data as(
-                                  select ppscfv1.int_value,ppscfv.timestamp_value,ppscfv2.timestamp_value as checked_in_time
+                                  select ppscfv1.int_value,ppse.start_time as timestamp_value,ppscfv2.timestamp_value as checked_in_time
                                   from flow.project_process_step pps
-                                           left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
-                                           inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
-                                           left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
-                                           left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
+                                           inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+                                           left join flow.project_process_step_event_custom_field_value ppscfv1 on ppse.id = ppscfv1.project_process_step_event_id and ppscfv1.custom_field_group_assignment_id = 4
+                                           left join flow.project_process_step_event_custom_field_value ppscfv2 on ppse.id = ppscfv2.project_process_step_event_id and ppscfv2.custom_field_group_assignment_id = 1377
                                            inner join brs.project_details pd on pd.project_id = pps.project_id
                                   where pps.process_step_id = 1
                                     and pd.company_id = v_company_id
-                                    and (((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
-                                          OR ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                    and (((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                                          OR ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                               between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date)
                               select id,
                                      name,
@@ -1204,20 +1203,19 @@ BEGIN
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                      from (
                               with project_data as(
-                                  select ppscfv1.int_value,ppscfv.timestamp_value,ppscfv2.timestamp_value as checked_in_time,o.id as org_id,up.user_id
+                                  select ppscfv1.int_value,ppse.start_time as timestamp_value,ppscfv2.timestamp_value as checked_in_time,o.id as org_id,up.user_id
                                   from flow.project_process_step pps
                                            inner join flow.project p on p.id = pps.project_id
                                            inner join flow.user_position up on up.id = p.user_position_id
                                            inner join flow.org o on o.id = up.org_id
-                                           left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
-                                           inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
-                                           left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
-                                           left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
+                                           inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+                                           left join flow.project_process_step_event_custom_field_value ppscfv1 on ppse.id = ppscfv1.project_process_step_event_id and ppscfv1.custom_field_group_assignment_id = 4
+                                           left join flow.project_process_step_event_custom_field_value ppscfv2 on ppse.id = ppscfv2.project_process_step_event_id and ppscfv2.custom_field_group_assignment_id = 1377
                                            inner join brs.project_details pd on pd.project_id = pps.project_id
                                   where pps.process_step_id = 1
                                     and pd.company_id = v_company_id
-                                    and (((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
-                                         OR ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                    and (((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                                         OR ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                             between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date)
                               select id,
                                      name,

@@ -67,12 +67,15 @@
               Please select a Work Queue Category
             </v-card>
             <v-card flat tile v-for="wq in workQueues" class="flex-display card-main"
-                    :class="{'clickable': wq.workQueueCount > 0}"
+                    :class="{'clickable': wq.workQueueCount > 0,
+                             'light-border': !wq.useEventData,
+                             'dark-border': wq.useEventData}"
                     :key="wq.id"
                     width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
-                <router-link class="no-text-decoration card-link"
-                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
+                <div class="no-text-decoration card-link"
+                     :class="{'clickable': wq.workQueueCount > 0}"
+                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">
                   <div class="card-title-container text-left"
                        :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
                        :style="{'background-color': wq.color + '20' }">
@@ -136,7 +139,7 @@
                       {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                     </div>
                   </div>
-                </router-link>
+                </div>
               </v-card-text>
             </v-card>
           </v-row>
@@ -206,6 +209,11 @@ export default {
     }
   },
   methods: {
+    goToRoute(changeRoute, routeName, params, query) {
+      if(changeRoute) {
+        this.$router.push({name: routeName, params, query})
+      }
+    },
     getTargetColor(color) {
       return isLightColor(color) ? '#363636' : '#ffffff'
     },
@@ -360,8 +368,15 @@ export default {
   margin-right: 24px;
   margin-left: 24px;
   margin-bottom: 32px;
-  border: 2px solid #DBE0E3;
   //box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark-border {
+  border: 2px solid darkgray;
+}
+
+.light-border {
+  border: 2px solid #DBE0E3;
 }
 
 .card-main:hover {

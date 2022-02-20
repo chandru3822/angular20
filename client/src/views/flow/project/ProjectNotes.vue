@@ -1,31 +1,26 @@
 <template>
-<v-row id="project-notes-container">
-  <v-col cols="12" lg="12" class="text-left">
-
-    <NotesAndActivity
+    <NotesAndActivityContent
       ref="notes"
       :showNotes="true"
       :showActivity="false"
       :notes="notes"
       :primaryId="parseInt(projectId)"
       type="Project"
+      class="px-2"
     />
-  </v-col>
 
-</v-row>
 </template>
 
 <script>
 
 import {getRequestWithParams} from '@/helpers/helpers'
-import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
-
+import NotesAndActivityContent from "@/views/flow/components/NotesAndActivityContent";
 
 
 export default {
   name: 'ProjectNotes',
   components: {
-    NotesAndActivity,
+    NotesAndActivityContent,
   },
   data () {
     return {
@@ -59,10 +54,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#project-notes-container {
-  margin-top: -5px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 0;
-}
+
 </style>

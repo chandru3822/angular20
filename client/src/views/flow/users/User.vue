@@ -109,19 +109,13 @@
   import { Actions } from '@/store'
   import {AppMutations} from '@/stores/AppStore'
   import axios from 'axios'
-  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-  import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {UserMutations} from "@/stores/UserStore";
 
   export default {
     name: 'User',
-    components: {
-
-      CustomValueInput,
-      NotesAndActivity
-    },
+    components: {},
     data () {
       return {
         breadcrumbs: [

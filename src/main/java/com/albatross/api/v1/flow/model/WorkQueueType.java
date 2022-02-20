@@ -17,5 +17,5 @@ public class WorkQueueType {
       longWindowDurationType, shortWindowDurationType, expectedCycleDurationType;
     private List<WorkQueueTypeSchedule> schedule;
     private Double expectedTarget;
-    private Boolean archived, inverseExpectation;
+    private Boolean archived, inverseExpectation, useEventData;
 }

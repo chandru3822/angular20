@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -153,11 +152,7 @@ public class SmartlistController {
   @GetMapping(value = "/customFieldObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyObjectType>> getCustomFieldObjectTypes() {
       List<CompanyObjectType> types = objectTypeService.getCompanyObjectTypes();
-      // Object types 3 (users) and 5 (orgs) are only available in smartlists through process steps, not as direct lists or fields
-      List<CompanyObjectType> filteredTypes = types.stream()
-          .filter(t -> t.getObjectTypeId() != 6)
-          .collect(Collectors.toList());
-      return new ResponseEntity<>(filteredTypes, HttpStatus.OK);
+      return new ResponseEntity<>(types, HttpStatus.OK);
   }
 
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)

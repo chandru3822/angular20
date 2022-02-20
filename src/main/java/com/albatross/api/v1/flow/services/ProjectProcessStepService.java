@@ -232,6 +232,11 @@ public class ProjectProcessStepService {
     }
   }
 
+  public ProjectProcessStepStatus getProjectProcessStepStatus(Long stepId) {
+    Optional <ProjectProcessStepStatus> status = sqlCache.get("projectProcessStep.getStatus", Map.of("stepId", stepId), ProjectProcessStepStatus.class);
+    return status.orElse(null);
+  }
+
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
     var ppsId = this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId);
     if (performAutoTrigger) {
@@ -301,6 +306,9 @@ public class ProjectProcessStepService {
 
       TypeReference<List<ProjectProcessStepRequirement>> requirementsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "autoTriggeredActionRequirements", new JsonCollectionDeserializer(requirementsRef, objectMapper));
+
+      TypeReference<List<ProjectProcessStepEvent>> ppsEventsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "projectProcessStepEvents", new JsonCollectionDeserializer(ppsEventsRef, objectMapper));
     }
   }
 
@@ -317,9 +325,12 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
-
     ProjectProcessStep pps = getProjectProcessStep(ppsId);
     ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
+    return getActionResult(actionId, action, pps);
+  }
+
+  public ProjectProcessStepAction getActionResult(Long actionId, ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
 
     List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
       .filter(step -> step.getProcessStepRequirementId() != null)
@@ -616,9 +627,14 @@ public class ProjectProcessStepService {
       } catch (Exception e) {
         throw new RuntimeException(String.format("Unable to calculate function requirement, PPS requirement ID: %s, PPS ID: %s *** %s", r.getId(), ppsId, e.getMessage()));
       }
-    } else if(r.getProcessStepRequirementTypeId() == 7) {
+    } else if(r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS.id) || r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS_CATEGORY.id)) {
       // 7 = check process step status type from reference step
-      requirementMet = calculateStatusRequirement(r, ppsId, false);
+      // 8 = check process step status category type from reference step
+      requirementMet = calculateStatusRequirement(r, ppsId, false, r.getProcessStepRequirementTypeId());
+    } else if(r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS.id) || r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS_CATEGORY.id)) {
+      // 9 = check project status type
+      // 8 = check project status category type
+      requirementMet = calculateStatusRequirement(r, ppsId, true, r.getProcessStepRequirementTypeId());
     } else {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
 
@@ -706,10 +722,20 @@ public class ProjectProcessStepService {
       return passed;
   }
 
-  public boolean calculateStatusRequirement(ProjectProcessStepRequirement requirement, Long projectProcessStepId, Boolean isProject) {
+  public boolean calculateStatusRequirement(ProjectProcessStepRequirement requirement, Long projectProcessStepId, Boolean isProject, Long requirementTypeId) {
     boolean passed = false;
+
     if(isProject) {
-      //place holder for checking project statuses in the future
+      //if there is a pps then check the project status from that
+      Optional<Project> projectWithStatus = projectService.getStatus(requirement.getProjectId());
+      if(projectWithStatus.isPresent()) {
+        // check if the status is in one of the statuses
+        int idToCheck = requirementTypeId.equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS.id) ? projectWithStatus.get().getCompanyProjectStatusTypeId().intValue() : projectWithStatus.get().getProjectStatusTypeId().intValue();
+        passed = requirement.getListOfValueIds().contains(idToCheck);
+      } else {
+        //
+        passed = !requirement.getFailIfNoReferenceStepFound();
+      }
     } else {
       //check process step status here
       //get the primary pps of the reference_process_step_id type
@@ -719,10 +745,12 @@ public class ProjectProcessStepService {
 //      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
 
       Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
+
       //if we found a primary pss of that type
       if(projectProcessStep.isPresent()) {
         // check if the status is in one of the statuses
-        passed = requirement.getListOfValueIds().contains(projectProcessStep.get().getCompanyProcessStepStatusTypeId().intValue());
+        int idToCheck = requirementTypeId.equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS.id) ? projectProcessStep.get().getCompanyProcessStepStatusTypeId().intValue() : projectProcessStep.get().getProcessStepStatusTypeId().intValue();
+        passed = requirement.getListOfValueIds().contains(idToCheck);
       } else {
         //if we didn't find one, check the "failIfNoReferenceStepFound" value
         passed = !requirement.getFailIfNoReferenceStepFound();

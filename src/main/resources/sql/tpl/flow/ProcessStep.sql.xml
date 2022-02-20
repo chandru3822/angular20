@@ -102,8 +102,7 @@
                           FROM (
                                    SELECT cfg.id,
                                           cfg.group_name as "groupName",
-                                          cfg.event_type_id as "eventTypeId",
-                                          et.event_type as "eventType",
+                                          cfg.event_id as "eventId",
                                           cot.object_type_id as "objectTypeId",
                                           cot.id as "companyObjectTypeId",
                                           cfg.archived,
@@ -204,7 +203,6 @@
                                                           ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
                                    FROM flow.custom_field_group cfg
                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                       left join flow.event_type et on et.id = cfg.event_type_id
                                    WHERE cfg.process_step_id = ps.id AND cfg.archived is not true
                                    order by cfg.group_order) cfGroups), '[]') AS custom_field_groups,
                   coalesce((

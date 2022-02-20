@@ -9,7 +9,8 @@ create or replace function flow.get_project_available_owners(p_company_id int, p
                   full_name text,
                   user_position_id int,
                   "position" varchar,
-                  position_id int
+                  position_id int,
+                  phone_number varchar
                 ) as
 
 $$
@@ -22,7 +23,8 @@ BEGIN
            concat(u.first_name, ' ', u.last_name) as full_name,
            up.id as user_position_id,
            p.position,
-           up.position_id
+           up.position_id,
+           u.phone_number
     from flow.user_position up
            inner join flow.position p on up.position_id = p.id
            inner join flow."user" u on up.user_id = u.id

@@ -264,8 +264,7 @@
     order by p.date_created desc
   ]]></project.generateReport>
 
-  <project.get>
-    <![CDATA[
+  <project.get><![CDATA[
       select
         p.id,
         p.street1,
@@ -273,10 +272,12 @@
         p.city,
         p.company_state_id,
         s.state,
+        s.abbreviation as state_abbreviation,
         p.postal_code,
         p.company_country_id,
         c.country,
         ct.phone,
+        ct.email,
         ct.mobile,
         p.contact_id,
         p.date_created,
@@ -285,6 +286,7 @@
         p.time_zone,
         p.latitude,
         p.longitude,
+        pst.project_status_type as "rootProjectStatusType",
         pro.process_name,
         p.contact_id,
         p.created_by_id,
@@ -305,6 +307,7 @@
         p.project_name,
         p.company_project_status_type_id,
         cpst.project_status_type,
+        cpst.project_status_type_id,
         cot.status_read_only,
         cot.owner_read_only,
         coalesce((
@@ -345,13 +348,13 @@
       left join flow.company_country cc on cc.id = p.company_country_id
       left join flow.country c on c.id = cc.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+      inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
       where p.id = :projectId
         and case when :isParent
             then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else cp.company_id = :companyId end
             and p.archived is not true
-    ]]>
-  </project.get>
+  ]]></project.get>
 
   <project.update>
     update flow.project set
@@ -424,8 +427,51 @@
             else ps.company_id = :companyId end
       and pps.archived is not true
       and p.archived is not true
+      and case when :statusTypeId::int is not null then :statusTypeId::int = cpsst.process_step_status_type_id else 1=1 end
     order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
+
+  <project.getEventsByProjectId><![CDATA[
+     select
+        ppse.id,
+        pps.id as project_process_step_id,
+        pps.project_id,
+        ppse.process_step_event_id as process_step_event_id,
+        ppse.date_created,
+        ps.process_step_name,
+        ppse.start_time,
+        ppse.end_time,
+        pps.company_process_step_status_type_id,
+        cpsst.process_step_status_type_id,
+        coalesce(ppse.date_modified, ppse.date_created) as last_updated,
+        cest.event_status_type,
+        e.event_name,
+        ppse.resource_id,
+        cest.event_status_type_id,
+        cest.id as company_event_status_type_id,
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource
+      from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+             inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.event e on pse.event_id = e.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+             left join flow.user_position up on up.id = ppse.resource_id
+             left join flow.user u on u.id = up.user_id
+             left join flow.org o on o.id = ppse.resource_id
+             inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+             inner join flow.system_list sl on sl.id = csl.system_list_id
+      where p.id = :projectId
+        and pps.archived is not true
+        and ppse.archived is not true
+        and p.archived is not true
+        and case when :statusTypeId::int is not null then :statusTypeId::int = cest.event_status_type_id else 1=1 end
+      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+
+  ]]></project.getEventsByProjectId>
 
   <project.getAttachments><![CDATA[
     select
@@ -642,6 +688,18 @@
         date_modified = now()
     where id = :projectId
 ]]></project.updateStatus>
+
+  <project.getStatusDetails><![CDATA[
+     select p.id,
+            p.company_project_status_type_id as "companyProjectStatusTypeId",
+            cpst.project_status_type         as "projectStatusType",
+            cpst.project_status_type_id      as "projectStatusTypeId",
+            pst.project_status_type          as "rootProjectStatusType"
+     from flow.project p
+            inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+            inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+     where p.id = :projectId
+]]></project.getStatusDetails>
 
   <project.updateGeoLocation><![CDATA[
     update flow.project

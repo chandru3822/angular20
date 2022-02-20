@@ -56,42 +56,16 @@
               tabindex=1
               v-model="newGroup.groupName"
             ></v-text-field>
-            <div v-if="showScheduleGroupCheckbox()" class="mb-3">
-              <label>Schedule Group:</label>
-              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable"
-                     @change="[getSchedulingFields(), getEventTypes()]">
-            </div>
-            <div v-if="newGroup.schedulable">
-              <v-select
-                v-model="newGroup.eventTypeId"
-                :items="eventTypes"
-                label="Scheduling Tool Event Type"
-                placeholder="Select One..."
-                item-text="eventType"
-                item-value="id"
-              ></v-select>
-              <div v-for="(sf, index) in schedulingFields" :key="index">
-                <v-select attach v-model="newGroup.schedulingFields[index]"
-                          text
-                          :items="sf.availableCustomFields"
-                          :label="`Please select a field to be used as the ${sf.fieldType}`"
-                          placeholder="Select One..."
-                          item-value="id"
-                          item-text="fieldName"
-                          return-object
-                ></v-select>
-              </div>
-            </div>
           </div>
           <v-btn
             color="primaryCustom"
             class="white--text mr-2"
-            :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
+            :disabled="!newGroup.groupName"
             @click="saveFieldGroup()">
             Save
           </v-btn>
           <v-btn
-            @click="[newGroup = { schedulingFields: [], schedulable: false }, createNew = false]">
+            @click="[newGroup = {}, createNew = false]">
             Cancel
           </v-btn>
         </v-card>
@@ -143,7 +117,7 @@
                   </td>
                   <td>
                     <div class="item-icons">
-                      <v-btn v-if="!item.eventTypeId && userCanAdd" small text
+                      <v-btn v-if="userCanAdd" small text
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                         <v-icon v-else>add</v-icon>
@@ -258,14 +232,13 @@
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 justify"
                          v-if="item.customFields && item.customFields.length > 0">
-                    <div v-if="item.eventTypeId">Scheduling Tool Event Type: {{item.eventType}}</div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false"
                                @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                               :key="index" class="pa-0" color="transparent">
-                        <v-list-item :class="{grab: !item.eventTypeId}">
+                        <v-list-item class="grab">
                           <v-list-item-action>
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
@@ -410,7 +383,7 @@
                             </div>
                           </v-list-item-content>
                           <v-menu offset-y
-                                  v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
@@ -424,7 +397,7 @@
                             </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
+                                v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId })"
                                 :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>
@@ -435,7 +408,7 @@
                           </v-btn>
 
                           <v-dialog
-                            v-if="!item.eventTypeId && userCanEdit"
+                            v-if="userCanEdit"
                             v-model="cf.deleteConfirm"
                             width="500">
                             <template v-slot:activator="{ on }">
@@ -497,7 +470,6 @@
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getEventTypes} from '@/services/scheduleService'
   import {
     handleHidingGlobalLoader,
     getRequest,
@@ -562,10 +534,7 @@
         positions: [],
         positionsLoading: false,
         constants,
-        newGroup: {
-          schedulingFields: [],
-          schedulable: false
-        },
+        newGroup: {},
         newField: {},
         // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
         selectedIndex: null,
@@ -588,7 +557,6 @@
           {text: null, value: 'icons', show: true}
         ],
         expanded: [],
-        schedulingFields: [],
         eventTypes: []
       }
     },
@@ -627,14 +595,9 @@
         try {
           this.newGroup.processStepId = this.$route.params.id
 
-          this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
-          this.newGroup.eventTypeId = this.newGroup.schedulable ? this.newGroup.eventTypeId : null
-
-          const {data, status} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
+          const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.localCustomFieldGroups.push(data)
           this.newGroup = {
-            schedulingFields: [],
-            schedulable: false,
           }
           this.createNew = false
           this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
@@ -881,41 +844,6 @@
         return this.localCustomFieldGroups?.filter(cfg => {
           return !cfg.archived
         })
-      },
-      async getSchedulingFields() {
-        if (this.newGroup.schedulable) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getRequest(`/customFieldGroup/getEventTypesAndFields/2`)
-            this.schedulingFields = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async getEventTypes() {
-        if (this.newGroup.schedulable) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getEventTypes()
-            this.eventTypes = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      showScheduleGroupCheckbox() {
-        let tempGroups = this.localCustomFieldGroups.filter(cfg => !cfg.archived)
-        return tempGroups?.length === 0 ||
-          tempGroups.find(cfg => cfg.eventTypeId) === undefined
       },
       async saveRowChanges(rows) {
         if (rows?.length > 0) {

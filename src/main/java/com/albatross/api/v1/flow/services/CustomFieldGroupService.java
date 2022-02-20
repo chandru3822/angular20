@@ -211,7 +211,7 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupId", groupId);
@@ -222,6 +222,9 @@ public class CustomFieldGroupService {
       // as of right now, judson says a field can be native to multiple process steps, but not within the same process step, i think this query does that now
       params.put("processStepId", processStepId);
       results = sqlCache.query("customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep", params, CustomField.class);
+    } else if (null != eventId) {
+      params.put("eventId", eventId);
+      results = sqlCache.query("customFieldGroupAssignment.getAvailableNativeFieldsForEvent", params, CustomField.class);
     } else {
       results = sqlCache.query("customFieldGroupAssignment.getAvailableCustomFieldsInGroup", params, CustomField.class);
     }
@@ -234,7 +237,6 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
-    params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("eventId", customFieldGroup.getEventId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
@@ -257,7 +259,7 @@ public class CustomFieldGroupService {
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
-    if(null != customFieldGroup.getEventTypeId() && null != customFieldGroup.getSchedulingFields()) {
+    if(null != customFieldGroup.getEventId() && null != customFieldGroup.getSchedulingFields()) {
       List<CustomField> newFieldList = new ArrayList<>();
       for(CustomField cf : customFieldGroup.getSchedulingFields()) {
         cf.setCustomFieldGroupId(cfg.getId());

@@ -1,31 +1,27 @@
 <template>
-  <div>
-    <v-toolbar color="transparent" class="elevation-0">
-      <v-toolbar-title>
-        Messaging
-      </v-toolbar-title>
-    </v-toolbar>
-
-    <v-row id="project-tabs" class="mb-2 message-container" justify="center" no-gutters>
+  <div class="height-one-hunned">
+    <v-row id="project-tabs" class="message-container" justify="center" no-gutters>
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
-          :participants="participants"
-          :onMessageWasSent="onMessageWasSent"
-          :messageList="messageList"
-          :newMessagesCount="newMessagesCount"
-          :isOpen="true"
-          :close="closeChat"
-          :open="openChat"
-          :showEmoji="false"
-          :showFile="true"
-          :showEdition="false"
-          :showDeletion="false"
-          :showCloseButton="false"
-          :showLauncher="false"
-          :colors="colors"
-          :alwaysScrollToBottom="true"
-          :messageStyling="messageStyling"/>
+            class="chat-container"
+            :participants="participants"
+            :onMessageWasSent="onMessageWasSent"
+            :messageList="messageList"
+            :newMessagesCount="newMessagesCount"
+            :isOpen="true"
+            :close="closeChat"
+            :open="openChat"
+            :showEmoji="false"
+            :showFile="true"
+            :showEdition="false"
+            :showDeletion="false"
+            :showCloseButton="false"
+            :showLauncher="false"
+            :showHeader="false"
+            :colors="colors"
+            :alwaysScrollToBottom="true"
+            :messageStyling="messageStyling"/>
       </template>
       <template v-slot:user-avatar="{ message, user }">
         <div class="message-avatar" v-if="message.type === 'text' && user && user.name">
@@ -53,6 +49,7 @@ export default {
   data() {
     return {
       snackbar: {},
+      currentUserFullName: this.$store.state.user.details.fullName,
       projectId: parseInt(this.$route.params.projectId),
       participants: [],
       messageList: [], // the list of the messages to show, can be paginated and adjusted dynamically
@@ -126,7 +123,7 @@ export default {
         await postRequest(`/communication/sendTextsForProject`, params)
 
         //dont add to the ui unless the message goes thru successfully
-        message.data.meta = moment().format('M/D/YYYY h:mm a')
+        message.data.meta = this.currentUserFullName + ' ' + moment().format('M/D/YYYY h:mm a')
         this.messageList = [...this.messageList, message]
         this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1
       } catch (e) {
@@ -165,11 +162,11 @@ export default {
     async fetchSmsData() {
       try {
         let messages = []
-        const {data} = await getRequest(`/sms/messages/${this.projectId}`)
+        const {data} = await getRequest(`/sms/messages/${this.projectId}`, null, [])
 
         data.forEach(u => {
           let msgFrom = '';
-          if (u.fromPhone != null && u.fromPhone != '+18014480212') {
+          if (u.fromPhone != null && u.fromPhone !== '+18014480212') {
             msgFrom = u.contactId;
           } else {
             msgFrom = 'me';
@@ -184,7 +181,7 @@ export default {
                 file: {
                   name: u.message,
                   url: u.mediaUrls[0],
-                  meta: this.$filters.formatDate(u.created, 'timestamp')
+                  meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
                 }
               }
             }
@@ -194,7 +191,7 @@ export default {
               author: msgFrom,
               data: {
                 text: u.message,
-                meta: this.$filters.formatDate(u.created, 'timestamp')
+                meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
               }
             }
           }
@@ -214,16 +211,65 @@ export default {
 </script>
 
 <style lang="scss">
+
 .message-container {
   min-height: 400px;
+  height: calc(100% - 10px);
   margin-top: 5px;
+}
+
+.sc-message-list {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  height: 100% !important;
+}
+
+.sc-message--content.sent .sc-message--meta {
+  text-align: right;
+}
+
+.sc-message--content.received .sc-message--meta {
+  text-align: left;
+}
+
+.sc-message--meta, .sc-message--text-content {
+  margin-bottom: 5px !important;
 }
 
 .sc-chat-window {
   position: unset !important;
   max-width: 100%;
-  width: 400px !important;
+  width: 100% !important;
   height: 100% !important;
+  max-height: unset !important;
   text-align: left !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.sc-user-input--text {
+  width: calc(100% - 100px);
+}
+
+.sc-user-input {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.sc-user-input--text {
+  border-bottom-left-radius: 0 !important;
+}
+
+.chat-container {
+  width:100%;
+  height: 100%;
+}
+
+.sc-message{
+  width:100%;
+}
+
+.sc-message--avatar{
+  display: none;
 }
 </style>

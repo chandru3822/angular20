@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -67,14 +66,13 @@ public class ProcessStepEventRequirementService {
     return results;
   }
 
-  //todo: this nasty
   public List<ProcessStepAction> deleteRequirement(Long requirementId) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("requirementId", requirementId);
-    List<ProcessStepAction> actionsUsingRequirement = new ArrayList<>();
-//    List<ProcessStepAction> actionsUsingRequirement = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
+//    List<ProcessStepAction> actionsUsingRequirement = new ArrayList<>();
+    List<ProcessStepAction> actionsUsingRequirement = sqlCache.query("processStepEventRequirement.actionsUsingRequirement", params, ProcessStepAction.class);
 
     if(!actionsUsingRequirement.isEmpty()) {
       return actionsUsingRequirement;
@@ -177,7 +175,7 @@ public class ProcessStepEventRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
+      TypeReference<List<EventRequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
         new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,9 +10,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessStepEventActionField {
 
-  private Long id, customFieldGroupAssignmentId, processStepEventActionId, customFieldId;
+  private Long id, customFieldGroupAssignmentId, processStepEventActionId, customFieldId, customFieldGroupId;
   private String fieldName, groupName;
   private Boolean archived, required, optional;
 

@@ -47,16 +47,13 @@ BEGIN
         where p.id = p_project_id
         group by up.user_id, up.id
       )
-      select ui.user_id, ui.id, ppscfv.timestamp_value as start_time, ppscfv2.timestamp_value as end_time
+      select ui.user_id, ui.id, ppse.start_time as start_time, ppse.end_time as end_time
       from flow.project p
              inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
-             inner join flow.project_process_step_custom_field_value ppscfv
-                        on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 5
-             inner join flow.project_process_step_custom_field_value ppscfv2
-                        on ppscfv2.project_process_step_id = pps.id and ppscfv2.custom_field_group_assignment_id = 6
-             inner join flow.project_process_step_custom_field_value ppscfv1
-                        on ppscfv1.project_process_step_id = pps.id and ppscfv1.custom_field_group_assignment_id = 7
-             inner join user_ids ui on ppscfv1.int_value = any (ui.user_position_ids)
+             inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.event_status_type est on cest.event_status_type_id = est.id and est.id in (1,2)
+             inner join user_ids ui on ppse.resource_id = any (ui.user_position_ids)
              inner join flow.company_process_step_status_type cpsst
                         on cpsst.id = pps.company_process_step_status_type_id
              inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
@@ -64,8 +61,8 @@ BEGIN
              inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
              inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
         and pst4.id in (1, 4)
-      where ppscfv.timestamp_value >= p_start_time
-        and ppscfv2.timestamp_value <= p_end_time
+      where ppse.start_time >= p_start_time
+        and ppse.end_time <= p_end_time
       union all
       select ra.user_id, -1 as id, ra.start_time as start_time, ra.end_time as end_time
       from flow.resource_appointment ra
@@ -100,16 +97,13 @@ BEGIN
         where pcz.remote is true  and pcz.archived is false
         group by up.user_id, up.id
       )
-      select ui.user_id, ui.id, ppscfv.timestamp_value as start_time, ppscfv2.timestamp_value as end_time
+      select ui.user_id, ui.id, ppse.start_time as start_time, ppse.end_time as end_time
       from flow.project p
              inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
-             inner join flow.project_process_step_custom_field_value ppscfv
-                        on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 5
-             inner join flow.project_process_step_custom_field_value ppscfv2
-                        on ppscfv2.project_process_step_id = pps.id and ppscfv2.custom_field_group_assignment_id = 6
-             inner join flow.project_process_step_custom_field_value ppscfv1
-                        on ppscfv1.project_process_step_id = pps.id and ppscfv1.custom_field_group_assignment_id = 7
-             inner join user_ids ui on ppscfv1.int_value = any (ui.user_position_ids)
+             inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.event_status_type est on cest.event_status_type_id = est.id and est.id in (1,2)
+             inner join user_ids ui on ppse.resource_id = any (ui.user_position_ids)
              inner join flow.company_process_step_status_type cpsst
                         on cpsst.id = pps.company_process_step_status_type_id
              inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
@@ -117,8 +111,8 @@ BEGIN
              inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
              inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
         and pst4.id in (1, 4)
-      where ppscfv.timestamp_value >= p_start_time
-        and ppscfv2.timestamp_value <= p_end_time
+      where ppse.start_time >= p_start_time
+        and ppse.end_time <= p_end_time
       union all
       select ra.user_id, -1 as id, ra.start_time as start_time, ra.end_time as end_time
       from flow.resource_appointment ra
@@ -207,7 +201,7 @@ BEGIN
                                    when rs.end_date is not null then
                                      p_available_date::date between rs.start_date and rs.end_date
                                    else
-                                     p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
+                                       p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
       where foo2.available is true
         and foo2.scheduled_start_time at time zone 'UTC' at time zone v_timezone > now() + interval '30 minutes'
       group by foo2.scheduled_start_time
@@ -225,16 +219,16 @@ BEGIN
                      from excluded_appointments
                      where excluded_appointments.user_id = foo1.user_id
                        and case
-                         when id > 0 then
-                           ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps (excluded_appointments.start_time , excluded_appointments.end_time)
-                             or
-                            (excluded_appointments.start_time , excluded_appointments.end_time) overlaps (foo1.scheduled_start_time, foo1.scheduled_end_time) )
-                         else ((excluded_appointments.start_time < foo1.scheduled_end_time
-                           and excluded_appointments.end_time > foo1.scheduled_start_time))
-                           and
-                              ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps (excluded_appointments.start_time , excluded_appointments.end_time)
-                                or
-                               (excluded_appointments.start_time , excluded_appointments.end_time) overlaps (foo1.scheduled_start_time, foo1.scheduled_end_time) ) end) as available,
+                             when id > 0 then
+                               ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps (excluded_appointments.start_time , excluded_appointments.end_time)
+                                 or
+                                (excluded_appointments.start_time , excluded_appointments.end_time) overlaps (foo1.scheduled_start_time, foo1.scheduled_end_time) )
+                             else ((excluded_appointments.start_time < foo1.scheduled_end_time
+                               and excluded_appointments.end_time > foo1.scheduled_start_time))
+                               and
+                                  ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps (excluded_appointments.start_time , excluded_appointments.end_time)
+                                    or
+                                   (excluded_appointments.start_time , excluded_appointments.end_time) overlaps (foo1.scheduled_start_time, foo1.scheduled_end_time) ) end) as available,
                     pczu_timezone
              from (
                     select user_id,
@@ -281,7 +275,7 @@ BEGIN
                                    when rs.end_date is not null then
                                      p_available_date::date between rs.start_date and rs.end_date
                                    else
-                                     p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
+                                       p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
       where foo2.available is true
         and foo2.scheduled_start_time at time zone 'UTC' at time zone pczu_timezone >
             now() at time zone pczu_timezone + interval '30 minutes'

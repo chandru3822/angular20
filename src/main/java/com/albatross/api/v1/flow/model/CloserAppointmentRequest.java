@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CloserAppointmentRequest {
 
-  private Long projectId, projectProcessStepId;
+  private Long projectId, projectProcessStepId, projectProcessStepEventId;
   private Date appointmentTime, startTime, endTime;
   private List<Integer> users;
   private Boolean remote;

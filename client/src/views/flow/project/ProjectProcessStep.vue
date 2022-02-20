@@ -1,73 +1,8 @@
 <template>
-  <v-main>
-
-    <!--  screen header -->
-    <v-row class="process-step-header">
-      <v-col cols="8" class="text-left pl-5">
-        <div class="project-title">
-          {{ project.projectName}}
-        </div>
-        <div class="project-subtitle">
-          {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
-        </div>
-      </v-col>
-
-      <v-col cols="4" class="lead-owner pb-2 text-right">
-        <div v-if="!displayChangeOwner">
-          <div v-if="processStep.owner && processStep.owner.userId">
-            <v-avatar
-              :tile="false"
-              :size="25"
-              color="grey lighten-4"
-              class="account-img mr-2"
-            >
-              <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
-            </v-avatar>
-            {{processStep.owner.fullName}}<br/>
-            {{processStep.owner.position}}
-          </div>
-        </div>
-        <div v-if="displayChangeOwner">
-          <v-autocomplete v-model="processStep.owner"
-                          :items="availableOwners"
-                          label="Select Owner"
-                          item-text="fullName"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          return-object
-                          autocomplete="off"
-                          @change="updateOwner"
-                          attach
-          >
-          </v-autocomplete>
-        </div>
-        <v-btn text x-small v-if="userCanEdit" class="change-owner-button"
-               @click="displayChangeOwner = !displayChangeOwner">
-          <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
-          <span v-else>add owner</span>
-        </v-btn>
-        <v-btn text x-small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
-               class="change-owner-button" @click="removeOwner">
-          remove
-        </v-btn>
-      </v-col>
-    </v-row>
+  <v-main v-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
+    <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
-        <!--    <v-btn-->
-        <!--      class="back-btn"-->
-        <!--      text-->
-        <!--      :ripple="false"-->
-        <!--      @click="$router.go(-1)">Back</v-btn>-->
-        <v-btn
-          class="back-btn"
-          text
-          :ripple="false"
-          :to="`/project/${projectId}/details`"
-          id="qa-back-to-project">
-          Back to Project
-        </v-btn>
         <v-dialog width="500" v-model="unsavedFieldsModal">
           <v-card>
             <v-card-title
@@ -78,7 +13,7 @@
             </v-card-title>
 
             <v-card-text class="pt-4">
-              You have unsaved fields.  Are you sure you want to continue without saving?
+              You have unsaved fields. Are you sure you want to continue without saving?
             </v-card-text>
 
             <v-divider></v-divider>
@@ -92,29 +27,32 @@
               <v-btn
                 color="primaryCustom"
                 text
-                @click="[navigationOverride = true, goToPath(toPath)]">
+                @click="[navigationOverride = true, goToPath(toPath, query)]">
                 Yes
               </v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <!--    {{usingUniqueView}}-->
       </v-col>
 
-      <v-col cols="12" class="py-0 process-step-header">
-        <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-          <v-toolbar-title class="px-5 process-step-name">
-            {{ processStep.processStepName }}
-            <span v-if="processStep.processStepStatusTypeId" :class="getStatusClass(processStep.processStepStatusTypeId)">({{ processStep.processStepStatusType }})</span>
-<!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
-<!--                    size="20" color="green">mdi-circle-slice-8-->
-<!--            </v-icon>-->
+      <v-col cols="12" class="pb-4 pt-6">
+        <v-toolbar color="transparent" height="auto"
+                   id="pps-toolbar"
+                   class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
+          <v-toolbar-title class="process-step-name albatross-header-2">
+            <div>{{ processStep.processStepName }}</div>
+            <div v-if="processStep.processStepStatusTypeId"
+                  :class="getStatusClass(processStep.processStepStatusTypeId)">({{
+                processStep.processStepStatusType
+              }})</div>
+            <!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
+            <!--                    size="20" color="green">mdi-circle-slice-8-->
+            <!--            </v-icon>-->
             <v-dialog
               v-model="processStep.changeActiveConfirm"
               width="500">
               <template #activator="{ on }">
                 <v-checkbox
-                  class=""
                   v-on="on"
                   dense
                   v-model="processStep.main"
@@ -146,7 +84,7 @@
                   <v-btn
                     color="primaryCustom"
                     text
-                    @click="[processStep.changeActiveConfirm = false, showMainDialog = true]">
+                    @click="[processStep.changeActiveConfirm = false, processStep.main = true, showMainDialog = true]">
                     Yes
                   </v-btn>
                 </v-card-actions>
@@ -154,154 +92,84 @@
             </v-dialog>
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <div>
-            <v-btn
-              v-if="anyGroupNonUnique()"
-              color="primaryCustom"
-              class="white--text"
-              :disabled="fieldsSaving"
-              @click="[fieldsSaving = true, checkFields()]"
-            >Save Process Step Fields
-            </v-btn>
-          </div>
-        </v-toolbar>
-      </v-col>
-      <v-col cols="12" lg="6" class="text-left pt-0">
-
-        <!--    process field groups-->
-        <v-col
-          class="pt-0"
-          v-for="(cfg, index) in customFieldGroups"
-          :key="index"
-        >
-          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-            <v-toolbar-title>
-              <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-              <v-btn small text v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"
-                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">
-                <v-icon>mdi-calendar</v-icon>
-              </v-btn>
-              {{cfg.groupName}}
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card class="pa-4"
-                  v-if="cfg.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
-            A state and postal code are required on the project to continue with scheduling. Please return to the
-            project screen and update.
-          </v-card>
-          <v-card class="pa-3" v-else>
-            <CustomValueInput
-              v-for="(field, idx) in cfg.customFieldValues"
-              :key="idx"
-              :callback="populateDirtyCfvs"
-              :readonly="getReadOnly(field)"
-              :field="field"
-            />
-            <v-btn color="primaryCustom" v-if="cfg.uniqueBehaviorTypeId === 1" class="white--text"
-                   :disabled="uniqueAlreadyHasValue"
-                   id="qa-round-robin-button"
-                   @click="showRoundRobin = !showRoundRobin">Round Robin
-            </v-btn>
-            <div v-if="cfg.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
-              <v-toolbar flat color="transparent">
-                <v-toolbar-title>Lead Allocation</v-toolbar-title>
-              </v-toolbar>
-              <v-card-text class="py-0">
-                <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !showRemoteSearch">
-                  You do not have access to schedule projects in this Postal Code
-                </v-card-text>
-                <div class="pb-3" v-else>
-                  <CustomValueInput
-                    :readonly="!userCanEdit"
-                    :min-date="minDate"
-                    :callback="checkAvailabilityDate"
-                    :field="availabilityDateField"
-                  />
-                  <div class="text-right" v-if="availabilityDateField.dateValue">
-                    <v-btn color="primaryCustom" class="white--text"
-                           :loading="remoteSearchLoading"
-                           :disabled="inPersonSearchLoading"
-                           v-if="showRemoteSearch || userIsAdmin"
-                           id="qa-round-robin-search-remote"
-                           @click="getAvailableTimeSlots(true)">
-                      Search Remote Appt. Slots
-                    </v-btn>
-                    <v-btn color="primaryCustom" class="white--text ml-3"
-                           :loading="inPersonSearchLoading"
-                           v-if="schedulerCanEdit || userIsAdmin"
-                           :disabled="remoteSearchLoading"
-                           id="qa-round-robin-search"
-                           @click="getAvailableTimeSlots(false)">
-                      Search In-person Appt. Slots
-                    </v-btn>
-                  </div>
-                  <v-select attach v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
-                            v-model="selectedTimeSlot"
-                            class="qa-round-robin-time-select"
-                            :items="timeSlots"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Select an Available Time Slot"
-                            return-object
-                  >
-                    <template slot="selection" slot-scope="data">
-                      {{ data.item.scheduledStartTime | formatDate('timestamp')}}
-                    </template>
-                    <template slot="item" slot-scope="data">
-                      {{ data.item.scheduledStartTime | formatDate('timestamp')}}
-                    </template>
-                  </v-select>
-                  <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
-                    Selected Date
-                  </div>
-                  <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                    <v-btn color="primaryCustom" class="white--text"
-                           @click="saveCloserAppointment" id="qa-round-robin-save">
-                      Save Appointment
-                    </v-btn>
-                  </div>
+          <v-toolbar-items class="owner-toolbar-items">
+            <div v-if="!displayChangeOwner">
+              <div v-if="processStep.owner && processStep.owner.userId" class="d-flex flex-row align-center">
+                <div class="d-flex flex-column">
+                <div class="owner-info">
+                  {{ processStep.owner.fullName }}<br/>
+                  <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
                 </div>
-              </v-card-text>
-
+                </div>
+                <v-btn v-if="userCanEdit" small icon class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
+              </div>
             </div>
-          </v-card>
-        </v-col>
-
-
-        <!-- todo: @humes just putting this here so i can test scheduling.  feel free to do what you want with it. i dont even know if this is the right spot -->
-        <!-- @TODO: @randa, Uncommenting for now until I can add it in programatically. How do we not hardcode the processStepid and projectId vals? (they harcoded for testing?)   -->
-        <!--    <v-row>-->
-        <!--      <v-col cols="12">-->
-
-        <!--        <h3>Links</h3>-->
-
-        <!--        <v-btn :to="{name: 'schedule', query: { processStepId: 1, projectId: 171704 } }">-->
-        <!--          Test link to schedule screen-->
-        <!--        </v-btn>-->
-        <!--      </v-col>-->
-        <!--    </v-row>-->
-
-
-      </v-col>
-
-      <v-col cols="12" lg="6" class="text-left pt-0">
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>
-            Actions
-            <v-btn
-              class="back-btn show-unperformable-actions-btn"
-              text
-              :ripple="false"
-              @click="showUnperformableActions = !showUnperformableActions"
-            >
-              {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
-            </v-btn>
-          </v-toolbar-title>
+            <div v-if="displayChangeOwner">
+              <v-autocomplete v-model="processStep.owner"
+                              :items="availableOwners"
+                              class="mt-1"
+                              label="Select Owner"
+                              item-text="fullName"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              return-object
+                              hide-details
+                              autocomplete="off"
+                              @change="updateOwner"
+                              attach
+              >
+              </v-autocomplete>
+            </div>
+            <div>
+              <v-btn text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
+                     :class="{'mt-2': displayChangeOwner}"
+                     @click="displayChangeOwner = !displayChangeOwner">
+                <span v-if="displayChangeOwner">cancel</span>
+                <span v-else>add owner</span>
+              </v-btn>
+            </div>
+          </v-toolbar-items>
         </v-toolbar>
-        <v-col v-for="action in filteredActions" :key="action.id" class="pt-0">
+      </v-col>
+      <v-col cols="12" class="text-left pt-2 pb-4" v-if="userHasEventsFeature && (
+        (processStepEvents && processStepEvents.length > 0) ||
+        (processStep && processStep.projectProcessStepEvents && processStep.projectProcessStepEvents.length > 0)
+      )">
+        <div class="pps-subheader albatross-header-3">
+          All Events
+          <v-autocomplete
+            v-model="eventToAdd"
+            v-if="userCanAddEvents && processStepEvents && processStepEvents.length > 0"
+            :items="processStepEvents"
+            placeholder="Select Event to add"
+            item-text="eventName"
+            item-value="id"
+            return-object
+            dense
+            class="toolbar-z-index-override mt-2"
+            @input="addEvent()"
+          ></v-autocomplete>
+        </div>
+        <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block mr-4 mt-2">
+          <EventButton
+            :event="e"
+            :project-id="projectId"
+          />
+        </div>
+      </v-col>
+      <v-col cols="12" class="text-left pt-4">
+        <div class="pps-subheader albatross-header-3" v-if="processStep && processStep.actions && processStep.actions.length > 0">
+          Actions
+          <v-btn
+            class="back-btn show-unperformable-actions-btn"
+            text
+            :ripple="false"
+            @click="showUnperformableActions = !showUnperformableActions"
+          >
+            {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
+          </v-btn>
+        </div>
+        <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
@@ -313,19 +181,9 @@
             v-else-if="action.actionTypeId === 1 && !action.hideFromWeb"
             @click="followMultipleLinks(action)"
           >
-            {{action.actionName}}
+            {{ action.actionName }}
           </v-btn>
-        </v-col>
-        <!--    <NotesAndActivity-->
-        <!--      :showNotes="true"-->
-        <!--      :showActivity="false"-->
-        <!--      :notes="notes"-->
-        <!--      :primaryId="parseInt(projectProcessStepId)"-->
-        <!--      type="ProjectProcessStep"-->
-        <!--    />-->
-        <v-row>
-          <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
-        </v-row>
+        </div>
 
         <v-row>
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
@@ -333,622 +191,623 @@
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
+      <v-col cols="12" style="height: 0; padding: 0 !important;">
+      <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
+      </v-col>
+      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
+        <v-toolbar-title class="albatross-header-3">
+          Process Step Details
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text @click="setSplitColumnValue()" class="px-0">
+            <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+            <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
+          </v-btn>
+          <v-btn v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+            <v-icon class="px-0">mdi-upload</v-icon>
+          </v-btn>
+          <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+            <UploadDocumentModal @cancel="showUploadModal = false"
+                                 :width="uploadModalWidth"
+                                 :show-success-snackbar="true"
+                                 :pps-id="parseInt(projectProcessStepId)"
+                                 :attachment-types="attachmentTypes"></UploadDocumentModal>
+          </v-dialog>
+          <div>
+            <v-btn
+              color="primaryCustom"
+              class="white--text mt-3 ml-2"
+              :disabled="fieldsSaving || getReadOnly()"
+              @click="[fieldsSaving = true, checkFields()]"
+            >Save Fields
+            </v-btn>
+          </div>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-col cols="12" class="text-left py-0 px-0">
+        <!--    process field groups-->
+        <v-col
+          class="pt-0"
+          v-for="(cfg, index) in customFieldGroups"
+          :key="index"
+        >
+          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+            <v-toolbar-title>
+              <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
+              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"
+                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">
+                <v-icon>mdi-calendar</v-icon>
+              </v-btn>
+              {{ cfg.groupName }}
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+            </v-toolbar-items>
+          </v-toolbar>
+
+          <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+            <v-row>
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                  :key="idx"
+                  :use-field-ancillary-name="true"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getReadOnly(field)"
+                  :field="field"
+                  :show-field-name="false"
+                />
+              </v-col>
+              <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                  :key="idx"
+                  :use-field-ancillary-name="true"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getReadOnly(field)"
+                  :field="field"
+                  :show-field-name="false"
+                />
+              </v-col>
+            </v-row>
+
+          </v-card>
+        </v-col>
+
+      </v-col>
 
     </v-row>
 
     <ProjectProcessStepStatus
-        v-if="!isProcessStepLoading"
-        :show-dialog="showMainDialog"
-        :project-id="parseInt(projectId)"
-        :project-process-step="processStep"
-        :available-process-step-statuses="availableProcessStepStatuses"
-        :limit-to-active="false"
-        :limit-to-non-cancelled="true"
-        :new-status-optional="processStep.processStepStatusTypeId !== 3"
-        @updateStatus="updateMain"
-        @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
+      :show-dialog="showMainDialog"
+      :project-id="projectId"
+      :project-process-step="processStep"
+      :available-process-step-statuses="availableProcessStepStatuses"
+      :limit-to-active="false"
+      :limit-to-non-cancelled="true"
+      :new-status-optional="processStep.processStepStatusTypeId !== 3"
+      @updateStatus="updateMain"
+      @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
     />
+  </v-main>
+  <v-main v-else>
+    <SpinnerInline centered :size="50" color="primaryCustom"/>
   </v-main>
 </template>
 
 <script>
 
-  import {handleHidingGlobalLoader, followLink, getRequest, logError, getSnackbar, getRequestWithParams, postRequest} from '@/helpers/helpers'
-  import ActionButton from './ActionButton'
-  import {AppMutations} from '@/stores/AppStore'
-  import {getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-  import Attachments from '@/views/flow/components/Attachments'
-  import Links from '@/views/flow/components/Links'
-  import CustomValueInput from '@/views/flow/components/CustomValueInput'
-  import {getCustomFieldReadOnly} from '@/services/customFieldService'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import moment from 'moment-timezone'
-  import {DateTime} from 'luxon'
-  import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+import {
+  handleHidingGlobalLoader,
+  followLink,
+  getRequest,
+  logError,
+  getSnackbar,
+  getRequestWithParams,
+  postRequest
+} from '@/helpers/helpers'
+import ActionButton from './ActionButton'
+import EventButton from './EventButton'
+import {AppMutations} from '@/stores/AppStore'
+import {ProjectMutations} from '@/stores/ProjectStore'
+import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
+import Attachments from '@/views/flow/components/Attachments'
+import Links from '@/views/flow/components/Links'
+import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import {getCustomFieldReadOnly, getEventCustomFieldReadOnly} from '@/services/customFieldService'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+import SpinnerInline from '@/components/SpinnerInline'
+import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 
-  const NEW_STATUS_TO_USE = {id: null}
+const NEW_STATUS_TO_USE = {id: null}
 
-  export default {
-    name: 'ProjectProcessStep',
-    components: {
-      ActionButton,
-      Links,
-      Attachments,
-      CustomValueInput,
-      DatetimePickerInput,
-      ProjectProcessStepStatus
+export default {
+  name: 'ProjectProcessStep',
+  props: {
+    project: Object
+  },
+  components: {
+    ActionButton,
+    EventButton,
+    Links,
+    Attachments,
+    CustomValueInput,
+    DatetimePickerInput,
+    ProjectProcessStepStatus,
+    SpinnerInline,
+    UploadDocumentModal
+  },
+  data() {
+    return {
+      snackbar: {},
+      unsavedFieldsModal: false,
+      fieldsSaving: false,
+      getStatusClass,
+      showUploadModal: false,
+      uploadModalWidth: 600,
+      attachmentTypes: [],
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+      userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
+      userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
+      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
+      schedulerCanEdit: false,
+      showRemoteSearch: false,
+      mostRecentSearchWasRemote: false,
+      schedulerLoading: true,
+      timezone: this.$store.state.user.details.timezone.value,
+      projectId: parseInt(this.$route.params.projectId),
+      projectProcessStepId: this.$route.params.processStepId,
+      processStepId: this.$route.query.processStepId,
+      processStep: {},
+      customFieldGroups: [],
+      isProcessStepLoading: true,
+      dirtyCfvs: [],
+      toPath: null,
+      query: {},
+      navigationOverride: false,
+      notes: [],
+      displayChangeOwner: false,
+      availableOwners: [],
+      availableProcessStepStatuses: [],
+      searchLoading: false,
+      showMainDialog: false,
+      NEW_STATUS_TO_USE,
+      showUnperformableActions: false,
+      processStepLoading: true,
+      eventToAdd: {},
+      processStepEvents: [],
+      // windowWidth: window.innerWidth,
+      // splitColumnMinWidth: 1700
+
+    }
+  },
+  watch: {
+    // whenever pps id changes, this function will run
+    '$route.params.processStepId': async function () {
+      // reset the selected item
+      this.processStepId = this.$route.query.processStepId
+      this.projectProcessStepId = this.$route.params.processStepId
+      await this.loadAllPageDetails()
     },
-    data() {
-      return {
-        snackbar: {},
-        unsavedFieldsModal: false,
-        minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
-        roundRobinNumberOfDays: 7,
-        availabilityDateField: {fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
-        timeSlots: [],
-        selectedTimeSlot: {},
-        closerApptOverride: false,
-        fieldsSaving: false,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
-        userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
-        userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
-        schedulerCanEdit: false,
-        showRemoteSearch: false,
-        mostRecentSearchWasRemote: false,
-        schedulerLoading: true,
-        closerApptSaved: false,
-        searchedTimeSlots: false,
-        timezone: this.$store.state.user.details.timezone.value,
-        projectId: this.$route.params.projectId,
-        projectProcessStepId: this.$route.params.processStepId,
-        processStepId: this.$route.query.processStepId,
-        processStep: {},
-        customFieldGroups: [],
-        isProcessStepLoading: true,
-        dirtyCfvs: [],
-        toPath: null,
-        navigationOverride: false,
-        notes: [],
-        project: {},
-        displayChangeOwner: false,
-        availableOwners: [],
-        availableProcessStepStatuses: [],
-        inPersonSearchLoading: false,
-        remoteSearchLoading: false,
-        usingUniqueView: false,
-        uniqueCfgId: null,
-        showRoundRobin: false,
-        uniqueAlreadyHasValue: false,
-        psHasEventCfg: false,
-        psRequiresResource: false,
-        showMainDialog: false,
-        NEW_STATUS_TO_USE,
-        showUnperformableActions: false
+  },
+  mounted() {
+    // window.addEventListener('resize', () => {
+    //   this.windowWidth = window.innerWidth
+    // })
+  },
+  async created() {
+    await this.loadAllPageDetails()
+  },
+  computed: {
+    filteredActions() {
+      if (!this?.processStep?.actions) {
+        return []
       }
-    },
-    async created() {
-      this.getCustomFieldGroups()
-      //per 9/24 request judson had us remove notes from process steps
-      // this.getNotes()
-      this.getProject()
-      await this.getProcessStep()
-      this.getAvailableOwners()
-    },
-    computed: {
-      filteredActions () {
-        if (!this?.processStep?.actions) {
-          return []
-        }
 
-        if (this.showUnperformableActions) {
-          return this.processStep.actions
-        } else {
-          return this.processStep.actions.filter(a => a.canPerform === true)
-        }
-      }
-    },
-    beforeRouteLeave (to, from, next) {
-      // called when the route that renders this component is about to
-      // be navigated away from.
-      // has access to `this` component instance.
-      if (this.navigationOverride || this.dirtyCfvs.length === 0) {
-        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
-        next()
+      if (this.showUnperformableActions) {
+        return this.processStep.actions
       } else {
-        this.toPath = to.path
-        this.unsavedFieldsModal = true
-      }
-    },
-    methods: {
-      goToPath(path) {
-        this.$router.push(path)
-      },
-      getStatusClass(rootTypeId) {
-        return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
-      },
-      anyGroupNonUnique() {
-        let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
-        return null != nonUniqueGroups
-      },
-      async getAvailableStatuses() {
-        if(this.processStep?.processStepId) {
-          try {
-            const {data} = await getAssignedToProcessStep(this.processStep.processStepId)
-            // const {data} = await getRequest(`/processStep/status`)
-            this.availableProcessStepStatuses = data
-          } catch (e) {
-            this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            logError(e)
-          }
-        }
-      },
-      getProcessStep: async function () {
-        try {
-          const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-          this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
-          this.getAvailableStatuses()
-          window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
-            : `${this.processStep.processStepName}`
-          return {data, status}
-        } catch (e) {
-          logError(e)
-        } finally {
-          this.isProcessStepLoading = false
-        }
-      },
-      async setCfgValues() {
-        this.customFieldGroups.forEach(cfg => {
-          if (cfg.uniqueBehaviorTypeId === 1) {
-            this.uniqueCfgId = cfg.id
-            this.psHasEventCfg = true
-            this.psRequiresResource = true
-            this.usingUniqueView = true
-            let boolVal = false
-            cfg.customFieldValues?.forEach(cfv => {
-              if (([1, 2].includes(cfv.scheduleFieldTypeId) && cfv.timestampValue && cfv.id) ||
-                (cfv.scheduleFieldTypeId === 3 && cfv.intValue && cfv.id)) {
-                boolVal = true
-              }
-              //for the schedule closer appt, if the current user is in the list of available resources, auto assign them
-              // this isn't working because it doesn't make the field "dirty" so it doesn't save.  need to fix later
-              // if(cfv.scheduleFieldTypeId === 3 && null == cfv.intValue) {
-              //   //get the user's primary user_position_id
-              //   let primaryUserPosition = this.$store.state.user.details.userPositions.find(up => up.primaryFlag)
-              //   if(primaryUserPosition?.id) {
-              //     //if found, check if it exists in the list of values
-              //     let match = cfv.listOfValues.find(lv => lv.id === primaryUserPosition.id)
-              //     if(match?.id) {
-              //       cfv.intValue = match.id
-              //     }
-              //
-              //   }
-              // }
-            })
-            this.uniqueAlreadyHasValue = boolVal
-          } else if (null != cfg.eventTypeId) {
-            this.psHasEventCfg = true
-            this.psRequiresResource = false
-          }
-        })
-        if(this.usingUniqueView) {
-          //need to load the round robin Number of days into future for this project
-          const {data} = await getRequestWithParams(`/postalCode/zone/byPostalCode`, {
-            params: {
-              projectId: this.projectId,
-              postalCode: this.project.postalCode
-            }
-          })
-          this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
-        }
-
-      },
-      async getCustomFieldGroups() {
-        //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
-        //this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
-          this.customFieldGroups = data
-          this.setCfgValues()
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getNotes() {
-        try {
-          const {data} = await getRequestWithParams(`/note/getProjectProcessStepNotes`, {
-            params: {
-              primaryId: this.projectProcessStepId
-            }
-          })
-          this.notes = data
-        } catch {
-          console.log('suck')
-
-        }
-      },
-      getProject: async function () {
-        try {
-          const {data} = await getRequest(`/project/${this.projectId}`)
-          this.project = data
-          window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
-            : `${this.project.projectName}`
-          //turning off the await...i dont think we need to wait for this to load
-          this.userCanScheduleLeadAllocation()
-          this.userCanScheduleRemoteLeadAllocation()
-        } catch (e) {
-          logError(e)
-        }
-      },
-      async getAvailableOwners() {
-        // this.$store.commit(AppMutations.SET_LOADING, true)
-        if(this.processStep?.processStepProcessId) {
-          try {
-            const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
-            this.availableOwners = data
-
-            // this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            logError(e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            // this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async userCanScheduleLeadAllocation() {
-        //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-        if (this.userIsScheduler && this.project?.postalCode) {
-          this.schedulerLoading = true
-          try {
-            const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
-              params: {
-                postalCode: this.project.postalCode
-              }
-            })
-            // const {data} = await getRequest(`/postalCode/zone/userCanSchedule`)
-            this.schedulerCanEdit = data
-          } catch (e) {
-            logError(e)
-            this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } finally {
-            this.schedulerLoading = false
-          }
-        }
-      },
-      async userCanScheduleRemoteLeadAllocation() {
-        //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-        if (this.userIsScheduler) {
-          this.schedulerLoading = true
-          try {
-            const {data} = await getRequest(`/postalCode/zone/userCanScheduleRemote`)
-            this.showRemoteSearch = data
-          } catch (e) {
-            logError(e)
-            this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } finally {
-            this.schedulerLoading = false
-          }
-        }
-      },
-      async updateProjectFieldGroups() {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
-          this.customFieldGroups = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async checkFields() {
-        let validSave = true
-        let resource = null
-        if (this.psHasEventCfg) {
-          //get check all schedule event cfgs on the page
-          this.customFieldGroups.forEach(cfg => {
-            if (null != cfg.eventTypeId) {
-              let startField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 1)
-              let endField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 2)
-              let resourceField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 3)
-
-              let startTime = startField?.timestampValue
-              let endTime = endField?.timestampValue
-              resource = resourceField?.intValue
-              if ((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
-                this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.fieldsSaving = false
-                validSave = false
-              } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-                this.snackbar = getSnackbar('ERROR', 'End time must be after start time')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.fieldsSaving = false
-                validSave = false
-              } else if (this.psRequiresResource && startTime && endTime && !resource) {
-                //resource required if times are saving
-                this.snackbar = getSnackbar('ERROR', 'Resource is required')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.fieldsSaving = false
-                validSave = false
-              }
-            }
-          })
-        }
-
-        if (validSave) {
-          await this.updateFieldGroups(this.usingUniqueView && this.uniqueCfgId, resource)
-        }
-      },
-      async updateFieldGroups(cameFromUnique, resourceId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.processStep.customFieldGroups = this.customFieldGroups
-        try {
-          // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
-          // save dirty custom field values
-          const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-          //if override - schedule closer appt - log to the audit table
-          if (cameFromUnique) {
-            this.setCfgValues()
-            if (resourceId) {
-              // console.log('AUDIT saving', resourceId)
-              let params = {
-                projectId: this.projectId,
-                projectProcessStepId: this.projectProcessStepId,
-                userPositionId: resourceId
-              }
-              await postRequest(`/availability/auditOverride`, params)
-            }
-          }
-          //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
-          this.closerApptSaved = true
-          const {status} = await this.getProcessStep()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } finally {
-          this.fieldsSaving = false
-        }
-      },
-      populateDirtyCfvs(field) {
-        //some fields are for unique behavior and they dont need to be saved. this check should filter them out
-        if (field.customFieldId) {
-          let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-          if (!match) {
-            this.dirtyCfvs.push(field)
-          }
-        } else {
-          //this should only get hit when the "Select a Date" field value gets changed
-          this.selectedTimeSlot = {}
-          this.timeSlots = []
-          this.searchedTimeSlots = false
-        }
-      },
-      async removeOwner() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.processStep.owner = {}
-          const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
-          this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateOwner() {
-        this.displayChangeOwner = false
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateMain(pps) {
-        this.showMainDialog = false
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
-          const {status} = await this.getProcessStep()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.processStep.main = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getReadOnly: function (field) {
-        // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
-        return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
-          || getCustomFieldReadOnly(this.$store, field)
-          || !this.userCanEdit
-      },
-      followMultipleLinks(action) {
-        action?.processStepActionLinks?.forEach(link => {
-          followLink(link.url, this.projectId)
-        })
-      },
-      handleActionCompleted() {
-        this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
-      },
-      handleOnCompleteError(actionId, errorMessage) {
-        logError(`Failed to complete action with actionId: ${actionId}`)
-
-        let message = 'Unable to Complete Action'
-
-        // See if this is a java function failure and display a more specific error message
-        if (errorMessage && typeof errorMessage === 'string') {
-          let lastClause = errorMessage.substring(errorMessage.lastIndexOf('*** '))
-
-          // This is specific to BR to display if a loan wasn't found. Genericize when we get "free time"
-          if (lastClause.includes('Unable to locate application')) {
-            message = 'Unable to locate loan application'
-          }
-        }
-
-        this.snackbar = getSnackbar('ERROR', message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      },
-      async getAvailableTimeSlots(remote) {
-        this.mostRecentSearchWasRemote = remote
-        try {
-          this.remoteSearchLoading = remote
-          this.inPersonSearchLoading = !remote
-          this.selectedTimeSlot = {}
-          this.searchedTimeSlots = false
-
-          let params = {
-            projectId: this.projectId,
-            startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            availableDate: this.availabilityDateField.dateValue,
-            remote: remote
-          }
-          const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
-          this.searchedTimeSlots = true
-          this.timeSlots = data
-          this.remoteSearchLoading = false
-          this.inPersonSearchLoading = false
-        } catch (e) {
-          logError(e)
-          this.remoteSearchLoading = false
-          this.inPersonSearchLoading = false
-          let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async saveCloserAppointment() {
-        try {
-          let body = {
-            projectId: this.projectId,
-            projectProcessStepId: this.projectProcessStepId,
-            // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-            appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-            users: this.selectedTimeSlot.users,
-            remote: this.mostRecentSearchWasRemote
-          }
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/availability/setCloserAppointment`, body)
-          if (data) {
-            this.customFieldGroups = data
-            this.setCfgValues()
-            this.closerApptSaved = true
-            this.showRoundRobin = false
-            this.availabilityDateField.dateValue = null
-            this.timeSlots = []
-            this.selectedTimeSlot = {}
-          }
-          const {status} = await this.getProcessStep()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      checkAvailabilityDate() {
-        if (this.availabilityDateField.dateValue !== null) {
-          // Limit user to selecting availability dates < 8 days out
-          const selectedDate = DateTime.fromISO(this.availabilityDateField.dateValue)
-          const cappedDate = DateTime.local().set({hour: 0, minute: 0, second: 0, millisecond: 0}).plus({days: this.roundRobinNumberOfDays})
-          if (selectedDate > cappedDate) {
-            this.availabilityDateField.dateValue = null
-            this.snackbar = getSnackbar('ERROR', `You can only schedule appointments ${this.roundRobinNumberOfDays} days in advance`)
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.populateDirtyCfvs(this.availabilityDateField)
-          }
-        }
+        return this.processStep.actions.filter(a => a.canPerform === true)
       }
     }
+  },
+  beforeRouteUpdate(to, from, next) {
+    // called when the route that renders this component is about to be updated via router-view update
+    if (this.navigationOverride || this.dirtyCfvs.length === 0) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to be navigated away from.
+    if (this.navigationOverride || this.dirtyCfvs.length === 0) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  methods: {
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+    },
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if (this.$store.state.project.manualColumnSplit) {
+        return values.filter(function (element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
+    async loadAllPageDetails() {
+      this.processStepLoading = true
+      //if you add a new item to requests make sure it returns the request status
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
+      await Promise.all(requests).then((statusVals) => {
+        let success = true
+        statusVals.forEach(status => {
+          if (status !== 200) {
+            success = false
+          }
+        })
+        if (success) {
+          //this was causing issues if you moved too quickly between pps
+          this.processStepLoading = false
+        }
+      })
+    },
+    goToPath(path, query) {
+      //reset these values so the next screen works if also a pps
+      this.unsavedFieldsModal = false
+      this.$router.push({ path, query })
+    },
+    async getAvailableStatuses() {
+      if (this.processStep?.processStepId) {
+        try {
+          const {data} = await getCompanyAssignedToProcessStep(this.processStep.processStepId)
+          // const {data} = await getRequest(`/processStep/status`)
+          this.availableProcessStepStatuses = data
+        } catch (e) {
+          this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          logError(e)
+        }
+      }
+    },
+    getProcessStep: async function (reloadAll) {
+      try {
+        this.processStepLoading = true
+        const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
+        this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+        this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
+        if(reloadAll) {
+          //dont reload if only doing simple refresh
+          this.getAvailableStatuses()
+          this.getAvailableOwners()
+        } else {
+          //only set this to false when doing a simple refresh or else it will turn off loaders too soon
+          this.processStepLoading = false
+        }
+        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
+          : `${this.processStep.processStepName}`
+        // return {data, status}
+        return status
+      } catch (e) {
+        logError(e)
+      }
+    },
+    async getCustomFieldGroups() {
+      try {
+        const {data, status} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
+        this.customFieldGroups = data
+        return status
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async getNotes() {
+      try {
+        const {data} = await getRequestWithParams(`/note/getProjectProcessStepNotes`, {
+          params: {
+            primaryId: this.projectProcessStepId
+          }
+        })
+        this.notes = data
+      } catch {
+        console.log('suck')
+
+      }
+    },
+    async getAvailableOwners() {
+      // this.$store.commit(AppMutations.SET_LOADING, true)
+      if (this.processStep?.processStepProcessId) {
+        try {
+          const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`, null, [])
+          this.availableOwners = data
+
+          // this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          // this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async checkFields() {
+      //why is this still here?
+      await this.updateFieldGroups()
+    },
+    async updateFieldGroups() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      // this.processStep.customFieldGroups = this.customFieldGroups
+      try {
+        // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+        // save dirty custom field values
+        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
+        this.dirtyCfvs = []
+        this.customFieldGroups = data
+        this.$emit('refresh-upcoming-pps')
+        await this.getProcessStep(false)
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } finally {
+        this.fieldsSaving = false
+      }
+    },
+    populateDirtyCfvs(field) {
+      //i think we could mostly remove this code now that round robin moved to events
+      //some fields are for unique behavior and they dont need to be saved. this check should filter them out
+      if (field.customFieldId) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if (!match) {
+          this.dirtyCfvs.push(field)
+        }
+      }
+    },
+    async removeOwner() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.processStep.owner = {}
+        const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+        this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateOwner() {
+      this.displayChangeOwner = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+        this.$emit('refresh-upcoming-pps')
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateMain(pps) {
+      this.showMainDialog = false
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
+        const status = await this.getProcessStep(false)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.processStep.main = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getReadOnly: function (field) {
+      // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
+      let fieldReadOnly = false
+      if(null != field) {
+        fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
+      }
+      return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
+        || fieldReadOnly
+        || !this.userCanEdit
+    },
+    followMultipleLinks(action) {
+      action?.processStepActionLinks?.forEach(link => {
+        followLink(link.url, this.projectId)
+      })
+    },
+    handleActionCompleted(data) {
+      this.$emit('refresh-upcoming-pps')
+      this.$emit('refresh-project-status')
+
+      this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //if root status is not active then go back to project screen
+      if(data?.processStepStatusTypeId !== 1) {
+        //just in case something wasn't saved before running this action then still allow the nav
+        this.navigationOverride = true
+        this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
+      } else {
+        this.getProcessStep(false)
+        //have to reload the custom field groups as well in case the action populated something
+        this.getCustomFieldGroups()
+      }
+    },
+    handleOnCompleteError(actionId, errorMessage) {
+      logError(`Failed to complete action with actionId: ${actionId}`)
+
+      let message = 'Unable to Complete Action'
+
+      // See if this is a java function failure and display a more specific error message
+      if (errorMessage && typeof errorMessage === 'string') {
+        let lastClause = errorMessage.substring(errorMessage.lastIndexOf('*** '))
+
+        // This is specific to BR to display if a loan wasn't found. Genericize when we get "free time"
+        if (lastClause.includes('Unable to locate application')) {
+          message = 'Unable to locate loan application'
+        }
+      }
+
+      this.snackbar = getSnackbar('ERROR', message)
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    addEvent: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventToAdd.id}`)
+        this.$emit('refresh-upcoming-events')
+        this.$router.push(`/project/${this.projectId}/processStep/${data.projectProcessStepId}/event/${data.id}`)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getProcessStepEvents: async function () {
+      //this gets the events assigned to the process step so we know which ADD buttons to show
+      try {
+        const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
+        this.processStepEvents = data
+        return status
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getProcessStepAttachmentTypes: async function () {
+      //this gets the attachment types assigned to the process step so we know whether to show the upload button
+      try {
+        const {data, status} = await getRequest(`/attachmentType/processStepTypes/${this.processStepId}`, null, [])
+        this.attachmentTypes = data
+        return status
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
+
   }
+}
 </script>
 
 <style lang="scss">
-  .cfg-name-toolbar .v-toolbar__content {
-    padding-left: 0 !important;
-  }
+#pps-toolbar .v-toolbar__content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.cfg-name-toolbar .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-name-toolbar .v-toolbar__title {
+  font-size: 14px;
+}
+
+.cfg-detail-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-detail-header .v-toolbar__title {
+  font-size: 16px;
+}
+
+.owner-toolbar-items {
+  flex-direction: column;
+  text-align: right;
+}
 </style>
 <style lang="scss" scoped>
-  .process-step-header {
-    border-bottom: solid 1px #EAEAF4;
-  }
+.process-step-name {
+  font-weight: normal;
+  font-size: 1.25rem;
+}
 
-  .status-active {
-    color: green;
-    font-weight: normal;
-    font-size: 12px;
-  }
+.owner-image {
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 5px;
+}
 
-  .status-complete {
-    color: cornflowerblue;
-    font-weight: normal;
-    font-size: 12px;
-  }
+owner-toolbar-tools {
+  display: flex;
+}
 
-  .status-cancelled {
-    color: darkred;
-    font-weight: normal;
-    font-size: 12px;
-  }
+.owner-info {
+  display: inline-block;
+  font-size: 14px;
+}
 
-  .process-step-name {
-    font-weight: bold;
-    font-size: 22px;
-    padding-top: 10px;
-  }
+.owner-position {
+  color: #9E9C9C;
+}
 
-  ::v-deep {
-    .v-btn.back-btn {
+.pps-subheader {
+  width: 186px;
+  margin-top: 5px;
+}
 
-      text-transform: capitalize;
-      text-decoration: underline;
+::v-deep {
+  .v-btn.back-btn {
 
-      &:not(.v-btn--round) {
-        padding: 0;
-      }
+    text-transform: capitalize;
+    text-decoration: underline;
 
-      &:hover:before {
-        opacity: 0 !important;
-      }
-
-      .v-btn__content {
-        justify-content: start;
-      }
+    &:not(.v-btn--round) {
+      padding: 0;
     }
 
-    .show-unperformable-actions-btn {
-      margin-bottom: 2px;
-      font-size: 12px;
+    &:hover:before {
+      opacity: 0 !important;
+    }
+
+    .v-btn__content {
+      justify-content: start;
     }
   }
+
+  .show-unperformable-actions-btn {
+    margin-bottom: 2px;
+    margin-left: 10px;
+    font-size: 12px;
+  }
+}
 </style>

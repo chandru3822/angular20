@@ -211,16 +211,22 @@ public class SecurityService implements UserDetailsService {
   /*
   Return whether user has any of the given access levels to the given feature
    */
-  public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCode) {
+  public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCodes) {
     List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
     for (FeatureAccessControl fac : featureAccessControlList) {
-      if (fac.getFeatureCode().equals(featureCode) && accessCode.contains(fac.getAccessCode())) {
+      if (fac.getFeatureCode().equals(featureCode) && accessCodes.contains(fac.getAccessCode())) {
         return true;
       }
     }
     //if the user's highest company id is 1, then they are an albatross system admin - 7 oaks employee
     //we return true for all features, access levels, etc for ^^ these users
     return userHighestCompanyId == 1;
+  }
+
+  public void validateUserFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCodes) {
+    if(!userHasFeatureAccessLevel(userId, companyId, userHighestCompanyId, featureCode, accessCodes)) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized.", new Exception());
+    }
   }
 
   @SuppressWarnings("unchecked")

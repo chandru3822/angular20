@@ -14,7 +14,7 @@ BEGIN
                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                  inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
         where pps.project_id = p_project_id
-          and cfg.event_type_id = p_event_type_id
+--           and cfg.event_type_id = p_event_type_id
           and cfg.archived is false
           and pps.archived is false
           and pv.archived is false

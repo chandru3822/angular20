@@ -10,25 +10,32 @@
             <v-card-text>
               <router-link :to="`/login`">Back to Login</router-link>
               <div class="py-4 font-size-16">
-                Albatross is under maintenance. <br/>
-                If you are a mobile user, please watch the training video below. <br/>
-                The site will be available again on Monday, Feb 14th.
+                Albatross is under maintenance. <br/><br/>
+                The site will be available again on the evening of Sunday, Feb 20th.<br/><br/>
+
+                If you’re a mobile user please watch your training video below:<br/><br/>
+                Setters: <a target="_blank" href="https://www.screencast.com/t/ciilzrVome">https://www.screencast.com/t/ciilzrVome</a><br/><br/>
+                Closers: <a target="_blank" href="https://www .screencast.com/t/wZqOQ3oSj">https://www .screencast.com/t/wZqOQ3oSj</a><br/><br/>
+                Installers: <a target="_blank" href="https://www.screencast.com/t/rSuSwmqOUD">https://www.screencast.com/t/rSuSwmqOUD</a><br/><br/>
+                Site Surveyors: <a target="_blank" href="https://www.screencast.com/t/ab3SnJTpxqw">https://www.screencast.com/t/ab3SnJTpxqw</a><br/><br/>
+                AHJ Inspections: <a target="_blank" href="https://www.screencast.com/t/HrhoSk7Hs5">https://www.screencast.com/t/HrhoSk7Hs5</a><br/><br/>
+                Work Orders: <a target="_blank" href="https://www.screencast.com/t/yvYxZ4fOT">https://www.screencast.com/t/yvYxZ4fOT</a>
               </div>
-              <div class="text-center one-hunned">
-                <video
-                  v-for="a in attachments"
-                  class="maintenance-c"
-                  :key="a.presignedUrl"
-                  width="450"
-                  height="400"
-                  controls
-                >
-                  <source
-                    :src="a.presignedUrl"
-                    type="video/mp4"
-                  >
-                </video>
-              </div>
+<!--              <div class="text-center one-hunned">-->
+<!--                <video-->
+<!--                  v-for="a in attachments"-->
+<!--                  class="maintenance-c"-->
+<!--                  :key="a.presignedUrl"-->
+<!--                  width="450"-->
+<!--                  height="400"-->
+<!--                  controls-->
+<!--                >-->
+<!--                  <source-->
+<!--                    :src="a.presignedUrl"-->
+<!--                    type="video/mp4"-->
+<!--                  >-->
+<!--                </video>-->
+<!--              </div>-->
             </v-card-text>
           </v-card>
         </v-col>
@@ -53,7 +60,8 @@
       }
     },
     created () {
-      this.getMaintenanceAttachments()
+      //they decided they wanted to show links
+      // this.getMaintenanceAttachments()
     },
     methods: {
       async getMaintenanceAttachments () {
