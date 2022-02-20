@@ -31,4 +31,5 @@ public class ProjectProcessStep {
   List<CustomFieldGroup> customFieldGroups;
 
   private List<ProjectProcessStepRequirement> autoTriggeredActionRequirements;
+  private List<ProjectProcessStepEvent> projectProcessStepEvents;
 }

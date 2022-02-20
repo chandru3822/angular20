@@ -673,16 +673,6 @@ const router = new Router({
                 }
               },
             }, {
-              path: 'eventTypes',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "eventTypes" */ './views/flow/settings/EventTypes.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
-            }, {
               path: 'workQueue',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -825,6 +815,16 @@ const router = new Router({
                 },
               ]
             },  {
+              path: 'eventStatuses',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventStatuses" */ './views/flow/settings/EventStatuses.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'eventStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -1095,20 +1095,21 @@ const router = new Router({
               return accessDenied()
             }
           },
-        }, {
-          name: 'projectProcessStep',
-          path: '/project/:projectId/processStep/:processStepId',
-          component: () => {
-            if (store.getters.userHasFeature('PROCESS_STEPS')) {
-              return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
-            } else {
-              return accessDenied()
-            }
-          }
-        }, {
+        },
+        // {
+        //   name: 'projectProcessStep',
+        //   path: '/project/:projectId/processStep/:processStepId',
+        //   component: () => {
+        //     if (store.getters.userHasFeature('PROCESS_STEPS')) {
+        //       return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
+        //     } else {
+        //       return accessDenied()
+        //     }
+        //   }
+        // },
+        {
           path: '/project/:projectId',
           name: 'project',
-          meta: {title: 'Albatross - Project'},
           component: () => {
             if (store.getters.userHasFeature('PROJECTS')) {
               return import (/* webpackChunkName: "project" */ './views/flow/project/Project.vue')
@@ -1119,23 +1120,54 @@ const router = new Router({
           children: [{
             path: 'details',
             name: 'projectDetails',
-            meta: {title: 'Albatross - Project Details'},
             // component: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue')
             components: {
               default: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue'),
               tabs: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue'),
             }
           }, {
-            path: 'notes',
-            name: 'projectNotes',
-            meta: {title: 'Albatross - Project Notes'},
-            component: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectNotes.vue')
-          }
+            name: 'projectProcessStep',
+            path: 'processStep/:processStepId',
+            component: () => {
+              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          }, {
+            name: 'ppsEvent',
+            path: 'processStep/:processStepId/event/:ppsEventId',
+            component: () => {
+              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStepEvent.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          }, {
+            path: 'processSteps',
+            component: () => {
+              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/AllProcessSteps.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          } , {
+              path: 'events',
+              component: () => {
+                if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                  return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/AllEvents.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
           ]
         },        {
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
-          meta: {title: 'Albatross - Projects'},
           component: () => {
             if (store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')) {
               return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')

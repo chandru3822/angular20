@@ -212,10 +212,6 @@ export default {
         title: 'Project Statuses',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/eventTypes',
-        title: 'Scheduling Tool Event Types',
-        show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
-      }, {
         path: '/settings/workQueue/types',
         title: 'Work Queue',
         show: this.hasSettingsAccess || this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')

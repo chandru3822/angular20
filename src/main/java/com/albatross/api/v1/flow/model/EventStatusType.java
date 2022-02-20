@@ -8,10 +8,10 @@ import lombok.Setter;
 public class EventStatusType {
 
   //oh boy. this is confusing af.  id = companyEventStatusTypeId.  EventStatusTypeId = rootEventStatusTypeId
-  private Long id, eventStatusTypeId, displayOrder;
+    private Long id, eventStatusTypeId, displayOrder;
 
-  private String eventStatusType, rootEventStatusType;
-  private Attachment icon;
+    private String eventStatusType, rootEventStatusType;
+    private Attachment icon;
 
   private Boolean archived, isDefault;
 

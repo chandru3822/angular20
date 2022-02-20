@@ -94,8 +94,9 @@ public class CustomFieldGroupController {
   @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long companyObjectTypeId,
                                                             @RequestParam Long groupId,
-                                                            @RequestParam(required = false) Long processStepId) {
-    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId);
+                                                            @RequestParam(required = false) Long processStepId,
+                                                            @RequestParam(required = false) Long eventId) {
+    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId, eventId);
   }
 
   @PostMapping(value = "/addCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)

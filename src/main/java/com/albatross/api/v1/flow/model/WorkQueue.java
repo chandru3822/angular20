@@ -12,5 +12,5 @@ public class WorkQueue {
       shortWindow, longWindow, expectedCycle, shortWindowExited, longWindowExited;
     private String workQueueType, color, shortWindowDurationType, longWindowDurationType, expectedCycleDurationType;
     private Double shortWindowPercentage, longWindowPercentage, shortWip, longWip, expectedTarget;
-    private Boolean archived, inverseExpectation;
+    private Boolean archived, inverseExpectation, useEventData;
 }

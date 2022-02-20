@@ -14,6 +14,57 @@
                 single-line
                 hide-details
               ></v-text-field>
+              <v-card flat color="rowShadeCustom" class="square-card">
+                <v-card-title style="height: 40px" class="py-0">
+                  Read Only
+                  <v-checkbox type="checkbox" class="ml-3"
+                              v-model="event.startTimeReadOnly"></v-checkbox>
+                </v-card-title>
+                <v-card-text>
+                  <v-autocomplete
+                    v-if="event.startTimeReadOnly"
+                    v-model="event.startTimeWhiteListedPositions"
+                    :items="positions"
+                    :loading="positionsLoading"
+                    multiple
+                    clearable
+                    label="White Listed Positions"
+                    item-text="position"
+                    item-value="positionId"
+                    return-object
+                    height="35px"
+                    class="d-inline-block mr-3"
+                    @change="event.startTimePositionsChanged = true">
+                    <v-list-item
+                      slot="prepend-item"
+                      ripple
+                      @click="[event.startTimePositionsChanged = true, toggleSelectAllPositions(event, 'startTimeWhiteListedPositions')]"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ icon(event, 'startTimeWhiteListedPositions') }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      slot="prepend-item"
+                      class="mt-2"
+                    ></v-divider>
+                    <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                    >
+                      <v-chip small
+                              v-if="index === 0 && event.startTimeWhiteListedPositions && event.startTimeWhiteListedPositions.length < 2">
+                        <span>{{ item.position }}</span>
+                      </v-chip>
+                      <span
+                        v-if="index === 1 && event.startTimeWhiteListedPositions && event.startTimeWhiteListedPositions.length >= 2"
+                        class="primary--text text-caption"
+                      >{{ event.startTimeWhiteListedPositions.length }} selected</span>
+                    </template>
+                  </v-autocomplete>
+                </v-card-text>
+              </v-card>
             </v-col>
             <v-col cols="6">
               <v-text-field
@@ -22,6 +73,57 @@
                 single-line
                 hide-details
               ></v-text-field>
+              <v-card flat color="rowShadeCustom" class="square-card">
+                <v-card-title style="height: 40px" class="py-0">
+                  Read Only
+                  <v-checkbox type="checkbox" class="ml-3"
+                              v-model="event.endTimeReadOnly"></v-checkbox>
+                </v-card-title>
+                <v-card-text>
+                  <v-autocomplete
+                    v-if="event.endTimeReadOnly"
+                    v-model="event.endTimeWhiteListedPositions"
+                    :items="positions"
+                    :loading="positionsLoading"
+                    multiple
+                    clearable
+                    label="White Listed Positions"
+                    item-text="position"
+                    item-value="positionId"
+                    return-object
+                    height="35px"
+                    class="d-inline-block mr-3"
+                    @change="event.endTimePositionsChanged = true">
+                    <v-list-item
+                      slot="prepend-item"
+                      ripple
+                      @click="[event.endTimePositionsChanged = true, toggleSelectAllPositions(event, 'endTimeWhiteListedPositions')]"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ icon(event, 'endTimeWhiteListedPositions') }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      slot="prepend-item"
+                      class="mt-2"
+                    ></v-divider>
+                    <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                    >
+                      <v-chip small
+                              v-if="index === 0 && event.endTimeWhiteListedPositions && event.endTimeWhiteListedPositions.length < 2">
+                        <span>{{ item.position }}</span>
+                      </v-chip>
+                      <span
+                        v-if="index === 1 && event.endTimeWhiteListedPositions && event.endTimeWhiteListedPositions.length >= 2"
+                        class="primary--text text-caption"
+                      >{{ event.endTimeWhiteListedPositions.length }} selected</span>
+                    </template>
+                  </v-autocomplete>
+                </v-card-text>
+              </v-card>
             </v-col>
           </v-row>
           <v-row>
@@ -31,16 +133,68 @@
                 v-model="event.resourceCustomFieldId"
                 :items="schedulingFields[0].availableCustomFields"
                 label="Resource"
+                @change="resourceFieldChanged = true"
                 item-text="fieldName"
                 item-value="id"
               ></v-autocomplete>
+              <v-card flat color="rowShadeCustom" class="square-card">
+                <v-card-title style="height: 40px" class="py-0">
+                  Read Only
+                  <v-checkbox type="checkbox" class="ml-3"
+                              v-model="event.resourceReadOnly"></v-checkbox>
+                </v-card-title>
+                <v-card-text>
+                  <v-autocomplete
+                    v-if="event.resourceReadOnly"
+                    v-model="event.resourceWhiteListedPositions"
+                    :items="positions"
+                    :loading="positionsLoading"
+                    multiple
+                    clearable
+                    label="White Listed Positions"
+                    item-text="position"
+                    item-value="positionId"
+                    return-object
+                    height="35px"
+                    class="d-inline-block mr-3"
+                    @change="event.resourcePositionsChanged = true">
+                    <v-list-item
+                      slot="prepend-item"
+                      ripple
+                      @click="[event.resourcePositionsChanged = true, toggleSelectAllPositions(event, 'resourceWhiteListedPositions')]"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ icon(event, 'resourceWhiteListedPositions') }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      slot="prepend-item"
+                      class="mt-2"
+                    ></v-divider>
+                    <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                    >
+                      <v-chip small
+                              v-if="index === 0 && event.resourceWhiteListedPositions && event.resourceWhiteListedPositions.length < 2">
+                        <span>{{ item.position }}</span>
+                      </v-chip>
+                      <span
+                        v-if="index === 1 && event.resourceWhiteListedPositions && event.resourceWhiteListedPositions.length >= 2"
+                        class="primary--text text-caption"
+                      >{{ event.resourceWhiteListedPositions.length }} selected</span>
+                    </template>
+                  </v-autocomplete>
+                </v-card-text>
+              </v-card>
             </v-col>
             <v-col cols="6">
               <v-btn class="white--text mr-0 save-btn"
                      dark
-                     @click="saveResourceField"
+                     @click="saveChangesToDefaultFields"
                      color="primaryButton"
-              >Save Resource Field
+              >Save Changes
               </v-btn>
             </v-col>
 
@@ -260,10 +414,10 @@
                                         <v-list-item
                                           slot="prepend-item"
                                           ripple
-                                          @click="toggleSelectAllPositions(cf)"
+                                          @click="toggleSelectAllPositions(cf, 'whiteListedPositions')"
                                         >
                                           <v-list-item-action>
-                                            <v-icon>{{ icon(cf) }}</v-icon>
+                                            <v-icon>{{ icon(cf, 'whiteListedPositions') }}</v-icon>
                                           </v-list-item-action>
                                           <v-list-item-title>Select All</v-list-item-title>
                                         </v-list-item>
@@ -297,7 +451,7 @@
                               </v-row>
                             </div>
                           </v-list-item-content>
-                          <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                          <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit)]">
                             <v-icon>edit</v-icon>
                           </v-btn>
                           <v-menu offset-y
@@ -444,6 +598,7 @@ export default {
       fieldsInUse: [],
       positions: [],
       positionsLoading: false,
+      resourceFieldChanged: false,
       constants,
       newGroup: {},
       event: {},
@@ -489,6 +644,7 @@ export default {
   },
   async created() {
     this.getSchedulingFields()
+    this.getPositions()
     await this.getEvent()
   },
   methods: {
@@ -505,28 +661,48 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    selectAll(f) {
-      return f.whiteListedPositions?.length === this.positions?.length
+    selectAll(f, fieldName) {
+      return f[fieldName]?.length === this.positions?.length
     },
-    selectSome(f) {
-      return f.whiteListedPositions?.length > 0 && !this.selectAll(f)
+    selectSome(f, fieldName) {
+      return f[fieldName]?.length > 0 && !this.selectAll(f)
     },
-    icon(f) {
-      if (this.selectAll(f)) {
+    icon(f, fieldName) {
+      if (this.selectAll(f, fieldName)) {
         return 'check_box'
       }
-      if (this.selectSome(f)) {
+      if (this.selectSome(f, fieldName)) {
         return 'indeterminate_check_box'
       }
       return 'check_box_outline_blank'
     },
-    async saveResourceField() {
+    async saveChangesToDefaultFields() {
+      //save the read only and resource custom fields
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await postRequest(`/event/${this.eventId}/saveResourceField/${this.event.resourceCustomFieldId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Value Saved')
+        await postRequest(`/event/${this.eventId}/saveChangesToDefaultFields`, this.event)
+        if(this.event.startTimePositionsChanged || (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0)) {
+          this.saveWhiteListedPositions(6, (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0) ? [] :this.event.startTimeWhiteListedPositions)
+        }
+        if(this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
+          this.saveWhiteListedPositions(7, (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0) ? [] : this.event.endTimeWhiteListedPositions)
+        }
+        if(this.event.resourcePositionsChanged || (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0)) {
+          this.saveWhiteListedPositions(8,  (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0) ? [] : this.event.resourceWhiteListedPositions)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Event Changes Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveWhiteListedPositions(whiteListTypeId, whiteListedPositions) {
+      try {
+        await putRequest(`/event/${this.eventId}/saveWhiteListPositions/${whiteListTypeId}`, whiteListedPositions)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving')
@@ -875,14 +1051,14 @@ export default {
         }
       })
     },
-    toggleSelectAllPositions(field) {
+    toggleSelectAllPositions(item, wlpField) {
       this.$nextTick(() => {
-        if (this.selectAll(field)) {
-          field.whiteListedPositions = []
-          field.positionsChanged = true
+        if (this.selectAll(item, wlpField)) {
+          item[wlpField] = []
+          item.positionsChanged = true
         } else {
-          field.whiteListedPositions = cloneDeep(this.positions)
-          field.positionsChanged = true
+          item[wlpField] = cloneDeep(this.positions)
+          item.positionsChanged = true
         }
       })
     },

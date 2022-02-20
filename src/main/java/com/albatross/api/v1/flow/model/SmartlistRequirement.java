@@ -13,11 +13,11 @@ public class SmartlistRequirement {
 
   //@TODO humes: should probably make this have a field of type SmartlistField since it uses most of those fields anyways
 
-  private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
+  private Long id, smartlistId, smartlistFieldId, processStepId, eventId, processStepEventId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
                dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, systemListId, listOfValueId, systemListOptionId, customSqlOptionId,
                smartlistSystemListId, companyId;
 
-  private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name, customFieldSqlKey, projectDetailsColumn;
+  private String requirementValue, secondaryRequirementValue, processStepName, eventName, objectType, operatorType, name, customFieldSqlKey, projectDetailsColumn;
 
   private Timestamp dateCreated, dateModified;
 
@@ -29,8 +29,9 @@ public class SmartlistRequirement {
 
   private DataTypeRequirement dataTypeRequirement;
 
+  // Used for smartlists
   @JsonIgnore
-  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn, ppsTable;
+  private String referenceTable, referenceColumn, valueReferenceTable, valueEventReferenceTable, joinTable, joinColumn, ppsTable, ppsEventTable;
 
   @JsonIgnore
   private CustomField customField;

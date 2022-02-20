@@ -8,124 +8,142 @@
         <span class="ancillary" v-else-if="field.ancillaryCustomFieldGroupAssignmentId">(Primary)</span>
       </v-col>
 
-      <v-col class="d-flex justify-start align-self-start py-0">
-        <DatetimePickerInput
-          v-if="field.dataTypeId === 1"
-          v-model="field.dateValue"
-          :timezone="this.timezone"
-          :type="'date'"
-          :min-date="minDate"
-          :max-date="maxDate"
-          :filled="filledStyle"
-          :format="'MMMM DD, YYYY'"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          :readonly="readonly"
-          @input="callback(field)"
-        />
+  <v-col class="d-flex justify-start align-self-start py-0">
+    <DatetimePickerInput
+      v-if="field.dataTypeId === 1"
+      v-model="field.dateValue"
+      :timezone="this.timezone"
+      :type="'date'"
+      :required="required"
+      :min-date="minDate"
+      :max-date="maxDate"
+      :filled="filledStyle"
+      :format="'MMMM DD, YYYY'"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      :readonly="readonly"
+      :custom-class="readonly ? 'error--text' : ''"
+      @input="callback(field)"
+    />
 
-        <DatetimePickerInput
-          v-if="field.dataTypeId === 2"
-          v-model="field.timestampValue"
-          :timezone="this.timezone"
-          type="timestamp"
-          :filled="filledStyle"
-          :required="required"
-          :format="'MMMM DD, YYYY, h:mm A'"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          :readonly="readonly"
-          @input="callback(field)"
-        />
+    <DatetimePickerInput
+      v-if="field.dataTypeId === 2"
+      v-model="field.timestampValue"
+      :timezone="this.timezone"
+      type="timestamp"
+      :filled="filledStyle"
+      :required="required"
+      :format="'MMMM DD, YYYY, h:mm A'"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      :readonly="readonly"
+      :custom-class="readonly ? 'error--text' : ''"
+      @input="callback(field)"
+    />
 
-        <v-checkbox
-          v-if="field.dataTypeId === 3"
-          v-model="field.booleanValue"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          :rules="getRequiredRule()"
-          :filled="filledStyle"
-          :disabled="readonly"
-          :ripple="false"
-          @change="callback(field)"
-        />
+    <v-checkbox
+      v-if="field.dataTypeId === 3"
+      v-model="field.booleanValue"
+      :required="required"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      :rules="getRequiredRule()"
+      :filled="filledStyle"
+      :disabled="readonly"
+      :readonly="readonly"
+      :class="{'error--text': readonly}"
+      :ripple="false"
+      @change="callback(field)"
+    />
 
-        <v-text-field
-          v-if="field.dataTypeId === 4"
-          text
-          :readonly="readonly"
-          placeholder=" "
-          :rules="getRequiredRule()"
-          :filled="filledStyle"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          type="number"
-          v-model.number="field.numericValue"
-          @change="callback(field)"
-          autocomplete="off"
-        />
+    <v-text-field
+      v-if="field.dataTypeId === 4"
+      text
+      :required="required"
+      :readonly="readonly"
+      :disabled="readonly"
+      :class="{'error--text': readonly}"
+      placeholder=" "
+      :rules="getRequiredRule()"
+      :filled="filledStyle"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      type="number"
+      v-model.number="field.numericValue"
+      @change="callback(field)"
+      autocomplete="off"
+    />
 
-        <v-textarea
-          v-if="field.dataTypeId === 5"
-          auto-grow
-          rows="1"
-          :readonly="readonly"
-          :disabled="readonly"
-          placeholder=" "
-          :rules="getRequiredRule()"
-          :filled="filledStyle"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          v-model="field.textValue"
-          @change="callback(field)"
-          autocomplete="off"
-        />
+    <v-textarea
+      v-if="field.dataTypeId === 5"
+      auto-grow
+      rows="1"
+      :required="required"
+      :readonly="readonly"
+      :disabled="readonly"
+      :class="{'error--text': readonly}"
+      placeholder=" "
+      :rules="getRequiredRule()"
+      :filled="filledStyle"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      v-model="field.textValue"
+      @change="callback(field)"
+      autocomplete="off"
+    />
 
-        <v-text-field
-          v-if="field.dataTypeId === 6 && !field.hasListValues"
-          text
-          :readonly="readonly"
-          :disabled="readonly"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          placeholder=" "
-          :filled="filledStyle"
-          :rules="getRequiredRule()"
-          type="number"
-          v-model.number="field.intValue"
-          @change="callback(field)"
-          autocomplete="off"
-        />
+    <v-text-field
+      v-if="field.dataTypeId === 6 && !field.hasListValues"
+      text
+      :required="required"
+      :readonly="readonly"
+      :disabled="readonly"
+      :class="{'error--text': readonly}"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      placeholder=" "
+      :filled="filledStyle"
+      :rules="getRequiredRule()"
+      type="number"
+      v-model.number="field.intValue"
+      @change="callback(field)"
+      autocomplete="off"
+    />
 
-        <v-autocomplete
-          v-if="field.dataTypeId === 6 && field.hasListValues"
-          v-model="field.intValue"
-          :hide-no-data="field.lazyLoadValues"
-          :clearable="!readonly"
-          :readonly="readonly"
-          :disabled="readonly"
-          :filled="filledStyle"
-          :rules="getRequiredRule()"
-          :items="field.listOfValues"
-          :label="hideLabel ? null : field.fieldName"
-          :hide-details="hideDetails"
-          :loading="isLoading"
-          placeholder=" "
-          item-value="id"
-          item-text="name"
-          @input="callback(field)"
-          autocomplete="off"
-        >
-          <template #item="{ item }">
-            <v-list-item-content>
-              <v-list-item-title v-text="item.name" />
-              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
-            </v-list-item-content>
-          </template>
-        </v-autocomplete>
+    <v-autocomplete
+      v-if="field.dataTypeId === 6 && field.hasListValues"
+      v-model="field.intValue"
+      text
+      :hide-no-data="field.lazyLoadValues"
+      :required="required"
+      :clearable="!readonly"
+      :readonly="readonly"
+      :disabled="readonly"
+      :class="{'error--text': readonly}"
+      :loading="isLoading"
+      placeholder=" "
+      :filled="filledStyle"
+      :rules="getRequiredRule()"
+      :items="field.listOfValues"
+      :label="getFieldName()"
+      :hide-details="hideDetails"
+      item-value="id"
+      item-text="name"
+      @input="callback(field)"
+      autocomplete="off"
+    >
+      <template #item="{ item }">
+        <v-list-item-content>
+          <v-list-item-title v-text="item.name" />
+          <v-list-item-subtitle v-if="item.description" v-text="item.description" />
+        </v-list-item-content>
+      </template>
+    </v-autocomplete>
 
         <v-autocomplete
           v-if="field.dataTypeId === 7 || field.dataTypeId === 10"
+          text
+          :required="required"
           multiple
           placeholder=" "
           v-model="field.intArrayValue"
@@ -136,8 +154,9 @@
           :clearable="!readonly"
           :readonly="readonly"
           :disabled="readonly"
-          :rules="getRequiredRule()"
-          :label="hideLabel ? null : field.fieldName"
+          :class="{'error--text': readonly}"
+          :rules="getRequiredRule(field.dataTypeId)"
+          :label="getFieldName()"
           :hide-details="hideDetails"
           item-value="id"
           item-text="name"
@@ -155,14 +174,17 @@
         <v-autocomplete
           v-if="field.dataTypeId === 8"
           v-model="field.intValue"
+          text
+          :required="required"
           :search-input.sync="search"
           :hide-no-data="field.lazyLoadValues"
           :clearable="!readonly"
           :filled="filledStyle"
           :readonly="readonly"
           :disabled="readonly"
+          :class="{'error--text': readonly}"
           :items="field.listOfValues"
-          :label="hideLabel ? null : field.fieldName"
+          :label="getFieldName()"
           :hide-details="hideDetails"
           :rules="getRequiredRule()"
           placeholder=" "
@@ -184,13 +206,16 @@
           v-model="field.intValue"
           :search-input.sync="search"
           :hide-no-data="field.lazyLoadValues"
+          text
           :filled="filledStyle"
+          :required="required"
           :clearable="!readonly"
           :items="field.listOfValues"
-          :label="hideLabel ? null : field.fieldName"
+          :label="getFieldName()"
           :hide-details="hideDetails"
           :readonly="readonly"
           :disabled="readonly"
+          :class="{'error--text': readonly}"
           :rules="getRequiredRule()"
           placeholder=" "
           item-value="id"
@@ -238,6 +263,10 @@ export default {
       default: false
     },
     field: Object,
+    useFieldAncillaryName: {
+      type: Boolean,
+      default: false
+    },
     showFieldName: {
       type: Boolean,
       default: true
@@ -267,11 +296,25 @@ export default {
       return field.values
     }
   },
-  data() {
+  computed: {
+    fieldAncillaryName() {
+      if(this.field.ancillaryCustomFieldHint) {
+        return this.field.fieldName + ' ' + this.field.ancillaryCustomFieldHint
+      } else if (this.field.useParentData) {
+        return this.field.fieldName + ' (Parent)'
+      } else if (this.field.ancillaryCustomFieldGroupAssignmentId) {
+        return this.field.fieldName + ' (Ancillary)'
+      } else {
+        return this.field.fieldName
+      }
+    },
+  },
+  data () {
     return {
       search: null,
       isLoading: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
+      arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value
     }
   },
@@ -290,8 +333,13 @@ export default {
   },
 
   methods: {
-    getRequiredRule() {
-      if (this.required) {
+    getFieldName() {
+      return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
+    },
+    getRequiredRule(dataTypeId) {
+      if (this.required && [7,10].includes(dataTypeId)) {
+        return this.arrayRequiredRules
+      } else if (this.required) {
         return this.requiredRules
       }
     },

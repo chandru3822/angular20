@@ -60,8 +60,9 @@ public class WorkQueueController {
   }
 
   @GetMapping(value = "/smartlist/{id}/buildSql", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String buildSql (@PathVariable Long id) {
-    return workQueueService.buildSql(id);
+  public String buildSql (@PathVariable Long id,
+                          @RequestParam Boolean useEventData) {
+    return workQueueService.buildSql(id, useEventData);
   }
 
 }

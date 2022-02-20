@@ -25,26 +25,19 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
                              partner_target
 
                       from (
-                             with first_appointment as (
-                               select pps.project_id,
-                                      min(pps.process_step_complete_date) date_created
-                               from flow.project_process_step pps
-                               where pps.process_step_id = 1
-                                 and pps.process_step_complete_date is not null
-                               group by pps.project_id
-                             )
                              select 'First Time Appointments Created' as name,
                                     1                                 as milestone_type_id,
+                                    1                                 as display_order,
                                     (select count(1) as company_count
                                      from brs.project_details pd
-                                            inner join first_appointment fa on fa.project_id = pd.project_id
-                                     where ((fa.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                     where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                        and pd.company_id = v_company_id
                                        and pd.archived is false
                                     )                                 as company_count,
@@ -67,6 +60,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -75,6 +69,7 @@ BEGIN
                       from (
                              select 'Planned Appointments' as name,
                                     2                      as milestone_type_id,
+                                    2                      as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
@@ -99,22 +94,24 @@ BEGIN
                              false as show_targets,
                              true  as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
                              partner_target
 
                       from (
-                             select 'Pitches'    as name,
-                                    3            as milestone_type_id,
+                             select 'Pitches' as name,
+                                    3         as milestone_type_id,
+                                    3         as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.first_appointment_pitched at time zone 'UTC') at time zone
                                             'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                        and pd.company_id = v_company_id
                                        and pd.archived is false
-                                    )            as company_count,
-                                    0            as partner_count,
+                                    )         as company_count,
+                                    0         as partner_count,
 --                                     case
 --                                       when p_company_id = 2 then
 --                                         (select count(1) as count
@@ -125,14 +122,15 @@ BEGIN
 --                                            and pd.archived is false
 --                                         )
 --                                       else 0 end as partner_count,
-                                    0            as brs_target,
-                                    0            as partner_target
+                                    0         as brs_target,
+                                    0         as partner_target
                            ) as row_counts
                       union
                       select name,
                              true  as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -141,6 +139,7 @@ BEGIN
                       from (
                              select 'Bookings'   as name,
                                     4            as milestone_type_id,
+                                    4            as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.installation_agreement_signed_date at time zone 'UTC') at time zone
@@ -177,6 +176,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -185,6 +185,7 @@ BEGIN
                       from (
                              select 'Site Surveys Verified' as name,
                                     5                       as milestone_type_id,
+                                    5                       as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.site_survey_verified_date at time zone 'UTC') at time zone
@@ -211,6 +212,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -219,6 +221,7 @@ BEGIN
                       from (
                              select 'Final Designs Created' as name,
                                     6                       as milestone_type_id,
+                                    6                       as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone
@@ -245,6 +248,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -253,6 +257,7 @@ BEGIN
                       from (
                              select 'Final Designs Sent' as name,
                                     7                    as milestone_type_id,
+                                    7                    as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone
@@ -276,9 +281,10 @@ BEGIN
                            ) as row_counts
                       union
                       select name,
-                             false as show_targets,
+                             true  as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -287,6 +293,7 @@ BEGIN
                       from (
                              select 'Final Designs Approved' as name,
                                     8                        as milestone_type_id,
+                                    8                        as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.final_design_signed_date at time zone 'UTC') at time zone
@@ -310,9 +317,10 @@ BEGIN
                            ) as row_counts
                       union
                       select name,
-                             true  as show_targets,
+                             false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -321,6 +329,7 @@ BEGIN
                       from (
                              select 'Final Designs Completed' as name,
                                     9                         as milestone_type_id,
+                                    9                         as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.final_design_complete_date at time zone 'UTC') at time zone
@@ -357,6 +366,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -365,6 +375,7 @@ BEGIN
                       from (
                              select 'Plan Sets Created' as name,
                                     10                  as milestone_type_id,
+                                    10                  as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.plan_set_created_date at time zone 'UTC') at time zone
@@ -391,6 +402,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -399,6 +411,7 @@ BEGIN
                       from (
                              select 'Permit Packs Created' as name,
                                     11                     as milestone_type_id,
+                                    11                     as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.permit_pack_complete at time zone 'UTC') at time zone
@@ -425,6 +438,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -433,12 +447,13 @@ BEGIN
                       from (
                              select 'Permits Submitted' as name,
                                     12                  as milestone_type_id,
+                                    12                  as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
 
                                      where least(
-                                         ((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
-                                         permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
+                                       ((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
+                                       permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
                                        and pd.company_id = v_company_id
                                        and pd.archived is false
                                     )                   as company_count,
@@ -462,6 +477,7 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -470,6 +486,7 @@ BEGIN
                       from (
                              select 'Permits Approved' as name,
                                     13                 as milestone_type_id,
+                                    13                 as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.permit_approved_date at time zone 'UTC') at time zone
@@ -496,6 +513,49 @@ BEGIN
                              false as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
+                             company_count,
+                             partner_count,
+                             brs_target,
+                             partner_target
+
+                      from (
+                             select 'Installations Made Ready to Schedule' as name,
+                                    22                                     as milestone_type_id,
+                                    14                                     as display_order,
+                                    (with results as (
+                                      SELECT p.id,
+                                             min((wqc.date_entered_queue AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::date as date_entered_queue
+                                      FROM flow.work_queue_cycle wqc
+                                             inner join flow.project_process_step pps ON wqc.project_process_step_id = pps.id
+                                             inner join flow.company_process_step_status_type cpsst
+                                                        ON wqc.company_process_step_status_type_id = cpsst.id
+                                             inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
+                                                        ON wqc.process_step_work_queue_type_process_step_status_type_id =
+                                                           pswqtpsst.id
+                                             inner join flow.process_step_work_queue_type pswqt
+                                                        ON pswqtpsst.process_step_work_queue_type_id = pswqt.id
+                                             inner join flow.user u on u.id = pps.created_by_id
+                                             JOIN flow.work_queue_type wqt ON pswqt.work_queue_type_id = wqt.id
+                                             inner join flow.project p ON pps.project_id = p.id
+                                      WHERE pps.process_step_id = 3365
+                                        AND work_queue_type_id = 93
+                                      group by p.id
+                                    )
+                                     select count(1) as count
+                                     from results
+                                     where date_entered_queue between p_custom_start_date and p_custom_end_date
+                                    )                                      as company_count,
+                                    0                                      as partner_count,
+                                    0                                      as brs_target,
+                                    0                                      as partner_target
+                           ) as row_counts
+                      union
+                      select name,
+                             false as show_targets,
+                             false as has_additional_column,
+                             milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -504,6 +564,7 @@ BEGIN
                       from (
                              select 'Installations Scheduled' as name,
                                     14                        as milestone_type_id,
+                                    15                        as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.installation_scheduled at time zone 'UTC') at time zone
@@ -530,6 +591,7 @@ BEGIN
                              false as show_targets,
                              true  as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -538,6 +600,7 @@ BEGIN
                       from (
                              select 'Planned Installations' as name,
                                     15                      as milestone_type_id,
+                                    16                      as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where (
@@ -568,6 +631,7 @@ BEGIN
                              true  as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -576,6 +640,7 @@ BEGIN
                       from (
                              select 'Substantial Completions' as name,
                                     16                        as milestone_type_id,
+                                    17                        as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.substantial_completion_date at time zone 'UTC') at time zone
@@ -612,6 +677,7 @@ BEGIN
                              false as show_targets,
                              true  as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -620,6 +686,7 @@ BEGIN
                       from (
                              select 'Inspections Scheduled' as name,
                                     17                      as milestone_type_id,
+                                    18                      as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where (
@@ -648,6 +715,7 @@ BEGIN
                              false as show_targets,
                              true  as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -656,6 +724,7 @@ BEGIN
                       from (
                              select 'Planned Inspections' as name,
                                     18                    as milestone_type_id,
+                                    19                    as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone
@@ -683,9 +752,10 @@ BEGIN
                            ) as row_counts
                       union
                       select name,
-                             false as show_targets,
+                             true  as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -694,6 +764,7 @@ BEGIN
                       from (
                              select 'Inspections Passed' as name,
                                     19                   as milestone_type_id,
+                                    20                   as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where ((pd.ahj_final_inspection_verified at time zone 'UTC') at time zone
@@ -720,6 +791,7 @@ BEGIN
                              false as show_targets,
                              true  as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -728,6 +800,7 @@ BEGIN
                       from (
                              select 'Inspection Results Submitted' as name,
                                     20                             as milestone_type_id,
+                                    21                             as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where (
@@ -758,6 +831,7 @@ BEGIN
                              true  as show_targets,
                              false as has_additional_column,
                              milestone_type_id,
+                             display_order,
                              company_count,
                              partner_count,
                              brs_target,
@@ -766,6 +840,7 @@ BEGIN
                       from (
                              select 'Final Completions' as name,
                                     21                  as milestone_type_id,
+                                    22                  as display_order,
                                     (select count(1) as count
                                      from brs.project_details pd
                                      where pd.final_completion_submitted_date BETWEEN p_custom_start_date and p_custom_end_date
@@ -795,7 +870,7 @@ BEGIN
                                          where target_date = v_target_start_date)
                                       else 0 end        as partner_target
                            ) as row_counts
-                      order by milestone_type_id
+                      order by display_order
                     ) as funnel_rows;
 
 

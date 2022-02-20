@@ -12,12 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -31,7 +30,6 @@ public class EventService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final CustomFieldGroupService customFieldGroupService;
   private final ObjectMapper om;
 
   public List<Event> getEventsForCompany() {
@@ -49,14 +47,17 @@ public class EventService {
     return result.orElse(null);
   }
 
-  public void saveResourceField(Long id, Long resourceCustomFieldId) {
+  public void saveChangesToDefaultFields(Long id, Event event) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
-    params.put("resourceCustomFieldId", resourceCustomFieldId);
-    sqlCache.update("event.saveResourceField", params);
+    params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
+    params.put("startTimeReadOnly", event.getStartTimeReadOnly());
+    params.put("endTimeReadOnly", event.getEndTimeReadOnly());
+    params.put("resourceReadOnly", event.getResourceReadOnly());
+    sqlCache.update("event.saveChangesToDefaultFields", params);
   }
 
   public void deleteEvent(Long id) {
@@ -75,7 +76,6 @@ public class EventService {
     params.put("id", event.getId());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("name", event.getEventName());
-    params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
     sqlCache.update("event.update", params);
   }
 
@@ -97,12 +97,33 @@ public class EventService {
     return results;
   }
 
+  public List<WorkQueueTypeEventStatus> getStatusesForWqt(Long processStepId, Long eventId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("processStepId", processStepId);
+    params.put("eventId", eventId);
+    List<WorkQueueTypeEventStatus> results = sqlCache.query("event.getStatusesForWqt", params, WorkQueueTypeEventStatus.class);
+    return results;
+  }
+
   public List<CompanyEventStatusType> getAssignedEventStatuses(Long eventId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("eventId", eventId);
     List<CompanyEventStatusType> results = sqlCache.query("event.getAssignedStatuses", params, CompanyEventStatusType.class);
 
     return results;
+  }
+
+  public List<ListOfValue> getAssignedEventStatusesByListOfValue(Long eventId) {
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+    return sqlCache.query("event.getAssignedEventStatusesByListOfValue", Map.of("eventId", eventId, "companyId", companyId), ListOfValue.class);
+  }
+
+  public List<ListOfValue> getAssignedEventCategoriesByListOfValue(Long eventId) {
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+    return sqlCache.query("event.getAssignedEventCategoriesByListOfValue", Map.of("eventId", eventId, "companyId", companyId), ListOfValue.class);
   }
 
   public List<EventStatusType> getCompanyEventStatuses() {
@@ -198,6 +219,53 @@ public class EventService {
     return companyEventStatusTypes;
   }
 
+  public List<ProcessStepEvent> getByEventId(Long eventId) {
+    return sqlCache.query("event.getProcessStepEventsByEventId", Map.of("eventId", eventId), new ProcessStepEventService.ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+  }
+
+  /**
+   * Get available resource owners for the given eventId
+   * @param eventId
+   * @return List<SystemListOption>
+   */
+  public List<SystemListOption> getAvailableOwners(Long eventId) {
+    var companyId = securityService.getCurrentUser().getCompanyId();
+    List<Map<String, Object>> results = sqlCache.query("event.getAvailableOwners", Map.of("eventId", eventId, "companyId", companyId), new ColumnMapRowMapper());
+    var options = new ArrayList<SystemListOption>();
+    results.forEach(r -> {
+      options.add(new SystemListOption(Long.parseLong(r.get("id").toString()), r.get("name").toString()));
+    });
+    return options;
+  }
+
+  public void saveWhiteListPositions(Long eventId, Long whiteListTypeId, List<WhiteListedPosition> whiteListedPositions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("eventId", eventId);
+    params.put("whiteListTypeId", whiteListTypeId);
+
+    if(whiteListedPositions.isEmpty()) {
+      // if white list is empty then remove all
+      sqlCache.update("event.archiveWhiteListPositions", params);
+    } else {
+      // archive any positions no longer assigned
+      List<Long> positionIdsUsed = whiteListedPositions.stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
+      params.put("positionIdsUsed", positionIdsUsed);
+      sqlCache.update("event.archiveUnusedWhiteListPositions", params);
+
+      for (WhiteListedPosition wlp : whiteListedPositions) {
+        params.put("positionId", wlp.getPositionId());
+        //this insert checks if there is already a non-archived row with the same values
+        sqlCache.update("event.insertWhiteListPosition", params);
+      }
+    }
+
+
+  }
+
   public static class EventMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -215,6 +283,18 @@ public class EventService {
       TypeReference<List<EventCompanyEventStatusType>> companyEventStatusTypeRef = new TypeReference<List<EventCompanyEventStatusType>>() {};
       bw.registerCustomEditor(List.class, "companyEventStatusTypes",
         new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "startTimeWhiteListedPositions",
+        new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> endTimeWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "endTimeWhiteListedPositions",
+        new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> resourceWhiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "resourceWhiteListedPositions",
+        new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
     }
   }
 

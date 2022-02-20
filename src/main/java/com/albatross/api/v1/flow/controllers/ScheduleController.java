@@ -7,7 +7,11 @@ import com.albatross.api.v1.flow.services.ScheduleService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,8 +46,9 @@ public class ScheduleController {
   }
 
   @PostMapping(value = "/projects", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ScheduleEvent> getScheduleProjects(@RequestBody EventSearchParams params) {
-    return scheduleService.getScheduleProjects(params);
+  public ResponseEntity<Page<ScheduleEvent>> getScheduleProjects(@RequestBody EventSearchParams params,
+                                                                Pageable pageable) {
+    return new ResponseEntity<>(scheduleService.getScheduleProjects(params, pageable), HttpStatus.OK);
   }
 
   @PostMapping(value = "/projectResources", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,7 +56,7 @@ public class ScheduleController {
     return scheduleService.getAvailableProjectResource(request);
   }
 
-  @PostMapping(value = "/getProject", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/getProject", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getProject(@RequestBody EventSearchParams params) {
     //this returns a list because if they search for canceled or complete they could get more than one
     return scheduleService.getProject(params);
@@ -70,9 +75,9 @@ public class ScheduleController {
 
   @Data
   public static class EventSearchParams {
-    private List<Long> userIds, orgIds, eventTypeIds, userPositionIds, postalCodeZoneUserIds;
+    private List<Long> userIds, orgIds, eventIds, userPositionIds, postalCodeZoneUserIds;
     private String startTime, endTime, search;
-    private Long companyStateId, projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId;
+    private Long companyStateId, projectId, eventId, processStepStatusTypeId, eventStatusTypeId, projectProcessStepEventId;
   }
 
   @Data

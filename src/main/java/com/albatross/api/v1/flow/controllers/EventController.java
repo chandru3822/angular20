@@ -36,10 +36,10 @@ public class EventController {
     return eventService.getEvent(id);
   }
 
-  @PostMapping(value = "/{id}/saveResourceField/{resourceCustomFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveResourceField(@PathVariable Long id,
-                                @PathVariable Long resourceCustomFieldId) {
-    eventService.saveResourceField(id, resourceCustomFieldId);
+  @PostMapping(value = "/{id}/saveChangesToDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveChangesToDefaultFields(@PathVariable Long id,
+                                         @RequestBody Event event) {
+    eventService.saveChangesToDefaultFields(id, event);
   }
 
   @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,6 +63,12 @@ public class EventController {
     return new ResponseEntity<>(eventService.getEventStatuses(), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/statusesForWqt", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<WorkQueueTypeEventStatus>> getStatusesForWqt(@RequestParam Long processStepId,
+                                                                          @RequestParam Long eventId) {
+    return new ResponseEntity<>(eventService.getStatusesForWqt(processStepId, eventId), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<EventStatusType>> getCompanyProjectStatuses() {
     return new ResponseEntity<>(eventService.getCompanyEventStatuses(), HttpStatus.OK);
@@ -76,6 +82,16 @@ public class EventController {
   @GetMapping(value = "/{eventId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyEventStatusType>> getAssignedEventStatuses(@PathVariable Long eventId) {
     return new ResponseEntity<>(eventService.getAssignedEventStatuses(eventId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{eventId}/lovStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ListOfValue>> getAssignedEventStatusesByListOfValue(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getAssignedEventStatusesByListOfValue(eventId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{eventId}/lovCategory", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ListOfValue>> getAssignedEventCategoriesByListOfValue(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getAssignedEventCategoriesByListOfValue(eventId), HttpStatus.OK);
   }
 
   @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -104,4 +120,21 @@ public class EventController {
     return eventService.getAvailableStatusesForEvent(id);
   }
 
+  @GetMapping(value = "/{eventId}/processStepEvents", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepEvent>> getProcessStepEventsByEventId(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getByEventId(eventId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "{eventId}/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SystemListOption>> getAvaiableOwners(@PathVariable Long eventId) {
+    return new ResponseEntity<>(eventService.getAvailableOwners(eventId), HttpStatus.OK);
+  }
+
+  //white list start, end or resource field
+  @PutMapping(value = "/{eventId}/saveWhiteListPositions/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveWhiteListPositions(@PathVariable Long eventId,
+                                     @PathVariable Long typeId,
+                                     @RequestBody List<WhiteListedPosition> whiteListedPositions) {
+    eventService.saveWhiteListPositions(eventId, typeId, whiteListedPositions);
+  }
 }

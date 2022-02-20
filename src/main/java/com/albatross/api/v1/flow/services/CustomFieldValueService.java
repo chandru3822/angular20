@@ -79,7 +79,6 @@ public class CustomFieldValueService {
         params.put("textValue", cfv.getTextValue());
         params.put("numericValue", cfv.getNumericValue());
         params.put("intValue", cfv.getIntValue());
-//        params.put("intArrayValue", cfv.getIntArrayValue());
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
@@ -126,6 +125,8 @@ public class CustomFieldValueService {
       Long companyId;
       if(objectType.equals("user")) {
         companyId = user.getCompanyId();
+      } else if(objectType.equals("event")) {
+        companyId = sqlCache.queryForObject("projectProcessStepEvent.getCompanyId", params, Long.class);
       } else {
         companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
       }

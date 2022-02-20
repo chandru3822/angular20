@@ -34,25 +34,27 @@ public class CustomField {
       flowCustomFieldId;
   private List<Long> systemListOptionIds;
   private String fieldName,
-      fieldCode,
-      objectType,
-      groupName,
-      customFieldSqlKey,
-      customFieldSqlReferenceTable,
-      processStepName,
-      dataType;
+    fieldCode,
+    objectType,
+    groupName,
+    customFieldSqlKey,
+    customFieldSqlReferenceTable,
+    processStepName,
+    eventName,
+    dataType;
   private Boolean archived,
-      showOnInsert,
-      requireOnInsert,
-      showOnUserProfile,
-      hasListValues,
-      allowMultiple,
-      readonly,
-      customFieldGroupAssignmentReadOnly,
-      customFieldGroupAssignmentHidden,
-      useParentData,
-      sortListValuesAlphabetically,
-      lazyLoadValues;
+    showOnInsert,
+    requireOnInsert,
+    showOnUserProfile,
+    hasListValues,
+    allowMultiple,
+    detailView,
+    readonly,
+    customFieldGroupAssignmentReadOnly,
+    customFieldGroupAssignmentHidden,
+    useParentData,
+    sortListValuesAlphabetically,
+    lazyLoadValues;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;

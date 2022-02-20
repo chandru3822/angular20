@@ -762,7 +762,7 @@ import cloneDeep from 'lodash.clonedeep'
 import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {
   getActiveAssignedToProcessStep,
-  getAssignedToProcessStep,
+  getCompanyAssignedToProcessStep,
   getCancelledCompanyStatusTypesAssignedToProcessStep
 } from '@/services/processStepStatusTypeService'
 import {
@@ -1064,10 +1064,27 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async loadFunctionParams(dbFunctionId, isRequirement) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+        if (isRequirement) {
+          this.newRequirement.requirementParamDynamicValues = data
+        } else {
+          this.selectedChildRequirementParamDynamicValues = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getStatusTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getAssignedToProcessStep(this.processStepId)
+        const {data, status} = await getCompanyAssignedToProcessStep(this.processStepId)
         this.statusTypes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

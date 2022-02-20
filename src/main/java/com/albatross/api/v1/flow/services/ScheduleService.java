@@ -4,16 +4,17 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ScheduleController;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.ProjectWithEvents;
-import com.albatross.api.v1.flow.model.ScheduleEvent;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -95,20 +96,25 @@ public class ScheduleService {
   }
 
   // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
-  public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
+  public Page<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("companyStateId", esp.getCompanyStateId());
-    params.put("eventTypeIds", esp.getEventTypeIds());
+    params.put("eventIds", esp.getEventIds());
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
+    params.put("eventStatusTypeId", esp.getEventStatusTypeId());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    params.put("search", esp.getSearch());
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProjects", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
-    return results;
+    Integer total = 10000; //todo come back and check later
+    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
   public List<ListOfValue> getAvailableProjectResource(ScheduleController.ResourceRequest req) {
@@ -128,11 +134,12 @@ public class ScheduleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("projectId", esp.getProjectId());
-    params.put("eventTypeId", esp.getEventTypeId());
+    params.put("eventId", esp.getEventId());
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
+    params.put("eventStatusTypeId", esp.getEventStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    params.put("projectProcessStepId", esp.getProjectProcessStepId());
+    params.put("projectProcessStepEventId", esp.getProjectProcessStepEventId());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }
@@ -156,48 +163,15 @@ public class ScheduleService {
     if(null != ev.getStart() && null != ev.getEnd() && null != ev.getResourceId()) {
       User user = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
-      params.put("projectProcessStepId", ev.getProjectProcessStepId());
-      params.put("userId", user.trueUserId());
-      params.put("sourceId", ev.getProjectProcessStepId());
 
-      //default values so we can call the same query all the other ones do
-      params.put("dateValue", null);
-      params.put("timestampValue", null);
-      params.put("booleanValue", false);
-      params.put("textValue", null);
-      params.put("numericValue", null);
-      params.put("intValue", null);
-      params.put("intArrayValue", null);
-
-      // save the start time
-      params.put("timestampValue", ev.getStart());
-      params.put("customFieldGroupAssignmentId", ev.getStartCustomFieldGroupAssignmentId());
-      // this can be null for new values
-      params.put("id", ev.getStartCustomFieldValueId());
-      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
-
-      // reset the params - although i dont think this is actually necessary
-      params.remove("customFieldGroupAssignmentId");
-      params.remove("timestampValue");
-      params.remove("id");
-
-      // save the end time
-      params.put("timestampValue", ev.getEnd());
-      params.put("customFieldGroupAssignmentId", ev.getEndCustomFieldGroupAssignmentId());
-      params.put("id", ev.getEndCustomFieldValueId());
-      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
-
-
-      // reset the params - although i dont think this is actually necessary
-      params.remove("customFieldGroupAssignmentId");
-      params.replace("timestampValue", null);
-      params.remove("id");
-
-      // save the resourceId
-      params.put("intValue", ev.getResourceId());
-      params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldGroupAssignmentId());
-      params.put("id", ev.getResourceCustomFieldValueId());
-      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+      params.put("id", ev.getProjectProcessStepEventId());
+      params.put("startTime", ev.getStart());
+      params.put("endTime", ev.getEnd());
+      params.put("companyEventStatusTypeId", ev.getCompanyEventStatusTypeId());
+      params.put("resourceId", ev.getResourceId());
+      params.put("modifiedById", user.getId());
+      //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird
+      sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
     }
 
   }
@@ -232,7 +206,7 @@ public class ScheduleService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProjectWithEvents.ProjectEvent>> eventsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStepEvent>> eventsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "events",
           new JsonCollectionDeserializer(eventsRef, objectMapper));
     }
