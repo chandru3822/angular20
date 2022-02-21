@@ -683,17 +683,20 @@ export default {
     },
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
+      // if not readonly and the user can manage then ignore event status check
       let fieldReadOnly = false
       if (null != field) {
         fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
       }
-      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+      return ((!this.userIsAdmin && !this.userCanManage && !fieldReadOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
         || fieldReadOnly || !this.userCanEdit
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
+      let readOnly = getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
       // if events admin then they can edit any event fields, otherwise idk???
-      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
-        || getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
+      // if not readonly and the user can manage then ignore event status check
+      return ((!this.userIsAdmin && !this.userCanManage && !readOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+        || readOnly
         || !this.userCanEdit
     },
     populateDirtyCfvs(field) {
