@@ -23,6 +23,12 @@ export default {
 
 svg {
   height: 48px;
+  .trophy {
+    fill: white;
+  }
+  .stripe {
+    fill: #1D9ADD;
+  }
 }
 .active {
   height: 64px;

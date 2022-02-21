@@ -3,25 +3,29 @@
     <v-col cols="12" id="incentive-container" class="justify-end">
       <div id="milestones-container">
         <incentive-milestone
-            :milestone-level="MilestoneEnum.LEVEL1"
+            :milestone-level="MilestoneEnum.LEVEL0"
+            :quarter="QuarterEnum.Q1"
             :currentQuarterCount = "currentQuarterCount"
             :drilldown="dashboardType.drilldown"
             :dashboard-type="dashboardType"
         ></incentive-milestone>
         <incentive-milestone
-            :milestone-level="MilestoneEnum.LEVEL2"
+            :milestone-level="milestoneLevel"
+            :quarter="QuarterEnum.Q2"
             :currentQuarterCount = "currentQuarterCount"
             :dashboard-type="dashboardType"
             :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
         <incentive-milestone
             :milestone-level="MilestoneEnum.LEVEL3"
+            :quarter="QuarterEnum.Q3"
             :currentQuarterCount = "currentQuarterCount"
             :dashboard-type="dashboardType"
             :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
         <incentive-milestone
             :milestone-level="MilestoneEnum.LEVEL4"
+            :quarter="QuarterEnum.Q4"
             :currentQuarterCount = "currentQuarterCount"
             :dashboard-type="dashboardType"
             :drilldown="dashboardType.drilldown"
@@ -47,7 +51,7 @@
 <script>
 import constants from '@/helpers/constants'
 import {incentive_constants, DashboardTypeEnum} from './incentive_constants'
-import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
+import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
 
 export default {
@@ -65,12 +69,21 @@ export default {
       constants,
       incentive_constants,
       MilestoneEnum,
+      QuarterEnum,
       percentAchieved: 0,
       progressBarIsFull: false,
     }
   },
   computed: {
     windowInnerWidth () { return window.innerWidth},
+    milestoneLevel() {
+      switch(true) {
+        case this.currentQuarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1]:
+          break
+        default:
+          return MilestoneEnum.LEVEL0
+      }
+    }
   },
   methods: {
     calcYearPercentage () {

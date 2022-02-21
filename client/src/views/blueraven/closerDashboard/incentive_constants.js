@@ -1,4 +1,4 @@
-import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
+import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 
 /**Values that can be changed for new theme*/
 const firstMilestone = "Bronze"

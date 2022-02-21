@@ -72,7 +72,7 @@
 
 <script>
 import {DashboardTypeEnum, incentive_constants} from "@/views/blueraven/closerDashboard/incentive_constants";
-import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
+import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {AppMutations} from "@/stores/AppStore";
 import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
@@ -83,6 +83,7 @@ export default {
   name: "IncentiveMilestone",
   components: {TrophyDynamic},
   props: {
+    quarter: QuarterEnum,
     milestoneLevel: MilestoneEnum,
     dashboardType: DashboardTypeEnum,
     currentQuarterCount: Number,
@@ -136,25 +137,34 @@ export default {
           this.getNextMilestoneGoal() === undefined
       );
 
-
     }
   },
   methods: {
     setLabels () {
-      const diff = this.milestoneGoal - this.currentQuarterCount
+      const diff = this.getNextMilestoneGoal() - this.currentQuarterCount
 
       const r = this.currentQuarterCount >= this.milestoneGoal ? 0 : diff
-      this.upperLabel = this.milestoneLabel
-      this.lowerLabel =  `${r} ${this.milestoneUnits} to ${this.milestoneLabel}`
+      this.upperLabel = this.quarter
+      if(this.milestoneLevel === MilestoneEnum.LEVEL4) {
+        this.lowerLabel = `${this.incentive_constants.milestoneMap.get(this.milestoneLevel)} Achieved!`
+      } else {
+        this.lowerLabel = `${diff} ${this.milestoneUnits} to ${this.incentive_constants.milestoneMap.get(this.getNextMilestone())}`
+      }
     },
     getNextMilestoneGoal() {
+      const nextMilestone = this.getNextMilestone();
+          return nextMilestone ? this.dashboardType.milestoneGoalMap[this.getNextMilestone()]: undefined
+    },
+    getNextMilestone() {
       switch (this.milestoneLevel){
+        case MilestoneEnum.LEVEL0:
+          return MilestoneEnum.LEVEL1
         case MilestoneEnum.LEVEL1:
-          return this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]
+          return MilestoneEnum.LEVEL2
         case MilestoneEnum.LEVEL2:
-          return this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]
+          return MilestoneEnum.LEVEL3
         case MilestoneEnum.LEVEL3:
-          return this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]
+          return MilestoneEnum.LEVEL4
         default:
           return undefined
       }
@@ -250,7 +260,9 @@ export default {
 
   .milestone-content {
     cursor: pointer;
-    background-color: #191919;
+    color: white;
+    background-color: transparent;
+    border: 4px solid white;
     display: flex;
     flex-flow: row nowrap;
     padding: calc(1em - 4px);
@@ -467,6 +479,8 @@ export default {
     }
 
     .milestone-content {
+      background-color: transparent;
+      border: 4px solid white;
       width: 180px;
       height: 130px;
     }
@@ -478,18 +492,21 @@ export default {
   color: #B99A86;
 }
 .milestone-content.bronze {
+  background-color: #191919;
   border: 4px solid #B99A86;
 }
 .silver {
   color: #A8A9AB;
 }
 .milestone-content.silver {
+  background-color: #191919;
   border: 4px solid #A8A9AB;
 }
 .gold {
   color: #FFD700;
 }
 .milestone-content.gold {
+  background-color: #191919;
   border: 4px solid #FFD700;
 }
 .platinum {
