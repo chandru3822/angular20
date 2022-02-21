@@ -7,8 +7,20 @@ export const MilestoneEnum = Object.freeze({
 });
 
 export const QuarterEnum = Object.freeze({
-    Q1: '1st Quarter',
-    Q2: '2nd Quarter',
-    Q3: '3rd Quarter',
-    Q4: '4th Quarter'
+    Q1: {
+        value: 1,
+        label: '1st Quarter'
+    },
+    Q2: {
+        value: 2,
+        label: '2nd Quarter'
+    },
+    Q3: {
+        value: 3,
+        label: '3rd Quarter'
+    },
+    Q4: {
+        value: 4,
+        label: '4th Quarter'
+    }
 })

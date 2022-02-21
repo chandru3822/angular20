@@ -73,7 +73,7 @@ const DashboardTypeEnum = Object.freeze({
         },
         milestoneUnits: 'Pitches',
         drilldown: {
-            lable: ' | Pitches - Q',
+            label: ' | Pitches - Q',
             path: '/closerDashboard/finalDesignsCompletedDrilldown'
         }
     }

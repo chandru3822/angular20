@@ -11,7 +11,7 @@
       <div class="milestone-content mt-1" :class="colorClass">
         <div class="milestone-content-left-side d-flex align-items-flex-end"><trophy-dynamic :color="colorClass" :active="active"></trophy-dynamic></div>
         <div class="milestone-content-right-side">
-          <span class="milestone-top-right-label" :class="colorClass">{{ milestoneGoal }} FDC</span>
+          <span class="milestone-top-right-label" :class="colorClass">{{ currentQuarterCount }} FDC</span>
         </div>
       </div>
       <span class="milestone-bottom-label">{{ lowerLabel }}</span>
@@ -132,21 +132,20 @@ export default {
       }
     },
     active () {
-      return this.currentQuarterCount >= this.milestoneGoal && (
-          this.currentQuarterCount < this.getNextMilestoneGoal() ||
-          this.getNextMilestoneGoal() === undefined
-      );
-
+      return this.currentQuarter === this.quarter.value
     }
   },
   methods: {
     setLabels () {
       const diff = this.getNextMilestoneGoal() - this.currentQuarterCount
-
-      const r = this.currentQuarterCount >= this.milestoneGoal ? 0 : diff
-      this.upperLabel = this.quarter
-      if(this.milestoneLevel === MilestoneEnum.LEVEL4) {
-        this.lowerLabel = `${this.incentive_constants.milestoneMap.get(this.milestoneLevel)} Achieved!`
+      this.upperLabel = this.quarter.label
+      if(this.quarter.value < this.currentQuarter && this.milestoneLevel === MilestoneEnum.LEVEL0){
+        //if the quarter is over and no milestone was reached
+        this.lowerLabel = "No milestone reached"
+      }
+      else if(this.milestoneLevel === MilestoneEnum.LEVEL4 || (this.quarter.value < this.currentQuarter)) {
+        //if they reached the highest level OR the Quarter is over and one of the other milestones was reached
+        this.lowerLabel = `${this.incentive_constants.milestoneMap.get(this.milestoneLevel)} Achieved`
       } else {
         this.lowerLabel = `${diff} ${this.milestoneUnits} to ${this.incentive_constants.milestoneMap.get(this.getNextMilestone())}`
       }

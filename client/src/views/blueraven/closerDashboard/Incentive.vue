@@ -3,30 +3,30 @@
     <v-col cols="12" id="incentive-container" class="justify-end">
       <div id="milestones-container">
         <incentive-milestone
-            :milestone-level="MilestoneEnum.LEVEL0"
+            :milestone-level="milestoneLevel(counts.q1)"
             :quarter="QuarterEnum.Q1"
-            :currentQuarterCount = "currentQuarterCount"
+            :currentQuarterCount = "counts.q1"
             :drilldown="dashboardType.drilldown"
             :dashboard-type="dashboardType"
         ></incentive-milestone>
         <incentive-milestone
-            :milestone-level="milestoneLevel"
+            :milestone-level="milestoneLevel(counts.q2)"
             :quarter="QuarterEnum.Q2"
-            :currentQuarterCount = "currentQuarterCount"
+            :currentQuarterCount = "counts.q2"
             :dashboard-type="dashboardType"
             :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
         <incentive-milestone
-            :milestone-level="MilestoneEnum.LEVEL3"
+            :milestone-level="milestoneLevel(counts.q3)"
             :quarter="QuarterEnum.Q3"
-            :currentQuarterCount = "currentQuarterCount"
+            :currentQuarterCount = "counts.q3"
             :dashboard-type="dashboardType"
             :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
         <incentive-milestone
-            :milestone-level="MilestoneEnum.LEVEL4"
+            :milestone-level="milestoneLevel(counts.q4)"
             :quarter="QuarterEnum.Q4"
-            :currentQuarterCount = "currentQuarterCount"
+            :currentQuarterCount = "counts.q4"
             :dashboard-type="dashboardType"
             :drilldown="dashboardType.drilldown"
         ></incentive-milestone>
@@ -34,7 +34,7 @@
 
       <div id="progress-bar-container">
         <div class="d-flex">
-          <span class="progress-bar-title">Yearly Point Total</span>
+          <span class="progress-bar-title">Cumulative Points</span>
         </div>
         <div id="progress-bar">
           <div v-for="i in incentive_constants.totalPointsPossible" class="progress-bar-segment"></div>
@@ -60,7 +60,12 @@ export default {
     IncentiveMilestone
   },
   props: {
-    currentQuarterCount: Number,
+    counts: {
+      q1: Number,
+      q2: Number,
+      q3: Number,
+      q4: Number
+    },
     yearlyPointTotal: Number,
     dashboardType: DashboardTypeEnum
   },
@@ -76,16 +81,22 @@ export default {
   },
   computed: {
     windowInnerWidth () { return window.innerWidth},
-    milestoneLevel() {
-      switch(true) {
-        case this.currentQuarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1]:
-          break
-        default:
-          return MilestoneEnum.LEVEL0
-      }
-    }
   },
   methods: {
+    milestoneLevel(quarterCount) {
+      switch(true) {
+        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
+          return this.MilestoneEnum.LEVEL4
+        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]:
+          return this.MilestoneEnum.LEVEL3
+        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]:
+          return this.MilestoneEnum.LEVEL2
+        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1]:
+          return this.MilestoneEnum.LEVEL1
+        default:
+          return this.MilestoneEnum.LEVEL0
+      }
+    },
     calcYearPercentage () {
       // Fill progress bar based on closer's points for the year
       this.percentAchieved = (this.yearlyPointTotal / this.incentive_constants.totalPointsPossible) * 100
@@ -93,7 +104,7 @@ export default {
       this.progressBarIsFull = this.percentAchieved === 100
     }
   },
-  created() {
+  updated() {
     this.calcYearPercentage()
   }
 }
@@ -126,7 +137,7 @@ export default {
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
-  margin: 30px auto 120px auto;
+  margin: 30px auto 30px auto;
   width: calc(100% - 50px);
   height: 20%;
 

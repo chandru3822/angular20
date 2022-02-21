@@ -1,6 +1,6 @@
 <template>
   <v-container id="closer-dash-container" class="incentive-tab-override">
-    <Incentive :dashboard-type="DashboardTypeEnum.CLOSER" :current-quarter-count="currentQuarterCount" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
+    <Incentive :dashboard-type="DashboardTypeEnum.CLOSER" :counts="fdcCounts" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
   </v-container>
 </template>
 
