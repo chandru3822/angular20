@@ -112,11 +112,12 @@ export default {
 
 <style lang="scss" scoped>
 #incentive-container {
-  background: black url("../../../assets/blueraven/Ravens_Cup_Albatross.svg") no-repeat fixed center;
+  background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Albatross.jpg") no-repeat fixed center 0;
   background-size: cover;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
+  height: 100vh;
 
   #incentive-banner {
     padding-top: 15px;
@@ -137,7 +138,7 @@ export default {
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
-  margin: 30px auto 30px auto;
+  margin: 5px auto 30px auto;
   width: calc(100% - 50px);
   height: 20%;
 
@@ -203,7 +204,7 @@ export default {
 
 @media (min-width: 737px) {
   #incentive-container {
-    background: black url("../../../assets/blueraven/Ravens_Cup_Albatross.svg") no-repeat scroll center -50px;
+    background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Albatross.jpg") no-repeat scroll center 0;
     background-size: cover;
 
     #incentive-banner {
@@ -239,6 +240,7 @@ export default {
   #progress-bar-container {
     width: 65%;
     height: 20%;
+    margin: 30px auto 10px auto;
   }
 
   #milestone-medals-container {
@@ -249,6 +251,8 @@ export default {
 
 @media (min-width: 1135px) {
   #incentive-container {
+    height: calc(100vh - 106px);
+
     #incentive-banner {
       margin-top: -29px;
       margin-bottom: -90px;
@@ -269,7 +273,7 @@ export default {
 
 @media (min-width: 1410px) {
   #incentive-container {
-    height: calc(100vh - 99px);
+    height: calc(100vh - 106px);
 
     #incentive-banner {
       margin-top: -29px;

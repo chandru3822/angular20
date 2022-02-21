@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :id="`phase-${milestoneLevel}`" class="milestone"
+    <div :id="`quarter-${quarter.value}`" class="milestone"
          :class="{
                         'align-items-center': windowInnerWidth < 1135,
                         'align-items-flex-start': windowInnerWidth >= 1135,
@@ -152,7 +152,7 @@ export default {
     },
     getNextMilestoneGoal() {
       const nextMilestone = this.getNextMilestone();
-          return nextMilestone ? this.dashboardType.milestoneGoalMap[this.getNextMilestone()]: undefined
+      return nextMilestone ? this.dashboardType.milestoneGoalMap[this.getNextMilestone()]: undefined
     },
     getNextMilestone() {
       switch (this.milestoneLevel){
@@ -286,34 +286,40 @@ export default {
     }
   }
 }
-  .active-milestone {
-    .milestone-top-label,
-    .milestone-bottom-label {
-      width: 260px;
-    }
 
-    .milestone-top-label {
-      font-size: 16px;
-    }
+#quarter-1.milestone,
+#quarter-2.milestone {
+  margin-bottom: 20px;
+}
 
-    .milestone-bottom-label {
-      font-weight: bold;
-      font-size: 16px;
-    }
+.active-milestone {
+  .milestone-top-label,
+  .milestone-bottom-label {
+    width: 260px;
+  }
 
-    .milestone-content {
-      border: 3px solid white;
-      width: 180px;
-      height: 130px;
+  .milestone-top-label {
+    font-size: 16px;
+  }
 
-      .milestone-content-right-side {
-        .milestone-top-right-label {
-          font-weight: bold;
-          font-size: 14px;
-        }
+  .milestone-bottom-label {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .milestone-content {
+    border: 3px solid white;
+    width: 180px;
+    height: 130px;
+
+    .milestone-content-right-side {
+      .milestone-top-right-label {
+        font-weight: bold;
+        font-size: 14px;
       }
     }
   }
+}
 
 
 .v-card__title {
@@ -385,35 +391,35 @@ export default {
     }
   }
 
-    .active-milestone {
-      .milestone-top-label,
-      .milestone-bottom-label {
-        width: 240px;
+  .active-milestone {
+    .milestone-top-label,
+    .milestone-bottom-label {
+      width: 200px;
+    }
+
+    .milestone-top-label {
+      font-size: 16px;
+    }
+
+    .milestone-bottom-label {
+      font-size: 16px;
+    }
+
+    .milestone-content {
+      width: 180px;
+      height: 130px;
+
+      .milestone-content-left-side {
+        height: 100%;
       }
 
-      .milestone-top-label {
-        font-size: 16px;
-      }
-
-      .milestone-bottom-label {
-        font-size: 16px;
-      }
-
-      .milestone-content {
-        width: 180px;
-        height: 130px;
-
-        .milestone-content-left-side {
-          height: 100%;
-        }
-
-        .milestone-content-right-side {
-          .milestone-top-right-label {
-            font-size: 14px;
-          }
+      .milestone-content-right-side {
+        .milestone-top-right-label {
+          font-size: 14px;
         }
       }
     }
+  }
 
 
   #milestone-medals-container {
@@ -438,9 +444,9 @@ export default {
     margin-bottom: 0;
   }
 
-  #phase-1,
-  #phase-2 {
-    margin-bottom: 20px;
+  #quarter-1.milestone,
+  #quarter-2.milestone {
+    margin-bottom: 0;
   }
 
   #milestone-medals-container {
@@ -454,10 +460,6 @@ export default {
 }
 
 @media (min-width: 1135px) {
-  #phase-1,
-  #phase-2 {
-    margin-bottom: 0;
-  }
 
   .milestone {
 
