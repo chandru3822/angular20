@@ -328,14 +328,13 @@
                   ></v-textarea>
                   <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id">
                     <CustomValueInput
-                      v-if="item.customFieldId === 56"
                       :callback="(item) => updateDirtyValue(item)"
                       :readonly="!userCanEdit"
                       :showFieldName="false"
                       :field="item"
                       :filled-style="true"
                     />
-                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 56"
+                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                   v-model="item.textValue"
                                   :readonly="!userCanEdit"
                                   :disabled="!userCanEdit"
@@ -373,29 +372,6 @@
                            :isNested="true"
                            class="mb-8"
                   ></AhjLink>
-                  <div class="flex-display justify-space-between flex-nowrap">
-                    <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id"
-                         :class="[{'mr-4': item.customFieldId === 55}, {'ml-4': item.customFieldId === 61}]">
-                      <CustomValueInput
-                        v-if="[55,61].indexOf(item.customFieldId) !== -1"
-                        :callback="(item) => updateDirtyValue(item)"
-                        :readonly="!userCanEdit"
-                        :showFieldName="false"
-                        :field="item"
-                        :filled-style="true"
-                      />
-                      <v-text-field
-                        v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
-                        v-model="item.textValue"
-                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Other Value"
-                        filled
-                        class="other-field"
-                      ></v-text-field>
-                    </div>
-                  </div>
                   <v-textarea v-model="ahjUtility.submissionInstructions"
                               @change="dataWasChanged = true"
                               label="Instructions"
@@ -423,6 +399,24 @@
                                 label="Expected Timeline for Approval"
                                 filled
                   ></v-text-field>
+                  <div v-for="item in getCustomFieldsForGroup(23)" :key="item.id">
+                    <CustomValueInput
+                      :callback="(item) => updateDirtyValue(item)"
+                      :readonly="!userCanEdit"
+                      :showFieldName="false"
+                      :field="item"
+                      :filled-style="true"
+                    />
+                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                                  v-model="item.textValue"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
+                                  @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                                  label="Other Value"
+                                  filled
+                                  class="other-field"
+                    ></v-text-field>
+                  </div>
                   <AhjChecklist v-if="dataReady"
                                 title="Checklist"
                                 :user-can-edit="userCanEdit"
@@ -445,8 +439,8 @@
                     <v-card-title class="primaryCustom white--text font-weight-bold">
                       Rejections
                     </v-card-title>
-                    <v-card-text>
-                      <div v-for="item in getCustomFieldsForGroup(23)" :key="item.id" class="mt-4">
+                    <v-card-text class="mt-4">
+                      <div v-for="item in getCustomFieldsForGroup(6)" :key="item.id" class="mt-4">
                         <CustomValueInput
                           :callback="(item) => updateDirtyValue(item)"
                           :readonly="!userCanEdit"
@@ -483,8 +477,7 @@
                   PTO Details
                 </v-card-title>
                 <v-card-text class="mt-4">
-                  <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id"
-                       :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
+                  <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
                     <CustomValueInput
                       :callback="(item) => updateDirtyValue(item)"
                       :readonly="!userCanEdit"
@@ -493,7 +486,7 @@
                       :filled-style="true"
                     />
                     <v-text-field
-                      v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
+                      v-if="showOtherField(item.intValue, item.listOfValues)"
                       v-model="item.textValue"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
@@ -523,25 +516,6 @@
                            :isNested="true"
                            class="mb-8"
                   ></AhjLink>
-                  <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
-                    <CustomValueInput
-                      v-if="item.customFieldId === 60"
-                      :callback="(item) => updateDirtyValue(item)"
-                      :readonly="!userCanEdit"
-                      :showFieldName="false"
-                      :field="item"
-                      :filled-style="true"
-                    />
-                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 60"
-                                  v-model="item.textValue"
-                                  :readonly="!userCanEdit"
-                                  :disabled="!userCanEdit"
-                                  @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                                  label="Other Value"
-                                  filled
-                                  class="other-field"
-                    ></v-text-field>
-                  </div>
                   <AhjChecklist v-if="dataReady"
                                 title="Checklist for Utility Inspection"
                                 :checklistTypeId="7"
@@ -557,26 +531,6 @@
                       Pending PTO Followup
                     </v-card-title>
                     <v-card-text class="mt-4">
-                      <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
-                        <CustomValueInput
-                          v-if="item.customFieldId === 40"
-                          :callback="(item) => updateDirtyValue(item)"
-                          :readonly="!userCanEdit"
-                          :showFieldName="false"
-                          :field="item"
-                          :filled-style="true"
-                        />
-                        <v-text-field
-                          v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
-                          v-model="item.textValue"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                          label="Other Value"
-                          filled
-                          class="other-field"
-                        ></v-text-field>
-                      </div>
                       <v-text-field v-model="ahjUtility.timelines"
                                     @change="dataWasChanged = true"
                                     label="Timelines"
