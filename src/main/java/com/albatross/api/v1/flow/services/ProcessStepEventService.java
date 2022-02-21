@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -87,6 +88,19 @@ public class ProcessStepEventService {
       sqlCache.update("processStepEvent.updateDisplayOrder", params);
     }
   }
+
+  public Boolean userCanEditStartTime(Long processStepEventId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepEventId", processStepEventId);
+
+    List<Long> whiteListedPositionIds = sqlCache.query("processStepEvent.getStartTimeWhitelistedPositionIds", params, new SingleColumnRowMapper<>(Long.class));
+
+    Boolean userHasPosition = securityService.userHasPosition(currentUser.getHighestCompanyId(), whiteListedPositionIds, currentUser.getUserPositions());
+
+    return userHasPosition;
+  }
+
 
   public void deleteEventFromStep(Long id) {
     User currentUser = securityService.getCurrentUser();
