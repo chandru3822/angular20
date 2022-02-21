@@ -9,6 +9,16 @@
     and at.is_system is not true
   ]]></attachmentType.getTypesForCompany>
 
+  <attachmentType.getSystemTypes><![CDATA[
+    select at.*,
+           kp.key_pattern
+    from flow.attachment_type at
+      inner join flow.key_pattern kp on kp.id = at.key_pattern_id
+    where at.archived is not true
+    and at.is_system is true
+    order by at.attachment_type
+  ]]></attachmentType.getSystemTypes>
+
   <attachmentType.getObjectType><![CDATA[
     SELECT cotat.id,
        cotat.attachment_type_id as "attachmentTypeId",
