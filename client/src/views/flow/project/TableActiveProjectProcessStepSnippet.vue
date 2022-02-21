@@ -21,9 +21,9 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr>
+          <tr class="clickable" @click="goToPath(`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`)">
             <td class="text-left" id="qa-process-link">
-              <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`">{{ item.projectProcessStepId }}</router-link>
+              {{ item.projectProcessStepId }}
             </td>
             <td class="text-left" id="qa-process-step-name">{{item.processStepName}}</td>
             <td class="text-left" id="qa-process-date-created">{{ item.dateCreated | formatDate('timestamp') }}</td>
@@ -56,6 +56,11 @@ export default {
       {text: 'Status', value: 'processStepStatusType', show: true},
     ]
     }
+  },
+  methods: {
+    goToPath(path) {
+      this.$router.push(path)
+    },
   }
 }
 </script>

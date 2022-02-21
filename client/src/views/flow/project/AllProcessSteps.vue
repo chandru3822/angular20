@@ -4,7 +4,7 @@
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>Active Process Steps</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Active Process Steps</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <AddProcessStep
@@ -153,6 +153,7 @@ export default {
         this.isProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.processSteps = data
+        window.document.title = `${this.project.projectName} - Process Steps`
       } catch (e) {
         logError(e)
       } finally {

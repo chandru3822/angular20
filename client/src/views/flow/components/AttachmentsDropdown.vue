@@ -32,10 +32,10 @@
               </v-btn>
 
               <v-btn
-                  v-if="!projectProcessStepId"
+                  v-if="!projectProcessStepId && getNonPrimaryCount(type.attachmentTypeId) != 0"
                   @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
                   elevation="0"
-                  color="transparent"
+
                   class="expansion-panel-btn"
               >
                 <span v-if="type.showNonPrimary">Hide non-primary</span>
@@ -187,6 +187,8 @@ export default {
       data.forEach(d => {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
+        //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
+        d.editableNameCopy = d.editableName
       })
 
       this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
@@ -199,6 +201,13 @@ export default {
     getTypeCount: function(typeId) {
       try {
         return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
+      } catch {
+        return 0
+      }
+    },
+    getNonPrimaryCount: function(typeId) {
+      try {
+        return this.attachments?.filter(a => a.attachmentTypeId === typeId && !a.archived && !a.main).length || 0
       } catch {
         return 0
       }
@@ -254,7 +263,10 @@ export default {
       } else {
         let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
         newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
-
+        //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
+        newAttachment.editableNameCopy = newAttachment.editableName
+        this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.attachments = [...this.attachments, newAttachment]
       }
       this.$store.commit(AppMutations.SET_LOADING, false)
@@ -263,9 +275,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .expansion-panel-header{
   font-size: 14px;
+  color: var(--v-primaryText-base);
 }
 
 .bold {
@@ -286,5 +299,9 @@ export default {
 
 .file-hover {
   background: #EEF0F4 !important;
+}
+
+.theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
+  background-color: transparent !important;
 }
 </style>

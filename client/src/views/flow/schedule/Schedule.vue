@@ -86,6 +86,7 @@
                             :items="searchProjects"
                             :search-input.sync="search"
                             item-text="projectName"
+                            :key="0"
                             prepend-icon="search"
                             text
                             label="Search for project..."
@@ -703,7 +704,6 @@
       },
       async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
         this.listLoading = true
-        console.log('PPSEEVENETID',projectProcessStepEventId)
         try {
           let params = {
             projectId,

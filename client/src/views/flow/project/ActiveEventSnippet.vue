@@ -6,7 +6,6 @@
       <EventButton
           :event="e"
           :project-id="projectId"
-          :pps-event-id="ppsEventId"
       />
     </div>
   </v-col>
@@ -18,17 +17,13 @@ import {getStatusClass} from '@/services/processStepStatusTypeService'
 import EventButton from "@/views/flow/project/EventButton";
 
 export default {
-  name: 'UpcomingEventSnippet',
+  name: 'ActiveEventSnippet',
   props: {
     projectId: Number,
     events: Array
   },
 
-  computed: {
-    ppsEventId () {
-      return parseInt(this.$route.params.ppsEventId)
-    },
-  },
+  computed: {},
   data () {
     return {
       getStatusClass

@@ -423,6 +423,16 @@
     where id = :id
   ]]></processStepEventRequirement.updateRequirement>
 
+  <processStepEventRequirement.actionsUsingRequirement><![CDATA[
+      select psa.id,
+       psa.action_name
+      from flow.process_step_event_logic psl
+             inner join flow.process_step_event_action psa on psa.id = psl.process_step_event_action_id
+      where psl.process_step_event_requirement_id = :requirementId
+        and psl.archived is not true
+        and psa.archived is not true
+  ]]></processStepEventRequirement.actionsUsingRequirement>
+
   <processStepEventRequirement.insertRequirement><![CDATA[
     insert into flow.process_step_event_requirement(process_step_requirement_type_id, operator_type_id, requirement_value, custom_field_group_assignment_id,
                                                 company_function_id, requirement_nbr, date_created, created_by_id, process_step_event_id, secondary_requirement_value, data_type_requirement_id,

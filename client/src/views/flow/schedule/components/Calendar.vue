@@ -716,8 +716,8 @@
                 // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
                 // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
                 d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
-                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
-                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.groupName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
+                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.eventName}`
+                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
                 let matchingResource = this.resources.find(r => r.id === d.resourceId)
                 d.colorForBorder = matchingResource?.color
               })

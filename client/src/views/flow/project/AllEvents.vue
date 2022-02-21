@@ -4,19 +4,19 @@
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>Upcoming Events</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-col cols="12" v-if="upcomingEventsLoading">
+          <v-col cols="12" v-if="activeEventsLoading">
             <SpinnerInline :size="20" color="primaryCustom"/>
           </v-col>
 
           <v-col cols="12" v-else class="pt-0">
-            <TableUpcomingEventSnippet
-              :events="getUpcomingEvents(events)"
+            <TableActiveEventSnippet
+              :events="getActiveEvents(events)"
               :projectId="projectId"/>
           </v-col>
         </v-row>
@@ -55,7 +55,7 @@
               </v-row>
             </v-col>
 
-            <v-col cols="12" v-if="upcomingEventsLoading">
+            <v-col cols="12" v-if="activeEventsLoading">
               <SpinnerInline :size="20" color="primaryCustom"/>
             </v-col>
 
@@ -89,15 +89,15 @@
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-import TableUpcomingEventSnippet from '@/views/flow/project/TableUpcomingEventSnippet'
+import TableActiveEventSnippet from '@/views/flow/project/TableActiveEventSnippet'
 import moment from 'moment'
 
 export default {
-  name: 'UpcomingEvents',
+  name: 'AllEvents',
   components: {
     SpinnerInline,
     EventSnippet,
-    TableUpcomingEventSnippet
+    TableActiveEventSnippet
   },
   props: {
     project: Object
@@ -109,7 +109,7 @@ export default {
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      upcomingEventsLoading: false,
+      activeEventsLoading: false,
       snackbar: {},
       eventSearch: '',
       eventsExpanded: true,
@@ -132,7 +132,7 @@ export default {
     }
   },
   methods: {
-    getUpcomingEvents(events) {
+    getActiveEvents(events) {
       return events.filter(event => {
         return event.eventStatusTypeId === 1
       })
@@ -142,13 +142,14 @@ export default {
     },
     getEvents: async function () {
       try {
-        this.upcomingEventsLoading = true
+        this.activeEventsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/events`)
         this.events = data
+        window.document.title = `${this.project.projectName} - Events`
       } catch (e) {
         logError(e)
       } finally {
-        this.upcomingEventsLoading = false
+        this.activeEventsLoading = false
       }
     },
   }

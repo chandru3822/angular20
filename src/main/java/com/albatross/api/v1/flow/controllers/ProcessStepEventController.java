@@ -64,6 +64,12 @@ public class ProcessStepEventController {
     processStepEventService.deleteEventFromStep(processStepEventId);
   }
 
+  //this endpoint is specifically made for the BR mobile app, BUT it is generic and anyone could use it so i put it here
+  @GetMapping(value = "/{processStepEventId}/userCanEditStartTime", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Boolean userCanEditStartTime(@PathVariable Long processStepEventId) {
+    return processStepEventService.userCanEditStartTime(processStepEventId);
+  }
+
   //event actions
   @PostMapping(value = "/{eventId}/action", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepEventAction> addStepEventAction (@PathVariable Long stepId,

@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION flow.check_pps_has_event_with_value(p_project_process
 $BODY$
 declare
   v_request_is_valid boolean;
+  v_function_result boolean default false;
   v_data_type_id     int;
 BEGIN
 
@@ -23,12 +24,10 @@ BEGIN
 
     select cdt.data_type_id
     into v_data_type_id
-    from flow.project_process_step pps
-           inner join flow.custom_field_group cfg on cfg.process_step_id = pps.process_step_id
-           inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+    from flow.custom_field_group_assignment cfga
            inner join flow.custom_field cf on cfga.custom_field_id = cf.id
            inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-    where pps.id = p_project_process_step_id;
+    where cfga.id = p_cfga;
 
     -- 1,date
     -- 2,timestamp
@@ -47,82 +46,83 @@ BEGIN
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.date_value = p_value_to_check::date
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 2 then
       select case
                when (select ppsecfv.id
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.timestamp_value = p_value_to_check::timestamp
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 3 then
       select case
                when (select ppsecfv.id
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.boolean_value = p_value_to_check::boolean
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 4 then
       select case
                when (select ppsecfv.id
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.numeric_value = p_value_to_check::numeric
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 5 then
       select case
                when (select ppsecfv.id
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.text_value = p_value_to_check
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
     elsif v_data_type_id = 6 then
       select case
                when (select ppsecfv.id
                      from flow.project_process_step_event_custom_field_value ppsecfv
                             inner join flow.project_process_step_event ppse
                                        on ppsecfv.project_process_step_event_id = ppse.id and
-                                          ppse.project_process_step_id = 4052423
+                                          ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and ppsecfv.int_value = p_value_to_check::integer
                      limit 1) is not null then true
                else false end
-      into v_request_is_valid;
+      into v_function_result;
       --             elsif v_data_type_id = 7 then
       --currently not going to code to work for multi-selects
 
     end if;
+    return v_function_result;
   else
     return false;
   end if;

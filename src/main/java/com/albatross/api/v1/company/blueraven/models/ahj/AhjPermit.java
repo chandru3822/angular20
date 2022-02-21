@@ -14,7 +14,7 @@ public class AhjPermit {
     private Long id, ahjId, stateId;
     private Double averagePermitFee;
     private String engineeringLetterRequired, printLocation, stampedPlan, businessLicense, contractorLicense,
-                   otherLicense, submissionNote, revisionNote, asBuiltNote, deliveryNote, approvalTimeline,
+                   otherLicense, submissionNote, revisionNote, asBuiltNote, nonStandardNote, deliveryNote, approvalTimeline,
                    documentsAvailable, depositAmount, asBuiltFeeAmount, followUpFeeAmount, deliveryFeeAmount,
                    revisionFeeAmount, stateName, brsTechnicianPermitSubmissionInstructions, cancellationAndRefundInstructions,
                    brsTechnicianPermitPickupAndDeliveryInstructions, approvalInstructions, ahjName;

@@ -1,13 +1,20 @@
 <template>
-  <v-card class="px-6 py-4 square-card" :width="width">
+  <v-card class="px-6 pt-4 square-card" :width="width">
     <v-form ref="uploadDocumentForm" class="one-hunned">
       <v-card-title
         color="blackText"
-        class="text-h6 text-capitalize pa-0 font-weight-bold"
+        class="albatross-header-3 text-capitalize pa-0"
         primary-title>
         Select Folder
+        <v-spacer></v-spacer>
+        <v-btn
+          class="elevation-0 text-capitalize"
+          @click="$emit('cancel')"
+        >
+          Close
+        </v-btn>
       </v-card-title>
-      <v-card-text class="pt-4 px-0 documents-list-container">
+      <v-card-text class="pt-4 px-0 pb-0 documents-list-container">
         <div class="documents-list-inner">
           <v-row class="d-flex justify-start">
             <input type="file"
@@ -18,7 +25,7 @@
             <div
               @click="[clickedTypeId = type.attachmentTypeId, $refs.hiddenFileInput.click()]"
               :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
-              class="type text-center pb-0 file-icon"
+              class="type text-center file-icon"
               @dragenter="dragTypeId=type.attachmentTypeId"
               @dragleave="dragTypeId=null"
               @dragend="dragTypeId=null"
@@ -34,15 +41,6 @@
           </v-row>
         </div>
       </v-card-text>
-      <v-card-actions class="upload-actions">
-        <v-btn
-          color="grey"
-          text
-          @click="$emit('cancel')"
-        >
-          Close
-        </v-btn>
-      </v-card-actions>
     </v-form>
   </v-card>
 </template>
@@ -67,7 +65,8 @@ export default {
     attachmentTypes: Array,
     ppsId: Number,
     ppsEventId: Number,
-    width: Number
+    width: Number,
+    showSuccessSnackbar: Boolean
   },
   components: {},
   data() {
@@ -95,7 +94,6 @@ export default {
           for (let i = 0; i < files.length; ++i) {
             let file = files[i];
             if (file && file.size > 0) {
-              console.log('PPS', this.ppsId)
               await this.$store.dispatch(null != this.ppsId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
                 null != this.ppsEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD : Actions.OBJECT_TYPE_FILE_UPLOAD, {
                 file,
@@ -121,7 +119,12 @@ export default {
         this.snackbar = getSnackbar('ERROR', error.message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
-        //  for now do nothing
+        //show snackbar if told to
+        if(this.showSuccessSnackbar) {
+          this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+        //i dont remember why we do this
         this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
         this.$emit('cancel')
       }
@@ -138,9 +141,9 @@ export default {
   justify-content: center;
 }
 
-.documents-list-inner {
-  width: 300px;
-}
+/*.documents-list-inner {*/
+/*  width: 750px;*/
+/*}*/
 
 .upload-actions {
   justify-content: end;
@@ -151,7 +154,10 @@ export default {
 }
 
 .file-icon {
-  width: 100px;
+  width: 167px;
+  padding: 16px;
+  margin: 0 12px 24px 12px;
+
 }
 
 .file-icon:hover {

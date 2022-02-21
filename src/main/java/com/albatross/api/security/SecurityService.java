@@ -2,10 +2,7 @@ package com.albatross.api.security;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
-import com.albatross.api.v1.flow.model.Company;
-import com.albatross.api.v1.flow.model.FeatureAccessControl;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CompanyService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -215,6 +212,20 @@ public class SecurityService implements UserDetailsService {
     List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
     for (FeatureAccessControl fac : featureAccessControlList) {
       if (fac.getFeatureCode().equals(featureCode) && accessCodes.contains(fac.getAccessCode())) {
+        return true;
+      }
+    }
+    //if the user's highest company id is 1, then they are an albatross system admin - 7 oaks employee
+    //we return true for all features, access levels, etc for ^^ these users
+    return userHighestCompanyId == 1;
+  }
+
+  /*
+  Return whether user has any of the positions requested
+   */
+  public Boolean userHasPosition(Long userHighestCompanyId, List<Long> positionIdsToCheckFor, List<UserPosition> userPositions) {
+    for (UserPosition up : userPositions) {
+      if (positionIdsToCheckFor.contains(up.getPositionId())) {
         return true;
       }
     }

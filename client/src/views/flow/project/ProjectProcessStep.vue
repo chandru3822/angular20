@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="!processStepLoading" class="py-0 pt-6 px-6 relative height-one-hunned overflow-y-auto">
+  <v-main v-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -27,7 +27,7 @@
               <v-btn
                 color="primaryCustom"
                 text
-                @click="[navigationOverride = true, goToPath(toPath)]">
+                @click="[navigationOverride = true, goToPath(toPath, query)]">
                 Yes
               </v-btn>
             </v-card-actions>
@@ -35,14 +35,16 @@
         </v-dialog>
       </v-col>
 
-      <v-col cols="12" class="pb-4">
-        <v-toolbar color="transparent" class="elevation-0 mt-2 cfg-name-toolbar toolbar-z-index-override mx-2">
+      <v-col cols="12" class="pb-4 pt-6">
+        <v-toolbar color="transparent" height="auto"
+                   id="pps-toolbar"
+                   class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
           <v-toolbar-title class="process-step-name albatross-header-2">
-            {{ processStep.processStepName }}
-            <span v-if="processStep.processStepStatusTypeId"
+            <div>{{ processStep.processStepName }}</div>
+            <div v-if="processStep.processStepStatusTypeId"
                   :class="getStatusClass(processStep.processStepStatusTypeId)">({{
                 processStep.processStepStatusType
-              }})</span>
+              }})</div>
             <!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
             <!--                    size="20" color="green">mdi-circle-slice-8-->
             <!--            </v-icon>-->
@@ -92,19 +94,14 @@
           <v-spacer></v-spacer>
           <v-toolbar-items class="owner-toolbar-items">
             <div v-if="!displayChangeOwner">
-              <div v-if="processStep.owner && processStep.owner.userId">
-                <v-avatar
-                  :tile="false"
-                  :size="16"
-                  color="grey lighten-4"
-                  class="account-img mr-2 owner-image"
-                >
-                  <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
-                </v-avatar>
+              <div v-if="processStep.owner && processStep.owner.userId" class="d-flex flex-row align-center">
+                <div class="d-flex flex-column">
                 <div class="owner-info">
                   {{ processStep.owner.fullName }}<br/>
-                  <span class="owner-position">{{ processStep.owner.position }}</span>
+                  <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
                 </div>
+                </div>
+                <v-btn v-if="userCanEdit" small icon class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
               </div>
             </div>
             <div v-if="displayChangeOwner">
@@ -124,16 +121,11 @@
               </v-autocomplete>
             </div>
             <div>
-              <v-btn text small v-if="userCanEdit" class="change-owner-button"
+              <v-btn text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
                      :class="{'mt-2': displayChangeOwner}"
                      @click="displayChangeOwner = !displayChangeOwner">
                 <span v-if="displayChangeOwner">cancel</span>
-                <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
                 <span v-else>add owner</span>
-              </v-btn>
-              <v-btn text small v-if="userCanEdit && processStep.owner && processStep.owner.userId"
-                     class="change-owner-button" @click="removeOwner">
-                remove
               </v-btn>
             </div>
           </v-toolbar-items>
@@ -199,17 +191,6 @@
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
-      <v-col v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0">
-        <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
-          Upload Documents
-        </v-btn>
-        <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-          <UploadDocumentModal @cancel="showUploadModal = false"
-                               :width="uploadModalWidth"
-                               :pps-id="parseInt(projectProcessStepId)"
-                               :attachment-types="attachmentTypes"></UploadDocumentModal>
-        </v-dialog>
-      </v-col>
       <v-col cols="12" style="height: 0; padding: 0 !important;">
       <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
       </v-col>
@@ -219,15 +200,24 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                 @click="setSplitColumnValue()">
-            <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-            <v-icon v-else>mdi-format-align-justify</v-icon>
+          <v-btn text @click="setSplitColumnValue()" class="px-0">
+            <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+            <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
+          <v-btn v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+            <v-icon class="px-0">mdi-upload</v-icon>
+          </v-btn>
+          <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+            <UploadDocumentModal @cancel="showUploadModal = false"
+                                 :width="uploadModalWidth"
+                                 :show-success-snackbar="true"
+                                 :pps-id="parseInt(projectProcessStepId)"
+                                 :attachment-types="attachmentTypes"></UploadDocumentModal>
+          </v-dialog>
           <div>
             <v-btn
               color="primaryCustom"
-              class="white--text mt-3"
+              class="white--text mt-3 ml-2"
               :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
             >Save Fields
@@ -258,7 +248,7 @@
 
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
-              <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -269,7 +259,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6" v-if="columnSplit">
+              <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -336,7 +326,7 @@ const NEW_STATUS_TO_USE = {id: null}
 export default {
   name: 'ProjectProcessStep',
   props: {
-    splitValueColumns: Boolean
+    project: Object
   },
   components: {
     ActionButton,
@@ -356,7 +346,7 @@ export default {
       fieldsSaving: false,
       getStatusClass,
       showUploadModal: false,
-      uploadModalWidth: 400,
+      uploadModalWidth: 600,
       attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
@@ -377,10 +367,9 @@ export default {
       isProcessStepLoading: true,
       dirtyCfvs: [],
       toPath: null,
+      query: {},
       navigationOverride: false,
       notes: [],
-      project: {},
-      // projectLoading: true,
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
@@ -391,8 +380,8 @@ export default {
       processStepLoading: true,
       eventToAdd: {},
       processStepEvents: [],
-      windowWidth: window.innerWidth,
-      splitColumnMinWidth: 1700
+      // windowWidth: window.innerWidth,
+      // splitColumnMinWidth: 1700
 
     }
   },
@@ -406,17 +395,14 @@ export default {
     },
   },
   mounted() {
-    window.addEventListener('resize', () => {
-      this.windowWidth = window.innerWidth
-    })
+    // window.addEventListener('resize', () => {
+    //   this.windowWidth = window.innerWidth
+    // })
   },
   async created() {
     await this.loadAllPageDetails()
   },
   computed: {
-    columnSplit() {
-      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
-    },
     filteredActions() {
       if (!this?.processStep?.actions) {
         return []
@@ -429,15 +415,27 @@ export default {
       }
     }
   },
-  beforeRouteLeave(to, from, next) {
-    // called when the route that renders this component is about to
-    // be navigated away from.
-    // has access to `this` component instance.
+  beforeRouteUpdate(to, from, next) {
+    // called when the route that renders this component is about to be updated via router-view update
     if (this.navigationOverride || this.dirtyCfvs.length === 0) {
-      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
       next()
     } else {
       this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to be navigated away from.
+    if (this.navigationOverride || this.dirtyCfvs.length === 0) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
       this.unsavedFieldsModal = true
     }
   },
@@ -447,7 +445,7 @@ export default {
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.columnSplit) {
+      if (this.$store.state.project.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -472,8 +470,10 @@ export default {
         }
       })
     },
-    goToPath(path) {
-      this.$router.push(path)
+    goToPath(path, query) {
+      //reset these values so the next screen works if also a pps
+      this.unsavedFieldsModal = false
+      this.$router.push({ path, query })
     },
     async getAvailableStatuses() {
       if (this.processStep?.processStepId) {
@@ -534,19 +534,6 @@ export default {
 
       }
     },
-    // getProject: async function () {
-    //   try {
-    //     this.projectLoading = true
-    //     const {data} = await getRequest(`/project/${this.projectId}`)
-    //     this.projectLoading = false
-    //     this.project = data
-    //     window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
-    //       : `${this.project.projectName}`
-    //   } catch (e) {
-    //     this.projectLoading = false
-    //     logError(e)
-    //   }
-    // },
     async getAvailableOwners() {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.processStep?.processStepProcessId) {
@@ -576,7 +563,10 @@ export default {
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        this.$emit('refresh-upcoming-pps')
         await this.getProcessStep(false)
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
@@ -664,9 +654,13 @@ export default {
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       //if root status is not active then go back to project screen
       if(data?.processStepStatusTypeId !== 1) {
+        //just in case something wasn't saved before running this action then still allow the nav
+        this.navigationOverride = true
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
       } else {
         this.getProcessStep(false)
+        //have to reload the custom field groups as well in case the action populated something
+        this.getCustomFieldGroups()
       }
     },
     handleOnCompleteError(actionId, errorMessage) {
@@ -691,6 +685,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.eventToAdd.id}`)
+        this.$emit('refresh-upcoming-events')
         this.$router.push(`/project/${this.projectId}/processStep/${data.projectProcessStepId}/event/${data.id}`)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -732,8 +727,14 @@ export default {
 </script>
 
 <style lang="scss">
+#pps-toolbar .v-toolbar__content {
+  display: flex;
+  align-items: flex-start;
+}
+
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .cfg-name-toolbar .v-toolbar__title {
@@ -758,13 +759,16 @@ export default {
 .process-step-name {
   font-weight: normal;
   font-size: 1.25rem;
-  padding-top: 10px;
 }
 
 .owner-image {
   display: inline-block;
   vertical-align: top;
   margin-top: 5px;
+}
+
+owner-toolbar-tools {
+  display: flex;
 }
 
 .owner-info {

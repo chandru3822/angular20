@@ -4,18 +4,18 @@
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="albatross-header-3">Upcoming Events</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-col cols="12" v-if="upcomingEventsLoading">
+          <v-col cols="12" v-if="activeEventsLoading">
             <SpinnerInline :size="20" color="primaryCustom"/>
           </v-col>
 
           <v-col cols="12" v-else class="pa-0">
-            <UpcomingEventSnippet
+            <ActiveEventSnippet
               @refresh-upcoming-events="getEvents()"
               :events="events"
               :projectId="projectId"/>
@@ -41,15 +41,15 @@
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-import UpcomingEventSnippet from '@/views/flow/project/UpcomingEventSnippet'
+import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
 import moment from 'moment'
 
 export default {
-  name: 'UpcomingEvents',
+  name: 'ActiveEvents',
   components: {
     SpinnerInline,
     EventSnippet,
-    UpcomingEventSnippet
+    ActiveEventSnippet
   },
   props: {
     project: Object,
@@ -67,7 +67,7 @@ export default {
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      upcomingEventsLoading: false,
+      activeEventsLoading: false,
       snackbar: {},
       eventSearch: '',
       eventsExpanded: false,
@@ -95,13 +95,13 @@ export default {
     },
     getEvents: async function () {
       try {
-        this.upcomingEventsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/upcomingEvents`, null, [])
+        this.activeEventsLoading = true
+        const {data} = await getRequest(`/project/${this.projectId}/activeEvents`, null, [])
         this.events = data
       } catch (e) {
         logError(e)
       } finally {
-        this.upcomingEventsLoading = false
+        this.activeEventsLoading = false
       }
     },
   }
