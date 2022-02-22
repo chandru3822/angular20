@@ -31,6 +31,11 @@ public class AttachmentTypeController {
     return attachmentTypeService.getAttachmentTypesForCompany();
   }
 
+  @GetMapping(value = "/system", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getSystemAttachmentTypes () {
+    return attachmentTypeService.getSystemAttachmentTypes();
+  }
+
   @PutMapping(value = "/updateOrderInProcessStep", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateOrderInProcessStep(@RequestBody List<ProcessStepAttachmentType> attachmentTypes) {
     attachmentTypeService.updateOrderInProcessStep(attachmentTypes);

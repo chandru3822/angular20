@@ -165,18 +165,20 @@
         // window.location.reload()
       },
       async getUserImage () {
-        try {
-          await this.$store.dispatch(Actions.FILE_GET_ONE, {
-            attachmentTypeId: this.attachmentTypeId,
-            sourceId: this.userId,
-            callback: async (img) => {
-              this.$store.commit(UserMutations.SET_USER_IMAGE, img)
-              this.loadComplete = true
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.loadComplete = true
+        if(this.userId) {
+          try {
+            await this.$store.dispatch(Actions.FILE_GET_ONE, {
+              attachmentTypeId: this.attachmentTypeId,
+              sourceId: this.userId,
+              callback: async (img) => {
+                this.$store.commit(UserMutations.SET_USER_IMAGE, img)
+                this.loadComplete = true
+              }
+            })
+          } catch(e) {
+            console.error('*** ERROR ***', e)
+            this.loadComplete = true
+          }
         }
       },
       getFirstName () {
