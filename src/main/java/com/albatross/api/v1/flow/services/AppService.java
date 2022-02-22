@@ -36,6 +36,9 @@ public class AppService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
+  @Value(value = "${app.env}")
+  private String environment;
+
   /**
    * Set the URL to find an Attachment in a custom S3 bucket.
    *
@@ -209,6 +212,10 @@ public class AppService {
     params.put("createdById", null != currentUser ? currentUser.getId() : SystemSettings.SYSTEM_USER.getId());
     params.put("key", key);
 
+    //call this so that if table is missing in stage/flux after a data dump then it will put the table back before failing mobile's build process
+    fixMissingAppTable();
+
+    //then add the record in
     Long id = sqlCache.updateReturningId("app.insertAttachmentRecord", params, "id").longValue();
 
     return findById(id);
@@ -245,8 +252,11 @@ public class AppService {
   }
 
   public void fixMissingAppTable() {
-    //this will create the flow.app_attachment table if it is not already present
-    sqlCache.update("app.createMissingTable", Collections.emptyMap());
+    if(null != environment && (environment.equals("stage") || environment.equals("flux"))) {
+      //this will create the flow.app_attachment table if it is not already present
+      sqlCache.update("app.createMissingTable", Collections.emptyMap());
+    }
+    //else do nothing
   }
 
   public void fixMissingAppData(Integer limit) {

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,13 @@ public class AttachmentTypeService {
     params.put("companyId", user.getCompanyId());
 
     List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getTypesForCompany", params, AttachmentType.class);
+    return attachmentTypes;
+  }
+
+  public List<AttachmentType> getSystemAttachmentTypes() {
+    User user = securityService.getCurrentUser();
+
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getSystemTypes", Collections.emptyMap(), AttachmentType.class);
     return attachmentTypes;
   }
 
