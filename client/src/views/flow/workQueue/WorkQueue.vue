@@ -73,9 +73,11 @@
                     :key="wq.id"
                     width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
-                <div class="no-text-decoration card-link"
-                     :class="{'clickable': wq.workQueueCount > 0}"
-                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">
+                <router-link class="no-text-decoration card-link"
+                             :to="wq.workQueueCount > 0 ? {name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}} : ''">
+<!--                <div class="no-text-decoration card-link"-->
+<!--                     :class="{'clickable': wq.workQueueCount > 0}"-->
+<!--                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">-->
                   <div class="card-title-container text-left"
                        :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
                        :style="{'background-color': wq.color + '20' }">
@@ -139,7 +141,7 @@
                       {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                     </div>
                   </div>
-                </div>
+                </router-link>
               </v-card-text>
             </v-card>
           </v-row>
