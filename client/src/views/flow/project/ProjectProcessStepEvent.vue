@@ -837,7 +837,8 @@ export default {
           // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-          users: this.selectedTimeSlot.users
+          users: this.selectedTimeSlot.users,
+          remote: this.mostRecentSearchWasRemote
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/availability/setCloserAppointment`, body)

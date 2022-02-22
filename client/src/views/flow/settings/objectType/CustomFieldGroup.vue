@@ -436,7 +436,7 @@
                             </div>
                           </div>
                         </v-list-item-content>
-                        <v-menu offset-y v-if="cf.ancillaryCustomFieldGroupAssignmentId === null && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                        <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on">
                               <v-icon>mdi-cursor-move</v-icon>
