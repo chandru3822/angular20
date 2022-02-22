@@ -106,16 +106,7 @@ public class AppController {
     appService.uploadApp(versionNumber, buildNumber, AppType.ANDROID.id, attachment, null);
   }
 
-  //these 2 endpoints are to help mobile with stage builds after a data dump from prod and we dropped the entire schema and lost everything from flow.app_attachment
-  @RequestMapping(method = RequestMethod.POST, value = "/fixTable")
-  public void fixMissingAppTable() {
-    if(null != environment && (environment.equals("stage") || environment.equals("flux"))) {
-      appService.fixMissingAppTable();
-    } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not available.", new Exception());
-    }
-  }
-
+  //this endpoint is to help mobile with stage builds after a data dump from prod and we dropped the entire schema and lost everything from flow.app_attachment
   @PreAuthorize("hasRootLevelAccess()")
   @RequestMapping(method = RequestMethod.POST, value = "/fixData")
   public void fixMissingAppData(@RequestParam(required = false) Integer limit) {
