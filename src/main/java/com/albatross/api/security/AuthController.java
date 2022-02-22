@@ -111,8 +111,7 @@ public class AuthController {
     user.setFeatureAccess(results);
 
     if (maintenanceMode && !securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MAINTENANCE_MODE", List.of("ADMIN"))) {
-      String msg = "Site is under maintenance.";
-      return ResponseEntity.status(FORBIDDEN).body(msg);
+      return ResponseEntity.status(FORBIDDEN).body("{\"message\" : \"Site is under maintenance.\", \"maintenanceMode\" : true }");
     }
 
     JwtClaims body = createJwtBody(user);
