@@ -104,8 +104,10 @@ export default {
       this.progressBarIsFull = this.percentAchieved === 100
     }
   },
+  //using updated instead of created makes the CloserIncentive dash work perfectly and the SetterIncentive dash spin indefinitely and I DON'T KNOW WHY
   updated() {
     this.calcYearPercentage()
+    console.log(this.yearlyPointTotal) //for debugging
   }
 }
 </script>

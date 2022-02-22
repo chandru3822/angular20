@@ -112,7 +112,7 @@ export default {
   computed: {
     windowInnerWidth () { return window.innerWidth},
     milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + this.drilldown.label + this.selectedQuarter
+      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + this.drilldown.label + this.quarter.value
     },
     milestoneGoal () {
       return this.dashboardType.milestoneGoalMap[this.milestoneLevel]
@@ -211,7 +211,17 @@ export default {
   async created () {
     this.currentUserId = this.$store.state.user.details.id
     this.setLabels()
+  },
 
+  updated() {
+    console.log('UPDATE')
+    console.log(this.quarter.label)
+    console.log('count: ' + this.currentQuarterCount)
+    console.log(`milestone: ${this.milestoneLevel}`)
+    console.log(`next milestone: ${this.getNextMilestone()}`)
+    console.log(`next milestone goal: ${this.getNextMilestoneGoal()}`)
+    console.log('--------------------------------------------------')
+    this.setLabels()
   }
 }
 </script>
@@ -465,7 +475,7 @@ export default {
 
     .milestone-top-label,
     .milestone-bottom-label {
-      width: 156px;
+      width: 164px;
     }
 
     .milestone-content {

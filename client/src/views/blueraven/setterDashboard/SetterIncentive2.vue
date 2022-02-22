@@ -1,6 +1,6 @@
 <template>
   <v-container id="setter-dash-container" class="incentive-tab-override">
-    <Incentive :dashboard-type="isSetterMgr ? DashboardTypeEnum.SETTERMGR : DashboardTypeEnum.SETTER" :current-quarter-count="currentQuarterCount" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
+    <Incentive :dashboard-type="dashboardType" :counts="pitchCounts" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
   </v-container>
 </template>
 
@@ -9,7 +9,7 @@ import moment from 'moment'
 import constants from '@/helpers/constants'
 import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
-import MilestoneEnum from "@/views/blueraven/closerDashboard/MilestoneEnum";
+import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {incentive_constants, DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import Incentive from "@/views/blueraven/closerDashboard/Incentive";
 
@@ -22,62 +22,23 @@ export default {
     snackbar: {},
     constants,
     incentive_constants,
-    DashboardTypeEnum,
-    milestoneDialog: false,
     currentUserId: null,
-    selectedQuarter: 1,
-    headers: [
-      { text: '', value: '', show: true, sortable: false },
-      { text: 'Name', value: 'customer_name', show: true },
-      { text: 'Project ID', value: 'id', show: true },
-      { text: 'Source', value: 'source_name', show: true },
-      { text: 'Appointment Date', value: 'appointment_date', show: true },
-      { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
-    ],
-    milestoneDrilldownData: [],
     incentiveDataLoaded: false,
     currentQuarter: moment().quarter(),
     pitchCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
-    q1_points: 0,
-    q2_points: 0,
-    q3_points: 0,
-    q4_points: 0,
-    q1_medal_icon: '',
-    q2_medal_icon: '',
-    q3_medal_icon: '',
-    q4_medal_icon: '',
-    q1_lower_label: '',
-    q2_lower_label: '',
-    q3_lower_label: '',
-    q4_lower_label: '',
-    percentAchieved: 0,
-    progressBarIsFull: false,
     isSetterMgr: false,
   }),
   computed: {
     windowInnerWidth () { return window.innerWidth},
-    is_q1 () { return this.currentQuarter === 1 },
-    is_q2 () { return this.currentQuarter === 2 },
-    is_q3 () { return this.currentQuarter === 3 },
-    is_q4 () { return this.currentQuarter === 4 },
-    currentQuarterCount () {
-      switch(this.currentQuarter){
-        case 4:
-          return this.pitchCounts.q4
-        case 3:
-          return this.pitchCounts.q3
-        case 2:
-          return this.pitchCounts.q2
-        default:
-          return this.pitchCounts.q1
-      }
+    dashboardType() {
+      return this.isSetterMgr ? DashboardTypeEnum.SETTERMGR : DashboardTypeEnum.SETTER
     },
     yearlyPointTotal () {
       // Calculate points for each quarter
-      const q1_points= this.calcPointsForQuarter(this.pitchCounts.q1, this.pitchCounts.q1QualificationMet),
-          q2_points= this.calcPointsForQuarter(this.pitchCounts.q2, this.pitchCounts.q2QualificationMet),
-          q3_points= this.calcPointsForQuarter(this.pitchCounts.q3, this.pitchCounts.q3QualificationMet),
-          q4_points= this.calcPointsForQuarter(this.pitchCounts.q4, this.pitchCounts.q4QualificationMet)
+      const q1_points= this.calcPointsForQuarter(this.pitchCounts.q1),
+          q2_points= this.calcPointsForQuarter(this.pitchCounts.q2),
+          q3_points= this.calcPointsForQuarter(this.pitchCounts.q3),
+          q4_points= this.calcPointsForQuarter(this.pitchCounts.q4)
       //return total
       return q1_points + q2_points + q3_points + q4_points
     }
@@ -85,9 +46,7 @@ export default {
   /* INCENTIVE-RELATED CODE END */
   async created() {
     this.currentUserId = this.$store.state.user.details.id
-
     let userPositions = this.$store.state.user.details.userPositions
-
     if (userPositions?.length > 0) {
       this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
       this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
@@ -119,12 +78,10 @@ export default {
 
         getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
           this.pitchCounts = res.data
-
-          // Calculate points for each quarter
-          this.q1_points = this.calcPointsForQuarter(this.pitchCounts.q1)
-          this.q2_points = this.calcPointsForQuarter(this.pitchCounts.q2)
-          this.q3_points = this.calcPointsForQuarter(this.pitchCounts.q3)
-          this.q4_points = this.calcPointsForQuarter(this.pitchCounts.q4)
+          this.pitchCounts.q1 = 101
+          this.pitchCounts.q2 = 79
+          this.pitchCounts.q3 = 500
+          this.pitchCounts.q4 = 79
 
           this.incentiveDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -139,33 +96,18 @@ export default {
     },
 
     calcPointsForQuarter(pitchCount) {
-      if (!this.isSetterMgr) {
         switch (true) {
-          case pitchCount >= this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL1] && pitchCount < this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL2]:
+          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]:
             return 1 // Level 1
-          case pitchCount >= this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL2] && pitchCount < this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL3]:
+          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]:
             return 2 // Level 2
-          case pitchCount >= this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL3] && pitchCount < this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL4]:
+          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
             return 3 // Level 3
-          case pitchCount >= this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL4]:
+          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
             return 4 // Level 4
           default:
             return 0 // None
         }
-      } else {
-        switch (true) {
-          case pitchCount >= this.DashboardTypeEnum.SETTERMGR[MilestoneEnum.LEVEL1] && pitchCount < 390:
-            return 1 // A-10
-          case pitchCount >= this.DashboardTypeEnum.SETTERMGR[MilestoneEnum.LEVEL2] && pitchCount < this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL3]:
-            return 2 // Level 2
-          case pitchCount >= this.DashboardTypeEnum.SETTERMGR[MilestoneEnum.LEVEL3] && pitchCount < this.DashboardTypeEnum.SETTER[MilestoneEnum.LEVEL4]:
-            return 3 // Level 3
-          case pitchCount >= this.DashboardTypeEnum.SETTERMGR[MilestoneEnum.LEVEL4]:
-            return 4 // Level 4
-          default:
-            return 0 // None
-        }
-      }
     }
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <v-container id="closer-dash-container" class="incentive-tab-override">
-    <Incentive :dashboard-type="DashboardTypeEnum.CLOSER" :counts="fdcCounts" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
+    <Incentive :dashboard-type="dashboardType" :counts="fdcCounts" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
   </v-container>
 </template>
 
@@ -10,6 +10,7 @@
   import { AppMutations } from '@/stores/AppStore'
   import Incentive from "@/views/blueraven/closerDashboard/Incentive";
   import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
+  import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 
   export default {
     name: 'closerIncentive',
@@ -18,10 +19,8 @@
     },
     data () {
       return {
-        DashboardTypeEnum,
         snackbar: {},
         currentUserId: null,
-        selectedQuarter: 1,
         incentiveDataLoaded: false,
         currentQuarter: moment().quarter(),
         fdcCounts: {
@@ -30,27 +29,12 @@
           q3: 0, q3QualificationMet: false,
           q4: 0, q4QualificationMet: false
         },
-        percentAchieved: 0,
-        progressBarIsFull: false,
       }
     },
     computed: {
       windowInnerWidth () { return window.innerWidth},
-      is_q1 () { return this.currentQuarter === 1 },
-      is_q2 () { return this.currentQuarter === 2 },
-      is_q3 () { return this.currentQuarter === 3 },
-      is_q4 () { return this.currentQuarter === 4 },
-      currentQuarterCount () {
-        switch(this.currentQuarter){
-          case 4:
-            return this.fdcCounts.q4
-          case 3:
-            return this.fdcCounts.q3
-          case 2:
-            return this.fdcCounts.q2
-          default:
-            return this.fdcCounts.q1
-        }
+      dashboardType() {
+        return DashboardTypeEnum.CLOSER;
       },
       yearlyPointTotal () {
         // Calculate points for each quarter
@@ -62,7 +46,6 @@
         return q1_points + q2_points + q3_points + q4_points
       }
     },
-    watch: {},
     methods: {
       resetScrollBarPosition () {
         // reset scroll bar position to top
@@ -76,6 +59,10 @@
         try {
           getRequest('/closerDashboard/getIncentiveFdcCounts', 'blueraven').then(res => {
             this.fdcCounts = res.data
+            this.fdcCounts.q1 = 10
+            this.fdcCounts.q1QualificationMet = true
+            this.fdcCounts.q2 = 14
+            this.fdcCounts.q2QualificationMet = true
             this.incentiveDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           })
@@ -91,16 +78,14 @@
       calcPointsForQuarter (fdcCount, qualificationMetForQuarter) {
         if (qualificationMetForQuarter) {
           switch (true) {
-            case fdcCount >= 10 && fdcCount < 12:
-              return 1 // A-10
-            case fdcCount >= 12 && fdcCount < 15:
-              return 2 // F-14
-            case fdcCount >= 15 && fdcCount < 18:
-              return 3 // FA-18
-            case fdcCount >= 18 && fdcCount < 24:
-              return 4 // F-22
-            case fdcCount >= 24:
-              return 5 // F-35
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && fdcCount < DashboardTypeEnum.CLOSER.milestoneGoalMap[MilestoneEnum.LEVEL2]:
+              return 1 // Level 1
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && fdcCount < DashboardTypeEnum.CLOSER.milestoneGoalMap[MilestoneEnum.LEVEL3]:
+              return 2 // Level 2
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && fdcCount < DashboardTypeEnum.CLOSER.milestoneGoalMap[MilestoneEnum.LEVEL4]:
+              return 3 // Level 3
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
+              return 4 // Level 4
             default:
               return 0 // No medal
           }
