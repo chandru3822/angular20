@@ -34,6 +34,10 @@ public class SmartlistFieldAssignment {
   @JsonIgnore
   private String referenceTable, referenceColumn, joinTable, joinColumn;
 
+  //The system list ID of the custom field attached to this event's resource field
+  @JsonIgnore
+  private Long eventResourceSystemListId;
+
   //These fields are used as table aliases for smartlist generation
   @JsonIgnore
   private String valueReferenceTable, ppsTable, ppsEventTable, userPositionTable;
