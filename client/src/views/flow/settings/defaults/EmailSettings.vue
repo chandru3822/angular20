@@ -212,7 +212,7 @@ export default {
         if(!this.addFormValid) {
           throw {data: false};
         }
-        const makeDefault = this.newEmail.checked
+        const makeDefault = this.newEmail.checked || false
         this.newEmail.isDefault = makeDefault;
         this.newEmail.createdById = this.userId;
         this.newEmail.companyId=this.companyId;

@@ -534,7 +534,8 @@
         textFile: null,
         primaryPositionsOnly: true,
         source: null,
-        allUsersLoading: false
+        allUsersLoading: false,
+        companyId: this.$store.state.user.details.companyId
       }
     },
     computed: {
@@ -980,7 +981,7 @@
       },
       async getEmailSenders() {
         try {
-          const {data} = await getRequest(`/emailAddress`, null)
+          const {data} = await getRequest(`/emailAddress/${this.companyId}`, null)
           this.fromEmails = data.map(e => e.emailAddress)
         } catch (e) {
           console.error('*** ERROR ***', e)
