@@ -59,11 +59,6 @@
         try {
           getRequest('/closerDashboard/getIncentiveFdcCounts', 'blueraven').then(res => {
             this.fdcCounts = res.data
-            this.fdcCounts.q1 = 10
-            this.fdcCounts.q1QualificationMet = true
-            this.fdcCounts.q2 = 14
-            this.fdcCounts.q2QualificationMet = true
-            this.incentiveDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           })
         } catch (e) {
@@ -78,11 +73,11 @@
       calcPointsForQuarter (fdcCount, qualificationMetForQuarter) {
         if (qualificationMetForQuarter) {
           switch (true) {
-            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && fdcCount < DashboardTypeEnum.CLOSER.milestoneGoalMap[MilestoneEnum.LEVEL2]:
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && fdcCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]:
               return 1 // Level 1
-            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && fdcCount < DashboardTypeEnum.CLOSER.milestoneGoalMap[MilestoneEnum.LEVEL3]:
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && fdcCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]:
               return 2 // Level 2
-            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && fdcCount < DashboardTypeEnum.CLOSER.milestoneGoalMap[MilestoneEnum.LEVEL4]:
+            case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && fdcCount <this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
               return 3 // Level 3
             case fdcCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
               return 4 // Level 4

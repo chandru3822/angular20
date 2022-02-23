@@ -78,10 +78,6 @@ export default {
 
         getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
           this.pitchCounts = res.data
-          this.pitchCounts.q1 = 101
-          this.pitchCounts.q2 = 79
-          this.pitchCounts.q3 = 500
-          this.pitchCounts.q4 = 79
 
           this.incentiveDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -96,18 +92,16 @@ export default {
     },
 
     calcPointsForQuarter(pitchCount) {
-        switch (true) {
-          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]:
-            return 1 // Level 1
-          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]:
-            return 2 // Level 2
-          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
-            return 3 // Level 3
-          case pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
-            return 4 // Level 4
-          default:
-            return 0 // None
-        }
+      if(pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]){
+        return 1
+      } else if (pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]){
+        return 2
+      } else if (pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]){
+        return 3
+      } else if (pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]){
+        return 4
+      }
+      else return 0
     }
   }
 }
@@ -140,86 +134,6 @@ export default {
 
     #setter-dash-toolbar {
       padding: 0 !important;
-    }
-  }
-}
-
-#setter-dash-toolbar-container {
-  #setter-dash-toolbar {
-    header {
-      background-color: #fff !important;
-    }
-
-    #setter-dash-title-container ::v-deep .v-toolbar__content {
-      width: 100%;
-
-      .v-toolbar__title {
-        font-size: 13px;
-      }
-    }
-
-    #date-range-btns-toolbar {
-      position: fixed;
-      bottom: 0;
-      z-index: 3;
-      height: 45px !important;
-
-      ::v-deep .v-toolbar__content {
-        display: flex;
-        justify-content: flex-end;
-        padding: 5px 12px;
-        width: 100%;
-        height: 45px !important;
-
-        .v-toolbar__items {
-          display: flex;
-          flex-flow: row nowrap;
-          justify-content: flex-end;
-          align-items: center;
-          padding-right: 0;
-        }
-      }
-
-      .v-btn-toggle .v-btn {
-        border: 1px solid var(--v-primaryCustom-base) !important;
-        font-size: 11px;
-        letter-spacing: 0.02em !important;
-        height: 25px;
-
-        &:not(:last-child) {
-          border-right: none !important;
-        }
-
-        &:hover {
-          background-color: var(--v-primaryCustom-base);
-          color: #fff !important;
-          opacity: .75;
-        }
-      }
-
-      .v-btn--active {
-        background-color: var(--v-primaryCustom-base);
-        color: #fff !important;
-      }
-    }
-  }
-}
-
-#setter-dash-tabs {
-  width: 100%;
-
-  .col-12 {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-
-    span {
-      letter-spacing: 0.02em;
-      font-size: 11px;
-    }
-
-    .tab-separator {
-      border-right: 1px solid var(--v-primaryCustom-base);
     }
   }
 }

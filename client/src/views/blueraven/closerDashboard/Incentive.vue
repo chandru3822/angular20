@@ -82,6 +82,11 @@ export default {
   computed: {
     windowInnerWidth () { return window.innerWidth},
   },
+  watch: {
+    yearlyPointTotal:  function ()  {
+      this.calcYearPercentage()
+    }
+  },
   methods: {
     milestoneLevel(quarterCount) {
       switch(true) {
@@ -104,8 +109,7 @@ export default {
       this.progressBarIsFull = this.percentAchieved === 100
     }
   },
-  //using updated instead of created makes the CloserIncentive dash work perfectly and the SetterIncentive dash spin indefinitely and I DON'T KNOW WHY
-  updated() {
+  created() {
     this.calcYearPercentage()
     console.log(this.yearlyPointTotal) //for debugging
   }

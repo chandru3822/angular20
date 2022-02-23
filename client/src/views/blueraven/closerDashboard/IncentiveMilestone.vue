@@ -135,6 +135,11 @@ export default {
       return this.currentQuarter === this.quarter.value
     }
   },
+  watch: {
+    currentQuarterCount () {
+      this.setLabels()
+    }
+  },
   methods: {
     setLabels () {
       const diff = this.getNextMilestoneGoal() - this.currentQuarterCount
@@ -210,17 +215,6 @@ export default {
 
   async created () {
     this.currentUserId = this.$store.state.user.details.id
-    this.setLabels()
-  },
-
-  updated() {
-    console.log('UPDATE')
-    console.log(this.quarter.label)
-    console.log('count: ' + this.currentQuarterCount)
-    console.log(`milestone: ${this.milestoneLevel}`)
-    console.log(`next milestone: ${this.getNextMilestone()}`)
-    console.log(`next milestone goal: ${this.getNextMilestoneGoal()}`)
-    console.log('--------------------------------------------------')
     this.setLabels()
   }
 }
