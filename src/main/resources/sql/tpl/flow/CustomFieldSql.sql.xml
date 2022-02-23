@@ -92,4 +92,17 @@ order by s.state
   order by postal_code asc
   limit 50
   ]]></customFieldSql.flow.postalCodes.lazy>
+
+  <customFieldSql.brs.ahjSpecificInstallationRequirements><![CDATA[
+    select string_agg(ar1.description, E'\n') as "text_value"
+    from brs.project_details pd
+           inner join brs.ahj a on a.id = pd.ahj
+           inner join brs.ahj_requirements ar on a.id = ar.ahj_id
+          inner join brs.ahj_requirement ar1 on ar.requirement_id = ar1.id
+    where pd.project_id = :projectId
+    and ar1.requirement_type_id = 5
+    and ar1.archived is false
+    and ar.archived is false
+  ]]></customFieldSql.brs.ahjSpecificInstallationRequirements>
+
 </sql>

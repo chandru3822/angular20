@@ -36,12 +36,14 @@ public class CustomFieldController {
   }
 
   @GetMapping(value = "/getByParentProcessStep/{id}")
-  public List<CustomField> getByParentProcessStep(@PathVariable Long id) {
-    return customFieldService.getByParentProcessStep(id);
+  public List<CustomField> getByParentProcessStep(@PathVariable Long id,
+                                                  @RequestParam(required = false) Boolean excludedUnhandledDataTypes) {
+    return customFieldService.getByParentProcessStep(id, excludedUnhandledDataTypes);
   }
 
   @GetMapping(value = "/getByParentType/{id}")
-  public List<CustomField> getByParentType(@PathVariable Long id) {
-    return customFieldService.getByParentType(id);
+  public List<CustomField> getByParentType(@PathVariable Long id,
+                                           @RequestParam(required = false) Boolean excludedUnhandledDataTypes) {
+    return customFieldService.getByParentType(id, excludedUnhandledDataTypes);
   }
 }

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,12 +53,17 @@ public class CustomFieldValueService {
       cv.setHasListValues(true);
       String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
       if(null != sql) {
-        cv.setHasListValues(true);
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
         params.put("userId", userId);
-        List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
-        cv.setListOfValues(listOfValues);
+        if(cv.getSystemReadonly()) {
+          Optional<String> textValue = sqlCache.queryForObjectOptionalBySql(sql, params, String.class);
+          textValue.ifPresent(cv::setTextValue);
+        } else {
+          cv.setHasListValues(true);
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
+          cv.setListOfValues(listOfValues);
+        }
       }
     } else if (null != cv.getCompanySystemListId()) {
       cv.setHasListValues(true);
@@ -139,6 +145,9 @@ public class CustomFieldValueService {
         handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
       } else if (objectType.equals("process_step")) {
         Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
+        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
+      } else if (objectType.equals("event")) {
+        Long projectId = projectService.getProjectIdByProjectProcessStepEventId(id);
         handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
       } else {
         handleCustomListOfValue(fieldGroups, companyId);

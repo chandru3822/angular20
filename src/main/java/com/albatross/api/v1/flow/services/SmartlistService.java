@@ -156,6 +156,7 @@ public class SmartlistService {
 
   public List<SmartlistFieldAssignment> getAvailableFields(Long objectTypeId) {
     Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeId", objectTypeId);
+    //@humes, for now i am excluding the new system readonly data type _rn
     return sqlCache.query("smartlist.getAvailableFields", params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 

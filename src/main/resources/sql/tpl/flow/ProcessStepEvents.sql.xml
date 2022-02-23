@@ -127,6 +127,7 @@ where pse.process_step_id = :processStepId
                                                FROM (
                                                       select pseaf.id,
                                                              cf.id as "customFieldId",
+                                                             cdt.data_type_id as "dataTypeId",
                                                              pseaf.process_step_event_action_id as "processStepEventActionId",
                                                              cfg.group_name as "groupName",
                                                              cf.field_name as "fieldName",
@@ -136,6 +137,7 @@ where pse.process_step_id = :processStepId
                                                       from flow.custom_field_group_assignment cfga
                                                              inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                                                              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                                             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                                              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                                                              left join flow.process_step_event_action_field pseaf on cfga.id = pseaf.custom_field_group_assignment_id and pseaf.process_step_event_action_id = psea.id and pseaf.archived is false
                                                       where cot.object_type_id = 6
