@@ -133,4 +133,52 @@
         AND a.attachment_type_id = :attachmentTypeId
   ]]></app.deleteBySourceAndType>
 
+  <app.createMissingTable><![CDATA[
+    create table if not exists flow.app_attachment
+    (
+        id                 serial                  not null
+            constraint flow_app_attachment_pk
+                primary key,
+        company_id         integer                 not null
+            constraint flow_aa_company_id_fk
+                references flow.company
+                on update restrict on delete restrict,
+        app_type_id        integer                 not null
+            constraint flow_aa_app_type_id_fk
+                references flow.app_type
+                on update restrict on delete restrict,
+        attachment_type_id integer                 not null
+            constraint flow_aa_attachment_type_id_fk
+                references flow.attachment_type
+                on update restrict on delete restrict,
+        filename           varchar(1000),
+        content_type       varchar(100),
+        s3_key             varchar(100),
+        size               integer,
+        show               boolean   default false not null,
+        date_created       timestamp default now(),
+        date_modified      timestamp,
+        created_by_id      integer                 not null
+            constraint flow_aa_created_by_id_fk
+                references flow."user",
+        modified_by_id     integer
+            constraint flow_aa_modified_by_id_fk
+                references flow."user",
+        archived           boolean   default false not null,
+        version_number     varchar(20),
+        build_number       integer,
+        display_name       varchar(100)
+    )
+  ]]></app.createMissingTable>
+
+  <app.insertMissingAppRecord><![CDATA[
+    insert into flow.app_attachment (company_id, app_type_id, attachment_type_id, filename, content_type, s3_key, size, date_modified, created_by_id, modified_by_id, version_number, build_number, display_name)
+    select 3, :appTypeId, 8, :fileName, :contentType, :s3key, :size, now(), 2417172, 2417172, :versionNumber, :buildNumber, :fileName
+    where not exists ( select id
+    from flow.app_attachment
+      where s3_key = :s3key);
+  ]]></app.insertMissingAppRecord>
+
+
+
 </sql>

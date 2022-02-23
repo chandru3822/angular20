@@ -15,7 +15,7 @@ import '@/styles/main.scss'
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 
-const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_GA_ID } = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_GA_ID, VUE_APP_MAINTENANCE_MODE } = process.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
@@ -120,9 +120,16 @@ axios.interceptors.response.use(
             : response.status === 403
             ? 'User Unauthorized'
             : 'Unknown Error'
-        localStorage.removeItem('store')
-        store.commit(UserMutations.LOGIN_ERROR, msg)
-        router.push({ name: 'login' })
+        console.log('randaLogger', response.data.maintenanceMode)
+        if(response?.data?.maintenanceMode && status === 403) {
+          //if we dont remove the store item then a logged in user who USED to have permission will still have permission later
+          localStorage.removeItem('store')
+          router.push({ name: 'siteUnderMaintenance' })
+        } else {
+          localStorage.removeItem('store')
+          store.commit(UserMutations.LOGIN_ERROR, msg)
+          router.push({ name: 'login' })
+        }
       } else if (status >= 500 && status <= 599) {
         //remove the loading spinner that was likely turned on before this error happened
         store.commit(UserMutations.SET_LOADING, false)

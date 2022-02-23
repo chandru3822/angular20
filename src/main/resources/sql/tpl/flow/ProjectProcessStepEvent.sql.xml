@@ -28,6 +28,7 @@
              inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
              inner join flow.event e on pse.event_id = e.id
       where ppse.id = :id
+        and ppse.archived is false
   ]]></projectProcessStepEvent.getBasic>
 
   <projectProcessStepEvent.get><![CDATA[
@@ -75,6 +76,8 @@
                                     psea.archived,
                                     psea.always_enabled as "alwaysEnabled",
                                     psea.multiple_uses as "multipleUses",
+                                    psea.hide_from_web as "hideFromWeb",
+                                    psea.hide_from_mobile as "hideFromMobile",
                                     case when
                                            (select id
                                             from flow.project_process_step_event_action ppsea
@@ -141,6 +144,7 @@
                                             wlp.archived
                                      FROM flow.white_listed_position wlp
                                      WHERE wlp.white_list_type_id = 6
+                                       and wlp.event_id = e.id
                                        AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
                    coalesce((
                               SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -152,6 +156,7 @@
                                             wlp.archived
                                      FROM flow.white_listed_position wlp
                                      WHERE wlp.white_list_type_id = 7
+                                       and wlp.event_id = e.id
                                        AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
                    coalesce((
                               SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -163,6 +168,7 @@
                                             wlp.archived
                                      FROM flow.white_listed_position wlp
                                      WHERE wlp.white_list_type_id = 8
+                                       and wlp.event_id = e.id
                                        AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
     from flow.project_process_step_event ppse
            inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
@@ -179,7 +185,7 @@
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
     where ppse.id = :id
-
+      and ppse.archived is false
   ]]></projectProcessStepEvent.get>
 
   <projectProcessStepEvent.savePpsEventDetails><![CDATA[
@@ -187,7 +193,7 @@
       set resource_id = :resourceId::int,
           start_time = :startTime::timestamp,
           end_time = :endTime::timestamp,
-          company_event_status_type_id = :companyEventStatusTypeId,
+          company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
           modified_by_id = :modifiedById::int,
           date_modified = now()
     where id = :id
@@ -228,34 +234,6 @@
       where ppsa.project_process_step_event_id = :projectProcessStepEventId
         and a.archived is not true
         and ppsa.archived is not true
-      union all
-      select
-        a.id,
-        a.size,
-        a.uuid,
-        a.date_created,
-        a.date_modified,
-        a.filename,
-        a.attachment_type_id,
-        a.content_type,
-        a.s3_key,
-        a.archived,
-        substring(filename, '\.([^\.]+)$') as file_extension,
-        ps.process_step_name,
-        null::int as project_process_step_event_id,
-        ppsa.project_process_step_id,
-        pps.main,
-        concat(u.first_name, ' ', u.last_name) AS uploadedBy
-      from flow.project_process_step_attachment ppsa
-             inner join flow.attachment a on a.id = ppsa.attachment_id
-             inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
-             inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
-             inner join flow.process_step ps on ps.id = pps.process_step_id
-             inner join flow."user" u ON a.created_by_id = u.id
-      where ppse.id = :projectProcessStepEventId
-        and a.archived is not true
-        and ppsa.archived is not true
-      order by main desc, date_created desc
   ]]></projectProcessStepEvent.getProjectProcessStepEventAttachments>
 
   <projectProcessStepEvent.addAttachment><![CDATA[

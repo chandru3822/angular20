@@ -1,35 +1,35 @@
 <template>
-  <small v-if="!drillDownAttachments.length" small >No attachments available</small>
+  <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
 
-  <v-container v-else dense :key="renderTicker">
-    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'shaded-row': item.main}" :key="item.processStepId">
-      <v-col class="text-left pa-1 flex-grow-3">
+  <v-container v-else dense :key="renderTicker" id="attachment-table">
+    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
+      <v-col cols="6" class="text-left pa-1">
         <v-btn
             icon
             text
             :href="item.presignedUrl" class="type">
-          <v-icon large color="grey">
+          <v-icon size="25" color="grey">
             {{ getIconForFile(item) }}
           </v-icon>
         </v-btn>
         <a v-if="!item.edit" :href="item.presignedUrl"
-           class="type link text-center">
-          {{ item.editableName }}
+           class="type link text-left text-decoration-none">
+          {{ item.editableNameCopy }}
         </a>
         <v-text-field
             v-else
             hide-details
             label="Filename"
-            class="my-2 flex-grow-2 text-field"
+            class="my-2 text-field"
             v-model="item.editableName"
         ></v-text-field>
       </v-col>
-      <v-col small class="text-right px-1 flex-grow-2 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
-      <v-col class="text-right pa-0">
+      <v-col cols="4" class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
+      <v-col cols="2" class="text-right pa-0">
         <v-btn v-if="!item.edit" dense small text class="px-0" @click="[item.edit = true, renderTicker++]">
           <v-icon>edit</v-icon>
         </v-btn>
-        <v-btn v-if="item.edit" dense text small class="px-0" @click="[item.edit = false, renderTicker++]">
+        <v-btn v-if="item.edit" dense text small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
           cancel
         </v-btn>
         <v-btn  v-if="item.edit" dense small text class="px-0" @click="saveFilename(item)">
@@ -37,34 +37,28 @@
         </v-btn>
         <v-dialog
             v-model="item.deleteConfirm"
-            width="500">
+            width="400"
+        class="albatross-body-1">
           <template #activator="{ on }">
-            <v-btn small text v-on="on" class="px-0">
+            <v-btn small text v-on="on" class="px-0" v-if="!item.edit">
               <v-icon>delete</v-icon>
             </v-btn>
           </template>
           <v-card>
-            <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-              Confirm
-            </v-card-title>
-
             <v-card-text class="pt-4">
-              Are you sure you want to delete <strong>{{item.filename}}</strong>?
+              Are you sure you want to delete {{item.filename}}?
             </v-card-text>
-
-            <v-divider></v-divider>
-
             <v-card-actions>
-              <v-spacer></v-spacer>
               <v-btn
+                  class="elevation-0 text-capitalize"
                   @click="item.deleteConfirm = false">
                 No
               </v-btn>
+              <v-spacer></v-spacer>
               <v-btn
                   color="primaryCustom"
-                  text
+                  dark
+                  class="elevation-0 text-capitalize"
                   @click="[item.archived = true, deleteAttachment(item.id)]">
                 Yes
               </v-btn>
@@ -118,6 +112,7 @@ export default {
         }
         item.filename = newFileName
         const {data, status} = await putRequest(`/attachment/${item.id}`, item)
+        item.editableNameCopy = item.editableName
         item.presignedUrl = data.presignedUrl
         item.edit = false
         this.renderTicker++;
@@ -132,13 +127,29 @@ export default {
       }
     },
     deleteAttachment: async function (id) {
-      await deleteAttachment(id)
+      try {
+        await deleteAttachment(id)
+        this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Document')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+
     },
   }
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+#attachment-table .type {
+  font-size: 14px;
+}
+</style>
+
+<style lang="scss" scoped>
 .attachment {
   display: flex;
   justify-content: space-between;
@@ -157,8 +168,15 @@ export default {
 
 .attachment-info {
   font-size: 14px;
-  color: #A5A5A5;
+  color: #5E636D;
 
 }
 
+.primary-row{
+  background-color: #ebf5ff !important;
+}
+
+.no-attach {
+  color: var(--v-primaryText-base);
+}
 </style>

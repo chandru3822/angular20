@@ -71,6 +71,7 @@
       type="number"
       v-model.number="field.numericValue"
       @change="callback(field)"
+      autocomplete="off"
     />
 
     <v-textarea
@@ -88,6 +89,7 @@
       :hide-details="hideDetails"
       v-model="field.textValue"
       @change="callback(field)"
+      autocomplete="off"
     />
 
     <v-text-field
@@ -105,6 +107,7 @@
       type="number"
       v-model.number="field.intValue"
       @change="callback(field)"
+      autocomplete="off"
     />
 
     <v-autocomplete
@@ -127,6 +130,7 @@
       item-value="id"
       item-text="name"
       @input="callback(field)"
+      autocomplete="off"
     >
       <template #item="{ item }">
         <v-list-item-content>
@@ -151,12 +155,13 @@
           :readonly="readonly"
           :disabled="readonly"
           :class="{'error--text': readonly}"
-          :rules="getRequiredRule()"
+          :rules="getRequiredRule(field.dataTypeId)"
           :label="getFieldName()"
           :hide-details="hideDetails"
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -186,6 +191,7 @@
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -215,6 +221,7 @@
           item-value="id"
           item-text="name"
           @input="callback(field)"
+          autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -307,6 +314,7 @@ export default {
       search: null,
       isLoading: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
+      arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value
     }
   },
@@ -328,8 +336,10 @@ export default {
     getFieldName() {
       return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
     },
-    getRequiredRule() {
-      if (this.required) {
+    getRequiredRule(dataTypeId) {
+      if (this.required && [7,10].includes(dataTypeId)) {
+        return this.arrayRequiredRules
+      } else if (this.required) {
         return this.requiredRules
       }
     },

@@ -395,7 +395,6 @@ export default {
       let invalidDate = false;
       // Only validate if Hours is selected
       if (this.workQueueType.expectedCycleDurationTypeId != 2) {
-        debugger;
         return true;
       }
 

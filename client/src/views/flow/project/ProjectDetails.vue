@@ -17,14 +17,14 @@
             Project Details
           </v-tab>
         </v-tabs>
-        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-3" v-if="displayedGroups && displayedGroups.length > 0">
-          <v-toolbar-title>{{ displayedGroups[0].groupName }}</v-toolbar-title>
+        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6" v-if="displayedGroups && displayedGroups.length > 0">
+          <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
+            <v-btn text
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-              <v-icon v-else>mdi-menu</v-icon>
+              <v-icon v-else>mdi-format-align-justify</v-icon>
             </v-btn>
             <div>
               <v-btn
@@ -38,7 +38,7 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
-      <div class="project-fields-container" ref="projectFieldsContainer">
+      <div class="project-fields-container px-3" ref="projectFieldsContainer">
         <v-col v-if="isFieldsLoading">
           <SpinnerInline :size="20" color="primaryCustom"/>
         </v-col>
@@ -50,13 +50,12 @@
             v-for="(group, index) in displayedGroups"
             :key="index"
           >
-            <v-toolbar color="transparent" class="elevation-0 process-step-toolbar"
-              v-if="index !== 0">
-              <v-toolbar-title>{{ group.groupName }}</v-toolbar-title>
+            <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+              <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
             </v-toolbar>
             <v-card class="px-4 text-left square-card">
               <v-row>
-                <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
+                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                   <CustomValueInput
                     v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
                     :key="idx"
@@ -66,7 +65,7 @@
                     :field="field"
                   />
                 </v-col>
-                <v-col cols="6" v-if="columnSplit">
+                <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
                   <CustomValueInput
                     v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
                     :key="idx"
@@ -125,28 +124,25 @@ export default {
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
-      windowWidth: window.innerWidth,
-      splitColumnMinWidth: 1700
+      // windowWidth: window.innerWidth,
+      // splitColumnMinWidth: 1700
     }
   },
   created() {
+    window.document.title = `${this.project.projectName} - Project Details`
     this.getProjectTabs()
     this.getProcessSteps()
     this.getFieldGroups()
   },
   mounted() {
-    window.addEventListener('resize', () => {
-      this.windowWidth = window.innerWidth
-    })
+    // window.addEventListener('resize', () => {
+    //   this.windowWidth = window.innerWidth
+    // })
   },
   props: {
     project: Object,
-    splitValueColumns: Boolean
   },
   computed: {
-    columnSplit() {
-      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
-    },
     displayedGroups() {
       return this.selectedTab?.id ? this.customFieldGroups.filter(cfg => cfg.companyObjectTypeTabId === this.selectedTab.id) : this.customFieldGroups
     },
@@ -168,7 +164,7 @@ export default {
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if(this.columnSplit) {
+      if(this.$store.state.project.manualColumnSplit) {
         return values.filter(function(element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -228,6 +224,8 @@ export default {
         }
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)

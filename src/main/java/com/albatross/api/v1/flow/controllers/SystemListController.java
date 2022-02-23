@@ -6,38 +6,31 @@ import com.albatross.api.v1.flow.model.SystemList;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.SystemListService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
-
-@Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping(value = "/api/v1/flow/systemList")
+@RequiredArgsConstructor
+@RequestMapping(value = "/api/v1/flow/systemList", produces = MediaType.APPLICATION_JSON_VALUE)
 public class SystemListController {
 
   private final SystemListService systemListService;
   private final SecurityService securityService;
 
-  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<SystemList> getSystemListsForCompany () {
+  @GetMapping(value = "")
+  public List<SystemList> getSystemListsForCompany() {
     return systemListService.getSystemListsForCompany();
   }
 
-  @GetMapping(value = "/{id}/options", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ListOfValue> getSystemListOptionsForCompany (@PathVariable("id") Long typeId,
-                                                           @RequestParam Boolean subOptions,
-                                                           @RequestParam(required = false) List<Long> systemListOptionIds) {
+  @GetMapping(value = "/{id}/options")
+  public List<ListOfValue> getSystemListOptionsForCompany(
+      @PathVariable("id") Long typeId,
+      @RequestParam Boolean subOptions,
+      @RequestParam(required = false) List<Long> systemListOptionIds) {
     User currentUser = securityService.getCurrentUser();
-    return systemListService.getSystemListOptionsForCompany(typeId, subOptions, systemListOptionIds, currentUser.getCompanyId());
+    return systemListService.getSystemListOptionsForCompany(
+        typeId, subOptions, systemListOptionIds, currentUser.getCompanyId());
   }
-
 }

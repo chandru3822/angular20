@@ -26,6 +26,11 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "forgotPassword" */'./views/ForgotPassword.vue')
     },
     {
+      path: '/siteUnderMaintenance',
+      name: 'siteUnderMaintenance',
+      component: () => import(/* webpackChunkName: "forgotPassword" */'./views/SiteUnderMaintenance.vue')
+    },
+    {
       path: '/passwordReset/:uuid?',
       name: 'forgotPasswordReset',
       component: ForgotPasswordReset,
@@ -1116,7 +1121,6 @@ const router = new Router({
         {
           path: '/project/:projectId',
           name: 'project',
-          meta: {title: 'Albatross - Project'},
           component: () => {
             if (store.getters.userHasFeature('PROJECTS')) {
               return import (/* webpackChunkName: "project" */ './views/flow/project/Project.vue')
@@ -1127,7 +1131,6 @@ const router = new Router({
           children: [{
             path: 'details',
             name: 'projectDetails',
-            meta: {title: 'Albatross - Project Details'},
             // component: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue')
             components: {
               default: () => import (/* webpackChunkName: "project" */ './views/flow/project/ProjectDetails.vue'),
@@ -1176,7 +1179,6 @@ const router = new Router({
         },        {
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
-          meta: {title: 'Albatross - Projects'},
           component: () => {
             if (store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')) {
               return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
@@ -1287,6 +1289,9 @@ const router = new Router({
             }, {
               path: 'function/:id',
               component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/functions/Function.vue'),
+            }, {
+              path: 'uploads',
+              component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/Uploads.vue'),
             }
           ]
         }, {
@@ -1529,6 +1534,10 @@ async function getUser() {
 }
 
 function accessDenied() {
-  return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+  if(process.env.VUE_MAINTENANCE_MODE) {
+    return import(/* webpackChunkName: "accessDenied" */ './views/SiteUnderMaintenance.vue')
+  } else {
+    return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+  }
 }
 

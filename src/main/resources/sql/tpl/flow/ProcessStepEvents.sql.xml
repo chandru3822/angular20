@@ -273,6 +273,8 @@ where pse.process_step_id = :processStepId
           require_resource = :requireResource,
           always_enabled = :alwaysEnabled,
           multiple_uses = :multipleUses,
+          hide_from_web = :hideFromWeb,
+          hide_from_mobile = :hideFromMobile,
           company_process_step_status_type_id = :companyProcessStepStatusTypeId,
           modified_by_id = :userId,
           date_modified = now()
@@ -381,6 +383,17 @@ where pse.process_step_id = :processStepId
     insert into flow.process_step_event_action_field(process_step_event_action_id, custom_field_group_assignment_id, required)
     values (:actionId, :cfgaId, :required)
   ]]></processStepEvent.addRequiredFieldStatus>
+
+  <processStepEvent.getStartTimeWhitelistedPositionIds><![CDATA[
+    SELECT wlp.position_id
+    FROM flow.white_listed_position wlp
+    WHERE wlp.white_list_type_id = 6
+      and wlp.event_id = (
+        select pse.event_id
+        from flow.process_step_event pse
+        where pse.id = :processStepEventId)
+      AND wlp.archived is not true
+  ]]></processStepEvent.getStartTimeWhitelistedPositionIds>
 
 
 

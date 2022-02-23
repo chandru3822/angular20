@@ -1,6 +1,6 @@
 <template>
   <div v-if="loadComplete">
-    <v-row>
+    <v-row class="toolbar-z-index-override">
       <v-col
         v-if="VUE_APP_ENV === 'uat'"
         cols="12"

@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,10 +100,11 @@ public class WorkQueueTypeService {
   }
 
   public Optional<WorkQueueType> insertType(WorkQueueType type) {
+    Boolean useEventData = null != type.getUseEventData() ? type.getUseEventData() : false;
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueType", type.getWorkQueueType());
-    params.put("useEventData", null != type.getUseEventData() ? type.getUseEventData() : false);
+    params.put("useEventData", useEventData);
     params.put("createdById", user.trueUserId());
     params.put("workQueueCategoryId", type.getWorkQueueCategoryId());
     params.put("companyId", user.getCompanyId());
@@ -110,6 +112,8 @@ public class WorkQueueTypeService {
 
     //any time a work queue type is created we need to create a smartlist placeholder for any custom fields in the dropdown
     params.put("workQueueTypeId", id);
+    //this is the root object type, then we combine it with company id to get the company_object_type_id
+    params.put("objectTypeId", useEventData ? ObjectType.EVENT.id : ObjectType.PROCESS_STEP.id);
     sqlCache.update("workQueueType.addSmartlist", params);
 
     return getType(id);

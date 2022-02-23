@@ -805,7 +805,6 @@
           item.selected = false;
           this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
           this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
-          debugger;
           this.selectAllUsers = false
           // Synchronize the selection of users with allUsers
           this.users.filter(u => u.id === item.id)[0].selected = false;

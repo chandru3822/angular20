@@ -157,6 +157,7 @@
                                     wlp.archived
                              FROM flow.white_listed_position wlp
                              WHERE wlp.white_list_type_id = 6
+                               and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -168,6 +169,7 @@
                                     wlp.archived
                              FROM flow.white_listed_position wlp
                              WHERE wlp.white_list_type_id = 7
+                               and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -179,6 +181,7 @@
                                     wlp.archived
                              FROM flow.white_listed_position wlp
                              WHERE wlp.white_list_type_id = 8
+                               and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
     from flow.event e
     where e.id = :id

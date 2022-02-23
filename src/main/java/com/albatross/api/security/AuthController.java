@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 
 @Slf4j
@@ -51,6 +52,9 @@ public class AuthController {
 
   @Value("${security.doCompanyDefaultValidation:false}")
   private Boolean doCompanyDefaultValidation;
+
+  @Value(value = "${app.maintenanceMode:false}")
+  private Boolean maintenanceMode;
 
   @GetMapping(value = "/heartbeat")
   public ResponseEntity getHeartbeat() {
@@ -105,6 +109,10 @@ public class AuthController {
 
     List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
     user.setFeatureAccess(results);
+
+    if (maintenanceMode && !securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MAINTENANCE_MODE", List.of("ADMIN"))) {
+      return ResponseEntity.status(FORBIDDEN).body("{\"message\" : \"Site is under maintenance.\", \"maintenanceMode\" : true }");
+    }
 
     JwtClaims body = createJwtBody(user);
     String jwt = jwtUtils.encodeDetails(body);

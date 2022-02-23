@@ -45,7 +45,6 @@
                            :value="2"
                            :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
                 </v-radio-group>
-                <span @click="trackButton" class="learn-span">Learn more about work queue metrics</span>
               </div>
             </v-col>
             <v-col cols="12" md="6" class="py-0 future-follow-ups-column">
@@ -68,12 +67,17 @@
               Please select a Work Queue Category
             </v-card>
             <v-card flat tile v-for="wq in workQueues" class="flex-display card-main"
-                    :class="{'clickable': wq.workQueueCount > 0}"
+                    :class="{'clickable': wq.workQueueCount > 0,
+                             'light-border': !wq.useEventData,
+                             'dark-border': wq.useEventData}"
                     :key="wq.id"
                     width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
                 <router-link class="no-text-decoration card-link"
-                             :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}}">
+                             :to="wq.workQueueCount > 0 ? {name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}} : ''">
+<!--                <div class="no-text-decoration card-link"-->
+<!--                     :class="{'clickable': wq.workQueueCount > 0}"-->
+<!--                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">-->
                   <div class="card-title-container text-left"
                        :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
                        :style="{'background-color': wq.color + '20' }">
@@ -207,6 +211,11 @@ export default {
     }
   },
   methods: {
+    goToRoute(changeRoute, routeName, params, query) {
+      if(changeRoute) {
+        this.$router.push({name: routeName, params, query})
+      }
+    },
     getTargetColor(color) {
       return isLightColor(color) ? '#363636' : '#ffffff'
     },
@@ -287,13 +296,6 @@ export default {
     getBorder(wq) {
       return `solid 1px ${wq.color}`
     },
-    trackButton(){
-      this.$gtag.event('learn-work-queue-metrics', {
-        event_category: 'click',
-        event_label: 'Learn About Work Queue Metrics'
-      })
-      this.showMetricsDialog = true
-    }
   },
 
 }
@@ -368,8 +370,15 @@ export default {
   margin-right: 24px;
   margin-left: 24px;
   margin-bottom: 32px;
-  border: 2px solid #DBE0E3;
   //box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark-border {
+  border: 2px solid darkgray;
+}
+
+.light-border {
+  border: 2px solid #DBE0E3;
 }
 
 .card-main:hover {

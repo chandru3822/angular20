@@ -1,10 +1,41 @@
 <template>
-  <v-main class="py-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
-    <div v-if="selectedEvent.id">
-      <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" id="event-header">
-        <v-toolbar-title>
-          {{ selectedEvent.eventName }}
+  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="text-h5 grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
 
+        <v-card-text class="pt-4">
+          You have unsaved fields. Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath, query)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <div v-if="selectedEvent.id" class="pt-6">
+      <v-toolbar color="transparent" height="auto"
+                 class="elevation-0 cfg-name-toolbar px-6" id="event-header">
+        <v-toolbar-title class="albatross-header-2">
+          <div>{{ selectedEvent.eventName}}</div>
+          <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{selectedEvent.eventStatusType}})</div> <br>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -13,7 +44,7 @@
             v-model="selectedEvent.deleteConfirm"
             width="500">
             <template v-slot:activator="{ on }">
-              <v-btn text small class="clickable" v-on="on">
+              <v-btn text small class="clickable mt-1" v-on="on">
                 <v-icon>delete</v-icon>
               </v-btn>
             </template>
@@ -48,8 +79,9 @@
           </v-dialog>
         </v-toolbar-items>
       </v-toolbar>
+      <div class="pb-4 px-6">
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
-        <div class="action-subheader">
+        <div class="action-subheader albatross-header-3">
           Actions
           <v-btn
             class="back-btn show-unperformable-actions-btn"
@@ -62,43 +94,38 @@
         </div>
       </div>
       <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
-        <v-btn class="action-button white--text"
+        <v-btn class="action-button white--text text-capitalize"
                color="primaryCustom"
+               v-if="!action.hideFromWeb"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
           {{ action.actionName }}
         </v-btn>
       </div>
-      <div v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" class="my-2">
-        <v-btn class="one-hunned" color="#E3E3E3" @click="showUploadModal = true">
-          Upload Documents
-        </v-btn>
-        <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-          <UploadDocumentModal @cancel="showUploadModal = false"
-                               :width="uploadModalWidth"
-                               :pps-event-id="ppsEventId"
-                               :attachment-types="attachmentTypes"></UploadDocumentModal>
-        </v-dialog>
       </div>
-      <div class="cfg-detail-header fixed-toolbar">
-        <v-toolbar flat color="secondary">
-          <v-toolbar-title>
-            <v-btn fab small text v-if="$store.getters.userHasFeature('SCHEDULE')"
-                   class="px-0" target="_blank"
-                   :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-              <v-icon>mdi-calendar</v-icon>
-            </v-btn>
+      <div class="fixed-toolbar padding-left-1">
+        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-6">
+          <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="windowWidth >= splitColumnMinWidth && !splitValueColumns"
-                   @click="setSplitColumnValue()">
-              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
-              <v-icon v-else>mdi-menu</v-icon>
+            <v-btn text small @click="setSplitColumnValue()" class="px-0">
+              <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+              <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
+              <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+                <v-icon class="px-0">mdi-upload</v-icon>
+              </v-btn>
+              <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+                <UploadDocumentModal @cancel="showUploadModal = false"
+                                     :width="uploadModalWidth"
+                                     :show-success-snackbar="true"
+                                     :pps-event-id="ppsEventId"
+                                     :attachment-types="attachmentTypes"></UploadDocumentModal>
+              </v-dialog>
             <div>
-              <v-btn class="white--text mt-3"
+              <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
                      :disabled="!userCanEdit || getReadOnly()"
                      color="primaryButton">
@@ -107,9 +134,9 @@
             </div>
           </v-toolbar-items>
         </v-toolbar>
-        <div class="error-text pb-4" v-if="eventActionMissingRequirements">
-          {{ this.saveErrorMsg }}
-        </div>
+      </div>
+      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
+        {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
@@ -117,7 +144,15 @@
         project screen and update.
       </v-card>
 
-      <v-form ref="eventFieldForm" v-else>
+      <v-form ref="eventFieldForm" class="px-6" v-else>
+        <div class="albatross-header-4 d-flex align-baseline">Overview
+        <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                                                         class="px-0 d-flex align-baseline" target="_blank"
+                                                         :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+              <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span><v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
+            </v-btn>
+        </div>
+        <v-card class="square-card px-4 pt-4 mt-4">
         <v-autocomplete
           v-model="selectedEvent.companyEventStatusTypeId"
           :items="companyEventStatuses"
@@ -125,6 +160,7 @@
           :disabled="!userCanManage"
           item-text="eventStatusType"
           item-value="id"
+          @input="defaultValuesChanged = true"
         ></v-autocomplete>
         <DatetimePickerInput
           v-model="selectedEvent.startTime"
@@ -135,6 +171,7 @@
           :type="'timestamp'"
           :format="'MMMM DD, YYYY, h:mm A'"
           label="Start Time"
+          :change-callback="() => { this.defaultValuesChanged = true}"
         />
         <DatetimePickerInput
           v-model="selectedEvent.endTime"
@@ -145,6 +182,7 @@
           :type="'timestamp'"
           :format="'MMMM DD, YYYY, h:mm A'"
           label="End Time"
+          :change-callback="() => { this.defaultValuesChanged = true}"
         />
         <v-autocomplete
           v-if="selectedEvent && selectedEvent.availableResources"
@@ -156,6 +194,7 @@
           label="Resource"
           item-text="name"
           item-value="id"
+          @input="defaultValuesChanged = true"
         ></v-autocomplete>
 
         <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
@@ -226,7 +265,7 @@
           </v-card-text>
 
         </div>
-
+        </v-card>
         <v-col
           v-if="selectedEvent && selectedEvent.id"
           class="pt-0 px-0"
@@ -234,7 +273,7 @@
           :key="cfg.id"
         >
           <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-            <v-toolbar-title>
+            <v-toolbar-title class="albatross-header-4">
               <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
               <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
               <!--                <v-icon>mdi-calendar</v-icon>-->
@@ -247,7 +286,7 @@
           </v-toolbar>
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
-              <v-col :cols="columnSplit ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -259,7 +298,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6" v-if="columnSplit">
+              <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -307,6 +346,8 @@ import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
+import {getStatusClass} from '@/services/eventStatusTypeService'
+
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -326,7 +367,12 @@ export default {
       snackbar: {},
       selectedEvent: {},
       showUploadModal: false,
-      uploadModalWidth: 400,
+      uploadModalWidth: 600,
+      defaultValuesChanged: false,
+      unsavedFieldsModal: false,
+      navigationOverride: false,
+      toPath: null,
+      query: {},
       attachmentTypes: [],
       attemptedAction: {},
       companyEventStatuses: [],
@@ -367,17 +413,42 @@ export default {
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
       showUnperformableActions: false,
       eventDetailsLoading: true,
-      windowWidth: window.innerWidth,
-      splitColumnMinWidth: 1700
+      // windowWidth: window.innerWidth,
+      // splitColumnMinWidth: 1700,
+      getStatusClass
     }
   },
   async created() {
     await this.loadAllPageDetails()
   },
+  beforeRouteUpdate(to, from, next) {
+    // called when the route that renders this component is about to be updated via router-view update
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.defaultValuesChanged)) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to be navigated away from.
+    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.defaultValuesChanged)) {
+      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+      this.navigationOverride = false
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
   mounted() {
-    window.addEventListener('resize', () => {
-      this.windowWidth = window.innerWidth
-    })
+    // window.addEventListener('resize', () => {
+    //   this.windowWidth = window.innerWidth
+    // })
   },
   watch: {
     eventActionMissingRequirements: function () {
@@ -394,9 +465,6 @@ export default {
     },
   },
   computed: {
-    columnSplit() {
-      return this.splitValueColumns || (this.windowWidth >= this.splitColumnMinWidth && this.$store.state.project.manualColumnSplit)
-    },
     filteredActions() {
       if (!this?.selectedEvent?.eventActions) {
         return []
@@ -410,12 +478,16 @@ export default {
     }
   },
   methods: {
+    goToPath(path, query) {
+      this.unsavedFieldsModal = false
+      this.$router.push({ path, query })
+    },
     setSplitColumnValue() {
       //flip the flag
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.columnSplit) {
+      if (this.$store.state.project.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -441,7 +513,7 @@ export default {
           }
         })
       } catch (e) {
-        console.log('*** ERROR ***', e)
+        console.error('*** ERROR ***', e)
 
       }
     },
@@ -463,7 +535,6 @@ export default {
       this.saveErrorMsg = 'Additional fields are required to perform the selected action.'
 
       let cfHasMissing = this.needsRequiredField(action.requiredFields)
-
       if ((!this.selectedEvent.startTime) ||
         (this.actionRequiresEnd && !this.selectedEvent.endTime) ||
         (this.actionRequiresResource && !this.selectedEvent.resourceId) || cfHasMissing) {
@@ -490,7 +561,7 @@ export default {
               (cf.dataTypeId === 4 && null == cf.numericValue) ||
               (cf.dataTypeId === 5 && null == cf.textValue) ||
               (cf.dataTypeId === 6 && null == cf.intValue) ||
-              (cf.dataTypeId === 7 && null == cf.intArrayValue) ||
+              (cf.dataTypeId === 7 && (null == cf.intArrayValue || cf.intArrayValue.length === 0)) ||
               (cf.dataTypeId === 8 && null == cf.intValue) ||
               (cf.dataTypeId === 9 && null == cf.intValue)
             ) {
@@ -574,10 +645,16 @@ export default {
         this.$emit('refresh-upcoming-pps')
         this.$emit('refresh-upcoming-events')
 
+        //set this because running an action also saves fields so it needs to be reset
+        this.defaultValuesChanged = false
         if (data?.processStepStatusTypeId !== 1) {
+          //set navigation override so we dont get the unsaved fields popup
+          this.navigationOverride = true
           //if ps root status is not active then go back to project screen
           this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
         } else if (data?.eventStatusTypeId !== 1) {
+          //set navigation override so we dont get the unsaved fields popup
+          this.navigationOverride = true
           //if ps root status is active but event root status is not then go back to ps
           let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
           this.$router.push(path)
@@ -606,17 +683,20 @@ export default {
     },
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
+      // if not readonly and the user can manage then ignore event status check
       let fieldReadOnly = false
       if (null != field) {
         fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
       }
-      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+      return ((!this.userIsAdmin && !this.userCanManage && !fieldReadOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
         || fieldReadOnly || !this.userCanEdit
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
+      let readOnly = getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
       // if events admin then they can edit any event fields, otherwise idk???
-      return (!this.userIsAdmin && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
-        || getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
+      // if not readonly and the user can manage then ignore event status check
+      return ((!this.userIsAdmin && !this.userCanManage && !readOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+        || readOnly
         || !this.userCanEdit
     },
     populateDirtyCfvs(field) {
@@ -651,6 +731,8 @@ export default {
           processStepId: this.selectedEvent.processStepId,
           processStepName: this.selectedEvent.processStepName
         })
+        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
+          : `${this.selectedEvent.eventName}`
         this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
@@ -665,7 +747,8 @@ export default {
         return status
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
+        let msg = e?.data?.message || 'Error Retrieving Details'
+        this.snackbar = getSnackbar('ERROR', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
@@ -673,6 +756,9 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
+        //set navigation override so that if there were unsaved fields it won't ask you to try and save
+        this.navigationOverride = true
+        this.$emit('refresh-upcoming-events')
         //go to the process step
         this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`)
       } catch (e) {
@@ -696,7 +782,10 @@ export default {
           customFieldValues: this.dirtyCfvs
         }
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
+        this.dirtyCfvs = []
         this.selectedEvent = data
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
@@ -748,7 +837,8 @@ export default {
           // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-          users: this.selectedTimeSlot.users
+          users: this.selectedTimeSlot.users,
+          remote: this.mostRecentSearchWasRemote
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/availability/setCloserAppointment`, body)
@@ -826,6 +916,7 @@ export default {
         validSave = false
         this.actionRequiresEnd = false
         this.actionRequiresResource = false
+        this.eventActionMissingRequirements = true
         this.saveErrorMsg = 'Start Time is required to save the event fields'
         //dont do this for now. makes the page look weird after save
         // document.getElementById('event-header').scrollIntoView()
@@ -834,6 +925,7 @@ export default {
       //after everything, only save if valid
       if (validSave) {
         this.eventActionMissingRequirements = false
+        this.defaultValuesChanged = false
         this.saveEventDetails()
       }
     },
@@ -866,6 +958,11 @@ export default {
   white-space: normal;
 }
 
+#event-header .v-toolbar__content {
+  display: flex;
+  align-items: flex-start;
+}
+
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -880,11 +977,10 @@ export default {
   padding-right: 0 !important;
 }
 
-.cfg-detail-header .v-toolbar__title {
-  font-size: 16px;
-}
+
 </style>
 <style lang="scss" scoped>
+
 .cfg-detail-header {
   background-color: var(--v-secondary-base) !important;
   margin-left: -10px;
@@ -892,11 +988,22 @@ export default {
   padding-left: 10px;
   padding-right: 10px;
 }
+.scheduler-button-text {
+  text-transform: capitalize;
+  text-decoration: underline;
+}
+.scheduler-button-icon {
+ text-decoration: none;
+  font-size: 12px;
+}
 
 .action-subheader {
   width: 186px;
   margin-top: 20px;
-  font-weight: 600;
+}
+
+.padding-left-1 {
+  padding-left: 1px; //keeps the Event Details toolbar from covering the border on the left panel
 }
 
 ::v-deep {

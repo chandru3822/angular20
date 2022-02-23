@@ -212,10 +212,6 @@ export default {
 
 <style lang="scss">
 
-.sidebar-title {
-font-size: 16px;
-}
-
 .message-container {
   min-height: 400px;
   height: calc(100% - 10px);

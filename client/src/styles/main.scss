@@ -69,8 +69,9 @@ body {
 }
 
 /* required to make autocomplete dropdowns not get covered up */
+// 202 = dialog modals, we dont want to be on top of those
 .toolbar-z-index-override {
-  z-index: 999;
+  z-index: 201;
 }
 
 .app-toolbar {
@@ -90,6 +91,7 @@ body {
   max-height: 100vh;
   overflow: hidden;
 }
+
 .app-button{
   padding: 0 5px;
   border-radius: 3px;
@@ -258,26 +260,31 @@ label[for="adminOriginatorSelect"] {
 }
 
 .status-active {
-  color: green;
+  color: #228726;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .status-complete {
-  color: cornflowerblue;
+  color: #3671E3;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .status-cancelled {
   color: #8B0000;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .hr-non-transparent {
   border-color: #e0e1e2 !important;
 }
+
+.text-wrap {
+  white-space: normal !important;
+}
+
 .app-pre-wrapper {
   white-space: pre-line;
   font-family: 'Lato', sans-serif;
@@ -387,3 +394,58 @@ label[for="adminOriginatorSelect"] {
   }
 
 }
+
+
+//Global Styles
+//there may be a better way to do this, but I wanted to at least get something going here
+.albatross-header-1 {
+  font-weight: normal;
+  font-size: 1.25rem;
+}
+.albatross-header-2,
+.cfg-name-toolbar .v-toolbar__title.albatross-header-2,
+.v-toolbar__title.albatross-header-2 //to override vuetify styling
+{
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+.albatross-header-3,
+.cfg-name-toolbar .v-toolbar__title.albatross-header-3,
+.v-toolbar__title.albatross-header-3
+{
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+.albatross-header-4,
+.cfg-name-toolbar .v-toolbar__title.albatross-header-4,
+.v-toolbar__title.albatross-header-4
+{
+  font-weight: normal;
+  font-size: 1rem;
+
+}.albatross-header-5 {
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+//eventually this should be our default body font size/weight, rendering this class unnecessary
+.albatross-body-1 {
+  font-weight: normal;
+  font-size: 1rem;
+}
+//
+.albatross-body-2,
+  .albatross-body-2.status-cancelled,
+  .albatross-body-2.status-complete,
+  .albatross-body-2.status-active
+  //ideally, the status classes would only change the color, but this is for
+  // the intermediate time so we don't break things already using status classes
+{
+  font-weight: normal;
+  font-size: 0.875rem;
+}
+.albatross-body-3 {
+  font-weight: normal;
+  font-size: 0.75rem;
+}
+

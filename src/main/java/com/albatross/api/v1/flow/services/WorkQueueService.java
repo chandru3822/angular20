@@ -108,7 +108,12 @@ public class WorkQueueService {
       query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
     } else {
       //this should only be called for wqt using event data
-      query = smartlistService.buildProcessStepSql(smartlist, fields, timezone, false);
+      query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
+
+      //add default fields to fields list
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields();
+      defaultFields.addAll(fields);
+      fields = defaultFields;
     }
     List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
@@ -148,7 +153,12 @@ public class WorkQueueService {
     String query;
     if(useEventData) {
 //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
-      query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData);
+      query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
+
+      //add default fields to fields list
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields();
+      defaultFields.addAll(fields);
+      fields = defaultFields;
     } else {
       query = smartlistService.buildSql(smartlist, fields);
     }

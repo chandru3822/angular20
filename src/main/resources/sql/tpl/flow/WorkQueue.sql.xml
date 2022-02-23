@@ -9,6 +9,7 @@
        wqt.long_window,
        wqt.expected_cycle,
        wqt.inverse_expectation,
+       wqt.use_event_data,
        s.id as smartlist_id,
        wqc.color,
        metrics.*,
@@ -107,6 +108,7 @@ select wqt.id as work_queue_type_id,
        null as long_window,
        null as expected_cycle,
        null as inverse_expectation,
+       wqt.use_event_data,
        s.id as smartlist_id,
        wqc.color,
        null as short_window_numerator       ,
@@ -153,7 +155,7 @@ select wqt.id as work_queue_type_id,
                 from flow.process_step_event_work_queue_type_project_status_type pswqtpsst
                        inner join flow.process_step_event_work_queue_type pswqt on pswqtpsst.process_step_event_work_queue_type_id = pswqt.id
                        inner join flow.process_step_event pse on pswqt.process_step_event_id = pse.id
-                       inner join flow.process_step ps on pswqt.process_step_event_id = ps.id
+                       inner join flow.process_step ps on pse.process_step_id = ps.id
                 where pswqt.work_queue_type_id = wqt.id
                   and pswqt.archived is not true
                   and pswqtpsst.archived is not true
@@ -172,7 +174,7 @@ select wqt.id as work_queue_type_id,
                 from flow.process_step_event_work_queue_type_event_status_type pswqtpsst
                        inner join flow.process_step_event_work_queue_type pswqt on pswqtpsst.process_step_event_work_queue_type_id = pswqt.id
                        inner join flow.process_step_event pse on pswqt.process_step_event_id = pse.id
-                       inner join flow.process_step ps on pswqt.process_step_event_id = ps.id
+                       inner join flow.process_step ps on pse.process_step_id = ps.id
                 where pswqt.work_queue_type_id = wqt.id
                   and pswqt.archived is not true
                   and pswqtpsst.archived is not true
@@ -202,6 +204,7 @@ select wqt.id as work_queue_type_id,
          where wqt.id = pswqt.work_queue_type_id
            and pswqt.archived is not true
            and pps.archived is not true
+           and ppse.archived is not true
            and p.archived is not true
            and case
                  when :isParent then ps.company_id = any

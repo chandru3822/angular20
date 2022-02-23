@@ -27,99 +27,112 @@
             Save
           </v-btn>
         </v-card>
-        <v-data-table
-          :headers="headers"
-          :items="filterEventStatuses()"
-          :fixed-header="true"
-          :expanded.sync="expanded"
-          single-expand
-          :items-per-page="-1"
-          hide-default-footer
-          :sort-by="['displayOrder']"
-          :sort-desc="[false]"
-          class="elevation-1"
-        >
-          <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
-              <h3 class="mb-3">Edit Status Type</h3>
-              <v-text-field v-model="item.eventStatusType"
-                            label="Status Type"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-              ></v-text-field>
-              <v-autocomplete
-                :items="rootStatusTypes"
-                v-model="item.eventStatusTypeId"
-                item-value="id"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                label="Select a Category"
-                item-text="eventStatusType"></v-autocomplete>
-              <v-btn color="primaryCustom" dark class="white--text"
-                     :disabled="!item.eventStatusType || !item.eventStatusTypeId"
-                     @click="saveType(item, false)">Save
-              </v-btn>
-            </td>
-          </template>
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td style="width: 50px">
-                <v-btn text icon small class="handle" v-if="userCanEdit">
-                  <v-icon>drag_handle</v-icon>
+        <v-card class="square-card">
+          <v-card-title class="pt-0">
+            <v-text-field
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-card-title>
+          <v-data-table
+            :headers="headers"
+            :items="filterEventStatuses()"
+            :fixed-header="true"
+            :expanded.sync="expanded"
+            single-expand
+            :search="search"
+            :items-per-page="-1"
+            hide-default-footer
+            :sort-by="['displayOrder']"
+            :sort-desc="[false]"
+            class="elevation-1"
+          >
+            <template #expanded-item="{ headers, item }">
+              <td :colspan="headers.length" class="pa-4 text-left"
+                  :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+                <h3 class="mb-3">Edit Status Type</h3>
+                <v-text-field v-model="item.eventStatusType"
+                              label="Status Type"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                ></v-text-field>
+                <v-autocomplete
+                  :items="rootStatusTypes"
+                  v-model="item.eventStatusTypeId"
+                  item-value="id"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
+                  label="Select a Category"
+                  item-text="eventStatusType"></v-autocomplete>
+                <v-btn color="primaryCustom" dark class="white--text"
+                       :disabled="!item.eventStatusType || !item.eventStatusTypeId"
+                       @click="saveType(item, false)">Save
                 </v-btn>
               </td>
-              <td class="text-left">
-                {{ item.eventStatusType }}
-              </td>
-              <td class="text-left">
-                {{ item.rootEventStatusType }}
-              </td>
-              <td class="text-right">
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                          v-model="item.deleteConfirm" width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this status type: <strong>{{ item.eventStatusType }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
+            </template>
+            <template #item="{ item, index }">
+              <tr :class="{'shaded-row': index % 2}">
+                <td style="width: 50px">
+                  <v-btn text icon small class="handle" v-if="userCanEdit">
+                    <v-icon>drag_handle</v-icon>
+                  </v-btn>
+                </td>
+                <td class="text-left">
+                  {{ item.eventStatusType }}
+                </td>
+                <td class="text-left">
+                  {{ item.rootEventStatusType }}
+                </td>
+                <td class="text-right">
+                  <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                  <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                            v-model="item.deleteConfirm" width="500">
+                    <template #activator="{ on }">
+                      <v-btn small text v-on="on">
+                        <v-icon>delete</v-icon>
                       </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="[item.archived = true, deleteType(item)]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </td>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="text-h5 grey lighten-2"
+                        primary-title
+                      >
+                        Confirm
+                      </v-card-title>
 
-            </tr>
-          </template>
-        </v-data-table>
+                      <v-card-text>
+                        Are you sure you want to delete this status type: <strong>{{ item.eventStatusType }}</strong>?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="[item.archived = true, deleteType(item)]">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </td>
+
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card>
       </v-col>
 
     </v-row>
@@ -150,6 +163,7 @@ export default {
     return {
       snackbar: {},
       constants,
+      search: '',
       statusTypes: [],
       expanded: [],
       rootStatusTypes: [],

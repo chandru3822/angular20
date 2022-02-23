@@ -20,8 +20,6 @@ AS
 $BODY$
 declare
   v_user_id                                     integer;
-  v_project_process_step_id                     integer;
-  v_project_process_step_custom_field_value_id  integer;
   v_user_full_name                              text;
   v_user_email                                  text;
   v_user_position_id                            integer;
@@ -132,8 +130,8 @@ BEGIN
     select count(1)
     into v_user_already_assigned_to_another_project_id
     from flow.project p
-           inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
-           inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+           inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1 and pps.archived is false
+           inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id and ppse.archived is false
            inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
            inner join flow.event_status_type est on cest.event_status_type_id = est.id and est.id in (1,2)
            inner join flow.company_process_step_status_type cpsst
@@ -163,7 +161,23 @@ BEGIN
       update brs.set_closer_appointment_audit
       set closer_selected = true
       where id = v_set_closer_appointment_audit_id;
-      return query select true::boolean,
+      --set the proposal due date on the process step to the start time
+      perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::int, p_appointment_start_time::text);
+      --change the status of the event to pending
+      update flow.project_process_step_event
+        set company_event_status_type_id = 7
+      where id = p_project_process_step_event_id;
+      --change the status of the project process step to Pending Event
+      update flow.project_process_step
+      set company_process_step_status_type_id = 76
+      where id = p_project_process_step_id;
+      --change the status of the project to appointment scheduled
+      update flow.project
+        set company_project_status_type_id = 61
+      where id = p_project_id;
+
+      --then return
+             return query select true::boolean,
                           v_user_id::integer,
                           p_appointment_start_time::timestamp,
                           (p_appointment_start_time +

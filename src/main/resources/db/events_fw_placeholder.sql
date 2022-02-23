@@ -27,7 +27,7 @@ CREATE TABLE if not exists flow.project_process_step_event
   start_time                   timestamp,
   end_time                     timestamp,
   date_created                 timestamp without time zone DEFAULT now(),
-  date_modified                timestamp without time zone,
+  date_modified                timestamp without time zone DEFAULT now(),
   created_by_id                integer not null,
   modified_by_id               integer,
   archived                     boolean not null            default false,
@@ -72,7 +72,7 @@ CREATE TABLE if not exists flow.project_process_step_event_custom_field_value
   int_value                        integer,
   int_array_value                  integer[],
   date_created                     timestamp without time zone DEFAULT now(),
-  date_modified                    timestamp without time zone,
+  date_modified                    timestamp without time zone DEFAULT now(),
   created_by_id                    integer not null,
   modified_by_id                   integer,
   CONSTRAINT project_process_step_event_custom_field_value_pk PRIMARY KEY (id),
@@ -115,7 +115,7 @@ CREATE TABLE if not exists flow.project_process_step_event_attachment
   attachment_id                 integer not null,
   project_process_step_event_id integer not null,
   date_created                  timestamp without time zone DEFAULT now(),
-  date_modified                 timestamp without time zone,
+  date_modified                 timestamp without time zone DEFAULT now(),
   created_by_id                 integer not null,
   modified_by_id                integer,
   archived                      boolean not null default false,
@@ -516,21 +516,114 @@ where process_step_id = 1
   and group_name = 'Closer Appointment Scheduling'
   and archived is false;
 
+-- this allows mobile to show the review button on an installation event.
+insert into flow.unique_behavior_type(unique_behavior_type, created_by_id)
+select 'REVIEW_INSTALLATION', 2417170
+WHERE not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'REVIEW_INSTALLATION');
+
+update flow.process_step_event
+  set unique_behavior_type_id = 3
+where process_step_id = 3365
+and event_id = 22;
 -- add the db function that checks for active events on a pps
+-- insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+--   select 'flow.pps_has_active_events', 3, 1, 'Project Process Step has Active Events', 'Checks to see if a project process step has any active events assigned to it.'
+--    where not exists (select id from flow.db_function where function_name = 'flow.pps_has_active_events');
+-- ;
+--
+-- insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+-- select (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 'Project Process Step ID', 0,
+--     6, 1, 3
+--       where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_active_events')
+--         and parameter_name = 'Project Process Step ID');
+--
+-- insert into flow.company_function(company_function_name, db_function_id, company_id)
+-- select 'Project Process Step has Active Events', (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 3
+-- where not exists (select id from flow.company_function where company_function_name = 'Project Process Step has Active Events');
+
+-- add the db function that checks for pps events of a certain type
 insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
-  select 'flow.pps_has_active_events', 3, 1, 'Project Process Step has Active Events', 'Checks to see if a project process step has any active events assigned to it.'
-   where not exists (select id from flow.db_function where function_name = 'flow.pps_has_active_events');
+  select 'flow.pps_has_events_in_selected_status', 3, 1, 'Project Process Step has Events In Selected Statuses', 'Checks to see if a project process step has any events of specific types.'
+   where not exists (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status');
 ;
 
 insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
-select (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 'Project Process Step ID', 0,
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Project Process Step ID', 0,
     6, 1, 3
-      where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_active_events')
+      where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
         and parameter_name = 'Project Process Step ID');
 
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Company Event Status Type IDs (comma separate, null for none)', 1,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
+                                                           and parameter_name = 'Company Event Status Type IDs (comma separate, null for none)');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Event Status Category IDs (comma separate, null for none)', 2,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
+                                                           and parameter_name = 'Event Status Category IDs (comma separate, null for none)');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 'Event ID (null for none)', 3,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status')
+                                                           and parameter_name = 'Event ID (null for none)');
+
 insert into flow.company_function(company_function_name, db_function_id, company_id)
-select 'Project Process Step has Active Events', (select id from flow.db_function where function_name = 'flow.pps_has_active_events'), 3
-where not exists (select id from flow.company_function where company_function_name = 'Project Process Step has Active Events');
+select 'Process Step has Events In Selected Statuses', (select id from flow.db_function where function_name = 'flow.pps_has_events_in_selected_status'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Process Step has Events In Selected Statuses');
+
+
+-- add the db function that checks for pps event custom field value
+insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+select 'flow.check_pps_has_event_with_value', 3, 1, 'Project Process Step has Event With Custom Field Value', 'Checks to see if a project process step has any events with a specific value assigned to a specific custom field group assignment.'
+where not exists (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value');
+;
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 'Project Process Step ID', 0,
+       6, 1, 3
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value')
+                                                           and parameter_name = 'Project Process Step ID');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 'Custom Field Group Assignment ID', 1,
+       6, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value')
+                                                           and parameter_name = 'Custom Field Group Assignment ID');
+
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 'Value to Check For', 2,
+       5, 2, null
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value')
+                                                           and parameter_name = 'Value to Check For');
+
+insert into flow.company_function(company_function_name, db_function_id, company_id)
+select 'Process Step has Event With Custom Field Value', (select id from flow.db_function where function_name = 'flow.check_pps_has_event_with_value'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Process Step has Event With Custom Field Value');
+
+-- add function for proposal due date work queue
+insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, description)
+select 'brs.populate_proposal_due_date', null, 2, 'Populate Proposal Due Date', 'Checks for Closer Appointment Event on itself and uses the start time as the proposal due date.'
+where not exists (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date');
+;
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date'), 'Project ID', 0,
+       6, 1, 2
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date')
+                                                           and parameter_name = 'Project ID');
+insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+select (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date'), 'Project Process Step ID', 1,
+       6, 1, 3
+where not exists ( select id from flow.db_function_param where db_function_id = (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date')
+                                                           and parameter_name = 'Project Process Step ID');
+insert into flow.company_function(company_function_name, db_function_id, company_id)
+select 'Populate Proposal Due Date', (select id from flow.db_function where function_name = 'brs.populate_proposal_due_date'), 3
+where not exists (select id from flow.company_function where company_function_name = 'Populate Proposal Due Date');
+
+
 
 -- SMARTLIST STUFF
 alter table if exists flow.smartlist_field_assignment
@@ -587,6 +680,20 @@ set archived = true
 from offendingRequirements
 where sr.id = offendingRequirements.id;
 
+-- archive smartlist field assignments that used to belong to PSs but will now belong to events (start times, end times, and resource fields)
+update flow.smartlist_field_assignment
+set archived = true
+where id = any(
+  select distinct(sfa.id)
+  from flow.smartlist s
+         inner join flow.smartlist_field_assignment sfa on sfa.smartlist_id = s.id
+         inner join flow.custom_field_group_assignment cfga on cfga.id = sfa.custom_field_group_assignment_id
+         inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+         inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+         inner join flow.user u on s.owner_id = u.id
+  where to_tsvector(cf.field_name) @@ to_tsquery('resource | time') and s.archived is not true and sfa.archived is not true
+);
+
 --system fields
 insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, created_by_id, company_data_type_id, join_table, join_column, smartlist_system_list_id)
 values (91, 'Event ID', 'flow.project_process_step_event', 'id', 99999999, 5, null, null, null),
@@ -613,7 +720,7 @@ CREATE TABLE if not exists flow.process_step_event_work_queue_type
   work_queue_type_id integer,
   archived boolean default false,
   date_created   timestamp without time zone DEFAULT now(),
-  date_modified   timestamp without time zone,
+  date_modified   timestamp without time zone DEFAULT now(),
   created_by_id  integer                not null,
   modified_by_id integer,
   CONSTRAINT process_step_event_work_queue_type_pk PRIMARY KEY (id),
@@ -654,7 +761,7 @@ CREATE TABLE if not exists flow.process_step_event_work_queue_type_process_step_
   process_step_status_type_id integer,
   process_step_event_work_queue_type_id integer not null,
   date_created     timestamp without time zone DEFAULT now(),
-  date_modified   timestamp without time zone,
+  date_modified   timestamp without time zone DEFAULT now(),
   created_by_id    integer      not null,
   modified_by_id  integer,
   archived       boolean not null default false,
@@ -710,7 +817,7 @@ CREATE TABLE if not exists flow.process_step_event_work_queue_type_project_statu
   project_status_type_id integer,
   process_step_event_work_queue_type_id integer not null,
   date_created     timestamp without time zone DEFAULT now(),
-  date_modified   timestamp without time zone,
+  date_modified   timestamp without time zone DEFAULT now(),
   created_by_id    integer      not null,
   modified_by_id  integer,
   archived       boolean not null default false,
@@ -766,7 +873,7 @@ CREATE TABLE if not exists flow.process_step_event_work_queue_type_event_status_
   event_status_type_id integer,
   process_step_event_work_queue_type_id integer not null,
   date_created     timestamp without time zone DEFAULT now(),
-  date_modified   timestamp without time zone,
+  date_modified   timestamp without time zone DEFAULT now(),
   created_by_id    integer      not null,
   modified_by_id  integer,
   archived       boolean not null default false,
@@ -970,6 +1077,8 @@ insert into flow.migration_child_process_step(project_process_id, process_step_i
 values(170,'{170,206,207,171}');
 insert into flow.migration_child_process_step(project_process_id, process_step_ids)
 values(25,'{25,235,26}');
+insert into flow.migration_child_process_step(project_process_id, process_step_ids)
+values(3494,'{3494}');
 
 
 alter table brs.project_details drop column if exists ahj_inspection_start_time_ppse_id;
@@ -995,3 +1104,40 @@ insert into flow.process_step_requirement_type(process_step_requirement_type)
 alter table flow.project_process_step_event add column if not exists cancelled_date timestamp;
 alter table flow.project_process_step_event add column if not exists completed_date timestamp;
 alter table flow.project_process_step_event add column if not exists scheduled_date timestamp;
+
+
+insert into flow.feature(feature_name, feature_code, feature_path, is_system)
+(select 'Maintenance Mode', 'MAINTENANCE_MODE', null, true
+  where not exists (select id from flow.feature where feature_code = 'MAINTENANCE_MODE'));
+
+insert into flow.company_feature(feature_name, company_id, feature_id, home_page, hidden)
+  (select 'Maintenance Mode', 3, (select id from flow.feature where feature_code = 'MAINTENANCE_MODE'), false, true
+   where not exists (select id from flow.company_feature where feature_name = 'Maintenance Mode'));
+
+insert into flow.feature_access_control(feature_id, access_control_id, created_by_id)
+(select (select id from flow.feature where feature_code = 'MAINTENANCE_MODE'), 5, 2417170
+where not exists (select id from flow.feature_access_control
+  where feature_id = (select id from flow.feature where feature_code = 'MAINTENANCE_MODE')
+  and access_control_id = 5));
+
+-- add all 7oaks employees permission to maintenance mode
+insert into flow.user_feature_access_control(user_id, company_feature_id, access_control_id, enabled)
+select u.id, 398, 5, true
+from flow."user" u
+where email in (
+'mandy@7oaksgroup.com',
+'scott.humes+rick@7oaksgroup.com',
+'john@7oaksgroup.com',
+'kory@calmes.org',
+'michael.meyers@xomly.com',
+'randa@randa.com',
+'kellersk@7oaksgroup.com',
+'kaleb@7oaksgroup.com',
+'jacey@7oaksgroup.com',
+'jessica@7oaksgroup.com'
+  )
+and not exists (
+  select id from flow.user_feature_access_control ufac
+  where ufac.user_id = u.id and ufac.access_control_id = 5 and ufac.company_feature_id = 398
+  )
+;

@@ -1,9 +1,9 @@
---drop FUNCTION if exists flow.get_project_process_step_event_requirements_with_values(INTEGER, INTEGER[]);
+-- drop FUNCTION if exists flow.get_project_process_step_event_requirements_with_values(INTEGER, INTEGER[]);
 
 CREATE OR REPLACE FUNCTION flow.get_project_process_step_event_requirements_with_values(p_project_process_step_id INTEGER, p_requirement_ids INTEGER[])
 
   RETURNS TABLE (id int, project_id int, process_step_requirement_type_id int, process_step_id int, operator_type_id int, requirement_value varchar, custom_field_group_assignment_id int,
-                 company_function_id int, reference_process_step_id int, requirement_nbr int, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id int, modified_by_id int,
+                 company_function_id int, fail_if_no_reference_step_found boolean, reference_process_step_id int, requirement_nbr int, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id int, modified_by_id int,
                  archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
                  process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
                  company_system_list_id int, system_list_option_id int, custom_sql_option_id int, time_zone varchar, project_custom_field_value_id int, project_process_step_id int, text_value text,
@@ -23,6 +23,7 @@ BEGIN
       psr.requirement_value,
       psr.custom_field_group_assignment_id,
       psr.company_function_id,
+      psr.fail_if_no_reference_step_found,
       psr.reference_process_step_id,
       psr.requirement_nbr,
       psr.date_created,
