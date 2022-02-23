@@ -37,7 +37,8 @@ BEGIN
                                     1                                 as display_order,
                                     (select count(1) as company_count
                                      from brs.project_details pd
-                                     where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                      inner join flow.project_process_step_event ppse on ppse.id = pd.first_appointment_ppse_id
+                                     where ((ppse.scheduled_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                        and pd.company_id = v_company_id
                                        and pd.archived is false
                                     )                                 as company_count,
