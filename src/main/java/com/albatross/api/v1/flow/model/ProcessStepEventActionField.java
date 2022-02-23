@@ -13,7 +13,8 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessStepEventActionField {
 
-  private Long id, customFieldGroupAssignmentId, processStepEventActionId, customFieldId, customFieldGroupId;
+  private Long id, customFieldGroupAssignmentId, processStepEventActionId,
+    customFieldId, customFieldGroupId, dataTypeId;
   private String fieldName, groupName;
   private Boolean archived, required, optional;
 
