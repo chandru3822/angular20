@@ -477,6 +477,7 @@ select
   cf.company_system_list_id,
   sl.system_list_type_id,
   sl.id as system_list_id,
+  csl_e.system_list_id as "eventResourceSystemListId",
   case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
   (select row_to_json(f) from(
       select
@@ -572,6 +573,8 @@ left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 left join flow.process_step_event pse on pse.id = sfa.process_step_event_id
 left join flow.event e on e.id = pse.event_id
 left join flow.process_step ps2 on ps2.id = pse.process_step_id
+left join flow.custom_field cf_e on cf_e.id = e.resource_custom_field_id
+left join flow.company_system_list csl_e on csl_e.id = cf_e.company_system_list_id
 where
   sfa.smartlist_id = :smartlistId and
   sfa.archived is not true

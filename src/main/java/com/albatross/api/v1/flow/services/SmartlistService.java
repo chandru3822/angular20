@@ -1589,13 +1589,13 @@ public class SmartlistService {
 
         //join the value table for the respective field object type
         if (r.getObjectTypeId() == 1) {
-          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.project"));
+          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.project", false));
         } else if (r.getObjectTypeId() == 2) {
-          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.contact"));
+          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.contact", false));
         } else if (r.getObjectTypeId() == 4) {
           r.setPpsTable(UUID.randomUUID().toString());
           projectsValueJoins.append(joinPpsTable(r.getPpsTable(), r.getProcessStepId(), smartlist.isMainProcessSteps()));
-          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), r.getPpsTable()));
+          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), r.getPpsTable(), false));
         } else if (r.getObjectTypeId() == 6) {
           // check if process step is already joined
           if (projectsValueJoins.indexOf(".process_step_id = " + r.getProcessStepId()) != -1) {
@@ -1618,18 +1618,18 @@ public class SmartlistService {
               r.setPpsEventTable(ppsEventTable);
             } else {
               r.setPpsEventTable(UUID.randomUUID().toString());
-              query.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId()));
+              query.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId(), false));
             }
           } else {
             //join pps and ppse tables
             r.setPpsTable(UUID.randomUUID().toString());
             r.setPpsEventTable(UUID.randomUUID().toString());
             projectsValueJoins.append(joinPpsTable(r.getPpsTable(), r.getProcessStepId(), smartlist.isMainProcessSteps()));
-            projectsValueJoins.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId()));
+            projectsValueJoins.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId(), false));
           }
 
           // join pps event value table
-          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueEventReferenceTable(), r.getPpsEventTable()));
+          projectsValueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueEventReferenceTable(), r.getPpsEventTable(), false));
         }
       }
 
@@ -1711,14 +1711,14 @@ public class SmartlistService {
               r.setPpsEventTable(ppsEventTable);
             } else {
               r.setPpsEventTable(UUID.randomUUID().toString());
-              projectsValueJoins.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId()));
+              projectsValueJoins.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId(), false));
             }
           } else {
             r.setPpsTable(UUID.randomUUID().toString());
             r.setPpsEventTable(UUID.randomUUID().toString());
             //join pps and ppse tables
             projectsValueJoins.append(joinPpsTable(r.getPpsTable(), r.getProcessStepId(), smartlist.isMainProcessSteps()));
-            projectsValueJoins.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId()));
+            projectsValueJoins.append(joinPPsEventTable(r.getPpsEventTable(), r.getPpsTable(), r.getProcessStepEventId(), false));
           }
 
           //next determine referenceLocation
@@ -1950,7 +1950,8 @@ public class SmartlistService {
           } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
             selectFields.append(String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name) as \"%s\", ", f.getValueReferenceTable(), f.getValueReferenceTable(), f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.org")) { //else if field is event resource
-            selectFields.append(String.format("(select name from \"systemList_3\" where id = flow.project_process_step_event.resource_id) as \"%s\", ", f.getId()));
+            final long systemListNumber = (f.getEventResourceSystemListId() == 1 || f.getEventResourceSystemListId() == 2) ? 1 : f.getEventResourceSystemListId();
+            selectFields.append(String.format("(select name from \"systemList_%s\" where id = flow.project_process_step_event.resource_id) as \"%s\", ", systemListNumber, f.getId()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
                      Objects.equals(f.getReferenceTable(), "flow.process_step") ||
                      Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
@@ -2051,15 +2052,15 @@ public class SmartlistService {
           } else {
             //join the value table for the respective field object type
             if (f.getObjectTypeId() == 1) {
-              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.project"));
+              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.project", false));
             } else if (f.getObjectTypeId() == 2) {
-              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.contact"));
+              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.contact", false));
             } else if (f.getObjectTypeId() == 4) {
               f.setPpsTable("flow.project_process_step");
-              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), f.getPpsTable()));
+              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), f.getPpsTable(), false));
             } else if (f.getObjectTypeId() == 6) {
               f.setPpsEventTable("flow.project_process_step_event");
-              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueEventReferenceTable(), f.getPpsEventTable()));
+              valueJoins.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueEventReferenceTable(), f.getPpsEventTable(), false));
             }
           }
         }
@@ -2084,15 +2085,15 @@ public class SmartlistService {
             if (r.getCustomFieldGroupAssignmentId() != null) {
               //join the value table for the respective field object type
               if (r.getObjectTypeId() == 1) {
-                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.project"));
+                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.project", false));
               } else if (r.getObjectTypeId() == 2) {
-                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.contact"));
+                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), "flow.contact", false));
               } else if (r.getObjectTypeId() == 4) {
                 r.setPpsTable("flow.project_process_step");
-                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), r.getPpsTable()));
+                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueReferenceTable(), r.getPpsTable(), false));
               } else if (r.getObjectTypeId() == 6) {
                 r.setPpsEventTable("flow.project_process_step_event");
-                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueEventReferenceTable(), r.getPpsEventTable()));
+                valueJoins.append(joinValueTable(r.getObjectTypeId(), r.getCustomFieldGroupAssignmentId(), r.getValueEventReferenceTable(), r.getPpsEventTable(), false));
               }
             }
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
@@ -2347,9 +2348,9 @@ public class SmartlistService {
       //if the field is a custom field
       if (f.getCustomFieldGroupAssignmentId() != null) {
         if (f.getObjectTypeId() == 1) {
-          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.project"));
+          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.project", true));
         } else if (f.getObjectTypeId() == 2) {
-          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.contact"));
+          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), "flow.contact", true));
         } else if (f.getObjectTypeId() == 4) {
           if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
             // if the PS is already joined, use it
@@ -2365,7 +2366,7 @@ public class SmartlistService {
           }
 
           //join pps value table
-          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), f.getPpsTable()));
+          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), f.getPpsTable(), true));
         } else if (f.getObjectTypeId() == 6) {
           //check if process step is already joined
           if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
@@ -2387,16 +2388,16 @@ public class SmartlistService {
                 .orElse(null);
               f.setPpsEventTable(ppsEventTable);
             } else {
-              query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId()));
+              query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
             }
           } else {
             //join pps and ppse tables
             query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
-            query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId()));
+            query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
           }
 
           //join pps event value table
-          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), f.getPpsEventTable()));
+          query.append(joinValueTable(f.getObjectTypeId(), f.getCustomFieldGroupAssignmentId(), f.getValueReferenceTable(), f.getPpsEventTable(), true));
         }
       }
 
@@ -2475,12 +2476,12 @@ public class SmartlistService {
                 .orElse(null);
               f.setPpsEventTable(ppsEventTable);
             } else {
-              query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId()));
+              query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
             }
           } else {
             //join pps and ppse tables
             query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
-            query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId()));
+            query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
           }
 
           //if field is event name system field
@@ -2499,7 +2500,8 @@ public class SmartlistService {
           } else if (Objects.equals(f.getReferenceTable(), "flow.org")) { //else if field is event resource
 
             final String newValueTable = UUID.randomUUID().toString();
-            query.append(String.format(" left join \"systemList_3\" \"%s\" on \"%s\".id = \"%s\".%s", newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
+            final long systemListNumber = (f.getEventResourceSystemListId() == 1 || f.getEventResourceSystemListId() == 2) ? 1 : f.getEventResourceSystemListId();
+            query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListNumber, newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
             f.setValueReferenceTable(newValueTable);
           }
         }
@@ -3104,8 +3106,14 @@ public class SmartlistService {
    * @param processStepEventId Process step event ID of the project_process_step_event table
    * @return a sql string snippet
    */
-  private String joinPPsEventTable(String ppsEventTable, String ppsTable, Long processStepEventId) {
-    return String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true and \"%s\".process_step_event_id != flow.process_step_event.id ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable, ppsEventTable);
+  private String joinPPsEventTable(String ppsEventTable, String ppsTable, Long processStepEventId, Boolean isWorkqueue) {
+    var join = String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable);
+
+    if (isWorkqueue) {
+      join += String.format("and \"%s\".process_step_event_id != flow.process_step_event.id ", ppsEventTable);
+    }
+
+    return join;
   }
 
   /**
@@ -3117,7 +3125,7 @@ public class SmartlistService {
    * @param objectTable String (UUID string for process step and event fields when smartlist is NOT event/process step) to the object type specific joining table
    * @return a sql snippet
    */
-  private String joinValueTable(Long objectTypeId, Long cfgaId, String valueTable, String objectTable) {
+  private String joinValueTable(Long objectTypeId, Long cfgaId, String valueTable, String objectTable, Boolean isWorkqueue) {
 
     var join = "";
     var baseObjectTable = "";
@@ -3137,10 +3145,14 @@ public class SmartlistService {
       baseJoinColumn = "project_process_step_event_id";
 
       //not sure we actually need to check for objectTable being a uuid here. I think on an event field, we will always pass in a uuid
-      var casePart = "";
       if (isUUID) {
-        casePart = String.format("case when \"%s\".process_step_event_id != flow.process_step_event.id then \"%s\".id else flow.project_process_step_event.id end", objectTable, objectTable);
-        join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".custom_field_group_assignment_id = %s and \"%s\".%s = %s ", baseObjectTable, valueTable, valueTable, cfgaId, valueTable, baseJoinColumn, casePart);
+        if (isWorkqueue) {
+          var casePart = String.format("case when \"%s\".process_step_event_id != flow.process_step_event.id then \"%s\".id else flow.project_process_step_event.id end", objectTable, objectTable);
+          join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".custom_field_group_assignment_id = %s and \"%s\".%s = %s ", baseObjectTable, valueTable, valueTable, cfgaId, valueTable, baseJoinColumn, casePart);
+        } else {
+          join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".custom_field_group_assignment_id = %s and \"%s\".%s = \"%s\".id ", baseObjectTable, valueTable, valueTable, cfgaId, valueTable, baseJoinColumn, objectTable);
+        }
+
       } else {
         join = String.format(" left join flow.%s_custom_field_value \"%s\" on \"%s\".%s = %s.id and \"%s\".custom_field_group_assignment_id = %s ",  baseObjectTable, valueTable, valueTable, baseJoinColumn, objectTable, valueTable, cfgaId);
       }
