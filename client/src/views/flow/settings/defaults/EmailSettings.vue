@@ -88,7 +88,7 @@
                 <v-btn small text v-if="index === editIndex" @click="clearChangeToDefault(item)">
                   cancel
                 </v-btn>
-
+<!--todo: create delete confirmation dialog component to be used throughout the app-->
                 <v-dialog
                     v-if="index !== editIndex"
                     v-model="item.deleteConfirm"
