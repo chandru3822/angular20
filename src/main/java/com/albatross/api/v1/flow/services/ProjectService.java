@@ -71,6 +71,13 @@ public class ProjectService {
     return projectId;
   }
 
+  public Long getProjectIdByProjectProcessStepEventId(Long projectProcessStepEventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepEventId", projectProcessStepEventId);
+    Long projectId = sqlCache.queryForObject("project.getProjectIdByProjectProcessStepEventId", params, Long.class);
+    return projectId;
+  }
+
   public List<ProjectDensityResult> getProjectsInGeoArea(DensitySearch search) {
     User currentUser = securityService.getCurrentUser();
 

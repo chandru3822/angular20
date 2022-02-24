@@ -242,11 +242,11 @@ export default {
     }
   },
   methods: {
-    async getCustomFieldObjectTypes () {
+    async getCompanyObjectTypes () {
       if(this.hasSettingsAccess) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
+          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
           this.companyObjectTypes = data
           this.setTitle()
           handleHidingGlobalLoader(this, status)
@@ -275,7 +275,7 @@ export default {
     }
   },
   created () {
-    this.getCustomFieldObjectTypes()
+    this.getCompanyObjectTypes()
   }
 }
 </script>

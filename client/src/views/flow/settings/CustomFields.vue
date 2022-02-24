@@ -146,13 +146,28 @@
                       tabindex="1"
                       v-model="item.newFieldName"
                     />
-                    <div v-if="!apiPath" class="text-left read-only-label">
-                      <label>Read-only:</label>
+                    <div v-if="!apiPath && userIsSystemAdmin" class="text-left read-only-label">
+                      <label>System Level Read-only:</label>
                       <input type="checkbox"
                              :readonly="!userCanEdit"
                              :disabled="!userCanEdit"
                              class="ml-2"
+                             v-model="item.systemReadonly">
+                    </div>
+                    <div v-if="!apiPath" class="text-left read-only-label">
+                      <label>{{ item.systemReadonly ? 'This field is readonly at system level and cannot be changed.' : 'Read-only:'}}</label>
+                      <input type="checkbox"
+                             v-if="!item.systemReadonly"
+                             :readonly="!userCanEdit"
+                             :disabled="!userCanEdit"
+                             class="ml-2"
                              v-model="item.readonly">
+                      <input type="checkbox"
+                             v-else
+                             :readonly="true"
+                             :disabled="true"
+                             class="ml-2"
+                             v-model="item.systemReadonly">
                     </div>
                     <v-autocomplete
                       v-model="item.companyDataType"
@@ -281,7 +296,7 @@
                                     :false-value="true" :true-value="false"
                                     :label="ot.objectType" />
                       </v-container>
-                      <v-container>
+                      <v-container v-else>
                         <v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"
                                     :key="index"
                                     flat
@@ -366,6 +381,7 @@ export default {
       selectedObjectType: { id: -1, objectType: "All" },
       customFieldObjectTypes: [],
       objectFilters: [],
+      userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
       blankNewObject: {
         id: -1,
@@ -380,6 +396,7 @@ export default {
   },
   async created() {
     await this.getCompanyDataTypes();
+    //todo @randa do this so that if there are exclusions they will load correctly
     this.getCustomFieldObjectTypes();
     this.getCustomFields();
     this.getSystemLists();
@@ -398,7 +415,7 @@ export default {
       return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
     },
     filterDataTypes(item) {
-      if (this.$store.getters.userHasFeature("SYSTEM")) {
+      if (this.userIsSystemAdmin) {
         return this.dataTypes;
       } else {
         // filter out the system item if not a system admin
@@ -482,7 +499,7 @@ export default {
     async getCustomFieldObjectTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath, null, []);
+        const { data, status } = await getRequest(`/objectType/getCompanyObjectTypes`, this.apiPath, null, []);
         data?.forEach(d => d.archived = true);
         this.customFieldObjectTypes = cloneDeep(data);
         this.objectFilters = data;

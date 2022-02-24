@@ -2,7 +2,6 @@ package com.albatross.api.utils;
 
 import com.albatross.api.utils.convert.mapper.ConversionServiceBeanPropertyRowMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
@@ -155,6 +154,22 @@ public class BaseSqlCache {
   public <T> List<T> queryBySql(String sql, Map<String, Object> params, RowMapper<T> rowMapper) {
     MapSqlParameterSource paramSource = scrubParams(params);
     return jdbc.query(sql, paramSource, rowMapper);
+  }
+
+  public <T> T queryForObjectBySql(String sql, Map<String, Object> params, Class<T> elementType) {
+    MapSqlParameterSource paramSource = scrubParams(params);
+    return jdbc.queryForObject(sql, paramSource, elementType);
+  }
+
+  public <T> Optional<T> queryForObjectOptionalBySql(String sql, Map<String, Object> params, Class<T> elementType) {
+    try {
+      MapSqlParameterSource paramSource = scrubParams(params);
+
+      //noinspection unchecked
+      return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
+    } catch (DataAccessException e) {
+      return Optional.empty();
+    }
   }
 
   public <T> Optional<T> get(String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {

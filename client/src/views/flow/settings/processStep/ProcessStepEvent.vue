@@ -225,7 +225,7 @@
               </v-toolbar>
               <v-data-table
                 :headers="eventActionFieldHeaders"
-                :items="action.customFields"
+                :items="filteredCustomFields(action)"
                 disable-sort
                 :items-per-page="-1"
                 :mobile-breakpoint="0"
@@ -686,6 +686,11 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
         }
       }
     },
+      filteredCustomFields(action) {
+        return action.customFields.filter(cf => {
+          return cf.dataTypeId !== 12
+        })
+      }
   }
 
 }
