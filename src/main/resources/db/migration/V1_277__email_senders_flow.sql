@@ -22,13 +22,34 @@ CREATE TABLE if not exists flow.email_sender
 	                           ON UPDATE NO ACTION ON DELETE NO ACTION
 	);
 
-INSERT INTO flow.email_sender (email_address, company_id, created_by_id)
-select 'support@blueravensolar.com', 3, 99999999
+INSERT INTO flow.email_sender (email_address, sender_name, company_id, is_default, created_by_id)
+select 'support@blueravensolar.com', 'Blue Raven Support', 3, true, 99999999
+	where not exists(select id from flow.email_sender where email_address = 'support@blueravensolar.com')
+;
+
+INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id)
+select 'salesops@blueravensolar.com', 'Blue Raven Sales', 3, 99999999
 	where not exists(select id from flow.email_sender where email_address = 'salesops@blueravensolar.com')
 ;
 
-INSERT INTO flow.email_sender (email_address, company_id, created_by_id)
-select 'salesops@blueravensolar.com', 3, 99999999
-	where not exists(select id from flow.email_sender where email_address = 'salesops@blueravensolar.com')
+INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id)
+select 'brs.operations@blueravensolar.com', 'Blue Raven Operations', 3, 99999999
+	where not exists(select id from flow.email_sender where email_address = 'brs.operations@blueravensolar.com')
 ;
 
+INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id)
+select 'bugs@blueravensolar.com', 'Blue Raven Bugs', 3, 99999999
+	where not exists(select id from flow.email_sender where email_address = 'bugs@blueravensolar.com')
+;
+
+INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id)
+select 'closers@blueravensolar.com', 'Blue Raven Closers', 3, 99999999
+	where not exists(select id from flow.email_sender where email_address = 'closers@blueravensolar.com')
+;
+
+INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id)
+select 'saleshr@blueravensolar.com', 'Blue Raven Sales HR', 3, 99999999
+	where not exists(select id from flow.email_sender where email_address = 'saleshr@blueravensolar.com')
+;
+
+DROP TABLE if exists brs.email_sender;
