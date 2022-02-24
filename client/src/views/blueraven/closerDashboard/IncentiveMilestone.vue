@@ -11,7 +11,7 @@
       <div class="milestone-content mt-1" :class="colorClass">
         <div class="milestone-content-left-side d-flex align-items-flex-end"><trophy-dynamic :color="colorClass" :active="active"></trophy-dynamic></div>
         <div class="milestone-content-right-side">
-          <span class="milestone-top-right-label" :class="colorClass">{{ currentQuarterCount }} FDC</span>
+          <span class="milestone-top-right-label" :class="colorClass">{{ currentQuarterCount }} {{dashboardType.milestoneUnits}}</span>
         </div>
       </div>
       <span class="milestone-bottom-label">{{ lowerLabel }}</span>
@@ -182,9 +182,27 @@ export default {
     async milestoneDrilldown (quarter) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(this.drilldown.path, {params: {quarter}}, 'blueraven')
+        let params = {}
+        if(this.dashboardType === DashboardTypeEnum.SETTERMGR){
+          let userPositions = this.$store.state.user.details.userPositions
+          let userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+          params = {
+            quarter,
+            isSetterMgr: true,
+            setterMgrOfficeId: userOfficeId ? userOfficeId : null
+          }
+        } else if (this.dashboardType === DashboardTypeEnum.SETTER){
+          let userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+          params = {
+            quarter,
+            isSetterMgr: false,
+            setterMgrOfficeId: userOfficeId ? userOfficeId : null
+          }
+        } else {
+          params = {quarter}
+        }
+        const {data} = await getRequestWithParams(this.dashboardType.drilldown.path, {params}, 'blueraven')
         this.drilldownData = cloneDeep(data)
-
         if (this.drilldownData.length > 0) {
           this.drilldownData.forEach(row => {
             if (row.customer_name) {
