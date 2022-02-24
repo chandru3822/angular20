@@ -192,7 +192,7 @@ BEGIN
     left join flow.data_type_requirement dtr on dtr.id = psr.data_type_requirement_id
     left join flow.list_of_value lov on lov.id = psr.list_of_value_id
     left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfga.id
-    left join flow.project_process_step_custom_field_value ppscfv1 on ppscfv1.custom_field_group_assignment_id = cfga.id and ppscfv1.project_process_step_id = pps1.id and ppscfv1.archived is not true
+    left join flow.project_process_step_custom_field_value ppscfv1 on ppscfv1.custom_field_group_assignment_id = cfga.id and ppscfv1.project_process_step_id = pps1.id
     left join flow.project_custom_field_value pcfv on pcfv.custom_field_group_assignment_id = cfga.id and pcfv.project_id = pps.project_id
     left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga.id and ccfv.contact_id = p.contact_id
     where
