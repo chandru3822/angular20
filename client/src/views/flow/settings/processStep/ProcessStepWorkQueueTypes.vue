@@ -821,7 +821,7 @@ export default {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data, status} = await getRequestWithParams(`/event/statusesForWqt`, {
-            params: {processStepId: this.processStepId, eventId: this.event.id}
+            params: {processStepId: this.processStepId, eventId: this.event.eventId}
           })
           this.combinedEventStatuses = data
           handleHidingGlobalLoader(this, status)
