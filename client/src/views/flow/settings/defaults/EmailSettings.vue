@@ -76,7 +76,7 @@
               </td>
               <td>
                 <v-icon v-show="item.isDefault" v-if="index !== editIndex" class="centered">mdi-check</v-icon>
-                <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" label="Default"></v-checkbox>
+                <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
               </td>
               <td>
                 <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
