@@ -17,57 +17,7 @@
       <span class="milestone-bottom-label">{{ lowerLabel }}</span>
     </div>
     <SetterMilestoneDrilldown v-if="isSetter" :selected-quarter="quarter.value" :is-open="milestoneDialog" :drilldown-data="drilldownData" @close-drilldown="closeMilestoneDialog"></SetterMilestoneDrilldown>
-    <v-dialog v-if="isCloser" v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
-      <v-card>
-        <v-card-title class="mb-1">
-          <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
-        </v-card-title>
-
-        <v-card-text>
-          <v-data-table
-              id="drilldown-table"
-              :headers="headers"
-              :items="drilldownData"
-              :items-per-page="-1"
-              :mobile-breakpoint="0"
-              fixed-header
-              dense
-              hide-default-footer
-              class="elevation-1"
-          >
-            <template v-if="drilldownData.length > 0" #item="{ item, index }">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
-                <td class="text-left"><a :href="'/project/' + item.id">{{ item.id || '' }}</a></td>
-                <td class="text-left">{{ item.source_name || '' }}</td>
-                <td class="text-left">{{ item.system_size || '' }}</td>
-                <td class="text-left">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
-              </tr>
-            </template>
-
-            <template #no-data>
-              <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
-                Data is not yet available for the selected quarter.
-              </div>
-              <div v-else class="my-3">
-                No data is available for the selected quarter.
-              </div>
-            </template>
-          </v-data-table>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="closeMilestoneDialog">
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
+    <CloserMilestoneDrilldown v-if="isCloser" :selected-quarter="quarter.value" :is-open="milestoneDialog" :drilldown-data="drilldownData" @close-drilldown="closeMilestoneDialog"></CloserMilestoneDrilldown>
   </div>
 </template>
 
@@ -80,16 +30,20 @@ import cloneDeep from "lodash.clonedeep";
 import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
 import moment from "moment";
 import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMilestoneDrilldown";
+import CloserMilestoneDrilldown from "@/views/blueraven/closerDashboard/CloserMilestoneDrilldown";
 
 export default {
   name: "IncentiveMilestone",
-  components: {SetterMilestoneDrilldown, TrophyDynamic},
+  components: {
+    SetterMilestoneDrilldown,
+    CloserMilestoneDrilldown,
+    TrophyDynamic
+  },
   props: {
     quarter: QuarterEnum,
     milestoneLevel: MilestoneEnum,
     dashboardType: DashboardTypeEnum,
-    currentQuarterCount: Number,
-    drilldown: Object
+    currentQuarterCount: Number
   },
   data() {
     return {
@@ -97,14 +51,6 @@ export default {
       milestoneDialog: false,
       currentUserId: null,
       selectedQuarter: 1,
-      headers: [
-        { text: '', value: '', show: true, sortable: false },
-        { text: 'Name', value: 'customer_name', show: true },
-        { text: 'Project ID', value: 'id', show: true },
-        { text: 'Source', value: 'source_name', show: true },
-        { text: 'System Size', value: 'system_size', show: true },
-        { text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true }
-      ],
       currentQuarter: moment().quarter(),
       drilldownData: [],
       upperLabel: '',
@@ -113,15 +59,6 @@ export default {
   },
   computed: {
     windowInnerWidth () { return window.innerWidth},
-    milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + this.drilldown.label + this.quarter.value
-    },
-    milestoneGoal () {
-      return this.dashboardType.milestoneGoalMap[this.milestoneLevel]
-    },
-    milestoneLabel () {
-      return this.incentive_constants.milestoneMap.get(this.milestoneLevel)
-    },
     milestoneUnits () {
       return this.dashboardType.milestoneUnits
     },
@@ -351,42 +288,6 @@ export default {
   }
 }
 
-
-.v-card__title {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#drilldown-title {
-  font-family: "Roboto Condensed", sans-serif;
-  font-size: 14px;
-}
-
-.close-modal-x {
-  font-size: 20px;
-
-  &:hover {
-    font-weight: bolder;
-  }
-}
-
-#drilldown-table {
-  ::v-deep .v-data-table__wrapper {
-    max-height: calc(100vh - 250px);
-  }
-
-  th, td {
-    font-family: "Roboto Condensed", sans-serif;
-    font-size: 10px;
-  }
-
-  .customer-name {
-    text-transform: capitalize;
-  }
-}
-
 @media (min-width: 500px) {
 }
 
@@ -457,15 +358,6 @@ export default {
     height: 60px;
   }
 
-  #drilldown-title {
-    font-size: 18px;
-  }
-
-  #drilldown-table {
-    th, td {
-      font-size: 12px;
-    }
-  }
 }
 
 @media (min-width: 1070px) {
@@ -482,10 +374,6 @@ export default {
   #milestone-medals-container {
     width: 45%;
     max-width: 650px;
-  }
-
-  #drilldown-title {
-    font-size: 24px;
   }
 }
 

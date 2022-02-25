@@ -22,10 +22,10 @@
             <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
               <td class="text-left">{{ index + 1 }}</td>
               <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
-              <td class="text-left">{{ item.id || '' }}</td>
-              <td class="text-left">{{ item.source || '' }}</td>
-              <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-              <td class="text-left">{{ item.appointment_outcome || '' }}</td>
+              <td class="text-left"><a :href="'/project/' + item.id">{{ item.id || '' }}</a></td>
+              <td class="text-left">{{ item.source_name || '' }}</td>
+              <td class="text-left">{{ item.system_size || '' }}</td>
+              <td class="text-left">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
             </tr>
           </template>
 
@@ -57,7 +57,7 @@ import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 
 export default {
-  name: "SetterMilestoneDrilldown",
+  name: "CloserMilestoneDrilldown",
   props: {
     selectedQuarter: Number,
     drilldownData: [],
@@ -71,8 +71,8 @@ export default {
         { text: 'Name', value: 'customer_name', show: true },
         { text: 'Project ID', value: 'id', show: true },
         { text: 'Source', value: 'source_name', show: true },
-        { text: 'Appointment Date', value: 'appointment_date', show: true },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
+        { text: 'System Size', value: 'system_size', show: true },
+        { text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true }
       ],
     }
   },
@@ -82,7 +82,7 @@ export default {
   },
   computed: {
     milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + DashboardTypeEnum.SETTER.drilldown.label + this.selectedQuarter
+      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + this.selectedQuarter
     },
   },
   methods: {
@@ -147,5 +147,4 @@ export default {
     font-size: 24px;
   }
 }
-
 </style>
