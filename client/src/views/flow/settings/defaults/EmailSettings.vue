@@ -92,42 +92,12 @@
                 <v-btn small text v-if="index === editIndex" @click="clearChanges()">
                   cancel
                 </v-btn>
-<!--todo: create delete confirmation dialog component to be used throughout the app-->
-                <v-dialog
-                    v-if="index !== editIndex"
-                    v-model="item.deleteConfirm"
-                    width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on" :disabled="item.isDefault">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                      Confirm
-                    </v-card-title>
-                    <v-card-text>
-                      Are you sure you want to delete this Email Address: <strong>{{ item.emailAddress }}</strong>?
-                    </v-card-text>
-                    <v-divider></v-divider>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deleteEmailAddress(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-
+                <ConfirmDeleteDialog
+                    :is-disabled="item.isDefault"
+                    label="this email address"
+                    :item-to-delete="item.emailAddress"
+                    @confirm-delete="deleteEmailAddress(item)"
+                ></ConfirmDeleteDialog>
               </td>
             </tr>
           </template>
@@ -147,10 +117,11 @@ import {
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: "EmailSettings",
-
+  components: {ConfirmDeleteDialog},
   data() {
     return {
       addFormValid: false,
@@ -269,6 +240,9 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    cancelDelete(item){
+      item.deleteConfirm = false
     }
   }
 }
