@@ -16,7 +16,8 @@
       </div>
       <span class="milestone-bottom-label">{{ lowerLabel }}</span>
     </div>
-    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
+    <SetterMilestoneDrilldown v-if="isSetter" :selected-quarter="quarter.value" :is-open="milestoneDialog" :drilldown-data="drilldownData" @close-drilldown="closeMilestoneDialog"></SetterMilestoneDrilldown>
+    <v-dialog v-if="isCloser" v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
@@ -78,10 +79,11 @@ import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
 import moment from "moment";
+import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMilestoneDrilldown";
 
 export default {
   name: "IncentiveMilestone",
-  components: {TrophyDynamic},
+  components: {SetterMilestoneDrilldown, TrophyDynamic},
   props: {
     quarter: QuarterEnum,
     milestoneLevel: MilestoneEnum,
@@ -133,6 +135,12 @@ export default {
     },
     active () {
       return this.currentQuarter === this.quarter.value
+    },
+    isSetter() {
+      return this.dashboardType === DashboardTypeEnum.SETTER || this.dashboardType === DashboardTypeEnum.SETTERMGR
+    },
+    isCloser() {
+      return this.dashboardType === DashboardTypeEnum.CLOSER
     }
   },
   watch: {
