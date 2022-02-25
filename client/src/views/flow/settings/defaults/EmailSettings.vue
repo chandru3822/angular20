@@ -23,7 +23,7 @@
             <v-text-field text
                           type="text"
                           placeholder="Sender Name"
-                          :rules="[v => !!v || 'Sender name is required']"
+                          :rules="senderRequiredRule"
                           v-model="newEmail.senderName"
                           required
             >
@@ -33,7 +33,7 @@
             <v-text-field text
                           type="text"
                           placeholder="Email Address"
-                          :rules="[v => !!v || 'Email address is required']"
+                          :rules="emailRules"
                           v-model="newEmail.emailAddress"
                           required
             >
@@ -57,6 +57,8 @@
               <td class="text-left">
                 <v-text-field text
                               type="text"
+                              :ref="`senderName-edit-${item.id}`"
+                              :rules="senderRequiredRule"
                               v-if="index === editIndex"
                               v-model="item.senderName">
                 </v-text-field>
@@ -67,6 +69,8 @@
               <td class="text-left">
                 <v-text-field text
                               type="text"
+                              :ref="`emailAddress-edit-${item.id}`"
+                              :rules="emailRules"
                               v-if="index === editIndex"
                               v-model="item.emailAddress">
                 </v-text-field>
@@ -82,10 +86,10 @@
                 <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="updateEmailAddress(item)" v-if="index === editIndex">
+                <v-btn small text @click="updateEmailAddress(item)" :disabled="!isEditValid(item.id)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small text v-if="index === editIndex" @click="clearChangeToDefault(item)">
+                <v-btn small text v-if="index === editIndex" @click="clearChanges()">
                   cancel
                 </v-btn>
 <!--todo: create delete confirmation dialog component to be used throughout the app-->
@@ -142,6 +146,7 @@ import {
   handleHidingGlobalLoader
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
+import constants from "@/helpers/constants";
 
 export default {
   name: "EmailSettings",
@@ -161,7 +166,8 @@ export default {
       editIndex: null,
       newEmail: {},
       addNew: false,
-      displayErrors: false
+      senderRequiredRule: [v => !!v || 'Sender name is required'],
+      emailRules: constants.EMAIL_RULES,
     }
   },
   async created() {
@@ -182,9 +188,22 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    clearChangeToDefault(item) {
-        item.checked = item.isDefault;
+    async clearChanges() {
+      await this.getEmailSenders()
         this.editIndex = null
+    },
+    isEditValid(itemId){
+      const senderNameRef = this.$refs[`senderName-edit-${itemId}`]
+      const emailAddressRef = this.$refs[`emailAddress-edit-${itemId}`]
+      if(senderNameRef && emailAddressRef){
+        return senderNameRef.valid && emailAddressRef.valid
+      } else if (senderNameRef && !emailAddressRef){
+        return senderNameRef.valid
+      } else if (!senderNameRef && emailAddressRef) {
+        return emailAddressRef.valid
+      } else {
+        return false
+      }
     },
     async updateEmailAddress(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
