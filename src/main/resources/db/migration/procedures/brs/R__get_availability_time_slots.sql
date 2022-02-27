@@ -49,8 +49,8 @@ BEGIN
       )
       select ui.user_id, ui.id, ppse.start_time as start_time, ppse.end_time as end_time
       from flow.project p
-             inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
-             inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+             inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1 and pps.archived is false
+             inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id and ppse.archived is false
              inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
              inner join flow.event_status_type est on cest.event_status_type_id = est.id and est.id in (1,2)
              inner join user_ids ui on ppse.resource_id = any (ui.user_position_ids)
@@ -99,8 +99,8 @@ BEGIN
       )
       select ui.user_id, ui.id, ppse.start_time as start_time, ppse.end_time as end_time
       from flow.project p
-             inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
-             inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+             inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1 and pps.archived is false
+             inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id and ppse.archived is false
              inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
              inner join flow.event_status_type est on cest.event_status_type_id = est.id and est.id in (1,2)
              inner join user_ids ui on ppse.resource_id = any (ui.user_position_ids)

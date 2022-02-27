@@ -28,7 +28,8 @@
             cfga.use_parent_data as "useParentData",
             cf.list_of_value_id as "listOfValueId",
             cf.field_name as "fieldName",
-            cf.readonly,
+            case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+            cf.system_readonly as "systemReadonly",
             cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
             cf.custom_field_sql_key as "customFieldSqlKey",
             cf.company_system_list_id as "companySystemListId",
@@ -129,7 +130,8 @@
           cfga.field_order as "fieldOrder",
           cf.list_of_value_id as "listOfValueId",
           cf.field_name as "fieldName",
-          cf.readonly,
+          case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+          cf.system_readonly as "systemReadonly",
           cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
           cf.custom_field_sql_key as "customFieldSqlKey",
           cf.company_system_list_id as "companySystemListId",
@@ -193,7 +195,8 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
-                                    cf.readonly,
+                                    case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                                    cf.system_readonly as "systemReadonly",
                                     cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
@@ -294,7 +297,8 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
-                                    cf.readonly,
+                                    case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                                    cf.system_readonly as "systemReadonly",
                                     cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
@@ -446,7 +450,8 @@
                                       cfga.schedule_field_type_id as "scheduleFieldTypeId",
                                       cf.list_of_value_id as "listOfValueId",
                                       cf.field_name as "fieldName",
-                                      cf.readonly,
+                                      case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                                      cf.system_readonly as "systemReadonly",
                                       cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                       cf.custom_field_sql_key as "customFieldSqlKey",
                                       cf.company_system_list_id as "companySystemListId",
@@ -509,11 +514,11 @@
                                            inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
                                            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                            left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :sourceId
-                                           left join flow.project_process_step_custom_field_value pcv1 on pcv1.custom_field_group_assignment_id = cfga.ancillary_custom_field_group_assignment_id and pcv1.project_process_step_id = pps1.id and pcv1.archived is not true
+                                           left join flow.project_process_step_custom_field_value pcv1 on pcv1.custom_field_group_assignment_id = cfga.ancillary_custom_field_group_assignment_id and pcv1.project_process_step_id = pps1.id
                                            left join flow.project_process_step p on p.id = :sourceId
                                            left join flow.project proj on proj.id = p.project_id
-                                           left join flow.project_custom_field_value pcfv on pcfv.custom_field_group_assignment_id = cfga1.id and pcfv.project_id = p.project_id and pcfv.archived is not true
-                                           left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga1.id and ccfv.contact_id = proj.contact_id and ccfv.archived is not true
+                                           left join flow.project_custom_field_value pcfv on pcfv.custom_field_group_assignment_id = cfga1.id and pcfv.project_id = p.project_id
+                                           left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga1.id and ccfv.contact_id = proj.contact_id
                                   where cfga.custom_field_group_id = cfg.id
                                     and cfga.archived is not true
                                     and cot1.archived is not true
@@ -610,7 +615,8 @@
                               cfga.schedule_field_type_id as "scheduleFieldTypeId",
                               cf.list_of_value_id as "listOfValueId",
                               cf.field_name as "fieldName",
-                              cf.readonly,
+                              case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                              cf.system_readonly as "systemReadonly",
                               cf.custom_field_sql_key as "customFieldSqlKey",
                               cf.company_system_list_id as "companySystemListId",
                               cf.system_list_option_ids as "systemListOptionIds",
@@ -669,8 +675,8 @@
                                    left join flow.project_process_step_event_custom_field_value ecfv on ecfv.custom_field_group_assignment_id = cfga.id and ecfv.project_process_step_event_id = :sourceId
                                    left join flow.project_process_step pps3 on pps3.process_step_id = cfgAnc.process_step_id and pps3.project_id = pps.project_id
                                    left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga1.id and pcv.project_process_step_id = pps3.id
-                                   left join flow.project_custom_field_value pcfv on pcfv.custom_field_group_assignment_id = cfga1.id and pcfv.project_id = pps.project_id and pcfv.archived is not true
-                                   left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga1.id and ccfv.contact_id = p2.contact_id and ccfv.archived is not true
+                                   left join flow.project_custom_field_value pcfv on pcfv.custom_field_group_assignment_id = cfga1.id and pcfv.project_id = pps.project_id
+                                   left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga1.id and ccfv.contact_id = p2.contact_id
                             where cfga.custom_field_group_id = cfg.id
                               and cfga.archived is not true
                               and cot1.archived is not true
@@ -725,7 +731,8 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
-                                    cf.readonly,
+                                    case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                                    cf.system_readonly as "systemReadonly",
                                     cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",

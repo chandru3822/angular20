@@ -50,6 +50,7 @@ public class CustomField {
     allowMultiple,
     detailView,
     readonly,
+    systemReadonly,
     customFieldGroupAssignmentReadOnly,
     customFieldGroupAssignmentHidden,
     useParentData,

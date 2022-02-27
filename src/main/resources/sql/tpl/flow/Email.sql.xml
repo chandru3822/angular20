@@ -35,4 +35,66 @@
     where id = :id
   ]]></email.markProcessed>
 
+	<email.getDefaultSenderByCompanyId>
+		<![CDATA[
+            select
+       			email_address
+            from flow.email_sender
+            where is_default = true
+            and company_id = :companyId
+		]]>
+	</email.getDefaultSenderByCompanyId>
+
+	<email.getSendersByCompanyId>
+		<![CDATA[
+            SELECT
+                   ems.id,
+                   ems.email_address,
+                   ems.sender_name,
+                   ems.company_id,
+                   ems.date_modified,
+                   ems.modified_by_id as "modifiedById",
+                   ems.date_created,
+                   ems.created_by_id as "createdById",
+                   ems.archived,
+                   ems.is_default as "isDefault"
+            FROM flow.email_sender ems
+            WHERE archived is not true
+            AND company_id = :companyId
+            ORDER BY ems.email_address
+        ]]>
+	</email.getSendersByCompanyId>
+
+	<email.saveFromAddress>
+		<![CDATA[
+		INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id, date_created)
+		select :emailAddress, :senderName, :companyId, :createdById, now()
+		where not exists(select id from flow.email_sender where email_address = :emailAddress)
+		]]>
+	</email.saveFromAddress>
+
+	<email.updateEmailAddress>
+		<![CDATA[
+		update flow.email_sender
+		set sender_name = :senderName, email_address = :emailAddress, modified_by_id = :modifiedBy, date_modified = now()
+		where id = :id
+		]]>
+	</email.updateEmailAddress>
+
+	<email.changeDefaultAddress>
+		<![CDATA[
+		update flow.email_sender
+    		set is_default =
+		case
+			when id = :id then true
+			when id != :id then false
+		end
+		where company_id = :companyId;
+		]]>
+	</email.changeDefaultAddress>
+
+	<email.deleteEmailAddress><![CDATA[
+        update flow.email_sender set archived = true, modified_by_id = :modifiedBy, date_modified = now() where id = :id
+    ]]></email.deleteEmailAddress>
+
 </sql>

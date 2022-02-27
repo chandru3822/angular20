@@ -288,7 +288,7 @@
                         </v-list-item-action>
                         <v-list-item-content>
                           <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
-                            {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
+                            {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
@@ -296,10 +296,17 @@
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'rowShadeCustom'" class="square-card">
                                     <v-card-title style="height: 40px" class="py-0">
                                       Read Only
-                                      <v-checkbox type="checkbox" class="ml-3"
+                                      <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"
+                                                  :disabled="true"
+                                                  :readonly="true"
+                                                  v-model="cf.systemReadonly"></v-checkbox>
+                                      <v-checkbox type="checkbox" class="ml-3" v-else
                                                   v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>
                                     </v-card-title>
-                                    <v-card-text>
+                                    <v-card-text v-if="cf.systemReadonly" class="mt-2">
+                                      System Readonly Cannot Change
+                                    </v-card-text>
+                                    <v-card-text v-else>
                                       <v-autocomplete
                                         v-if="cf.customFieldGroupAssignmentReadOnly"
                                         v-model="cf.whiteListedPositions"
@@ -436,7 +443,7 @@
                             </div>
                           </div>
                         </v-list-item-content>
-                        <v-menu offset-y v-if="cf.ancillaryCustomFieldGroupAssignmentId === null && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                        <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on">
                               <v-icon>mdi-cursor-move</v-icon>

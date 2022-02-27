@@ -69,7 +69,7 @@ export default {
   methods: {
     async getCompanyObjectTypes() {
       try {
-        const {data} = await getRequest(`/objectType/getCustomFieldObjectTypes`, 'blueraven')
+        const {data} = await getRequest(`/objectType/getCompanyObjectTypes`, 'blueraven')
         this.companyObjectTypes = data
       } catch (e) {
         logError(e)
