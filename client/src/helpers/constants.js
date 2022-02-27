@@ -25,7 +25,7 @@ constants.APP_FILE_TYPES = '.apk, .plist, .ipa'
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",
-  v => /.+@.+/.test(v) || "E-mail must be valid"
+  v => /.+@.+.[.].+/.test(v) || "E-mail must be valid"
 ]
 
 constants.POSTAL_CODE_RULES = [

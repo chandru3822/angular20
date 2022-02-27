@@ -250,14 +250,12 @@
                                                              left join flow.project_process_step_custom_field_value ppscfv
                                                                        on ppscfv.custom_field_group_assignment_id =
                                                                           cfga.ancillary_custom_field_group_assignment_id and
-                                                                          ppscfv.project_process_step_id = pps1.id and
-                                                                          ppscfv.archived is not true
+                                                                          ppscfv.project_process_step_id = pps1.id
                                                              left join flow.project_process_step pps3 on pps3.id = pps.id
                                                              left join flow.project proj on proj.id = pps3.project_id
                                                              left join flow.project_custom_field_value pcfv
                                                                        on pcfv.custom_field_group_assignment_id = cfga1.id and
-                                                                          pcfv.project_id = pps3.project_id and
-                                                                          pcfv.archived is not true
+                                                                          pcfv.project_id = pps3.project_id
                                                       where cfga.custom_field_group_id = cfg.id
                                                         and cfga.archived is not true
                                                       order by cfga.field_order

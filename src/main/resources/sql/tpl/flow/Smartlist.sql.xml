@@ -316,6 +316,7 @@ inner join flow.custom_field cf on cf.id = cfga.custom_field_id
 inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
 where ot.id = :objectTypeId and
       cot.company_id = :companyId and
+      cdt.data_type_id != 12 and
       cfga.ancillary_custom_field_group_assignment_id is null and
       cfga.archived is not true and
       cfg.archived is not true
@@ -489,7 +490,8 @@ select
         cfga1.field_order as "fieldOrder",
         cf.list_of_value_id as "listOfValueId",
         cf.field_name as "fieldName",
-        cf.readonly,
+        case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+        cf.system_readonly as "systemReadonly",
         cf.custom_field_sql_key as "customFieldSqlKey",
         cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
         cf.company_system_list_id as "companySystemListId",
@@ -1016,7 +1018,8 @@ select sr.id,
                 cfga1.field_order as "fieldOrder",
                 cf.list_of_value_id as "listOfValueId",
                 cf.field_name as "fieldName",
-                cf.readonly,
+                case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                cf.system_readonly as "systemReadonly",
                 cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
                 cf.custom_field_sql_key as "customFieldSqlKey",
                 cf.company_system_list_id as "companySystemListId",

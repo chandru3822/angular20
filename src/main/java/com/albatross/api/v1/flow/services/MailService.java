@@ -1,12 +1,14 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.EmailSender;
+import com.albatross.api.v1.flow.model.User;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -31,6 +33,7 @@ public class MailService {
   private final PropertiesConfiguration propConfig;
   private final ThreadPoolTaskExecutor taskExecutor;
   private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   public void sendMessage(
       String to,
@@ -54,7 +57,7 @@ public class MailService {
     Session session = getSession();
 
     if (null == sentByEmail) {
-      sentByEmail = "support@blueravensolar.com";
+    	sentByEmail = getDefaultSenderEmailAddress();
     }
 
     try {
@@ -143,7 +146,7 @@ public class MailService {
 
               String from = message.getFrom();
               if (null == from) {
-                from = "support@blueravensolar.com";
+                from = getDefaultSenderEmailAddress();
               }
 
               final InternetAddress fromAddress =
@@ -210,6 +213,57 @@ public class MailService {
     return counter.get();
   }
 
+    public List<EmailSender> getEmailSenders(Long companyId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("companyId", companyId);
+        try {
+            return sqlCache.query("email.getSendersByCompanyId", params, EmailSender.class);
+        }
+        catch (Exception e){
+            return null;
+        }
+    }
+
+    public List<EmailSender> saveFromEmailAddress(EmailSender emailAddress, boolean updateDefault) {
+      HashMap<String, Object> params = new HashMap<>();
+        User user = securityService.getCurrentUser();
+        params.put("emailAddress", emailAddress.getEmailAddress());
+        params.put("senderName", emailAddress.getSenderName());
+        params.put("companyId", emailAddress.getCompanyId());
+      params.put("createdById", user.getId());
+
+      Long id = sqlCache.updateReturningId("email.saveFromAddress", params, "id").longValue();
+        if (updateDefault){
+            params.put("isDefault", emailAddress.getIsDefault());
+            params.put("id", id);
+            sqlCache.update("email.changeDefaultAddress", params);
+        }
+        return this.getEmailSenders(emailAddress.getCompanyId());
+    }
+
+    public List<EmailSender> updateSenderEmailAddress(EmailSender emailAddress, boolean updateDefault){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", emailAddress.getId());
+        params.put("senderName", emailAddress.getSenderName());
+        params.put("emailAddress", emailAddress.getEmailAddress());
+        params.put("modifiedBy", emailAddress.getModifiedById());
+        params.put("isDefault", emailAddress.getIsDefault());
+        params.put("companyId", emailAddress.getCompanyId());
+        sqlCache.update("email.updateEmailAddress", params);
+        if (updateDefault){
+            sqlCache.update("email.changeDefaultAddress", params);
+        }
+        return this.getEmailSenders(emailAddress.getCompanyId());
+        //todo: this function makes three separate database calls; I don't know if that's optimized, so let me know if we need to change this
+    }
+
+    public void deleteFromEmailAddress(Long emailAddressId, Long userId) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", emailAddressId);
+      params.put("modifiedBy", userId);
+      sqlCache.update("email.deleteEmailAddress", params);
+    }
+
   private Session getSession() {
     Properties props = new Properties();
     props.put("mail.transport.protocol", "smtp");
@@ -262,4 +316,22 @@ public class MailService {
 
     sqlCache.update("email.insert", params);
   }
+
+    private String getDefaultSenderEmailAddress() {
+        Long companyId = getCompanyIdFromUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("companyId", companyId);
+
+        String defaultEmail = sqlCache.queryForObject("email.getDefaultSenderByCompanyId", params, String.class);
+        if(null == defaultEmail){
+            throw new RuntimeException("SentByEmail cannot be null");
+        }
+        return defaultEmail;
+
+    }
+
+    private Long getCompanyIdFromUser() {
+        User user = securityService.getCurrentUser();
+        return null == user ? 3 : user.getCompanyId(); //todo: sitewide admin doesn't necessarily have user for current company, so we need to figure out how to get the right id
+    }
 }

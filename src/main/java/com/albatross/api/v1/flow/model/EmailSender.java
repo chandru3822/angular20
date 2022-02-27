@@ -1,4 +1,4 @@
-package com.albatross.api.v1.company.blueraven.models;
+package com.albatross.api.v1.flow.model;
 
 import lombok.Data;
 
@@ -11,7 +11,10 @@ import java.util.Date;
 public class EmailSender {
     private Long id;
     private String emailAddress;
+    private String senderName;
     private Boolean archived;
     private Date dateCreated, dateModified;
     private Long createdById, modifiedById;
+    private Long companyId;
+    private Boolean isDefault;
 }
