@@ -889,10 +889,10 @@ BEGIN
         -- raise notice 'I am here';
         case when x.update_first_value_only is false then
           v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
-                  $$ where project_id = $$ || v_project_id;
+                  $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null $$;
           else
             v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
-                    $$ where project_id = $$ || v_project_id || $$ and ($$ || x.field_to_update ||
+                    $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null and ($$ || x.field_to_update ||
                     $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
           end case;
         --raise notice 'v_sql % ',v_sql;
@@ -910,11 +910,11 @@ BEGIN
             --  raise notice 'am I in the first case %',v_resource_name;
             v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
                      v_value ||
-                     $$ where project_id = $$ || v_project_id;
+                     $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null $$;
             else
               v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
                        v_value ||$$ , $$||x.update_first_value_only_id||$$ =  $1.id
-                        where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
+                        where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null and ($$ || x.second_field_to_update ||
                        $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
             end case;
           -- raise notice 'v_sql1 % ',v_sql1;
