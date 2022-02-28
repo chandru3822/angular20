@@ -2021,7 +2021,7 @@ public class SmartlistService {
 
       withClause.append("select ").append(selectFields);
 
-      withClause.append(addFromClause(smartlist.getObjectTypeId(), processStepId));
+      withClause.append(addFromClause(smartlist.getObjectTypeId(), processStepId, null));
 
       StringBuilder valueJoins = new StringBuilder();
       psFields.forEach(f -> {
@@ -2335,7 +2335,7 @@ public class SmartlistService {
     var query = new StringBuilder();
 
     //add "from" clause and initial joins
-    query.append(addFromClause((useEventData) ? 6L : smartlist.getObjectTypeId(), null));
+    query.append(addFromClause((useEventData) ? 6L : smartlist.getObjectTypeId(), null, smartlist.getWorkQueueTypeId()));
 
     //join value tables for every field
     for (SmartlistFieldAssignment f : fields) {
@@ -2714,7 +2714,8 @@ public class SmartlistService {
         .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
         .append("flow.process_step.process_step_name as \"Process Step Name\", ")
         .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
-        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ");
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
+        .append("flow.process_step_event_work_queue_type.id as \"processStepEventWorkQueueTypeId\", ");
 
         if (timezone != null) {
           defaultFields.append(String.format("to_char(flow.project_process_step_event.start_time at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"Event Start Time\", ", timezone));
@@ -2840,6 +2841,7 @@ public class SmartlistService {
           r.remove("projectProcessStepEventId");
           r.remove("projectProcessStepId");
           r.remove("projectId");
+          r.remove("processStepEventWorkQueueTypeId");
         } else {
           r.remove("processStepId");
           r.remove("projectProcessStepId");
@@ -3231,7 +3233,7 @@ public class SmartlistService {
     return join;
   }
 
-  private String addFromClause(Long smartlistObjectTypeId, Long processStepId) {
+  private String addFromClause(Long smartlistObjectTypeId, Long processStepId, Long workQueueTypeId) {
     var join = " from";
 
     if (smartlistObjectTypeId == 4) {
@@ -3243,6 +3245,10 @@ public class SmartlistService {
       join += " inner join flow.project_process_step on flow.project_process_step.id = flow.project_process_step_event.project_process_step_id ";
       join += " inner join flow.company_event_status_type on company_event_status_type.id = flow.project_process_step_event.company_event_status_type_id ";
       join += " inner join flow.event_status_type on flow.event_status_type.id = flow.company_event_status_type.event_status_type_id ";
+
+      if (workQueueTypeId != null) {
+        join += " left join flow.process_step_event_work_queue_type on flow.process_step_event_work_queue_type.process_step_event_id = flow.process_step_event.id and flow.process_step_event_work_queue_type.work_queue_type_id = " + workQueueTypeId + " ";
+      }
     }
 
     join += " inner join flow.company_process_step_status_type on flow.company_process_step_status_type.id = flow.project_process_step.company_process_step_status_type_id";
@@ -3293,13 +3299,13 @@ public class SmartlistService {
     var eventStartTime = new SmartlistFieldAssignment();
     eventStartTime.setName("Event Start Time");
     defaultFields.add(eventStartTime);
-    SmartlistFieldAssignment noteFollowUp = new SmartlistFieldAssignment();
+    var noteFollowUp = new SmartlistFieldAssignment();
     noteFollowUp.setName("Next Follow-up Date");
     defaultFields.add(noteFollowUp);
-    SmartlistFieldAssignment noteContent = new SmartlistFieldAssignment();
+    var noteContent = new SmartlistFieldAssignment();
     noteContent.setName("Note Content");
     defaultFields.add(noteContent);
-    SmartlistFieldAssignment noteCreatedBy = new SmartlistFieldAssignment();
+    var noteCreatedBy = new SmartlistFieldAssignment();
     noteCreatedBy.setName("Note Created By");
     defaultFields.add(noteCreatedBy);
     return defaultFields;
