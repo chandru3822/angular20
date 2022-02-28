@@ -4,7 +4,6 @@
     from flow.contact_custom_field_value
     where contact_id = :contactId
       and custom_field_group_assignment_id = 19331
-      and archived is false
     limit 1
   ]]></genesys.getAgentIdByContactId>
 
@@ -13,7 +12,6 @@
     from flow.contact_custom_field_value
     where contact_id = :contactId
       and custom_field_group_assignment_id = 22530
-      and archived is false
     limit 1
   ]]></genesys.getTextelPhoneKeyByContactId>
 
@@ -22,7 +20,6 @@
     from flow.contact_custom_field_value
     where contact_id = :contactId
       and custom_field_group_assignment_id = 19357
-      and archived is false
     limit 1
   ]]></genesys.getGenesysContactIdByContactId>
 
@@ -32,7 +29,6 @@
         date_modified = now()
     where contact_id = :contactId
       and custom_field_group_assignment_id = 19357
-      and archived is false
   ]]></genesys.updateGenesysContactIdByContactId>
 
   <genesys.getContactIdByPhone><![CDATA[
@@ -79,7 +75,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level1>
 
@@ -91,7 +86,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek2Level1>
 
@@ -103,7 +97,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
-            and archived = false
     )
   ]]></genesys.getContactIdsAgedLevel1>
 
@@ -115,7 +108,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level2>
 
@@ -127,7 +119,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek2Level2>
 
@@ -139,7 +130,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
-            and archived = false
     )
   ]]></genesys.getContactIdsAgedLevel2>
 
@@ -151,7 +141,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level3>
 
@@ -163,7 +152,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek2Level3>
 
@@ -175,7 +163,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
-            and archived = false
     )
   ]]></genesys.getContactIdsAgedLevel3>
 
@@ -187,7 +174,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level10>
 
@@ -199,7 +185,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek2Level10>
 
@@ -211,7 +196,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
-            and archived = false
     )
   ]]></genesys.getContactIdsAgedLevel10>
 
@@ -223,7 +207,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level1Textel>
 
@@ -235,7 +218,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level2Textel>
 
@@ -247,7 +229,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level3Textel>
 
@@ -259,7 +240,6 @@
           where custom_field_group_assignment_id = 399
             and int_value in (697,700)
             and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-            and archived = false
     )
   ]]></genesys.getContactIdsWeek1Level10Textel>
 </sql>
