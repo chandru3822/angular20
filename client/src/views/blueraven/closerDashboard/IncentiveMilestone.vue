@@ -368,7 +368,7 @@ export default {
 
   #quarter-1.milestone,
   #quarter-2.milestone {
-    margin-bottom: 0;
+    margin-bottom: 16px;
   }
 
   #milestone-medals-container {
@@ -390,6 +390,10 @@ export default {
       width: 156px;
       height: 104px;
     }
+  }
+  #quarter-1.milestone,
+  #quarter-2.milestone {
+    margin-bottom: 0;
   }
 
   .active-milestone {
