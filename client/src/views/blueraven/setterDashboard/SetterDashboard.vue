@@ -1,5 +1,5 @@
 <template>
-  <v-container id="setter-dash-container">
+  <v-container id="setter-dash-container" ref="setterDashContainer">
     <v-row id="setter-dash-toolbar-container">
       <v-col cols="12" id="setter-dash-toolbar" class="pt-0 pb-2">
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
@@ -265,7 +265,7 @@
     methods: {
       resetScrollBarPosition () {
         // reset scroll bar positioning to top
-        document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+        this.$refs.setterDashContainer.scrollTop = 0
       },
 
       /* PERSONAL PERFORMANCE-RELATED CODE START */
