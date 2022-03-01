@@ -3,7 +3,17 @@
       v-model="openDialog"
       width="500">
     <template #activator="{ on }">
-      <v-btn small text v-on="on" :disabled="isDisabled">
+      <v-tooltip top v-if="showTooltip">
+        <template v-slot:activator="{ on: tooltip }">
+          <div v-on="{ ...tooltip }" class="d-inline-block">
+          <v-btn small text v-on="on" :disabled="isDisabled">
+        <v-icon>delete</v-icon>
+      </v-btn>
+          </div>
+        </template>
+            <span>{{tooltipText}}</span>
+      </v-tooltip>
+      <v-btn v-else small text v-on="on" :disabled="isDisabled">
         <v-icon>delete</v-icon>
       </v-btn>
     </template>
@@ -41,7 +51,9 @@ export default {
   props: {
     label: String, //Dialog will say "Are you sure you want to delete {{label}}: {{itemToDelete}}?"
     itemToDelete: String,
-    isDisabled: Boolean //optional if you want to disable the icon that opens the dialog
+    isDisabled: Boolean, //optional if you want to disable the icon that opens the dialog
+    showTooltip: Boolean,
+    tooltipText: String,
   },
   data() {
     return {
