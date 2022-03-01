@@ -73,12 +73,17 @@ public class NoteController {
 
   @PostMapping(value = "/saveProjectProcessStepWorkQueueNote", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Note> saveProjectProcessStepWorkQueueNote(@RequestBody Note note) {
-    return new ResponseEntity<>(noteService.saveNote(null, note, true, false), HttpStatus.OK);
+    return new ResponseEntity<>(noteService.saveNote(null, note, true, false,false), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/saveProjectProcessStepEventWorkQueueNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Note> saveProjectProcessStepEventWorkQueueNote(@RequestBody Note note) {
+    return new ResponseEntity<>(noteService.saveNote(null, note, false, true, false), HttpStatus.OK);
   }
 
   @PostMapping(value = "/saveProjectProdStatsNote", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Note> saveProjectProdStatsNote(@RequestBody Note note) {
-    return new ResponseEntity<>(noteService.saveNote(null, note, false, true), HttpStatus.OK);
+    return new ResponseEntity<>(noteService.saveNote(null, note, false, false,true), HttpStatus.OK);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
