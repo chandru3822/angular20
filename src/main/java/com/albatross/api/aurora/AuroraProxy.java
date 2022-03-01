@@ -1,5 +1,6 @@
 package com.albatross.api.aurora;
 
+import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -43,8 +44,10 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.stream.Collectors.groupingBy;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+//@TODO: this class should probably be renamed to 'AuroraService' and moved to the brs service folder to match convention
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuroraProxy {
   private final ObjectMapper om = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -58,6 +61,8 @@ public class AuroraProxy {
 
   @Value(value = "${aurora.api.secret}")
   private String apiSecret;
+
+  private final SqlCache sqlCache;
 
   private static String useTemplate(String template, Map<String, ? extends Object> vals) {
     StringSubstitutor subs = new StringSubstitutor(vals);
@@ -427,5 +432,9 @@ public class AuroraProxy {
     public Optional<BigDecimal> getAzimuth() {
       return getField(fields, "azimuth").map(JsonNode::decimalValue);
     }
+  }
+
+  public String getDesignId(Long ppsId, Long cfgaId) {
+    return sqlCache.queryForObject("aurora.getIdByProjectProcessStepId", Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class);
   }
 }

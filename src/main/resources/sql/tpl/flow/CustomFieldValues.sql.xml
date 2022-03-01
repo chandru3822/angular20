@@ -108,7 +108,7 @@
     where cot.object_type_id = :objectTypeId
       and cfg.archived is not true
       and cot.company_id = :companyId
-    order by cfg.group_order;
+    order by cfg.group_order
   ]]></customFieldValues.project.getCustomFieldGroupsAndValues>
 
   <customFieldValues.user.getUserProfileFields><![CDATA[
@@ -943,7 +943,28 @@
   ]]></customFieldValue.project.updateValueUsingCfId>
 
   <customFieldValue.updateValueUsingFunction><![CDATA[
-      select from flow.set_pps_cfv(:projectId::int, :userId::int, :cfgaId::integer, :value::text);
+      select from flow.set_pps_cfv(:projectId::int, :userId::int, :cfgaId::integer, :value::text)
   ]]></customFieldValue.updateValueUsingFunction>
 
+<customFieldValue.getListOfValueIdByCfgaIdAndName><![CDATA[
+  select lov.id
+  from flow.list_of_value lov
+  inner join flow.custom_field cf on cf.list_of_value_id = lov.parent_id
+  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+  where cfga.id = :cfgaId and
+        lov.parent_id is not null and
+        lov.archived is not true and
+        lower(lov.name) = lower(:name)
+]]></customFieldValue.getListOfValueIdByCfgaIdAndName>
+
+<!-- Once albatross has a json data type, this query can be removed in favor of using the new json convention -->
+<customFieldValue.upsertAuroraDesign><![CDATA[
+  insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, created_by_id, date_modified, json_value)
+  values (:sourceId, :customFieldGroupAssignmentId, :userId, now(), :jsonValue::jsonb)
+  on conflict (project_process_step_id, custom_field_group_assignment_id)
+  do update
+  set json_value = :jsonValue::jsonb,
+      modified_by_id = :userId,
+      date_modified = now()
+]]></customFieldValue.upsertAuroraDesign>
 </sql>
