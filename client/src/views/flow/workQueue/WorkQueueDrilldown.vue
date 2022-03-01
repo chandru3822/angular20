@@ -11,10 +11,17 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-switch
-              v-if="masterResults.length > 0 && !workQueue.useEventData"
+              v-if="masterResults.length > 0"
               v-model="hideFutureFollowUps"
               class="mx-2 mt-5 wq-follow-up-switch"
               label="Hide work with a next follow-up date in the future"
+              @change="filterFutureFollowUps()"
+            />
+            <v-switch
+              v-if="masterResults.length > 0 && workQueue.useEventData"
+              v-model="hideFutureEvents"
+              class="mx-2 mt-5 wq-follow-up-switch"
+              label="Hide events with a start time in the future"
               @change="filterFutureFollowUps()"
             />
             <v-btn text @click="exportCsv" v-if="results.length > 0">
@@ -190,11 +197,13 @@ export default {
       snackbar: {},
       showNotesModal: false,
       hideFutureFollowUps: false,
+      hideFutureEvents: false,
       selectedPps: {},
       filters: {},
       notesPpsIndex: null, //this is used to know which row to update after a note is changed
       cachedFilters: {},
       constants,
+      initialPageLoad: true,
       search: '',
       ytfDoWeNeedThis: 0,
       timezone: this.$store.state.user.details.timezone.value,
@@ -240,7 +249,8 @@ export default {
   async created() {
     this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-    this.getWorkQueueName()
+    this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+    await this.getWorkQueueName()
     await this.getWorkDetails()
   },
   methods: {
@@ -259,15 +269,33 @@ export default {
     },
     filterFutureFollowUps() {
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
-      if (this.hideFutureFollowUps) {
-        this.filteredResults = cloneDeep(this.results)
-        this.results = this.results.filter(r => {
+      localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
+      //master results = all results loaded at start
+      //filtered results = the filters from the column headers
+      if (!this.workQueue.useEventData && this.hideFutureFollowUps) {
+        this.results = this.filteredResults.filter(r => {
           if(r.notes && r.notes.length > 0) {
             let firstNoteFollowUp = r.notes[0]?.followUpDate
-            return firstNoteFollowUp === null || firstNoteFollowUp === undefined || new Date(firstNoteFollowUp) <= new Date()
+            let noFollowUp = firstNoteFollowUp === null || firstNoteFollowUp === undefined
+            //holy crap, why is this so hard.
+            //just trying to compare a date in YYYY-MM-DD to now() was so stinking hard for me
+            return noFollowUp || (!noFollowUp && (moment().isAfter(moment.utc(firstNoteFollowUp, 'YYYY-MM-DD').format('YYYY-MM-DD'))))
           } else {
             return true
           }
+        })
+      } else if (this.workQueue.useEventData && (this.hideFutureEvents || this.hideFutureFollowUps)) {
+        this.results = this.filteredResults.filter(r => {
+          let noteFilter = true
+          if(r.notes && r.notes.length > 0) {
+            let firstNoteFollowUp = r.notes[0]?.followUpDate
+            let noFollowUp = firstNoteFollowUp === null || firstNoteFollowUp === undefined
+            //holy crap, why is this so hard.
+            //just trying to compare a date in YYYY-MM-DD to now() was so stinking hard for me
+            noteFilter = noFollowUp || (!noFollowUp && (moment().isAfter(moment.utc(firstNoteFollowUp, 'YYYY-MM-DD').format('YYYY-MM-DD'))))
+          }
+
+          return (!this.hideFutureFollowUps || (this.hideFutureFollowUps && noteFilter)) && (!this.hideFutureEvents || (this.hideFutureEvents && moment(r['Event Start Time'], 'MM/DD/YYYY hh:mm a').isBefore(moment())))
         })
       } else {
         this.results = cloneDeep(this.filteredResults)
@@ -354,6 +382,7 @@ export default {
         }
 
         this.masterResults = cloneDeep(this.results)
+        this.filteredResults = cloneDeep(this.results)
         if (this.useProcessStepHeaders) {
           this.headers = [
             {text: 'Project', value: 'Project Name', show: true},
@@ -428,7 +457,7 @@ export default {
           this.filterResults()
         }
 
-        if (this.hideFutureFollowUps) {
+        if (this.hideFutureFollowUps || this.hideFutureEvents) {
           this.filterFutureFollowUps()
         }
 
@@ -504,6 +533,7 @@ export default {
         localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
         return matchCount === numFiltersUsed
       })
+      this.filteredResults = cloneDeep(this.results)
     },
     updateRowNotes(item) {
       this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null
