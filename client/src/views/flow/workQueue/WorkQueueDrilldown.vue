@@ -119,6 +119,7 @@
                   </v-btn>
                 </div>
                 <v-dialog
+                  @click:outside="closeNotesModal()"
                   :key="ytfDoWeNeedThis"
                   v-model="item.showNotesModal"
                 >
@@ -141,7 +142,6 @@
                         :secondary-id="workQueue.useEventData ? item.processStepEventWorkQueueTypeId : item.processStepWorkQueueTypeId"
                         type="ProjectProcessStep"
                         :callback="(item) => updateRowNotes(item)"
-
                       />
                     </v-card-text>
 
@@ -151,7 +151,7 @@
                       <v-btn
                         color="primaryCustom"
                         class="white--text mr-2 mb-3"
-                        @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
+                        @click="[ytfDoWeNeedThis++, closeNotesModal()]"
                       >
                         Close
                       </v-btn>
@@ -540,6 +540,14 @@ export default {
       this.results[this.notesPpsIndex].firstNoteCreatedAt = item.dateCreated
       this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null
       this.results[this.notesPpsIndex].firstNoteContent = item.note
+    },
+    closeNotesModal() {
+      //this is dumb.  if you update the results before the modal closes things get weird
+      //if you update after then you have to catch all the ways that the modal can close
+      this.results[this.notesPpsIndex].showNotesModal = false
+      if(this.hideFutureFollowUps) {
+        this.filterFutureFollowUps()
+      }
     }
   },
 
