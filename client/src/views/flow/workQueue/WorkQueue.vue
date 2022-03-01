@@ -47,7 +47,7 @@
                   hide-details
                   color="primaryCustom"
                   v-model="hideFutureFollowUps"
-                  class="wq-follow-up-switch d-inline-block"
+                  class="wq-follow-up-switch d-inline-block fix-switch-color"
                   @change="getWorkQueues()"
                 />
               </div>
@@ -58,7 +58,7 @@
                   hide-details
                   color="primaryCustom"
                   v-model="hideFutureEvents"
-                  class="mt-3 wq-follow-up-switch d-inline-block"
+                  class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
                   @change="getWorkQueues()"
                 />
               </div>
