@@ -87,6 +87,11 @@
       values (:projectProcessStepId, :processStepWorkQueueTypeId, :noteId)
   ]]></note.insertProjectProcessStepWorkQueueNoteRelation>
 
+  <note.insertProjectProcessStepEventWorkQueueNoteRelation><![CDATA[
+    insert into flow.pps_event_process_step_event_work_queue_type_note(project_process_step_event_id, process_step_event_work_queue_type_id, note_id)
+      values (:projectProcessStepEventId, :processStepEventWorkQueueTypeId, :noteId)
+  ]]></note.insertProjectProcessStepEventWorkQueueNoteRelation>
+
   <note.insertProjectProdStatsNoteRelation><![CDATA[
     insert into flow.project_prod_stats_note(project_id, project_production_stats_type_id, note_id)
       values (:projectId, (select id from flow.project_production_stats_type where production_stats_type = :productionType), :noteId)

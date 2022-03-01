@@ -2708,9 +2708,9 @@ public class SmartlistService {
       defaultFields.append(" select ")
         .append("flow.project.project_name as \"Project Name\", ")
         .append("flow.event.event_name \"Event Name\", ")
-        .append("flow.project_process_step_event.id \"projectProcessStepEventId\", ")
         .append("flow.project_process_step.id \"projectProcessStepId\", ")
         .append("flow.project.id as \"projectId\", ")
+        .append("flow.project_process_step_event.id \"projectProcessStepEventId\", ")
         .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
         .append("flow.process_step.process_step_name as \"Process Step Name\", ")
         .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
@@ -2816,17 +2816,17 @@ public class SmartlistService {
 
         //add most recent note header to the end after all the custom fields
 
-        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
-        sfa3.setName("Next Follow-up Date");
-        headers.add(sfa3);
-
-        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
-        sfa4.setName("Note Content");
-        headers.add(sfa4);
-
-        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
-        sfa5.setName("Note Created By");
-        headers.add(sfa5);
+//        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
+//        sfa3.setName("Next Follow-up Date");
+//        headers.add(sfa3);
+//
+//        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
+//        sfa4.setName("Note Content");
+//        headers.add(sfa4);
+//
+//        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
+//        sfa5.setName("Note Created By");
+//        headers.add(sfa5);
       }
     }
 
@@ -3299,15 +3299,15 @@ public class SmartlistService {
     var eventStartTime = new SmartlistFieldAssignment();
     eventStartTime.setName("Event Start Time");
     defaultFields.add(eventStartTime);
-    var noteFollowUp = new SmartlistFieldAssignment();
-    noteFollowUp.setName("Next Follow-up Date");
-    defaultFields.add(noteFollowUp);
-    var noteContent = new SmartlistFieldAssignment();
-    noteContent.setName("Note Content");
-    defaultFields.add(noteContent);
-    var noteCreatedBy = new SmartlistFieldAssignment();
-    noteCreatedBy.setName("Note Created By");
-    defaultFields.add(noteCreatedBy);
+//    SmartlistFieldAssignment noteFollowUp = new SmartlistFieldAssignment();
+//    noteFollowUp.setName("Next Follow-up Date");
+//    defaultFields.add(noteFollowUp);
+//    SmartlistFieldAssignment noteContent = new SmartlistFieldAssignment();
+//    noteContent.setName("Note Content");
+//    defaultFields.add(noteContent);
+//    SmartlistFieldAssignment noteCreatedBy = new SmartlistFieldAssignment();
+//    noteCreatedBy.setName("Note Created By");
+//    defaultFields.add(noteCreatedBy);
     return defaultFields;
   }
 

@@ -94,13 +94,13 @@
                   {{ getColumnValue(item, c) }}
                 </div>
               </td>
-              <td class="note-created-at" v-if="useProcessStepHeaders">
+              <td class="note-created-at" v-if="queueHasNotes">
                 {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
               </td>
-              <td class="notes-follow-up" v-if="useProcessStepHeaders">
+              <td class="notes-follow-up" v-if="queueHasNotes">
                 {{ item.followUpDate | formatDate('date') }}
               </td>
-              <td class="notes-column" v-if="useProcessStepHeaders">
+              <td class="notes-column" v-if="queueHasNotes">
                 <div class="flex-display align-center">
                   <pre class="app-pre-wrapper">
                      {{ item.firstNoteContent }}
@@ -128,9 +128,10 @@
                         :showActivity="false"
                         :bordered="true"
                         :notes="item.notes"
-                        :is-wqt-note="true"
-                        :primary-id="item.projectProcessStepId"
-                        :secondary-id="item.processStepWorkQueueTypeId"
+                        :is-ps-wqt-note="!workQueue.useEventData"
+                        :is-event-wqt-note="workQueue.useEventData"
+                        :primary-id="workQueue.useEventData ? item.projectProcessStepEventId : item.projectProcessStepId"
+                        :secondary-id="workQueue.useEventData ? item.processStepEventWorkQueueTypeId : item.processStepWorkQueueTypeId"
                         type="ProjectProcessStep"
                         :callback="(item) => updateRowNotes(item)"
 
@@ -211,6 +212,8 @@ export default {
       masterResults: [],
       customColumns: [],
       useProcessStepHeaders: false,
+      queueHasNotes: false,
+      queueHasOwningPositions: false,
       noResults: true,
       totalItems: 0,
       footerProps: {
@@ -329,17 +332,24 @@ export default {
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
 
+
         //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
-        if(this.useProcessStepHeaders) {
+        //for PS both Notes and Owning positions should exist,
+        //for PSE only notes will exist
+        if(this.results?.length > 0 && 'Notes' in this.results[0]) {
+          this.queueHasNotes = true
           this.results.forEach(r => {
             r.showNotesModal = false
             r.notes = JSON.parse(r['Notes'])
             r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
             r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
             r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
-            r.firstNoteContent = r.notes[0]?.note,
+            r.firstNoteContent = r.notes[0]?.note
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
-            r.owningPositions = JSON.parse(r['Owning Positions'])
+            if('Owning Positions' in this.results[0]) {
+              this.queueHasOwningPositions = true
+              r.owningPositions = JSON.parse(r['Owning Positions'])
+            }
           })
         }
 
@@ -380,7 +390,7 @@ export default {
             show: true
           })
         })
-        if (this.useProcessStepHeaders) {
+        if (this.queueHasNotes) {
 
           //add the notes column to the end
           this.headers.push({
