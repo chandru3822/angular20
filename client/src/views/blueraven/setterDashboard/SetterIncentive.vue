@@ -1,5 +1,5 @@
 <template>
-  <v-container id="setter-dash-container" class="incentive-tab-override">
+  <v-container id="setter-dash-container" class="incentive-tab-override" ref="setterDashContainer">
     <Incentive :dashboard-type="dashboardType" :counts="pitchCounts" :yearly-point-total="yearlyPointTotal" :incentive-data-loaded="incentiveDataLoaded"></Incentive>
   </v-container>
 </template>
@@ -62,7 +62,7 @@ export default {
   methods: {
     resetScrollBarPosition() {
       // reset scroll bar positioning to top
-      document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      this.$refs.setterDashContainer.scrollTop = 0
     },
 
     /* INCENTIVE-RELATED CODE START */

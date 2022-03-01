@@ -1,5 +1,5 @@
 <template>
-  <v-container id="closer-dash-container">
+  <v-container id="closer-dash-container" ref="closerDashContainer">
     <v-row id="closer-dash-toolbar-container">
       <v-col cols="12" id="closer-dash-toolbar" class="pt-0 pb-2">
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
@@ -367,7 +367,7 @@
 
       resetScrollBarPosition () {
         // reset scroll bar position to top
-        document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+        this.$refs.closerDashContainer.scrollTop = 0
       },
 
       /* RANKING TABLES-RELATED CODE START */
