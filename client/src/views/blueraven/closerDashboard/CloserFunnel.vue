@@ -1,5 +1,5 @@
 <template>
-  <v-container id="closer-dash-container">
+  <v-container id="closer-dash-container" ref="closerDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
     <!--    1: {{this.showFunnels}}-->
@@ -1116,7 +1116,7 @@ export default {
   methods: {
     resetScrollBarPosition() {
       // reset scroll bar position to top
-      document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      this.$refs.closerDashContainer.scrollTop = 0
     },
 
     /* FUNNEL-RELATED CODE START */

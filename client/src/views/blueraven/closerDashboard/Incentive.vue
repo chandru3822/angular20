@@ -112,7 +112,6 @@ export default {
   },
   created() {
     this.calcYearPercentage()
-    console.log(this.yearlyPointTotal) //for debugging
   }
 }
 </script>
@@ -131,7 +130,7 @@ export default {
     padding-bottom: 50px;
     margin-bottom: -50px;
     width: 100%;
-    max-height: 50vh;
+    max-height: 30vh;
   }
 }
 
@@ -217,6 +216,7 @@ export default {
     #incentive-banner {
       margin-bottom: -80px;
       max-width: 673px;
+      max-height: 40vh;
     }
   }
 
@@ -265,6 +265,7 @@ export default {
     #incentive-banner {
       margin-top: -29px;
       margin-bottom: -90px;
+      max-height: 50vh;
     }
   }
 
