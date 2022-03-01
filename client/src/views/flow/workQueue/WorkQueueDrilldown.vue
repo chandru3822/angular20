@@ -13,14 +13,14 @@
             <v-switch
               v-if="masterResults.length > 0"
               v-model="hideFutureFollowUps"
-              class="mx-2 mt-5 wq-follow-up-switch"
+              class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
               label="Hide work with a next follow-up date in the future"
               @change="filterFutureFollowUps()"
             />
             <v-switch
               v-if="masterResults.length > 0 && workQueue.useEventData"
               v-model="hideFutureEvents"
-              class="mx-2 mt-5 wq-follow-up-switch"
+              class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
               label="Hide events with a start time in the future"
               @change="filterFutureFollowUps()"
             />
