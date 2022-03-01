@@ -258,12 +258,18 @@ public class BrsProcessStepActionFunctionService {
       //This is hardcoded to the specific custom field group assignment ID of the used custom field. Not ideal
       Long designCfgaId = 22560L;
 
+      log.error("ZZZ debug 0");
+
       String designId = auroraService.getDesignId(ppsId, designCfgaId);
       if (designId == null) {
         throw new RuntimeException("Unable to fetch design ID");
       }
 
+      log.error("ZZZ debug 1");
+
       AuroraProxy.DesignSummary designResponse = auroraService.getDesignSummary(designId);
+
+      log.error("ZZZ debug 2");
 
       var design = designResponse.getFields().get("design");
       int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
@@ -272,6 +278,8 @@ public class BrsProcessStepActionFunctionService {
       int panelQuantity = 0;
       String manufacturer = null;
       String inverter = null;
+
+      log.error("ZZZ debug 3");
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
@@ -292,6 +300,8 @@ public class BrsProcessStepActionFunctionService {
       params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
       params.put("sourceId", ppsId);
 
+      log.error("ZZZ debug 4");
+
       for(ActionParamDynamicValue dynamicValue : func.getActionParamDynamicValues()) {
         final String paramName = dynamicValue.getParameterName();
         var cfgaId = Long.parseLong(dynamicValue.getDynamicValue());
@@ -306,6 +316,8 @@ public class BrsProcessStepActionFunctionService {
         params.put("intValue", null);
         params.put("intArrayValue", null);
         params.put("jsonValue", null);
+
+        log.error("ZZZ debug CDGA ID: " + cfgaId);
 
         //IDing by field name is about a generic as we can get as of now, but not ideal
         if (paramName.contains("System Size")) {
