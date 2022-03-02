@@ -981,7 +981,7 @@ $body$
 
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 CREATE TRIGGER update_events_trg
-  after INSERT or update OF start_time,end_time,resource_id
+  after INSERT or update OF start_time,end_time,resource_id,company_event_status_type_id
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_events();
