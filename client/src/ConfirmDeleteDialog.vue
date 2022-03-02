@@ -6,13 +6,22 @@
       <v-tooltip top v-if="showTooltip">
         <template v-slot:activator="{ on: tooltip }">
           <div v-on="{ ...tooltip }" class="d-inline-block">
-          <v-btn small text v-on="on" :disabled="isDisabled">
+            <v-btn v-if="textbutton" color="brRed" class="white--text py-1 px-2" small v-on="on" :disabled="isDisabled">
+              Delete
+            </v-btn>
+            <v-btn v-else small text v-on="on" :disabled="isDisabled">
         <v-icon>delete</v-icon>
       </v-btn>
           </div>
         </template>
             <span>{{tooltipText}}</span>
       </v-tooltip>
+      <v-btn v-else-if="textbutton"
+             color="brRed"
+             class="white--text py-1 px-2"
+             small v-on="on" :disabled="isDisabled">
+        Delete
+      </v-btn>
       <v-btn v-else small text v-on="on" :disabled="isDisabled">
         <v-icon>delete</v-icon>
       </v-btn>
@@ -54,6 +63,7 @@ export default {
     isDisabled: Boolean, //optional if you want to disable the icon that opens the dialog
     showTooltip: Boolean,
     tooltipText: String,
+    textbutton: Boolean
   },
   data() {
     return {
