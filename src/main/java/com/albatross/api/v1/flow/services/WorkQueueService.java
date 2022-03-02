@@ -4,7 +4,6 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
-import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +36,7 @@ public class WorkQueueService {
   private final WorkQueueTypeService workQueueTypeService;
   private final SqlCacheRO sqlCacheRO;
 
-  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned, Boolean filterFutureFollowUps) {
+  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned, Boolean filterFutureFollowUps, Boolean filterFutureEvents) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
@@ -46,40 +45,12 @@ public class WorkQueueService {
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
     params.put("filterFutureFollowUps", null != filterFutureFollowUps && filterFutureFollowUps);
+    params.put("filterFutureEvents", null != filterFutureEvents && filterFutureEvents);
     params.put("unassigned", null != unassigned && unassigned);
-    //currently we only show active process steps. but sending in as a list in case that changes
-    params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
     return results;
   }
-
-//  public Page<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId, Long userPositionId, Boolean unassigned, Pageable pageable) {
-//    User user = securityService.getCurrentUser();
-//    HashMap<String, Object> params = new HashMap<>();
-//    params.put("workQueueTypeId", workQueueTypeId);
-//    params.put("parentCompanyId", user.getHighestParentCompanyId());
-//    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
-//    params.put("companyId", user.getCompanyId());
-//    params.put("userPositionId", userPositionId);
-//    params.put("unassigned", null == unassigned ? false : unassigned);
-//    params.put("limit", pageable.getPageSize());
-//    params.put("offset", pageable.getOffset());
-//
-//    String sqlKey = "workQueue.getProcessStepsByTypeId";
-//
-//    //todo: this is a total whack-a-hack, need to remove this after we do a more configurable work queue in a future release
-//    if(workQueueTypeId == 98 || workQueueTypeId == 99 || workQueueTypeId == 106) {
-//      sqlKey = "workQueue.getProcessStepsByTypeIdForHack";
-//    }
-//
-//    List<WorkQueueDetail> results = sqlCache.query(sqlKey, params, new WorkQueueDetailMapper<>(WorkQueueDetail.class, om));
-//    //count should be the same regardless of the hack or not
-//    Integer count = sqlCache.queryForObject("workQueue.getProcessStepsByTypeIdCount", params, Integer.class);
-//
-//    Page<WorkQueueDetail> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-//    return page;
-//  }
 
   public SmartlistResult getWorkQueueDetails(Long workQueueTypeId, Long smartlistId, Long userId, Boolean unassigned, String timezone, Pageable pageable,
                                              List<Long> installationCrewIds) {

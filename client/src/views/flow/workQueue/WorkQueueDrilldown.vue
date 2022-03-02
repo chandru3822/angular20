@@ -11,10 +11,17 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-switch
-              v-if="masterResults.length > 0 && !workQueue.useEventData"
+              v-if="masterResults.length > 0"
               v-model="hideFutureFollowUps"
-              class="mx-2 mt-5 wq-follow-up-switch"
+              class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
               label="Hide work with a next follow-up date in the future"
+              @change="filterFutureFollowUps()"
+            />
+            <v-switch
+              v-if="masterResults.length > 0 && workQueue.useEventData"
+              v-model="hideFutureEvents"
+              class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
+              label="Hide events with a start time in the future"
               @change="filterFutureFollowUps()"
             />
             <v-btn text @click="exportCsv" v-if="results.length > 0">
@@ -94,13 +101,13 @@
                   {{ getColumnValue(item, c) }}
                 </div>
               </td>
-              <td class="note-created-at" v-if="useProcessStepHeaders">
+              <td class="note-created-at" v-if="queueHasNotes">
                 {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
               </td>
-              <td class="notes-follow-up" v-if="useProcessStepHeaders">
+              <td class="notes-follow-up" v-if="queueHasNotes">
                 {{ item.followUpDate | formatDate('date') }}
               </td>
-              <td class="notes-column" v-if="useProcessStepHeaders">
+              <td class="notes-column" v-if="queueHasNotes">
                 <div class="flex-display align-center">
                   <pre class="app-pre-wrapper">
                      {{ item.firstNoteContent }}
@@ -112,6 +119,7 @@
                   </v-btn>
                 </div>
                 <v-dialog
+                  @click:outside="closeNotesModal()"
                   :key="ytfDoWeNeedThis"
                   v-model="item.showNotesModal"
                 >
@@ -128,12 +136,12 @@
                         :showActivity="false"
                         :bordered="true"
                         :notes="item.notes"
-                        :is-wqt-note="true"
-                        :primary-id="item.projectProcessStepId"
-                        :secondary-id="item.processStepWorkQueueTypeId"
+                        :is-ps-wqt-note="!workQueue.useEventData"
+                        :is-event-wqt-note="workQueue.useEventData"
+                        :primary-id="workQueue.useEventData ? item.projectProcessStepEventId : item.projectProcessStepId"
+                        :secondary-id="workQueue.useEventData ? item.processStepEventWorkQueueTypeId : item.processStepWorkQueueTypeId"
                         type="ProjectProcessStep"
                         :callback="(item) => updateRowNotes(item)"
-
                       />
                     </v-card-text>
 
@@ -143,7 +151,7 @@
                       <v-btn
                         color="primaryCustom"
                         class="white--text mr-2 mb-3"
-                        @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
+                        @click="[ytfDoWeNeedThis++, closeNotesModal()]"
                       >
                         Close
                       </v-btn>
@@ -189,11 +197,13 @@ export default {
       snackbar: {},
       showNotesModal: false,
       hideFutureFollowUps: false,
+      hideFutureEvents: false,
       selectedPps: {},
       filters: {},
       notesPpsIndex: null, //this is used to know which row to update after a note is changed
       cachedFilters: {},
       constants,
+      initialPageLoad: true,
       search: '',
       ytfDoWeNeedThis: 0,
       timezone: this.$store.state.user.details.timezone.value,
@@ -211,6 +221,8 @@ export default {
       masterResults: [],
       customColumns: [],
       useProcessStepHeaders: false,
+      queueHasNotes: false,
+      queueHasOwningPositions: false,
       noResults: true,
       totalItems: 0,
       footerProps: {
@@ -237,7 +249,8 @@ export default {
   async created() {
     this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-    this.getWorkQueueName()
+    this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+    await this.getWorkQueueName()
     await this.getWorkDetails()
   },
   methods: {
@@ -256,15 +269,33 @@ export default {
     },
     filterFutureFollowUps() {
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
-      if (this.hideFutureFollowUps) {
-        this.filteredResults = cloneDeep(this.results)
-        this.results = this.results.filter(r => {
+      localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
+      //master results = all results loaded at start
+      //filtered results = the filters from the column headers
+      if (!this.workQueue.useEventData && this.hideFutureFollowUps) {
+        this.results = this.filteredResults.filter(r => {
           if(r.notes && r.notes.length > 0) {
             let firstNoteFollowUp = r.notes[0]?.followUpDate
-            return firstNoteFollowUp === null || firstNoteFollowUp === undefined || new Date(firstNoteFollowUp) <= new Date()
+            let noFollowUp = firstNoteFollowUp === null || firstNoteFollowUp === undefined
+            //holy crap, why is this so hard.
+            //just trying to compare a date in YYYY-MM-DD to now() was so stinking hard for me
+            return noFollowUp || (!noFollowUp && (moment().isAfter(moment.utc(firstNoteFollowUp, 'YYYY-MM-DD').format('YYYY-MM-DD'))))
           } else {
             return true
           }
+        })
+      } else if (this.workQueue.useEventData && (this.hideFutureEvents || this.hideFutureFollowUps)) {
+        this.results = this.filteredResults.filter(r => {
+          let noteFilter = true
+          if(r.notes && r.notes.length > 0) {
+            let firstNoteFollowUp = r.notes[0]?.followUpDate
+            let noFollowUp = firstNoteFollowUp === null || firstNoteFollowUp === undefined
+            //holy crap, why is this so hard.
+            //just trying to compare a date in YYYY-MM-DD to now() was so stinking hard for me
+            noteFilter = noFollowUp || (!noFollowUp && (moment().isAfter(moment.utc(firstNoteFollowUp, 'YYYY-MM-DD').format('YYYY-MM-DD'))))
+          }
+
+          return (!this.hideFutureFollowUps || (this.hideFutureFollowUps && noteFilter)) && (!this.hideFutureEvents || (this.hideFutureEvents && moment(r['Event Start Time'], 'MM/DD/YYYY hh:mm a').isBefore(moment())))
         })
       } else {
         this.results = cloneDeep(this.filteredResults)
@@ -329,21 +360,29 @@ export default {
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
 
+
         //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
-        if(this.useProcessStepHeaders) {
+        //for PS both Notes and Owning positions should exist,
+        //for PSE only notes will exist
+        if(this.results?.length > 0 && 'Notes' in this.results[0]) {
+          this.queueHasNotes = true
           this.results.forEach(r => {
             r.showNotesModal = false
             r.notes = JSON.parse(r['Notes'])
             r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
             r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
             r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
-            r.firstNoteContent = r.notes[0]?.note,
+            r.firstNoteContent = r.notes[0]?.note
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
-            r.owningPositions = JSON.parse(r['Owning Positions'])
+            if('Owning Positions' in this.results[0]) {
+              this.queueHasOwningPositions = true
+              r.owningPositions = JSON.parse(r['Owning Positions'])
+            }
           })
         }
 
         this.masterResults = cloneDeep(this.results)
+        this.filteredResults = cloneDeep(this.results)
         if (this.useProcessStepHeaders) {
           this.headers = [
             {text: 'Project', value: 'Project Name', show: true},
@@ -380,7 +419,7 @@ export default {
             show: true
           })
         })
-        if (this.useProcessStepHeaders) {
+        if (this.queueHasNotes) {
 
           //add the notes column to the end
           this.headers.push({
@@ -418,7 +457,7 @@ export default {
           this.filterResults()
         }
 
-        if (this.hideFutureFollowUps) {
+        if (this.hideFutureFollowUps || this.hideFutureEvents) {
           this.filterFutureFollowUps()
         }
 
@@ -494,12 +533,21 @@ export default {
         localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
         return matchCount === numFiltersUsed
       })
+      this.filteredResults = cloneDeep(this.results)
     },
     updateRowNotes(item) {
       this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null
       this.results[this.notesPpsIndex].firstNoteCreatedAt = item.dateCreated
       this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null
       this.results[this.notesPpsIndex].firstNoteContent = item.note
+    },
+    closeNotesModal() {
+      //this is dumb.  if you update the results before the modal closes things get weird
+      //if you update after then you have to catch all the ways that the modal can close
+      this.results[this.notesPpsIndex].showNotesModal = false
+      if(this.hideFutureFollowUps) {
+        this.filterFutureFollowUps()
+      }
     }
   },
 

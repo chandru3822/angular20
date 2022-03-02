@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
@@ -72,6 +73,8 @@ public class ProjectProcessStepService {
   private final CustomFieldValueService customFieldValueService;
 
   private final GoodleapService goodleapService;
+
+  private final AuroraProxy auroraService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -1041,7 +1044,7 @@ public class ProjectProcessStepService {
               systemValues.put("userId", user.getId());
 
               if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService);
+                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService);
                 Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
                 method.invoke(functionClass, childFunction, systemValues);
               } else {
