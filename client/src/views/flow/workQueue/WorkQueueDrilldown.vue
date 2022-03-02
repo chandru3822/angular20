@@ -285,6 +285,7 @@ export default {
           }
         })
       } else if (this.workQueue.useEventData && (this.hideFutureEvents || this.hideFutureFollowUps)) {
+        console.log('randaLogger', this.filteredResults)
         this.results = this.filteredResults.filter(r => {
           let noteFilter = true
           if(r.notes && r.notes.length > 0) {
@@ -298,6 +299,7 @@ export default {
           return (!this.hideFutureFollowUps || (this.hideFutureFollowUps && noteFilter)) && (!this.hideFutureEvents || (this.hideFutureEvents && moment(r['Event Start Time'], 'MM/DD/YYYY hh:mm a').isBefore(moment())))
         })
       } else {
+        console.log('non onono')
         this.results = cloneDeep(this.filteredResults)
       }
     },
@@ -533,13 +535,31 @@ export default {
         localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
         return matchCount === numFiltersUsed
       })
+      //we populate this so that if they hide/unhide future after doing some filtering we can get back to the filtered state
       this.filteredResults = cloneDeep(this.results)
     },
     updateRowNotes(item) {
-      this.results[this.notesPpsIndex].followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null
+      //have to set the matching value in filteredResults...cuz we do and it is dumb
+      let matchInFilteredResults = this.filteredResults.find(fr => fr.projectProcessStepEventId === this.results[this.notesPpsIndex].projectProcessStepEventId && fr.processStepEventWorkQueueTypeId === this.results[this.notesPpsIndex].processStepEventWorkQueueTypeId)
+
+      let followUpDate = null != item.followUpDate ? moment.utc(item.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null
+      this.results[this.notesPpsIndex].followUpDate = followUpDate
+      matchInFilteredResults.followUpDate = followUpDate
+
       this.results[this.notesPpsIndex].firstNoteCreatedAt = item.dateCreated
-      this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null
+      matchInFilteredResults.firstNoteCreatedAt = item.dateCreated
+
+      let dateFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null
+      this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = dateFormatted
+      console.log('randaLogger',matchInFilteredResults)
+      matchInFilteredResults.firstNoteCreatedAtFormatted = dateFormatted
+
       this.results[this.notesPpsIndex].firstNoteContent = item.note
+      matchInFilteredResults.firstNoteContent = item.note
+
+      //also re-populate the entire notes array
+      matchInFilteredResults.notes = this.results[this.notesPpsIndex].notes
+
     },
     closeNotesModal() {
       //this is dumb.  if you update the results before the modal closes things get weird
