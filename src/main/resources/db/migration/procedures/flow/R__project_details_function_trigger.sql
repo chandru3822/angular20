@@ -550,7 +550,7 @@ BEGIN
       where project_id = v_project_id1
         and first_appointment_not_pitched_or_missed is null;
 
-      elsif new.int_value is null or new.int_value != old.int_value then
+      elsif (TG_OP = 'UPDATE') then
       update brs.project_details
       set first_appointment_not_pitched_or_missed = null,
           first_appointment_not_pitched_or_missed_id = null,
@@ -572,7 +572,7 @@ BEGIN
       and ppsecfv2.custom_field_group_assignment_id = 4
       where ppse.id = new.project_process_step_event_id
       and ppsecfv2.int_value in (2, 1139, 1140)
-      group by ppsecfv2.int_value,ppse2.start_time;
+      group by ppsecfv2.int_value,ppse2.start_time limit 1;
 
       select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
       into v_missed_id,v_missed
@@ -584,7 +584,7 @@ BEGIN
         and ppsecfv2.custom_field_group_assignment_id = 4
       where ppse.id = new.project_process_step_event_id
         and ppsecfv2.int_value in (3)
-      group by ppsecfv2.int_value,ppse2.start_time;
+      group by ppsecfv2.int_value,ppse2.start_time limit 1;
 
       select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
       into v_not_either_id,v_not_either
@@ -596,7 +596,7 @@ BEGIN
         and ppsecfv2.custom_field_group_assignment_id = 4
       where ppse.id = new.project_process_step_event_id
         and ppsecfv2.int_value not in (2, 3, 1139, 1140)
-      group by ppsecfv2.int_value,ppse2.start_time;
+      group by ppsecfv2.int_value,ppse2.start_time limit 1;
 
       update brs.project_details
       set first_appointment_missed_id = v_missed_id,
