@@ -550,7 +550,7 @@ BEGIN
       where project_id = v_project_id1
         and first_appointment_not_pitched_or_missed is null;
 
-      elsif new.int_value is null or new.int_value != old.int_value then
+      elsif (TG_OP = 'UPDATE') then
       update brs.project_details
       set first_appointment_not_pitched_or_missed = null,
           first_appointment_not_pitched_or_missed_id = null,
@@ -572,7 +572,7 @@ BEGIN
       and ppsecfv2.custom_field_group_assignment_id = 4
       where ppse.id = new.project_process_step_event_id
       and ppsecfv2.int_value in (2, 1139, 1140)
-      group by ppsecfv2.int_value,ppse2.start_time;
+      group by ppsecfv2.int_value,ppse2.start_time limit 1;
 
       select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
       into v_missed_id,v_missed
@@ -584,7 +584,7 @@ BEGIN
         and ppsecfv2.custom_field_group_assignment_id = 4
       where ppse.id = new.project_process_step_event_id
         and ppsecfv2.int_value in (3)
-      group by ppsecfv2.int_value,ppse2.start_time;
+      group by ppsecfv2.int_value,ppse2.start_time limit 1;
 
       select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
       into v_not_either_id,v_not_either
@@ -596,7 +596,7 @@ BEGIN
         and ppsecfv2.custom_field_group_assignment_id = 4
       where ppse.id = new.project_process_step_event_id
         and ppsecfv2.int_value not in (2, 3, 1139, 1140)
-      group by ppsecfv2.int_value,ppse2.start_time;
+      group by ppsecfv2.int_value,ppse2.start_time limit 1;
 
       update brs.project_details
       set first_appointment_missed_id = v_missed_id,
@@ -889,10 +889,10 @@ BEGIN
         -- raise notice 'I am here';
         case when x.update_first_value_only is false then
           v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
-                  $$ where project_id = $$ || v_project_id;
+                  $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null $$;
           else
             v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
-                    $$ where project_id = $$ || v_project_id || $$ and ($$ || x.field_to_update ||
+                    $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null and ($$ || x.field_to_update ||
                     $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
           end case;
         --raise notice 'v_sql % ',v_sql;
@@ -910,11 +910,11 @@ BEGIN
             --  raise notice 'am I in the first case %',v_resource_name;
             v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
                      v_value ||
-                     $$ where project_id = $$ || v_project_id;
+                     $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null $$;
             else
               v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
                        v_value ||$$ , $$||x.update_first_value_only_id||$$ =  $1.id
-                        where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
+                        where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||$$ is not null and ($$ || x.second_field_to_update ||
                        $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
             end case;
           -- raise notice 'v_sql1 % ',v_sql1;
@@ -981,7 +981,7 @@ $body$
 
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 CREATE TRIGGER update_events_trg
-  after INSERT or update OF start_time,end_time,resource_id
+  after INSERT or update OF start_time,end_time,resource_id,company_event_status_type_id
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_events();
