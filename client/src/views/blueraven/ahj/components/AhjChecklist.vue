@@ -25,7 +25,8 @@
             label="this checklist item"
             :item-to-delete="checklistItem.description"
             @confirm-delete="[deleteItem(), checklistItem.deleteConfirm = false]"
-            textbutton>
+            textbutton
+            v-if="editMode">
         </confirm-delete-dialog>
         <v-btn @click="saveItem" color="primaryButton" class="white--text py-1 px-2"
                :disabled="checklistItem.description === ''" small>
