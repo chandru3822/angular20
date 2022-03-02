@@ -29,8 +29,9 @@ public class WorkQueueController {
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId,
                                         @RequestParam(required = false) Boolean unassigned,
                                         @RequestParam(required = false) Long userId,
-                                        @RequestParam(required = false) Boolean filterFutureFollowUps) {
-    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned, filterFutureFollowUps);
+                                        @RequestParam(required = false) Boolean filterFutureFollowUps,
+                                        @RequestParam(required = false) Boolean filterFutureEvents) {
+    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned, filterFutureFollowUps, filterFutureEvents);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
