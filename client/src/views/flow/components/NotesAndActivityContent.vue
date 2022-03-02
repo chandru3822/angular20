@@ -33,7 +33,7 @@
             </div>
           </template>
         </Mentionable>
-        <div class="follow-up-reminder" v-if="isWqtNote">
+        <div class="follow-up-reminder" v-if="isPsWqtNote || isEventWqtNote">
           <label class="mr-3">Set follow-up reminder for: </label>
           <DatetimePickerInput
               v-model="note.followUpDate"
@@ -109,7 +109,7 @@
                   </div>
                 </template>
               </Mentionable>
-              <div class="follow-up-reminder" v-if="isWqtNote">
+              <div class="follow-up-reminder" v-if="isPsWqtNote || isEventWqtNote">
                 <label class="mr-3">Set follow-up reminder for: </label>
                 <DatetimePickerInput
                     v-model="item.followUpDate"
@@ -150,7 +150,7 @@
             <td class="note-created-by">
               {{ item.createdBy }} {{ item.dateCreated | formatDate('timestamp') }}
             </td>
-            <td class="note-follow-up-date" v-if="isWqtNote">
+            <td class="note-follow-up-date" v-if="isPsWqtNote || isEventWqtNote">
               {{ item.followUpDate | formatDate('date') }}
             </td>
             <td class="text-right" style="width: 50px;">
@@ -391,7 +391,8 @@ export default {
     primaryId: Number,
     secondaryId: Number,
     installDashTile: String,
-    isWqtNote: Boolean,
+    isPsWqtNote: Boolean,
+    isEventWqtNote: Boolean,
     notes: Array,
     type: String,
     callback: Function
@@ -414,7 +415,7 @@ export default {
       headers: [
         {text: 'Notes Feed', value: 'note', show: true},
         {text: 'Note Created', value: 'createdBy', show: true},
-        {text: 'Next Follow-up Date', value: 'followUpDate', show: this.isWqtNote},
+        {text: 'Next Follow-up Date', value: 'followUpDate', show: this.isPsWqtNote || this.isEventWqtNote},
         {text: null, value: 'icons', show: true, width: '50px'}
       ],
       expanded: [],
@@ -465,7 +466,8 @@ export default {
           }
         } else {
           // @randa: Probably should create an object type enum on the frontend that mimics the backend?
-          url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
+          url = this.isPsWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` :
+            this.isEventWqtNote ? `/note/saveProjectProcessStepEventWorkQueueNote` : `/note/save${this.$props.type}Note`
           body = {
             primaryId: this.primaryId,
             id: n.reply ? null : n.id,
@@ -474,6 +476,9 @@ export default {
             //these 2 fields are for pps pswqt notes which require 2 keys to save/get
             projectProcessStepId: this.primaryId,
             processStepWorkQueueTypeId: this.secondaryId,
+            //these 2 params are used for event wqs. the endpoint will handle which one to use
+            projectProcessStepEventId: this.primaryId,
+            processStepEventWorkQueueTypeId: this.secondaryId,
             followUpDate: n.followUpDate
           }
         }
@@ -488,7 +493,7 @@ export default {
           this.$props.notes.unshift(data)
           this.note = {}
         }
-        if(this.isWqtNote && (!n.id || this.$props.notes.findIndex(i => i.id === n.id) === 0)) {
+        if((this.isPsWqtNote || this.isEventWqtNote) && (!n.id || this.$props.notes.findIndex(i => i.id === n.id) === 0)) {
           //if it is a new (non-child) note or edit to the first note, send the note back in the callback so the wq ui can be updated
           this.callback(data)
         }

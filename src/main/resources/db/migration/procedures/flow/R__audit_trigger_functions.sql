@@ -239,7 +239,8 @@ BEGIN
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
                                 when new.int_array_value is not null then new.int_array_value::text
-                                when new.boolean_value is not null then new.boolean_value::text end,
+                                when new.boolean_value is not null then new.boolean_value::text
+                                when new.json_value is not null then new.json_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
@@ -250,14 +251,16 @@ BEGIN
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
                            when old.int_array_value is not null then old.int_array_value::text
-                           when old.boolean_value is not null then old.boolean_value::text end,
+                           when old.boolean_value is not null then old.boolean_value::text
+                           when old.json_value is not null then old.json_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
                     when new.int_array_value is not null then new.int_array_value::text
-                    when new.boolean_value is not null then new.boolean_value::text end,
+                    when new.boolean_value is not null then new.boolean_value::text
+                    when new.json_value is not null then new.json_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
@@ -268,7 +271,8 @@ BEGIN
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
                            when old.int_array_value is not null then old.int_array_value::text
-                           when old.boolean_value is not null then old.boolean_value::text end,
+                           when old.boolean_value is not null then old.boolean_value::text
+                           when old.json_value is not null then old.json_value::text end,
                null,
                now(),
                new.modified_by_id);
