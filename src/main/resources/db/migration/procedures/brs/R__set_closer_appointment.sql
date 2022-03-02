@@ -193,7 +193,8 @@ BEGIN
                                                     p_current_user_id,
                                                     p_project_process_step_id,
                                                     p_appointment_start_time,
-                                                    p_users);
+                                                    p_users, 
+                                                    p_remote);
     else
       return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text,null::integer;
     end if;
