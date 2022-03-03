@@ -130,18 +130,23 @@ export default {
         let params = {}
         if(this.dashboardType === DashboardTypeEnum.SETTERMGR){
           let userPositions = this.$store.state.user.details.userPositions
-          let userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+          let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
+          let userOfficeId = userOffice ? userOffice.orgId : null
+
           params = {
             quarter,
             isSetterMgr: true,
             setterMgrOfficeId: userOfficeId ? userOfficeId : null
           }
         } else if (this.dashboardType === DashboardTypeEnum.SETTER){
-          let userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+          let userPositions = this.$store.state.user.details.userPositions
+          let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
+          let userOfficeId = userOffice ? userOffice.orgId : null
+
           params = {
             quarter,
             isSetterMgr: false,
-            setterMgrOfficeId: userOfficeId ? userOfficeId : null
+            setterMgrOfficeId: userOfficeId
           }
         } else {
           params = {quarter}
