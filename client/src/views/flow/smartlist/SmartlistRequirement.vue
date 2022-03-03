@@ -30,7 +30,7 @@
         <v-autocomplete
           v-model="newRequirement.selectedField"
           label="Field"
-          :items="projectDetailsColumns"
+          :items="filteredProjectDetailsRequirements"
           item-value="project_details_column"
           item-text="name"
           return-object
@@ -447,7 +447,7 @@ export default {
       type: Boolean,
       default: false
     },
-    projectDetailsColumns: {
+    projectDetailsRequirements: {
       type: Array,
       default: () => []
     }
@@ -504,6 +504,11 @@ export default {
     }
   },
   computed: {
+    filteredProjectDetailsRequirements () {
+      return this.projectDetailsRequirements.filter(f => {
+        return !this.requirements.find(af => af.projectDetailsColumn === f.projectDetailsColumn && (f.processStepEventId === null || af.processStepEventId === f.processStepEventId))
+      })
+    },
     shouldShowEditFormValueInput () {
       return this.expandedRequirement.dataTypeRequirement?.secondaryRequirement
     },
@@ -727,7 +732,7 @@ export default {
         ...this.newRequirement,
         ...this.newRequirement.selectedField,
         processStepId: this.newRequirement.processStepId,
-        processStepEventId: this.newRequirement.processStepEventId
+        processStepEventId: (this.isProjectDetails) ? this.newRequirement.selectedField.processStepEventId : this.newRequirement.processStepEventId
       })
     },
     updateRequirement (requirement) {
