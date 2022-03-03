@@ -28,10 +28,11 @@
 
       <template v-if="isProjectDetails === true">
         <v-autocomplete
-          v-model="newField.projectDetailsColumn"
+          v-model="newField"
           label="Field"
           :items="filteredProjectDetailsColumns"
           item-value="projectDetailsColumn"
+          return-object
           item-text="name"
           attach
         />
@@ -236,8 +237,9 @@ export default {
   },
   computed: {
     filteredProjectDetailsColumns () {
-      const columnNames = this.assignedFields.map(f => f.projectDetailsColumn)
-      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
+      return this.projectDetailsColumns.filter(f => {
+        return !this.assignedFields.find(af => af.projectDetailsColumn === f.projectDetailsColumn && (f.processStepEventId === null || af.processStepEventId === f.processStepEventId))
+      })
     },
     isNewFieldButtonDisabled () {
       return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
