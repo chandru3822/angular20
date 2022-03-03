@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -86,7 +88,22 @@ public class SmartlistController {
 
   @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFieldSmartlistFields(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getAssignedFields(smartlistId), HttpStatus.OK);
+
+    Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
+
+    if (!Objects.equals(smartlistId, smartlist.getId())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+    List<SmartlistFieldAssignment> fields;
+
+    if (smartlist.isProjectDetails()) {
+      fields = smartlistService.getAssignedProjectDetailsFields(smartlistId);
+    } else {
+      fields = smartlistService.getAssignedFields(smartlistId);
+    }
+
+    return new ResponseEntity<>(fields, HttpStatus.OK);
   }
 
   @PostMapping(value = "/{smartlistId}/field", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

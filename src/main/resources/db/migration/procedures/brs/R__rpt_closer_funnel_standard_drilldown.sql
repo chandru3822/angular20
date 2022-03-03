@@ -2170,7 +2170,7 @@ BEGIN
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
                                     (4, 59, 61, 56, 3, 58, 57, 60, 2, 1139, 1140, 16685, 15327))
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >
+                               and ((ppscfv1.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >
                                    (now() at time zone 'US/Mountain')
                                and ppse.start_time is not null
                                and pd.company_id = v_company_id
@@ -2262,7 +2262,7 @@ BEGIN
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                 ppscfv2.timestamp_value is not null
+                                 ppscfv1.timestamp_value is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;

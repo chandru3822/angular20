@@ -189,6 +189,10 @@ public class SmartlistService {
     return sqlCache.get("smartlist.getAssignedFieldById", Map.of("id", assignmentId), SmartlistFieldAssignment.class).orElse(null);
   }
 
+  public SmartlistFieldAssignment getAssignedProjectDetailsFieldById(Long assignmentId) {
+    return sqlCache.get("smartlist.getAssignedProjectDetailsFieldById", Map.of("id", assignmentId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om)).orElse(null);
+  }
+
   public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
     return sqlCache.query("smartlist.getAssignedProjectDetailsFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
@@ -243,7 +247,12 @@ public class SmartlistService {
     params.put("projectDetailsColumn", assignment.getProjectDetailsColumn());
     params.put("processStepEventId", assignment.getProcessStepEventId());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
-    return this.getAssignedFieldById(assignmentId);
+
+    if (assignment.getProjectDetailsColumn() != null) {
+      return this.getAssignedProjectDetailsFieldById(assignmentId);
+    } else {
+      return this.getAssignedFieldById(assignmentId);
+    }
   }
 
   public SmartlistRequirement addRequirement(Long smartlistId, SmartlistRequirement requirement) {
