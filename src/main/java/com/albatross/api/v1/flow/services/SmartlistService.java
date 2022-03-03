@@ -197,20 +197,28 @@ public class SmartlistService {
     return sqlCache.query("smartlist.getAssignedProjectDetailsFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
-    public SmartlistRequirement getRequirementById(Long requirementId) {
-        User user = securityService.getCurrentUser();
-        Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
-        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+  public SmartlistRequirement getRequirementById(Long requirementId) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object>params = Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    SmartlistRequirement requirement = sqlCache.get("smartlist.getRequirementById", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
 
-        if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
-            final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
-            if (sql != null) {
-                requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
-            }
-        }
-
-        return requirement;
+    if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
+      final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
+      if (sql != null) {
+        requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+      }
     }
+
+    return requirement;
+  }
+
+  public SmartlistRequirement getProjectDetailsRequirementById(Long requirementId) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object>params = Map.of("id", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    return sqlCache.get("smartlist.getProjectRequirementById", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+  }
 
   public List<SmartlistLogic> getLogic(Long smartlistId) {
     return sqlCache.query("smartlist.getLogic", Map.of("smartlistId", smartlistId), SmartlistLogic.class);
@@ -261,7 +269,17 @@ public class SmartlistService {
     params.put("userId", user.trueUserId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
-    return getRequirementById(requirementId);
+
+    var smartlist = getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new RuntimeException("Unable to find given smartlist");
+    }
+
+    if (smartlist.isProjectDetails()) {
+      return getProjectDetailsRequirementById(requirementId);
+    } else {
+      return getRequirementById(requirementId);
+    }
   }
 
   public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
@@ -269,7 +287,17 @@ public class SmartlistService {
     params.put("userId", securityService.getCurrentUser().trueUserId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     sqlCache.update("smartlist.updateRequirement", params);
-    return getRequirementById(requirement.getId());
+
+    var smartlist = getSmartlist(requirement.getSmartlistId());
+    if (smartlist == null) {
+      throw new RuntimeException("Unable to find given smartlist");
+    }
+
+    if (smartlist.isProjectDetails()) {
+      return getProjectDetailsRequirementById(requirement.getId());
+    } else {
+      return getRequirementById(requirement.getId());
+    }
   }
 
   public void deleteRequirement(Long requirementId) {
@@ -290,17 +318,29 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany, "parentCompanyId", user.getHighestParentCompanyId());
-    List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+    var smartlist = getSmartlist(smartlistId);
 
-    if (includeListValues) {
+    if (smartlist == null) {
+      throw new RuntimeException("Unable to find given smartlist");
+    }
+
+    List<SmartlistRequirement> requirements;
+
+    if (smartlist.isProjectDetails()) {
+      requirements = sqlCache.query("smartlist.getProjectDetailsRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+    } else {
+      requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+
+      if (includeListValues) {
         for (SmartlistRequirement r : requirements) {
-            if (r.getCustomFieldSqlKey() != null) {
-                final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
-                if (sql != null) {
-                    r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
-                }
+          if (r.getCustomFieldSqlKey() != null) {
+            final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
+            if (sql != null) {
+              r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
             }
+          }
         }
+      }
     }
 
     return requirements;
@@ -509,6 +549,17 @@ public class SmartlistService {
           if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
             requirementValue = requirementValue.toString().replace("not", "");
           }
+        }
+      }
+
+      if (Objects.equals(r.getHasListValues(), true)) {
+        var matchedListItem = r.getAvailableListOfValues().stream()
+          .filter(req -> Objects.equals(req.getId(), r.getListOfValueId()))
+          .findFirst()
+          .orElse(null);
+
+        if (matchedListItem != null) {
+          requirementValue = matchedListItem.getName();
         }
       }
 

@@ -270,7 +270,7 @@
       :reset-form="resetRequirementForm"
       :can-edit="canEdit"
       :is-project-details="smartlist.projectDetails"
-      :project-details-columns="filteredProjectDetailsRequirements"
+      :project-details-requirements="projectDetailsColumns"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -425,10 +425,6 @@ export default {
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     },
-    filteredProjectDetailsRequirements () {
-      const columnNames = this.requirements.map(r => r.projectDetailsColumn)
-      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
-    },
     filteredCompanyObjectTypes () {
       if (this.smartlist.id) {
         let objectTypeIds = []
@@ -537,7 +533,8 @@ export default {
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
           displayOrder: maxNumber + 1,
-          projectDetailsColumn: requirement.projectDetailsColumn
+          projectDetailsColumn: requirement.projectDetailsColumn,
+          processStepEventId: requirement.processStepEventId
         })
         this.requirements.push(data)
         this.resetRequirementForm = true
