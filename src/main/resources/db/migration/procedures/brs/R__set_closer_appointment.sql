@@ -192,6 +192,7 @@ BEGIN
                    from flow.set_closer_appointment(p_project_id,
                                                     p_current_user_id,
                                                     p_project_process_step_id,
+                                                    p_project_process_step_event_id,
                                                     p_appointment_start_time,
                                                     p_users, 
                                                     p_remote);
