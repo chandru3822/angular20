@@ -967,7 +967,7 @@ BEGIN
              (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
     end if;
 
-    if new.resource_id is not null and  (TG_OP = 'INSERT') then
+    if new.resource_id is not null and old.resource_id is null then
       update brs.project_details
       set closer_user_id          = v_user_id,
           closer_name             = v_closer_name,
