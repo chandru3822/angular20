@@ -143,7 +143,7 @@
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>
-                  <confirm-delete-dialog :label="`this process step from the ${process.processName} process`" :item-to-delete="item.processStepName" @confirm-delete="[item.archived = true, deleteStepFromProcess(item.id)]"></confirm-delete-dialog>
+                  <confirm-delete-dialog :label="`this process step from the ${process.processName} process: `" :item-to-delete="item.processStepName" @confirm-delete="[item.archived = true, deleteStepFromProcess(item.id)]"></confirm-delete-dialog>
                 </div>
               </td>
             </tr>

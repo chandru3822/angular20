@@ -36,7 +36,7 @@
                   {{a.attachmentType}}
                 </v-list-item-content>
                 <v-checkbox  style="display: flex; justify-content: flex-end" v-model="a.readOnly" label="Read-Only" @change="updateReadOnly(a)"></v-checkbox>
-                <confirm-delete-dialog label="this attachment type" :item-to-delete="a.attachmentType" @confirm-delete="[a.archived = true, deleteAttachmentType(a.id)]"></confirm-delete-dialog>
+                <confirm-delete-dialog label="this attachment type: " :item-to-delete="a.attachmentType" @confirm-delete="[a.archived = true, deleteAttachmentType(a.id)]"></confirm-delete-dialog>
               </v-list-item>
             </v-list>
           </draggable>

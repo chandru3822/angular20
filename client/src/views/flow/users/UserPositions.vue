@@ -170,7 +170,7 @@
                 <v-btn class="d-inline-block" text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
                 <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')"
-                    label="this position"
+                    label="this position: "
                     :item-to-delete="item.position"
                     @confirm-delete="deleteUserPosition(item)"
                 ></confirm-delete-dialog>

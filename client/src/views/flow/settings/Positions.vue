@@ -54,7 +54,7 @@
                 </v-btn>
                 <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    label="this position"
+                    label="this position: "
                     :item-to-delete="item.position"
                     @confirm-delete="deletePosition(item)"
                 ></confirm-delete-dialog>

@@ -61,9 +61,10 @@
               <v-icon v-if="addImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn v-else text class="mr-2" @click="deleteAttachment(companyLogo.id)">
-              <v-icon>delete</v-icon>
-            </v-btn>
+            <confirm-delete-dialog
+            label="the company logo"
+            @confirm-delete="deleteAttachment(companyLogo.id)"
+            ></confirm-delete-dialog>
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -140,10 +141,11 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'CompanySettings',
-
+  components: {ConfirmDeleteDialog},
   data () {
     return {
       loadComplete: false,

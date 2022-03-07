@@ -140,7 +140,7 @@
                 <v-list-item-content>
                   {{a.attachmentType}}
                 </v-list-item-content>
-                <confirm-delete-dialog label="this attachment type" :item-to-delete="a.attachmentType" @confirm-delete="[a.archived = true, deleteAttachmentType(a.id)]"></confirm-delete-dialog>
+                <confirm-delete-dialog label="this attachment type: " :item-to-delete="a.attachmentType" @confirm-delete="[a.archived = true, deleteAttachmentType(a.id)]"></confirm-delete-dialog>
               </v-list-item>
             </v-list>
           </draggable>

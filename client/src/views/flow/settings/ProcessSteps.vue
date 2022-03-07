@@ -84,7 +84,7 @@
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                                           label="this process step"
+                                           label="this process step: "
                                            :item-to-delete="item.processStepName"
                                            :is-disabled="item.workQueueTypes.length > 0"
                                            :show-tooltip="item.workQueueTypes.length > 0"

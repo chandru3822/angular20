@@ -22,7 +22,7 @@
       <div class="checklist-btns">
         <a @click="hideCtrls" class="cancel-link mr-3">Cancel</a>
         <confirm-delete-dialog
-            label="this checklist item"
+            label="this checklist item: "
             :item-to-delete="checklistItem.description"
             @confirm-delete="[deleteItem(), checklistItem.deleteConfirm = false]"
             textbutton

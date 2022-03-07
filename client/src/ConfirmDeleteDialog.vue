@@ -33,7 +33,7 @@
         Delete
       </v-card-title>
       <v-card-text class="albatross-body-1">
-      Are you sure you want to delete {{label}}: <strong>{{ itemToDelete}}</strong>?
+      Are you sure you want to delete {{label}}<strong>{{ itemToDelete}}</strong>?
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -73,6 +73,7 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm-delete')
+      this.openDialog = false
     },
     no() {
       this.openDialog = false
