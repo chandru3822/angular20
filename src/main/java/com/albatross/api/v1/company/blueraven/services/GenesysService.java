@@ -219,6 +219,7 @@ public class GenesysService {
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
+    wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
     contactMap.put("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
