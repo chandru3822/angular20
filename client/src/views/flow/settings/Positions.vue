@@ -49,47 +49,15 @@
                 {{item.orgType}}
               </td>
               <td class="px-0">
-                <v-btn x-small fab text class="d-inline-block" @click="clickRow(item.id)">
+                <v-btn small fab text class="d-inline-block" @click="clickRow(item.id)">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-dialog
-                    v-model="item.deleteConfirm"
+                <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn x-small fab text class="d-inline-block"  v-on="on">
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this position: <strong>{{ item.position }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deletePosition(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                    label="this position"
+                    :item-to-delete="item.position"
+                    @confirm-delete="deletePosition(item)"
+                ></confirm-delete-dialog>
               </td>
             </tr>
           </template>
@@ -103,10 +71,11 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'Positions',
-
+    components: {ConfirmDeleteDialog},
     data() {
       return {
         delay: 500,
