@@ -100,6 +100,7 @@
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
           {{ action.actionName }}
+          <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">check</v-icon>
         </v-btn>
       </div>
       </div>
