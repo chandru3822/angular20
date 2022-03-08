@@ -16,9 +16,10 @@ BEGIN
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                      from (
                               with project_data as(
-                                  select ppscfv1.int_value,ppse.start_time as timestamp_value,ppscfv2.timestamp_value as checked_in_time
+                                  select ppscfv1.int_value,ppse.start_time as timestamp_value,coalesce(ppscfv2.timestamp_value, ppsea.date_created) as checked_in_time
                                   from flow.project_process_step pps
                                            inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+                                           left join flow.project_process_step_event_action ppsea on ppsea.project_process_step_event_id = ppse.id and ppsea.process_step_event_action_id = 408 --408 = check in action on event stage/prod
                                            left join flow.project_process_step_event_custom_field_value ppscfv1 on ppse.id = ppscfv1.project_process_step_event_id and ppscfv1.custom_field_group_assignment_id = 4
                                            left join flow.project_process_step_event_custom_field_value ppscfv2 on ppse.id = ppscfv2.project_process_step_event_id and ppscfv2.custom_field_group_assignment_id = 1377
                                            inner join brs.project_details pd on pd.project_id = pps.project_id
@@ -688,14 +689,14 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.credit_decision_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.credit_decision_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                              null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -705,16 +706,16 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.credit_decision_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.credit_decision_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.credit_decision_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.credit_decision_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                              null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -726,13 +727,13 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                              null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -752,16 +753,15 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.credit_decision_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.credit_check = 82
-                                                 and --Pass
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.credit_decision_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.credit_check = 82 --Pass
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -772,18 +772,17 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.credit_decision_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.credit_decision_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.credit_check = 82
-                                                 and --Pass
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.credit_decision_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.credit_decision_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.credit_check = 82 --Pass
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -796,15 +795,14 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.credit_check = 82
-                                                 and --Pass
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.credit_check = 82 --Pass
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -825,14 +823,14 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.installation_agreement_signed_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.installation_agreement_signed_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.installation_agreement_signed_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.installation_agreement_signed_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -842,16 +840,16 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.installation_agreement_signed_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.installation_agreement_signed_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.installation_agreement_signed_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.installation_agreement_signed_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.installation_agreement_signed_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.installation_agreement_signed_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -863,13 +861,13 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.installation_agreement_signed_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.installation_agreement_signed_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -889,14 +887,14 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.site_survey_verified_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.site_survey_verified_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.site_survey_verified_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.site_survey_verified_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -906,16 +904,16 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.site_survey_verified_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.site_survey_verified_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.site_survey_verified_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.site_survey_verified_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.site_survey_verified_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.site_survey_verified_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -927,13 +925,13 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.site_survey_verified_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.site_survey_verified_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -953,14 +951,14 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_sent_to_homeowner_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -970,16 +968,16 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_sent_to_homeowner_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -991,13 +989,13 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+--                                                  and pd.final_design_sent_to_homeowner_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1017,14 +1015,14 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.final_design_signed_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.final_design_signed_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_signed_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1034,16 +1032,16 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.final_design_signed_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_signed_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.final_design_signed_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.final_design_signed_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_signed_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1055,13 +1053,13 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.final_design_signed_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1081,13 +1079,13 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.company_id = v_company_id
-                                                 and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.company_id = v_company_id
+--                                                  and pd.final_design_complete_date is not null
+--                                                  and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1096,14 +1094,14 @@ BEGIN
                                                  and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.company_id = v_company_id
-                                                 and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.company_id = v_company_id
+--                                                  and pd.final_design_complete_date is not null
+--                                                  and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1113,13 +1111,13 @@ BEGIN
                                                  and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.company_id = v_company_id
-                                                 and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.company_id = v_company_id
+--                                                  and pd.final_design_complete_date is not null
+--                                                  and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1139,14 +1137,14 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.substantial_completion_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.substantial_completion_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.substantial_completion_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.substantial_completion_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1156,16 +1154,16 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.substantial_completion_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.substantial_completion_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.substantial_completion_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.substantial_completion_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.substantial_completion_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.substantial_completion_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1177,13 +1175,13 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.substantial_completion_date is not null
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                where pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.substantial_completion_date is not null
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1203,12 +1201,13 @@ BEGIN
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                      from (
                               with project_data as(
-                                  select ppscfv1.int_value,ppse.start_time as timestamp_value,ppscfv2.timestamp_value as checked_in_time,o.id as org_id,up.user_id
+                                  select ppscfv1.int_value,ppse.start_time as timestamp_value,coalesce(ppscfv2.timestamp_value, ppsea.date_created) as checked_in_time,o.id as org_id,up.user_id
                                   from flow.project_process_step pps
                                            inner join flow.project p on p.id = pps.project_id
                                            inner join flow.user_position up on up.id = p.user_position_id
                                            inner join flow.org o on o.id = up.org_id
                                            inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+                                           left join flow.project_process_step_event_action ppsea on ppsea.project_process_step_event_id = ppse.id and ppsea.process_step_event_action_id = 408 --408 = check in action on event
                                            left join flow.project_process_step_event_custom_field_value ppscfv1 on ppse.id = ppscfv1.project_process_step_event_id and ppscfv1.custom_field_group_assignment_id = 4
                                            left join flow.project_process_step_event_custom_field_value ppscfv2 on ppse.id = ppscfv2.project_process_step_event_id and ppscfv2.custom_field_group_assignment_id = 1377
                                            inner join brs.project_details pd on pd.project_id = pps.project_id
@@ -1927,20 +1926,20 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.credit_decision_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.credit_decision_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                              null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1956,22 +1955,22 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.credit_decision_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.credit_decision_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.credit_decision_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.credit_decision_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                              null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -1989,19 +1988,19 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.credit_decision_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.credit_decision_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                              null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2027,21 +2026,21 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.credit_decision_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.credit_check = 82
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.credit_decision_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.credit_check = 82
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2058,23 +2057,23 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.credit_decision_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.credit_decision_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.credit_check = 82
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.credit_decision_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.credit_decision_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.credit_check = 82
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2093,21 +2092,21 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.credit_decision_date is not null
-                                                 and pd.credit_check = 82
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.credit_decision_date is not null
+--                                                  and pd.credit_check = 82
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2134,20 +2133,20 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.installation_agreement_signed_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.installation_agreement_signed_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.installation_agreement_signed_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.installation_agreement_signed_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2163,22 +2162,22 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.installation_agreement_signed_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.installation_agreement_signed_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.installation_agreement_signed_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.installation_agreement_signed_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.installation_agreement_signed_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.installation_agreement_signed_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2196,19 +2195,19 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.installation_agreement_signed_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.installation_agreement_signed_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2234,20 +2233,20 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.site_survey_verified_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.site_survey_verified_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.site_survey_verified_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.site_survey_verified_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2263,22 +2262,22 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.site_survey_verified_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.site_survey_verified_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.site_survey_verified_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.site_survey_verified_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.site_survey_verified_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.site_survey_verified_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2296,19 +2295,19 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.site_survey_verified_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.site_survey_verified_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2334,20 +2333,20 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_sent_to_homeowner_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_sent_to_homeowner_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2363,22 +2362,22 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_sent_to_homeowner_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_sent_to_homeowner_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2396,19 +2395,19 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.final_design_sent_to_homeowner_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+--                                                  and pd.final_design_sent_to_homeowner_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2434,20 +2433,20 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.final_design_signed_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_signed_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.final_design_signed_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_signed_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2463,22 +2462,22 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.final_design_signed_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_signed_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.final_design_signed_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.final_design_signed_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.final_design_signed_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.final_design_signed_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2496,19 +2495,19 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-
-                                                 and pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.final_design_signed_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--
+--                                                  and pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.final_design_signed_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and pd.company_id = v_company_id
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2534,19 +2533,19 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
-
-                                                 and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--                                                  and pd.company_id = v_company_id
+--
+--                                                  and pd.final_design_complete_date is not null
+--                                                  and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2560,21 +2559,21 @@ BEGIN
                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
-
-                                                 and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
-
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--                                                  and pd.company_id = v_company_id
+--
+--                                                  and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
+--
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                               )
+                                                null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2590,19 +2589,19 @@ BEGIN
                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
-
-                                                 and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--                                                  and pd.company_id = v_company_id
+--
+--                                                  and pd.final_design_complete_date is not null
+--                                                  and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2629,20 +2628,20 @@ BEGIN
                                               name,
                                               display_order,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
-
-                                                 and pd.substantial_completion_date :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.substantial_completion_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_today_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--                                                  and pd.company_id = v_company_id
+--
+--                                                  and pd.substantial_completion_date :: DATE =
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.substantial_completion_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                               )
+                                                null as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2658,22 +2657,22 @@ BEGIN
                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
-
-                                                 and pd.substantial_completion_date :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.substantial_completion_date :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.substantial_completion_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_week_to_date_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--                                                  and pd.company_id = v_company_id
+--
+--                                                  and pd.substantial_completion_date :: DATE >=
+--                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+--                                                  and pd.substantial_completion_date :: DATE <=
+--                                                      (now() at time zone 'US/Mountain') :: DATE
+--                                                  and pd.substantial_completion_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                               )
+                                              null as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
@@ -2691,19 +2690,19 @@ BEGIN
                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
                                               ) as week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                                        inner join flow.user_position up on up.id = p.user_position_id
-                                                        inner join flow.org o on o.id = up.org_id
-                                               where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
-
-                                                 and pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and pd.substantial_completion_date is not null
-                                                 and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
-                                                 and pd.appointment_check_in is not null
-                                              ) as checked_in_custom_date_range_count,
+--                                               (select count(1)
+--                                                from brs.project_details pd
+--                                                         inner join flow.project p on p.id = pd.project_id
+--                                                         inner join flow.user_position up on up.id = p.user_position_id
+--                                                         inner join flow.org o on o.id = up.org_id
+--                                                where up.user_id = any (p_user_ids)
+--                                                  and pd.company_id = v_company_id
+--
+--                                                  and pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date
+--                                                  and pd.substantial_completion_date is not null
+--                                                  and case when array_length(p_org_ids, 1) > 0 then o.id = any (p_org_ids) else 1 = 1 end
+--                                               )
+                                                null as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
