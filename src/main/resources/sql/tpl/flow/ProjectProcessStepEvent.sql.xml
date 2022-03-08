@@ -287,8 +287,8 @@
   ]]></projectProcessStepEvent.updatePrimaryIfOnlyOne>
 
   <projectProcessStepEvent.insertAuditRow><![CDATA[
-     insert into flow.project_process_step_event_action(project_process_step_event_id, process_step_event_action_id, created_by_id)
-      values (:projectProcessStepEventId, :processStepEventActionId, :createdById)
+     insert into flow.project_process_step_event_action(project_process_step_event_id, process_step_event_action_id, created_by_id, allow_multiple_uses)
+      values (:projectProcessStepEventId, :processStepEventActionId, :createdById, :allowMultipleUses)
   ]]></projectProcessStepEvent.insertAuditRow>
 
   <projectProcessStepEvent.getPpsEventAction><![CDATA[
