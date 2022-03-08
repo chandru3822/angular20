@@ -10,6 +10,8 @@
      cf.sort_list_values_alphabetically,
      cf.created_by_id,
      cf.modified_by_id,
+     cdt.data_type_id,
+     cf.allow_now,
      cf.company_data_type_id,
      cf.custom_field_sql_key,
      cf.custom_field_sql_reference_table,
@@ -59,6 +61,7 @@
                                case when cf.sort_list_values_alphabetically is false then lv.display_order end
                         ) rows), '[]') AS list_of_values
     from flow.custom_field cf
+      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where cf.id = :id
     order by cf.field_name
   ]]></customField.getOne>
@@ -75,6 +78,8 @@
        cf.created_by_id,
        cf.modified_by_id,
        cf.company_data_type_id,
+       cdt.data_type_id,
+       cf.allow_now,
        cf.custom_field_sql_key,
        cf.custom_field_sql_reference_table,
        cf.company_system_list_id,
@@ -169,6 +174,7 @@
       set field_name = trim(:fieldName),
           company_system_list_id = :systemListId,
           readonly = :readonly,
+          allow_now = :allowNow,
           system_readonly = :systemReadonly,
           sort_list_values_alphabetically = :sortListValuesAlphabetically,
           system_list_option_ids = :systemListOptionIds::int[],
@@ -181,10 +187,10 @@
     insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key,
                                   custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
                                   readonly, sort_list_values_alphabetically,
-                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly)
+                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
     values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey,
             :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly,
-            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly)
+            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
     returning id
   ]]></customField.insertField>
 
