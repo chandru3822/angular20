@@ -69,6 +69,7 @@ public class CustomFieldService {
             && customField.getSortListValuesAlphabetically());
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
     params.put("systemReadonly", customField.getSystemReadonly() != null && customField.getSystemReadonly());
+    params.put("allowNow", customField.getAllowNow() != null && customField.getAllowNow());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put(
         "systemListOptionIds",
