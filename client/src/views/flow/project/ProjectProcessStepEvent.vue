@@ -99,7 +99,15 @@
                v-if="!action.hideFromWeb"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
-          {{ action.actionName }}
+          <div>
+            <div class="action-button-name">
+              {{ action.actionName }}
+            </div>
+            <div class="action-button-subtitle">
+              <span class="action-button-subtitle-date">{{ action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+                {{ action.actionRunBy}}
+            </div>
+          </div>
           <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">check</v-icon>
         </v-btn>
       </div>
@@ -1035,6 +1043,19 @@ export default {
     margin-left: 10px;
     font-size: 12px;
   }
+}
+
+.action-button-name {
+  display: block;
+}
+
+.action-button-subtitle {
+  display: block;
+  font-size: 10px;
+}
+
+.action-button-subtitle-date {
+  text-transform: lowercase;
 }
 
 </style>

@@ -79,6 +79,17 @@
                                     psea.multiple_uses as "multipleUses",
                                     psea.hide_from_web as "hideFromWeb",
                                     psea.hide_from_mobile as "hideFromMobile",
+                                   (select ppsea.date_created
+                                    from flow.project_process_step_event_action ppsea
+                                    where ppsea.project_process_step_event_id = ppse.id
+                                      and ppsea.process_step_event_action_id = psea.id
+                                    order by ppsea.date_created desc limit 1) as "actionRunDate",
+                                   (select concat(u.first_name, ' ', left(u.last_name, 1))
+                                    from flow.project_process_step_event_action ppsea
+                                      inner join flow."user" u on ppsea.created_by_id = u.id
+                                    where ppsea.project_process_step_event_id = ppse.id
+                                      and ppsea.process_step_event_action_id = psea.id
+                                    order by ppsea.date_created desc limit 1) as "actionRunBy",
                                     case when
                                            (select id
                                             from flow.project_process_step_event_action ppsea
