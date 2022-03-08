@@ -103,9 +103,11 @@
               <v-icon v-if="addHomePageImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn v-else text class="mr-2" @click="deleteAttachment(homePageLogo.id)">
-              <v-icon>delete</v-icon>
-            </v-btn>
+            <confirm-delete-dialog
+                v-else
+                label="the home page logo"
+                @confirm-delete="deleteAttachment(homePageLogo.id)"
+            ></confirm-delete-dialog>
           </div>
         </v-toolbar>
         <div class="text-center">

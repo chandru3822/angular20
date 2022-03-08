@@ -75,46 +75,13 @@
                     <v-btn small text @click="goToTournament(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-if="userCanDelete"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this tournament: <strong>{{ item.tournamentName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[item.archived = true, deleteTournament(item.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanDelete"
+                        label="this tournament: "
+                        :item-to-delete="item.tournamentName"
+                        @confirm-delete="[item.archived = true, deleteTournament(item.id)]"
+                    ></confirm-delete-dialog>
                   </td>
-
                 </tr>
               </template>
             </v-data-table>
@@ -131,11 +98,13 @@
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'TournamentsAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmDeleteDialog,
       DatetimePickerInput
     },
     data () {

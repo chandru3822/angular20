@@ -128,44 +128,11 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <v-dialog
-                v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
-                v-model="b.deleteConfirm"
-                width="500">
-                <template v-slot:activator="{ on }">
-                  <v-list-item-action class="clickable" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-list-item-action>
-                </template>
-                <v-card>
-                  <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title
-                  >
-                    Confirm
-                  </v-card-title>
-
-                  <v-card-text>
-                    Are you sure you want to delete this bracket?
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      @click="b.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primaryCustom"
-                      text
-                      @click="[b.archived = true, deleteBracket(b.id)]">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+              <confirm-delete-dialog
+                  v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
+                  label="this bracket"
+                  @confirm-delete="[b.archived = true, deleteBracket(b.id)]"
+              ></confirm-delete-dialog>
             </v-toolbar>
             <v-card flat v-if="b.addRound">
               <DatetimePickerInput
@@ -314,11 +281,13 @@
     postRequest,
     getSnackbar
   } from '@/helpers/helpers'
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'BracketAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmDeleteDialog,
       DatetimePickerInput
     },
     data() {

@@ -91,44 +91,12 @@
                       <v-icon v-else-if="item.custom">add</v-icon>
                       <v-icon v-else>edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-model="item.deleteConfirm"
-                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this field: <strong>{{ item.fieldName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteField(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                        label="this field: "
+                        :item-to-delete="item.fieldName"
+                        @confirm-delete="deleteField(item)"
+                    ></confirm-delete-dialog>
                   </div>
                 </td>
               </tr>
@@ -341,6 +309,7 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: "CustomFields",
@@ -349,6 +318,7 @@ export default {
     apiPath: { type: String }
   },
   components: {
+    ConfirmDeleteDialog,
     draggable
   },
   data() {

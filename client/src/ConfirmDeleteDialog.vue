@@ -33,6 +33,7 @@
         Delete
       </v-card-title>
       <v-card-text class="albatross-body-1">
+        <slot></slot>
       Are you sure you want to delete {{label}}<strong>{{ itemToDelete}}</strong>?
       </v-card-text>
       <v-card-actions>
