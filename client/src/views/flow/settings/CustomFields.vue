@@ -168,6 +168,14 @@
                              :disabled="true"
                              class="ml-2"
                              v-model="item.systemReadonly">
+                      <br>
+                      <label>Allow Selecting Now: </label>
+                      <input type="checkbox"
+                             v-if="item.dataTypeId === 1 || item.dataTypeId === 2"
+                             :readonly="!userCanEdit"
+                             :disabled="!userCanEdit"
+                             class="ml-2"
+                             v-model="item.allowNow">
                     </div>
                     <v-autocomplete
                       v-model="item.companyDataType"
