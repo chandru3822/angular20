@@ -94,7 +94,7 @@
                 </v-btn>
                 <ConfirmDeleteDialog
                     :is-disabled="item.isDefault"
-                    label="this email address"
+                    label="this email address: "
                     :item-to-delete="item.emailAddress"
                     @confirm-delete="deleteEmailAddress(item)"
                 ></ConfirmDeleteDialog>

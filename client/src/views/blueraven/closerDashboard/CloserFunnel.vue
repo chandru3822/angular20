@@ -709,7 +709,7 @@
                   </td>
                   <td :class="item.checked_in_time_date_class"
                       v-if="funnelDrilldownHeaders[27].show">
-                    {{ item.checked_in_time | formatDate('date', 'MM/DD/YYYY h:mm a') }}
+                    {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
                   </td>
                 </tr>
               </template>

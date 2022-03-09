@@ -489,6 +489,9 @@ export default {
     }
   },
   methods: {
+    doSomething() {
+      console.log('this happened')
+    },
     goToPath(path, query) {
       this.unsavedFieldsModal = false
       this.$router.push({ path, query })
@@ -641,6 +644,7 @@ export default {
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
+          saveVersion: this.selectedEvent.saveVersion,
           companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
           customFieldValues: this.dirtyCfvs
         }
@@ -677,7 +681,9 @@ export default {
 
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
+        let saveMismatch = e.data?.message === 'Save Version Mismatch'
+        let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
+        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -789,6 +795,7 @@ export default {
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
+          saveVersion: this.selectedEvent.saveVersion,
           //we only send up the status if it changed. sql handles whether to save the value or not
           companyEventStatusTypeId: this.statusChanged ? this.selectedEvent.companyEventStatusTypeId : null,
           customFieldValues: this.dirtyCfvs
@@ -806,7 +813,9 @@ export default {
         }
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Event')
+        let saveMismatch = e.data?.message === 'Save Version Mismatch'
+        let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
+        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)

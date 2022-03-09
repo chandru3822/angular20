@@ -203,12 +203,24 @@ public class ProjectProcessStepEventService {
       params.put("startTime", saveEvent.getStartTime());
       params.put("endTime", saveEvent.getEndTime());
       params.put("resourceId", saveEvent.getResourceId());
+      params.put("saveVersion", saveEvent.getSaveVersion());
 
       //mobile is not going to allow them to save this field so in the sql we check if this value is null and we don't do anything if it is.
       params.put("companyEventStatusTypeId", saveEvent.getCompanyEventStatusTypeId());
       params.put("modifiedById", currentUser.getId());
 
-      sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+
+      //can only do the save version check if we receive a saveVersion. initially mobile will not be sending this in.
+      //once mobile updates then we can remove the else statement here
+      if(null != saveEvent.getSaveVersion()) {
+        int countUpdatedRows = sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+        if(countUpdatedRows == 0) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());
+        }
+      } else {
+        sqlCache.update("projectProcessStepEvent.savePpsEventDetailsNoVersion", params);
+      }
+
 
       if(null != saveEvent.getCustomFieldValues() && !saveEvent.getCustomFieldValues().isEmpty()) {
         //the fields sent in here are the dirty fields, save those
