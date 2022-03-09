@@ -474,7 +474,7 @@ public class SmartlistService {
       if (smartlist.getObjectTypeId() == 4) {
         query = buildProcessStepSql(smartlist, fields);
       } else {
-        query = buildEventSql(smartlist, fields, false, timezone);
+        query = buildEventsSql(smartlist, fields, null, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
