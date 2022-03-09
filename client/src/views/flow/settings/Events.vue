@@ -61,43 +61,12 @@
                     <v-btn small text @click="goToEvent(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                              v-model="item.deleteConfirm" width="500">
-
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this event: <strong>{{ item.eventName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteEvent(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                        label="this event: "
+                        :item-to-delete="item.eventName"
+                        @confirm-delete="deleteEvent(item)"
+                    ></confirm-delete-dialog>
                   </td>
 
                 </tr>
@@ -117,9 +86,11 @@ import Vue2Filters from 'vue2-filters'
 
 import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import debounce from "lodash.debounce";
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'Events',
+  components: {ConfirmDeleteDialog},
   mixins: [Vue2Filters.mixin],
 
   data () {
