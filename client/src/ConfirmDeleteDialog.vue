@@ -59,7 +59,7 @@
 export default {
   name: "ConfirmDeleteDialog",
   props: {
-    label: String, //Dialog will say "Are you sure you want to delete {{label}}: {{itemToDelete}}?"
+    label: String, //Dialog will say "Are you sure you want to delete {{label}} {{itemToDelete}}?"
     itemToDelete: String,
     isDisabled: Boolean, //optional if you want to disable the icon that opens the dialog
     showTooltip: Boolean,
