@@ -6,10 +6,10 @@
       <v-tooltip top v-if="showTooltip">
         <template v-slot:activator="{ on: tooltip }">
           <div v-on="{ ...tooltip }" class="d-inline-block">
-            <v-btn v-if="textbutton" color="brRed" class="white--text py-1 px-2" small v-on="on" :disabled="isDisabled">
+            <v-btn v-if="textbutton" color="brRed" class="white--text py-1 px-2 align-center" small v-on="on" :disabled="isDisabled">
               Delete
             </v-btn>
-            <v-btn v-else small text v-on="on" :disabled="isDisabled">
+            <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">
         <v-icon>delete</v-icon>
       </v-btn>
           </div>
@@ -18,11 +18,11 @@
       </v-tooltip>
       <v-btn v-else-if="textbutton"
              color="brRed"
-             class="white--text py-1 px-2"
+             class="white--text py-1 px-2 align-center"
              small v-on="on" :disabled="isDisabled">
         Delete
       </v-btn>
-      <v-btn v-else small text v-on="on" :disabled="isDisabled">
+      <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">
         <v-icon>delete</v-icon>
       </v-btn>
     </template>
@@ -84,5 +84,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.align-center {
+  align-self: center;
+}
 
 </style>

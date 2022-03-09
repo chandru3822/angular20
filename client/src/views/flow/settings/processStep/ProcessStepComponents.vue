@@ -113,44 +113,11 @@
                     <td class="text-left">{{ item.rootProcessStepStatusType }}</td>
                     <td class="text-right">
                       <div class="flex-display">
-                        <v-dialog
-                          v-if="userCanEdit"
-                          v-model="item.deleteConfirm"
-                          width="500">
-                          <template v-slot:activator="{ on }">
-                            <v-btn text v-on="on">
-                              <v-icon>delete</v-icon>
-                            </v-btn>
-                          </template>
-                          <v-card>
-                            <v-card-title
-                              class="text-h5 grey lighten-2"
-                              primary-title
-                            >
-                              Confirm
-                            </v-card-title>
-
-                            <v-card-text>
-                              Are you sure you want to delete <strong>{{ item.processStepStatusType }}</strong>?
-                            </v-card-text>
-
-                            <v-divider></v-divider>
-
-                            <v-card-actions>
-                              <v-spacer></v-spacer>
-                              <v-btn
-                                @click="item.deleteConfirm = false">
-                                No
-                              </v-btn>
-                              <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="deleteStatusTypeFromStep(item)">
-                                Yes
-                              </v-btn>
-                            </v-card-actions>
-                          </v-card>
-                        </v-dialog>
+                        <confirm-delete-dialog
+                            v-if="userCanEdit"
+                            :item-to-delete="item.processStepStatusType"
+                            @confirm-delete="deleteStatusTypeFromStep(item)"
+                        ></confirm-delete-dialog>
                       </div>
                     </td>
                   </tr>
@@ -201,44 +168,12 @@
                     <v-list-item-content>
                       {{ a.link }} | {{ a.url }}
                     </v-list-item-content>
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="a.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="a.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[a.archived = true, deleteLinkFromStep(a.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanEdit"
+                        label="this link: "
+                        :item-to-delete="a.link"
+                        @confirm-delete="[a.archived = true, deleteLinkFromStep(a.id)]"
+                    ></confirm-delete-dialog>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -286,46 +221,12 @@
                     <v-list-item-content>
                       {{ a.attachmentType }}
                     </v-list-item-content>
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="a.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this attachment type: <strong>{{
-                            a.attachmentType
-                          }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="a.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[a.archived = true, deleteTypeFromStep(a.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanEdit"
+                        label="this attachment type: "
+                        :item-to-delete="a.attachmentType"
+                        @confirm-delete="[a.archived = true, deleteTypeFromStep(a.id)]"
+                    ></confirm-delete-dialog>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -349,11 +250,13 @@ import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
 
 import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'ProcessStepComponents',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmDeleteDialog,
     ProcessStepWorkQueueTypes,
     ProcessStepCustomFieldGroups,
     draggable,

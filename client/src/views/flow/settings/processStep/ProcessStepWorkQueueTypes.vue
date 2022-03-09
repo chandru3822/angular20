@@ -329,44 +329,11 @@
                     </v-btn>
                     <v-btn text @click="expanded = []" v-else>cancel
                     </v-btn>
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete <strong>{{ item.workQueueType }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteWorkQueueTypeFromStep(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanEdit"
+                        :item-to-delete="item.workQueueType"
+                        @confirm-delete="deleteWorkQueueTypeFromStep(item)"
+                    ></confirm-delete-dialog>
                   </div>
                 </td>
               </tr>
@@ -392,11 +359,12 @@ import {
   getSnackbar,
   getRequestWithParams
 } from '@/helpers/helpers'
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'ProcessStepWorkQueueTypes',
   mixins: [Vue2Filters.mixin],
-  components: {},
+  components: {ConfirmDeleteDialog},
   props: {
     processStep: Object,
     event: Object
