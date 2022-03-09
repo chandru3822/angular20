@@ -10,7 +10,6 @@
             <v-spacer></v-spacer>
             <div class="expansion-panel-header-open" v-if="open"
                  key="0">
-              {{type.attachmentTypeId}}
               <input
                   :id="`fileInput${type.attachmentTypeId}`"
                   type="file"
