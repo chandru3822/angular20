@@ -163,42 +163,12 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                          v-model="item.deleteConfirm" width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this status type: <strong>{{ item.projectStatusType }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="[item.archived = true, deleteType(item)]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <confirm-delete-dialog
+                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    label="this status type: "
+                    :item-to-delete="item.projectStatusType"
+                    @confirm-delete="[item.archived = true, deleteType(item)]"
+                ></confirm-delete-dialog>
               </td>
 
             </tr>
@@ -223,11 +193,13 @@
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'ProjectStatuses',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmDeleteDialog,
       draggable,
     },
     data () {

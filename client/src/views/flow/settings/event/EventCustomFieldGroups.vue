@@ -290,48 +290,14 @@
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="item.deleteConfirm"
-                        width="500">
-                        <template #activator="{ on }">
-                          <v-btn small text v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title>
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text class="pt-4">
-                            <span class="error--text">WARNING:</span>
-                            By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-
-                            Are you sure you want to delete this Custom Field Group: <strong>{{
-                              item.groupName
-                            }}</strong>?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="item.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="deleteWithChecks(item, item.id, null)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
+                      <confirm-delete-dialog
+                          v-if="userCanEdit"
+                          label="this Custom Field Group: "
+                          :item-to-delete="item.groupName"
+                          @confirm-delete="deleteWithChecks(item, item.id, null)"
+                      ><span class="error--text">WARNING:</span>
+                        By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                      </confirm-delete-dialog>
                     </div>
                   </td>
                 </tr>
@@ -558,11 +524,13 @@ import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'EventCustomFieldGroups',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmDeleteDialog,
     draggable,
   },
   updated() {
