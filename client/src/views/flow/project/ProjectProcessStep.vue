@@ -137,9 +137,10 @@
       )">
         <div class="pps-subheader albatross-header-3">
           All Events
+<!--          only allow events added to active process steps -->
           <v-autocomplete
             v-model="eventToAdd"
-            v-if="userCanAddEvents && processStepEvents && processStepEvents.length > 0"
+            v-if="processStep.processStepStatusTypeId === 1 && userCanAddEvents && processStepEvents && processStepEvents.length > 0"
             :items="processStepEvents"
             placeholder="Select Event to add"
             item-text="eventName"

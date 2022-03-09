@@ -13,8 +13,8 @@ import java.util.List;
 @Setter
 public class ProcessStepEventAction {
 
-  private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId, displayOrder, rootEventStatusTypeId, rootProcessStepStatusTypeId; //rootProcessStepStatusTypeId needed to determine if action can be run, //rootEventStatusTypeId needed for mobile
-  private String actionName, processStepStatusType, eventStatusType;
+  private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId, displayOrder, rootEventStatusTypeId, rootProcessStepStatusTypeId, createdById; //rootProcessStepStatusTypeId needed to determine if action can be run, //rootEventStatusTypeId needed for mobile
+  private String actionName, processStepStatusType, eventStatusType, actionRunDate, actionRunBy;
   private Boolean archived, requireStartTime, requireEndTime, requireResource,
     canPerform, logicListChanged, alwaysEnabled, alreadyTriggered, multipleUses, hideFromMobile, hideFromWeb;
   private List<ProcessStepEventActionField> customFields, requiredFields, optionalFields;

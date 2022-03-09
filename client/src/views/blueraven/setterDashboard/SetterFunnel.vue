@@ -1,5 +1,5 @@
 <template>
-  <v-container id="setter-dash-container">
+  <v-container id="setter-dash-container" ref="setterDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- FUNNEL -->
     <div id="pipeline-container"
@@ -721,7 +721,7 @@
 
       resetScrollBarPosition () {
         // reset scroll bar positioning to top
-        document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+        this.$refs.setterDashContainer.scrollTop = 0
       },
 
       /* FUNNEL-RELATED CODE START */

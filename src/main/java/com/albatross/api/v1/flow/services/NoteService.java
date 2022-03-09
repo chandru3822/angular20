@@ -87,10 +87,10 @@ public class NoteService {
   }
 
   public Note saveNote(Long typeId, Note note) {
-    return saveNote(typeId, note, false, false);
+    return saveNote(typeId, note, false, false, false);
   }
 
-  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote, Boolean isProjectProdStats) {
+  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote, Boolean isPpsEventWqtNote, Boolean isProjectProdStats) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
@@ -116,7 +116,13 @@ public class NoteService {
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
         sqlCache.update("note.insertProjectProcessStepWorkQueueNoteRelation", p2);
-      } else if(isProjectProdStats) {
+      } else if(isPpsEventWqtNote) {
+        p2.put("projectProcessStepEventId", note.getProjectProcessStepEventId());
+        p2.put("processStepEventWorkQueueTypeId", note.getProcessStepEventWorkQueueTypeId());
+        p2.put("noteId", noteId);
+        p2.put("typeId", typeId);
+        sqlCache.update("note.insertProjectProcessStepEventWorkQueueNoteRelation", p2);
+      }else if(isProjectProdStats) {
         // isProjectProdStats is used for Installer Dashboard
         p2.put("projectId", note.getPrimaryId());
         p2.put("productionType", note.getInstallDashTile());

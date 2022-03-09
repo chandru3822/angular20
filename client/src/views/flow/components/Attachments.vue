@@ -111,6 +111,11 @@
                     <v-btn small text v-if="item.edit" @click="[item.edit = false, renderTicker++]">
                       cancel
                     </v-btn>
+                    <confirm-delete-dialog
+                        label="this position: "
+                        :item-to-delete="item.position"
+                        @confirm-delete="deletePositionFromPool(item)"
+                    ></confirm-delete-dialog>
                     <v-dialog
                       v-model="item.deleteConfirm"
                       width="500">
@@ -167,13 +172,15 @@ import {handleHidingGlobalLoader, getRequest, putRequest, getFileIcon, getReques
 import {deleteAttachment} from '@/services/attachmentService'
 import AttachmentUpload from "@/views/flow/components/AttachmentUpload";
 import orderBy from 'lodash.orderby'
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
 export default {
   name: "Attachments",
   components: {
-    AttachmentUpload
+    AttachmentUpload,
+    ConfirmDeleteDialog
   },
   data () {
     return {

@@ -17,7 +17,7 @@ public class ProjectProcessStepEvent {
 
   private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId, companyProcessStepStatusTypeId,
     eventId, resourceId, uniqueBehaviorTypeId, eventStatusTypeId, rootProjectProcessStepStatusTypeId, //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
-    processStepId, projectId;
+    processStepId, projectId, saveVersion;
   private String eventName, eventStatusType, resource, processStepName, lastUpdated, dateCreated;
   private Timestamp startTime, endTime;
   private List<CustomFieldGroup> customFieldGroups;

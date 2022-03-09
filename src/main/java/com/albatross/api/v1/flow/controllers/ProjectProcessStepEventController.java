@@ -89,7 +89,7 @@ public class ProjectProcessStepEventController {
 
   @Data
   public static class SaveEventRequest {
-    private Long id, resourceId, companyEventStatusTypeId;
+    private Long id, resourceId, companyEventStatusTypeId, saveVersion;
     private Timestamp startTime, endTime;
     private List<CustomFieldValue> customFieldValues;
   }

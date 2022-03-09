@@ -1,6 +1,7 @@
 <template>
   <v-row justify="center" no-gutters>
     <v-col cols="12" id="incentive-container" class="justify-end">
+      <img id="incentive-banner" src="../../../assets/blueraven/Ravens_Cup_Logo_I4_1.svg" alt="incentive competition banner">
       <div id="milestones-container">
         <incentive-milestone
             :milestone-level="milestoneLevel(counts.q1)"
@@ -111,14 +112,13 @@ export default {
   },
   created() {
     this.calcYearPercentage()
-    console.log(this.yearlyPointTotal) //for debugging
   }
 }
 </script>
 
 <style lang="scss" scoped>
 #incentive-container {
-  background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Albatross.jpg") no-repeat fixed center 0;
+  background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Background.jpg") no-repeat fixed center 0;
   background-size: cover;
   display: flex;
   flex-flow: column nowrap;
@@ -126,18 +126,20 @@ export default {
   height: 100vh;
 
   #incentive-banner {
-    padding-top: 15px;
+    padding-top: 0;
+    padding-bottom: 50px;
     margin-bottom: -50px;
     width: 100%;
-    max-width: 350px;
+    max-height: 30vh;
   }
 }
 
 #milestones-container {
   display: flex;
   flex-flow: column nowrap;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
+  overflow-y: scroll;
 }
 
 #progress-bar-container {
@@ -201,29 +203,30 @@ export default {
 
 @media (min-width: 500px) {
 
-    #progress-bar {
-      height: 17px;
-    }
-
-
+  #progress-bar {
+    height: 17px;
   }
+
+
+}
 
 @media (min-width: 737px) {
   #incentive-container {
-    background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Albatross.jpg") no-repeat scroll center 0;
-    background-size: cover;
 
     #incentive-banner {
       margin-bottom: -80px;
       max-width: 673px;
+      max-height: 40vh;
     }
   }
 
   #milestones-container {
     flex-flow: row wrap;
+    justify-content: center;
     margin: 0 auto;
     width: calc(100% - 110px);
     align-items: center;
+    overflow-y: unset;
   }
 
   #progress-bar-container {
@@ -262,6 +265,7 @@ export default {
     #incentive-banner {
       margin-top: -29px;
       margin-bottom: -90px;
+      max-height: 50vh;
     }
   }
 

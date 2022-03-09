@@ -99,7 +99,16 @@
                v-if="!action.hideFromWeb"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
-          {{ action.actionName }}
+          <div>
+            <div class="action-button-name">
+              {{ action.actionName }}
+            </div>
+            <div class="action-button-subtitle">
+              <span class="action-button-subtitle-date">{{ action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+                {{ action.actionRunBy}}
+            </div>
+          </div>
+          <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">check</v-icon>
         </v-btn>
       </div>
       </div>
@@ -160,7 +169,7 @@
           :disabled="!userCanManage"
           item-text="eventStatusType"
           item-value="id"
-          @input="defaultValuesChanged = true"
+          @input="[statusChanged = true, defaultValuesChanged = true]"
         ></v-autocomplete>
         <DatetimePickerInput
           v-model="selectedEvent.startTime"
@@ -369,6 +378,8 @@ export default {
       showUploadModal: false,
       uploadModalWidth: 600,
       defaultValuesChanged: false,
+      //this is used to determine if we should save the status or not. should only save if it changes
+      statusChanged: false,
       unsavedFieldsModal: false,
       navigationOverride: false,
       toPath: null,
@@ -478,6 +489,9 @@ export default {
     }
   },
   methods: {
+    doSomething() {
+      console.log('this happened')
+    },
     goToPath(path, query) {
       this.unsavedFieldsModal = false
       this.$router.push({ path, query })
@@ -630,6 +644,7 @@ export default {
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
+          saveVersion: this.selectedEvent.saveVersion,
           companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
           customFieldValues: this.dirtyCfvs
         }
@@ -666,7 +681,9 @@ export default {
 
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
+        let saveMismatch = e.data?.message === 'Save Version Mismatch'
+        let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
+        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -778,10 +795,13 @@ export default {
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
-          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
+          saveVersion: this.selectedEvent.saveVersion,
+          //we only send up the status if it changed. sql handles whether to save the value or not
+          companyEventStatusTypeId: this.statusChanged ? this.selectedEvent.companyEventStatusTypeId : null,
           customFieldValues: this.dirtyCfvs
         }
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
+        this.statusChanged = false
         this.dirtyCfvs = []
         this.selectedEvent = data
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
@@ -793,7 +813,9 @@ export default {
         }
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Event')
+        let saveMismatch = e.data?.message === 'Save Version Mismatch'
+        let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
+        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1030,6 +1052,19 @@ export default {
     margin-left: 10px;
     font-size: 12px;
   }
+}
+
+.action-button-name {
+  display: block;
+}
+
+.action-button-subtitle {
+  display: block;
+  font-size: 10px;
+}
+
+.action-button-subtitle-date {
+  text-transform: lowercase;
 }
 
 </style>

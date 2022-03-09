@@ -1,5 +1,5 @@
 <template>
-  <v-container id="closer-dash-container">
+  <v-container id="closer-dash-container" ref="closerDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
     <!--    1: {{this.showFunnels}}-->
@@ -508,24 +508,26 @@
                 <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                   <!-- CHECKED-IN COUNT -->
                   <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-if="[18,19,20,22,24,23,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
-                       class="checked-in-column-center"
+                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
+                       class="checked-in-column-center clickable"
                        :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
-                    {{ line.id === 21 ? '' : line.checked_in_today_count }}
-                  </div>
-                  <div v-if="line.id === 21"
-                       class="checked-in-column-bottom checked-in-column-line-overlap"
                        @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
                     {{ line.checked_in_today_count }}
                   </div>
+                  <div v-else class="no-checked-in-column-placeholder"></div>
+                  <!--                  <div v-if="line.id === 21"-->
+                  <!--                       class="checked-in-column-bottom checked-in-column-line-overlap"-->
+                  <!--                       @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">-->
+                  <!--                    {{ line.checked_in_today_count }}-->
+                  <!--                  </div>-->
 
                   <!-- COUNT -->
-                  <div @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
+                  <div @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)" class="clickable">
                     {{ line.today_count }}
                   </div>
                 </div>
-                <div v-else @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
+                <div v-else @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)"
+                    class="weird-placeholder clickable">
                   {{ line.today_count }}
                 </div>
               </td>
@@ -535,24 +537,21 @@
                 <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                   <!-- CHECKED-IN COUNT -->
                   <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
-                       class="checked-in-column-center"
+                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
+                       class="checked-in-column-center clickable"
                        :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
                        @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
-                    {{ line.id === 21 ? '' : line.checked_in_week_to_date_count }}
+                    {{ line.checked_in_today_count }}
                   </div>
-                  <div v-if="line.id === 21"
-                       class="checked-in-column-bottom checked-in-column-line-overlap"
-                       @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
-                    {{ line.checked_in_week_to_date_count }}
-                  </div>
+                  <div v-else class="no-checked-in-column-placeholder"></div>
 
                   <!-- COUNT -->
-                  <div @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
+                  <div @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)" class="clickable">
                     {{ line.week_to_date_count }}
                   </div>
                 </div>
-                <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
+                <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)"
+                     class="weird-placeholder clickable">
                   {{ line.week_to_date_count }}
                 </div>
               </td>
@@ -563,24 +562,21 @@
                 <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                   <!-- CHECKED-IN COUNT -->
                   <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
-                       class="checked-in-column-center"
+                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
+                       class="checked-in-column-center clickable"
                        :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
                        @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
                     {{ line.id === 21 ? '' : line.checked_in_custom_date_range_count }}
                   </div>
-                  <div v-if="line.id === 21"
-                       class="checked-in-column-bottom checked-in-column-line-overlap"
-                       @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
-                    {{ line.checked_in_custom_date_range_count }}
-                  </div>
+                  <div v-else class="no-checked-in-column-placeholder"></div>
 
                   <!-- COUNT -->
-                  <div @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
+                  <div @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)" class="clickable">
                     {{ line.custom_date_range_count }}
                   </div>
                 </div>
-                <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
+                <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)"
+                     class="weird-placeholder clickable">
                   {{ line.custom_date_range_count }}
                 </div>
               </td>
@@ -710,6 +706,10 @@
                   <td :class="item.substantial_completion_date_class"
                       v-if="funnelDrilldownHeaders[26].show">
                     {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td :class="item.checked_in_time_date_class"
+                      v-if="funnelDrilldownHeaders[27].show">
+                    {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
                   </td>
                 </tr>
               </template>
@@ -952,7 +952,8 @@ export default {
           show: false,
           width: 175,
           optional: true
-        } // 26
+        }, // 26
+        {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true}, // 27
       ],
       funnelDrilldownData: [],
       funnelDrilldownLoading: false,
@@ -1116,7 +1117,7 @@ export default {
   methods: {
     resetScrollBarPosition() {
       // reset scroll bar position to top
-      document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      this.$refs.closerDashContainer.scrollTop = 0
     },
 
     /* FUNNEL-RELATED CODE START */
@@ -1824,6 +1825,7 @@ export default {
         case 23: // Yet to occur
         case 11: // Pitched
           this.funnelDrilldownHeaders[13].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[27].show = isCheckedInColumn // check_in_time
           break
         case 9: // Credits run
           this.funnelDrilldownHeaders[13].show = true // appointment_outcome
@@ -2603,7 +2605,6 @@ export default {
       }
 
       .funnel-td {
-        cursor: pointer;
         font-size: 8px;
         text-align: center;
       }
@@ -2811,7 +2812,6 @@ export default {
       }
 
       .funnel-td {
-        cursor: pointer;
         text-align: center;
         font-size: 7px;
         width: 90px;
@@ -2822,7 +2822,6 @@ export default {
       }
 
       .funnel-data-container {
-        cursor: pointer;
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
@@ -2842,12 +2841,21 @@ export default {
         width: 38px;
       }
 
+      .no-checked-in-column-placeholder {
+        width: 105px;
+      }
+
+      .weird-placeholder {
+        margin-left: 60px;
+      }
+
       .checked-in-column-top {
         border-bottom: none;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
+        border-top: none;
+        //border-top-left-radius: 5px;
+        //border-top-right-radius: 5px;
         padding: 3px 2px 5.5px 2px;
-        margin-top: 3px;
+        //margin-top: 3px;
       }
 
       .checked-in-column-center {
@@ -3442,7 +3450,7 @@ export default {
 
         .checked-in-column-top {
           padding: 6px 1px;
-          margin-top: 5px;
+          //margin-top: 5px;
         }
 
         .checked-in-column-center {
@@ -3896,7 +3904,7 @@ export default {
 
         .checked-in-column-top {
           padding: 10px 5px;
-          margin-top: 5px;
+          //margin-top: 5px;
         }
 
         .checked-in-column-center {

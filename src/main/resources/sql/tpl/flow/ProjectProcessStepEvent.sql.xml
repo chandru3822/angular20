@@ -1,7 +1,7 @@
 <sql>
   <projectProcessStepEvent.insertEvent><![CDATA[
-    insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, company_event_status_type_id, created_by_id)
-    values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById)
+    insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, company_event_status_type_id, created_by_id, save_version)
+    values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById, 1)
   ]]></projectProcessStepEvent.insertEvent>
 
   <projectProcessStepEvent.delete><![CDATA[
@@ -79,6 +79,17 @@
                                     psea.multiple_uses as "multipleUses",
                                     psea.hide_from_web as "hideFromWeb",
                                     psea.hide_from_mobile as "hideFromMobile",
+                                   (select ppsea.date_created
+                                    from flow.project_process_step_event_action ppsea
+                                    where ppsea.project_process_step_event_id = ppse.id
+                                      and ppsea.process_step_event_action_id = psea.id
+                                    order by ppsea.date_created desc limit 1) as "actionRunDate",
+                                   (select concat(u.first_name, ' ', left(u.last_name, 1))
+                                    from flow.project_process_step_event_action ppsea
+                                      inner join flow."user" u on ppsea.created_by_id = u.id
+                                    where ppsea.project_process_step_event_id = ppse.id
+                                      and ppsea.process_step_event_action_id = psea.id
+                                    order by ppsea.date_created desc limit 1) as "actionRunBy",
                                     case when
                                            (select id
                                             from flow.project_process_step_event_action ppsea
@@ -196,9 +207,22 @@
           end_time = :endTime::timestamp,
           company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
           modified_by_id = :modifiedById::int,
+          date_modified = now(),
+          save_version = save_version + 1
+    where id = :id
+      and save_version = :saveVersion
+  ]]></projectProcessStepEvent.savePpsEventDetails>
+
+  <projectProcessStepEvent.savePpsEventDetailsNoVersion><![CDATA[
+    update flow.project_process_step_event
+      set resource_id = :resourceId::int,
+          start_time = :startTime::timestamp,
+          end_time = :endTime::timestamp,
+          company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
+          modified_by_id = :modifiedById::int,
           date_modified = now()
     where id = :id
-  ]]></projectProcessStepEvent.savePpsEventDetails>
+  ]]></projectProcessStepEvent.savePpsEventDetailsNoVersion>
 
   <projectProcessStepEvent.getCompanyId><![CDATA[
     select e.company_id
@@ -287,8 +311,8 @@
   ]]></projectProcessStepEvent.updatePrimaryIfOnlyOne>
 
   <projectProcessStepEvent.insertAuditRow><![CDATA[
-     insert into flow.project_process_step_event_action(project_process_step_event_id, process_step_event_action_id, created_by_id)
-      values (:projectProcessStepEventId, :processStepEventActionId, :createdById)
+     insert into flow.project_process_step_event_action(project_process_step_event_id, process_step_event_action_id, created_by_id, allow_multiple_uses)
+      values (:projectProcessStepEventId, :processStepEventActionId, :createdById, :allowMultipleUses)
   ]]></projectProcessStepEvent.insertAuditRow>
 
   <projectProcessStepEvent.getPpsEventAction><![CDATA[
