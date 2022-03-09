@@ -58,10 +58,11 @@
                 <v-icon v-if="addImage">remove</v-icon>
                 <v-icon v-else>add</v-icon>
               </v-btn>
-              <v-btn v-else-if="userCanEdit" text class="mr-2"
-                     @click="deleteAttachment(pool.backgroundAttachmentId)">
-                <v-icon>delete</v-icon>
-              </v-btn>
+              <confirm-delete-dialog
+                  v-else-if="userCanEdit"
+                  label="the Winner Background Image"
+                  @confirm-delete="deleteAttachment(pool.backgroundAttachmentId)"
+              ></confirm-delete-dialog>
             </v-toolbar-items>
           </v-toolbar>
           <label></label>
@@ -135,42 +136,11 @@
               <tr class="text-left" :class="{'shaded-row': pool.positions.indexOf(item) % 2}">
                 <td class="text-left">{{ item.position }}</td>
                 <td class="text-right">
-                  <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Are you sure you want to delete this position: {{ item.position }}?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deletePositionFromPool(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <confirm-delete-dialog
+                      label="this position: "
+                      :item-to-delete="item.position"
+                      @confirm-delete="deletePositionFromPool(item)"
+                  ></confirm-delete-dialog>
                 </td>
               </tr>
             </template>
@@ -233,42 +203,11 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Are you sure you want to delete this user: {{ item.user }}?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deleteUserFromPool(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <confirm-delete-dialog
+                      label="this user: "
+                      :item-to-delete="item.fullName"
+                      @confirm-delete="deleteUserFromPool(item)"
+                  ></confirm-delete-dialog>
                 </td>
               </tr>
             </template>
@@ -295,11 +234,13 @@
     postRequest,
     getSnackbar
   } from '@/helpers/helpers'
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'PoolAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmDeleteDialog,
       DatetimePickerInput
     },
     data() {
