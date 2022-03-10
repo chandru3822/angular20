@@ -2405,8 +2405,6 @@ public class SmartlistService {
 
     StringBuilder query = new StringBuilder();
 
-//    var usedProcessStepIds = new ArrayList<>();
-//    var usedProcessStepEventIds = new ArrayList<>();
     List<SmartlistFieldAssignment> usedProcessSteps = new ArrayList<>();
     List<SmartlistFieldAssignment> usedProcessStepEvents = new ArrayList<>();
 
@@ -2720,18 +2718,6 @@ public class SmartlistService {
 
     query.append(String.format("\"projects\" as (%s), ", projectsClause));
 
-//    for(SmartlistFieldAssignment f : fields) {
-//      if (f.getProcessStepEventId() != null && !usedProcessStepEventIds.contains(f.getProcessStepEventId())) {
-//        usedProcessStepEventIds.add(f.getProcessStepEventId());
-//        usedProcessStepIds.add(f.getProcessStepId());
-//      }
-//
-//      //prepend custom field sql queries
-//      if (f.getCustomFieldSqlKey() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-//        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
-//      }
-//    }
-
     List<SmartlistFieldAssignment> additionalPsFields = new ArrayList<>();
 
     //
@@ -2794,11 +2780,6 @@ public class SmartlistService {
     //a with clause will be generated for each distinct process step event
     for(var eventField : usedProcessStepEvents) {
 
-//      SmartlistFieldAssignment eventField = fields.stream()
-//        .filter(f -> Objects.equals(processStepEventId, f.getProcessStepEventId()))
-//        .findFirst()
-//        .orElse(null);
-
       //we know this case won't happen, but defensive programming
       if (eventField == null) {
         break;
@@ -2815,7 +2796,6 @@ public class SmartlistService {
           } else {
             return true;
           }
-//          f.getProcessStepEventId() == null || f.getProcessStepEventId().equals(eventField.getProcessStepEventId())
         })
         .sorted(Comparator.comparing(SmartlistFieldAssignment::getDisplayOrder))
         .toList();
