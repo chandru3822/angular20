@@ -2815,8 +2815,21 @@ public class SmartlistService {
         } else if (f.getSmartlistFieldId() != null) {
           //smartlist system fields
           if (f.getReferenceTable().equals("flow.user")) {
+
+            var joinTable = f.getJoinTable();
+            if (isAdditionalPs) {
+              //see if this PPS table has already been joined
+              // if so reuse the table, if not join it
+              if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
+                f.setPpsTable(getPpsTable(f, eventFields, null));
+              } else {
+                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+              }
+              joinTable = String.format("\"%s\"", f.getPpsTable());
+            }
+
             final String joinUserPosition = UUID.randomUUID().toString();
-            valueJoins.append(String.format(" left join flow.user_position \"%s\" on \"%s\".id = %s.%s ", joinUserPosition, joinUserPosition, f.getJoinTable(), f.getJoinColumn()));
+            valueJoins.append(String.format(" left join flow.user_position \"%s\" on \"%s\".id = %s.%s ", joinUserPosition, joinUserPosition, joinTable, f.getJoinColumn()));
             valueJoins.append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
             f.setUserPositionTable(joinUserPosition);
           }
