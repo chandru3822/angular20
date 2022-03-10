@@ -169,6 +169,7 @@ public class ScheduleService {
       params.put("endTime", ev.getEnd());
       params.put("companyEventStatusTypeId", ev.getCompanyEventStatusTypeId());
       params.put("resourceId", ev.getResourceId());
+      params.put("saveVersion", ev.getSaveVersion());
       params.put("modifiedById", user.getId());
       //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird
       sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);

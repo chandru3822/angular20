@@ -252,7 +252,7 @@ BEGIN
                                       left join flow.project_process_step_event ppse
                                                 on pps.id = ppse.project_process_step_id
                                       inner join flow.project_process_step_event_custom_field_value ppscfv
-                                                 on pps.id = ppscfv.project_process_step_event_id and
+                                                 on ppse.id = ppscfv.project_process_step_event_id and
                                                     ppscfv.custom_field_group_assignment_id = 4
                                       left join flow.list_of_value lov on lov.id = ppscfv.int_value
                              where ((ppse.start_time at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
