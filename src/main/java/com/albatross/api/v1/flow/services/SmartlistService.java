@@ -4950,6 +4950,15 @@ public class SmartlistService {
     var eventStartTime = new SmartlistFieldAssignment();
     eventStartTime.setName("Event Start Time");
     defaultFields.add(eventStartTime);
+    var nextFollowUp = new SmartlistFieldAssignment();
+    nextFollowUp.setName("Next Follow-up Date");
+    defaultFields.add(nextFollowUp);
+    var noteContent = new SmartlistFieldAssignment();
+    noteContent.setName("Note Content");
+    defaultFields.add(noteContent);
+    var noteCreatedBy = new SmartlistFieldAssignment();
+    noteCreatedBy.setName("Note Created By");
+    defaultFields.add(noteCreatedBy);
     return defaultFields;
   }
 
