@@ -403,7 +403,7 @@ public class SmartlistService {
       query = buildProcessStepSql(smartlist, fields);
     }
     else if (smartlist.getObjectTypeId() == 6) {
-      query = buildEventsSql(smartlist, fields, null, null);
+      query = buildEventSql(smartlist, fields, null, null);
     }
     else {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
@@ -474,7 +474,7 @@ public class SmartlistService {
       if (smartlist.getObjectTypeId() == 4) {
         query = buildProcessStepSql(smartlist, fields);
       } else {
-        query = buildEventsSql(smartlist, fields, null, null);
+        query = buildEventSql(smartlist, fields, null, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
@@ -2397,7 +2397,7 @@ public class SmartlistService {
     return query.toString();
   }
 
-  public String buildEventsSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, Boolean useEventData) {
+  public String buildEventSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, String timezone, Boolean useEventData) {
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
