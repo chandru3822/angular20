@@ -2520,23 +2520,18 @@ public class SmartlistService {
         } else if (r.getObjectTypeId() == 4) {
 
           // check if process step is already joined
-          if (projectsValueJoins.indexOf(".process_step_id = " + r.getProcessStepId()) != -1) {
+          if (isPsAlreadyJoined(projectsValueJoins.toString(), r.getProcessStepId())) {
             // if the PS is already joined, use it
-            final String ppsTable = requirements.stream()
-              .filter(req -> req.getProcessStepId().equals(r.getProcessStepId()))
-              .map(SmartlistRequirement::getPpsTable)
-              .findFirst()
-              .orElse(null);
             //@TODO: I believe a join happening here is a bug. Test when able
             //            projectsValueJoins.append(joinPpsTable(ppsTable, r.getProcessStepId(), smartlist.isMainProcessSteps()));
-            r.setPpsTable(ppsTable);
+            r.setPpsTable(getPpsTable(r, requirements, null));
           } else {
             r.setPpsTable(UUID.randomUUID().toString());
+            projectsValueJoins.append(joinPpsTable(r.getPpsTable(), r.getProcessStepId(), smartlist.isMainProcessSteps()));
           }
 
           String joinTable = r.getPpsTable();
           String joinColumn = r.getReferenceColumn();
-          projectsValueJoins.append(joinPpsTable(r.getPpsTable(), r.getProcessStepId(), smartlist.isMainProcessSteps()));
 
           if (Objects.equals(r.getReferenceTable(), "flow.process_step")) {
             // process step name system field
@@ -2823,7 +2818,7 @@ public class SmartlistService {
               if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
                 f.setPpsTable(getPpsTable(f, eventFields, null));
               } else {
-                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), true));
               }
               joinTable = String.format("\"%s\"", f.getPpsTable());
             }
@@ -2861,7 +2856,7 @@ public class SmartlistService {
                 if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
                   f.setPpsTable(getPpsTable(f, eventFields, null));
                 } else {
-                  valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+                  valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), true));
                 }
               } else {
                 f.setPpsTable("flow.project_process_step");
@@ -2895,7 +2890,7 @@ public class SmartlistService {
               if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
                 f.setPpsTable(getPpsTable(f, eventFields, null));
               } else {
-                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), true));
               }
             } else {
               f.setPpsTable("flow.project_process_step");
@@ -2958,7 +2953,7 @@ public class SmartlistService {
                 }
 
               } else {
-                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+                valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), true));
                 joinTable = String.format("\"%s\"", f.getPpsTable());
               }
 
@@ -3049,7 +3044,11 @@ public class SmartlistService {
       StringBuilder whereClause = new StringBuilder();
 
       requirements.stream()
-        .filter(r -> r.getProcessStepEventId() != null && r.getProcessStepEventId().equals(eventField.getProcessStepEventId()))
+        .filter(r -> {
+          final boolean isSameEvent = r.getProcessStepEventId() != null && r.getProcessStepEventId().equals(eventField.getProcessStepEventId());
+          final boolean isSamePs = r.getProcessStepId() != null && r.getProcessStepId().equals(eventField.getProcessStepId());
+          return isSameEvent || isSamePs;
+        })
         .forEach(r -> {
 
           String referenceLocation = null;
@@ -4129,7 +4128,9 @@ public class SmartlistService {
    */
   private String joinPpsTable(String ppsTable, Long processStepId, Boolean isMainProcessSteps) {
     var join = String.format(" left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s and \"%s\".archived is not true ", ppsTable, ppsTable, ppsTable, processStepId, ppsTable);
-    join += String.format(" and \"%s\".main is true ", ppsTable);
+    if (isMainProcessSteps == null || isMainProcessSteps) {
+      join += String.format(" and \"%s\".main is true ", ppsTable);
+    }
     return join;
   }
 
