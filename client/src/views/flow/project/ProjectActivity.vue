@@ -12,7 +12,7 @@
 <!--          </div>-->
 <!--        </v-toolbar-items>-->
 <!--      </v-toolbar>-->
-      <div class="albatross-header-3 mb-3 d-inline-block"
+      <div class="albatross-header-3 d-inline-block"
            :class="{'title-collapse': $store.state.project.rightSideSplit,
                     'title-no-collapse': !$store.state.project.rightSideSplit}">
         <div v-if="!$store.state.project.rightSideSplit" class="d-inline-block">{{sidebarTitle}}</div>
@@ -20,8 +20,9 @@
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </div>
-<!--      <div class="right-expander-button d-inline-block">-->
-<!--      </div>-->
+<!--      i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
+      <div class="sidebar-subtitle mb-3" v-if="!$store.state.project.rightSideSplit">{{sidebarSubTitle}}</div>
+
       <div class="project-activity-inner-container">
         <div v-show="!$store.state.project.rightSideSplit" :style="{'height': $store.state.project.rightSideSplit ? 'calc(100% - 250px)' : 'calc(100vh - 17rem)'}">
           <Messaging v-if="selectedOption === 0" :primaryId="projectId"/>
@@ -82,11 +83,11 @@ export default {
   props: {},
   data() {
     return {
-      projectId: parseInt(this.$route.params.projectId),
-      projectProcessStepId: parseInt(this.$route.params.processStepId),
-      projectProcessStepEventId: parseInt(this.$route.params.ppsEventId),
+      projectId: parseInt(this.$route.params.projectId) || null,
+      projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
+      projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
       selectedOption: null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab,
-
+      refreshKey: false
     }
   },
   created() {
@@ -99,7 +100,17 @@ export default {
         case 1:
           return "Project Notes"
         case 2:
-          return "Documents"
+          return this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : 'Project Documents'
+      }
+    },
+    sidebarSubTitle() {
+      switch (this.selectedOption) {
+        case 0:
+          return ''
+        case 1:
+          return ''
+        case 2:
+          return this.$route.params.ppsEventId ? 'Documents related to the selected event.' : this.$route.params.processStepId ? 'Documents related to the selected process step.' : 'Documents related to the selected project.'
       }
     }
   },
@@ -142,6 +153,11 @@ export default {
   min-height: 65px;
   bottom: 5px;
   position: absolute;
+}
+
+.sidebar-subtitle {
+  margin-left: 24px;
+  font-size: 14px;
 }
 
 .section-footer {

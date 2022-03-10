@@ -219,6 +219,7 @@ public class GenesysService {
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
+    wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
     contactMap.put("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
@@ -819,12 +820,12 @@ public class GenesysService {
   }
 
   private void addTextelParameters(HashMap<String, Object> contactMap, boolean isUpdate) {
-    contactMap.put("messageBody1", "Hello " + contactMap.get("first_name") + ", this is Blue Raven Solar. We are just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
-    contactMap.put("messageBody2", "Hey " + contactMap.get("first_name") + ", I'd love to share some incentives that are available right now to help you save money on your electric bill! Is now a good time to talk?");
-    contactMap.put("messageBody3", "Hello " + contactMap.get("first_name") + ", are you still interested in learning more about how you can save money on your electric bill by going solar? I'd be happy to answer any questions you have!");
-    contactMap.put("messageBody4", "Hi " + contactMap.get("first_name") + ", if you would prefer to see if you qualify without talking to us, click the link below to see if you qualify. https://blueravensolar.aidaform.com/qualify_now");
-    contactMap.put("messageBody5", "Just wanted to check in. We would be more than happy to assist you.");
-    contactMap.put("messageBody6", "Hey " + contactMap.get("first_name") +", we don't want to bother you, but we do want to be here to help with your request. Is there anything questions we can assist with about going solar?");
+    contactMap.put("messageBody1", "Hello " + contactMap.get("first_name") + ", this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
+    contactMap.put("messageBody2", "Let me know which is better for you!");
+    contactMap.put("messageBody3", "Hi there, Blue Raven Solar again. We’d be happy to put together a proposal to help you see what solar would look like for you. Let me know when it’s a good time to talk!");
+    contactMap.put("messageBody4", "Hi there! Just following up on your request for a solar proposal for your home. Is it a good time to chat? You can also text me if that’s easier for you.");
+    contactMap.put("messageBody5", "Just wanted to check in. We would be more than happy to assist you. Let me know when it’s a good time to talk.");
+    contactMap.put("messageBody6", "Hey " + contactMap.get("first_name") +", we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
     contactMap.put("messageBody7", "Hi " + contactMap.get("first_name") +", are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
     contactMap.put("messageBodyAfterHours", "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");
     contactMap.put("messageBodyStop", "We have removed you from our messaging campaign. No more messages will be sent. Questions? Send them to sales@blueravensolar.com or call 385-233-0858");

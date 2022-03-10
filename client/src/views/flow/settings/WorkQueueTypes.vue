@@ -88,44 +88,12 @@
                     <v-btn class="clickable" small text v-if="userCanEdit || userIsAdmin">
                       <v-icon @click="goToDetails(item)">edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-model="item.deleteConfirm"
-                      v-if="userCanDelete"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this work queue type: <strong>{{ item.workQueueType }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[item.archived = true, deleteType(item.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanDelete"
+                        label="this work queue type: "
+                        :item-to-delete="item.workQueueType"
+                        @confirm-delete="[item.archived = true, deleteType(item.id)]"
+                    ></confirm-delete-dialog>
                   </div>
                 </td>
               </tr>
@@ -150,9 +118,11 @@
   import { handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'WorkQueueTypes',
+    components: {ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     mounted() {

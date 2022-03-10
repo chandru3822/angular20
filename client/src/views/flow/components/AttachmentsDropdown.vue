@@ -11,7 +11,7 @@
             <div class="expansion-panel-header-open" v-if="open"
                  key="0">
               <input
-                  id="fileInput"
+                  :id="`fileInput${type.attachmentTypeId}`"
                   type="file"
                   multiple
                   :accept="acceptedFileTypes"
@@ -20,7 +20,7 @@
                   @click.stop=""
                   ref='fileInput'
               >
-              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile"
+              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile(type.attachmentTypeId)"
                      @dragenter="dragTypeId=type.attachmentTypeId"
                      @dragleave="dragTypeId=null"
                      @dragend="dragTypeId=null"
@@ -169,10 +169,6 @@ export default {
       this.fetchAttachmentTypes()
       this.fetchAttachments()
     },
-    toggleShowNonPrimary(){
-      this.showNonPrimaryDocs = !this.showNonPrimaryDocs;
-    },
-
     fetchAttachmentTypes: async function () {
       this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
@@ -193,11 +189,6 @@ export default {
 
       this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
-    drillDown: function(type) {
-      this.displayType = type
-      //not sure why i am having to unset this value
-      this.dragTypeId = null
-    },
     getTypeCount: function(typeId) {
       try {
         return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
@@ -216,8 +207,8 @@ export default {
       let files = e.dataTransfer.files
       await this.uploadDocument(files, attachmentTypeId)
     },
-    selectFile: function(){
-      document.getElementById('fileInput')?.click();
+    selectFile: function(typeId){
+      document.getElementById(`fileInput${typeId}`)?.click();
     },
     uploadDocument: async function (files, attachmentTypeId) {
       if (files?.length > 0) {
@@ -234,7 +225,7 @@ export default {
                       (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
                           Actions.OBJECT_TYPE_FILE_UPLOAD, {
                 file,
-                attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
+                attachmentTypeId: attachmentTypeId,
                 projectId: this.projectId,
                 projectProcessStepId: this.projectProcessStepId,
                 userId: this.userId,

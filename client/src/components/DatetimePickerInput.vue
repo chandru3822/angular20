@@ -10,7 +10,7 @@
 >
   <template #activator="{on}">
     <v-text-field
-      :class="customClass"
+      :class="[customClass, {'no-icon-click': !allowNow}]"
       :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
       :placeholder="placeholder"
@@ -24,6 +24,8 @@
       :disabled="readonly"
       v-on="!readonly && on"
       @click:clear="clearInput"
+      @click:append="setNow"
+      @click:prepend="setNow"
       :hide-details="hideDetails"
       :dense="dense"
       :outlined="outlined"
@@ -82,6 +84,7 @@ export default {
     allowedMinutes: Function,
     showAppendIcon: Boolean,
     changeCallback: Function,
+    allowNow: Boolean,
     required: {
       type: Boolean,
       default: false
@@ -202,18 +205,28 @@ export default {
       this.init()
       this.changeHandler()
     },
-    init () {
-      // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
-      let value = DateTime.fromISO(this.$props.value, { zone: 'utc'})
+    init (overrideWithNow) {
+      let value
+      if(!overrideWithNow) {
+        // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
+        value = DateTime.fromISO(this.$props.value, { zone: 'utc'})
+      }
 
       // if (['timestamp', 'time'].includes(this.type)) {
       //   value = value.setZone(this.timezone)
       // }
 
       const now = DateTime.local()
-      this.dateToUse = (value.isValid) ? value : now
+      this.dateToUse = !overrideWithNow && (value.isValid) ? value : now
       this.date = this.dateToUse.toFormat('yyyy-MM-dd')
-      if(this.$props.value == null) {
+      if(overrideWithNow) {
+        this.time = this.dateToUse.toFormat('HH:mm')
+        this.setFunction(this.time)
+        this.saveDate()
+        if(this.type === 'timestamp') {
+          this.saveTime()
+        }
+      } else if(this.$props.value == null) {
         //if not previous value, set the time to the beginning of the current hour and do the setFunction thing that i dont even remember what it does now
         this.time = this.dateToUse.startOf('hour').toFormat('HH:mm')
         this.setFunction(this.time)
@@ -233,6 +246,11 @@ export default {
     clearInput () {
         this.$emit('input', null)
         this.changeHandler()
+    },
+    setNow() {
+      if(this.allowNow) {
+        this.init(true)
+      }
     }
   }
 }
@@ -241,5 +259,9 @@ export default {
 <style lang="scss">
 .datetime-picker-input label, .datetime-picker-input input {
   z-index: 0;
+}
+
+.no-icon-click .v-icon--link {
+  cursor: default !important;
 }
 </style>

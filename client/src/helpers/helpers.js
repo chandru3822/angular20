@@ -2,10 +2,11 @@ import axios from 'axios'
 import constants from './constants'
 import { AppMutations } from '@/stores/AppStore'
 
-export function getSnackbar(type, text) {
+export function getSnackbar(type, text, displayMsgAsHtml) {
   //if you need a custom snackbar build it in your component
   let snackbar = constants.SNACKBARS[type]
   snackbar.text = text
+  snackbar.displayAsHtml = displayMsgAsHtml
   snackbar.enabled = true
   return snackbar
 }

@@ -55,7 +55,8 @@ public class CustomField {
     customFieldGroupAssignmentHidden,
     useParentData,
     sortListValuesAlphabetically,
-    lazyLoadValues;
+    lazyLoadValues,
+    allowNow;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;

@@ -3,7 +3,26 @@
       v-model="openDialog"
       width="500">
     <template #activator="{ on }">
-      <v-btn small text v-on="on" :disabled="isDisabled">
+      <v-tooltip top v-if="showTooltip">
+        <template v-slot:activator="{ on: tooltip }">
+          <div v-on="{ ...tooltip }" class="d-inline-block">
+            <v-btn v-if="textbutton" color="brRed" class="white--text py-1 px-2 align-center" small v-on="on" :disabled="isDisabled">
+              Delete
+            </v-btn>
+            <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">
+        <v-icon>delete</v-icon>
+      </v-btn>
+          </div>
+        </template>
+            <span>{{tooltipText}}</span>
+      </v-tooltip>
+      <v-btn v-else-if="textbutton"
+             color="brRed"
+             class="white--text py-1 px-2 align-center"
+             small v-on="on" :disabled="isDisabled">
+        Delete
+      </v-btn>
+      <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">
         <v-icon>delete</v-icon>
       </v-btn>
     </template>
@@ -14,7 +33,8 @@
         Delete
       </v-card-title>
       <v-card-text class="albatross-body-1">
-      Are you sure you want to delete {{label}}: <strong>{{ itemToDelete}}</strong>?
+        <slot></slot>
+      Are you sure you want to delete {{label}}<strong>{{ itemToDelete}}</strong>?
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -39,9 +59,12 @@
 export default {
   name: "ConfirmDeleteDialog",
   props: {
-    label: String, //Dialog will say "Are you sure you want to delete {{label}}: {{itemToDelete}}?"
+    label: String, //Dialog will say "Are you sure you want to delete {{label}} {{itemToDelete}}?"
     itemToDelete: String,
-    isDisabled: Boolean //optional if you want to disable the icon that opens the dialog
+    isDisabled: Boolean, //optional if you want to disable the icon that opens the dialog
+    showTooltip: Boolean,
+    tooltipText: String,
+    textbutton: Boolean
   },
   data() {
     return {
@@ -51,6 +74,7 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm-delete')
+      this.openDialog = false
     },
     no() {
       this.openDialog = false
@@ -60,5 +84,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.align-center {
+  align-self: center;
+}
 
 </style>
