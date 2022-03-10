@@ -2049,7 +2049,7 @@ public class SmartlistService {
             } else if (f.getObjectTypeId() == 6) {
               valueTable = f.getValueEventReferenceTable();
             }
-            selectFields.append(addSelectCustomField(f.getDataTypeId(), valueTable, f.getId().toString(), f.getHasListValues()));
+            selectFields.append(addSelectCustomField(f.getDataTypeId(), valueTable, f.getId().toString(), f.getHasListValues(), timezone));
           }
         } else if (f.getSystemListId() != null) {
           //system list fields
@@ -2997,7 +2997,7 @@ public class SmartlistService {
             } else if (f.getObjectTypeId() == 6) {
               valueTable = f.getValueEventReferenceTable();
             }
-            selectFields.append(addSelectCustomField(f.getDataTypeId(), valueTable, f.getId().toString(), f.getHasListValues()));
+            selectFields.append(addSelectCustomField(f.getDataTypeId(), valueTable, f.getId().toString(), f.getHasListValues(), timezone));
           }
         } else if (f.getSystemListId() != null) {
           //system list fields
@@ -3612,7 +3612,11 @@ public class SmartlistService {
           if (f.getDataTypeId() == 1) {
             selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if(f.getDataTypeId() == 2) {
-            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            if (timezone != null) {
+              selectQuery.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
+            } else {
+              selectQuery.append(String.format(" to_char(%s.%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            }
           } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
             selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if (f.getDataTypeId() == 7) {
@@ -3621,7 +3625,7 @@ public class SmartlistService {
             selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           }
         } else {//else field is process step or event custom field
-          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getName(), f.getHasListValues()));
+          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getName(), f.getHasListValues(), timezone));
         }
       } else {
         //if field is custom sql
@@ -3688,7 +3692,80 @@ public class SmartlistService {
     //remove the extra ", "
     defaultFields.delete(defaultFields.length() - 2, defaultFields.length());
 
-    defaultFields.append(" select ").append(addWorkQueueDefaultFields(smartlist.getWorkQueueTypeId(), useEventData, timezone));
+    //default fields
+    if (useEventData) {
+      //event fields
+      defaultFields.append(" select ")
+        .append("flow.project.project_name as \"Project Name\", ")
+        .append("flow.event.event_name \"Event Name\", ")
+        .append("flow.project_process_step.id \"projectProcessStepId\", ")
+        .append("flow.project.id as \"projectId\", ")
+        .append("flow.project_process_step_event.id \"projectProcessStepEventId\", ")
+        .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
+        .append("flow.process_step.process_step_name as \"Process Step Name\", ")
+        .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
+        .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
+        .append("flow.process_step_event_work_queue_type.id as \"processStepEventWorkQueueTypeId\", ");
+
+      if (timezone != null) {
+        defaultFields.append(String.format("to_char(flow.project_process_step_event.start_time at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"Event Start Time\", ", timezone));
+      } else {
+        defaultFields.append("to_char(flow.project_process_step_event.start_time, 'MM/DD/YYYY HH:MI am') as \"Event Start Time\", ");
+      }
+
+      //copied the PS query from buildSQL function and altered for events
+      defaultFields.append("""
+          coalesce((
+            select array_to_json(array_agg(row_to_json(notes)))
+            from (
+              select n.id,
+                     n.note,
+                     n.archived,
+                     n.parent_id as "parentId",
+                     n.date_created as "dateCreated",
+                     n.date_modified as "dateModified",
+                     n.created_by_id as "createdById",
+                     n.follow_up_date as "followUpDate",
+                     concat(creator.first_name, ' ', creator.last_name) as "createdBy",
+                     n.modified_by_id as "modifiedById",
+                     pn.project_process_step_event_id as "projectProcessStepEventId",
+                     pn.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
+                     coalesce((
+                       select array_to_json(array_agg(row_to_json(childNotes)))
+                       from (
+                       select n2.id,
+                              n2.note,
+                              n2.archived,
+                              n2.date_created as "dateCreated",
+                              n2.date_modified as "dateModified",
+                              n2.created_by_id as "createdById",
+                              n2.follow_up_date as "followUpDate",
+                              concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
+                              n2.modified_by_id as "modifiedById",
+                              pn2.project_process_step_event_id as "projectProcessStepEventId",
+                              pn2.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId"
+                       from flow.note n2
+                       inner join flow.pps_event_process_step_event_work_queue_type_note pn2 on pn2.note_id = n2.id
+                       inner join flow.user creator2 on creator2.id = n2.created_by_id
+                       where n2.archived is not true and
+                             n2.parent_id = n.id
+                       order by n2.date_created
+                     ) childNotes), '[]') as "childNotes"
+              from flow.note n
+              inner join flow.pps_event_process_step_event_work_queue_type_note pn on pn.note_id = n.id
+              inner join flow.user creator on creator.id = n.created_by_id
+              inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = pn.process_step_event_work_queue_type_id
+              where n.archived is not true and
+                    n.parent_id is null and
+                    pn.project_process_step_event_id = flow.project_process_step_event.id and
+                    psewqt.process_step_event_id = flow.process_step_event.id and
+                    psewqt.work_queue_type_id = %s
+              order by n.date_created desc
+            ) notes), '[]') as "Notes",\040""".formatted(smartlist.getWorkQueueTypeId()));
+    } else {
+      //process step fields
+      defaultFields.append(" select ");
+    }
 
     if (fields.isEmpty()) {
       //remove the extra ", "
@@ -3705,7 +3782,7 @@ public class SmartlistService {
     if(workQueueSmartlist) {
       if (useEventData) {
         //add default fields to fields list
-        var defaultFields = getEventWorkqueueDefaultFields();
+        var defaultFields = getEventWorkqueueDefaultFields(true);
         defaultFields.addAll(headers);
         headers = defaultFields;
       } else {
@@ -4027,12 +4104,16 @@ public class SmartlistService {
    * @return a sql snippet
    */
   //@TODO: This function name is no bueno. Needs some love
-  private String addSelectCustomField(Long dataTypeId, String valueTable, String fieldLabel, Boolean hasListValues) {
+  private String addSelectCustomField(Long dataTypeId, String valueTable, String fieldLabel, Boolean hasListValues, String customTimezone) {
     var select = "";
     if (dataTypeId == 1) {
       select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
     } else if(dataTypeId == 2) {
-      select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
+      if (customTimezone != null) {
+        select = String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), customTimezone, fieldLabel);
+      } else {
+        select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
+      }
     } else if (dataTypeId == 6 && hasListValues) {
       select = String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
     } else if (dataTypeId == 7) {
@@ -4854,7 +4935,7 @@ public class SmartlistService {
     }
   }
 
-  public List<SmartlistFieldAssignment> getEventWorkqueueDefaultFields() {
+  public List<SmartlistFieldAssignment> getEventWorkqueueDefaultFields(boolean isCSV) {
     var defaultFields = new ArrayList<SmartlistFieldAssignment>();
     var projectName = new SmartlistFieldAssignment();
     projectName.setName("Project Name");
@@ -4877,15 +4958,17 @@ public class SmartlistService {
     var eventStartTime = new SmartlistFieldAssignment();
     eventStartTime.setName("Event Start Time");
     defaultFields.add(eventStartTime);
-    var nextFollowUp = new SmartlistFieldAssignment();
-    nextFollowUp.setName("Next Follow-up Date");
-    defaultFields.add(nextFollowUp);
-    var noteContent = new SmartlistFieldAssignment();
-    noteContent.setName("Note Content");
-    defaultFields.add(noteContent);
-    var noteCreatedBy = new SmartlistFieldAssignment();
-    noteCreatedBy.setName("Note Created By");
-    defaultFields.add(noteCreatedBy);
+    if (isCSV) {
+      var nextFollowUp = new SmartlistFieldAssignment();
+      nextFollowUp.setName("Next Follow-up Date");
+      defaultFields.add(nextFollowUp);
+      var noteContent = new SmartlistFieldAssignment();
+      noteContent.setName("Note Content");
+      defaultFields.add(noteContent);
+      var noteCreatedBy = new SmartlistFieldAssignment();
+      noteCreatedBy.setName("Note Created By");
+      defaultFields.add(noteCreatedBy);
+    }
     return defaultFields;
   }
 
