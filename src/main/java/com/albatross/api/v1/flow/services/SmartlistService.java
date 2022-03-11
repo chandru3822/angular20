@@ -3804,17 +3804,17 @@ public class SmartlistService {
 
         //add most recent note header to the end after all the custom fields
 
-//        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
-//        sfa3.setName("Next Follow-up Date");
-//        headers.add(sfa3);
-//
-//        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
-//        sfa4.setName("Note Content");
-//        headers.add(sfa4);
-//
-//        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
-//        sfa5.setName("Note Created By");
-//        headers.add(sfa5);
+        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
+        sfa3.setName("Next Follow-up Date");
+        headers.add(sfa3);
+
+        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
+        sfa4.setName("Note Content");
+        headers.add(sfa4);
+
+        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
+        sfa5.setName("Note Created By");
+        headers.add(sfa5);
       }
     }
 
