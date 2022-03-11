@@ -83,6 +83,7 @@ public class CompanyService {
   public List<CompanyConfigurationValue> getCompanyConfigurationValues(Long companyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", companyId);
+//    for now we filter out the readonly values and don't even display them
     List<CompanyConfigurationValue> results = sqlCache.query("company.getConfigurationValues", params, CompanyConfigurationValue.class);
     return results;
   }
