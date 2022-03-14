@@ -36,7 +36,11 @@
         <v-toolbar-title class="albatross-header-2">
           <div>{{ selectedEvent.eventName }}</div>
           <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
-          <div class="scheduled-time">Scheduled {{ selectedEvent.scheduledDate | formatDate('timestamp', 'M/D/YYYY [at] h:mm a') }}</div>
+          <div class="scheduled-time" v-if="selectedEvent.scheduledDate">
+            Scheduled {{ selectedEvent.scheduledDate | formatDate('timestamp', 'M/D/YYYY [at] h:mm a') }}
+            <br>
+            Created by {{selectedEvent.createdBy}}
+          </div>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
