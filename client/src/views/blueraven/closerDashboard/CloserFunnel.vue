@@ -384,8 +384,12 @@
               </template>
             </v-autocomplete>
 
-            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps">
+            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps(false)">
               All Reps
+            </v-btn>
+
+            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn-2" outlined @click="funnelAllReps(true)">
+              All Reps old
             </v-btn>
           </div>
         </div>
@@ -1234,7 +1238,7 @@ export default {
       }
     },
 
-    funnelAllReps() {
+    funnelAllReps(randa) {
       this.areaModel = []
       this.districtModel = []
       this.regionModel = []
@@ -1248,7 +1252,8 @@ export default {
         {user_id: -1, name: 'All Reps', active: true}
       ]
 
-      this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+      // this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+      this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false, randa)
     },
 
     loadSources() {
@@ -1318,7 +1323,7 @@ export default {
       }
     },
 
-    async apptsToFdcPipelineLoad(start, end, useRepDataInstead) {
+    async apptsToFdcPipelineLoad(start, end, useRepDataInstead, randa) {
       this.apptsToFdcPipelineLoaded = false
       this.apptsToFdcPipelineDataLoading = true
       let reps = []
@@ -1334,7 +1339,7 @@ export default {
       let modelOverride = false
       if (useRepDataInstead) {
         this.repData.forEach((rep, index) => {
-          reps.push(rep.user_id)
+          reps.push(rep.user_position_id)
           if (index === this.repData.length - 1) {
             //   this.districtModel = []
             //   this.regionModel = []
@@ -1351,20 +1356,21 @@ export default {
           }
         })
       } else {
-        this.repModel.forEach(rep => reps.push(rep.user_id))
+        this.repModel.forEach(rep => reps.push(rep.user_position_id))
       }
 
       if (modelOverride) {
         reps = []
         //this gets used when there are more than 1000 users selected
-        this.repDataMaster.forEach(rep => reps.push(rep.user_id))
+        this.repDataMaster.forEach(rep => reps.push(rep.user_position_id))
       }
 
       const requestBody = {
         users: reps,
         orgs: orgs,
         start: moment(start).format('YYYY-MM-DD'),
-        end: moment(end).format('YYYY-MM-DD')
+        end: moment(end).format('YYYY-MM-DD'),
+        randa
       }
 
       try {
@@ -1754,10 +1760,14 @@ export default {
       let datesMatch = false
 
       if (pipelineName === 'apptsCreatedPipeline') {
+        let brsSourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
+        let selfGenSourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
         if (funnelId === 12) { // BRS-provided sources
-          sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
-        } else { // Self-gen sources
-          sourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
+          sourceIds = brsSourceIds
+        } else if (funnelId === 13) { // Self-gen sources
+          sourceIds = selfGenSourceIds
+        } else {
+          sourceIds = brsSourceIds.concat(selfGenSourceIds)
         }
 
         switch (dateRange) {
@@ -1775,7 +1785,7 @@ export default {
             break
         }
       } else {
-        userIds = this.repModel.map(rep => rep.user_id)
+        userIds = this.repModel.map(rep => rep.user_position_id)
         orgIds = this.officeModel.map(org => org.org_id)
 
         switch (dateRange) {
@@ -1807,6 +1817,7 @@ export default {
         case 12: // BRS-provided appointments created
         case 13: // Self-gen appointments created
         case 10: // Total Appointments Created
+        case 26: // Missing source
           this.funnelDrilldownHeaders[12].show = true // date_created
           break
 

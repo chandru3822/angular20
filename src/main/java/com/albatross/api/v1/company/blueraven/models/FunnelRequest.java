@@ -14,5 +14,5 @@ public class FunnelRequest {
     private String start, end;
     private List<Long> brsProvidedSources, selfGenSources, sources, users, areas, orgs;
     private int funnelId;
-    private Boolean isCheckedInColumn;
+    private Boolean isCheckedInColumn, randa;
 }
