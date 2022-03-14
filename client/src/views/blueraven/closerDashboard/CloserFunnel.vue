@@ -384,12 +384,8 @@
               </template>
             </v-autocomplete>
 
-            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps(false)">
+            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps">
               All Reps
-            </v-btn>
-
-            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn-2" outlined @click="funnelAllReps(true)">
-              All Reps old
             </v-btn>
           </div>
         </div>
@@ -1238,7 +1234,7 @@ export default {
       }
     },
 
-    funnelAllReps(randa) {
+    funnelAllReps() {
       this.areaModel = []
       this.districtModel = []
       this.regionModel = []
@@ -1253,7 +1249,7 @@ export default {
       ]
 
       // this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
-      this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false, randa)
+      this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
     },
 
     loadSources() {
@@ -1323,7 +1319,7 @@ export default {
       }
     },
 
-    async apptsToFdcPipelineLoad(start, end, useRepDataInstead, randa) {
+    async apptsToFdcPipelineLoad(start, end, useRepDataInstead) {
       this.apptsToFdcPipelineLoaded = false
       this.apptsToFdcPipelineDataLoading = true
       let reps = []
@@ -1369,8 +1365,7 @@ export default {
         users: reps,
         orgs: orgs,
         start: moment(start).format('YYYY-MM-DD'),
-        end: moment(end).format('YYYY-MM-DD'),
-        randa
+        end: moment(end).format('YYYY-MM-DD')
       }
 
       try {

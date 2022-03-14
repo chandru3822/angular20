@@ -296,11 +296,7 @@ public class CloserDashboardService {
 
   public String funnelStandard(FunnelRequest funnelRequest) {
     String sqlQuery;
-    if(null != funnelRequest.getRanda() && funnelRequest.getRanda()) {
-      sqlQuery = "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
-    } else {
-      sqlQuery = "select brs.rpt_closer_funnel_standard_fancy(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
-    }
+    sqlQuery = "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
@@ -323,13 +319,7 @@ public class CloserDashboardService {
   }
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
-//    String sqlQuery = "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
-    String sqlQuery;
-    if(null != funnelRequest.getRanda() && funnelRequest.getRanda()) {
-       sqlQuery = "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
-    } else {
-      sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown_fancy(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, false)";
-    }
+    String sqlQuery = "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
   }
