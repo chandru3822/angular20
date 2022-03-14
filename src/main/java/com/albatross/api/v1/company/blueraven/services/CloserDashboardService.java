@@ -207,7 +207,7 @@ public class CloserDashboardService {
   }
 
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_appts_created_pipeline_fancy(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::integer[], array[ :selfGenSourceIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::integer[], array[ :selfGenSourceIds ]::integer[])";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
@@ -219,7 +219,7 @@ public class CloserDashboardService {
   }
 
   public String apptsCreatedPipelineDrilldown(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown_fancy(:startDate::date, :endDate::date, :funnelId::integer, array[ :sourceIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :sourceIds ]::integer[])";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
@@ -302,7 +302,7 @@ public class CloserDashboardService {
   }
 
   public String funnelApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_appt_date_cohort_fancy(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
@@ -319,13 +319,13 @@ public class CloserDashboardService {
   }
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown_fancy(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
+    String sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
   }
 
   public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown_fancy(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, true)";
+    String sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, true)";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
   }

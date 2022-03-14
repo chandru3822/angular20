@@ -22,7 +22,7 @@ BEGIN
                              rpt.checked_in_week_to_date_count,
                              rpt.custom_date_range_count,
                              rpt.checked_in_custom_date_range_count
-                      from brs.rpt_closer_funnel_standard_event_based_fancy(p_custom_start_date, p_custom_end_date,
+                      from brs.rpt_closer_funnel_standard_event_based(p_custom_start_date, p_custom_end_date,
                                                                             p_user_position_ids, p_org_ids) rpt
                       union all
                       (
