@@ -93,6 +93,7 @@
     select *
     from flow.company_configuration_value
     where archived is false
+    and readonly is false
     order by name;
   ]]></company.getConfigurationValues>
 

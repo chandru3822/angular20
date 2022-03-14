@@ -34,8 +34,9 @@
       <v-toolbar color="transparent" height="auto"
                  class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
-          <div>{{ selectedEvent.eventName}}</div>
-          <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{selectedEvent.eventStatusType}})</div> <br>
+          <div>{{ selectedEvent.eventName }}</div>
+          <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
+          <div class="scheduled-time">Scheduled {{ selectedEvent.scheduledDate | formatDate('timestamp', 'M/D/YYYY [at] h:mm a') }}</div>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -105,7 +106,7 @@
             </div>
             <div class="action-button-subtitle">
               <span class="action-button-subtitle-date">{{ action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
-                {{ action.actionRunBy}}
+              {{ action.actionRunBy}}
             </div>
           </div>
           <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">check</v-icon>
@@ -123,16 +124,17 @@
               <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
-              <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
-                <v-icon class="px-0">mdi-upload</v-icon>
-              </v-btn>
-              <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-                <UploadDocumentModal @cancel="showUploadModal = false"
-                                     :width="uploadModalWidth"
-                                     :show-success-snackbar="true"
-                                     :pps-event-id="ppsEventId"
-                                     :attachment-types="attachmentTypes"></UploadDocumentModal>
-              </v-dialog>
+            <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small
+                   @click="showUploadModal = true" class="px-0">
+              <v-icon class="px-0">mdi-upload</v-icon>
+            </v-btn>
+            <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+              <UploadDocumentModal @cancel="showUploadModal = false"
+                                   :width="uploadModalWidth"
+                                   :show-success-snackbar="true"
+                                   :pps-event-id="ppsEventId"
+                                   :attachment-types="attachmentTypes"></UploadDocumentModal>
+            </v-dialog>
             <div>
               <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
@@ -155,11 +157,12 @@
 
       <v-form ref="eventFieldForm" class="px-6" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
-        <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
-                                                         class="px-0 d-flex align-baseline" target="_blank"
-                                                         :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-              <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span><v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
-            </v-btn>
+          <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                 class="px-0 d-flex align-baseline" target="_blank"
+                 :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+            <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
+            <v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
+          </v-btn>
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
         <v-autocomplete
@@ -206,74 +209,74 @@
           @input="defaultValuesChanged = true"
         ></v-autocomplete>
 
-        <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
-               class="white--text mb-4"
-               :disabled="uniqueAlreadyHasValue"
-               id="qa-round-robin-button"
-               @click="showRoundRobin = !showRoundRobin">Round Robin
-        </v-btn>
-        <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title>Lead Allocation</v-toolbar-title>
-          </v-toolbar>
-          <v-card-text class="py-0">
-            <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
-              You do not have access to schedule projects in this Postal Code
+          <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
+                 class="white--text mb-4"
+                 :disabled="uniqueAlreadyHasValue"
+                 id="qa-round-robin-button"
+                 @click="showRoundRobin = !showRoundRobin">Round Robin
+          </v-btn>
+          <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
+            <v-toolbar flat color="transparent">
+              <v-toolbar-title>Lead Allocation</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="py-0">
+              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
+                You do not have access to schedule projects in this Postal Code
+              </v-card-text>
+              <div class="pb-3">
+                <CustomValueInput
+                  :readonly="!userCanEdit"
+                  :min-date="minDate"
+                  :callback="checkAvailabilityDate"
+                  :field="availabilityDateField"
+                />
+                <div class="text-right" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primaryCustom" class="white--text"
+                         :loading="remoteSearchLoading"
+                         :disabled="inPersonSearchLoading"
+                         v-if="showRemoteSearch || userIsAdmin"
+                         id="qa-round-robin-search-remote"
+                         @click="getAvailableTimeSlots(true)">
+                    Search Remote Appt. Slots
+                  </v-btn>
+                  <v-btn color="primaryCustom" class="white--text ml-3"
+                         :loading="inPersonSearchLoading"
+                         v-if="schedulerCanEdit || userIsAdmin"
+                         :disabled="remoteSearchLoading"
+                         id="qa-round-robin-search"
+                         @click="getAvailableTimeSlots(false)">
+                    Search In-person Appt. Slots
+                  </v-btn>
+                </div>
+                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
+                          v-model="selectedTimeSlot"
+                          class="qa-round-robin-time-select"
+                          :items="timeSlots"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Select an Available Time Slot"
+                          return-object
+                >
+                  <template slot="selection" slot-scope="data">
+                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                  </template>
+                  <template slot="item" slot-scope="data">
+                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                  </template>
+                </v-select>
+                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
+                  Selected Date
+                </div>
+                <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
+                  <v-btn color="primaryCustom" class="white--text"
+                         @click="saveCloserAppointment" id="qa-round-robin-save">
+                    Save Appointment
+                  </v-btn>
+                </div>
+              </div>
             </v-card-text>
-            <div class="pb-3">
-              <CustomValueInput
-                :readonly="!userCanEdit"
-                :min-date="minDate"
-                :callback="checkAvailabilityDate"
-                :field="availabilityDateField"
-              />
-              <div class="text-right" v-if="availabilityDateField.dateValue">
-                <v-btn color="primaryCustom" class="white--text"
-                       :loading="remoteSearchLoading"
-                       :disabled="inPersonSearchLoading"
-                       v-if="showRemoteSearch || userIsAdmin"
-                       id="qa-round-robin-search-remote"
-                       @click="getAvailableTimeSlots(true)">
-                  Search Remote Appt. Slots
-                </v-btn>
-                <v-btn color="primaryCustom" class="white--text ml-3"
-                       :loading="inPersonSearchLoading"
-                       v-if="schedulerCanEdit || userIsAdmin"
-                       :disabled="remoteSearchLoading"
-                       id="qa-round-robin-search"
-                       @click="getAvailableTimeSlots(false)">
-                  Search In-person Appt. Slots
-                </v-btn>
-              </div>
-              <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
-                        v-model="selectedTimeSlot"
-                        class="qa-round-robin-time-select"
-                        :items="timeSlots"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Select an Available Time Slot"
-                        return-object
-              >
-                <template slot="selection" slot-scope="data">
-                  {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                </template>
-                <template slot="item" slot-scope="data">
-                  {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                </template>
-              </v-select>
-              <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
-                Selected Date
-              </div>
-              <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                <v-btn color="primaryCustom" class="white--text"
-                       @click="saveCloserAppointment" id="qa-round-robin-save">
-                  Save Appointment
-                </v-btn>
-              </div>
-            </div>
-          </v-card-text>
 
-        </div>
+          </div>
         </v-card>
         <v-col
           v-if="selectedEvent && selectedEvent.id"
@@ -494,7 +497,7 @@ export default {
     },
     goToPath(path, query) {
       this.unsavedFieldsModal = false
-      this.$router.push({ path, query })
+      this.$router.push({path, query})
     },
     setSplitColumnValue() {
       //flip the flag
@@ -928,7 +931,7 @@ export default {
         }
       } else if (null != this.selectedEvent.startTime) {
         //for all other types just compare start to end if end not null
-        if (startTime && endTime && !moment(endTime).isAfter(startTime)){
+        if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
           validSave = false
           this.eventActionMissingRequirements = true
           this.saveErrorMsg = 'End time must be after start time'
@@ -1010,13 +1013,21 @@ export default {
   padding-left: 10px;
   padding-right: 10px;
 }
+
 .scheduler-button-text {
   text-transform: capitalize;
   text-decoration: underline;
 }
+
 .scheduler-button-icon {
- text-decoration: none;
+  text-decoration: none;
   font-size: 12px;
+}
+
+.scheduled-time {
+  color: #9E9C9C;
+  font-size: 12px;
+  font-weight: normal;
 }
 
 .action-subheader {

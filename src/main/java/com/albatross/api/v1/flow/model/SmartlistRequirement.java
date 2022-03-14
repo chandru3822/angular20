@@ -9,29 +9,25 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SmartlistRequirement {
+public class SmartlistRequirement extends SmartlistSuperField {
 
   //@TODO humes: should probably make this have a field of type SmartlistField since it uses most of those fields anyways
 
-  private Long id, smartlistId, smartlistFieldId, processStepId, eventId, processStepEventId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
-               dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, systemListId, listOfValueId, systemListOptionId, customSqlOptionId,
-               smartlistSystemListId, companyId;
+  private Long operatorTypeId, dataTypeRequirementId, listOfValueId, systemListOptionId, customSqlOptionId;
 
-  private String requirementValue, secondaryRequirementValue, processStepName, eventName, objectType, operatorType, name, customFieldSqlKey, projectDetailsColumn;
+  private String requirementValue, secondaryRequirementValue, operatorType;
 
-  private Timestamp dateCreated, dateModified;
+  private Boolean immutable, isCustomValue;
 
-  private Boolean immutable, archived, hasListValues, isCustomValue, allowMultiple;
+  private List<Long> listOfValueIds;
 
-  private List<Long> listOfValueIds, systemListOptionIds;
-
-  private List<ListOfValue> listOfValues, availableListOfValues;
+  private List<ListOfValue> availableListOfValues;
 
   private DataTypeRequirement dataTypeRequirement;
 
-  // Used for smartlists
+  //Used for smartlist generation
   @JsonIgnore
-  private String referenceTable, referenceColumn, valueReferenceTable, valueEventReferenceTable, joinTable, joinColumn, ppsTable, ppsEventTable;
+  private String valueReferenceTable, valueEventReferenceTable;
 
   @JsonIgnore
   private CustomField customField;
