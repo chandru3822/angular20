@@ -4,43 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Timestamp;
-import java.util.List;
-
 @Getter
 @Setter
-public class SmartlistFieldAssignment {
+public class SmartlistFieldAssignment extends SmartlistSuperField {
 
   //@TODO humes: customField brings in fields making some direct fields on this class redundant. Remove the direct redundant fields
 
-  private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
-      displayOrder, processStepId, eventId, processStepEventId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
-      companyId, systemListId;
-
-  private String name, objectType, processStepName, eventName, customFieldSqlKey, projectDetailsColumn;
-
-  private Timestamp dateCreated, dateModified;
-
-  private Boolean archived, hasListValues, allowMultiple;
-
-  private List<Long> systemListOptionIds;
-
-  private List<ListOfValue> listOfValues;
+  private Long systemListTypeId;
 
   private CustomField customField;
-
-
-  //These fields are used for smartlist generation
-  @JsonIgnore
-  private String referenceTable, referenceColumn, joinTable, joinColumn;
-
-  //The system list ID of the custom field attached to this event's resource field
-  @JsonIgnore
-  private Long eventResourceSystemListId;
-
-  //These fields are used as table aliases for smartlist generation
-  @JsonIgnore
-  private String valueReferenceTable, ppsTable, ppsEventTable, userPositionTable;
 
   @Deprecated //@TODO: turns out this field wasn't needed. Remove it's use from `buildProcessStepSql` function
   @JsonIgnore
