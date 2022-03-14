@@ -5,7 +5,7 @@ name: Albatross Build [Flux]
 on:
       push:
           branches:
-              - "feature/smartlists-be-loco"
+              - "noop"
 
 jobs:
     build:
