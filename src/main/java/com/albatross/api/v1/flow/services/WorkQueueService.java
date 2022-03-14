@@ -82,7 +82,7 @@ public class WorkQueueService {
       query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
 
       //add default fields to fields list
-      var defaultFields = smartlistService.getEventWorkqueueDefaultFields();
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
       defaultFields.addAll(fields);
       fields = defaultFields;
     }
@@ -127,7 +127,7 @@ public class WorkQueueService {
       query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
 
       //add default fields to fields list
-      var defaultFields = smartlistService.getEventWorkqueueDefaultFields();
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
       defaultFields.addAll(fields);
       fields = defaultFields;
     } else {
