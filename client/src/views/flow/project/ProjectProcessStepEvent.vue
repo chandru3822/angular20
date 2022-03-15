@@ -887,6 +887,7 @@ export default {
           //reset the error messages:
           this.eventActionMissingRequirements = false
           this.saveErrorMsg = ''
+          this.showUnperformableActions = true
 
         }
       } catch (e) {
