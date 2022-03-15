@@ -16,4 +16,5 @@ public class CloserAppointmentRequest {
   private Date appointmentTime, startTime, endTime;
   private List<Integer> users;
   private Boolean remote;
+  private List<CustomFieldValue> customFieldValues;
 }
