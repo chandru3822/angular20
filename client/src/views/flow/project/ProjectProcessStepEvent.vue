@@ -220,10 +220,10 @@
               <v-toolbar-title>Lead Allocation</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="py-0">
-              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
+              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !userIsAdmin">
                 You do not have access to schedule projects in this Postal Code
               </v-card-text>
-              <div class="pb-3">
+              <div class="pb-3" v-else>
                 <CustomValueInput
                   :readonly="!userCanEdit"
                   :min-date="minDate"
@@ -863,7 +863,8 @@ export default {
           // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
           users: this.selectedTimeSlot.users,
-          remote: this.mostRecentSearchWasRemote
+          remote: this.mostRecentSearchWasRemote,
+          customFieldValues: this.dirtyCfvs
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/availability/setCloserAppointment`, body)
@@ -875,12 +876,17 @@ export default {
           this.availabilityDateField.dateValue = null
           this.timeSlots = []
           this.selectedTimeSlot = {}
-          //set the start time, end time and resource on the event
+          //set the some values that may have updated when setting the closer appt event
           this.selectedEvent.startTime = data.appointmentStartTime
           this.selectedEvent.endTime = data.appointmentEndTime
           this.selectedEvent.resourceId = data.userPositionId
           this.selectedEvent.resource = data.userFullName
+          this.selectedEvent.companyEventStatusTypeId = data.companyEventStatusTypeId
+          this.selectedEvent.eventActions = data.eventActions
           this.uniqueAlreadyHasValue = true
+          //reset the error messages:
+          this.eventActionMissingRequirements = false
+          this.saveErrorMsg = ''
 
         }
       } catch (e) {
