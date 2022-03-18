@@ -208,9 +208,11 @@
   <expenseBudget.getAvailableUsers>
     <![CDATA[
             select distinct upv.user_id as id,
-                   upv.first_name || ' ' || upv.last_name as full_name
+                upv.first_name || ' ' || upv.last_name as full_name
             from flow.user_positions_vw upv
-            where position_id in (3,6,10,73,237, 517)
+            where position_id in (select unnest(string_to_array(value, ',')::int[])
+                                  from flow.company_configuration_value
+                                  where code = 'BUDGET_USER_POSITIONS')
               and upv.start_date < now()
               and (upv.end_date is null or upv.end_date > now())
             ORDER BY full_name
