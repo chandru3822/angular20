@@ -122,6 +122,41 @@ where pse.process_step_id = :processStepId
                                                       WHERE psl.process_step_event_action_id = psea.id
                                                         and psl.archived is not true
                                                       ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList",
+                                                      coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(childFn)))
+                                           FROM (
+                                                  SELECT psacf.id,
+                                                         psacf.archived,
+                                                         psacf.process_step_event_action_id as "processStepActionId",
+                                                         psacf.company_function_id as "companyFunctionId",
+                                                         psacf.display_order as "displayOrder",
+                                                         psacf.created_by_id as "createdById",
+                                                         psacf.modified_by_id as "modifiedById",
+                                                         cf.company_function_name as "companyFunctionName",
+                                                         coalesce((
+                                                                    SELECT array_to_json(array_agg(row_to_json(params)))
+                                                                    FROM (
+                                                                           select apdv.id,
+                                                                                  apdv.archived,
+                                                                                  dfp.db_function_id as "dbFunctionId",
+                                                                                  dfp.parameter_name as "parameterName",
+                                                                                  dfp.data_type_id as "dataTypeId",
+                                                                                  dfp.id as "dbFunctionParamId",
+                                                                                  apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+                                                                                  apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
+                                                                                  apdv.dynamic_value as "dynamicValue"
+                                                                           from flow.db_function_param dfp
+                                                                                  left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = psacf.id
+                                                                           where dfp.db_function_id = cf.db_function_id
+                                                                             and dfp.parameter_type_id = 2
+                                                                             and apdv.archived is not true
+                                                                         ) params), '[]') AS "actionParamDynamicValues"
+                                                  FROM flow.process_step_event_action_company_function psacf
+                                                         inner join flow.company_function cf on cf.id = psacf.company_function_id
+                                                  WHERE psacf.process_step_event_action_id = psea.id
+                                                    and psacf.archived is not true
+                                                  order by psacf.display_order, cf.company_function_name
+                                                ) childFn), '[]') AS "childFunctions",
                                     coalesce((
                                                SELECT array_to_json(array_agg(row_to_json(fields)))
                                                FROM (
@@ -351,6 +386,129 @@ where pse.process_step_id = :processStepId
         modified_by_id = :userId
     where id = :id
   ]]></processStepEvent.deleteActionFromEvent>
+
+  <processStepEvent.addChildFunctionToAction><![CDATA[
+    insert into flow.process_step_event_action_company_function (process_step_event_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+    values (:processStepEventActionId, :companyFunctionId, :displayOrder, :createdById, now(), :createdById, now())
+  ]]></processStepEvent.addChildFunctionToAction>
+
+  <processStepEvent.getActionChildFunction><![CDATA[
+    select cp.id,
+       cp.process_step_event_action_id,
+       cp.company_function_id,
+       cp.display_order,
+       cp.archived,
+       cp.date_created,
+       cp.date_modified,
+       cp.created_by_id,
+       cp.modified_by_id,
+       cf.company_function_name,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(params)))
+                    FROM (
+                             select apdv.id,
+                                    apdv.archived,
+                                    dfp.db_function_id as "dbFunctionId",
+                                    dfp.parameter_name as "parameterName",
+                                    dfp.data_type_id as "dataTypeId",
+                                    dfp.id as "dbFunctionParamId",
+                                    apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+                                    apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
+                                    apdv.dynamic_value as "dynamicValue"
+                             from flow.db_function_param dfp
+                                      left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = cp.id
+                             where dfp.db_function_id = cf.db_function_id
+                               and dfp.parameter_type_id = 2
+                               and apdv.archived is not true
+                         ) params), '[]') AS "actionParamDynamicValues"
+    from flow.process_step_event_action_company_function cp
+             inner join flow.company_function cf on cf.id = cp.company_function_id
+    where cp.id = :id
+  ]]></processStepEvent.getActionChildFunction>
+
+  <processStepEvent.deleteActionChildFunction><![CDATA[
+    update flow.process_step_event_action_company_function
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+  ]]></processStepEvent.deleteActionChildFunction>
+
+  <processStepEvent.updateActionChildFunction><![CDATA[
+    update flow.process_step_event_action_company_function
+      set display_order = :displayOrder,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+  ]]></processStepEvent.updateActionChildFunction>
+
+  <processStepEvent.getChildFunctionsByPpsEventId><![CDATA[
+    select
+      psacf.id,
+      psacf.archived,
+      psacf.process_step_event_action_id as "processStepEventActionId",
+      psacf.company_function_id as "companyFunctionId",
+      psacf.display_order as "displayOrder",
+      psacf.created_by_id as "createdById",
+      psacf.modified_by_id as "modifiedById",
+      cf.company_function_name as "companyFunctionName",
+      df.function_name as "functionName",
+      df.run_in_backend as "runInBackend",
+      pps.project_id as "projectId",
+      coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(params)))
+                 FROM (
+                        select
+                          apdv.id,
+                          apdv.archived,
+                          dfp.db_function_id as "dbFunctionId",
+                          dfp.parameter_name as "parameterName",
+                          dfp.data_type_id as "dataTypeId",
+                          dfp.id as "dbFunctionParamId",
+                          apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+                          apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
+                          apdv.dynamic_value as "dynamicValue"
+                        from flow.db_function_param dfp
+                               left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = psacf.id
+                        where
+                            dfp.db_function_id = cf.db_function_id and
+                            dfp.parameter_type_id = 2 and
+                          apdv.archived is not true
+                      ) params), '[]') AS "actionParamDynamicValues",
+      coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(params)))
+                 FROM (
+                        select dfp.data_type_id as "dataTypeId",
+                               dfp.parameter_type_id as "parameterTypeId",
+                               dfp.display_order as "displayOrder",
+                               ppscfv.text_value as "textValue",
+                               ppscfv.date_value as "dateValue",
+                               ppscfv.timestamp_value as "timestampValue",
+                               ppscfv.boolean_value as "booleanValue",
+                               ppscfv.numeric_value as "numericValue",
+                               ppscfv.int_value as "intValue",
+                               dfp.system_value_id as "systemValueId",
+                               apdv.dynamic_value as "dynamicValue"
+                        from flow.db_function_param dfp
+                               left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id
+                               left join flow.system_value sv on sv.id = dfp.system_value_id
+                               left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = psacf.id
+                               left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = ppse.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
+                        where dfp.db_function_id = df.id
+                          and dfp.archived is not true
+                        order by dfp.display_order) params), '[]') AS "companyFunctionParams"
+    from flow.process_step_event_action_company_function psacf
+           inner join flow.company_function cf on cf.id = psacf.company_function_id
+           inner join flow.db_function df on df.id = cf.db_function_id
+           inner join flow.project_process_step_event ppse on ppse.id = :ppsEventId
+           inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+    where
+        psacf.process_step_event_action_id = :id and
+      psacf.archived is not true
+    order by
+      psacf.display_order,
+      cf.company_function_name
+]]></processStepEvent.getChildFunctionsByPpsEventId>
 
   <processStepEvent.archiveOldLogic><![CDATA[
     update flow.process_step_event_logic

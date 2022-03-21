@@ -159,6 +159,183 @@
               <!--                     @click="saveEventAction(action)"-->
               <!--              >Save Action</v-btn>-->
 
+              <div>
+                <v-divider></v-divider>
+                <v-toolbar flat color="transparent">
+                  <v-toolbar-title class="app-title">
+                    Child Functions
+                  </v-toolbar-title>
+                  <v-spacer></v-spacer>
+                  <v-toolbar-items>
+                    <v-btn text v-if="!addChildFunction && userCanAdd"
+                           @click="[addChildFunction = true, loadChildFunctions(action.id)]">
+                      <v-icon>add</v-icon>
+                    </v-btn>
+                  </v-toolbar-items>
+                </v-toolbar>
+                <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                        v-if="addChildFunction">
+                  <h3>Add Child Function</h3>
+                  <v-autocomplete v-model="selectedChildFunction"
+                                  :items="childFunctions"
+                                  label="Function"
+                                  item-text="companyFunctionName"
+                                  return-object
+                                  attach
+                                  @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
+                  ></v-autocomplete>
+                  <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
+                    <h5 class="text-left">Dynamic Function Parameters</h5>
+                    <v-card flat color="transparent">
+                      <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
+                        <v-text-field
+                          v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                          type="number"
+                          :key="index"
+                          placeholder="Enter a dynamic value (number)"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                          v-else
+                          :key="index"
+                          placeholder="Enter a dynamic value"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
+                      </div>
+                    </v-card>
+                  </div>
+                  <div class="mt-3">
+                    <v-btn :disabled="!selectedChildFunction.id"
+                           @click="saveFunctionToAction(action)">
+                      <v-icon>save</v-icon>
+                      Save
+                    </v-btn>
+                    <v-btn class="ml-3" @click="addChildFunction = false">
+                      <v-icon>remove</v-icon>
+                      Cancel
+                    </v-btn>
+                  </div>
+                </v-card>
+              </div>
+              <v-row justify="center" class="pl-3 pr-3"
+                     v-if="action.childFunctions && action.childFunctions.length > 0">
+                <v-col cols="12" class="pt-0">
+                  <v-list v-for="(cp, index) in filterBy(action.childFunctions, false, 'archived')"
+                          :key="index"
+                          :class="{ 'shaded-row': index % 2 }">
+                    <v-list-item>
+                      <v-list-item-content class="text-left">
+                        <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
+                        <div class="mt-2"
+                             v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
+                          <h5 class="text-left">Dynamic Function Parameters</h5>
+                          <v-card flat color="transparent">
+                            <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
+                              <v-text-field
+                                v-if="fp.dataTypeId === 1"
+                                placeholder="Enter a date"
+                                type="date"
+                                :readonly="!cp.edit || !userCanEdit"
+                                :disabled="!cp.edit || !userCanEdit"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
+                              <v-text-field
+                                v-if="fp.dataTypeId === 2"
+                                placeholder="Enter a timestamp"
+                                :readonly="!cp.edit || !userCanEdit"
+                                :disabled="!cp.edit || !userCanEdit"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
+                              <v-text-field
+                                v-if="fp.dataTypeId === 3"
+                                :readonly="!cp.edit || !userCanEdit"
+                                :disabled="!cp.edit || !userCanEdit"
+                                placeholder="Enter a boolean"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
+                              <v-text-field
+                                v-if="fp.dataTypeId === 4"
+                                :readonly="!cp.edit || !userCanEdit"
+                                :disabled="!cp.edit || !userCanEdit"
+                                placeholder="Enter a number"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
+                              <v-text-field
+                                v-if="fp.dataTypeId === 6"
+                                :readonly="!cp.edit || !userCanEdit"
+                                :disabled="!cp.edit || !userCanEdit"
+                                placeholder="Enter an integer"
+                                type="number"
+                                step="1"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
+                              <v-text-field
+                                v-else
+                                :readonly="!cp.edit || !userCanEdit"
+                                :disabled="!cp.edit || !userCanEdit"
+                                placeholder="Enter a dynamic value"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
+                            </div>
+                          </v-card>
+                        </div>
+                        <v-list-item-subtitle>
+                          <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
+                                 @click="updateChildFunction(action.id, cp)">
+                            Save
+                          </v-btn>
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                      <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
+                             @click="cp.edit = !cp.edit">
+                        <v-icon v-if="cp.edit">remove</v-icon>
+                        <v-icon v-else>edit</v-icon>
+                      </v-btn>
+                      <v-dialog
+                        v-if="userCanEdit"
+                        v-model="cp.deleteConfirm"
+                        width="500">
+                        <template v-slot:activator="{ on }">
+                          <v-list-item-action class="clickable" v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-list-item-action>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                            class="text-h5 grey lighten-2"
+                            primary-title
+                          >
+                            Confirm
+                          </v-card-title>
+
+                          <v-card-text>
+                            Are you sure you want to delete <strong>{{ cp.functionName }}</strong> from <strong>{{
+                              action.actionName
+                            }}</strong>?
+                          </v-card-text>
+
+                          <v-divider></v-divider>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                              @click="cp.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                              color="primaryCustom"
+                              text
+                              @click="[cp.archived = true, deleteChildFunctionFromAction(action.id, cp.id)]">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </v-list-item>
+                  </v-list>
+                </v-col>
+              </v-row>
+              <v-divider></v-divider>
               <v-toolbar flat dense color="transparent">
                 <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                 <v-spacer></v-spacer>
@@ -331,7 +508,7 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getSnackbar, logError
+  getSnackbar, logError, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessStepRequirements";
@@ -381,6 +558,11 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
         companyEventStatuses: [],
         processStepStatuses: [],
         newEventStatuses: [],
+        addChildFunction: false,
+        selectedChildFunction: {},
+        childFunctions: [],
+        selectedChildRequirementParamDynamicValues: [],
+        selectedActionIndex: null,
         selectedEvent: {
           processStepEventActions: []
         },
@@ -526,6 +708,8 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
           if(!action.id) {
             this.addNewEventAction = false
             this.newEventAction = {}
+            //pre-populate this value so they can save some later
+            data.childFunctions = []
             this.selectedEvent.processStepEventActions.push(data)
           } else {
             action.eventStatusType = data.eventStatusType
@@ -690,7 +874,84 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
         return action.customFields.filter(cf => {
           return cf.dataTypeId !== 12
         })
-      }
+      },
+      async loadFunctionParams(dbFunctionId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+          this.selectedChildRequirementParamDynamicValues = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveFunctionToAction(action) {
+        console.log('save fn to action here')
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/addChildFunctionToAction`, {
+            companyFunctionId: this.selectedChildFunction.id,
+            displayOrder: 0,
+            actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
+          })
+          action.childFunctions.push(data)
+          this.selectedChildFunction = {}
+          this.selectedChildRequirementParamDynamicValues = []
+          this.addChildFunction = false
+          this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async loadChildFunctions() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/function/action/6`)
+          this.childFunctions = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateChildFunction(actionId, childFunction) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {status} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/updateActionChildFunction`, childFunction)
+          this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteChildFunctionFromAction(actionId, id) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {status} = await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/deleteChildFunction/${id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
   }
 
 }

@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
@@ -46,11 +47,15 @@ public class CompanyFunctionService {
     return results;
   }
 
-  public List<CompanyFunction> getCompanyFunctionsByType(Long typeId) {
+  public List<CompanyFunction> getCompanyFunctionsByType(Long typeId, Long objectTypeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("typeId", typeId);
+    params.put("processStepActionable", objectTypeId.equals(ObjectType.PROCESS_STEP.id));
+    params.put("eventActionable", objectTypeId.equals(ObjectType.EVENT.id));
+    //event = 6, ps = 4
+
     List<CompanyFunction> results = sqlCache.query("companyFunction.getFunctionsByType", params, CompanyFunction.class);
     return results;
   }

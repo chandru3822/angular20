@@ -30,14 +30,15 @@ public class CompanyFunctionController {
     return companyFunctionService.getCompanyFunctions();
   }
 
-  @GetMapping(value = "/action", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyFunction> getActionCompanyFunctions () {
-    return companyFunctionService.getCompanyFunctionsByType(FunctionType.ACTION.id);
+  @GetMapping(value = "/action/{objectTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunction> getActionCompanyFunctions (@PathVariable Long objectTypeId) {
+    return companyFunctionService.getCompanyFunctionsByType(FunctionType.ACTION.id, objectTypeId);
   }
 
   @GetMapping(value = "/requirement", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyFunction> getRequirementCompanyFunctions () {
-    return companyFunctionService.getCompanyFunctionsByType(FunctionType.REQUIREMENT.id);
+    //for now requirement function only exist for PS, maybe we will add for events later
+    return companyFunctionService.getCompanyFunctionsByType(FunctionType.REQUIREMENT.id, 4L);
   }
 
   @DeleteMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_VALUE)

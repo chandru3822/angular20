@@ -1,11 +1,15 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -24,13 +28,15 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,10 +49,13 @@ public class ProjectProcessStepEventService {
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
+  private final ProcessStepEventService processStepEventService;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
   private final AttachmentService attachmentService;
   private final AmazonS3 s3;
   private final ObjectMapper om;
+  private final GoodleapService goodleapService;
+  private final AuroraProxy auroraService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -243,7 +252,7 @@ public class ProjectProcessStepEventService {
     return result;
   }
 
-  public ResponseEntity<Object> performStepEventAction(Long ppsId, Long eventId, Long actionId) throws Exception {
+  public ResponseEntity<Object> performStepEventAction(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
     /*
      **High level pseudo logic:**
 
@@ -254,7 +263,7 @@ public class ProjectProcessStepEventService {
      */
 
     //get the action so the frontend doesn't have to pass in the big ass object
-    Optional<ProcessStepEventAction> psEventAction = getPpsEventAction(eventId, actionId);
+    Optional<ProcessStepEventAction> psEventAction = getPpsEventAction(ppsEventId, actionId);
 
     if (psEventAction.isPresent()) {
       ProcessStepEventAction processStepEventAction = psEventAction.get();
@@ -265,13 +274,14 @@ public class ProjectProcessStepEventService {
         .collect(Collectors.toList());
 
       HashMap<String, Object> eventParams = new HashMap<>();
-      eventParams.put("id", eventId);
+      eventParams.put("id", ppsEventId);
       Optional<ProjectProcessStepEvent> event = sqlCache.get("projectProcessStepEvent.getBasic", eventParams, ProjectProcessStepEvent.class);
 
       if (event.isPresent()) {
         List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(event.get().getProjectProcessStepId(), requirementIds, true);
 
         boolean canPerformAction = canPerformEventAction(event.get(), processStepEventAction, requirements);
+        var childFunctionsRan = false;
 
         //double check if action can be run, if so, run it, otherwise throw an error
         if (canPerformAction) {
@@ -283,9 +293,9 @@ public class ProjectProcessStepEventService {
           params.put("actionName", processStepEventAction.getActionName());
           params.put("userId", currentUser.getId());
           params.put("ppsId", ppsId);
-          params.put("projectProcessStepEventId", eventId);
+          params.put("projectProcessStepEventId", ppsEventId);
 
-          Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(eventId);
+          Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(ppsEventId);
           if (ppse.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
           } else {
@@ -296,6 +306,7 @@ public class ProjectProcessStepEventService {
           }
 
           ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+          boolean doAutoTriggers = false;
           //check if pps is already in the desired status, then update the pps status to the desired status if not already in it
           if (null != processStepEventAction.getCompanyProcessStepStatusTypeId() && !pps.getCompanyProcessStepStatusTypeId().equals(processStepEventAction.getCompanyProcessStepStatusTypeId())) {
             //do some validation here:
@@ -315,8 +326,15 @@ public class ProjectProcessStepEventService {
             //if the new status was a root ACTIVE status then run pps auto triggers
             //only run if the referring project process step is active
             if (pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
-              projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+              doAutoTriggers = true;
             }
+          }
+
+          childFunctionsRan = performChildFunctions(processStepEventAction.getId(), ppsEventId, pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
+
+          //moved this out of the status check section so we could do it after child functions have been run
+          if(doAutoTriggers || childFunctionsRan) {
+            projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails());
           }
 
           //if we made it to here then insert a record of having run the event
@@ -325,7 +343,7 @@ public class ProjectProcessStepEventService {
           params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
           sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
 
-          return ResponseEntity.ok(getPpsEvent(eventId));
+          return ResponseEntity.ok(getPpsEvent(ppsEventId));
         } else {
           throw new ResponseStatusException(HttpStatus.PRECONDITION_FAILED, "The requirements for this event action were not met.", new Exception());
         }
@@ -336,6 +354,52 @@ public class ProjectProcessStepEventService {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This action could not be found.", new Exception());
     }
 
+  }
+
+  public Boolean performChildFunctions(Long actionId, Long ppsEventId, Long ppsId, Long processStepId, Long projectId) {
+    var shouldRunAutoTriggers = false;
+    List<ProcessStepEventActionChildFunction> childFunctions = processStepEventService.getChildFunctionsWithParamValues(actionId, ppsEventId);
+    childFunctions.forEach(childFunction -> {
+      try {
+        if (childFunction.getRunInBackend()) {
+          User user = securityService.getCurrentUser();
+
+          final String originalFuncName = childFunction.getFunctionName();
+          final int dot = originalFuncName.indexOf('.');
+          final String functionAbbreviation = originalFuncName.substring(0, dot);
+          final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+
+          Map<String, Object> systemValues = new HashMap<>();
+          systemValues.put("processStepId", processStepId);
+          systemValues.put("ppsId", ppsId);
+          systemValues.put("projectId", projectId);
+          systemValues.put("userId", user.getId());
+          systemValues.put("ppsEventId", ppsEventId);
+
+          if (functionAbbreviation.equals("brs")) {
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService);
+            Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
+            method.invoke(functionClass, childFunction, systemValues);
+          } else {
+            // @TODO: Add company IDs here during onboarding
+          }
+        } else {
+          String params = String.join(", ", projectProcessStepService.prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, ppsEventId));
+          String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
+          sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+        }
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getCause().getMessage()));
+      } catch (Exception e) {
+        throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getMessage()));
+      }
+    });
+
+    if (!childFunctions.isEmpty()) {
+      shouldRunAutoTriggers = true;
+    }
+
+    return shouldRunAutoTriggers;
   }
 
   public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {

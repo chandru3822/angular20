@@ -84,8 +84,8 @@
   ]]></dbFunction.getOne>
 
   <dbFunction.insertFunction><![CDATA[
-     insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, run_in_backend)
-     values (:functionName, :returnDataTypeId, :dbFunctionTypeId, :displayName, :runInBackend)
+     insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, run_in_backend, process_step_actionable, event_actionable)
+     values (:functionName, :returnDataTypeId, :dbFunctionTypeId, :displayName, :runInBackend, :processStepActionable, :eventActionable)
   ]]></dbFunction.insertFunction>
 
   <dbFunction.insertParam><![CDATA[

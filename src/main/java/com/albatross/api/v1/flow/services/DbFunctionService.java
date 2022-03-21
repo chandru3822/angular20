@@ -81,6 +81,8 @@ public class DbFunctionService {
       dbFunction.setRunInBackend(false);
     }
     params.put("runInBackend", dbFunction.getRunInBackend() != null && dbFunction.getRunInBackend());
+    params.put("processStepActionable", dbFunction.getProcessStepActionable() != null && dbFunction.getProcessStepActionable());
+    params.put("eventActionable", dbFunction.getEventActionable() != null && dbFunction.getEventActionable());
 
     Long id = sqlCache.updateReturningId("dbFunction.insertFunction", params, "id").longValue();
     return getDbFunction(id);

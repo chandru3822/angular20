@@ -338,8 +338,8 @@
   ]]></processStepAction.updateActionChildFunction>
 
   <processStepAction.insertActionParamDynamicValue><![CDATA[
-    insert into flow.action_param_dynamic_value (db_function_param_id, process_step_action_company_function_id, dynamic_value, created_by_id, date_created, modified_by_id, date_modified)
-    values (:dbFunctionParamId, :processStepActionCompanyFunctionId, :dynamicValue, :createdById, now(), :createdById, now());
+    insert into flow.action_param_dynamic_value (db_function_param_id, process_step_action_company_function_id, dynamic_value, created_by_id, date_created, modified_by_id, date_modified, process_step_event_action_company_function_id)
+    values (:dbFunctionParamId, :processStepActionCompanyFunctionId, :dynamicValue, :createdById, now(), :createdById, now(), :processStepEventActionCompanyFunctionId);
   ]]></processStepAction.insertActionParamDynamicValue>
 
   <processStepAction.updateActionParamDynamicValue><![CDATA[
@@ -362,7 +362,7 @@ select
   cf.company_function_name as "companyFunctionName",
   df.function_name as "functionName",
   df.run_in_backend as "runInBackend",
-  p.id as "projectId",
+  pps.project_id as "projectId",
   coalesce((
     SELECT array_to_json(array_agg(row_to_json(params)))
     FROM (
@@ -408,7 +408,6 @@ from flow.process_step_action_company_function psacf
 inner join flow.company_function cf on cf.id = psacf.company_function_id
 inner join flow.db_function df on df.id = cf.db_function_id
 inner join flow.project_process_step pps on pps.id = :projectProcessStepId
-inner join flow.project p on p.id = pps.project_id
 where
   psacf.process_step_action_id = :id and
   psacf.archived is not true

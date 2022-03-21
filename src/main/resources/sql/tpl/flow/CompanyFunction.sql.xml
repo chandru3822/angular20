@@ -7,6 +7,7 @@
         inner join flow.db_function df on df.id = cf.db_function_id
       where cf.company_id = :companyId
         and cf.archived is not true
+        and db.archived is not true
       order by cf.company_function_name
   ]]></companyFunction.getFunctions>
 
@@ -18,7 +19,10 @@
         inner join flow.db_function df on df.id = cf.db_function_id
       where cf.company_id = :companyId
         and cf.archived is not true
+        and df.archived is not true
         and df.db_function_type_id = :typeId
+        and case when :eventActionable::boolean then df.event_actionable = :eventActionable
+             when :processStepActionable::boolean then df.process_step_actionable = :processStepActionable else true end
       order by cf.company_function_name
   ]]></companyFunction.getFunctionsByType>
 

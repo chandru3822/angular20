@@ -468,6 +468,7 @@
                                     :items="childFunctions"
                                     label="Function"
                                     item-text="companyFunctionName"
+                                    item-value="id"
                                     return-object
                                     attach
                                     @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
@@ -988,7 +989,7 @@ export default {
     async loadChildFunctions() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/function/action`)
+        const {data} = await getRequest(`/function/action/4`)
         this.childFunctions = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

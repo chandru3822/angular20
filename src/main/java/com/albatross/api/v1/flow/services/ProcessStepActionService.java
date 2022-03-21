@@ -271,7 +271,7 @@ public class ProcessStepActionService {
 
     Long id = sqlCache.updateReturningId("processStepAction.addChildFunctionToAction", params, "id").longValue();
 
-    handleDynamicValueParams(child.getActionParamDynamicValues(), id);
+    handleDynamicValueParams(child.getActionParamDynamicValues(), id, null);
 
     return getActionChildFunction(id);
   }
@@ -302,10 +302,10 @@ public class ProcessStepActionService {
     params.put("displayOrder", child.getDisplayOrder());
     sqlCache.update("processStepAction.updateActionChildFunction", params);
 
-    handleDynamicValueParams(child.getActionParamDynamicValues(), child.getId());
+    handleDynamicValueParams(child.getActionParamDynamicValues(), child.getId(), null);
   }
 
-  public void handleDynamicValueParams(List<ActionParamDynamicValue> params, Long processStepActionCompanyFunctionId) {
+  public void handleDynamicValueParams(List<ActionParamDynamicValue> params, Long processStepActionCompanyFunctionId, Long processStepEventActionCompanyFunctionId) {
     if(!params.isEmpty()) {
       User currentUser = securityService.getCurrentUser();
 
@@ -313,6 +313,7 @@ public class ProcessStepActionService {
         HashMap<String, Object> dynamicParams = new HashMap<>();
         dynamicParams.put("dbFunctionParamId", p.getDbFunctionParamId());
         dynamicParams.put("processStepActionCompanyFunctionId", processStepActionCompanyFunctionId);
+        dynamicParams.put("processStepEventActionCompanyFunctionId", processStepEventActionCompanyFunctionId);
         dynamicParams.put("dynamicValue", p.getDynamicValue());
 
         if(null != p.getId()){

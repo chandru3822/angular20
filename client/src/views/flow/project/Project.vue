@@ -275,6 +275,7 @@ export default {
       projectLoading: true,
       projectId: parseInt(this.$route.params.projectId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
     }
   },
@@ -352,14 +353,14 @@ export default {
       }
     },
     projectStatusIsReadOnly() {
-      if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
+      if (this.userIsAdmin || this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.statusReadOnly
       }
     },
     projectOwnerFieldIsReadOnly() {
-      if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
+      if (this.userIsAdmin || this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.ownerReadOnly
