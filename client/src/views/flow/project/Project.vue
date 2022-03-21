@@ -1,7 +1,9 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <v-dialog width="500" v-model="showEditProjectModal" content-class="square-card">
+    <v-dialog width="500"
+              v-if="project && project.id"
+              v-model="showEditProjectModal" content-class="square-card">
       <v-card class="px-6 py-4 square-card">
         <v-form ref="projectEditForm">
           <v-card-title
