@@ -20,7 +20,9 @@ select pd.closer_name                 as owner_name,
        pps.process_step_id,
        coalesce(ppscfv2.timestamp_value, ppsea.date_created) as checked_in_time,
        ppscfv1.int_value              as closer_appt_outcome_int_value,
-       pd.closer_appointment_start
+       pd.closer_appointment_start,
+       ppse.id as project_process_step_event_id,
+       ppse.project_process_step_id
 from brs.project_details pd
        inner join flow.user_position up on up.id = pd.closer_user_position_id
        inner join flow.org o on o.id = up.org_id

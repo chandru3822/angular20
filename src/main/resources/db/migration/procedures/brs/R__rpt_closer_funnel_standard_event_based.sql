@@ -85,8 +85,7 @@ BEGIN
 
            from brs.funnel f
                   cross join project_data pd
-           where f.use_project_details is false
-             and f.archived is false
+           where f.archived is false
              and f.funnel_type_id = 1
              and case
              -- 24 = Non-dispositioned appointments
@@ -135,7 +134,6 @@ BEGIN
     from funnel_stats fs
            right outer join brs.funnel f on f.id = fs.id
     where f.archived is false
-      and f.use_project_details is false
       and f.funnel_type_id = 1;
 
 
