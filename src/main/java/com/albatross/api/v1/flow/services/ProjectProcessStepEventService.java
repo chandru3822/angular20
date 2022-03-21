@@ -337,6 +337,18 @@ public class ProjectProcessStepEventService {
             projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails());
           }
 
+          //if the pps status was updated (or marked to be updated if the actual status didn't change)
+          if (processStepEventAction.getCompanyProcessStepStatusTypeId() != null) {
+            //run auto triggers for PPSs which use the new PPS status
+            List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
+            for(ProjectProcessStep step : steps) {
+              //only run if the referring PPS is active and not the parent PPS
+              if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
+                projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+              }
+            }
+          }
+
           //if we made it to here then insert a record of having run the event
           params.put("processStepEventActionId", processStepEventAction.getId());
           params.put("createdById", currentUser.getId());
