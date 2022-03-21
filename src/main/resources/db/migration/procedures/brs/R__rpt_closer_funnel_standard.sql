@@ -15,6 +15,7 @@ BEGIN
                       select rpt.id,
                              rpt.name,
                              rpt.display_order,
+                             rpt.funnel_type_id,
                              rpt.today_count,
                              rpt.checked_in_today_count,
                              rpt.week_to_date_count,
@@ -67,6 +68,7 @@ BEGIN
                         select f.id,
                                f.name,
                                f.display_order,
+                               f.funnel_type_id,
                                (select count(1)
                                 from project_data
                                 where
