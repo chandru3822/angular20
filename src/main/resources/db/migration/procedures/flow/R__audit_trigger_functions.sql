@@ -467,11 +467,11 @@ BEGIN
     insert into flow.project_process_step_event_audit(project_process_step_event_id, project_process_step_id,
                                                       process_step_event_id, resource_id, company_event_status_type_id,
                                                       start_time, end_time, date_created, date_modified,
-                                                      created_by_id, modified_by_id, archived)
+                                                      created_by_id, modified_by_id, archived,scheduled_date,cancelled_date,completed_date)
     values(new.id, new.project_process_step_id,
            new.process_step_event_id, new.resource_id, new.company_event_status_type_id,
            new.start_time, new.end_time, new.date_created, new.date_modified,
-           new.created_by_id, new.modified_by_id, new.archived);
+           new.created_by_id, new.modified_by_id, new.archived,new.scheduled_date,new.cancelled_date,new.completed_date);
 
 
   RETURN NULL;

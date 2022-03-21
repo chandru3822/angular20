@@ -458,21 +458,14 @@ CREATE OR REPLACE FUNCTION flow.update_project_details_process_steps_from_events
 $body$
 
 declare
-  v_project_id             integer;
-  v_sql                    character varying;
-  v_value                  character varying;
-  v_record                 record;
-  v_timestamp_value        timestamp;
-  v_project_id1            integer;
-  v_field_name             varchar;
-  v_parent_custom_field_id integer;
-  v_project_id2            integer;
-  v_missed_id              integer;
-  v_missed                 timestamp;
-  v_pitched_id             integer;
-  v_pitched                timestamp;
-  v_not_either_id          integer;
-  v_not_either             timestamp;
+  v_project_id                 integer;
+  v_sql                        character varying;
+  v_value                      character varying;
+  v_record                     record;
+  v_project_id1                integer;
+  v_field_name                 varchar;
+  v_parent_custom_field_id     integer;
+  v_project_id2                integer;
 BEGIN
 
   select pps.project_id
@@ -500,126 +493,8 @@ BEGIN
 
 
   if v_parent_custom_field_id = 10541 then
+    perform brs.update_appointment_data(new.project_process_step_event_id,v_project_id1);
 
-    select start_time
-    into v_timestamp_value
-    from flow.project_process_step_event ppse3
-           inner join flow.project_process_step_event_custom_field_value ppsecfv
-                      on ppse3.id = ppsecfv.project_process_step_event_id
-    where ppse3.id = new.project_process_step_event_id;
-
-    if new.int_value is not null then
-      update brs.project_details
-      set first_appointment_id         = new.int_value,
-          first_appointment_id_ppse_id = new.project_process_step_event_id
-      where project_id = v_project_id1
-        and (first_appointment_id is null or
-             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.project_process_step_event_id));
-    end if;
-
-    if new.int_value in (2, 1139, 1140) and (TG_OP = 'INSERT') then
-
-      update brs.project_details
-      set setter_milestone_pay = coalesce(v_timestamp_value, now())
-      where project_id = v_project_id1
-        and setter_milestone_pay is null;
-
-      update brs.project_details
-      set first_appointment_pitched    = coalesce(v_timestamp_value, now()),
-          first_appointment_pitched_id = new.int_value
-      where project_id = v_project_id1
-        and first_appointment_pitched is null;
-
-    elsif new.int_value in (3) and (TG_OP = 'INSERT') then
-      update brs.project_details
-      set setter_milestone_pay = coalesce(v_timestamp_value, now())
-      where project_id = v_project_id1
-        and setter_milestone_pay is null;
-
-      update brs.project_details
-      set first_appointment_missed    = coalesce(v_timestamp_value, now()),
-          first_appointment_missed_id = new.int_value
-      where project_id = v_project_id1
-        and first_appointment_missed is null;
-
-    elseif new.int_value is not null and
-           new.int_value not in (2, 3, 1139, 1140) and (TG_OP = 'INSERT') then
-      update brs.project_details
-      set first_appointment_not_pitched_or_missed    =coalesce(v_timestamp_value, now()),
-          first_appointment_not_pitched_or_missed_id = new.int_value
-      where project_id = v_project_id1
-        and first_appointment_not_pitched_or_missed is null;
-
-    elsif (TG_OP = 'UPDATE') then
-      update brs.project_details
-      set first_appointment_not_pitched_or_missed    = null,
-          first_appointment_not_pitched_or_missed_id = null,
-          first_appointment_missed                   = null,
-          first_appointment_missed_id                = null,
-          first_appointment_pitched                  = null,
-          first_appointment_pitched_id               = null,
-          setter_milestone_pay                       = null
-      where project_id = v_project_id1;
-
-
-      select ppsecfv2.int_value, ppse2.start_time, min(ppse2.date_created)
-      into v_pitched_id,v_pitched
-      from flow.project_process_step_event ppse
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
-             inner join flow.project_process_step_event ppse2 on ppse2.project_process_step_id = pps1.id
-             inner join flow.project_process_step_event_custom_field_value ppsecfv2
-                        on ppse2.id = ppsecfv2.project_process_step_event_id
-                          and ppsecfv2.custom_field_group_assignment_id = 4
-      where ppse.id = new.project_process_step_event_id
-        and ppsecfv2.int_value in (2, 1139, 1140)
-      group by ppsecfv2.int_value, ppse2.start_time
-      limit 1;
-
-      select ppsecfv2.int_value, ppse2.start_time, min(ppse2.date_created)
-      into v_missed_id,v_missed
-      from flow.project_process_step_event ppse
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
-             inner join flow.project_process_step_event ppse2 on ppse2.project_process_step_id = pps1.id
-             inner join flow.project_process_step_event_custom_field_value ppsecfv2
-                        on ppse2.id = ppsecfv2.project_process_step_event_id
-                          and ppsecfv2.custom_field_group_assignment_id = 4
-      where ppse.id = new.project_process_step_event_id
-        and ppsecfv2.int_value in (3)
-      group by ppsecfv2.int_value, ppse2.start_time
-      limit 1;
-
-      select ppsecfv2.int_value, ppse2.start_time, min(ppse2.date_created)
-      into v_not_either_id,v_not_either
-      from flow.project_process_step_event ppse
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
-             inner join flow.project_process_step_event ppse2 on ppse2.project_process_step_id = pps1.id
-             inner join flow.project_process_step_event_custom_field_value ppsecfv2
-                        on ppse2.id = ppsecfv2.project_process_step_event_id
-                          and ppsecfv2.custom_field_group_assignment_id = 4
-      where ppse.id = new.project_process_step_event_id
-        and ppsecfv2.int_value not in (2, 3, 1139, 1140)
-      group by ppsecfv2.int_value, ppse2.start_time
-      limit 1;
-
-      update brs.project_details
-      set first_appointment_missed_id                = v_missed_id,
-          first_appointment_missed                   = v_missed,
-          first_appointment_pitched_id               = v_pitched_id,
-          first_appointment_pitched                  = v_pitched,
-          first_appointment_not_pitched_or_missed_id = v_not_either_id,
-          first_appointment_not_pitched_or_missed    = v_not_either
-      where project_id = v_project_id1;
-
-      if v_missed_id is not null or v_pitched_id is not null then
-        update brs.project_details
-        set setter_milestone_pay = coalesce(least(v_missed, v_pitched), now())
-        where project_id = v_project_id1;
-      end if;
-
-    end if;
   end if;
 
 
@@ -843,6 +718,7 @@ BEGIN
 
   end if;
 
+
   select count(1)
   into v_count
   from flow.project_process_step_event ppse2
@@ -959,12 +835,7 @@ BEGIN
     where up.id = new.resource_id;
 
     if new.start_time is not null then
-      update brs.project_details
-      set first_appointment         = new.start_time,
-          first_appointment_ppse_id = new.id
-      where project_id = v_project_id
-        and (first_appointment is null or
-             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
+      perform brs.update_appointment_data(new.id,v_project_id);
     end if;
 
     if new.resource_id is not null and old.resource_id is null then

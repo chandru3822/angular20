@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
@@ -53,7 +54,7 @@ public class AvailabilityService {
   private final ObjectMapper om;
   private final CommunicationService communicationService;
   private final ProjectService projectService;
-  private final ProjectProcessStepService projectProcessStepService;
+  private final ProjectProcessStepEventService projectProcessStepEventService;
   private final CustomFieldValueService customFieldValueService;
   private final UserPositionService userPositionService;
   private final MapboxApiService mapboxApiService;
@@ -624,7 +625,23 @@ public class AvailabilityService {
       if (!results.isEmpty()) {
         if (null != results.get(0) && results.get(0).getSuccess()) {
 
-          projectProcessStepService.performAutoTriggerActions(request.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+          //if successful then update custom field values before running the schedule action
+          if(null != request.getCustomFieldValues() && request.getCustomFieldValues().size() > 0) {
+            customFieldValueService.updateCustomFieldValues(request.getCustomFieldValues(), request.getProjectProcessStepEventId(), ObjectType.EVENT.textValue());
+          }
+
+          //then run manually run the schedule event action which is process_step_action_id = 1
+          //this will also run auto triggers if needed
+          projectProcessStepEventService.performStepEventAction(request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L);
+
+          //after the auto triggers have run then get the event
+          Optional<ProjectProcessStepEvent> ppsEvent = projectProcessStepEventService.getPpsEvent(request.getProjectProcessStepEventId());
+
+          ppsEvent.ifPresent(projectProcessStepEvent -> {
+            //set some properties that the front end will need in order to show accurate and updated info
+            results.get(0).setCompanyEventStatusTypeId(projectProcessStepEvent.getCompanyEventStatusTypeId());
+            results.get(0).setEventActions(projectProcessStepEvent.getEventActions());
+          });
 
           //on success send email to the closer
           String closerEmail = results.get(0).getUserEmail();
@@ -656,6 +673,7 @@ public class AvailabilityService {
 
             communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
           }
+
           return ResponseEntity.ok(results.get(0));
         } else {
           //todo: handle other types of errors from function

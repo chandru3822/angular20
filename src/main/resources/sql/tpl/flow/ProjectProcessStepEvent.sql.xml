@@ -33,6 +33,7 @@
 
   <projectProcessStepEvent.get><![CDATA[
     select ppse.*,
+           concat(creator.first_name, ' ', creator.last_name) as created_by,
            cest.event_status_type,
            cest.event_status_type_id,
            cpsst2.process_step_status_type_id as root_project_process_step_status_type_id,
@@ -194,6 +195,7 @@
            left join flow.user_position up on up.id = ppse.resource_id
            left join flow.user u on u.id = up.user_id
            left join flow.org o on o.id = ppse.resource_id
+           left join flow.user creator on creator.id = ppse.created_by_id
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
     where ppse.id = :id
