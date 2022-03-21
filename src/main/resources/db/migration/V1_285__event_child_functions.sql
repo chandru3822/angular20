@@ -106,5 +106,5 @@ where not exists (
   );
 
 
-alter table flow.project_process_step add column parent_project_process_step_event_id int references flow.project_process_step_event(id);
+alter table flow.project_process_step add column if not exists parent_project_process_step_event_id int references flow.project_process_step_event(id);
 drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer, integer);
