@@ -212,7 +212,9 @@ BEGIN
                     case when p_is_checked_in_column then checked_in_time end as checked_in_time,
                     appointment_date, -- appointment_date === ppse.start_time (from the view)
                     cancelled_date,
-                    appointment_outcome
+                    appointment_outcome,
+                    project_process_step_event_id,
+                    project_process_step_id
              from brs.closer_dashboard_drilldown_vw
              where ((appointment_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                -- if not whole company then filter by user
