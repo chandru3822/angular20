@@ -397,7 +397,7 @@
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
             scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
-            hiddenDays: [0],
+            hiddenDays: [],
             minTime: '02:00:00',
             maxTime: '23:00:00',
             height: 'parent',
