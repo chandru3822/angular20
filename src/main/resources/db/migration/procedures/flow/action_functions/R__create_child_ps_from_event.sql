@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION flow.create_child_ps_from_event(p_pps_event_id intege
                                                            p_process_step_id_to_create integer,
                                                            p_initial_cpsst_id integer, p_cancel_cpsst_id integer,
                                                            p_override_existing_active boolean)
-  RETURNS boolean
+  RETURNS integer
   LANGUAGE plpgsql AS
 $$
 DECLARE
@@ -15,7 +15,8 @@ DECLARE
   v_status_check_count      bigint;
   v_has_existing_active     boolean default true;
   v_canceled_is_canceled    boolean;
-  v_active_is_active    boolean;
+  v_active_is_active        boolean;
+  v_created_pps_id          integer;
 BEGIN
 
   --verify that the cancelled status is actually a cancelled status
@@ -69,17 +70,17 @@ BEGIN
   -- ensure the v_status_check_count is 2, must always be 2
   -- if overide then do it, if not override then check the existing count
   if (v_event_process_id = v_process_step_process_id AND v_status_check_count = 2 AND
-           v_canceled_is_canceled is true AND v_active_is_active is true AND (
-      p_override_existing_active is true OR (p_override_existing_active is false AND v_has_existing_active is false)
-    )) then
+      v_canceled_is_canceled is true AND v_active_is_active is true AND (
+          p_override_existing_active is true OR (p_override_existing_active is false AND v_has_existing_active is false)
+        )) then
     --do the insert of the pps
-    perform flow.insert_project_process_step(v_project_id, p_process_step_id_to_create, null, p_user_id,
-                                          v_company_id, null, p_initial_cpsst_id, p_cancel_cpsst_id, p_pps_event_id);
+    select insert_project_process_step into v_created_pps_id from flow.insert_project_process_step(v_project_id, p_process_step_id_to_create, null, p_user_id,
+                                             v_company_id, null, p_initial_cpsst_id, p_cancel_cpsst_id, p_pps_event_id);
 
-    return true;
+    return v_created_pps_id::int;
 
   else
-    return false;
+    return null::int;
   end if;
 
 
