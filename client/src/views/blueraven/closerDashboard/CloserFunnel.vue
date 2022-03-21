@@ -1241,11 +1241,11 @@ export default {
       this.officeModel = []
 
       this.repModel = [
-        {user_id: -1, name: 'All Reps', active: true}
+        {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
       ]
 
       this.repData = [
-        {user_id: -1, name: 'All Reps', active: true}
+        {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
       ]
 
       // this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
