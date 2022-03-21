@@ -295,7 +295,8 @@ public class CloserDashboardService {
   }
 
   public String funnelStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery;
+    sqlQuery = "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
@@ -313,17 +314,18 @@ public class CloserDashboardService {
     parameters.addValue("userIds", userIds);
     parameters.addValue("orgIds", orgIds);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
+    String sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, false)";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
   }
 
   public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_closer_funnel_appt_date_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
+    String sqlQuery = "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, true)";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
   }

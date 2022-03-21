@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appt_date_cohort_drilldown(p_start_date date, p_end_date date,
-                                                                            p_funnel_id integer, p_user_ids integer[],
+                                                                            p_funnel_id integer, p_user_position_ids integer[],
                                                                             p_org_ids integer[],
                                                                             p_is_checked_in_column boolean)
     RETURNS SETOF json
@@ -12,8 +12,8 @@ declare
 BEGIN
     --doing this so it is easier to change to allow parameterizing later if needed
     select 3 into v_company_id;
-    --If p_user_ids has a -1 that means get the funnel for the whole company
-    select -1 = any (p_user_ids) into v_whole_company;
+    --If p_user_position_ids has a -1 that means get the funnel for the whole company
+    select -1 = any (p_user_position_ids) into v_whole_company;
     if v_whole_company then
 
         --Total Planned Appointments
