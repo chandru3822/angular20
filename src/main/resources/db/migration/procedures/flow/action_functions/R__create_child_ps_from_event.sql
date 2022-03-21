@@ -1,4 +1,4 @@
-drop function if exists flow.create_child_ps_from_event(integer, integer);
+drop function if exists flow.create_child_ps_from_event(integer, integer, integer, integer, integer, boolean);
 CREATE OR REPLACE FUNCTION flow.create_child_ps_from_event(p_pps_event_id integer, p_user_id integer,
                                                            p_process_step_id_to_create integer,
                                                            p_initial_cpsst_id integer, p_cancel_cpsst_id integer,
