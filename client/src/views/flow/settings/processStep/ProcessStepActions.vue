@@ -1440,6 +1440,11 @@ export default {
   width: 100%;
 }
 
+.dynamic-field-container {
+  width: 80%;
+  display: inline-block;
+}
+
 .action-header-bar {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
