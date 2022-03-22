@@ -142,6 +142,7 @@ where pse.process_step_id = :processStepId
                                                                                   dfp.parameter_name as "parameterName",
                                                                                   dfp.data_type_id as "dataTypeId",
                                                                                   dfp.id as "dbFunctionParamId",
+                                                                                  dfp.description,
                                                                                   apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                                                   apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                                                                   apdv.dynamic_value as "dynamicValue"
@@ -412,6 +413,7 @@ where pse.process_step_id = :processStepId
                                     dfp.parameter_name as "parameterName",
                                     dfp.data_type_id as "dataTypeId",
                                     dfp.id as "dbFunctionParamId",
+                                    dfp.description,
                                     apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                     apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                     apdv.dynamic_value as "dynamicValue"
@@ -465,6 +467,7 @@ where pse.process_step_id = :processStepId
                           dfp.parameter_name as "parameterName",
                           dfp.data_type_id as "dataTypeId",
                           dfp.id as "dbFunctionParamId",
+                          dfp.description,
                           apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                           apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                           apdv.dynamic_value as "dynamicValue"

@@ -87,8 +87,9 @@
   <companyFunction.getFunctionDynamicParams><![CDATA[
     select dfp.id db_function_param_id,
            dfp.data_type_id,
-       dfp.parameter_name,
-       null as dynamic_value
+           dfp.parameter_name,
+           dfp.description,
+           null as dynamic_value
     from flow.db_function_param dfp
     where dfp.db_function_id = :dbFunctionId
       and dfp.archived is not true

@@ -477,19 +477,41 @@
                       <h5 class="text-left">Dynamic Function Parameters</h5>
                       <v-card flat color="transparent">
                         <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
-                          <v-text-field
-                            v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
-                            type="number"
-                            :key="index"
-                            placeholder="Enter a dynamic value (number)"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
-                          <v-text-field
-                            v-else
-                            :key="index"
-                            placeholder="Enter a dynamic value"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          <v-tooltip
+                            v-if="fp.description != null"
+                            content-class="full-opacity-tooltip"
+                            :max-width="300"
+                            top
+                          >
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-btn
+                                text
+                                class="d-inline-block"
+                                v-bind="attrs"
+                                v-on="on"
+                              >
+                                <v-icon>
+                                  mdi-information
+                                </v-icon>
+                              </v-btn>
+                            </template>
+                            <span>{{ fp.description }}</span>
+                          </v-tooltip>
+                          <div class="dynamic-field-container">
+                            <v-text-field
+                              v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                              type="number"
+                              :key="index"
+                              placeholder="Enter a dynamic value (number)"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"></v-text-field>
+                            <v-text-field
+                              v-else
+                              :key="index"
+                              placeholder="Enter a dynamic value"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"></v-text-field>
+                          </div>
                         </div>
                       </v-card>
                     </div>
@@ -520,51 +542,73 @@
                             <h5 class="text-left">Dynamic Function Parameters</h5>
                             <v-card flat color="transparent">
                               <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
-                                <v-text-field
-                                  v-if="fp.dataTypeId === 1"
-                                  placeholder="Enter a date"
-                                  type="date"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-if="fp.dataTypeId === 2"
-                                  placeholder="Enter a timestamp"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-if="fp.dataTypeId === 3"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter a boolean"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-if="fp.dataTypeId === 4"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter a number"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-if="fp.dataTypeId === 6"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter an integer"
-                                  type="number"
-                                  step="1"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-else
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter a dynamic value"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
+                                <v-tooltip
+                                  v-if="fp.description != null"
+                                  content-class="full-opacity-tooltip"
+                                  :max-width="300"
+                                  top
+                                >
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                      text
+                                      class="d-inline-block"
+                                      v-bind="attrs"
+                                      v-on="on"
+                                    >
+                                      <v-icon>
+                                        mdi-information
+                                      </v-icon>
+                                    </v-btn>
+                                  </template>
+                                  <span>{{ fp.description }}</span>
+                                </v-tooltip>
+                                <div class="dynamic-field-container">
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 1"
+                                    placeholder="Enter a date"
+                                    type="date"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 2"
+                                    placeholder="Enter a timestamp"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 3"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter a boolean"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 4"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter a number"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 6"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter an integer"
+                                    type="number"
+                                    step="1"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter a dynamic value"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                </div>
                               </div>
                             </v-card>
                           </div>
@@ -1144,7 +1188,10 @@ export default {
     async saveChildProcessCancelledStatus(action, cp) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
+        const {
+          data,
+          status
+        } = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
           existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
           initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
         })
@@ -1164,7 +1211,10 @@ export default {
     async saveProcessStepToAction(action) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
+        const {
+          data,
+          status
+        } = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
           processStepId: this.newChildProcessStep.processStepId,
           existingCompanyProcessStepStatusTypeId: this.newChildProcessStep.existingCompanyProcessStepStatusTypeId,
           initialCompanyProcessStepStatusTypeId: this.newChildProcessStep.initialCompanyProcessStepStatusTypeId,
@@ -1200,7 +1250,10 @@ export default {
     async saveFunctionToAction(action) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
+        const {
+          data,
+          status
+        } = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
           companyFunctionId: this.selectedChildFunction.id,
           displayOrder: 0,
           actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
@@ -1264,7 +1317,10 @@ export default {
     async saveLinkToAction(action) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
+        const {
+          data,
+          status
+        } = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
           linkId: this.selectedLink.id
         })
         action.processStepActionLinks.push(data)

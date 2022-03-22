@@ -25,11 +25,13 @@
           <v-btn class="white--text"
                  color="primaryButton"
                  @click="saveEventDetails(selectedEvent)"
-          >Save</v-btn>
+          >Save
+          </v-btn>
         </v-card>
       </v-col>
 
-      <ProcessStepWorkQueueTypes v-if="!eventLoading && selectedEvent.id" :event="selectedEvent"></ProcessStepWorkQueueTypes>
+      <ProcessStepWorkQueueTypes v-if="!eventLoading && selectedEvent.id"
+                                 :event="selectedEvent"></ProcessStepWorkQueueTypes>
 
       <ProcessStepRequirements :callback="populateRequirements" :event-requirements="true"></ProcessStepRequirements>
       <v-col cols="12" class="pt-0 px-0">
@@ -73,7 +75,8 @@
                  color="primaryButton"
                  @click="saveEventAction(newEventAction)"
                  :disabled="!newEventAction.actionName"
-          >Add Action</v-btn>
+          >Add Action
+          </v-btn>
         </v-card>
         <v-data-table
           v-if="!addNewEventAction"
@@ -188,19 +191,41 @@
                     <h5 class="text-left">Dynamic Function Parameters</h5>
                     <v-card flat color="transparent">
                       <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
-                        <v-text-field
-                          v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
-                          type="number"
-                          :key="index"
-                          placeholder="Enter a dynamic value (number)"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
-                        <v-text-field
-                          v-else
-                          :key="index"
-                          placeholder="Enter a dynamic value"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
+                        <v-tooltip
+                          v-if="fp.description != null"
+                          content-class="full-opacity-tooltip"
+                          :max-width="300"
+                          top
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn
+                              text
+                              class="d-inline-block"
+                              v-bind="attrs"
+                              v-on="on"
+                            >
+                              <v-icon>
+                                mdi-information
+                              </v-icon>
+                            </v-btn>
+                          </template>
+                          <span>{{ fp.description }}</span>
+                        </v-tooltip>
+                        <div class="dynamic-field-container">
+                          <v-text-field
+                            v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                            type="number"
+                            :key="index"
+                            placeholder="Enter a dynamic value (number)"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                          <v-text-field
+                            v-else
+                            :key="index"
+                            placeholder="Enter a dynamic value"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        </div>
                       </div>
                     </v-card>
                   </div>
@@ -231,51 +256,73 @@
                           <h5 class="text-left">Dynamic Function Parameters</h5>
                           <v-card flat color="transparent">
                             <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
-                              <v-text-field
-                                v-if="fp.dataTypeId === 1"
-                                placeholder="Enter a date"
-                                type="date"
-                                :readonly="!cp.edit || !userCanEdit"
-                                :disabled="!cp.edit || !userCanEdit"
-                                v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
-                              <v-text-field
-                                v-else-if="fp.dataTypeId === 2"
-                                placeholder="Enter a timestamp"
-                                :readonly="!cp.edit || !userCanEdit"
-                                :disabled="!cp.edit || !userCanEdit"
-                                v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
-                              <v-text-field
-                                v-else-if="fp.dataTypeId === 3"
-                                :readonly="!cp.edit || !userCanEdit"
-                                :disabled="!cp.edit || !userCanEdit"
-                                placeholder="Enter a boolean"
-                                v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
-                              <v-text-field
-                                v-else-if="fp.dataTypeId === 4"
-                                :readonly="!cp.edit || !userCanEdit"
-                                :disabled="!cp.edit || !userCanEdit"
-                                placeholder="Enter a number"
-                                v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
-                              <v-text-field
-                                v-else-if="fp.dataTypeId === 6"
-                                :readonly="!cp.edit || !userCanEdit"
-                                :disabled="!cp.edit || !userCanEdit"
-                                placeholder="Enter an integer"
-                                type="number"
-                                step="1"
-                                v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
-                              <v-text-field
-                                v-else
-                                :readonly="!cp.edit || !userCanEdit"
-                                :disabled="!cp.edit || !userCanEdit"
-                                placeholder="Enter a dynamic value"
-                                v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
+                              <v-tooltip
+                                v-if="fp.description != null"
+                                content-class="full-opacity-tooltip"
+                                :max-width="300"
+                                top
+                              >
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-btn
+                                    text
+                                    class="d-inline-block"
+                                    v-bind="attrs"
+                                    v-on="on"
+                                  >
+                                    <v-icon>
+                                      mdi-information
+                                    </v-icon>
+                                  </v-btn>
+                                </template>
+                                <span>{{ fp.description }}</span>
+                              </v-tooltip>
+                              <div class="dynamic-field-container">
+                                <v-text-field
+                                  v-if="fp.dataTypeId === 1"
+                                  placeholder="Enter a date"
+                                  type="date"
+                                  :readonly="!cp.edit || !userCanEdit"
+                                  :disabled="!cp.edit || !userCanEdit"
+                                  v-model="fp.dynamicValue"
+                                  :label="fp.parameterName"></v-text-field>
+                                <v-text-field
+                                  v-else-if="fp.dataTypeId === 2"
+                                  placeholder="Enter a timestamp"
+                                  :readonly="!cp.edit || !userCanEdit"
+                                  :disabled="!cp.edit || !userCanEdit"
+                                  v-model="fp.dynamicValue"
+                                  :label="fp.parameterName"></v-text-field>
+                                <v-text-field
+                                  v-else-if="fp.dataTypeId === 3"
+                                  :readonly="!cp.edit || !userCanEdit"
+                                  :disabled="!cp.edit || !userCanEdit"
+                                  placeholder="Enter a boolean"
+                                  v-model="fp.dynamicValue"
+                                  :label="fp.parameterName"></v-text-field>
+                                <v-text-field
+                                  v-else-if="fp.dataTypeId === 4"
+                                  :readonly="!cp.edit || !userCanEdit"
+                                  :disabled="!cp.edit || !userCanEdit"
+                                  placeholder="Enter a number"
+                                  v-model="fp.dynamicValue"
+                                  :label="fp.parameterName"></v-text-field>
+                                <v-text-field
+                                  v-else-if="fp.dataTypeId === 6"
+                                  :readonly="!cp.edit || !userCanEdit"
+                                  :disabled="!cp.edit || !userCanEdit"
+                                  placeholder="Enter an integer"
+                                  type="number"
+                                  step="1"
+                                  v-model="fp.dynamicValue"
+                                  :label="fp.parameterName"></v-text-field>
+                                <v-text-field
+                                  v-else
+                                  :readonly="!cp.edit || !userCanEdit"
+                                  :disabled="!cp.edit || !userCanEdit"
+                                  placeholder="Enter a dynamic value"
+                                  v-model="fp.dynamicValue"
+                                  :label="fp.parameterName"></v-text-field>
+                              </div>
                             </div>
                           </v-card>
                         </div>
@@ -392,7 +439,7 @@
               </div>
               <v-btn v-if="userCanEdit" class="mt-4 ml-3 mb-4"
                      :disabled="!action.actionName"
-                     @click="validateActionLogicString(action, true)" >
+                     @click="validateActionLogicString(action, true)">
                 <v-icon class="mr-2">save</v-icon>
                 Save Changes
               </v-btn>
@@ -419,7 +466,7 @@
 
                 <template #item="{ item, index }">
                   <tr :class="{'shaded-row': index % 2}">
-                    <td class="text-left"><strong>{{item.groupName}}:</strong> {{item.fieldName}}</td>
+                    <td class="text-left"><strong>{{ item.groupName }}:</strong> {{ item.fieldName }}</td>
                     <td class="text-center">
                       <v-checkbox type="checkbox" class="ml-2" v-model="item.required"
                                   :key="requiredKey"
@@ -443,9 +490,9 @@
                   <v-icon>drag_handle</v-icon>
                 </v-btn>
               </td>
-              <td class="text-left">{{action.actionName}}</td>
-              <td class="text-left">{{action.eventStatusType || 'N/A'}}</td>
-              <td class="text-left">{{action.processStepStatusType || 'N/A'}}</td>
+              <td class="text-left">{{ action.actionName }}</td>
+              <td class="text-left">{{ action.eventStatusType || 'N/A' }}</td>
+              <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
                   <v-btn text @click="[expanded = [action]]" v-if="!expanded.includes(action)">
@@ -517,329 +564,331 @@ import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 
-  export default {
-    name: 'ProcessStepEvent',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ProcessStepRequirements,
-      ProcessStepWorkQueueTypes
-    },
-    mounted() {
-      let table = document.querySelector('.event-actions-table tbody')
-      const _self = this
-      Sortable.create(table, {
-        handle: '.handle',
-        onEnd({newIndex, oldIndex}) {
-          const rowSelected = _self.selectedEvent?.processStepEventActions.splice(oldIndex, 1)[0]
-          _self.selectedEvent?.processStepEventActions.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.selectedEvent?.processStepEventActions)
+export default {
+  name: 'ProcessStepEvent',
+  mixins: [Vue2Filters.mixin],
+  components: {
+    ProcessStepRequirements,
+    ProcessStepWorkQueueTypes
+  },
+  mounted() {
+    let table = document.querySelector('.event-actions-table tbody')
+    const _self = this
+    Sortable.create(table, {
+      handle: '.handle',
+      onEnd({newIndex, oldIndex}) {
+        const rowSelected = _self.selectedEvent?.processStepEventActions.splice(oldIndex, 1)[0]
+        _self.selectedEvent?.processStepEventActions.splice(newIndex, 0, rowSelected)
+        let rowsClone = cloneDeep(_self.selectedEvent?.processStepEventActions)
 
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-            //update display order
-            r.displayOrder = idx
-            //save only rows that changed
-            if (save) {
-              let rows = _self.selectedEvent?.processStepEventActions
-              rows[idx].newDisplayOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
-        }
-      })
-    },
-    data() {
-      return {
-        snackbar: {},
-        companyEventStatuses: [],
-        processStepStatuses: [],
-        newEventStatuses: [],
-        addChildFunction: false,
-        selectedChildFunction: {},
-        childFunctions: [],
-        selectedChildRequirementParamDynamicValues: [],
-        selectedActionIndex: null,
-        selectedEvent: {
-          processStepEventActions: []
-        },
-        expanded: [],
-        eventLoading: true,
-        addNewEventAction: false,
-        newEventAction: {},
-        addRequiredField: false,
-        addOptionalField: false,
-        requiredKey: 0,
-        optionalKey: 0,
-        eventCustomFields: [],
-        requiredFieldCfga: null,
-        optionalFieldCfga: null,
-        actionHeaders: [
-          {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-          {text: 'Action Name', value: 'actionName', show: true},
-          {text: 'Change Event Status To', value: 'companyEventStatusType', show: true},
-          {text: 'Change Process Step Status To', value: 'companyProcessStepStatusType', show: true},
-          {text: null, value: 'icons', show: true}
-        ],
-        processStepId: this.$route.params.id,
-        eventId: parseInt(this.$route.params.eventId),
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        eventActionFieldHeaders: [
-          {text: 'Field', value: 'fieldName', show: true},
-          {text: 'Required', value: 'required', width: '75px', show: true},
-          {text: 'Optional', value: 'groupName', width: '75px', show: true},
-        ],
-        // actionLogic stuff
-        operationTypes: [],
-        actionLogicError: false,
-        actionLogicErrorMsg: '',
-        invalidTypeCombos: [
-          '1,2', // open and close paren next to each other
-          '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
-          '0,0', // two requirements right next to each other
-          '3,4', // AND OR next to each other
-          '1,3', // open paren then AND
-          '1,4', // open paren then OR
-          '5,2', // not then close paren
-          '5,3', // not then and
-          '5,4', // not then or
-          '3,3', // and and
-          '4,4', // or or
-          '5,5', // not not
-          '0,5', // requirement then not ...needs and/or in between
-        ],
-        //doing these as strings since the filtered list will be too
-        invalidFirsts: ['2', '3', '4'],
-        invalidLasts: ['1', '3', '4', '5']
-      }
-    },
-    computed: {},
-    async created() {
-      //get event details
-      this.getCompanyProcessStepStatuses()
-      await this.getEventDetails()
-      this.getAssignedEventStatusTypes()
-      this.getOperationTypes()
-    },
-    methods: {
-      //populate requirements so that events can use them any time they change from the requirements component
-      populateRequirements(reqs) {
-        this.selectedEvent.requirements = reqs
-      },
-      async getEventDetails() {
-        try {
-          this.eventLoading = true
-          const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.eventId}`)
-          this.selectedEvent = data
-          this.eventLoading = false
-        } catch (e) {
-          this.eventLoading = true
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.companyStatusesLoading = false
-        }
-      },
-      async getAssignedEventStatusTypes() {
-          try {
-            const {data} = await getRequest(`/event/${this.selectedEvent.eventId}/status`)
-            this.companyEventStatuses = data
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.companyStatusesLoading = false
-          }
-      },
-      async getCompanyProcessStepStatuses() {
-        try {
-          const {data} = await getCompanyAssignedToProcessStep(this.processStepId)
-          this.processStepStatuses = data
-        } catch (e) {
-          this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          logError(e)
-        }
-      },
-      filterEventActions() {
-        // return this.selectedEvent?.processStepEventActions.filter(e => {
-        //   return !e.archived
-        // })
-        return orderBy(this.selectedEvent?.processStepEventActions.filter(psea => { return !psea.archived}), [psea => psea.displayOrder])
-      },
-      async saveEventDetails(psEvent) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}`, psEvent)
-          this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
-          this.expanded = []
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteActionFromEvent(action) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}`)
-          action.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveEventAction(action) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action`, action)
-          if(!action.id) {
-            this.addNewEventAction = false
-            this.newEventAction = {}
-            //pre-populate this value so they can save some later
-            data.childFunctions = []
-            this.selectedEvent.processStepEventActions.push(data)
-          } else {
-            action.eventStatusType = data.eventStatusType
-            action.processStepStatusType = data.processStepStatusType
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      validateActionLogicString(item, saveChanges) {
-        // using 0 to represent a logic item using a requirement
-        // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
-
-        //filter the logic list to exclude any archived
-        let nonArchivedLogic = item.processStepEventLogicList?.filter(l => !l.archived)
-
-        //compare number of open vs closing paren (probably not a perfect check but catches a lot)
-        let countOpenParen = nonArchivedLogic?.filter(l => l.operationTypeId === 1)?.length
-        let countCloseParen = nonArchivedLogic?.filter(l => l.operationTypeId === 2)?.length
-
-        //get the type ids so we can loop through them and count parens as we go
-        let operationTypeIds = nonArchivedLogic?.map(l => l.operationTypeId ?? 0)
-        let openCount = 0, closeCount = 0, parenProblem = false
-
-        //this part checks the parens more closely based on the order they appear in
-        operationTypeIds?.forEach(id => {
-          if (id === 1) {
-            openCount++
-          } else if (id === 2) {
-            closeCount++
-          }
-          //after each id, check if close > open. if so, there is a problem
-          if (closeCount > openCount) {
-            parenProblem = true
+        let rowsToSave = []
+        rowsClone.forEach((r, idx) => {
+          //check if the row needs to be saved before updating display order
+          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+          //update display order
+          r.displayOrder = idx
+          //save only rows that changed
+          if (save) {
+            let rows = _self.selectedEvent?.processStepEventActions
+            rows[idx].newDisplayOrder = idx
+            rowsToSave.push(r)
           }
         })
-
-        // turn the operation type ids into a string we can compare to invalid sequences
-        let operationTypeString = operationTypeIds?.toString()
-
-        // get the first and last operations to compare to invalid first and last options
-        let firstOperationTypeId = operationTypeString?.charAt(0)
-        let lastOperationTypeId = operationTypeString?.slice(-1)
-
-        if (countOpenParen !== countCloseParen || parenProblem) {
-          this.actionLogicError = true
-          this.actionLogicErrorMsg = 'Logic is missing opening or closing parenthesis.'
-        } else if (this.invalidTypeCombos.some(v => operationTypeString?.includes(v))) {
-          this.actionLogicError = true
-          this.actionLogicErrorMsg = 'Logic is invalid.'
-        } else if (this.invalidFirsts.includes(firstOperationTypeId)) {
-          this.actionLogicError = true
-          this.actionLogicErrorMsg = 'Invalid first logic operation.'
-        } else if (this.invalidLasts.includes(lastOperationTypeId)) {
-          this.actionLogicError = true
-          this.actionLogicErrorMsg = 'Invalid last logic operation.'
+        _self.saveRowChanges(rowsToSave)
+      }
+    })
+  },
+  data() {
+    return {
+      snackbar: {},
+      companyEventStatuses: [],
+      processStepStatuses: [],
+      newEventStatuses: [],
+      addChildFunction: false,
+      selectedChildFunction: {},
+      childFunctions: [],
+      selectedChildRequirementParamDynamicValues: [],
+      selectedActionIndex: null,
+      selectedEvent: {
+        processStepEventActions: []
+      },
+      expanded: [],
+      eventLoading: true,
+      addNewEventAction: false,
+      newEventAction: {},
+      addRequiredField: false,
+      addOptionalField: false,
+      requiredKey: 0,
+      optionalKey: 0,
+      eventCustomFields: [],
+      requiredFieldCfga: null,
+      optionalFieldCfga: null,
+      actionHeaders: [
+        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+        {text: 'Action Name', value: 'actionName', show: true},
+        {text: 'Change Event Status To', value: 'companyEventStatusType', show: true},
+        {text: 'Change Process Step Status To', value: 'companyProcessStepStatusType', show: true},
+        {text: null, value: 'icons', show: true}
+      ],
+      processStepId: this.$route.params.id,
+      eventId: parseInt(this.$route.params.eventId),
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      eventActionFieldHeaders: [
+        {text: 'Field', value: 'fieldName', show: true},
+        {text: 'Required', value: 'required', width: '75px', show: true},
+        {text: 'Optional', value: 'groupName', width: '75px', show: true},
+      ],
+      // actionLogic stuff
+      operationTypes: [],
+      actionLogicError: false,
+      actionLogicErrorMsg: '',
+      invalidTypeCombos: [
+        '1,2', // open and close paren next to each other
+        '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
+        '0,0', // two requirements right next to each other
+        '3,4', // AND OR next to each other
+        '1,3', // open paren then AND
+        '1,4', // open paren then OR
+        '5,2', // not then close paren
+        '5,3', // not then and
+        '5,4', // not then or
+        '3,3', // and and
+        '4,4', // or or
+        '5,5', // not not
+        '0,5', // requirement then not ...needs and/or in between
+      ],
+      //doing these as strings since the filtered list will be too
+      invalidFirsts: ['2', '3', '4'],
+      invalidLasts: ['1', '3', '4', '5']
+    }
+  },
+  computed: {},
+  async created() {
+    //get event details
+    this.getCompanyProcessStepStatuses()
+    await this.getEventDetails()
+    this.getAssignedEventStatusTypes()
+    this.getOperationTypes()
+  },
+  methods: {
+    //populate requirements so that events can use them any time they change from the requirements component
+    populateRequirements(reqs) {
+      this.selectedEvent.requirements = reqs
+    },
+    async getEventDetails() {
+      try {
+        this.eventLoading = true
+        const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.eventId}`)
+        this.selectedEvent = data
+        this.eventLoading = false
+      } catch (e) {
+        this.eventLoading = true
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.companyStatusesLoading = false
+      }
+    },
+    async getAssignedEventStatusTypes() {
+      try {
+        const {data} = await getRequest(`/event/${this.selectedEvent.eventId}/status`)
+        this.companyEventStatuses = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.companyStatusesLoading = false
+      }
+    },
+    async getCompanyProcessStepStatuses() {
+      try {
+        const {data} = await getCompanyAssignedToProcessStep(this.processStepId)
+        this.processStepStatuses = data
+      } catch (e) {
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        logError(e)
+      }
+    },
+    filterEventActions() {
+      // return this.selectedEvent?.processStepEventActions.filter(e => {
+      //   return !e.archived
+      // })
+      return orderBy(this.selectedEvent?.processStepEventActions.filter(psea => {
+        return !psea.archived
+      }), [psea => psea.displayOrder])
+    },
+    async saveEventDetails(psEvent) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}`, psEvent)
+        this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
+        this.expanded = []
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteActionFromEvent(action) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}`)
+        action.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveEventAction(action) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action`, action)
+        if (!action.id) {
+          this.addNewEventAction = false
+          this.newEventAction = {}
+          //pre-populate this value so they can save some later
+          data.childFunctions = []
+          this.selectedEvent.processStepEventActions.push(data)
         } else {
-          this.actionLogicError = false
-          this.actionLogicErrorMsg = ''
-          if (saveChanges) {
-            this.updateAction(item)
-          }
-        }
-      },
-      async getOperationTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/operation`)
-          this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateAction(action) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          action.processStepEventLogicList = action.processStepEventLogicList.filter(l => {
-            return !l.archived
-          })
-
-          // build the list of psr's that need to be set to immutable  do that if the save is successful
-          const psrListToUpdate = action.processStepEventLogicList.filter(l => {
-            return l.processStepEventRequirementId && !l.processStepRequirementImmutable
-          })
-
-          const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action`, action)
-          // this forces the list to update the values displayed ... using action = data did not work
-          action.actionType = data.actionType
+          action.eventStatusType = data.eventStatusType
           action.processStepStatusType = data.processStepStatusType
-          action.processStepEventLogicList = data.processStepEventLogicList
-          action.triggerAutomatically = data.triggerAutomatically
-          this.actionExpanded = []
-
-          //update the necessary psr's to immutable
-          if (psrListToUpdate.length > 0) {
-            psrListToUpdate.forEach(psr => {
-              let match = this.selectedEvent.requirements.find(r => r.id === psr.processStepEventRequirementId)
-              match.immutable = true
-            })
-          }
-
-          this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async alterRequiredFlag(requiredChanged, item, actionId) {
-        //flip the flags as they change
-        if(requiredChanged && item.required) {
-          item.optional = false
-          this.optionalKey++
-        } else if (!requiredChanged && item.optional) {
-          item.required = false
-          this.requiredKey++
+        this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    validateActionLogicString(item, saveChanges) {
+      // using 0 to represent a logic item using a requirement
+      // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
+
+      //filter the logic list to exclude any archived
+      let nonArchivedLogic = item.processStepEventLogicList?.filter(l => !l.archived)
+
+      //compare number of open vs closing paren (probably not a perfect check but catches a lot)
+      let countOpenParen = nonArchivedLogic?.filter(l => l.operationTypeId === 1)?.length
+      let countCloseParen = nonArchivedLogic?.filter(l => l.operationTypeId === 2)?.length
+
+      //get the type ids so we can loop through them and count parens as we go
+      let operationTypeIds = nonArchivedLogic?.map(l => l.operationTypeId ?? 0)
+      let openCount = 0, closeCount = 0, parenProblem = false
+
+      //this part checks the parens more closely based on the order they appear in
+      operationTypeIds?.forEach(id => {
+        if (id === 1) {
+          openCount++
+        } else if (id === 2) {
+          closeCount++
         }
+        //after each id, check if close > open. if so, there is a problem
+        if (closeCount > openCount) {
+          parenProblem = true
+        }
+      })
+
+      // turn the operation type ids into a string we can compare to invalid sequences
+      let operationTypeString = operationTypeIds?.toString()
+
+      // get the first and last operations to compare to invalid first and last options
+      let firstOperationTypeId = operationTypeString?.charAt(0)
+      let lastOperationTypeId = operationTypeString?.slice(-1)
+
+      if (countOpenParen !== countCloseParen || parenProblem) {
+        this.actionLogicError = true
+        this.actionLogicErrorMsg = 'Logic is missing opening or closing parenthesis.'
+      } else if (this.invalidTypeCombos.some(v => operationTypeString?.includes(v))) {
+        this.actionLogicError = true
+        this.actionLogicErrorMsg = 'Logic is invalid.'
+      } else if (this.invalidFirsts.includes(firstOperationTypeId)) {
+        this.actionLogicError = true
+        this.actionLogicErrorMsg = 'Invalid first logic operation.'
+      } else if (this.invalidLasts.includes(lastOperationTypeId)) {
+        this.actionLogicError = true
+        this.actionLogicErrorMsg = 'Invalid last logic operation.'
+      } else {
+        this.actionLogicError = false
+        this.actionLogicErrorMsg = ''
+        if (saveChanges) {
+          this.updateAction(item)
+        }
+      }
+    },
+    async getOperationTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/operation`)
+        this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateAction(action) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        action.processStepEventLogicList = action.processStepEventLogicList.filter(l => {
+          return !l.archived
+        })
+
+        // build the list of psr's that need to be set to immutable  do that if the save is successful
+        const psrListToUpdate = action.processStepEventLogicList.filter(l => {
+          return l.processStepEventRequirementId && !l.processStepRequirementImmutable
+        })
+
+        const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action`, action)
+        // this forces the list to update the values displayed ... using action = data did not work
+        action.actionType = data.actionType
+        action.processStepStatusType = data.processStepStatusType
+        action.processStepEventLogicList = data.processStepEventLogicList
+        action.triggerAutomatically = data.triggerAutomatically
+        this.actionExpanded = []
+
+        //update the necessary psr's to immutable
+        if (psrListToUpdate.length > 0) {
+          psrListToUpdate.forEach(psr => {
+            let match = this.selectedEvent.requirements.find(r => r.id === psr.processStepEventRequirementId)
+            match.immutable = true
+          })
+        }
+
+        this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async alterRequiredFlag(requiredChanged, item, actionId) {
+      //flip the flags as they change
+      if (requiredChanged && item.required) {
+        item.optional = false
+        this.optionalKey++
+      } else if (!requiredChanged && item.optional) {
+        item.required = false
+        this.requiredKey++
+      }
 
       try {
         const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}`, item)
@@ -870,95 +919,109 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
         }
       }
     },
-      filteredCustomFields(action) {
-        return action.customFields.filter(cf => {
-          return cf.dataTypeId !== 12
+    filteredCustomFields(action) {
+      return action.customFields.filter(cf => {
+        return cf.dataTypeId !== 12
+      })
+    },
+    async loadFunctionParams(dbFunctionId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+        this.selectedChildRequirementParamDynamicValues = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveFunctionToAction(action) {
+      console.log('save fn to action here')
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {
+          data,
+          status
+        } = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/addChildFunctionToAction`, {
+          companyFunctionId: this.selectedChildFunction.id,
+          displayOrder: 0,
+          actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
         })
-      },
-      async loadFunctionParams(dbFunctionId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
-          this.selectedChildRequirementParamDynamicValues = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveFunctionToAction(action) {
-        console.log('save fn to action here')
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/addChildFunctionToAction`, {
-            companyFunctionId: this.selectedChildFunction.id,
-            displayOrder: 0,
-            actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
-          })
-          action.childFunctions.push(data)
-          this.selectedChildFunction = {}
-          this.selectedChildRequirementParamDynamicValues = []
-          this.addChildFunction = false
-          this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadChildFunctions() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/function/action/6`)
-          this.childFunctions = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateChildFunction(actionId, childFunction) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/updateActionChildFunction`, childFunction)
-          this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteChildFunctionFromAction(actionId, id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/deleteChildFunction/${id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+        action.childFunctions.push(data)
+        this.selectedChildFunction = {}
+        this.selectedChildRequirementParamDynamicValues = []
+        this.addChildFunction = false
+        this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadChildFunctions() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/function/action/6`)
+        this.childFunctions = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateChildFunction(actionId, childFunction) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/updateActionChildFunction`, childFunction)
+        this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteChildFunctionFromAction(actionId, id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/deleteChildFunction/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 
 }
 </script>
 
+<style lang="scss">
+
+
+</style>
+
 <style scoped lang="scss">
+
 .required-field-label {
   width: 100px;
+}
+
+.dynamic-field-container {
+  width: 80%;
+  display: inline-block;
 }
 </style>
