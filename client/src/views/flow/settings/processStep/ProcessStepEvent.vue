@@ -72,7 +72,7 @@
           <v-btn class="white--text"
                  color="primaryButton"
                  @click="saveEventAction(newEventAction)"
-                 :disabled="!newEventAction.actionName || (!newEventAction.companyEventStatusTypeId && !newEventAction.companyProcessStepStatusTypeId)"
+                 :disabled="!newEventAction.actionName"
           >Add Action</v-btn>
         </v-card>
         <v-data-table
@@ -391,7 +391,7 @@
                 <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
               </div>
               <v-btn v-if="userCanEdit" class="mt-4 ml-3 mb-4"
-                     :disabled="!action.actionName || (!action.companyProcessStepStatusTypeId && !action.companyEventStatusTypeId)"
+                     :disabled="!action.actionName"
                      @click="validateActionLogicString(action, true)" >
                 <v-icon class="mr-2">save</v-icon>
                 Save Changes
