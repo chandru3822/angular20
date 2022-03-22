@@ -15,7 +15,7 @@ public class ProcessStepEventActionChildFunction {
 
   private Long id, processStepEventActionId, companyFunctionId, createdById, modifiedById, displayOrder, projectId;
   private String companyFunctionName, functionName;
-  private Boolean archived, edit = false, runInBackend;
+  private Boolean archived, edit = false, runInBackend, createsPps;
   private List<ActionParamDynamicValue> actionParamDynamicValues;
   private List<CompanyFunctionParam> companyFunctionParams;
 }

@@ -456,6 +456,7 @@ where pse.process_step_id = :processStepId
       cf.company_function_name as "companyFunctionName",
       df.function_name as "functionName",
       df.run_in_backend as "runInBackend",
+      df.creates_pps as "createsPps",
       pps.project_id as "projectId",
       coalesce((
                  SELECT array_to_json(array_agg(row_to_json(params)))

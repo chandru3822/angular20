@@ -281,7 +281,6 @@ public class ProjectProcessStepEventService {
         List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(event.get().getProjectProcessStepId(), requirementIds, true);
 
         boolean canPerformAction = canPerformEventAction(event.get(), processStepEventAction, requirements);
-        var childFunctionsRan = false;
 
         //double check if action can be run, if so, run it, otherwise throw an error
         if (canPerformAction) {
@@ -330,7 +329,9 @@ public class ProjectProcessStepEventService {
             }
           }
 
-          childFunctionsRan = performChildFunctions(processStepEventAction.getId(), ppsEventId, pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
+          var childFunctionResults = performChildFunctions(processStepEventAction.getId(), ppsEventId, pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
+          var childFunctionsRan = Boolean.parseBoolean(childFunctionResults.get("didFunctionsRun").toString());
+          List<Long> newChildPpsIds = (List<Long>) childFunctionResults.get("newChildPpsIds");
 
           //moved this out of the status check section so we could do it after child functions have been run
           if(doAutoTriggers || childFunctionsRan) {
@@ -345,6 +346,23 @@ public class ProjectProcessStepEventService {
               //only run if the referring PPS is active and not the parent PPS
               if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
                 projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+              }
+            }
+          }
+
+          //if new PPSs were created by DB functions, run through autotriggers
+          if (childFunctionsRan && !newChildPpsIds.isEmpty()) {
+            for (Long newPpsId : newChildPpsIds) {
+              projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
+
+              //run auto triggers for PPSs which use the new PPS status
+              List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
+              for(ProjectProcessStep step : steps) {
+                //only run if the referring PPS is active and not the parent PPS (which shouldn't happen since these are newly created PPSs)
+                //it's assumed the DB function that created this new ID put it in an active status/category
+                if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
+                  projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
+                }
               }
             }
           }
@@ -368,8 +386,21 @@ public class ProjectProcessStepEventService {
 
   }
 
-  public Boolean performChildFunctions(Long actionId, Long ppsEventId, Long ppsId, Long processStepId, Long projectId) {
-    var shouldRunAutoTriggers = false;
+  /**
+   *
+   * @param actionId
+   * @param ppsEventId
+   * @param ppsId
+   * @param processStepId
+   * @param projectId
+   * @return Map<String, Object> The returned map will have 2 keys:
+   *  didFunctionsRun: Boolean, true if any DB function was successfully ran, false otherwise
+   *  newChildPpsIds: List<Long>, List of all newly created PPS IDs
+   */
+  public Map<String, Object> performChildFunctions(Long actionId, Long ppsEventId, Long ppsId, Long processStepId, Long projectId) {
+    Map<String, Object> functionResults = new HashMap<>();
+    functionResults.put("didFunctionsRun", false);
+    List<Long> newChildPpsIds = new ArrayList<>();
     List<ProcessStepEventActionChildFunction> childFunctions = processStepEventService.getChildFunctionsWithParamValues(actionId, ppsEventId);
     childFunctions.forEach(childFunction -> {
       try {
@@ -398,7 +429,15 @@ public class ProjectProcessStepEventService {
         } else {
           String params = String.join(", ", projectProcessStepService.prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, ppsEventId));
           String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
-          sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+          Optional<Object> newChildPpsId = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+          if (childFunction.getCreatesPps() && newChildPpsId.isPresent()) {
+            try {
+              final Long newPpsId = Long.parseLong(newChildPpsId.get().toString());
+              newChildPpsIds.add(newPpsId);
+            } catch (Exception e) {
+              //noop, the DB function didn't return a PPS ID
+            }
+          }
         }
       } catch (InvocationTargetException e) {
         throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getCause().getMessage()));
@@ -408,10 +447,12 @@ public class ProjectProcessStepEventService {
     });
 
     if (!childFunctions.isEmpty()) {
-      shouldRunAutoTriggers = true;
+      functionResults.put("didFunctionsRun", true);
     }
 
-    return shouldRunAutoTriggers;
+    functionResults.put("newChildPpsIds", newChildPpsIds);
+
+    return functionResults;
   }
 
   public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {
