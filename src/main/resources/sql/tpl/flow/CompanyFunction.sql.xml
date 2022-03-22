@@ -7,7 +7,7 @@
         inner join flow.db_function df on df.id = cf.db_function_id
       where cf.company_id = :companyId
         and cf.archived is not true
-        and db.archived is not true
+        and df.archived is not true
       order by cf.company_function_name
   ]]></companyFunction.getFunctions>
 
