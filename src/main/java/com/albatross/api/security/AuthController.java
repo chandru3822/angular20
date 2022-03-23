@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -122,7 +123,7 @@ public class AuthController {
             "MAINTENANCE_MODE",
             List.of("ADMIN"))) {
       return ResponseEntity.status(FORBIDDEN)
-          .body("{\"message\" : \"Site is under maintenance.\", \"maintenanceMode\" : true }");
+          .body(Map.of("message", "Site is under maintenance.", "maintenanceMode", true));
     }
 
     JwtClaims body = createJwtBody(user);

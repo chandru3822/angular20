@@ -48,8 +48,7 @@ public class ElectronicDocumentController {
           }
           return docUrls;
       } catch (Exception e) {
-          log.error("ELECTRONIC: failed to generate document: {}", e.getMessage());
-          e.printStackTrace();
+          log.error("ELECTRONIC: failed to generate document", e);
           return null;
       }
   }

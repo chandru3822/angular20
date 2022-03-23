@@ -499,8 +499,7 @@ public class PandaDocService {
                 try {
                   sendDocument(projectId, documentId, tokens);
                 } catch (Exception ex) {
-                  log.error("PANDADOC: failed to send document: {}", ex.getMessage());
-                  ex.printStackTrace();
+                  log.error("PANDADOC: failed to send document", ex);
                 }
               }
             },
@@ -636,8 +635,7 @@ public class PandaDocService {
         tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
       }
     } catch (EmptyResultDataAccessException e) {
-      log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
-      e.printStackTrace();
+      log.warn("PANDADOC Error getting proposal log values", e);
     }
 
     tokens.put("Deal.Id", deets.getProjectId());
@@ -764,8 +762,7 @@ public class PandaDocService {
       tokens.put("Date", today);
 
     } catch (EmptyResultDataAccessException e) {
-      log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
-      e.printStackTrace();
+      log.warn("PANDADOC Error getting proposal log values}", e);
     }
 
     return tokens;

@@ -133,8 +133,7 @@ public class SMSService {
         Array varchar = connection.createArrayOf("varchar", mediaUrls);
         source.addValue("mediaUrls", varchar);
       } catch (SQLException e) {
-        log.error("TWILIO_WEBHOOK_ERROR: media url problems");
-        e.printStackTrace();
+        log.error("TWILIO_WEBHOOK_ERROR: media url problems", e);
       }
     }
 
@@ -164,8 +163,7 @@ public class SMSService {
                     try {
                       return new URI(s);
                     } catch (URISyntaxException e) {
-                      log.error("TWILIO_WEBHOOK_ERROR: media urls failed");
-                      e.printStackTrace();
+                      log.error("TWILIO_WEBHOOK_ERROR: media urls failed", e);
                     }
                     return null;
                   })
@@ -320,8 +318,7 @@ public class SMSService {
         try (Jedis jedis = jedisPool.getResource()) {
           jedis.lpush(webhookPayloadErrorsKey, msg.toJSON());
         } catch (JsonProcessingException ex) {
-          log.error("TWILIO_WEBHOOK_ERROR: failed to serialize");
-          ex.printStackTrace();
+          log.error("TWILIO_WEBHOOK_ERROR: failed to serialize", ex);
         }
 
         return;
@@ -350,8 +347,10 @@ public class SMSService {
       log.debug("TWILIO_WEBHOOK: payload {}", json);
       jedis.lpush(webhookPayloadKey, json);
     } catch (JsonProcessingException ex) {
-      log.error("TWILIO_WEBHOOK_ERROR: failed to serialize payload: {}", msg);
-      ex.printStackTrace();
+      log.error(
+          "TWILIO_WEBHOOK_ERROR: failed to serialize payload: {}, message: {}",
+          msg,
+          ex.getMessage());
     }
   }
 
