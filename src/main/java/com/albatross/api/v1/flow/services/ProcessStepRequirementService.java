@@ -6,54 +6,42 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor
 public class ProcessStepRequirementService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  SystemListService systemListService;
-
-  @Autowired
-  ProcessStepActionService processStepActionService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<ProcessStepRequirement> getRequirementsForStep(Long processStepId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
-    List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.getRequirementsForStep", params, new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om));
+    List<ProcessStepRequirement> results =
+        sqlCache.query(
+            "processStepRequirement.getRequirementsForStep",
+            params,
+            new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om));
 
-    // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
-    for(ProcessStepRequirement psr : results ) {
-      if(null != psr.getCustomFieldSqlKey()) {
+    // todo: this is duplicated from custom field value service but didn't quite match up, probably
+    // could re-write to combine the two
+    for (ProcessStepRequirement psr : results) {
+      if (null != psr.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(psr.getCustomFieldSqlKey());
-        if(null != sql) {
+        if (null != sql) {
           HashMap<String, Object> params2 = new HashMap<>();
           params2.put("projectId", null);
           params2.put("userId", user.getId());
@@ -71,20 +59,23 @@ public class ProcessStepRequirementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("requirementId", requirementId);
-    List<ProcessStepAction> actionsUsingRequirement = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
+    List<ProcessStepAction> actionsUsingRequirement =
+        sqlCache.query(
+            "processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
 
-    if(!actionsUsingRequirement.isEmpty()) {
+    if (!actionsUsingRequirement.isEmpty()) {
       return actionsUsingRequirement;
     } else {
       sqlCache.update("processStepRequirement.deleteRequirement", params);
       return null;
     }
-
   }
 
   public List<ProcessStepRequirementType> getRequirementTypes() {
-    List<ProcessStepRequirementType> results = sqlCache.query("processStepRequirement.getRequirementTypes", Collections.emptyMap(), ProcessStepRequirementType.class);
-    return results;
+    return sqlCache.query(
+        "processStepRequirement.getRequirementTypes",
+        Collections.emptyMap(),
+        ProcessStepRequirementType.class);
   }
 
   public ProcessStepRequirement getRequirementById(Long id) {
@@ -92,9 +83,12 @@ public class ProcessStepRequirementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<ProcessStepRequirement> result = sqlCache.get("processStepRequirement.getRequirement", params, new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om));
-
-    return result.orElse(null);
+    return sqlCache
+        .get(
+            "processStepRequirement.getRequirement",
+            params,
+            new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om))
+        .orElse(null);
   }
 
   public ProcessStepRequirement updateRequirement(ProcessStepRequirement requirement) {
@@ -104,17 +98,26 @@ public class ProcessStepRequirementService {
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
-    params.put("failIfNoReferenceStepFound", null != requirement.getFailIfNoReferenceStepFound() ? requirement.getFailIfNoReferenceStepFound() : false);
+    params.put(
+        "failIfNoReferenceStepFound",
+        null != requirement.getFailIfNoReferenceStepFound()
+            ? requirement.getFailIfNoReferenceStepFound()
+            : false);
     params.put("listOfValueId", requirement.getListOfValueId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
-    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
+    params.put(
+        "listOfValueIds",
+        (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", requirement.getId());
 
     handleDynamicValueParams(requirement.getRequirementParamDynamicValues(), requirement.getId());
 
-    Long id = sqlCache.updateReturningId("processStepRequirement.updateRequirement", params, "id").longValue();
+    Long id =
+        sqlCache
+            .updateReturningId("processStepRequirement.updateRequirement", params, "id")
+            .longValue();
     return getRequirementById(id);
   }
 
@@ -124,13 +127,19 @@ public class ProcessStepRequirementService {
     params.put("companyId", requirement.getProcessStepRequirementTypeId());
     params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
     params.put("referenceProcessStepId", requirement.getReferenceProcessStepId());
-    params.put("failIfNoReferenceStepFound", null != requirement.getFailIfNoReferenceStepFound() ? requirement.getFailIfNoReferenceStepFound() : false);
+    params.put(
+        "failIfNoReferenceStepFound",
+        null != requirement.getFailIfNoReferenceStepFound()
+            ? requirement.getFailIfNoReferenceStepFound()
+            : false);
     params.put("operatorTypeId", requirement.getOperatorTypeId());
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
     params.put("listOfValueId", requirement.getListOfValueId());
-    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
+    params.put(
+        "listOfValueIds",
+        (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     params.put("customFieldGroupAssignmentId", requirement.getCustomFieldGroupAssignmentId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
@@ -139,30 +148,36 @@ public class ProcessStepRequirementService {
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
 
-    Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
+    Long id =
+        sqlCache
+            .updateReturningId("processStepRequirement.insertRequirement", params, "id")
+            .longValue();
 
     handleDynamicValueParams(requirement.getRequirementParamDynamicValues(), id);
 
     return getRequirementById(id);
   }
 
-  public void handleDynamicValueParams(List<RequirementParamDynamicValue> params, Long processStepRequirementId) {
-    if(!params.isEmpty()) {
+  public void handleDynamicValueParams(
+      List<RequirementParamDynamicValue> params, Long processStepRequirementId) {
+    if (!params.isEmpty()) {
       User currentUser = securityService.getCurrentUser();
 
-      for(RequirementParamDynamicValue p : params){
+      for (RequirementParamDynamicValue p : params) {
         HashMap<String, Object> dynamicParams = new HashMap<>();
         dynamicParams.put("dbFunctionParamId", p.getDbFunctionParamId());
         dynamicParams.put("processStepRequirementId", processStepRequirementId);
         dynamicParams.put("dynamicValue", p.getDynamicValue());
 
-        if(null != p.getId()){
+        if (null != p.getId()) {
           dynamicParams.put("id", p.getId());
           dynamicParams.put("modifiedById", currentUser.trueUserId());
-          sqlCache.update("processStepRequirement.updateRequirementParamDynamicValue", dynamicParams);
-        }else {
+          sqlCache.update(
+              "processStepRequirement.updateRequirementParamDynamicValue", dynamicParams);
+        } else {
           dynamicParams.put("createdById", currentUser.trueUserId());
-          sqlCache.update("processStepRequirement.insertRequirementParamDynamicValue", dynamicParams);
+          sqlCache.update(
+              "processStepRequirement.insertRequirementParamDynamicValue", dynamicParams);
         }
       }
     }
@@ -178,39 +193,54 @@ public class ProcessStepRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
+      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "requirementParamDynamicValues",
           new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
       TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
-      bw.registerCustomEditor(Object.class, "dataTypeRequirement",
+      bw.registerCustomEditor(
+          Object.class,
+          "dataTypeRequirement",
           new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
 
       TypeReference<CustomField> customFieldRef = new TypeReference<>() {};
-      bw.registerCustomEditor(Object.class, "customField",
-        new JsonCollectionDeserializer(customFieldRef, objectMapper));
+      bw.registerCustomEditor(
+          Object.class,
+          "customField",
+          new JsonCollectionDeserializer(customFieldRef, objectMapper));
 
       TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
-      bw.registerCustomEditor(Object.class, "listOfValue",
+      bw.registerCustomEditor(
+          Object.class,
+          "listOfValue",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
 
       TypeReference<List<ListOfValue>> listOfValuesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "listOfValues",
+      bw.registerCustomEditor(
+          List.class,
+          "listOfValues",
           new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
 
       TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "availableListOfValues",
+      bw.registerCustomEditor(
+          List.class,
+          "availableListOfValues",
           new JsonCollectionDeserializer(availableListOfValuesRef, objectMapper));
 
       TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "listOfValueIds",
+      bw.registerCustomEditor(
+          List.class,
+          "listOfValueIds",
           new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
 
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "systemListOptionIds",
+      bw.registerCustomEditor(
+          List.class,
+          "systemListOptionIds",
           new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
-
     }
   }
-
 }

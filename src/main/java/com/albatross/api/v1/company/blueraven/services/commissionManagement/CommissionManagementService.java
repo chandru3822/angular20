@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -110,7 +108,7 @@ public class CommissionManagementService {
             "commissionManagement.getClosers",
             Collections.emptyMap(),
             new ClosersPlanMapper<>(ClosersPlan.class, om));
-    List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).collect(Collectors.toList());
+    List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).toList();
     Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
     for (ClosersPlan closer : closers) {
       boolean hasCommissionPlanGap = usersWithPlanGaps.contains(closer.getUserId());
@@ -125,7 +123,7 @@ public class CommissionManagementService {
             "commissionManagement.getSetters",
             Collections.emptyMap(),
             new ClosersPlanMapper<>(ClosersPlan.class, om));
-    List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).collect(Collectors.toList());
+    List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).toList();
     Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
     for (ClosersPlan closer : closers) {
       boolean hasCommissionPlanGap = usersWithPlanGaps.contains(closer.getUserId());
@@ -342,12 +340,14 @@ public class CommissionManagementService {
       Payroll mostRecent = approvedPayrolls.get(0);
       if (startDate.before(
           mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
-        if (credentials == null) // throw exception if not credentials are provided
-        throw new BackdatedPlanApprovalRequiredException(
+        if (credentials == null) { // throw exception if not credentials are provided
+          throw new BackdatedPlanApprovalRequiredException(
               startDate, mostRecent.getId(), mostRecent.getPeriodEnd());
+        }
         if (!areValidBackdatedPlanApprovalCredentials(
-            credentials)) // throw exception if credentials are inadequate
-        throw new BackdatedPlanApprovalBadCredentialsException();
+            credentials)) { // throw exception if credentials are inadequate
+          throw new BackdatedPlanApprovalBadCredentialsException();
+        }
         // if we get here, we're all good! backdated change included appropriate approval
         // credentials
         return IS_BACKDATED_PLAN;
@@ -356,14 +356,6 @@ public class CommissionManagementService {
     }
     return !IS_BACKDATED_PLAN;
   }
-
-  //    public boolean validateBackdatedPlan(PlanUser user)
-  //            throws BackdatedPlanApprovalRequiredException,
-  // BackdatedPlanApprovalBadCredentialsException {
-  //        Date startDate = user.getStartDate();
-  //        BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
-  //        return validateBackdatedPlan(startDate, approvalCreds);
-  //    }
 
   private boolean areValidBackdatedPlanApprovalCredentials(BackdatedPlanApprovalCredentials creds) {
     Boolean isApproved = false;
@@ -446,11 +438,14 @@ public class CommissionManagementService {
                 "rowId", user.getId(),
                 "userId", user.getUserId()),
             UserDateRange.class);
+
     final LocalDate newStartDate =
         user.getStartDate().toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+
     final Optional<LocalDate> existingStartDate =
         existingDateRange.map(UserDateRange::getStartDate);
-    return existingDateRange.isPresent() && !newStartDate.equals(existingStartDate);
+
+    return existingStartDate.isPresent() && !newStartDate.equals(existingStartDate.get());
   }
 
   public Source updateSource(Long planId, Source source) {

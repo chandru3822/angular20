@@ -28,21 +28,21 @@ import java.util.UUID;
 @Service
 public class SecurityService implements UserDetailsService {
 
-  @Autowired
-  private UserService userService;
+  @Autowired private UserService userService;
 
-  @Autowired
-  private CompanyService companyService;
+  @Autowired private CompanyService companyService;
 
-  @Autowired
-  private SqlCache sqlCache;
+  @Autowired private SqlCache sqlCache;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  @Autowired private PasswordEncoder passwordEncoder;
 
-  /**
-   * Look up a user by username
-   */
+  public static Authentication getRequiredAuthentication() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    Assert.notNull(auth, "Authentication not found");
+    return auth;
+  }
+
+  /** Look up a user by username */
   @Override
   public UserAccountDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user = getUser(username);
@@ -71,7 +71,8 @@ public class SecurityService implements UserDetailsService {
     if (user.isEmpty()) {
       return Optional.empty();
     }
-    List<FeatureAccessControl> results = getUserFeatureAccess(user.get().getId(), user.get().getCompanyId());
+    List<FeatureAccessControl> results =
+        getUserFeatureAccess(user.get().getId(), user.get().getCompanyId());
     return Optional.of(new UserAccountDetails(user.get(), results));
   }
 
@@ -89,8 +90,7 @@ public class SecurityService implements UserDetailsService {
         // don't do anything
       } else if (p instanceof User) {
         user = (User) p;
-      } else if (p instanceof UserAccountDetails) {
-        UserAccountDetails details = (UserAccountDetails) p;
+      } else if (p instanceof UserAccountDetails details) {
 
         if (details.getId().equals(SystemSettings.CRON_USER.getId())) {
           // @TODO: Once we start onboarding a second company, we will need a cron user per company
@@ -101,7 +101,8 @@ public class SecurityService implements UserDetailsService {
           user.setParentCompanyId(3L);
           user.setHighestParentCompanyId(3L);
         } else if (details.getId().equals(SystemSettings.BR_SYSTEM_USER.getId())) {
-          // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party API access feature
+          // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party
+          // API access feature
           user = new User();
           user.setCompanyId(3L);
           user.setHighestCompanyId(3L);
@@ -111,16 +112,20 @@ public class SecurityService implements UserDetailsService {
         } else {
           user = userService.findUserById(details.getId());
           user.setMasqueradingUserId(((UserAccountDetails) p).getMasqueradingUserId());
-          //if the user is masquerading - hard code their company id to the current one so we dont override the user's default
-          if(null != ((UserAccountDetails) p).getMasqueradingUserId() && null != ((UserAccountDetails) p).getCompanyId()) {
+          // if the user is masquerading - hard code their company id to the current one so we dont
+          // override the user's default
+          if (null != ((UserAccountDetails) p).getMasqueradingUserId()
+              && null != ((UserAccountDetails) p).getCompanyId()) {
             user.setCompanyId(((UserAccountDetails) p).getCompanyId());
           }
-          List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
+          List<FeatureAccessControl> results =
+              getUserFeatureAccess(details.getId(), user.getCompanyId());
           user.setFeatureAccess(results);
         }
 
       } else {
-//                    throw new IllegalStateException("Unhandled Security Principal type: " + p);
+        //                    throw new IllegalStateException("Unhandled Security Principal type: "
+        // + p);
       }
     }
     return user;
@@ -145,39 +150,38 @@ public class SecurityService implements UserDetailsService {
     return null;
   }
 
+  public void setCurrentUserDetails(UserAccountDetails uad) {
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new UsernamePasswordAuthenticationToken(uad, null, uad.getAuthorities()));
+  }
+
   public UserAccountDetails getRequiredCurrentUserDetails() {
     UserAccountDetails result = getCurrentUserDetails();
     Assert.notNull(result, "Couldn't determine current user");
     return result;
   }
 
-
-  public static Authentication getRequiredAuthentication() {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    Assert.notNull(auth, "Authentication not found");
-    return auth;
-  }
-
-  @SuppressWarnings("unchecked")
   public List<FeatureAccessControl> getUserFeatureAccess(Long userId, Long companyId) {
-    //this function gets ALL access for a user (combining user/position access control as needed)
+    // this function gets ALL access for a user (combining user/position access control as needed)
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", companyId);
     return sqlCache.query("feature.getAccessForUser", params, FeatureAccessControl.class);
   }
 
-  @SuppressWarnings("unchecked")
-  public List<FeatureAccessControl> getMasqueradedUserFeatureAccess(Long userId, Long companyId, Long trueUserId) {
-    //this function gets ALL access for a user (combining user/position access control as needed)
+  public List<FeatureAccessControl> getMasqueradedUserFeatureAccess(
+      Long userId, Long companyId, Long trueUserId) {
+    // this function gets ALL access for a user (combining user/position access control as needed)
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", companyId);
     params.put("trueUserId", trueUserId);
-    return sqlCache.query("feature.getMasqueradedUserFeatureAccess", params, FeatureAccessControl.class);
+    return sqlCache.query(
+        "feature.getMasqueradedUserFeatureAccess", params, FeatureAccessControl.class);
   }
 
-  public void updateUserPassword (Long userId, String newPassword) {
+  public void updateUserPassword(Long userId, String newPassword) {
     HashMap<String, Object> params = new HashMap<>();
     String newPwd = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
     params.put("password", newPwd);
@@ -189,58 +193,73 @@ public class SecurityService implements UserDetailsService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
-    Optional<Boolean> result = sqlCache.queryForObjectOptional("user.isSuperAdmin", params, Boolean.class);
-
-    return result.orElse(false);
+    return sqlCache
+        .queryForObjectOptional("user.isSuperAdmin", params, Boolean.class)
+        .orElse(false);
   }
 
-  //use to validate masquerading user stuff
+  // use to validate masquerading user stuff
   public Boolean userHasAccessInCompany(Long userId, Long companyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", companyId);
 
-    Optional<Boolean> result = sqlCache.queryForObjectOptional("user.hasAccessInCompany", params, Boolean.class);
-
-    return result.orElse(false);
+    return sqlCache
+        .queryForObjectOptional("user.hasAccessInCompany", params, Boolean.class)
+        .orElse(false);
   }
 
   /*
   Return whether user has any of the given access levels to the given feature
    */
-  public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCodes) {
+  public Boolean userHasFeatureAccessLevel(
+      Long userId,
+      Long companyId,
+      Long userHighestCompanyId,
+      String featureCode,
+      List<String> accessCodes) {
     List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
     for (FeatureAccessControl fac : featureAccessControlList) {
       if (fac.getFeatureCode().equals(featureCode) && accessCodes.contains(fac.getAccessCode())) {
         return true;
       }
     }
-    //if the user's highest company id is 1, then they are an albatross system admin - 7 oaks employee
-    //we return true for all features, access levels, etc for ^^ these users
+    // if the user's highest company id is 1, then they are an albatross system admin - 7 oaks
+    // employee
+    // we return true for all features, access levels, etc for ^^ these users
     return userHighestCompanyId == 1;
   }
 
   /*
   Return whether user has any of the positions requested
    */
-  public Boolean userHasPosition(Long userHighestCompanyId, List<Long> positionIdsToCheckFor, List<UserPosition> userPositions) {
+  public Boolean userHasPosition(
+      Long userHighestCompanyId,
+      List<Long> positionIdsToCheckFor,
+      List<UserPosition> userPositions) {
     for (UserPosition up : userPositions) {
       if (positionIdsToCheckFor.contains(up.getPositionId())) {
         return true;
       }
     }
-    //if the user's highest company id is 1, then they are an albatross system admin - 7 oaks employee
-    //we return true for all features, access levels, etc for ^^ these users
+    // if the user's highest company id is 1, then they are an albatross system admin - 7 oaks
+    // employee
+    // we return true for all features, access levels, etc for ^^ these users
     return userHighestCompanyId == 1;
   }
 
-  public void validateUserFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCodes) {
-    if(!userHasFeatureAccessLevel(userId, companyId, userHighestCompanyId, featureCode, accessCodes)) {
+  public void validateUserFeatureAccessLevel(
+      Long userId,
+      Long companyId,
+      Long userHighestCompanyId,
+      String featureCode,
+      List<String> accessCodes) {
+    if (!userHasFeatureAccessLevel(
+        userId, companyId, userHighestCompanyId, featureCode, accessCodes)) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized.", new Exception());
     }
   }
 
-  @SuppressWarnings("unchecked")
   public Boolean validatePassword(String password) {
     User currentUser = getCurrentUser();
     return validatePassword(currentUser, password);
@@ -250,34 +269,29 @@ public class SecurityService implements UserDetailsService {
     if (null == user.getPassword() || user.getPassword().isEmpty()) {
       log.warn("AUTH: Attempted login user has no password. {}", user.getEmail());
       return false;
-    } else {
-      Boolean match = passwordEncoder.matches(password, user.getPassword());
-      return match;
     }
+    return passwordEncoder.matches(password, user.getPassword());
   }
 
   public Boolean passwordIsCompanyDefault(Long userId, String password) {
-    //have to check if the user's password matches ANY company default that they have access to
-    Boolean match = false;
+    // have to check if the user's password matches ANY company default that they have access to
+    boolean match = false;
     List<Company> companiesUserHasAccessTo = companyService.getCompaniesAssignedToUser(userId);
 
-    for(Company c : companiesUserHasAccessTo) {
-      if(password.equalsIgnoreCase(c.getDefaultPassword())) {
+    for (Company c : companiesUserHasAccessTo) {
+      if (password.equalsIgnoreCase(c.getDefaultPassword())) {
         match = true;
+        break;
       }
     }
     return match;
   }
 
-  public void setCurrentUserDetails(UserAccountDetails uad) {
-    SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(uad, null, uad.getAuthorities()));
-  }
-
   public void validateCompanyAccess(Long companyId) {
     User user = getCurrentUser();
-    if(!user.getCompanyId().equals(companyId)) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
+    if (!user.getCompanyId().equals(companyId)) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
     }
   }
 }
-

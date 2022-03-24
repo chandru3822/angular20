@@ -31,8 +31,7 @@ public class BlueravenCustomFieldController {
   @PostMapping(value = "")
   public CustomField saveField(@RequestBody CustomField customField) throws SQLException {
     // add the field and list of values
-    CustomField field = customFieldService.saveField(customField);
-    return field;
+    return customFieldService.saveField(customField);
   }
 
   @GetMapping(value = "/{id}/values")

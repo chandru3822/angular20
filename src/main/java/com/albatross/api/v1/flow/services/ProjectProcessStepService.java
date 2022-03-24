@@ -50,8 +50,8 @@ import java.util.stream.Collectors;
 // I don't like it and would rather have them be private. Change back if/when possible
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ProjectProcessStepService {
 
   private final SqlCache sqlCache;

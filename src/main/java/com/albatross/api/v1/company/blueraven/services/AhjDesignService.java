@@ -57,7 +57,6 @@ public class AhjDesignService {
     return Optional.empty();
   }
 
-  @SuppressWarnings("Duplicates")
   public Optional<AhjDesignDetail> saveAhjDesign(
       Long ahjId, Long designId, AhjDesign design, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();

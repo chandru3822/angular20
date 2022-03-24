@@ -12,35 +12,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
-
-/**
- * Created by randanunn on 10/1/19.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class PositionService {
 
   private final SqlCache sqlCache;
   private final ObjectMapper om;
-
   private final SecurityService securityService;
 
   public List<Position> getPositionsForCompany() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Position> results = sqlCache.query("position.getAllForCompany", params, Position.class);
-    return results;
+    return sqlCache.query("position.getAllForCompany", params, Position.class);
   }
 
   public List<Position> getSchedulablePositions() {
@@ -52,18 +43,15 @@ public class PositionService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    List<Position> results = sqlCache.query("position.getSchedulablePositions", params, Position.class);
-    return results;
+    return sqlCache.query("position.getSchedulablePositions", params, Position.class);
   }
-
 
   public List<Position> getPositionsForCompanyWithParent() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    List<Position> results = sqlCache.query("position.getAllForCompanyWithParent", params, Position.class);
-    return results;
+    return sqlCache.query("position.getAllForCompanyWithParent", params, Position.class);
   }
 
   public Position getPosition(Long id) {
@@ -71,8 +59,9 @@ public class PositionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
-    Optional<Position> result = sqlCache.get("position.getOne", params, new PositionMapper<>(Position.class, om));
-    return result.orElse(null);
+    return sqlCache
+        .get("position.getOne", params, new PositionMapper<>(Position.class, om))
+        .orElse(null);
   }
 
   public Position insertPosition(Position p) {
@@ -88,13 +77,15 @@ public class PositionService {
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("smsOwner", null != p.getSmsOwner() ? p.getSmsOwner() : false);
-    params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
+    params.put(
+        "availableToChildren",
+        null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("createdById", user.trueUserId());
     Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
 
-    for(CompanyFeature cf : p.getCompanyFeatures()) {
-      for(FeatureAccessControl ac : cf.getAccessControl()) {
-        if(ac.isEnabled()) {
+    for (CompanyFeature cf : p.getCompanyFeatures()) {
+      for (FeatureAccessControl ac : cf.getAccessControl()) {
+        if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());
           params.put("accessControlId", ac.getId());
           params.put("positionId", positionId);
@@ -119,14 +110,17 @@ public class PositionService {
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("smsOwner", null != p.getSmsOwner() ? p.getSmsOwner() : false);
-    params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
+    params.put(
+        "availableToChildren",
+        null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("id", p.getId());
     params.put("modifiedById", user.trueUserId());
     sqlCache.update("position.update", params);
 
-    //i think these dirty checks are redundant now that i filtered the frontend but i am leaving them in cuz it works and i dont want to update it and have to test it again
-    for(CompanyFeature cf : p.getCompanyFeatures()) {
-      if(cf.isDirty()) {
+    // i think these dirty checks are redundant now that i filtered the frontend but i am leaving
+    // them in cuz it works and i dont want to update it and have to test it again
+    for (CompanyFeature cf : p.getCompanyFeatures()) {
+      if (cf.isDirty()) {
         for (FeatureAccessControl ac : cf.getAccessControl()) {
           if (ac.isDirty()) {
             if (null != ac.getId()) {
@@ -168,11 +162,10 @@ public class PositionService {
     protected void initBeanWrapper(BeanWrapper bw) {
 
       TypeReference<List<CompanyFeature>> companyFeaturesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "companyFeatures",
+      bw.registerCustomEditor(
+          List.class,
+          "companyFeatures",
           new JsonCollectionDeserializer(companyFeaturesRef, objectMapper));
-
     }
   }
-
-
 }

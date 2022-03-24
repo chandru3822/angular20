@@ -12,7 +12,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -454,10 +453,7 @@ public class ProjectProcessStepEventService {
         new PutObjectRequest(
             storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    PutObjectResult result =
-        s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
-
-    //    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));

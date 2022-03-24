@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.google.common.io.BaseEncoding;
 import com.google.common.net.UrlEscapers;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +44,8 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.stream.Collectors.groupingBy;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-//@TODO: this class should probably be renamed to 'AuroraService' and moved to the brs service folder to match convention
+// @TODO: this class should probably be renamed to 'AuroraService' and moved to the brs service
+// folder to match convention
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,7 @@ public class AuroraProxy {
   private final ObjectMapper om = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
   private final String host = "https://api.aurorasolar.com";
+  private final SqlCache sqlCache;
 
   @Value(value = "${aurora.api.tenantId}")
   private String tenantId;
@@ -61,8 +63,6 @@ public class AuroraProxy {
 
   @Value(value = "${aurora.api.secret}")
   private String apiSecret;
-
-  private final SqlCache sqlCache;
 
   private static String useTemplate(String template, Map<String, ? extends Object> vals) {
     StringSubstitutor subs = new StringSubstitutor(vals);
@@ -191,6 +191,13 @@ public class AuroraProxy {
     return new AuroraRequest(HttpMethod.GET, uri, null);
   }
 
+  public String getDesignId(Long ppsId, Long cfgaId) {
+    return sqlCache.queryForObject(
+        "aurora.getIdByProjectProcessStepId",
+        Map.of("ppsId", ppsId, "cfgaId", cfgaId),
+        String.class);
+  }
+
   ///////////////////////////////////////////////////////////////////////////
   // class encapsulating making requests to Aurora
   ///////////////////////////////////////////////////////////////////////////
@@ -244,7 +251,7 @@ public class AuroraProxy {
       String msg = toSignatureString(params);
       byte[] bs = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, secretKey).hmac(msg);
 
-      return uriEscape(BaseEncoding.base64().encode(bs));
+      return uriEscape(Base64.getEncoder().encodeToString(bs));
     }
 
     /** Converts this request to the format required by Aurora's authentication. */
@@ -432,9 +439,5 @@ public class AuroraProxy {
     public Optional<BigDecimal> getAzimuth() {
       return getField(fields, "azimuth").map(JsonNode::decimalValue);
     }
-  }
-
-  public String getDesignId(Long ppsId, Long cfgaId) {
-    return sqlCache.queryForObject("aurora.getIdByProjectProcessStepId", Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class);
   }
 }

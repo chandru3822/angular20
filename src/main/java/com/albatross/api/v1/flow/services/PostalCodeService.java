@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -23,10 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
+@RequiredArgsConstructor
 public class PostalCodeService {
-
 
   private final SqlCache sqlCache;
   private final SqlArrayService sqlArrayService;
@@ -39,55 +37,52 @@ public class PostalCodeService {
     params.put("companyId", user.getCompanyId());
     params.put("searchQuery", searchQuery);
 
-    List<PostalCodeZone> results = sqlCache.query("postalCode.getZones", params, PostalCodeZone.class);
-    return results;
+    return sqlCache.query("postalCode.getZones", params, PostalCodeZone.class);
   }
 
   public PostalCodeZone getZone(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZone", params, PostalCodeZone.class);
-    return result.orElse(null);
+    return sqlCache.get("postalCode.getZone", params, PostalCodeZone.class).orElse(null);
   }
 
   public List<PostalCodeAllocationUser> getScheduleToUsers(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
 
-    List<PostalCodeAllocationUser> results = sqlCache.query("postalCode.getScheduleToUsers", params, PostalCodeAllocationUser.class);
-    return results;
+    return sqlCache.query("postalCode.getScheduleToUsers", params, PostalCodeAllocationUser.class);
   }
 
   public List<PostalCodeZoneUser> getScheduleByUsers(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
 
-    List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getScheduleByUsers", params, PostalCodeZoneUser.class);
-    return results;
+    return sqlCache.query("postalCode.getScheduleByUsers", params, PostalCodeZoneUser.class);
   }
 
   public List<PostalCodeZonePostalCode> getCodesForZone(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
 
-    List<PostalCodeZonePostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCodeZonePostalCode.class);
-    return results;
+    return sqlCache.query("postalCode.getCodesForZone", params, PostalCodeZonePostalCode.class);
   }
 
-  public List<PostalCodeAllocationUser> saveManualUserAllocations(Long zoneId, List<PostalCodeAllocationUser> allocationUsers) {
+  public List<PostalCodeAllocationUser> saveManualUserAllocations(
+      Long zoneId, List<PostalCodeAllocationUser> allocationUsers) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
 
-    for(PostalCodeAllocationUser u : allocationUsers) {
+    for (PostalCodeAllocationUser u : allocationUsers) {
       params.put("pczuId", u.getPostalCodeZoneUserId());
       params.put("manualAllocation", u.getManualAllocation());
 
       sqlCache.update("postalCode.saveManualUserAllocation", params);
     }
-    //if users get terminated then they are still in zones. archiving them here ensures that if an allocation change is made it will also archive any terminated users
+    // if users get terminated then they are still in zones. archiving them here ensures that if an
+    // allocation change is made it will also archive any terminated users
     archiveInactiveUsers(zoneId);
 
     return getScheduleToUsers(zoneId);
@@ -101,7 +96,6 @@ public class PostalCodeService {
     params.put("zoneId", zoneId);
 
     sqlCache.update("postalCode.archiveInactiveUsers", params);
-
   }
 
   public PostalCodeZone saveZone(PostalCodeZone zone) {
@@ -114,7 +108,7 @@ public class PostalCodeService {
     params.put("schedulableFutureDays", zone.getSchedulableFutureDays());
 
     Long id;
-    if(null != zone.getId()) {
+    if (null != zone.getId()) {
       id = zone.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
@@ -152,7 +146,8 @@ public class PostalCodeService {
     return getZoneUser(id);
   }
 
-  public List<PostalCodeAllocationUser> insertAllocationUser(Long zoneId, PostalCodeZoneUser zoneUser) {
+  public List<PostalCodeAllocationUser> insertAllocationUser(
+      Long zoneId, PostalCodeZoneUser zoneUser) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -164,10 +159,12 @@ public class PostalCodeService {
 
     sqlCache.update("postalCode.insertZoneUser", params);
 
-    //if users get terminated then they are still in zones. archiving them here ensures that if a new allocation user is added it will also archive any terminated users
+    // if users get terminated then they are still in zones. archiving them here ensures that if a
+    // new allocation user is added it will also archive any terminated users
     archiveInactiveUsers(zoneId);
 
-    //adding an allocation user requires sending back the full allocation list instead of just the one user
+    // adding an allocation user requires sending back the full allocation list instead of just the
+    // one user
     return getScheduleToUsers(zoneId);
   }
 
@@ -194,10 +191,12 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZoneUser", params);
   }
 
-  public List<PostalCodeAllocationUser> deleteAllocationUser(Long zoneId, Long postalCodeZoneUserId) {
-    //delete the user like normal but return the adjusted allocation values
+  public List<PostalCodeAllocationUser> deleteAllocationUser(
+      Long zoneId, Long postalCodeZoneUserId) {
+    // delete the user like normal but return the adjusted allocation values
     deleteUser(postalCodeZoneUserId);
-    //if users get terminated then they are still in zones. archiving them here ensures that if an allocation user is deleted it will also archive any terminated users
+    // if users get terminated then they are still in zones. archiving them here ensures that if an
+    // allocation user is deleted it will also archive any terminated users
     archiveInactiveUsers(zoneId);
 
     return getScheduleToUsers(zoneId);
@@ -207,8 +206,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCodeZoneUser> result = sqlCache.get("postalCode.getZoneUser", params, PostalCodeZoneUser.class);
-    return result.orElse(null);
+    return sqlCache.get("postalCode.getZoneUser", params, PostalCodeZoneUser.class).orElse(null);
   }
 
   public ResponseEntity addCode(PostalCodeZonePostalCode pc) {
@@ -219,14 +217,17 @@ public class PostalCodeService {
     params.put("postalCode", pc.getPostalCode());
     params.put("createdById", user.trueUserId());
 
-    Optional<PostalCodeZonePostalCode> result = sqlCache.get("postalCode.checkForExisting", params, PostalCodeZonePostalCode.class);
-    if(result.isPresent() && !result.get().getPostalCodeZoneArchived()) {
+    Optional<PostalCodeZonePostalCode> result =
+        sqlCache.get("postalCode.checkForExisting", params, PostalCodeZonePostalCode.class);
+    if (result.isPresent() && !result.get().getPostalCodeZoneArchived()) {
       HashMap<String, Object> errorObj = new HashMap<>();
       errorObj.put("message", "Error: Postal Code Already In Use");
       return ResponseEntity.badRequest().body(errorObj);
     } else if (result.isPresent() && result.get().getPostalCodeZoneArchived()) {
-      //if the postal code zone has been deleted, then just update the record instead of adding a new row
-      //this feels like the wrong way. but i wanted to keep the unique constraint without archiving all postal codes when a zone is archived
+      // if the postal code zone has been deleted, then just update the record instead of adding a
+      // new row
+      // this feels like the wrong way. but i wanted to keep the unique constraint without archiving
+      // all postal codes when a zone is archived
       params.put("id", result.get().getId());
       sqlCache.update("postalCode.updateZoneCode", params);
 
@@ -235,16 +236,6 @@ public class PostalCodeService {
       Long id = sqlCache.updateReturningId("postalCode.addZoneCode", params, "id").longValue();
       return ResponseEntity.ok(getZonePostalCode(id));
     }
-
-//    try {
-//      Long id = sqlCache.updateReturningId("postalCode.addZoneCode", params, "id").longValue();
-//      return ResponseEntity.ok(getZonePostalCode(id));
-//    } catch (Error ex) {
-//      HashMap<String, Object> errorObj = new HashMap<>();
-//      errorObj.put("msg", ex.getMessage());
-//      return ResponseEntity.badRequest().body(errorObj);
-//    }
-
   }
 
   public void deleteCode(Long id) {
@@ -269,8 +260,7 @@ public class PostalCodeService {
     params.put("isSchedulingTool", true);
     params.put("loadSchedulers", loadSchedulers);
 
-    List<User> results = sqlCache.query("postalCode.getAvailableZoneUsers", params, User.class);
-    return results;
+    return sqlCache.query("postalCode.getAvailableZoneUsers", params, User.class);
   }
 
   public PostalCodeZone getZoneByPostalCode(String postalCode, Long projectId) {
@@ -278,23 +268,26 @@ public class PostalCodeService {
     Long companyId = user.getCompanyId();
     HashMap<String, Object> params = new HashMap<>();
 
-    if(null != projectId) {
-      //had to change this so that a parent looking at a child project could still see project tabs
+    if (null != projectId) {
+      // had to change this so that a parent looking at a child project could still see project tabs
       params.put("projectId", projectId);
-      Optional<Long> overrideCompanyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
-      if(overrideCompanyId.isPresent()) {
+      Optional<Long> overrideCompanyId =
+          sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+      if (overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {
         log.error("PCS: No Company ID found for project. {}", projectId);
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
       }
     }
 
     params.put("postalCode", postalCode);
     params.put("companyId", companyId);
 
-    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZoneByPostalCode", params, PostalCodeZone.class);
-    return result.orElse(null);
+    return sqlCache
+        .get("postalCode.getZoneByPostalCode", params, PostalCodeZone.class)
+        .orElse(null);
   }
 
   public Boolean userCanSchedule(String postalCode) {
@@ -328,16 +321,19 @@ public class PostalCodeService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("zoneIds", sqlArrayService.createSqlArrayOfType("int", zoneIds));
 
-    List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getAllZoneUsers", params, new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
-    return results;
+    return sqlCache.query(
+        "postalCode.getAllZoneUsers",
+        params,
+        new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
   }
 
   public PostalCodeZonePostalCode getZonePostalCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCodeZonePostalCode> result = sqlCache.get("postalCode.getZoneCode", params, PostalCodeZonePostalCode.class);
-    return result.orElse(null);
+    return sqlCache
+        .get("postalCode.getZoneCode", params, PostalCodeZonePostalCode.class)
+        .orElse(null);
   }
 
   public static class PostalCodeZoneMapper<T> extends BeanPropertyRowMapper<T> {
@@ -351,17 +347,20 @@ public class PostalCodeService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<PostalCodeZonePostalCode>> postalCodesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "postalCodes",
-        new JsonCollectionDeserializer(postalCodesRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "postalCodes", new JsonCollectionDeserializer(postalCodesRef, objectMapper));
 
       TypeReference<List<PostalCodeZoneUser>> scheduleToUsersRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "scheduleToUsers",
-        new JsonCollectionDeserializer(scheduleToUsersRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "scheduleToUsers",
+          new JsonCollectionDeserializer(scheduleToUsersRef, objectMapper));
 
       TypeReference<List<PostalCodeZoneUser>> scheduleByUsersRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "scheduleByUsers",
-        new JsonCollectionDeserializer(scheduleByUsersRef, objectMapper));
-
+      bw.registerCustomEditor(
+          List.class,
+          "scheduleByUsers",
+          new JsonCollectionDeserializer(scheduleByUsersRef, objectMapper));
     }
   }
 
@@ -376,9 +375,10 @@ public class PostalCodeService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "userPositions",
-        new JsonCollectionDeserializer(userPositionsRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "userPositions",
+          new JsonCollectionDeserializer(userPositionsRef, objectMapper));
     }
   }
-
 }

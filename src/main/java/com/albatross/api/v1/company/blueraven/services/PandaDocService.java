@@ -316,12 +316,12 @@ public class PandaDocService {
       log.debug("PANDADOC: field {}: {}", key, value);
       if (value == null) {
         errors.add(String.format("%s is undefined", key));
-      } else if (value.doubleValue() <= 0) {
+      } else if (value <= 0) {
         errors.add(String.format("%s must be greater than 0", key));
       }
     } catch (JSONException ex) {
       Object obj = tokens.opt(key);
-      errors.add(String.format("%s is an invalid field ({})", key, obj));
+      errors.add(String.format("%s is an invalid field (%s)", key, obj));
     }
 
     return errors;

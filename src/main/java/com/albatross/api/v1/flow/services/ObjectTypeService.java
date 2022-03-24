@@ -13,23 +13,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ObjectTypeService {
 
   private final SqlCache sqlCache;
@@ -38,27 +33,40 @@ public class ObjectTypeService {
 
   public List<CompanyObjectType> getCompanyObjectTypes() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyObjectType> result = sqlCache.query("objectType.getCompanyObjectTypes", params, CompanyObjectType.class);
-    return result;
+    return sqlCache.query("objectType.getCompanyObjectTypes", params, CompanyObjectType.class);
   }
 
   public Optional<CompanyObjectType> getCompanyObjectTypeDetail(Long objectTypeId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("objectTypeId", objectTypeId);
-    params.put("ownerReadOnlyTypeId", objectTypeId.equals(ObjectType.PROJECT.id) ? WhiteListType.PROJECT_OWNER_READ_ONLY.id : WhiteListType.CONTACT_OWNER_READ_ONLY.id);
-    params.put("statusReadOnlyTypeId", objectTypeId.equals(ObjectType.PROJECT.id) ? WhiteListType.PROJECT_STATUS_READ_ONLY.id : null);
-    Optional<CompanyObjectType> result = sqlCache.get("objectType.getCompanyObjectTypeDetail", params, new CompanyObjectTypeMapper<>(CompanyObjectType.class, om));
-    return result;
+    params.put(
+        "ownerReadOnlyTypeId",
+        objectTypeId.equals(ObjectType.PROJECT.id)
+            ? WhiteListType.PROJECT_OWNER_READ_ONLY.id
+            : WhiteListType.CONTACT_OWNER_READ_ONLY.id);
+    params.put(
+        "statusReadOnlyTypeId",
+        objectTypeId.equals(ObjectType.PROJECT.id)
+            ? WhiteListType.PROJECT_STATUS_READ_ONLY.id
+            : null);
+    return sqlCache.get(
+        "objectType.getCompanyObjectTypeDetail",
+        params,
+        new CompanyObjectTypeMapper<>(CompanyObjectType.class, om));
   }
 
-  public void saveTypeAndWhiteList(CompanyObjectType companyObjectType, Boolean savingStatusReadOnly, Boolean savePositions, Long whiteListTypeId) {
+  public void saveTypeAndWhiteList(
+      CompanyObjectType companyObjectType,
+      Boolean savingStatusReadOnly,
+      Boolean savePositions,
+      Long whiteListTypeId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("companyObjectTypeId", companyObjectType.getId());
@@ -67,35 +75,42 @@ public class ObjectTypeService {
     params.put("cfgaId", null);
     params.put("whiteListTypeId", whiteListTypeId);
 
-    if(savingStatusReadOnly) {
-      //these all say "customFieldGroupAssignment" but really they are just generic whitelist position functions
+    if (savingStatusReadOnly) {
+      // these all say "customFieldGroupAssignment" but really they are just generic whitelist
+      // position functions
       sqlCache.update("objectType.saveStatusReadOnly", params);
     } else {
       sqlCache.update("objectType.saveOwnerReadOnly", params);
     }
 
-    if ((savingStatusReadOnly && !companyObjectType.getStatusReadOnly()) || (!savingStatusReadOnly && !companyObjectType.getOwnerReadOnly())) {
+    if ((savingStatusReadOnly && !companyObjectType.getStatusReadOnly())
+        || (!savingStatusReadOnly && !companyObjectType.getOwnerReadOnly())) {
       // if field is not readonly archive any white listed positions for it
       sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositions", params);
     } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
-      List<WhiteListedPosition> positionsToUse = savingStatusReadOnly ? companyObjectType.getStatusReadOnlyWhiteListedPositions() : companyObjectType.getOwnerReadOnlyWhiteListedPositions();
-      List<Long> positionIdsUsed = positionsToUse.stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
+      List<WhiteListedPosition> positionsToUse =
+          savingStatusReadOnly
+              ? companyObjectType.getStatusReadOnlyWhiteListedPositions()
+              : companyObjectType.getOwnerReadOnlyWhiteListedPositions();
+      List<Long> positionIdsUsed =
+          positionsToUse.stream()
+              .map(WhiteListedPosition::getPositionId)
+              .collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
       if (positionIdsUsed.size() > 0) {
         sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
       } else {
-        //this means they removed ALL white listed positions
+        // this means they removed ALL white listed positions
         sqlCache.update("customFieldGroupAssignment.archiveAllWhiteListedPositions", params);
       }
 
       for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
-        //this insert checks if there is already a non-archived row with the same values
+        // this insert checks if there is already a non-archived row with the same values
         sqlCache.update("customFieldGroupAssignment.insertWhiteListPosition", params);
       }
     }
-
   }
 
   public static class CompanyObjectTypeMapper<T> extends BeanPropertyRowMapper<T> {
@@ -108,13 +123,19 @@ public class ObjectTypeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "statusReadOnlyWhiteListedPositions",
-        new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
+      TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "statusReadOnlyWhiteListedPositions",
+          new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
 
-      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "ownerReadOnlyWhiteListedPositions",
-        new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
+      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "ownerReadOnlyWhiteListedPositions",
+          new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
     }
   }
 }

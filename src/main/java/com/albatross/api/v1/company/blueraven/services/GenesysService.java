@@ -77,12 +77,12 @@ public class GenesysService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
-    Optional<Contact> result =
-        sqlCache.get(
+    return sqlCache
+        .get(
             "genesys.getContactIdByPhone",
             params,
-            new ContactService.ContactMapper<>(Contact.class, om));
-    return result.orElse(null);
+            new ContactService.ContactMapper<>(Contact.class, om))
+        .orElse(null);
   }
 
   public JSONObject getContactUrlByPhone(String phoneNumber) {
@@ -268,7 +268,7 @@ public class GenesysService {
 
     List<DialerContact> dc =
         apiInstance.postOutboundContactlistContacts(
-            contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+            contactListId, List.of(wdc), false, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
 
@@ -280,9 +280,8 @@ public class GenesysService {
         return;
       }
 
-      List<DialerContact> dcOld =
-          apiInstance.postOutboundContactlistContacts(
-              oldContactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+      apiInstance.postOutboundContactlistContacts(
+          oldContactListId, List.of(wdc), false, false, false);
     }
   }
 

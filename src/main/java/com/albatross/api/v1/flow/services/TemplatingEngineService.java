@@ -6,51 +6,37 @@ import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.script.ScriptEngineManager;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
-@Service
 @Slf4j
+@Service
 public class TemplatingEngineService {
 
-	ScriptEngineManager engineManager = new ScriptEngineManager();
+  public void applyFreemarkerTemplate(
+      String templateContent, Map<String, Object> contextMap, OutputStream output)
+      throws Exception {
+    Configuration config = new Configuration(Configuration.VERSION_2_3_25);
+    StringTemplateLoader stringLoader = new StringTemplateLoader();
+    stringLoader.putTemplate("template", templateContent);
+    config.setTemplateLoader(stringLoader);
 
-//	public void applyJavascriptTemplate(String templateContent, Map<String, Object> contextMap, OutputStream output) throws Exception {
-//
-//		ScriptContext scriptContext = new SimpleScriptContext();
-//		scriptContext.setWriter(new OutputStreamWriter(output));
-//
-//		ScriptEngine javascriptEngine = engineManager.getEngineByName("nashorn");
-//		for (String key : contextMap.keySet()) {
-//			scriptContext.setAttribute(key, contextMap.get(key), ScriptContext.ENGINE_SCOPE);
-//		}
-//
-//		javascriptEngine.eval(new StringReader(templateContent), scriptContext);
-//
-//	}
+    Template template = config.getTemplate("template");
+    template.process(contextMap, new OutputStreamWriter(output));
+  }
 
-	public void applyFreemarkerTemplate(String templateContent, Map<String, Object> contextMap, OutputStream output) throws Exception {
-		Configuration config = new Configuration(Configuration.VERSION_2_3_25);
-		StringTemplateLoader stringLoader = new StringTemplateLoader();
-		stringLoader.putTemplate("template", templateContent);
-		config.setTemplateLoader(stringLoader);
+  public String renderFreemarkerTemplate(String templateContent, Map<String, Object> context)
+      throws Exception {
+    try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+      applyFreemarkerTemplate(templateContent, context, output);
 
-		Template template = config.getTemplate("template");
-		template.process(contextMap, new OutputStreamWriter(output));
-	}
+      return output.toString();
+    } catch (Exception ex) {
+      log.error("TEMPLATE_ERROR: unable to create output stream", ex);
+    }
 
-	public String renderFreemarkerTemplate(String templateContent, Map<String, Object> context) throws Exception {
-		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-		    applyFreemarkerTemplate(templateContent, context, output);
-
-		    return output.toString();
-        } catch (Exception ex) {
-			log.error("TEMPLATE_ERROR: unable to create output stream: {}", ex);
-		}
-
-		return "fail fail fail";
-	}
+    return "fail fail fail";
+  }
 }

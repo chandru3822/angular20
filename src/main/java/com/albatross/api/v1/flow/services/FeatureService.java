@@ -12,73 +12,60 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-
-/**
- * Created by randanunn on 12/17/19.
- * !Describe Purpose!
- */
+/** Created by randanunn on 12/17/19. !Describe Purpose! */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class FeatureService {
 
   private final SqlCache sqlCache;
   private final ObjectMapper om;
-
   private final SecurityService securityService;
 
   public List<Feature> getAllFeatures() {
-    List<Feature> results = sqlCache.query("feature.getAll", Collections.EMPTY_MAP, Feature.class);
-    return results;
+    return sqlCache.query("feature.getAll", Collections.EMPTY_MAP, Feature.class);
   }
 
   public List<Feature> getCompanySpecificTools() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Feature> results = sqlCache.query("feature.getCompanyTools", params, Feature.class);
-    return results;
+    return sqlCache.query("feature.getCompanyTools", params, Feature.class);
   }
 
   public List<FeatureAccessControl> getPositionAccessForUser(Long userId) {
     User user = securityService.getCurrentUser();
-    //this function gets ALL position feature access for a user_id (excludes user_access)
-    HashMap<String, Object> params = new HashMap<>();
+    // this function gets ALL position feature access for a user_id (excludes user_access)
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", user.getCompanyId());
-    List<FeatureAccessControl> results = sqlCache.query("feature.getPositionAccessForUser", params, FeatureAccessControl.class);
-    return results;
+    return sqlCache.query("feature.getPositionAccessForUser", params, FeatureAccessControl.class);
   }
 
   public List<Feature> getHomePagesForCompany() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Feature> results = sqlCache.query("feature.getHomePagesForCompany", params, Feature.class);
-    return results;
+    return sqlCache.query("feature.getHomePagesForCompany", params, Feature.class);
   }
 
   public Feature saveFeature(Feature f) {
-    //this is used for adding/updating features to system
+    // this is used for adding/updating features to system
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("featureName", f.getFeatureName());
     params.put("featureCode", f.getFeatureCode());
     params.put("isSystem", null != f.getIsSystem() ? f.getIsSystem() : false);
 
     Long id;
-    if(null != f.getId()) {
+    if (null != f.getId()) {
       id = f.getId();
       params.put("id", id);
       sqlCache.update("feature.updateFeature", params);
@@ -90,49 +77,50 @@ public class FeatureService {
   }
 
   public Feature getOneFeature(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     Optional<Feature> f = sqlCache.get("feature.getOneFeature", params, Feature.class);
     return f.orElse(null);
   }
 
   public void deleteFeature(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     sqlCache.update("feature.deleteFeature", params);
   }
 
   public List<CompanyFeature> getFeaturesForCompany() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyFeature> results = sqlCache.query("feature.getAllForCompany", params, CompanyFeature.class);
-    return results;
+    return sqlCache.query("feature.getAllForCompany", params, CompanyFeature.class);
   }
 
   public List<CompanyFeature> getFeaturesForCompanyWithAccess() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyFeature> results = sqlCache.query("feature.getAllForCompanyWithAccess", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
-    return results;
+    return sqlCache.query(
+        "feature.getAllForCompanyWithAccess",
+        params,
+        new CompanyFeatureMapper<>(CompanyFeature.class, om));
   }
 
   public List<CompanyFeature> getFeaturesForUser(Long userId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
-    List<CompanyFeature> results = sqlCache.query("feature.getForUser", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
-    return results;
+    return sqlCache.query(
+        "feature.getForUser", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
   }
 
   public List<CompanyFeature> saveUserCompanyFeatures(Long userId, List<CompanyFeature> features) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
 
-    for(CompanyFeature cf : features) {
+    for (CompanyFeature cf : features) {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
-        if(null != ac.getId() || ac.isEnabled()) {
+        if (null != ac.getId() || ac.isEnabled()) {
           params.put("userFeatureAccessControlId", ac.getId());
           params.put("enabled", ac.isEnabled());
           params.put("companyFeatureId", cf.getId());
@@ -147,29 +135,28 @@ public class FeatureService {
   }
 
   public CompanyFeature getOneCompanyFeature(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<CompanyFeature> cf = sqlCache.get("feature.getOneCompanyFeature", params, CompanyFeature.class);
-    return cf.orElse(null);
+    return sqlCache.get("feature.getOneCompanyFeature", params, CompanyFeature.class).orElse(null);
   }
 
   public void deleteCompanyFeature(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     sqlCache.update("feature.deleteCompanyFeature", params);
   }
 
   public CompanyFeature saveCompanyFeature(CompanyFeature cf) {
-    //this is used for adding/updating company features to company
+    // this is used for adding/updating company features to company
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("featureName", cf.getFeatureName());
     params.put("featureId", cf.getFeatureId());
 
     Long id;
-    if(null != cf.getId()) {
+    if (null != cf.getId()) {
       id = cf.getId();
       params.put("id", id);
       sqlCache.update("feature.updateCompanyFeature", params);
@@ -191,10 +178,10 @@ public class FeatureService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<FeatureAccessControl>> accessControlRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "accessControl",
+      bw.registerCustomEditor(
+          List.class,
+          "accessControl",
           new JsonCollectionDeserializer(accessControlRef, objectMapper));
-
     }
   }
-
 }

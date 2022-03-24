@@ -132,7 +132,7 @@ public class PayrollController {
     }
   }
 
-  @RequestMapping(value = "/{payrollId}/overrides", method = RequestMethod.GET)
+  @GetMapping(value = "/{payrollId}/overrides")
   public List<OverrideResult> getAllOverrideDetails(@PathVariable Long payrollId)
       throws IOException {
     return payrollService.getAllOverrideDetails(payrollId);

@@ -12,7 +12,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
 public class UserService {
@@ -75,10 +73,8 @@ public class UserService {
         sqlCache.query("user.searchUsers", params, new UserMapper<>(User.class, om));
     Integer count = sqlCache.queryForObject("user.searchUserCount", params, Integer.class);
 
-    Page<User> page =
-        new PageImpl<>(
-            results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public void saveUserHomePage(Long homePageCompanyFeatureId) {
@@ -147,10 +143,6 @@ public class UserService {
       if (null != user.getUserStatusTypeId()) {
         saveUserStatus(true, id, user.getUserStatusTypeId());
       }
-      // save user companies - we do this differently now
-      //      if(null != user.getCompanies()) {
-      //        handleSavingUserCompanies(user.getCompanies(), user.getId());
-      //      }
       // save user password if sent in
       if (null != user.getNewPassword() && !user.getNewPassword().isEmpty()) {
         // todo: remove this check after we turn it on and mobile is working
@@ -235,9 +227,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
 
-    List<User> results =
-        sqlCache.query("user.getAllActiveUsers", params, new UserMapper<>(User.class, om));
-    return results;
+    return sqlCache.query("user.getAllActiveUsers", params, new UserMapper<>(User.class, om));
   }
 
   public List<User> getSchedulingUsers(Long companyStateId, Boolean isSchedulingTool) {
@@ -253,9 +243,7 @@ public class UserService {
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
-    List<User> results =
-        sqlCache.query("user.getSchedulingUsers", params, new UserMapper<>(User.class, om));
-    return results;
+    return sqlCache.query("user.getSchedulingUsers", params, new UserMapper<>(User.class, om));
   }
 
   public User findByUsernameIgnoreCase(String username, Long userId) {
@@ -284,36 +272,31 @@ public class UserService {
     // either way
     HashMap<String, Object> params = new HashMap<>();
     params.put("usernameOrEmail", usernameOrEmail);
-    Optional<User> user =
-        sqlCache.get(
-            "user.findByUsernameOrEmailIgnoreCase", params, new UserMapper<>(User.class, om));
-    return user.orElse(null);
+    return sqlCache
+        .get("user.findByUsernameOrEmailIgnoreCase", params, new UserMapper<>(User.class, om))
+        .orElse(null);
   }
 
   public User findByUserUuid(UUID uuid) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("uuid", uuid);
-    Optional<User> user = sqlCache.get("user.findByUserUuid", params, User.class);
-    return user.orElse(null);
+    return sqlCache.get("user.findByUserUuid", params, User.class).orElse(null);
   }
 
   public User findUserById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<User> user =
-        sqlCache.get("user.findUserById", params, new UserMapper<>(User.class, om));
     // note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning
     // the company's api path or aws bucket even when in that context
-    return user.orElse(null);
+
+    return sqlCache.get("user.findUserById", params, new UserMapper<>(User.class, om)).orElse(null);
   }
 
   public List<UserStatusType> getCompanyUserStatuses(Long companyId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", null != companyId ? companyId : user.getCompanyId());
-    List<UserStatusType> results =
-        sqlCache.query("user.getCompanyUserStatuses", params, UserStatusType.class);
-    return results;
+    return sqlCache.query("user.getCompanyUserStatuses", params, UserStatusType.class);
   }
 
   public void saveUserStatusType(UserStatusType userStatusType) {
@@ -326,7 +309,6 @@ public class UserService {
   }
 
   public void unlockUser(Long userId) {
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("loginAttempts", 0);
@@ -345,8 +327,7 @@ public class UserService {
     // per judson request also remove the user_status for that company and user
     sqlCache.update("user.archiveUserStatus", params);
 
-    List<Company> results = sqlCache.query("user.getUserCompanies", params, Company.class);
-    return results;
+    return sqlCache.query("user.getUserCompanies", params, Company.class);
   }
 
   public List<Company> addToCompany(UserController.NewUserCompanyRequest req) {
@@ -360,10 +341,8 @@ public class UserService {
 
     // check if there is already a user status for this user and company, if not, add new
     sqlCache.update("user.upsertUserStatus", params);
-    //    saveUserStatus(false, req.getUserId(), req.getCompanyUserStatusTypeId());
 
-    List<Company> results = sqlCache.query("user.getUserCompanies", params, Company.class);
-    return results;
+    return sqlCache.query("user.getUserCompanies", params, Company.class);
   }
 
   public void saveUserStatus(Boolean update, Long userId, Long userStatusTypeId) {
@@ -560,10 +539,7 @@ public class UserService {
         new PutObjectRequest(
             storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    PutObjectResult result =
-        s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
-
-    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
