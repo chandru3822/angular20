@@ -2091,7 +2091,7 @@ export default {
             // -2 was updated to mean - select all reps in the selected orgs
             this.repLengthOverride = true
             this.repModel = [
-              {user_id: -2, name: 'All Filtered Reps', active: true}
+              {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
             ]
             this.doRepWatcher()
           } else {
