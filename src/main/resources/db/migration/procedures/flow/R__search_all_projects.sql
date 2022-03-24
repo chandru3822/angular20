@@ -105,7 +105,7 @@ BEGIN
                      limit p_limit offset p_offset
                  ) as limited_projects;
         else
-          p_searchterm = trim(both ' ' from p_searchterm)||':*';
+          p_searchterm = lower(trim(translate(p_searchterm, '*,.& ', '')))||':*';
             RETURN QUERY
                 SELECT limited_projects.id,
                        limited_projects.project_name,
