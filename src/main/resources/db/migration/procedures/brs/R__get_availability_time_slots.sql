@@ -181,6 +181,9 @@ BEGIN
                                   inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                   inner join flow.user_status_type ust
                                              on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
+                                  inner join flow.user_position up
+                                             on up.user_id = pczu.user_id and primary_flag is true and up.archived is false
+                                  inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
                                   inner join flow.resource_schedule_availability rsa
                                              on rsa.resource_schedule_id = rs.id
                                                and rsa.archived is false
