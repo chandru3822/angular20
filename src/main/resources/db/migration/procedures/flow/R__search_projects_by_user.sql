@@ -130,7 +130,7 @@ BEGIN
                  ) as limited_projects;
 
         else
-          p_searchterm = p_searchterm||':*';
+          p_searchterm = lower(trim(translate(p_searchterm, '*,.& ', '')))||':*';
             RETURN QUERY
                 SELECT limited_projects.id,
                        limited_projects.project_name,

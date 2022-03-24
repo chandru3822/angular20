@@ -41,7 +41,7 @@ BEGIN
         into v_company_ids;
     end if;
     case when p_searchterm is not null and trim(p_searchterm) != '' then
-      p_searchterm = p_searchterm||':*';
+      p_searchterm = lower(trim(translate(p_searchterm, '*,.& ', '')))||':*';
         RETURN QUERY
             SELECT limited_projects.id,
                    limited_projects.project_name,
