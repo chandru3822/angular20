@@ -159,8 +159,8 @@
                               where lov.parent_id is not null
                                 and lov.parent_id = cf.list_of_value_id
                                 and (lov.archived is not true OR
-                                     (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
-                                       OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
+                                     (lov.archived is true AND (lov.id = ucv.int_value
+                                       OR lov.id = any( ucv.int_array_value ))))
                               order by
                                 case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                 case when cf.sort_list_values_alphabetically is false then lov.display_order end
@@ -228,8 +228,8 @@
                                                                   where lov.parent_id is not null
                                                                     and lov.parent_id = cf.list_of_value_id
                                                                     and (lov.archived is not true OR
-                                                                         (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
-                                                                           OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
+                                                                         (lov.archived is true AND (lov.id = ccv.int_value
+                                                                           OR lov.id = any(ccv.int_array_value))))
                                                                   order by
                                                                     case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                                     case when cf.sort_list_values_alphabetically is false then lov.display_order end
@@ -335,8 +335,8 @@
                                                         where lov.parent_id is not null
                                                           and lov.parent_id = cf.list_of_value_id
                                                           and (lov.archived is not true OR
-                                                               (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
-                                                                 OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
+                                                               (lov.archived is true AND (lov.id = ocv.int_value
+                                                                 OR lov.id = any(ocv.int_array_value))))
                                                         order by
                                                           case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                           case when cf.sort_list_values_alphabetically is false then lov.display_order end
@@ -493,8 +493,16 @@
                                                           where lov.parent_id is not null
                                                             and lov.parent_id = cf.list_of_value_id
                                                             and (lov.archived is not true OR
-                                                                 (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
-                                                                   OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
+                                                                 (lov.archived is true AND (lov.id = case
+                                                                                                       when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.int_value
+                                                                                                       when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.int_value
+                                                                                                       when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
+                                                                                                         case when cfga1.id is not null then pcv1.int_value else pcv.int_value end end
+                                                                   OR lov.id = any( case
+                                                                                      when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.int_array_value
+                                                                                      when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.int_array_value
+                                                                                      when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
+                                                                                        case when cfga1.id is not null then pcv1.int_array_value else pcv.int_array_value end end ))))
                                                           order by
                                                             case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                             case when cf.sort_list_values_alphabetically is false then lov.display_order end
@@ -661,8 +669,17 @@
                                                 where lov.parent_id is not null
                                                   and lov.parent_id = cf.list_of_value_id
                                                   and (lov.archived is not true OR
-                                                       (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
-                                                         OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
+                                                       (lov.archived is true AND (lov.id = case
+                                                                                             when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.int_value
+                                                                                             when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.int_value
+                                                                                             when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is null     then ecfv.int_value
+                                                                                             when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is not null then pcv.int_value end
+                                                         OR lov.id = any( case
+                                                                            when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.int_array_value
+                                                                            when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.int_array_value
+                                                                            when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is null     then ecfv.int_array_value
+                                                                            when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is not null then pcv.int_array_value
+                                                           end ))))
                                                 order by
                                                   case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                   case when cf.sort_list_values_alphabetically is false then lov.display_order end
@@ -785,8 +802,8 @@
                                                       where lov.parent_id is not null
                                                         and lov.parent_id = cf.list_of_value_id
                                                         and (lov.archived is not true OR
-                                                             (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
-                                                               OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
+                                                             (lov.archived is true AND (lov.id = ucv.int_value
+                                                               OR lov.id = any(ucv.int_array_value))))
                                                       order by
                                                         case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                         case when cf.sort_list_values_alphabetically is false then lov.display_order end
