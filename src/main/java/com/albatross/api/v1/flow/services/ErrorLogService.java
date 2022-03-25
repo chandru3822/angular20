@@ -6,20 +6,15 @@ import com.albatross.api.v1.flow.model.ErrorLog;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ErrorLogService {
 
   private final SqlCache sqlCache;
@@ -28,18 +23,16 @@ public class ErrorLogService {
 
   public List<ErrorLog> getErrorLogsForCompany() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<ErrorLog> results = sqlCache.query("errorLog.getAllForCompany", params, ErrorLog.class);
-    return results;
+    return sqlCache.query("errorLog.getAllForCompany", params, ErrorLog.class);
   }
 
   public void deleteErrorLog(Long id) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
     params.put("id", id);
     sqlCache.update("errorLog.delete", params);
   }
-
 }

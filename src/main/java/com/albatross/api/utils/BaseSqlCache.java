@@ -103,7 +103,6 @@ public class BaseSqlCache {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);
 
-    //noinspection unchecked
     return (T) jdbc.queryForObject(sql, paramSource, elementType);
   }
 
@@ -112,7 +111,6 @@ public class BaseSqlCache {
       MapSqlParameterSource paramSource = scrubParams(params);
       String sql = getByKey(key);
 
-      //noinspection unchecked
       return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
     } catch (DataAccessException e) {
       return Optional.empty();
@@ -165,7 +163,6 @@ public class BaseSqlCache {
     try {
       MapSqlParameterSource paramSource = scrubParams(params);
 
-      //noinspection unchecked
       return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
     } catch (DataAccessException e) {
       return Optional.empty();

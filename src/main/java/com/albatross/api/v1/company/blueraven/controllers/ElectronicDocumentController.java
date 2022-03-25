@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -25,33 +26,32 @@ public class ElectronicDocumentController {
 
   @GetMapping(value = "/getPermittingDocuments/{projectId}")
   public String getPermittingDocuments(@PathVariable Long projectId) {
-      return electronicDocumentService.getDocuments(projectId, 0);
+    return electronicDocumentService.getDocuments(projectId, 0);
   }
 
   @GetMapping(value = "/getUtilityDocuments/{projectId}")
   public String getUtilityDocuments(@PathVariable Long projectId) {
-      return electronicDocumentService.getDocuments(projectId, 1);
+    return electronicDocumentService.getDocuments(projectId, 1);
   }
 
   @GetMapping(value = "/getChangeOrderDocuments/{projectId}")
   public String getChangeOrderDocuments(@PathVariable Long projectId) {
-      return electronicDocumentService.getDocuments(projectId, 2);
+    return electronicDocumentService.getDocuments(projectId, 2);
   }
 
   @GetMapping(value = "/generate/{projectId}/{templateIdsIn}")
-  public ArrayList<String> getDocuments(@PathVariable Long projectId, @PathVariable String templateIdsIn) {
-      try {
-          String[] templateIds = templateIdsIn.split(",");
-          ArrayList<String> docUrls = new ArrayList<>();
-          for (String templateId: templateIds) {
-              docUrls.add(electronicDocumentService.generateDoc(projectId, templateId));
-          }
-          return docUrls;
-      } catch (Exception e) {
-          log.error("ELECTRONIC: failed to generate document: {}", e.getMessage());
-          e.printStackTrace();
-          return null;
+  public List<String> getDocuments(
+      @PathVariable Long projectId, @PathVariable String templateIdsIn) {
+    try {
+      String[] templateIds = templateIdsIn.split(",");
+      List<String> docUrls = new ArrayList<>();
+      for (String templateId : templateIds) {
+        docUrls.add(electronicDocumentService.generateDoc(projectId, templateId));
       }
+      return docUrls;
+    } catch (Exception e) {
+      log.error("ELECTRONIC: failed to generate document", e);
+      return null;
+    }
   }
-
 }

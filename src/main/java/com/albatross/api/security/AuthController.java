@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -33,16 +34,12 @@ import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 @Slf4j
 @RestController
 @RequestMapping(value = "/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-  @Autowired
-  private JwtUtils jwtUtils;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private JwtAuthenticationProvider jwtAuthProvider;
+  private final JwtUtils jwtUtils;
+  private final SecurityService securityService;
+  private final JwtAuthenticationProvider jwtAuthProvider;
 
   @Value("${security.jwt.expireDuration}")
   private Long jwtExpireDuration;
@@ -57,13 +54,12 @@ public class AuthController {
   private Boolean maintenanceMode;
 
   @GetMapping(value = "/heartbeat")
-  public ResponseEntity getHeartbeat() {
+  public ResponseEntity<?> getHeartbeat() {
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-  @ResponseBody
-  public ResponseEntity getJwtToken(@RequestBody Credentials creds) {
+  public ResponseEntity<?> getJwtToken(@RequestBody Credentials creds) {
     User user = securityService.getUser(creds.getUsername());
     if (user == null) {
       log.warn("AUTH: Login attempted with unknown username. {}", creds.getUsername());
@@ -78,10 +74,13 @@ public class AuthController {
     if (!validPassword) {
       int attempts = user.getLoginAttempts() + 1;
       securityService.updateLoginAttempts(attempts, user.getId());
-      log.warn("AUTH: Login attempted with bad password for user={}, count={}", creds.getUsername(), attempts);
+      log.warn(
+          "AUTH: Login attempted with bad password for user={}, count={}",
+          creds.getUsername(),
+          attempts);
       return ResponseEntity.badRequest().body("Invalid Username or Password");
     } else if (user.getLoginAttempts() > 0) {
-      //after successful login, if any previous unsuccessful, reset the count
+      // after successful login, if any previous unsuccessful, reset the count
       securityService.updateLoginAttempts(0, user.getId());
     }
 
@@ -90,28 +89,41 @@ public class AuthController {
       return ResponseEntity.badRequest().body("This account does not have access.");
     }
 
-    //cannot turn this on in prod until mobile is ready
-    //todo: remove this check after we turn it on and mobile is working
-    if(doCompanyDefaultValidation) {
-      if(null != creds.newPassword) {
+    // cannot turn this on in prod until mobile is ready
+    // todo: remove this check after we turn it on and mobile is working
+    if (doCompanyDefaultValidation) {
+      if (null != creds.newPassword) {
         // called after user was already told they needed to reset their password
         securityService.updateUserPassword(user.getId(), creds.newPassword);
       } else {
-        //validate that the user's password is not the same as the company default for any company they have access to
-        Boolean passwordIsCompanyDefault = securityService.passwordIsCompanyDefault(user.getId(), creds.getPassword());
-        if(passwordIsCompanyDefault) {
-          log.warn("AUTH: Login attempted with company default password for user={}", creds.getUsername());
+        // validate that the user's password is not the same as the company default for any company
+        // they have access to
+        Boolean passwordIsCompanyDefault =
+            securityService.passwordIsCompanyDefault(user.getId(), creds.getPassword());
+        if (passwordIsCompanyDefault) {
+          log.warn(
+              "AUTH: Login attempted with company default password for user={}",
+              creds.getUsername());
           // NOT_ACCEPTABLE = 406
-          return ResponseEntity.status(NOT_ACCEPTABLE).body("You must reset your password. Cannot use company default.");
+          return ResponseEntity.status(NOT_ACCEPTABLE)
+              .body("You must reset your password. Cannot use company default.");
         }
       }
     }
 
-    List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+    List<FeatureAccessControl> results =
+        securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
     user.setFeatureAccess(results);
 
-    if (maintenanceMode && !securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MAINTENANCE_MODE", List.of("ADMIN"))) {
-      return ResponseEntity.status(FORBIDDEN).body("{\"message\" : \"Site is under maintenance.\", \"maintenanceMode\" : true }");
+    if (maintenanceMode
+        && !securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "MAINTENANCE_MODE",
+            List.of("ADMIN"))) {
+      return ResponseEntity.status(FORBIDDEN)
+          .body(Map.of("message", "Site is under maintenance.", "maintenanceMode", true));
     }
 
     JwtClaims body = createJwtBody(user);
@@ -119,54 +131,73 @@ public class AuthController {
     return ResponseEntity.ok(new JwtAuthResponse(jwt, user));
   }
 
-  @RequestMapping("/masquerade/{userId}")
-  @ResponseBody
-  public MasqueradeResponseBody masquerade(@PathVariable("userId") Long userId,
-                                           @RequestHeader("Authorization") String authHeader) {
+  @GetMapping("/masquerade/{userId}")
+  public MasqueradeResponseBody masquerade(
+      @PathVariable("userId") Long userId, @RequestHeader("Authorization") String authHeader) {
     User user = securityService.getCurrentUser();
 
-    //make sure the current user has access to masquerade
-    Boolean userHasMasqueradeAccess = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "MASQUERADE", List.of("ADMIN"));
-    //make sure that the user they are trying to masquerade as is not a 7oaks employees
+    // make sure the current user has access to masquerade
+    Boolean userHasMasqueradeAccess =
+        securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "MASQUERADE",
+            List.of("ADMIN"));
+    // make sure that the user they are trying to masquerade as is not a 7oaks employees
     Boolean newUserIs7oaks = securityService.userIsSuperAdmin(userId);
-    //make sure that the user they are trying to masquerade as has access in their current company
-    Boolean newUserIsInCurrentCompany = securityService.userHasAccessInCompany(userId, user.getCompanyId());
-    //mke sure that the user is not trying to alias as themselves
+    // make sure that the user they are trying to masquerade as has access in their current company
+    Boolean newUserIsInCurrentCompany =
+        securityService.userHasAccessInCompany(userId, user.getCompanyId());
+    // mke sure that the user is not trying to alias as themselves
     Boolean userIsSelf = user.getId().equals(userId);
 
-    if(userHasMasqueradeAccess && !newUserIs7oaks && newUserIsInCurrentCompany && !userIsSelf) {
+    if (userHasMasqueradeAccess && !newUserIs7oaks && newUserIsInCurrentCompany && !userIsSelf) {
       Instant issuedAt = Instant.now();
       JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
       jwt.setMasqueradingUserId(user.getId());
       jwt.setCompanyId(user.getCompanyId());
-      //masquerading sessions will time out after 30 mins
+      // masquerading sessions will time out after 30 mins
       jwt.setExpiresAt(issuedAt.plus(Duration.ofMinutes(jwtMasqueradeExpireDuration)));
       jwt.setUserId(userId);
       jwtAuthProvider.forceReload(userId);
-      return new MasqueradeResponseBody().setResult("success")
-        .setToken(jwt);
+      return new MasqueradeResponseBody().setResult("success").setToken(jwt);
     } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You do not have access to masquerade as this user.", new Exception());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "You do not have access to masquerade as this user.",
+          new Exception());
     }
   }
 
-  @RequestMapping("/masquerade/clear")
-  @ResponseBody
+  @GetMapping("/masquerade/clear")
   public MasqueradeResponseBody clearMasquerade(@RequestHeader("Authorization") String authHeader) {
     JwtClaims jwt = jwtUtils.validateAuthHeader(authHeader);
     Instant issuedAt = Instant.now();
-    //invalidate the logged in user jwt
-    //set the user id on the new jwt to the masquerading user id
+    // invalidate the logged in user jwt
+    // set the user id on the new jwt to the masquerading user id
     jwt.setUserId(jwt.getMasqueradingUserId());
-    //clear the masq user id
+    // clear the masq user id
     jwt.setMasqueradingUserId(null);
     jwt.setCompanyId(null);
-    //reset the expiration to 7 days
+    // reset the expiration to 7 days
     jwt.setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
     jwtAuthProvider.forceReload(securityService.getCurrentUser().getId());
-    return new MasqueradeResponseBody().setResult("success")
-      .setToken(jwt);
+    return new MasqueradeResponseBody().setResult("success").setToken(jwt);
   }
+
+  private JwtClaims createJwtBody(User user) {
+    Long userId = user.getId();
+    Instant issuedAt = Instant.now();
+    return new JwtClaims()
+        .setUserId(userId)
+        .setIssuedAt(issuedAt)
+        .setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
+  }
+
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Bad credentials") // 400
+  @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
+  public void badCredentials() {}
 
   @JsonInclude(NON_NULL)
   @Data
@@ -178,28 +209,12 @@ public class AuthController {
     private JwtClaims token;
   }
 
-  private JwtClaims createJwtBody(User user) {
-    Long userId = user.getId();
-    Instant issuedAt = Instant.now();
-    return new JwtClaims().setUserId(userId)
-        .setIssuedAt(issuedAt)
-        .setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
-  }
-
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST,
-      reason = "Bad credentials")  // 400
-  @ExceptionHandler({UsernameNotFoundException.class,
-      BadCredentialsException.class})
-  public void badCredentials() {}
-
   @Data
   public static class Credentials {
     private String username, password, newPassword;
   }
 
-  /**
-   * This class defines what is returned from POST /auth/login
-   */
+  /** This class defines what is returned from POST /auth/login */
   @Data
   @AllArgsConstructor
   public static class JwtAuthResponse {

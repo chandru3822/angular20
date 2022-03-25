@@ -11,19 +11,17 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,8 +31,8 @@ import java.io.IOException;
 import java.util.*;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
+@RequiredArgsConstructor
 public class ContactService {
 
   private final SqlCache sqlCache;
@@ -64,11 +62,24 @@ public class ContactService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", List.of("VIEW_ALL"));
+    Boolean viewAll =
+        securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "CONTACTS",
+            List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
-      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", List.of("VIEW_DOWNLINE"));
+    if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
+        || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
+      viewDownline =
+          securityService.userHasFeatureAccessLevel(
+              user.getId(),
+              user.getCompanyId(),
+              user.getHighestCompanyId(),
+              "CONTACTS",
+              List.of("VIEW_DOWNLINE"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -81,20 +92,23 @@ public class ContactService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-//    String searchSqlKey = viewAll ? "contact.search" : viewDownline ? "contact.searchDownline" : "contact.searchByOwner";
+    //    String searchSqlKey = viewAll ? "contact.search" : viewDownline ? "contact.searchDownline"
+    // : "contact.searchByOwner";
     String searchSqlKey = "contact.searchByOwner";
-    if(viewDownline) {
+    if (viewDownline) {
       searchSqlKey = "contact.searchDownline";
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
       searchSqlKey = "contact.search";
     }
 
-    List<Contact> results = sqlCache.query(searchSqlKey, params, new ContactMapper<>(Contact.class, om));
+    List<Contact> results =
+        sqlCache.query(searchSqlKey, params, new ContactMapper<>(Contact.class, om));
 
-//    Integer count = sqlCache.queryForObject("contact.searchContactsCount", params, Integer.class);
+    //    Integer count = sqlCache.queryForObject("contact.searchContactsCount", params,
+    // Integer.class);
     Integer count = 10000;
-    Page<Contact> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public Contact getContact(Long contactId) {
@@ -110,10 +124,16 @@ public class ContactService {
     params.put("contactId", contactId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    Optional<Contact> contact = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
+    Optional<Contact> contact =
+        sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
 
-    if(contact.isPresent() && null != contact.get().getOwner() && null != contact.get().getOwner().getUserId()) {
-      String presignedUrl = attachmentService.getAttachmentPresignedUrl(contact.get().getOwner().getUserId(), com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
+    if (contact.isPresent()
+        && null != contact.get().getOwner()
+        && null != contact.get().getOwner().getUserId()) {
+      String presignedUrl =
+          attachmentService.getAttachmentPresignedUrl(
+              contact.get().getOwner().getUserId(),
+              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
       contact.get().getOwner().setPresignedUrl(presignedUrl);
     }
 
@@ -126,8 +146,9 @@ public class ContactService {
     params.put("contactId", contactId);
     params.put("parentCompanyId", 3L);
     params.put("isParent", false);
-    Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
-    return result.orElse(null);
+    return sqlCache
+        .get("contact.getById", params, new ContactMapper<>(Contact.class, om))
+        .orElse(null);
   }
 
   public Contact getContactByProjectId(Long projectId) {
@@ -138,8 +159,9 @@ public class ContactService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
-    Optional<Contact> result = sqlCache.get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om));
-    return result.orElse(null);
+    return sqlCache
+        .get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om))
+        .orElse(null);
   }
 
   public void deleteContact(Long contactId) {
@@ -150,27 +172,35 @@ public class ContactService {
     sqlCache.update("contact.delete", params);
   }
 
-  //todo: take this function away after we update the 1.6 million records geo temp
+  // todo: take this function away after we update the 1.6 million records geo temp
   public void updateContactLatLong(Integer limit) throws Exception {
-    //limit = how many to try and run, is passed in from endpoint
+    // limit = how many to try and run, is passed in from endpoint
     int limitCount = null == limit ? 100 : limit;
     HashMap<String, Object> params = new HashMap<>();
     params.put("limit", limitCount);
     log.info("*** CONTACTS: attempting to update lat/long for {} contacts ***", limitCount);
-    //this list should already only include contacts that had at least a street1 and city
-    List<Contact> contactsToUpdate = sqlCache.query("contact.getContactsToUpdateForLatLong", params, Contact.class);
+    // this list should already only include contacts that had at least a street1 and city
+    List<Contact> contactsToUpdate =
+        sqlCache.query("contact.getContactsToUpdateForLatLong", params, Contact.class);
 
-    for(Contact contact : contactsToUpdate) {
+    for (Contact contact : contactsToUpdate) {
       Double latitude = null, longitude = null;
-      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
-      //if we found new coordinates then uses those values
-      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-        //1 = lat, 0 = long
+      List<Double> coordinates =
+          mapboxApiService.getLatLong(
+              stringifyAddress(
+                  contact.getStreet1(),
+                  contact.getCity(),
+                  contact.getState(),
+                  contact.getPostalCode()));
+      // if we found new coordinates then uses those values
+      if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        // 1 = lat, 0 = long
         latitude = coordinates.get(1);
         longitude = coordinates.get(0);
       }
 
-      //do this update even if lat/long are null so that it sets the temp_geo_attempted to true so we know not to try it again
+      // do this update even if lat/long are null so that it sets the temp_geo_attempted to true so
+      // we know not to try it again
       HashMap<String, Object> params2 = new HashMap<>();
       params2.put("id", contact.getId());
       params2.put("latitude", latitude);
@@ -194,7 +224,9 @@ public class ContactService {
     params.put("phone", contact.getPhone());
     params.put("email", contact.getEmail());
     params.put("mobile", contact.getMobile());
-    params.put("companyId", null != contact.getCompanyId() ? contact.getCompanyId() : currentUser.getCompanyId());
+    params.put(
+        "companyId",
+        null != contact.getCompanyId() ? contact.getCompanyId() : currentUser.getCompanyId());
 
     Long id;
     Double latitude = contact.getLatitude();
@@ -205,16 +237,23 @@ public class ContactService {
 
       Contact existingContact = getContact(id);
 
-      //if the contact address changed, reload the coordinates
-      if(null != contact.getReloadCoordinates() && contact.getReloadCoordinates()) {
-        List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
-        //if we found new coordinates then uses those values
-        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-          //1 = lat, 0 = long
+      // if the contact address changed, reload the coordinates
+      if (null != contact.getReloadCoordinates() && contact.getReloadCoordinates()) {
+        List<Double> coordinates =
+            mapboxApiService.getLatLong(
+                stringifyAddress(
+                    contact.getStreet1(),
+                    contact.getCity(),
+                    contact.getState(),
+                    contact.getPostalCode()));
+        // if we found new coordinates then uses those values
+        if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          // 1 = lat, 0 = long
           latitude = coordinates.get(1);
           longitude = coordinates.get(0);
         } else {
-          //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+          // if the address changed but we didn't find valid coordinates for the new address then
+          // set these values to null
           latitude = null;
           longitude = null;
         }
@@ -225,26 +264,55 @@ public class ContactService {
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
-      //add update when we add that to the UI
+      // add update when we add that to the UI
       sqlCache.update("contact.updateContact", params);
 
-      if (!existingContact.getProjects().isEmpty() && !existingContact.getProjects().get(0).getProjectName().equals(contact.getFirstName() + " " + contact.getLastName())) {
-        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.trueUserId()));
+      if (!existingContact.getProjects().isEmpty()
+          && !existingContact
+              .getProjects()
+              .get(0)
+              .getProjectName()
+              .equals(contact.getFirstName() + " " + contact.getLastName())) {
+        sqlCache.update(
+            "project.updateNameByContactId",
+            Map.of(
+                "contactId",
+                id,
+                "name",
+                contact.getFirstName() + " " + contact.getLastName(),
+                "userId",
+                currentUser.trueUserId()));
       }
     } else {
-      //load contact geo location
-      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
-      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-        //1 = lat, 0 = long
+      // load contact geo location
+      List<Double> coordinates =
+          mapboxApiService.getLatLong(
+              stringifyAddress(
+                  contact.getStreet1(),
+                  contact.getCity(),
+                  contact.getState(),
+                  contact.getPostalCode()));
+      if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+        // 1 = lat, 0 = long
         latitude = coordinates.get(1);
         longitude = coordinates.get(0);
       }
 
-      UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
-      params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
+      UserPosition userPrimaryPosition =
+          userPositionService.getUserPrimaryPosition(currentUser.getId());
+      params.put(
+          "ownerUserPositionId",
+          null == userPrimaryPosition || null == userPrimaryPosition.getId()
+              ? null
+              : userPrimaryPosition.getId());
       if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
-        //todo: come back and remove this at some point
-        log.warn("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
+        // todo: come back and remove this at some point
+        log.warn(
+            "RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}",
+            currentUser.getId(),
+            contact.getFirstName(),
+            contact.getLastName(),
+            contact.getEmail());
       }
       params.put("latitude", latitude);
       params.put("longitude", longitude);
@@ -287,81 +355,100 @@ public class ContactService {
     params.put("postalCode", contact.getMailingPostalCode());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", contact.getId());
-    //add update when we add that to the UI
+    // add update when we add that to the UI
     sqlCache.update("contact.updateMailingAddress", params);
   }
 
   public List<Owner> getOwnersForContact(Long contactId) {
     User user = securityService.getCurrentUser();
     Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    return sqlCache.query("contact.getOwners", Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany), Owner.class);
+    return sqlCache.query(
+        "contact.getOwners",
+        Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany),
+        Owner.class);
   }
 
   @Transactional
   public Project convertToContact(Long contactId, CompanyProcess process) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
-    //save contact_type_id
+    // save contact_type_id
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     params.put("contactTypeId", ContactType.CUSTOMER.id);
     params.put("modifiedById", currentUser.trueUserId());
     sqlCache.update("contact.convertToContact", params);
 
-    //get contact to get their full name for the project and also so a parent can find this contact
+    // get contact to get their full name for the project and also so a parent can find this contact
     Contact contact = getContact(contactId);
 
-    //create project (use contact_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(contact.getId(), process.getId(), contact);
+    // create project (use contact_full_name as project_name)
+    Optional<Project> project =
+        projectService.insertProject(contact.getId(), process.getId(), contact);
 
-    //get initial process steps including the initial status
-    List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());
+    // get initial process steps including the initial status
+    List<ProcessStepProcess> initialProcessSteps =
+        processService.getInitialProcessStepProcesses(process.getId());
 
-    //for now we will insert the owner of the contact as the owner of all initial process steps
-    Long ownerUserPositionId = (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
+    // for now we will insert the owner of the contact as the owner of all initial process steps
+    Long ownerUserPositionId =
+        (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
 
     if (project.isPresent()) {
-      //create all initial project_process_steps - these wont have a userPositionId
+      // create all initial project_process_steps - these wont have a userPositionId
       for (ProcessStepProcess step : initialProcessSteps) {
-        //the last companyProcessStepStatusTypeId can be null because an initial process step shouldn't need to cancel any pre-existing steps of the same type
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, null, true, step.getCompanyProcessStepStatusTypeId(), null);
+        // the last companyProcessStepStatusTypeId can be null because an initial process step
+        // shouldn't need to cancel any pre-existing steps of the same type
+        projectProcessStepService.insertProjectProcessStep(
+            project.get().getId(),
+            step.getProcessStepId(),
+            ownerUserPositionId,
+            null,
+            true,
+            step.getCompanyProcessStepStatusTypeId(),
+            null);
       }
     }
 
-    //return project data so the frontend can navigate to project/{id}
+    // return project data so the frontend can navigate to project/{id}
     return project.orElse(null);
   }
 
   public List<Attachment> getContactAttachments(Long contactId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
-    List<Attachment> attachments = sqlCache.query("contact.getContactAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+    List<Attachment> attachments =
+        sqlCache.query("contact.getContactAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(
+        attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long contactId, Long attachmentTypeId) throws IOException {
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped
+  // code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long contactId, Long attachmentTypeId)
+      throws IOException {
     User user = securityService.getCurrentUser();
 
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
 
-    //get keyPattern from attachmentType
+    // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    String key =
+        String.format(
+            user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
     metadata.setCacheControl("public, max-age=31536000");
 
-    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+    PutObjectRequest objectRequest =
+        new PutObjectRequest(
+            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    PutObjectResult result = s3.putObject(objectRequest
-      .withCannedAcl(CannedAccessControlList.PublicRead));
-
-    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
@@ -394,20 +481,21 @@ public class ContactService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Owner> ownerRef = new TypeReference<Owner>() {
-      };
+      TypeReference<Owner> ownerRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(Object.class, "owner",
-        new JsonCollectionDeserializer(ownerRef, objectMapper));
+      bw.registerCustomEditor(
+          Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
 
-      TypeReference<List<Project>> projectsRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "projects",
-        new JsonCollectionDeserializer(projectsRef, objectMapper));
+      TypeReference<List<Project>> projectsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class, "projects", new JsonCollectionDeserializer(projectsRef, objectMapper));
 
-      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "ownerReadOnlyWhiteListedPositions",
-        new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
+      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "ownerReadOnlyWhiteListedPositions",
+          new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
     }
   }
 }

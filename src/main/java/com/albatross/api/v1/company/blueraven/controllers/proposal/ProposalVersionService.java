@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 @PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('PROPOSALS_ADMIN')")
 @RequiredArgsConstructor
@@ -268,7 +270,7 @@ public class ProposalVersionService {
         try {
           return om.readValue(((PGobject) row).getValue(), ProposalCustomValuesRow.class);
         } catch (JsonProcessingException e) {
-          e.printStackTrace();
+          log.error("Error reading proposal", e);
         }
       }
       return null;

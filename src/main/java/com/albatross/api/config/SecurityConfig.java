@@ -1,5 +1,6 @@
 package com.albatross.api.config;
 
+import com.albatross.api.security.CustomRequestHeaderAuthenticationFilter;
 import com.albatross.api.security.LoginSuccessHandler;
 import com.albatross.api.security.jwt.JwtAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
@@ -51,10 +52,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true);
     configuration.setAllowedOriginPatterns(
-      List.of(
-        "http://localhost:[*]",
-        "https://*.myblueraven.com",
-        "https://blueraven-excel-data-addon.netlify.app"));
+        List.of(
+            "http://localhost:[*]",
+            "https://*.myblueraven.com",
+            "https://blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowedMethods(List.of("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -64,52 +65,67 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http
-      .sessionManagement()
-      .sessionCreationPolicy(STATELESS)
-      .and()
-      .cors()
-      .and()
-      .authorizeRequests()
-      .antMatchers("/auth/login").permitAll()
-      .antMatchers("/public/**").permitAll()
-      .antMatchers("/api/v1/flow/app/latest/**").permitAll()
-      .antMatchers("/actuator/**").permitAll()
-      .antMatchers("/api/v1/flow/user/forgotPassword/**").permitAll()
-      .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-      .antMatchers("/webhook/twilio/**").permitAll()
-      .antMatchers("/webhook/hubspot/**").permitAll()
-      .antMatchers("/webhook/verse/**").permitAll()
-      // export the endpoint for automating s3 uploads of mobile builds from fast lane
-      .antMatchers("/api/v1/flow/app/addAttachmentRecord").permitAll()
-      // export the endpoint for mobile to call to ensure the app_attachment table is present in stage and flux before they do a build
-      .antMatchers("/api/v1/flow/app/fixTable").permitAll();
+    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry =
+        http.sessionManagement()
+            .sessionCreationPolicy(STATELESS)
+            .and()
+            .cors()
+            .and()
+            .authorizeRequests()
+            .antMatchers("/auth/login")
+            .permitAll()
+            .antMatchers("/public/**")
+            .permitAll()
+            .antMatchers("/api/v1/flow/app/latest/**")
+            .permitAll()
+            .antMatchers("/actuator/**")
+            .permitAll()
+            .antMatchers("/api/v1/flow/user/forgotPassword/**")
+            .permitAll()
+            .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+            .permitAll()
+            .antMatchers("/webhook/twilio/**")
+            .permitAll()
+            .antMatchers("/webhook/hubspot/**")
+            .permitAll()
+            .antMatchers("/webhook/verse/**")
+            .permitAll()
+            // export the endpoint for automating s3 uploads of mobile builds from fast lane
+            .antMatchers("/api/v1/flow/app/addAttachmentRecord")
+            .permitAll()
+            // export the endpoint for mobile to call to ensure the app_attachment table is present
+            // in stage and flux before they do a build
+            .antMatchers("/api/v1/flow/app/fixTable")
+            .permitAll();
 
-      if(maintenanceMode) {
-        //have to allow access to br endpoints so that ContactLeadController endpoints dont fail suddenly
-        registry.antMatchers("/api/v1/company/blueraven/contact**").permitAll();
-        registry.anyRequest().hasAnyAuthority("MAINTENANCE_MODE_ADMIN");
-      } else {
-        registry.anyRequest().authenticated();
-      }
+    if (maintenanceMode) {
+      // have to allow access to br endpoints so that ContactLeadController endpoints don't fail
+      // suddenly
+      registry.antMatchers("/api/v1/company/blueraven/contact**").permitAll();
+      registry.anyRequest().hasAnyAuthority("MAINTENANCE_MODE_ADMIN");
+    } else {
+      registry.anyRequest().authenticated();
+    }
 
-      registry.and()
-      .exceptionHandling()
-      .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-      .and()
-      .headers()
-      .frameOptions()
-      .sameOrigin()
-      .and()
-      .csrf().disable()
-      .addFilterAt(sessionFilter(), AbstractPreAuthenticatedProcessingFilter.class)
-      .addFilterBefore(authFailureFilter(), RequestHeaderAuthenticationFilter.class)
-      .authenticationProvider(jwtAuth);
+    registry
+        .and()
+        .exceptionHandling()
+        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+        .and()
+        .headers()
+        .frameOptions()
+        .sameOrigin()
+        .and()
+        .csrf()
+        .disable()
+        .addFilterAt(sessionFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+        .addFilterBefore(authFailureFilter(), RequestHeaderAuthenticationFilter.class)
+        .authenticationProvider(jwtAuth);
   }
 
   @SneakyThrows
   public RequestHeaderAuthenticationFilter sessionFilter() {
-    RequestHeaderAuthenticationFilter filter = new RequestHeaderAuthenticationFilter();
+    final var filter = new CustomRequestHeaderAuthenticationFilter();
     filter.setPrincipalRequestHeader("Authorization");
     filter.setAuthenticationManager(authenticationManager());
     filter.setExceptionIfHeaderMissing(false);

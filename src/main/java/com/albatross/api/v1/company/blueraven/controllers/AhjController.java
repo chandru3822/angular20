@@ -12,21 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Joseph Canto on 2019-07-12.
- */
 @RestController
 @Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/ahj")
 public class AhjController {
-  @Autowired
-  private AhjService ahjService;
+  @Autowired private AhjService ahjService;
 
-  @Autowired
-  private AhjRequirementService ahjRequirementService;
+  @Autowired private AhjRequirementService ahjRequirementService;
 
-  @Autowired
-  private AhjUtilityService ahjUtilityService;
+  @Autowired private AhjUtilityService ahjUtilityService;
 
   @GetMapping(value = "")
   public List<AhjSummary> getAhjList() {
@@ -55,46 +49,46 @@ public class AhjController {
 
   // REQUIREMENTS
   @GetMapping(value = "/{ahjId}/{itemType}/requirement/{originalRequirementId}/history")
-  public List<AhjRequirement> getRequirementHistory(@PathVariable Long ahjId,
-                                                    @PathVariable String itemType,
-                                                    @PathVariable Long originalRequirementId) {
+  public List<AhjRequirement> getRequirementHistory(
+      @PathVariable Long ahjId,
+      @PathVariable String itemType,
+      @PathVariable Long originalRequirementId) {
     if (itemType.equals("utility")) {
       return ahjUtilityService.getRequirementHistory(ahjId, originalRequirementId);
-    } else {
-      return ahjRequirementService.getRequirementHistory(ahjId, originalRequirementId);
     }
+    return ahjRequirementService.getRequirementHistory(ahjId, originalRequirementId);
   }
 
   @PostMapping(value = "/{ahjId}/{itemType}/requirement")
-  public AhjRequirement addRequirement(@PathVariable Long ahjId,
-                                       @PathVariable String itemType,
-                                       @RequestBody AhjRequirement requirement) {
+  public AhjRequirement addRequirement(
+      @PathVariable Long ahjId,
+      @PathVariable String itemType,
+      @RequestBody AhjRequirement requirement) {
     if (itemType.equals("utility")) {
-      return ahjUtilityService.addRequirement(ahjId, requirement);
-    } else {
-      return ahjRequirementService.addRequirement(ahjId, requirement);
+      return ahjUtilityService.addRequirement(ahjId, requirement).orElse(null);
     }
+
+    return ahjRequirementService.addRequirement(ahjId, requirement).orElse(null);
   }
 
   @PutMapping(value = "/{ahjId}/{itemType}/requirement/{requirementId}")
-  public AhjRequirement updateRequirement(@PathVariable Long ahjId,
-                                          @PathVariable String itemType,
-                                          @PathVariable Long requirementId,
-                                          @RequestBody AhjRequirement requirement) {
+  public AhjRequirement updateRequirement(
+      @PathVariable Long ahjId,
+      @PathVariable String itemType,
+      @PathVariable Long requirementId,
+      @RequestBody AhjRequirement requirement) {
     if (itemType.equals("utility")) {
-      return ahjUtilityService.updateRequirement(ahjId, requirementId, requirement);
-    } else {
-      return ahjRequirementService.updateRequirement(ahjId, requirementId, requirement);
+      return ahjUtilityService.updateRequirement(ahjId, requirementId, requirement).orElse(null);
     }
+    return ahjRequirementService.updateRequirement(ahjId, requirementId, requirement).orElse(null);
   }
 
   @PutMapping(value = "/{itemType}/requirement/{originalRequirementId}/archive")
-  public void archiveRequirement(@PathVariable String itemType,
-                                 @PathVariable Long originalRequirementId) {
+  public void archiveRequirement(
+      @PathVariable String itemType, @PathVariable Long originalRequirementId) {
     if (itemType.equals("utility")) {
       ahjUtilityService.archiveRequirement(originalRequirementId);
-    } else {
-      ahjRequirementService.archiveRequirement(originalRequirementId);
     }
+    ahjRequirementService.archiveRequirement(originalRequirementId);
   }
 }

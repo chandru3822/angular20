@@ -20,11 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,7 +31,12 @@ public class WorkQueueService {
   private final WorkQueueTypeService workQueueTypeService;
   private final SqlCacheRO sqlCacheRO;
 
-  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userId, Boolean unassigned, Boolean filterFutureFollowUps, Boolean filterFutureEvents) {
+  public List<WorkQueue> getWorkQueues(
+      Long workQueueCategoryId,
+      Long userId,
+      Boolean unassigned,
+      Boolean filterFutureFollowUps,
+      Boolean filterFutureEvents) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
@@ -48,12 +48,17 @@ public class WorkQueueService {
     params.put("filterFutureEvents", null != filterFutureEvents && filterFutureEvents);
     params.put("unassigned", null != unassigned && unassigned);
 
-    List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
-    return results;
+    return sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
   }
 
-  public SmartlistResult getWorkQueueDetails(Long workQueueTypeId, Long smartlistId, Long userId, Boolean unassigned, String timezone, Pageable pageable,
-                                             List<Long> installationCrewIds) {
+  public SmartlistResult getWorkQueueDetails(
+      Long workQueueTypeId,
+      Long smartlistId,
+      Long userId,
+      Boolean unassigned,
+      String timezone,
+      Pageable pageable,
+      List<Long> installationCrewIds) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
@@ -68,33 +73,37 @@ public class WorkQueueService {
     Optional<WorkQueueType> workQueueType = workQueueTypeService.getType(workQueueTypeId);
     Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
     if (smartlist == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
     log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
     String query = null;
-    if((workQueueType.isPresent() && !workQueueType.get().getUseEventData()) || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
-      //if the work queue type is not for event data OR it is for install crews, then keep doing the same thing
+    if ((workQueueType.isPresent() && !workQueueType.get().getUseEventData())
+        || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
+      // if the work queue type is not for event data OR it is for install crews, then keep doing
+      // the same thing
       query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
     } else {
-      //this should only be called for wqt using event data
+      // this should only be called for wqt using event data
       query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
 
-      //add default fields to fields list
+      // add default fields to fields list
       var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
       defaultFields.addAll(fields);
       fields = defaultFields;
     }
-    List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+    List<Map<String, Object>> results =
+        sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     List<Map<String, Object>> randasResults = new ArrayList<>();
 
-    for (Map<String, Object> result: results) {
+    for (Map<String, Object> result : results) {
 
       Map<String, Object> newResult = new HashMap<>();
 
-      for(Map.Entry<String, Object> entry: result.entrySet()) {
+      for (Map.Entry<String, Object> entry : result.entrySet()) {
         if (result.get(entry.getKey()) != null) {
           if (Objects.equals(entry.getValue().getClass(), PGobject.class)) {
             newResult.put(entry.getKey(), ((PGobject) entry.getValue()).getValue());
@@ -104,7 +113,6 @@ public class WorkQueueService {
         } else {
           newResult.put(entry.getKey(), entry.getValue());
         }
-
       }
 
       randasResults.add(newResult);
@@ -116,17 +124,18 @@ public class WorkQueueService {
   public String buildSql(Long smartlistId, Boolean useEventData) {
     Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
     if (smartlist == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
     log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
     String query;
-    if(useEventData) {
-//      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
+    if (useEventData) {
+      //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
       query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
 
-      //add default fields to fields list
+      // add default fields to fields list
       var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
       defaultFields.addAll(fields);
       fields = defaultFields;
@@ -143,8 +152,7 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
 
-    List<WorkQueueOwner> results = sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
-    return results;
+    return sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
   }
 
   public static class WorkQueueDetailMapper<T> extends BeanPropertyRowMapper<T> {
@@ -158,16 +166,20 @@ public class WorkQueueService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "owningPositions",
+      bw.registerCustomEditor(
+          List.class,
+          "owningPositions",
           new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
 
       TypeReference<List<ProjectProcessStep>> activeProcessStepsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "activeProcessSteps",
-        new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "activeProcessSteps",
+          new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
 
       TypeReference<List<Note>> notesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "notes",
-        new JsonCollectionDeserializer(notesRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "notes", new JsonCollectionDeserializer(notesRef, objectMapper));
     }
   }
 }
