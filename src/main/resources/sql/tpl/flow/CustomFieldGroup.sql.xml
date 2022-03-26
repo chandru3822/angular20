@@ -77,9 +77,6 @@
                                                             where lov.parent_id is not null
                                                               and lov.parent_id = cf.list_of_value_id
                                                               and lov.archived is not true
---                                                               @randa: I commented this out, was causing issues creating a contact. CFGs have no context of specific values on an object type
---                                                                    (lov.archived is true AND (lov.id = coalesce(pcv.int_value, ppscfv.int_value)
---                                                                      OR lov.id = any(coalesce(pcv.int_array_value, ppscfv.int_array_value)))))
                                                             order by
                                                               case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                               case when cf.sort_list_values_alphabetically is false then lov.display_order end
