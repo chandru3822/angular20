@@ -259,6 +259,9 @@ public class BrsProcessStepActionFunctionService {
       //This is hardcoded to the specific custom field group assignment ID of the used custom field. Not ideal
       Long designCfgaId = 22560L;
 
+      log.info("ZZZ ppsId: " + ppsId);
+      log.info("ZZZ designCfgaId: " + designCfgaId);
+
       log.info("ZZZ debug 0");
 
       String designId = auroraService.getDesignId(ppsId, designCfgaId);
